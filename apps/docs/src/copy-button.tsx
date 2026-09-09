@@ -1,7 +1,7 @@
 import { Button } from '@ultima/ui';
 import { useEffect, useRef, useState } from 'react';
 
-export function CopyButton({ text }: { text: string }) {
+export function CopyButton({ text, ariaLabel }: { text: string; ariaLabel?: string }) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -15,7 +15,7 @@ export function CopyButton({ text }: { text: string }) {
   }
 
   return (
-    <Button variant="ghost" size="sm" onClick={copy}>
+    <Button variant="ghost" size="sm" onClick={copy} aria-label={ariaLabel}>
       {copied ? 'Copied' : 'Copy'}
     </Button>
   );

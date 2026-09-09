@@ -19,3 +19,4 @@ export {
 export { colorScheme, darkTheme, lightTheme } from './themes';
 export { palette } from './palette';
 export type { ColorMode, ScaleName } from './palette';
+export type { ContrastResult, TokenEntry, TokenValue, TokensJson } from './tokens-json';
