@@ -15,7 +15,8 @@ A principle earns a line here only if it already settled a decision on the map, 
 - **Tokens are the only source of raw values.** A literal in component code is a bug, not a shortcut. A new need becomes a new token.
 - **Semantic names are stable, values are not.** A consumer re-skins at the semantic layer and nothing renames underneath them (ADR 0004).
 - **Contrast is a build gate, not advice.** WCAG 2.2 AA passes or the palette does not ship. APCA is reported beside the pairings and never fails a build.
-- **The docs site is the first user.** It imports from the workspace, so a convention that is painful to use gets felt before it ships.
+- **Ultima is the default kit for our StyleX React projects.** Core application components and common compositions belong on the roadmap, including the ones we otherwise reach for shadcn/ui to provide. This is a product scope commitment; public positioning can stay focused on Ultima.
+- **The docs site is the first complete application.** It uses production Ultima components for every reusable UI pattern, including navigation and responsive controls. A missing reusable component is added to Ultima and consumed from the workspace. Page layout, prose typography, and branding may use site-specific StyleX.
 
 ## Tokens
 
@@ -481,11 +482,61 @@ Lowest measured ratios today: `text-subtle` on `surface-hover` 4.78 dark and 4.9
 
 ## Components
 
-Decided on [Component authoring conventions](https://linear.app/frankie-ramirez/issue/ULT-11), reacting to the [Button and Card prototype](https://linear.app/frankie-ramirez/issue/ULT-7). Every component in Ultima follows these rules so a second author or an agent produces the same shape. The v0 set itself is listed first; the rules follow.
+Decided on [Component authoring conventions](https://linear.app/frankie-ramirez/issue/ULT-11), reacting to the [Button and Card prototype](https://linear.app/frankie-ramirez/issue/ULT-7). Every component in Ultima follows these rules so a second author or an agent produces the same shape. The release scope and v0 set are listed first; the rules follow.
+
+### Release scope and core coverage
+
+Scope amendment agreed on 2026-09-09. The original report-focused set remains the foundation. v0 also has to support the docs as a complete application, and the follow-up releases extend coverage to ordinary application work.
+
+The checklist below is planned scope, not a statement that components have shipped. Check a component entry only when it has production source, an installable registry item with its dependencies, copyable docs examples, and the applicable browser interaction and accessibility checks. A recipe entry must identify its installable component dependencies and provide a copyable example covered by the applicable checks. Compositions also document how their constituent components fit together. Registry smoke installs must cover the expanded catalogue in Vite and Next.js.
+
+#### v0: foundation and docs application
+
+- [ ] Ship the fourteen foundation components in the table below.
+- [ ] Ship Sidebar as a reusable component and use it for the docs menu. Its acceptance criteria are in the Docs site section.
+- [ ] Build every reusable docs control from production Ultima components. Add any missing reusable components to the v0 catalogue and consume them from the workspace.
+- [ ] Verify the docs at desktop and mobile widths in both color modes, including keyboard navigation and focus restoration after closing the mobile menu.
+- [ ] Complete the registry generation pipeline, component documentation, and CI gates defined in this specification.
+
+Sidebar's public parts, responsive state model, and dependencies need contracts before implementation. Reuse Dialog for mobile navigation if it satisfies that contract. If the implementation needs a separate Sheet or Drawer, promote that component from v0.2 into v0. The same rule applies to Breadcrumb, Collapsible, Separator, Scroll Area, or any other reusable pattern the docs needs. Search is not required for v0; adding it brings its missing component dependencies into the same release.
+
+#### v0.1: everyday forms and feedback
+
+- [ ] Field and Label, including descriptions, validation errors, and form integration examples.
+- [ ] Textarea, Checkbox, and Radio Group.
+- [ ] Combobox and Slider.
+- [ ] Alert and Alert Dialog.
+- [ ] Toast and Progress. Progress represents task completion; Meter remains the component for a bounded measurement.
+- [ ] Skeleton, Spinner, and Empty.
+
+The form examples must demonstrate submission and validation with a documented form integration, including disabled, required, and invalid states. Components needed by v0 move forward; they are not implemented a second time for this milestone.
+
+#### v0.2: application compositions and remaining core coverage
+
+- [ ] Command and a searchable command-dialog example.
+- [ ] Calendar and Date Picker.
+- [ ] Data Table with sorting, filtering, pagination, and row-selection examples.
+- [ ] Accordion and Collapsible.
+- [ ] Breadcrumb, Pagination, and Navigation Menu.
+- [ ] Popover, Sheet, and Drawer.
+- [ ] Context Menu, Menubar, and Hover Card.
+- [ ] Avatar, Separator, and Scroll Area.
+- [ ] Toggle and Toggle Group.
+- [ ] Button Group, Input Group, Input OTP, and Native Select.
+- [ ] Aspect Ratio, Resizable, and Carousel.
+- [ ] Chart, Item, Kbd, and Typography recipes.
+
+Each composition needs a dependency and accessibility decision before implementation. Calendar and Chart, for example, may need capabilities beyond Base UI. Any additional dependency must fit the StyleX-only styling contract; record an amendment to the primitive-library decision if its scope changes. The checklist describes supported capabilities, so a documented recipe may satisfy an entry where a separate component adds no useful behavior. Record that mapping explicitly when checking the entry.
+
+#### v1: dependable default
+
+v1 requires completed core coverage and a representative application built with Ultima that exercises forms, navigation, overlays, and data presentation without routinely requiring another UI kit. Installation must pass in both supported frameworks, and every shipped component must have documented contracts and the applicable checks. The copy-source registry's versioning and update policy must also be documented before v1.
+
+Release labels here describe delivery milestones. They do not settle that update policy or commit Ultima to tracking every future shadcn/ui addition. New component needs are added to this checklist with an explicit milestone.
 
 ### The v0 set
 
-Fourteen components: the report set, which is the nine mana's audit report needs, plus five form and overlay components. Each is one file and one registry item. Parts follow the compound rule below: a component built on a Base UI primitive exposes every Base UI part under its own name, styled or passed through, and a plain component names its parts for what they are. The accessible name, focus ring, and element per component are in the Accessibility contract.
+The fourteen foundation components are the report set, which is the nine mana's audit report needs, plus five form and overlay components. v0 also includes Sidebar and any dependencies required by the docs application, as defined above. The table records the existing foundation contracts; add the new components when their contracts are settled. Each component is one file and one registry item. Parts follow the compound rule below: a component built on a Base UI primitive exposes every Base UI part under its own name, styled or passed through, and a plain component names its parts for what they are. The accessible name, focus ring, and element per component are in the Accessibility contract.
 
 | Component | Item | Built on | Parts | Axes decided so far |
 | --- | --- | --- | --- | --- |
@@ -510,7 +561,7 @@ Defaults, declared in each component's destructure: Button `solid` / `md` / `acc
 
 The axes above, which parts carry Ultima styles, and the per-component notes were decided on [Per-component contracts for the v0 set](https://linear.app/frankie-ramirez/issue/ULT-19). No component in v0 has an axis beyond `variant`, `size`, and `tone`.
 
-Toast is the one adjacent Base UI primitive the report has no use for, and it is not in v0.
+Toast is planned for v0.1. If the docs needs it for a reusable interaction in v0, the docs application requirement brings it forward.
 
 ### One file per component
 
@@ -550,7 +601,7 @@ A single-part component exports one function: `Button`, `Input`, `Switch`. A mul
 
 ### Styled parts
 
-A compound component exposes every Base UI part, but most parts have nothing to paint. Rather than fourteen arbitrary lists, one rule, so a part Ultima has never listed still has an answer:
+A compound component exposes every Base UI part, but most parts have nothing to paint. Apply the same styling rule to every part, including parts added after the foundation set:
 
 **A part carries Ultima styles if it paints — background, border, shadow, or color — or if it sets its own type or spacing. A part passes through unstyled if its whole job is to portal, position, or group.** Unstyled by that rule across the system: `Portal`, `Root`, `Group`, `RadioGroup`, `SubmenuRoot`, and `Viewport`, except where a component's row below says otherwise. `Positioner` is a near-exception: it gets `outline: 0` and nothing else, following Base UI's own demos.
 
@@ -657,7 +708,7 @@ Rules the table compresses:
 - **Types enforce one thing.** `Tooltip.Trigger` requires `'aria-label': string`, because Base UI wires nothing between a tooltip and its trigger for assistive technology. Every other name source varies with context (a visible label, a labelling element, a child part), and a type cannot see children or siblings, so those are documented rules. Requiring `aria-label` on Input would steer authors to the worst of their three options.
 - **Wrapper triggers render the ring, not Ultima.** `Dropdown Menu`, `Tooltip`, and `Dialog` name a Trigger or Close in the focus-ring column, and those parts pass through unstyled under Styled parts above, so the ring comes from the element the consumer renders into the slot. The docs page for each says the slot must hold an Ultima Button or an element carrying its own ring. `Select.Trigger` is styled by Ultima and renders its own ring.
 - **Icon-only Button** is a documented rule, not a component: no `IconButton` and no `iconOnly` prop in v0.
-- **Input has no Field in v0.** Its validation state is the consumer's `aria-invalid`, styled through `':is([aria-invalid="true"])'` with `--ult-color-danger-border`. Base UI's `Field` is a later, additive part.
+- **Input works without Field.** Its validation state is the consumer's `aria-invalid`, styled through `':is([aria-invalid="true"])'` with `--ult-color-danger-border`. Field is planned for v0.1 and moves into v0 if the docs needs it; adding it preserves standalone Input usage.
 - **Dialog always renders a Title.** Base UI sets `aria-labelledby` only when one exists. A design with no visible heading hides the Title through the `style` slot rather than omitting it. `modal` stays Base UI's default (`true`).
 - **Table** parts are `Table.Root` `<table>`, `Table.Head` `<thead>`, `Table.Body` `<tbody>`, `Table.Row` `<tr>`, `Table.HeadCell` `<th scope="col">` (scope overridable), `Table.Cell` `<td>`, `Table.Caption` `<caption>`. There is no scroll wrapper: a consumer who needs horizontal scroll wraps the table in a `tabIndex={0}` region, and the docs page says so.
 - **Code** blocks wrap long lines rather than scroll, so the block needs no `tabIndex`.
@@ -669,7 +720,7 @@ Each component's docs page carries an Accessibility section restating its row. A
 
 ### Overlays
 
-One recipe for every popup in v0 (Dialog, Dropdown Menu, Select, Tooltip), so four components do not invent four transitions.
+Dialog, Dropdown Menu, Select, and Tooltip share one popup recipe. Additional overlays required by the docs reuse its tokens and transitions, with placement and motion appropriate to the component documented in their contracts.
 
 - **Surface.** `--ult-color-surface-raised`, a hairline `--ult-color-border`, `--ult-radius-lg`, and `--ult-shadow-md`. An overlay always sets a border and a shadow together, never a shadow alone. `z.popup`.
 - **Transition.** `transform-origin: var(--transform-origin)`, which Base UI's positioner seeds before Floating UI measures. Transition `opacity` and `transform` over `--ult-motion-fast` with the `enter` easing; `[data-starting-style]` and `[data-ending-style]` both sit at `opacity: 0` and `transform: scale(0.98)`, with the `exit` easing on the closing side. Tooltip is the one narrower case: `--ult-radius-sm`, `--ult-shadow-sm`, and text step 2.
@@ -679,7 +730,7 @@ One recipe for every popup in v0 (Dialog, Dropdown Menu, Select, Tooltip), so fo
 
 ### Iconography
 
-Decided on [Iconography in v0](https://linear.app/frankie-ramirez/issue/ULT-21). Base UI ships no glyphs: `Select.Icon`, `Select.ItemIndicator`, `Menu.CheckboxItemIndicator`, and `Menu.RadioItemIndicator` are empty containers, and `Menu.SubmenuTrigger` has no trailing affordance of its own. Ultima fills exactly those five slots and ships nothing else.
+Decided on [Iconography in v0](https://linear.app/frankie-ramirez/issue/ULT-21). Base UI ships no glyphs: `Select.Icon`, `Select.ItemIndicator`, `Menu.CheckboxItemIndicator`, and `Menu.RadioItemIndicator` are empty containers, and `Menu.SubmenuTrigger` has no trailing affordance of its own. The foundation components fill those five slots. New components document any additional built-in glyphs in their contracts and follow the same private SVG convention.
 
 **No registry item declares an icon dependency.** Not `lucide-react`, not any other set. Ultima needs four glyphs, and a declared dependency would put a package in every consumer's tree for four paths, pick their icon library on their behalf, and leave anyone already standardized on another set carrying two. Adding one later is additive, so this is cheap to reverse if a consumer ever asks.
 
@@ -693,7 +744,7 @@ Decided on [Iconography in v0](https://linear.app/frankie-ramirez/issue/ULT-21).
 | dot | `Menu.RadioItemIndicator` | `dropdown-menu.tsx` |
 | chevron-right | `Menu.SubmenuTrigger`, trailing | `dropdown-menu.tsx` |
 
-`select.tsx` and `dropdown-menu.tsx` are the only two files in v0 with a glyph in them.
+`select.tsx` and `dropdown-menu.tsx` are the foundation files with built-in glyphs. Sidebar and any components added for the docs must settle their glyph slots with their component contracts.
 
 **Geometry.** A 24×24 `viewBox`, `fill="none"`, `stroke="currentColor"`, `stroke-width: 1.5`, round caps and joins. The weight matches Phosphor's regular, which the docs demos use: Phosphor draws on a 256 grid with the stroke pre-expanded into filled geometry at 16 units, about 1.5px optical at 24px. Ultima keeps a 24×24 `viewBox` anyway, because hand-drawing four glyphs on a 256 grid buys nothing a reader can see. The seam is placed deliberately: a consumer's icon set is unknowable and a consumer who dislikes the chevron edits four lines in a file they own, while a mismatch on the docs pages is visible on every component page and fixable by nobody but us. `currentColor` means a glyph inherits its part's color and never names a token, which keeps the rule in Tokens in component code intact. The dot is a filled `<circle>`, the one exception to `fill="none"`.
 
@@ -906,6 +957,19 @@ The registry is generated from the workspace source, so an installed copy can on
 
 This makes the docs site a user of the components rather than a consumer in the glossary's sense. Mana's report remains the first true consumer.
 
+### Docs navigation and component ownership
+
+The docs menu uses the production Sidebar from `packages/ui`. Sidebar supports grouped navigation with nested items and an active-page indication, collapsible desktop navigation, and a mobile drawer. Routing remains the app's responsibility; Sidebar must accept links composed with the consumer's router.
+
+The docs implementation must prove these behaviors:
+
+- The current route has an accessible active-page indication, including on a direct page load. Nested navigation exposes its expanded state.
+- Keyboard users can reach every link and operate the desktop collapse and mobile menu controls. Icon-only controls have accessible names and visible focus rings.
+- Opening the mobile menu moves focus into it; Escape and its close control dismiss it and return focus to the trigger. Selecting a destination closes the menu. Modal behavior uses the shared overlay component's focus management.
+- The menu remains usable across desktop and mobile layouts, with long navigation lists and in both color modes. Sidebar accepts the same StyleX customization and semantic tokens as other components.
+
+Sidebar ships with its own registry item and component page. Reusable dependencies discovered while building it get the same treatment. The docs may own its route data and page layout; navigation controls, theme controls, copy buttons, and other reusable interactions use production Ultima components. Throwaway prototypes and site-local copies do not satisfy the v0 release gate.
+
 ### Authoring
 
 Content pages are MDX, one file per page under `apps/docs/src/content/`, compiled by `@mdx-js/rollup`. A single `Prose` component carries every typography style; MDX files hold no styling of their own. Routes stay code-based: a page module's default export is a component like any other, so MDX costs one plugin and no routing change.
@@ -979,7 +1043,7 @@ Until that exit code exists the Principles claim that contrast is a build gate i
 
 The end-to-end install into a fresh Vite app and a fresh Next.js app becomes `scripts/smoke-install.sh`, the scripted form of what `prototypes/ult-8` does by hand.
 
-It does not run on every pull request. It scaffolds two frameworks and drives the shadcn CLI over the network, which is minutes of wall clock and a standing flake risk, and a component change cannot break it. It runs three ways: on a weekly cron, on `workflow_dispatch`, and on pull requests matching a paths filter for the things that can break it, which are `registry/static/**`, `registry/items.config.ts`, and the registry build script. A green run is required before tagging v0.
+The smoke install scaffolds both frameworks and installs the released catalogue before building each consumer. It runs on a weekly cron, on `workflow_dispatch`, and on pull requests that change registry inputs: `registry/static/**`, `registry/items.config.ts`, the registry build and smoke scripts, `packages/ui/src/**`, `packages/tokens/**`, workspace dependency manifests, or the lockfile. Component imports and token changes can affect generated dependencies or compilation, so source changes must trigger the check. A green run covering the expanded v0 catalogue is required before tagging v0.
 
 ### CI
 
@@ -1000,7 +1064,7 @@ No linter in v0. The conventions this system actually cares about are one file p
 
 ### Considered and declined
 
-**Storybook.** It would have bought several of these decisions in one dependency: play functions under Vitest browser mode, an a11y addon running axe per story, and Chromatic for visual regression. It is declined because the docs site already holds that slot and the Docs site section already decided how. Demos are real modules whose printed source is read from the same file through `?raw`, so the running example and the copyable source cannot diverge. Composing stories into those pages would print story boilerplate instead of the JSX a reader copies, which is a real loss for a system whose whole distribution model is copied source. Keeping both stories and demos would give fourteen components three artifacts each, and Storybook would need a second Vite configuration replicating the StyleX setup exactly, where every divergence is a bug class visible in only one of the two builds.
+**Storybook.** It would have bought several of these decisions in one dependency: play functions under Vitest browser mode, an a11y addon running axe per story, and Chromatic for visual regression. It is declined because the docs site already holds that slot and the Docs site section already decided how. Demos are real modules whose printed source is read from the same file through `?raw`, so the running example and the copyable source cannot diverge. Composing stories into those pages would print story boilerplate instead of the JSX a reader copies, which is a real loss for a system whose whole distribution model is copied source. Keeping both stories and demos would give each component three artifacts, and Storybook would need a second Vite configuration replicating the StyleX setup exactly, where every divergence is a bug class visible in only one of the two builds.
 
 The direction matters more than the verdict: demo modules compose into stories later without loss, and stories do not decompose back into copyable demos. Declining now forecloses nothing.
 
