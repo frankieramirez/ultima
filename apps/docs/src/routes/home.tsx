@@ -51,12 +51,13 @@ const styles = stylex.create({
     gap: space['--ult-space-5'],
   },
   wordmark: {
-    color: color['--ult-color-highlight-text'],
-    fontSize: text['--ult-text-11'],
-    fontWeight: font['--ult-font-weight-semibold'],
-    letterSpacing: font['--ult-font-tracking-tight'],
-    lineHeight: font['--ult-font-leading-none'],
     margin: 0,
+  },
+  logo: {
+    display: 'block',
+    height: 'auto',
+    maxWidth: '34rem',
+    width: '100%',
   },
   pitch: {
     color: color['--ult-color-text'],
@@ -181,7 +182,9 @@ export function Home() {
   return (
     <main {...stylex.props(styles.page)}>
       <section {...stylex.props(styles.hero)}>
-        <h1 {...stylex.props(styles.wordmark)}>Ultima</h1>
+        <h1 {...stylex.props(styles.wordmark)}>
+          <img src="/ultima-banner.svg" alt="Ultima" width={2172} height={724} {...stylex.props(styles.logo)} />
+        </h1>
         <p {...stylex.props(styles.pitch)}>The final spell for the interfaces you build.</p>
         <p {...stylex.props(styles.prose)}>
           Ultima is a design system of tokens and React components, authored on Base UI and StyleX
