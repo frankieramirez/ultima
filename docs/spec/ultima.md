@@ -123,7 +123,7 @@ Five values, in `px` so corners do not grow with the font size.
 | --- | --- | --- |
 | `--ult-radius-xs` | 2px | swatches, bars, indicator dots |
 | `--ult-radius-sm` | 4px | inline code, small insets |
-| `--ult-radius-md` | 8px | Button, Input, Select trigger, menu items |
+| `--ult-radius-md` | 10px | Button, Input, Select trigger, menu items |
 | `--ult-radius-lg` | 12px | Card, Dialog, popups |
 | `--ult-radius-full` | 9999px | Badge and any pill |
 
