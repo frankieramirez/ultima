@@ -1,52 +1,47 @@
 ![Ultima wordmark with a cyan and violet crystal spell emblem](docs/assets/ultima-banner.svg)
 
-A fantasy-themed design system built with React, Base UI, and StyleX. Ultima is being built around a shadcn-compatible registry so consumers can own the component source in their projects.
+Ultima is a design system of tokens and React components, authored on Base UI and StyleX. It ships registry-first: the shadcn CLI copies the source into your project and you own it from there. Dark is the default and light is a full peer.
 
-## Status
+Ultima is v0 and in development.
 
-Ultima is in early development. The repo has semantic tokens with dark and light themes, a local docs application, and Button and Card authoring prototypes. The production component catalogue and registry generation pipeline are still being built. The main `@ultima/ui` entry point does not export components yet.
+![The Ultima docs site home page: the wordmark, a live demo strip, and the install commands](docs/assets/docs-home.png)
 
-The [release roadmap](docs/spec/ultima.md#release-scope-and-core-coverage) tracks the planned scope. Installation examples in the docs describe the intended workflow; they are not a published release guide yet.
+## Install
 
-## What Ultima provides
+Vite:
 
-| Area | In this repo |
-| --- | --- |
-| Design tokens | Semantic colors, typography, spacing, and motion in `packages/tokens`, with dark and light themes. |
-| React components | Base UI and StyleX authoring prototypes in `packages/ui`; production components are planned. |
-| Source registry | Registry items and setup prototypes for Vite and Next.js in `registry`; the complete distribution pipeline is planned. |
-| Documentation | A Vite app in `apps/docs` for exploring the palette and tokens, with component documentation still in progress. |
-
-## Local development
-
-Use Node.js 22 or newer and pnpm 10.33.0. From the repository root:
-
-```sh
-pnpm install --frozen-lockfile
-pnpm dev
+```bash
+npx shadcn add https://ultima.frankieramirez.com/r/setup-vite.json
+npx shadcn add @ultima/button
 ```
 
-Open the local URL printed by Vite to explore the docs.
+Next.js App Router:
 
-Other workspace commands:
-
-```sh
-pnpm build       # Build the docs application
-pnpm typecheck   # Typecheck all workspace packages
+```bash
+npx shadcn add https://ultima.frankieramirez.com/r/setup-next.json
+npx shadcn add @ultima/button
 ```
 
-Component tests run in Chromium. Install the browser once, then run the tests:
+The first command writes `components.json` and the StyleX compiler config. The second installs Button and, through it, the tokens and the shared lib. The long form with the steps you still do by hand is on the site.
 
-```sh
-pnpm exec playwright install chromium
-pnpm test
-```
+## Docs
 
-See the [component package guide](packages/ui/README.md) for browser test details.
+- [Install](https://ultima.frankieramirez.com/install)
+- [Components](https://ultima.frankieramirez.com/components)
+- [Tokens](https://ultima.frankieramirez.com/tokens)
+- [Rationale](https://ultima.frankieramirez.com/rationale)
 
-## Documentation
+## Stack
 
-- [Specification and release roadmap](docs/spec/ultima.md#release-scope-and-core-coverage)
-- [Project glossary](CONTEXT.md)
-- [Component package guide](packages/ui/README.md)
-- [Architecture decisions](docs/adr)
+- [Base UI](https://base-ui.com) for the primitives.
+- [StyleX](https://stylexjs.com) for styling, with tokens as the only source of raw values.
+- A [shadcn](https://ui.shadcn.com/docs/registry) registry for distribution.
+- Vite and TanStack Router for the docs site, which also serves the registry and the tokens export.
+
+## Related
+
+[mana](https://github.com/frankieramirez/mana) is the audit toolkit whose report is Ultima's first consumer.
+
+## License
+
+[MIT](LICENSE)
