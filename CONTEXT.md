@@ -118,6 +118,10 @@ The `style` prop every part accepts: StyleX styles from the caller, merged last.
 
 The one registry item, `lib/component.ts`, holding the helper types every component depends on. Installed once, like shadcn's `lib/utils`.
 
+## Glyph slot
+
+A Base UI part whose only content is an icon: `Select.Icon`, `Select.ItemIndicator`, `Menu.CheckboxItemIndicator`, `Menu.RadioItemIndicator`. Ultima fills each with a `1em` inline SVG private to the component file, and accepts `children` as a replacement. Ultima ships four glyphs in total and no icon dependency, so a slot Base UI leaves empty is the only place an Ultima glyph appears.
+
 ## Accessibility contract
 
 What a component promises for keyboard and screen-reader use beyond what its Base UI primitive gives: the source of its accessible name, which parts render the focus ring, and the element a plain component renders. Base UI owns roles, ARIA state, and keyboard handling; Ultima owns names, focus visibility, and element choice.

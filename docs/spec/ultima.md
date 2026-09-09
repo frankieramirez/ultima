@@ -677,6 +677,44 @@ One recipe for every popup in v0 (Dialog, Dropdown Menu, Select, Tooltip), so fo
 - **Reduced motion** needs no rule. Every duration is a token that already collapses to `1ms`, and Base UI's transition-aware unmount still fires at that duration.
 - **`keepMounted` is never set by Ultima.** Base UI's default (unmount when closed) stands, because how much closed DOM a page carries is the consumer's decision and the transition does not need the popup mounted. A consumer who wants it passes it through.
 
+### Iconography
+
+Decided on [Iconography in v0](https://linear.app/frankie-ramirez/issue/ULT-21). Base UI ships no glyphs: `Select.Icon`, `Select.ItemIndicator`, `Menu.CheckboxItemIndicator`, and `Menu.RadioItemIndicator` are empty containers, and `Menu.SubmenuTrigger` has no trailing affordance of its own. Ultima fills exactly those five slots and ships nothing else.
+
+**No registry item declares an icon dependency.** Not `lucide-react`, not any other set. Ultima needs four glyphs, and a declared dependency would put a package in every consumer's tree for four paths, pick their icon library on their behalf, and leave anyone already standardized on another set carrying two. Adding one later is additive, so this is cheap to reverse if a consumer ever asks.
+
+**Glyphs are inline SVG, private to the component file that uses them.** Not exported, and not a shared `lib/icons` item. One file per component is the load-bearing rule and the registry rewards a self-contained item, so each file carries its own. The check glyph is written out twice rather than pulling a third lib item into every component install.
+
+| Glyph | Slot | File |
+| --- | --- | --- |
+| chevron-down | `Select.Icon` | `select.tsx` |
+| check | `Select.ItemIndicator` | `select.tsx` |
+| check | `Menu.CheckboxItemIndicator` | `dropdown-menu.tsx` |
+| dot | `Menu.RadioItemIndicator` | `dropdown-menu.tsx` |
+| chevron-right | `Menu.SubmenuTrigger`, trailing | `dropdown-menu.tsx` |
+
+`select.tsx` and `dropdown-menu.tsx` are the only two files in v0 with a glyph in them.
+
+**Geometry.** A 24×24 `viewBox`, `fill="none"`, `stroke="currentColor"`, `stroke-width: 1.5`, round caps and joins. The weight matches Phosphor's regular, which the docs demos use: Phosphor draws on a 256 grid with the stroke pre-expanded into filled geometry at 16 units, about 1.5px optical at 24px. Ultima keeps a 24×24 `viewBox` anyway, because hand-drawing four glyphs on a 256 grid buys nothing a reader can see. The seam is placed deliberately: a consumer's icon set is unknowable and a consumer who dislikes the chevron edits four lines in a file they own, while a mismatch on the docs pages is visible on every component page and fixable by nobody but us. `currentColor` means a glyph inherits its part's color and never names a token, which keeps the rule in Tokens in component code intact. The dot is a filled `<circle>`, the one exception to `fill="none"`.
+
+**Size is `1em`, with `flex-shrink: 0`.** A glyph tracks the text step of the part holding it, so the 14px menu item and the 16px Select trigger get proportional chevrons with no coordination between them. No icon step joins the space scale, there is no `--ult-size-icon`, and no glyph gets a `size` axis. Phosphor's `IconContext` defaults to `size: "1em"` and `color: "currentColor"`, so the demo icons and Ultima's own glyphs size and color by the same mechanism with nothing to reconcile.
+
+**Overriding.** A slot whose whole content is a glyph renders the default and takes `children` as a replacement:
+
+```tsx
+<BaseSelect.Icon {...props} {...stylex.props(styles.icon, style)}>{children ?? <ChevronDown />}</BaseSelect.Icon>
+```
+
+`Menu.SubmenuTrigger` is the exception. Its children are the item's label, so its chevron is appended after them and is not overridable in v0.
+
+**The leading indicator slot.** The fixed-width slot the Dropdown Menu and Select notes call for is space step 6 (16px) wide with a space step 4 (8px) gap, reusing the item's own inline padding step. It is present whether or not an indicator renders, so item text aligns down the column.
+
+**Dialog's close affordance ships no glyph.** `Dialog.Close` passes through unstyled and is handed the consumer's own element, so there is nothing for Ultima to put an X inside. The Dialog docs page's canonical example is `render={<Button variant="ghost">Close</Button>}` with a text label, and a second example shows a glyph the reader supplies alongside `aria-label`. An X in Ultima's set would exist only to be rendered into a slot Ultima does not style.
+
+**Icons in the docs.** `apps/docs` takes `@phosphor-icons/react` as a devDependency, for demos that need a glyph Ultima does not ship: a leading icon on a Button, icons on menu items, Dialog's close. Weight is set once to `regular` through `IconContext` rather than per icon. The printed source shows the import rather than hiding it, and each component page carries one line saying Ultima ships no icon dependency and any set works. None of this reaches the registry: the package is MIT, has no runtime dependencies, and is tree-shakeable with `sideEffects: false`, so only the icons a demo names reach the built site.
+
+**Icon-only Button** stays the documented rule the [accessibility contract](https://linear.app/frankie-ramirez/issue/ULT-18) fixed. No `IconButton`, no `iconOnly` prop. The Button docs page prints the recipe: `aria-label`, the consumer's glyph as the only child, and a `style` override setting `paddingInline` to the block padding so the control is square at its size.
+
 ### Per-component notes
 
 What a builder would otherwise guess, beyond the axes, the styled parts, and the accessibility contract.
@@ -884,7 +922,7 @@ The site serves the registry catalogue at `/r/registry.json`, each item at `/r/{
 
 ### Portfolio surface
 
-The fantasy voice lives in the brand layer only: the name, the six scale names, hero and page titles, and the 404. Technical prose is plain. The header carries a text wordmark and no icon; whether Ultima ships icons, and where the mana mark sits, is not decided here.
+The fantasy voice lives in the brand layer only: the name, the six scale names, hero and page titles, and the 404. Technical prose is plain. The header carries a text wordmark and no icon, and Ultima ships no mark in v0. The favicon and the OG image are the wordmark's letterforms on a mithril ground rather than a drawn symbol, so no v0 ticket waits on illustration. Mana's Prism mark stays on mana: Ultima is a standalone MIT project, and carrying a mana mark would assert a relationship a reader cannot act on, so the two link to each other from their READMEs instead. Whether Ultima ships icons is settled under Iconography, and the answer does not reach the header.
 
 The header also carries a theme control offering dark, light, and system. Dark-first with light as a full peer is a claim the site should demonstrate rather than assert, and the control is the demonstration.
 
