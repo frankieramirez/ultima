@@ -8,6 +8,7 @@ Read the [Principles](docs/spec/ultima.md#principles) section of the specificati
 - `packages/ui` — one file per component in `src/`, the shared helper types in `src/lib/`, the tests in `src/__tests__/`.
 - `apps/docs` — the docs site, its MDX content, and the demos its component pages render.
 - `registry/` — build output, apart from `static/` and `items.config.ts`.
+- `skills/` — Ultima's own agent skills; [`forge`](skills/forge/SKILL.md) authors and revises a component.
 
 ## Rules that are easy to break
 
