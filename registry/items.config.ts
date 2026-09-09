@@ -42,15 +42,25 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A text input in three sizes, on Base UI.',
     docs: 'import { Input } from \'@/components/ui/input\';\n\n<label htmlFor="email">Email</label>\n<Input id="email" size="md" />',
   },
-  switch: {
-    title: 'Switch',
-    description: 'An on-off toggle with a sliding thumb, on Base UI.',
-    docs: "import { Switch } from '@/components/ui/switch';\n\n<label>\n  Notifications\n  <Switch.Root>\n    <Switch.Thumb />\n  </Switch.Root>\n</label>",
+  meter: {
+    title: 'Meter',
+    description: 'A bounded measurement as a toned bar, on Base UI.',
+    docs: 'import { Meter } from \'@/components/ui/meter\';\n\n<Meter.Root value={72}>\n  <Meter.Label>Disk used</Meter.Label>\n  <Meter.Track>\n    <Meter.Indicator tone="warning" />\n  </Meter.Track>\n  <Meter.Value tone="warning" />\n</Meter.Root>',
   },
   stat: {
     title: 'Stat',
     description: 'A single number with its label, for dashboards and summaries.',
     docs: "import { Stat } from '@/components/ui/stat';\n\n<Stat.Root>\n  <Stat.Label>Tokens</Stat.Label>\n  <Stat.Value>95</Stat.Value>\n</Stat.Root>",
+  },
+  switch: {
+    title: 'Switch',
+    description: 'An on-off toggle with a sliding thumb, on Base UI.',
+    docs: "import { Switch } from '@/components/ui/switch';\n\n<label>\n  Notifications\n  <Switch.Root>\n    <Switch.Thumb />\n  </Switch.Root>\n</label>",
+  },
+  tabs: {
+    title: 'Tabs',
+    description: 'Tabbed sections in an underline or a segmented variant, on Base UI.',
+    docs: 'import { Tabs } from \'@/components/ui/tabs\';\n\n<Tabs.Root variant="underline" defaultValue="tokens">\n  <Tabs.List>\n    <Tabs.Tab value="tokens">Tokens</Tabs.Tab>\n    <Tabs.Tab value="themes">Themes</Tabs.Tab>\n    <Tabs.Indicator />\n  </Tabs.List>\n  <Tabs.Panel value="tokens">Anything.</Tabs.Panel>\n</Tabs.Root>',
   },
   'setup-vite': {
     title: 'Ultima setup for Vite',

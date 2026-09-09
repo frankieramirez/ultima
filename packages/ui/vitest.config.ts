@@ -8,7 +8,14 @@ import { stylexOptions } from '../../stylex.options.ts';
 export default defineConfig({
   plugins: [stylex.vite(stylexOptions({ dev: true })), react()],
   optimizeDeps: {
-    include: ['@base-ui/react/button', '@base-ui/react/input', '@base-ui/react/switch', '@base-ui/react/use-render'],
+    include: [
+      '@base-ui/react/button',
+      '@base-ui/react/input',
+      '@base-ui/react/meter',
+      '@base-ui/react/switch',
+      '@base-ui/react/tabs',
+      '@base-ui/react/use-render',
+    ],
   },
   test: {
     include: ['src/__tests__/**/*.test.{ts,tsx}'],
