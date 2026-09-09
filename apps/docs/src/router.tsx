@@ -1,5 +1,6 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 
+import { ButtonPage } from './routes/button';
 import { ComponentsPage } from './routes/components';
 import { Home } from './routes/home';
 import { InstallPage } from './routes/install';
@@ -45,6 +46,12 @@ const componentsRoute = createRoute({
   component: ComponentsPage,
 });
 
+const buttonRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/components/button',
+  component: ButtonPage,
+});
+
 const componentNameRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/components/$name',
@@ -53,7 +60,7 @@ const componentNameRoute = createRoute({
 
 function ComponentNamePage() {
   const { name } = componentNameRoute.useParams();
-  return <Placeholder title={name} ticket="ULT-36 through ULT-39" />;
+  return <Placeholder title={name} ticket="ULT-37 through ULT-39" />;
 }
 
 const rationaleRoute = createRoute({
@@ -68,6 +75,7 @@ const routeTree = rootRoute.addChildren([
   tokensRoute,
   paletteRoute,
   componentsRoute,
+  buttonRoute,
   componentNameRoute,
   rationaleRoute,
 ]);

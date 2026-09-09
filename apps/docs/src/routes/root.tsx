@@ -1,3 +1,4 @@
+import { IconContext, type IconProps } from '@phosphor-icons/react';
 import { Outlet } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font } from '@ultima/tokens/tokens.stylex';
@@ -14,13 +15,24 @@ const styles = stylex.create({
   },
 });
 
+// Phosphor's provider replaces its context wholesale and IconBase has no
+// fallback for size, so a partial value renders every glyph at zero.
+const icons: IconProps = {
+  color: 'currentColor',
+  size: '1em',
+  weight: 'regular',
+  mirrored: false,
+};
+
 export function Root() {
   return (
     <ThemeRoot>
-      <div {...stylex.props(styles.shell)}>
-        <Header />
-        <Outlet />
-      </div>
+      <IconContext.Provider value={icons}>
+        <div {...stylex.props(styles.shell)}>
+          <Header />
+          <Outlet />
+        </div>
+      </IconContext.Provider>
     </ThemeRoot>
   );
 }
