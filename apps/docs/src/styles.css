@@ -1,0 +1,14 @@
+/*
+ * The docs app needs one CSS entry so Vite emits a stylesheet asset that the
+ * StyleX plugin can append its compiled rules to. Resets only; every visual
+ * value belongs in @ultima/tokens.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
