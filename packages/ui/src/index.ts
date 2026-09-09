@@ -10,3 +10,5 @@ export {
 } from './card';
 export { Stat, type StatRootProps, type StatLabelProps, type StatValueProps } from './stat';
 export { Code, type CodeProps, type CodeVariant } from './code';
+export { Input, type InputProps, type InputSize } from './input';
+export { Switch, type SwitchRootProps, type SwitchThumbProps } from './switch';
