@@ -69,3 +69,15 @@ WCAG 2.2 AA, checked for every semantic pairing the spec lists in both modes: 4.
 ## Interaction state token
 
 A semantic token for hover or active, named with a `-hover` or `-active` suffix. States are tokens resolved to palette steps, never colors derived at the use site.
+
+## Part
+
+One named piece of a compound component, such as `Card.Root` or `Dialog.Popup`. Part names match Base UI's where a primitive exists. A single-part component has no parts, just the component.
+
+## Style slot
+
+The `style` prop every part accepts: StyleX styles from the caller, merged last. It is the only way to restyle an installed component from outside its file. There is no `className` prop.
+
+## Shared lib
+
+The one registry item, `lib/component.ts`, holding the helper types every component depends on. Installed once, like shadcn's `lib/utils`.

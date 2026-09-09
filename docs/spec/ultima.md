@@ -316,3 +316,92 @@ Lowest measured ratios today: `text-subtle` on `surface-hover` 4.78 dark and 4.9
 | `--ult-color-danger-text` | `#88222b` |
 | `--ult-color-danger-contrast` | `#fdfdff` |
 | `--ult-color-surface-overlay` | `#f7f9ffcc` |
+
+## Components
+
+Decided on [Component authoring conventions](https://linear.app/frankie-ramirez/issue/ULT-11), reacting to the [Button and Card prototype](https://linear.app/frankie-ramirez/issue/ULT-7). Every component in Ultima follows these rules so a second author or an agent produces the same shape.
+
+### One file per component
+
+A component is one file, `packages/ui/src/<name>.tsx`, and one registry item of the same name. The file holds the StyleX tables at module scope, then the parts, then the export. Compound components are still one file. Demos live in `apps/docs`, never beside the component.
+
+Every file starts with `'use client'`. Base UI parts carry their own client boundary, but a plain component that uses `useRender` does not, and the directive is harmless under Vite.
+
+### The shared lib
+
+One registry item, `lib/component.ts`, holds the helper types every component uses. Components depend on it the way shadcn components depend on `lib/utils`.
+
+```ts
+import type * as stylex from '@stylexjs/stylex';
+
+/** The only styling escape hatch: StyleX styles merged last, so they win per property. */
+export type StyleProp = stylex.StyleXStyles;
+
+/** A Base UI part's props with Ultima's style slot in place of className and style. */
+export type PartProps<BaseProps> = Omit<BaseProps, 'className' | 'style'> & { style?: StyleProp };
+
+/** A native element's props with the same treatment, for plain components. */
+export type PlainProps<E extends keyof React.JSX.IntrinsicElements> = PartProps<React.ComponentProps<E>>;
+```
+
+### Props every component accepts
+
+- `style?: StyleProp`, on every part and slot. It is the only escape hatch. Passed last to `stylex.props`, so a caller override wins per property.
+- No `className`. Registry consumers own the source and edit it instead.
+- `render`, on every Base UI part (passed through) and on the root of every plain component (through Base UI's `useRender`). Plain slots such as `Card.Header` are two-line functions with no `render`.
+- `ref` is a plain prop under React 19. No `forwardRef`.
+
+A Base UI part is written as `<BasePart {...props} {...stylex.props(styles.part, style)} />`. A plain root is written with `useRender({ defaultTagName, render, props: { ...props, ...stylex.props(styles.root, style) } })`.
+
+### Compound components
+
+A single-part component exports one function: `Button`, `Input`, `Switch`. A multi-part component exports one namespace object of parts, `Card.Root`, `Dialog.Popup`, matching Base UI's part names wherever a primitive exists. Parts Ultima does not style (`Dialog.Portal`, `Tooltip.Provider`) sit on the same object, re-exported unchanged, so a consumer imports one name. Flat `DialogPopup`-style exports do not exist.
+
+### Variants and sizes
+
+One `stylex.create` table per axis, indexed by the prop. The axis props are `variant` and `size` across the whole system; the tables are `variants` and `sizes`; the prop unions are `keyof typeof` each table and exported as `<Component>Variant` and `<Component>Size`. Defaults are declared in the destructure. There is no `cva` and no compound-variant table in v0: a value that depends on both variant and size nests as a conditional inside the variant table, and the spec notes it on that component.
+
+```tsx
+const variants = stylex.create({ solid: { ... }, outline: { ... }, ghost: { ... } });
+const sizes = stylex.create({ sm: { ... }, md: { ... }, lg: { ... } });
+
+export type ButtonVariant = keyof typeof variants;
+export type ButtonSize = keyof typeof sizes;
+
+export function Button({ variant = 'solid', size = 'md', style, ...props }: ButtonProps) {
+  return <BaseButton {...props} {...stylex.props(styles.root, variants[variant], sizes[size], style)} />;
+}
+```
+
+### State styling
+
+- Pointer states use pseudo-classes and the state tokens: `':hover'` reads `--ult-color-<role>-hover`, `':active'` reads `--ult-color-<role>-active`. Never `color-mix()` or any color derived at the use site.
+- Component state uses Base UI's data attributes inside the value: `':is([data-disabled])'`, `':is([data-open])'`, `':is([data-checked])'`. The `className` function form is never used, so the class stays static.
+- Focus uses `':focus-visible'` and `--ult-color-border-focus`.
+- Dynamic styles (function values in `stylex.create`) are allowed only for runtime numbers such as a meter width, never for variants.
+
+### Tokens in component code
+
+Token groups are imported from the tokens file and read by their literal key: `color['--ult-color-surface']`. No local aliases, no raw values. The registry rewrites the import path on install.
+
+### What a component may assume about the consumer's CSS
+
+Nothing. StyleX rules sit in a cascade layer, so any unlayered consumer reset beats them. Each component therefore sets its own `box-sizing`, `margin`, `appearance`, `font-family`, and `line-height` on its root. The install flow tells consumers that their global resets must sit inside an `@layer`.
+
+### Naming
+
+| Thing | Rule | Example |
+| --- | --- | --- |
+| File and registry item | kebab-case | `dropdown-menu.tsx`, item `dropdown-menu` |
+| Component and parts | PascalCase | `DropdownMenu`, `DropdownMenu.Item` |
+| Props type | `<Component>Props`, `<Component><Part>Props` | `ButtonProps`, `CardRootProps` |
+| Axis unions | `<Component>Variant`, `<Component>Size` | `ButtonVariant` |
+| Style tables | `styles` keyed by part, `variants`, `sizes` | `styles.root`, `styles.header` |
+
+### The registry item
+
+Each component's item carries: `name` equal to the file name, `type: registry:ui`, `title`, a one-sentence `description`, `dependencies` (`@base-ui/react` and `@stylexjs/stylex` as used), `registryDependencies` (`@ultima/tokens`, `@ultima/lib`, and any Ultima component it composes), exactly one `files` entry, and a `docs` line giving the import and a minimal usage. Composing another Ultima component is declared as a dependency, never copied in. Generating the JSON from the monorepo is decided on the registry ticket.
+
+### The prototype
+
+`packages/ui/src/prototype/` and the `/prototype/ult-7` route stay in place, marked throwaway, until the v0 build writes the real Button and Card and deletes them.
