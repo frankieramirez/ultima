@@ -27,6 +27,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A button in three variants, three sizes, and two tones, on Base UI.',
     docs: "import { Button } from '@/components/ui/button';\n\n<Button variant=\"solid\" size=\"md\" tone=\"accent\">Save</Button>",
   },
+  'dropdown-menu': {
+    title: 'Dropdown Menu',
+    description: 'A keyboard-navigable menu with items, submenus, and selection controls, on Base UI.',
+    docs: "import { Button } from '@/components/ui/button';\nimport { DropdownMenu } from '@/components/ui/dropdown-menu';\n\n<DropdownMenu.Root>\n  <DropdownMenu.Trigger render={<Button />}>Actions</DropdownMenu.Trigger>\n  <DropdownMenu.Portal>\n    <DropdownMenu.Positioner>\n      <DropdownMenu.Popup>\n        <DropdownMenu.Item>Settings</DropdownMenu.Item>\n      </DropdownMenu.Popup>\n    </DropdownMenu.Positioner>\n  </DropdownMenu.Portal>\n</DropdownMenu.Root>",
+  },
   card: {
     title: 'Card',
     description: 'A surface with a header, body, and footer for grouping related content.',
