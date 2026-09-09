@@ -9,6 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { items } from '../registry/items.config.ts';
+import { agentGuide, type GuideComponent } from './build-agent-guide.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -17,6 +18,7 @@ const STAGE_DIR = join(REGISTRY_DIR, 'ultima');
 const STATIC_DIR = join(REGISTRY_DIR, 'static');
 const PUBLIC_DIR = join(root, 'apps/docs/public');
 const OUTPUT_DIR = join(PUBLIC_DIR, 'r');
+const SPEC = join(root, 'docs/spec/ultima.md');
 const TOKENS_DIST = join(root, 'packages/tokens/dist');
 const TOKEN_EXPORTS = ['tokens.css', 'tokens.json'];
 
@@ -247,17 +249,26 @@ function shadcnBuild() {
   });
 }
 
-/** The exports the docs site serves at their stable URLs. `llms.txt` joins them on ULT-44. */
-function publishExports() {
+function publishExports(components: Staged[]) {
   for (const name of TOKEN_EXPORTS) {
     copyFileSync(join(TOKENS_DIST, name), join(PUBLIC_DIR, name));
   }
+  const guide = agentGuide({
+    specPath: SPEC,
+    tokensJsonPath: join(TOKENS_DIST, 'tokens.json'),
+    components: components.map(({ name, source }): GuideComponent => {
+      const { title, description } = describe(name);
+      return { name, title, description, source };
+    }),
+  });
+  writeFileSync(join(PUBLIC_DIR, 'llms.txt'), guide);
 }
 
 requireTokenExports();
-const registry = describeRegistry(stageSources());
+const staged = stageSources();
+const registry = describeRegistry(staged);
 writeFileSync(join(REGISTRY_DIR, 'registry.json'), `${JSON.stringify(registry, null, 2)}\n`);
 shadcnBuild();
-publishExports();
+publishExports(staged.components);
 
 console.log(`registry: built ${registry.items.length} items into apps/docs/public/r`);

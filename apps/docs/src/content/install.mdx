@@ -65,3 +65,7 @@ Components need a StyleX compiler. Tokens do not.
 The stable URL is `https://ultima.frankieramirez.com/tokens.css`. Mana's audit report fetches or vendors that file and inlines it. The `tokens-css` registry item writes the same generated stylesheet to `~/ultima-tokens.css` if you want it committed next to your source.
 
 The export is plain CSS: no `@import`, no `url()`, no remote fonts. It follows `prefers-color-scheme` on `:root` and also ships `[data-theme="dark"]` and `[data-theme="light"]` blocks so you can pin a document to one mode with an attribute on `<html>`.
+
+## For an agent
+
+Point an agent at [`/llms.txt`](/llms.txt): the principles, the conventions, every component's import and props, and the token names, as plain Markdown at one URL. It is generated on every build, and it is the only guidance Ultima publishes for a consumer's repository — nothing documentary is installed into yours.
