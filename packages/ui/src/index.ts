@@ -10,6 +10,40 @@ export {
 } from './card';
 export { Stat, type StatRootProps, type StatLabelProps, type StatValueProps } from './stat';
 export { Code, type CodeProps, type CodeVariant } from './code';
+export { Badge, type BadgeProps, type BadgeVariant, type BadgeTone } from './badge';
+export {
+  Table,
+  type TableRootProps,
+  type TableHeadProps,
+  type TableBodyProps,
+  type TableRowProps,
+  type TableHeadCellProps,
+  type TableCellProps,
+  type TableCaptionProps,
+} from './table';
+export {
+  DropdownMenu,
+  type DropdownMenuRootProps,
+  type DropdownMenuTriggerProps,
+  type DropdownMenuPortalProps,
+  type DropdownMenuBackdropProps,
+  type DropdownMenuPositionerProps,
+  type DropdownMenuPopupProps,
+  type DropdownMenuViewportProps,
+  type DropdownMenuArrowProps,
+  type DropdownMenuItemProps,
+  type DropdownMenuLinkItemProps,
+  type DropdownMenuGroupProps,
+  type DropdownMenuGroupLabelProps,
+  type DropdownMenuSeparatorProps,
+  type DropdownMenuCheckboxItemProps,
+  type DropdownMenuCheckboxItemIndicatorProps,
+  type DropdownMenuRadioGroupProps,
+  type DropdownMenuRadioItemProps,
+  type DropdownMenuRadioItemIndicatorProps,
+  type DropdownMenuSubmenuRootProps,
+  type DropdownMenuSubmenuTriggerProps,
+} from './dropdown-menu';
 export {
   Select,
   type SelectSize,
@@ -50,3 +84,18 @@ export {
   type MeterIndicatorProps,
   type MeterValueProps,
 } from './meter';
+export {
+  Dialog,
+  type DialogViewportProps,
+  type DialogBackdropProps,
+  type DialogPopupProps,
+  type DialogTitleProps,
+  type DialogDescriptionProps,
+} from './dialog';
+export {
+  Tooltip,
+  type TooltipTriggerProps,
+  type TooltipPositionerProps,
+  type TooltipPopupProps,
+  type TooltipArrowProps,
+} from './tooltip';
