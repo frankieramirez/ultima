@@ -39,3 +39,18 @@ export {
   type MeterIndicatorProps,
   type MeterValueProps,
 } from './meter';
+export {
+  Dialog,
+  type DialogViewportProps,
+  type DialogBackdropProps,
+  type DialogPopupProps,
+  type DialogTitleProps,
+  type DialogDescriptionProps,
+} from './dialog';
+export {
+  Tooltip,
+  type TooltipTriggerProps,
+  type TooltipPositionerProps,
+  type TooltipPopupProps,
+  type TooltipArrowProps,
+} from './tooltip';
