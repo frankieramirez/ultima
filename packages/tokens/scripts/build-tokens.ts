@@ -17,6 +17,7 @@ import styleXPlugin from '@stylexjs/babel-plugin';
 import ts from 'typescript';
 
 import { stylexOptions } from '../../../stylex.options.ts';
+import type { ContrastResult, TokenEntry, TokensJson } from '../src/tokens-json.ts';
 
 const scriptsDir = dirname(fileURLToPath(import.meta.url));
 const packageDir = join(scriptsDir, '..');
@@ -401,8 +402,6 @@ function pairings(): Pairing[] {
   return table;
 }
 
-type ContrastResult = Pairing & Record<Mode, number> & { pass: boolean };
-
 function runGate(values: Map<string, ModeValues>): ContrastResult[] {
   return pairings().map((pairing) => {
     const foreground = values.get(pairing.foreground);
@@ -422,8 +421,6 @@ function runGate(values: Map<string, ModeValues>): ContrastResult[] {
   });
 }
 
-type TokenEntry = { group: string } & Record<Mode, { scale?: string; step?: number; value: string }>;
-
 function buildJson(
   tokens: SourceToken[],
   values: Map<string, ModeValues>,
@@ -441,7 +438,8 @@ function buildJson(
     };
     entries[token.name] = { group: token.group, dark: perMode('dark'), light: perMode('light') };
   }
-  return `${JSON.stringify({ version: 0, tokens: entries, contrast }, null, 2)}\n`;
+  const json: TokensJson = { version: 0, tokens: entries, contrast };
+  return `${JSON.stringify(json, null, 2)}\n`;
 }
 
 function fail(message: string): never {

@@ -17,6 +17,7 @@
     "@tanstack/react-router": "^1.170.33",
     "@ultima/tokens": "workspace:*",
     "@ultima/ui": "workspace:*",
+    "apca-w3": "^0.1.9",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
