@@ -3,13 +3,18 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 import { ButtonPage } from './routes/button';
 import { ComponentsPage } from './routes/components';
 import { Home } from './routes/home';
+import { InputPage } from './routes/input';
 import { InstallPage } from './routes/install';
+import { MeterPage } from './routes/meter';
 import { NotFound } from './routes/not-found';
 import { PalettePage } from './routes/palette';
 import { Placeholder } from './routes/placeholder';
 import { RationalePage } from './routes/rationale';
 import { Root } from './routes/root';
+import { SwitchPage } from './routes/switch';
+import { TabsPage } from './routes/tabs';
 import { TokensPage } from './routes/tokens';
+import { TooltipPage } from './routes/tooltip';
 
 const rootRoute = createRootRoute({
   component: Root,
@@ -52,6 +57,36 @@ const buttonRoute = createRoute({
   component: ButtonPage,
 });
 
+const tabsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/components/tabs',
+  component: TabsPage,
+});
+
+const meterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/components/meter',
+  component: MeterPage,
+});
+
+const tooltipRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/components/tooltip',
+  component: TooltipPage,
+});
+
+const inputRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/components/input',
+  component: InputPage,
+});
+
+const switchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/components/switch',
+  component: SwitchPage,
+});
+
 const componentNameRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/components/$name',
@@ -76,6 +111,11 @@ const routeTree = rootRoute.addChildren([
   paletteRoute,
   componentsRoute,
   buttonRoute,
+  tabsRoute,
+  meterRoute,
+  tooltipRoute,
+  inputRoute,
+  switchRoute,
   componentNameRoute,
   rationaleRoute,
 ]);

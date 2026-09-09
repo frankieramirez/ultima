@@ -1,0 +1,51 @@
+import { Demo } from '../../demo';
+import Sizes from '../../demos/input/sizes';
+import sizesSource from '../../demos/input/sizes?raw';
+import Labels from '../../demos/input/labels';
+import labelsSource from '../../demos/input/labels?raw';
+import Validation from '../../demos/input/validation';
+import validationSource from '../../demos/input/validation?raw';
+
+# Input
+
+A text input built on Base UI's Input, with the three shared control sizes and consumer-owned labeling.
+
+## Install
+
+```bash
+npx shadcn add @ultima/input
+```
+
+## Sizes
+
+`sm`, `md`, and `lg` use Ultima's three control heights. `md` is the default.
+
+<Demo component={Sizes} source={sizesSource} />
+
+## Labels
+
+Prefer a visible `<label htmlFor>` when the interface has one. `aria-label` names a control whose purpose is already visible from context; `aria-labelledby` can point to existing visible text.
+
+<Demo component={Labels} source={labelsSource} />
+
+## Validation and disabled state
+
+There is no Field component in v0. Validation state belongs to the consumer's `aria-invalid`; connect the error text with `aria-describedby`.
+
+<Demo component={Validation} source={validationSource} />
+
+## Props
+
+Only what Ultima adds. Everything else is Base UI's; see [Base UI's Input](https://base-ui.com/react/components/input) for the inherited surface.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Control height, padding, and text step. |
+| `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** A consumer `<label htmlFor>`, `aria-label`, or `aria-labelledby`.
+- **Focus ring.** On the input root, drawn on `:focus-visible` only.
+- **Keyboard.** Native input behavior, unchanged.

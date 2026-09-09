@@ -1,0 +1,42 @@
+import { Demo } from '../../demo';
+import Labels from '../../demos/switch/labels';
+import labelsSource from '../../demos/switch/labels?raw';
+import States from '../../demos/switch/states';
+import statesSource from '../../demos/switch/states?raw';
+
+# Switch
+
+A binary control built on Base UI's Switch, composed from a `Root` and `Thumb`.
+
+## Install
+
+```bash
+npx shadcn add @ultima/switch
+```
+
+## Labels
+
+Wrap the switch in a visible `<label>`, use `aria-label` when the purpose is already visible, or point `aria-labelledby` at visible text.
+
+<Demo component={Labels} source={labelsSource} />
+
+## Checked and disabled
+
+Use `defaultChecked` for an initially checked uncontrolled switch. The thumb's hairline border keeps it visible in forced-colors mode.
+
+<Demo component={States} source={statesSource} />
+
+## Props
+
+Ultima adds no axis to Switch. Everything else is Base UI's; see [Base UI's Switch](https://base-ui.com/react/components/switch) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root`, `Thumb` | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root`, `Thumb` | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** A wrapping `<label>`, `aria-label`, or `aria-labelledby`.
+- **Focus ring.** On `Root`, drawn on `:focus-visible` only.
+- **Keyboard.** Space and Enter toggle the switch through Base UI.
