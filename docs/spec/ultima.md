@@ -549,7 +549,7 @@ Decided on [Docs site scope](https://linear.app/frankie-ramirez/issue/ULT-14). T
 | `/palette` | The six scales, twelve steps, dark and light values, the step convention, and the WCAG gate results |
 | `/components` | Index of the v0 set |
 | `/components/<name>` | One page per v0 component |
-| `/rationale` | Why StyleX, why Base UI, why registry-first, why dark-first. Links the four ADRs |
+| `/rationale` | Why StyleX, why Base UI, why registry-first, why dark-first. Links the ADRs |
 
 `/install` is the long form the `docs` field of each setup item points at; the setup items print a short imperative list and nothing is installed into the consumer's repo as a README.
 
@@ -585,7 +585,7 @@ The fantasy voice lives in the brand layer only: the name, the six scale names, 
 
 The header also carries a theme control offering dark, light, and system. Dark-first with light as a full peer is a claim the site should demonstrate rather than assert, and the control is the demonstration.
 
-`/rationale` is the page that makes the system legible to a reader who is not installing it: the four ADRs in prose, with the alternatives that were actually on the table.
+`/rationale` is the page that makes the system legible to a reader who is not installing it: the ADRs in prose, with the alternatives that were actually on the table.
 
 ### README
 
@@ -614,7 +614,7 @@ Nothing is installed into the consumer's repository. Ultima ships no `AGENTS.md`
 
 A root-level document is exactly the kind of file the consumer's scaffold owns, and the Registry section already forbids a setup item from overwriting one. More than that, a copied document is stale the day the next decision lands: the consumer has no reason to re-run `add` on prose, and unlike a component they have edited, nothing in their workflow will ever surface the drift. Owning source you modify is the point of registry-first. Owning documentation you never update is a liability Ultima would have handed them.
 
-Guidance is hosted instead, on three surfaces that cannot go stale:
+This is ADR 0005. Guidance is hosted instead, on three surfaces that cannot go stale:
 
 | Surface | Audience | Holds |
 | --- | --- | --- |
