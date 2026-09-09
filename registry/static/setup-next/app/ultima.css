@@ -1,4 +1,4 @@
-/* PROTOTYPE (ULT-8). Installed by the Ultima setup-next registry item.
+/* Installed by the Ultima setup-next registry item.
    Import this from app/layout.tsx. The PostCSS plugin replaces the marker
    below with every StyleX rule it finds. Keep it once, in one file. */
 @stylex;

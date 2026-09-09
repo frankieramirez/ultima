@@ -1,11 +1,11 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
   "style": "base-ultima",
-  "rsc": true,
+  "rsc": false,
   "tsx": true,
   "tailwind": {
     "config": "",
-    "css": "app/globals.css",
+    "css": "src/index.css",
     "baseColor": "neutral",
     "cssVariables": true
   },
@@ -17,6 +17,6 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@ultima": "http://localhost:8765/r/{name}.json"
+    "@ultima": "https://ultima.frankieramirez.com/r/{name}.json"
   }
 }

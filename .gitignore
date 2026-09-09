@@ -4,3 +4,11 @@ dist/
 *.tsbuildinfo
 .vite/
 .vitest/
+
+# Registry build output: only registry/static/ and registry/items.config.ts are authored.
+registry/ultima/
+registry/registry.json
+apps/docs/public/r/*.json
+apps/docs/public/tokens.css
+apps/docs/public/tokens.json
+apps/docs/public/llms.txt

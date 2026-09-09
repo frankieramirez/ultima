@@ -10,10 +10,11 @@
     "dev": "pnpm --filter @ultima/docs dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck",
-    "registry:build": "npx -y shadcn@4.21.0 build registry.json -c registry -o ../apps/docs/public/r"
+    "typecheck": "tsc -p tsconfig.json && pnpm -r typecheck",
+    "registry:build": "pnpm --filter @ultima/tokens build && node --experimental-strip-types scripts/build-registry.ts"
   },
   "devDependencies": {
+    "@types/node": "^26.5.0",
     "typescript": "^5.9.3"
   }
 }
