@@ -15,22 +15,22 @@ import type { ComponentProps } from 'react';
 
 const styles = stylex.create({
   root: {
-    backgroundColor: color.surfaceRaised,
-    borderColor: color.border,
-    borderRadius: radius.lg,
+    backgroundColor: color['--ult-color-surface-raised'],
+    borderColor: color['--ult-color-border'],
+    borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
     borderWidth: '1px',
-    color: color.text,
+    color: color['--ult-color-text'],
     display: 'flex',
     flexDirection: 'column',
-    gap: space.lg,
-    padding: space.lg,
+    gap: space['--ult-space-6'],
+    padding: space['--ult-space-6'],
   },
-  header: { display: 'flex', flexDirection: 'column', gap: space.xs },
+  header: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-2'] },
   title: { fontSize: '1rem', fontWeight: 600, lineHeight: 1.3, margin: 0 },
-  description: { color: color.textMuted, fontSize: '0.875rem', lineHeight: 1.5, margin: 0 },
+  description: { color: color['--ult-color-text-muted'], fontSize: '0.875rem', lineHeight: 1.5, margin: 0 },
   body: { fontSize: '0.875rem', lineHeight: 1.5 },
-  footer: { alignItems: 'center', display: 'flex', gap: space.sm, justifyContent: 'flex-end' },
+  footer: { alignItems: 'center', display: 'flex', gap: space['--ult-space-4'], justifyContent: 'flex-end' },
 });
 
 type Slot<E extends keyof React.JSX.IntrinsicElements> = Omit<ComponentProps<E>, 'className' | 'style'> & {

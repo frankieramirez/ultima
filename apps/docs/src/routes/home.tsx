@@ -1,44 +1,44 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, radius, space } from '@ultima/tokens/tokens.stylex';
-import { darkTheme, lightTheme } from '@ultima/tokens';
+import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
 
 const styles = stylex.create({
   page: {
     margin: '0 auto',
     maxWidth: '48rem',
-    padding: space.xl,
+    padding: space['--ult-space-8'],
   },
   title: {
     fontSize: '1.5rem',
     margin: 0,
   },
   lede: {
-    color: color.textMuted,
-    marginBlock: space.md,
+    color: color['--ult-color-text-muted'],
+    marginBlock: space['--ult-space-5'],
   },
   modes: {
     display: 'grid',
-    gap: space.lg,
+    gap: space['--ult-space-6'],
     gridTemplateColumns: 'repeat(auto-fit, minmax(14rem, 1fr))',
   },
   panel: {
-    backgroundColor: color.surface,
-    borderColor: color.border,
-    borderRadius: radius.lg,
+    backgroundColor: color['--ult-color-surface'],
+    borderColor: color['--ult-color-border'],
+    borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
     borderWidth: '1px',
-    color: color.text,
-    padding: space.lg,
+    color: color['--ult-color-text'],
+    padding: space['--ult-space-6'],
   },
   swatch: {
-    backgroundColor: color.accent,
-    borderRadius: radius.sm,
-    color: color.accentText,
+    backgroundColor: color['--ult-color-accent'],
+    borderRadius: radius['--ult-radius-sm'],
+    color: color['--ult-color-accent-contrast'],
     display: 'inline-block',
-    fontFamily: font.mono,
+    fontFamily: font['--ult-font-mono'],
     fontSize: '0.75rem',
-    marginTop: space.md,
-    padding: space.sm,
+    marginTop: space['--ult-space-5'],
+    padding: space['--ult-space-4'],
   },
 });
 
@@ -54,13 +54,13 @@ export function Home() {
         Scaffold only. Provisional tokens, no components yet.
       </p>
       <div {...stylex.props(styles.modes)}>
-        <section {...stylex.props(darkTheme, styles.panel)}>
+        <section {...stylex.props(darkTheme, colorScheme.dark, styles.panel)}>
           <strong>Dark</strong>
-          <div {...stylex.props(styles.swatch)}>color.accent</div>
+          <div {...stylex.props(styles.swatch)}>color['--ult-color-accent']</div>
         </section>
-        <section {...stylex.props(lightTheme, styles.panel)}>
+        <section {...stylex.props(lightTheme, colorScheme.light, styles.panel)}>
           <strong>Light</strong>
-          <div {...stylex.props(styles.swatch)}>color.accent</div>
+          <div {...stylex.props(styles.swatch)}>color['--ult-color-accent']</div>
         </section>
       </div>
     </main>

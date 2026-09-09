@@ -1,7 +1,9 @@
 # Reference generator for the Ultima palette. Decided on ULT-10; see docs/spec/ultima.md, Palette.
-# Run: python3 packages/tokens/scripts/palette.py [-v]   (writes palette.json beside itself)
-# The v0 build ports this recipe to the tokens package; until then this file is the source of the values.
-import math, json, sys, os
+# Run: python3 packages/tokens/scripts/palette.py [-v]       writes palette.json beside itself
+#      python3 packages/tokens/scripts/palette.py --check   regenerates and diffs against the committed palette.json
+# Exits non-zero when any gated pairing is below its minimum in either mode, or (with --check) when
+# the committed file differs from a fresh run.
+import math, json, sys, os, difflib
 
 # ---------- color math ----------
 def lin_to_srgb(c): return 12.92*c if c<=0.0031308 else 1.055*c**(1/2.4)-0.055
@@ -112,5 +114,16 @@ if __name__=='__main__':
         if '-v' in sys.argv:
             for r in rows: print('  ',r)
     print('\nFAILS:' if allfails else '\nALL PAIRINGS PASS')
-    for f in allfails: print('  ',f)
-    json.dump({'palette':p,'semantic':{m:semantic(p,m) for m in ('dark','light')}},open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'palette.json'),'w'),indent=1)
+    for mode,fg,bg,r,minr in allfails: print(f'  {mode}: {fg} on {bg} is {r}:1, minimum {minr}:1',file=sys.stderr)
+    fresh=json.dumps({'palette':p,'semantic':{m:semantic(p,m) for m in ('dark','light')}},indent=1)
+    path=os.path.join(os.path.dirname(os.path.abspath(__file__)),'palette.json')
+    if '--check' in sys.argv:
+        committed=open(path).read() if os.path.exists(path) else ''
+        diff=list(difflib.unified_diff(committed.splitlines(),fresh.splitlines(),'palette.json (committed)','palette.json (regenerated)',lineterm=''))
+        if diff:
+            print('\n'.join(['palette.json differs from a fresh run:']+diff),file=sys.stderr)
+            sys.exit(1)
+        print('palette.json matches a fresh run')
+    else:
+        open(path,'w').write(fresh)
+    sys.exit(1 if allfails else 0)
