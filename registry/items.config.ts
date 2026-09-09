@@ -32,6 +32,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A keyboard-navigable menu with items, submenus, and selection controls, on Base UI.',
     docs: "import { Button } from '@/components/ui/button';\nimport { DropdownMenu } from '@/components/ui/dropdown-menu';\n\n<DropdownMenu.Root>\n  <DropdownMenu.Trigger render={<Button />}>Actions</DropdownMenu.Trigger>\n  <DropdownMenu.Portal>\n    <DropdownMenu.Positioner>\n      <DropdownMenu.Popup>\n        <DropdownMenu.Item>Settings</DropdownMenu.Item>\n      </DropdownMenu.Popup>\n    </DropdownMenu.Positioner>\n  </DropdownMenu.Portal>\n</DropdownMenu.Root>",
   },
+  badge: {
+    title: 'Badge',
+    description: 'A small static label in two variants and six tones.',
+    docs: "import { Badge } from '@/components/ui/badge';\n\n<Badge variant=\"subtle\" tone=\"success\">Passing</Badge>",
+  },
   card: {
     title: 'Card',
     description: 'A surface with a header, body, and footer for grouping related content.',
@@ -51,6 +56,11 @@ export const items: Record<string, RegistryItemDescription> = {
     title: 'Stat',
     description: 'A single number with its label, for dashboards and summaries.',
     docs: "import { Stat } from '@/components/ui/stat';\n\n<Stat.Root>\n  <Stat.Label>Tokens</Stat.Label>\n  <Stat.Value>95</Stat.Value>\n</Stat.Root>",
+  },
+  table: {
+    title: 'Table',
+    description: 'A data table as native table parts, with an optional caption.',
+    docs: "import { Table } from '@/components/ui/table';\n\n<Table.Root>\n  <Table.Caption>Latency by region</Table.Caption>\n  <Table.Head>\n    <Table.Row>\n      <Table.HeadCell>Region</Table.HeadCell>\n    </Table.Row>\n  </Table.Head>\n  <Table.Body>\n    <Table.Row>\n      <Table.Cell>us-east-1</Table.Cell>\n    </Table.Row>\n  </Table.Body>\n</Table.Root>",
   },
   tabs: {
     title: 'Tabs',
