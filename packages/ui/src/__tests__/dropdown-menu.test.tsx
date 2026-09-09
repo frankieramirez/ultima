@@ -21,14 +21,14 @@ test('the trigger opens a named menu with named items', async () => {
   await expect.element(page.getByRole('menuitem', { name: 'Rename' })).toBeVisible();
 });
 
-test('plain items omit the indicator inset while selection labels stay aligned', async () => {
+test('all labels align at the left and selection indicators sit at the right', async () => {
   await render(
     <DropdownMenu.Root defaultOpen>
       <DropdownMenu.Trigger>Options</DropdownMenu.Trigger>
       <DropdownMenu.Portal><DropdownMenu.Positioner><DropdownMenu.Popup>
         <DropdownMenu.Item><span data-testid="plain">Rename</span></DropdownMenu.Item>
         <DropdownMenu.CheckboxItem defaultChecked>
-          <DropdownMenu.CheckboxItemIndicator />
+          <DropdownMenu.CheckboxItemIndicator data-testid="trailing-check" />
           <span data-testid="checked">Pinned</span>
         </DropdownMenu.CheckboxItem>
         <DropdownMenu.CheckboxItem>
@@ -40,7 +40,11 @@ test('plain items omit the indicator inset while selection labels stay aligned',
   );
   await expect.element(page.getByRole('menu')).toBeVisible();
   const left = (name: string) => page.getByTestId(name).element().getBoundingClientRect().left;
-  expect(left('plain')).toBeLessThan(left('checked'));
+  expect(left('plain')).toBe(left('checked'));
+  const label = page.getByTestId('checked').element().getBoundingClientRect();
+  const indicator = page.getByTestId('trailing-check').element().getBoundingClientRect();
+  expect(indicator.left).toBeGreaterThan(label.right);
+  expect(Math.abs(indicator.top + indicator.height / 2 - label.top - label.height / 2)).toBeLessThan(1);
   const plain = page.getByRole('menuitem', { name: 'Rename' }).element();
   expect(left('plain') - plain.getBoundingClientRect().left).toBe(parseFloat(getComputedStyle(plain).paddingLeft));
   expect(left('unchecked')).toBe(left('checked'));
