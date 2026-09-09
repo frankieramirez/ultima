@@ -1,4 +1,4 @@
-// PROTOTYPE (ULT-8). Installed by the Ultima setup-next registry item.
+// Installed by the Ultima setup-next registry item.
 // Extracts the StyleX CSS into the file that carries the `@stylex;` marker.
 const babelConfig = require('./babel.config.js');
 
