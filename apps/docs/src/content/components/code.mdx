@@ -1,0 +1,50 @@
+import { Demo } from '../../demo';
+import Inline from '../../demos/code/inline';
+import inlineSource from '../../demos/code/inline?raw';
+import Block from '../../demos/code/block';
+import blockSource from '../../demos/code/block?raw';
+import InCard from '../../demos/code/in-card';
+import inCardSource from '../../demos/code/in-card?raw';
+
+# Code
+
+Monospaced code, inline in a sentence or as a wrapping block.
+
+## Install
+
+```bash
+npx shadcn add @ultima/code
+```
+
+## Inline
+
+The default variant renders a native `code` element in the surrounding sentence.
+
+<Demo component={Inline} source={inlineSource} />
+
+## Block
+
+Long lines wrap instead of creating a horizontal scroll region.
+
+<Demo component={Block} source={blockSource} />
+
+## Inside a Card
+
+The block variant composes directly inside another Ultima surface.
+
+<Demo component={InCard} source={inCardSource} />
+
+## Props
+
+Only what Ultima adds. Everything else is native; see MDN's [`code`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/code) and [`pre`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/pre) references.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `variant` | `'inline' \| 'block'` | `'inline'` | Chooses `code` or `pre` with a `code` child. |
+| `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Changes the root element. |
+
+## Accessibility
+
+- **Elements and name.** Native `code`, or `pre` with a `code` child for a block; its content is the accessible text.
+- **Focus and keyboard.** None. Blocks wrap long lines, so they are not scroll regions and need no `tabIndex`.

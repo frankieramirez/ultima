@@ -1,9 +1,20 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 
-import { ButtonPage } from './routes/button';
+import type { MDXComponents } from 'mdx/types';
+import type { ComponentType } from 'react';
+
+import BadgeContent from './content/components/badge.mdx';
+import ButtonContent from './content/components/button.mdx';
+import CardContent from './content/components/card.mdx';
+import CodeContent from './content/components/code.mdx';
+import DialogContent from './content/components/dialog.mdx';
+import DropdownMenuContent from './content/components/dropdown-menu.mdx';
+import SelectContent from './content/components/select.mdx';
+import StatContent from './content/components/stat.mdx';
+import TableContent from './content/components/table.mdx';
+import { components } from './components';
+import { Prose } from './prose';
 import { ComponentsPage } from './routes/components';
-import { DialogPage } from './routes/dialog';
-import { DropdownMenuPage } from './routes/dropdown-menu';
 import { Home } from './routes/home';
 import { InstallPage } from './routes/install';
 import { NotFound } from './routes/not-found';
@@ -11,7 +22,6 @@ import { PalettePage } from './routes/palette';
 import { Placeholder } from './routes/placeholder';
 import { RationalePage } from './routes/rationale';
 import { Root } from './routes/root';
-import { SelectPage } from './routes/select';
 import { TokensPage } from './routes/tokens';
 
 const rootRoute = createRootRoute({
@@ -49,30 +59,6 @@ const componentsRoute = createRoute({
   component: ComponentsPage,
 });
 
-const buttonRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/components/button',
-  component: ButtonPage,
-});
-
-const dialogRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/components/dialog',
-  component: DialogPage,
-});
-
-const dropdownMenuRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/components/dropdown-menu',
-  component: DropdownMenuPage,
-});
-
-const selectRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/components/select',
-  component: SelectPage,
-});
-
 const componentNameRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/components/$name',
@@ -81,8 +67,26 @@ const componentNameRoute = createRoute({
 
 function ComponentNamePage() {
   const { name } = componentNameRoute.useParams();
-  return <Placeholder title={name} ticket="ULT-37 through ULT-39" />;
+  const component = components.find(({ item }) => item === name);
+  const Content = writtenPages[name];
+
+  if (!component) return <NotFound />;
+  if (!Content) return <Placeholder title={component.name} ticket="a later component-page ticket" />;
+
+  return <Prose Content={Content} />;
 }
+
+const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>> = {
+  badge: BadgeContent,
+  button: ButtonContent,
+  card: CardContent,
+  code: CodeContent,
+  dialog: DialogContent,
+  'dropdown-menu': DropdownMenuContent,
+  select: SelectContent,
+  stat: StatContent,
+  table: TableContent,
+};
 
 const rationaleRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -96,10 +100,6 @@ const routeTree = rootRoute.addChildren([
   tokensRoute,
   paletteRoute,
   componentsRoute,
-  buttonRoute,
-  dialogRoute,
-  dropdownMenuRoute,
-  selectRoute,
   componentNameRoute,
   rationaleRoute,
 ]);
