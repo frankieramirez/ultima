@@ -13,13 +13,13 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     display: 'inline-flex',
     fontFamily: font['--ult-font-sans'],
-    fontSize: text['--ult-text-2'],
+    fontSize: text['--ult-text-3'],
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-wide'],
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    paddingBlock: space['--ult-space-1'],
-    paddingInline: space['--ult-space-3'],
+    paddingBlock: space['--ult-space-2'],
+    paddingInline: space['--ult-space-4'],
   },
 });
 
