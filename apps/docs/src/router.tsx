@@ -2,6 +2,8 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 
 import { ButtonPage } from './routes/button';
 import { ComponentsPage } from './routes/components';
+import { DialogPage } from './routes/dialog';
+import { DropdownMenuPage } from './routes/dropdown-menu';
 import { Home } from './routes/home';
 import { InstallPage } from './routes/install';
 import { NotFound } from './routes/not-found';
@@ -9,6 +11,7 @@ import { PalettePage } from './routes/palette';
 import { Placeholder } from './routes/placeholder';
 import { RationalePage } from './routes/rationale';
 import { Root } from './routes/root';
+import { SelectPage } from './routes/select';
 import { TokensPage } from './routes/tokens';
 
 const rootRoute = createRootRoute({
@@ -52,6 +55,24 @@ const buttonRoute = createRoute({
   component: ButtonPage,
 });
 
+const dialogRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/components/dialog',
+  component: DialogPage,
+});
+
+const dropdownMenuRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/components/dropdown-menu',
+  component: DropdownMenuPage,
+});
+
+const selectRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/components/select',
+  component: SelectPage,
+});
+
 const componentNameRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/components/$name',
@@ -76,6 +97,9 @@ const routeTree = rootRoute.addChildren([
   paletteRoute,
   componentsRoute,
   buttonRoute,
+  dialogRoute,
+  dropdownMenuRoute,
+  selectRoute,
   componentNameRoute,
   rationaleRoute,
 ]);
