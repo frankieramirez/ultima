@@ -826,7 +826,7 @@ Flat, following shadcn's default rules. A `registry:ui` file lands in `aliases.u
 
 ### Host and namespace
 
-Registry root `https://ultima.frankieramirez.com`. The catalogue is at `/r/registry.json`, each item at `/r/{name}.json`, and the tokens CSS export at `/tokens.css`. The docs site serves all of it.
+Registry root `https://ultima.systems`. The catalogue is at `/r/registry.json`, each item at `/r/{name}.json`, and the tokens CSS export at `/tokens.css`. The docs site serves all of it.
 
 The namespace is `@ultima`, written into the `registries` map of the `components.json` each setup item installs, so a consumer never runs `shadcn registry add` by hand.
 
@@ -835,7 +835,7 @@ The namespace is `@ultima`, written into the `registries` map of the `components
 `npx shadcn init` is not supported and never will be while its preflight requires Tailwind on disk. The documented entry is:
 
 ```bash
-npx shadcn add https://ultima.frankieramirez.com/r/setup-vite.json   # or setup-next.json
+npx shadcn add https://ultima.systems/r/setup-vite.json   # or setup-next.json
 npx shadcn add @ultima/button
 ```
 
@@ -863,7 +863,7 @@ The `docs` field of each setup item carries this as a short imperative list, pri
 
 ### The tokens CSS export
 
-Offered two ways. The stable URL `https://ultima.frankieramirez.com/tokens.css` is the documented path, and the one mana's audit report uses: it fetches or vendors the file and inlines it, which is why the export carries the self-contained-document constraints in the Tokens section. The `tokens-css` registry item writes the same generated file to `~/ultima-tokens.css` for a project that wants it committed alongside its own source.
+Offered two ways. The stable URL `https://ultima.systems/tokens.css` is the documented path, and the one mana's audit report uses: it fetches or vendors the file and inlines it, which is why the export carries the self-contained-document constraints in the Tokens section. The `tokens-css` registry item writes the same generated file to `~/ultima-tokens.css` for a project that wants it committed alongside its own source.
 
 ### Generation
 
@@ -886,7 +886,7 @@ Decided on [Mana report adoption](https://linear.app/frankie-ramirez/issue/ULT-1
 
 ### Delivery
 
-The report vendors the export: `skills/ultima/assets/ultima-tokens.css` is a copy of `https://ultima.frankieramirez.com/tokens.css` with the source URL and date in a header comment, and the renderer reads it and concatenates it ahead of its own `CSS` constant. Fetching at render time would break the report's no-network promise; pasting the export into the Python string literal would force the export to avoid `"""` and backslashes forever. Refreshing is a hand copy until that hurts.
+The report vendors the export: `skills/ultima/assets/ultima-tokens.css` is a copy of `https://ultima.systems/tokens.css` with the source URL and date in a header comment, and the renderer reads it and concatenates it ahead of its own `CSS` constant. Fetching at render time would break the report's no-network promise; pasting the export into the Python string literal would force the export to avoid `"""` and backslashes forever. Refreshing is a hand copy until that hurts.
 
 ### Aliases
 
@@ -980,9 +980,13 @@ Props tables are hand-written in the MDX and cover only what Ultima adds: `varia
 
 ### Hosting
 
-One Vercel project, root directory `apps/docs`, build command `pnpm registry:build && vite build`, serving `ultima.frankieramirez.com` as a CNAME on the existing zone.
+One Cloudflare Pages project, serving `ultima.systems`. Amended on [Hosting on Cloudflare Pages](https://linear.app/frankie-ramirez/issue/ULT-42): the host was Vercel and the domain was `ultima.frankieramirez.com` when this was first written, and both changed before anything shipped.
 
-The site serves the registry catalogue at `/r/registry.json`, each item at `/r/{name}.json`, the tokens exports at `/tokens.css` and `/tokens.json`, and the agent guide at `/llms.txt`. All of them are generated into `apps/docs/public/` as gitignored build output, the same way the registry JSON is. The SPA fallback rewrite excludes `/r/*`, `/tokens.css`, `/tokens.json`, and `/llms.txt`, and all of them carry `Access-Control-Allow-Origin: *`: the shadcn CLI fetches server-side and mana vendors the CSS export, but a browser-side tool or an agent reading any of them should not be blocked.
+The project builds from the repository root rather than from `apps/docs`, because the install step has to see `pnpm-workspace.yaml` to link `@ultima/tokens` and `@ultima/ui`. Install command `pnpm install`, build command `pnpm --filter @ultima/docs build`, output directory `apps/docs/dist`. The docs package's own `build` runs `registry:build` first, so one command publishes the registry and the site together.
+
+The site serves the registry catalogue at `/r/registry.json`, each item at `/r/{name}.json`, the tokens exports at `/tokens.css` and `/tokens.json`, and the agent guide at `/llms.txt`. All of them are generated into `apps/docs/public/` as gitignored build output, the same way the registry JSON is. All four carry `Access-Control-Allow-Origin: *`, from `apps/docs/public/_headers`: the shadcn CLI fetches server-side and mana vendors the CSS export, but a browser-side tool or an agent reading any of them should not be blocked. That file also sets the cache policy, immutable for Vite's fingerprinted `/assets/*` and revalidate-always for the four artifacts, which every deploy rewrites at the same URLs. It does not set `Content-Type`; Pages derives that from the file extension and appends a charset, and naming the type here would drop it.
+
+The SPA fallback is Pages' own, and two things in the output directory would break it. A `_redirects` splat is the wrong tool: Pages applies a redirect whether or not an asset matches the request, so `/* /index.html 200` would shadow the four artifacts rather than fall back to them. A top-level `404.html` is the other, because Pages reads its absence as the signal that this is a single-page application and serves `index.html` for any path with no asset behind it. Neither file belongs in `apps/docs/public/`. An unknown path therefore reaches the router, which renders the 404 page from the Portfolio surface section.
 
 ### Portfolio surface
 

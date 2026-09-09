@@ -9,7 +9,7 @@ import CodeBlock from '../demos/code/block';
 import ButtonVariants from '../demos/button/variants';
 
 const REPO = 'https://github.com/frankieramirez/ultima';
-const HOST = 'https://ultima.frankieramirez.com';
+const HOST = 'https://ultima.systems';
 
 const INSTALL = [
   {
