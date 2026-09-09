@@ -1,7 +1,9 @@
 import * as stylex from '@stylexjs/stylex';
 import { border, color, radius, space } from '@ultima/tokens/tokens.stylex';
-import { Button, Code } from '@ultima/ui';
-import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { Code } from '@ultima/ui';
+import type { ComponentType } from 'react';
+
+import { CopyButton } from './copy-button';
 
 const styles = stylex.create({
   figure: {
@@ -38,27 +40,13 @@ export function Demo({
   component: ComponentType;
   source: string;
 }) {
-  const [copied, setCopied] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  useEffect(() => () => clearTimeout(timer.current), []);
-
-  async function copy() {
-    await navigator.clipboard.writeText(source);
-    setCopied(true);
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => setCopied(false), 2000);
-  }
-
   return (
     <figure {...stylex.props(styles.figure)}>
       <div {...stylex.props(styles.stage)}>
         <Component />
       </div>
       <div {...stylex.props(styles.bar)}>
-        <Button variant="ghost" size="sm" onClick={copy}>
-          {copied ? 'Copied' : 'Copy'}
-        </Button>
+        <CopyButton text={source} />
       </div>
       <Code variant="block" style={styles.source}>
         {source}
