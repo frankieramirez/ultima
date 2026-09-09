@@ -1,0 +1,43 @@
+import { Demo } from '../../demo';
+import Variants from '../../demos/tabs/variants';
+import variantsSource from '../../demos/tabs/variants?raw';
+import Vertical from '../../demos/tabs/vertical';
+import verticalSource from '../../demos/tabs/vertical?raw';
+
+# Tabs
+
+A set of related panels built on Base UI's Tabs, with underline and segmented treatments.
+
+## Install
+
+```bash
+npx shadcn add @ultima/tabs
+```
+
+## Variants and disabled tabs
+
+`underline` is the default. `segmented` places the active tab on a raised pill. A disabled tab stays visible but cannot be activated.
+
+<Demo component={Variants} source={variantsSource} />
+
+## Vertical orientation
+
+Pass Base UI's `orientation="vertical"` to stack the tab list. Arrow keys follow the orientation.
+
+<Demo component={Vertical} source={verticalSource} />
+
+## Props
+
+Only what Ultima adds. Everything else is Base UI's; see [Base UI's Tabs](https://base-ui.com/react/components/tabs) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `variant` | `'underline' \| 'segmented'` | `'underline'` | Shape and emphasis for the whole composition. |
+| Every styled part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| Every part | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** Each tab is named by its text.
+- **Focus ring.** On `Tab`, drawn on `:focus-visible` only.
+- **Keyboard.** Base UI's arrow keys move focus. Enter or Space activates the focused tab; `activateOnFocus` and `loopFocus` keep their Base UI defaults.

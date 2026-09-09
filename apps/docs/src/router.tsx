@@ -9,9 +9,14 @@ import CardContent from './content/components/card.mdx';
 import CodeContent from './content/components/code.mdx';
 import DialogContent from './content/components/dialog.mdx';
 import DropdownMenuContent from './content/components/dropdown-menu.mdx';
+import InputContent from './content/components/input.mdx';
+import MeterContent from './content/components/meter.mdx';
 import SelectContent from './content/components/select.mdx';
 import StatContent from './content/components/stat.mdx';
+import SwitchContent from './content/components/switch.mdx';
 import TableContent from './content/components/table.mdx';
+import TabsContent from './content/components/tabs.mdx';
+import TooltipContent from './content/components/tooltip.mdx';
 import { components } from './components';
 import { Prose } from './prose';
 import { ComponentsPage } from './routes/components';
@@ -83,9 +88,14 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   code: CodeContent,
   dialog: DialogContent,
   'dropdown-menu': DropdownMenuContent,
+  input: InputContent,
+  meter: MeterContent,
   select: SelectContent,
   stat: StatContent,
+  switch: SwitchContent,
   table: TableContent,
+  tabs: TabsContent,
+  tooltip: TooltipContent,
 };
 
 const rationaleRoute = createRoute({

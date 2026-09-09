@@ -1,0 +1,47 @@
+import { Demo } from '../../demo';
+import ButtonTrigger from '../../demos/tooltip/button';
+import buttonTriggerSource from '../../demos/tooltip/button?raw';
+import IconOnly from '../../demos/tooltip/icon-only';
+import iconOnlySource from '../../demos/tooltip/icon-only?raw';
+
+# Tooltip
+
+A short description built on Base UI's Tooltip, opened from a consumer-owned trigger.
+
+## Install
+
+```bash
+npx shadcn add @ultima/tooltip
+```
+
+## Button trigger and arrow
+
+The canonical composition gives `Tooltip.Trigger` an Ultima Button through `render`. The trigger's required `aria-label` matches the tooltip text.
+
+<Demo component={ButtonTrigger} source={buttonTriggerSource} />
+
+## Icon-only trigger
+
+Ultima ships no icon dependency, and any set works. This demo uses [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency.
+
+An icon-only Button still follows the Button recipe: an `aria-label`, one glyph, and equal inline padding.
+
+<Demo component={IconOnly} source={iconOnlySource} />
+
+The trigger slot must hold an Ultima Button or an element carrying its own focus ring. `aria-label` is required by the `Tooltip.Trigger` types and must match the tooltip text.
+
+## Props
+
+Only what Ultima adds. Everything else is Base UI's; see [Base UI's Tooltip](https://base-ui.com/react/components/tooltip) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Trigger` | `aria-label` | `string` | — | Required. Matches the tooltip text and names the trigger. |
+| Styled parts | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| Every part | `render` | `ReactElement \| function` | — | Base UI's render prop; use it to supply the trigger element. |
+
+## Accessibility
+
+- **Name.** `aria-label` on `Tooltip.Trigger`, matching the tooltip text.
+- **Focus ring.** On the element rendered into `Trigger`, such as an Ultima Button.
+- **Keyboard.** Focus opens the tooltip. Escape closes it. Base UI supplies both behaviors.

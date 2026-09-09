@@ -1,0 +1,44 @@
+import { Demo } from '../../demo';
+import Report from '../../demos/meter/report';
+import reportSource from '../../demos/meter/report?raw';
+import Tones from '../../demos/meter/tones';
+import tonesSource from '../../demos/meter/tones?raw';
+
+# Meter
+
+A static measurement built on Base UI's Meter, with separately toned fills and values.
+
+## Install
+
+```bash
+npx shadcn add @ultima/meter
+```
+
+## Report meter
+
+Compose `Label`, `Track`, `Indicator`, and `Value` for a compact report-style measurement.
+
+<Demo component={Report} source={reportSource} />
+
+## Tones
+
+`tone` belongs separately to `Indicator` and `Value`; there is no Meter color context. The danger example passes the same tone to both parts, while the others tone only the indicator.
+
+<Demo component={Tones} source={tonesSource} />
+
+## Props
+
+Only what Ultima adds. Everything else is Base UI's; see [Base UI's Meter](https://base-ui.com/react/components/meter) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Indicator` | `tone` | `'neutral' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `'neutral'` | Colors the fill. |
+| `Value` | `tone` | `'neutral' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `'neutral'` | Colors the rendered number independently. |
+| Every styled part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| Every part | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** `Meter.Label` names the meter.
+- **Focus ring.** None. A meter is not focusable.
+- **Keyboard.** None. The value is static and exposed through the meter semantics.
