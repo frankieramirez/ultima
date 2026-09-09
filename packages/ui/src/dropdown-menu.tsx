@@ -18,7 +18,7 @@ const styles = stylex.create({
     borderWidth: border.hairline,
     borderStyle: 'solid',
     borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-lg'],
+    borderRadius: radius['--ult-radius-md'],
     boxShadow: shadow['--ult-shadow-md'],
     zIndex: z.popup,
     outlineWidth: 0,
