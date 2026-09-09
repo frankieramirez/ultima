@@ -1,10 +1,6 @@
 # Ultima
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/ultima-banner.svg">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/ultima-banner-light.svg">
-  <img alt="Ultima wordmark with a cyan and violet crystal spell emblem" src="docs/assets/ultima-banner-light.svg">
-</picture>
+![Ultima wordmark with a cyan and violet crystal spell emblem](docs/assets/ultima-banner.svg)
 
 A fantasy-themed design system built with React, Base UI, and StyleX. Ultima is being built around a shadcn-compatible registry so consumers can own the component source in their projects.
 
