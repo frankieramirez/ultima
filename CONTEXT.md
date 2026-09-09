@@ -121,3 +121,11 @@ The one registry item, `lib/component.ts`, holding the helper types every compon
 ## Accessibility contract
 
 What a component promises for keyboard and screen-reader use beyond what its Base UI primitive gives: the source of its accessible name, which parts render the focus ring, and the element a plain component renders. Base UI owns roles, ARIA state, and keyboard handling; Ultima owns names, focus visibility, and element choice.
+
+## Demo
+
+A real component module under `apps/docs/src/demos/`, rendered live on a docs page with its own source printed beneath it. A demo is three things at once: the running example, the copyable source, and the surface the accessibility sweep runs axe over.
+
+## Smoke install
+
+The scripted end-to-end proof that the registry still installs: a fresh Vite app and a fresh Next.js app run the documented `shadcn add` commands against the built registry and then build. It runs on a schedule and on registry changes, not on every pull request.

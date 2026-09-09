@@ -665,7 +665,7 @@ Rules the table compresses:
 - **Reduced motion** is handled entirely by the motion tokens dropping to 1ms. Components never write a `prefers-reduced-motion` query, and every transition reads a duration token, so Base UI's transition-aware unmount still fires.
 - **Forced colors.** No `@media (forced-colors)` rules in v0. Native elements, `outline` rings, and state on real elements degrade on their own. The exception is `Switch.Thumb`, a `<span>` that would lose its fill, so it carries a hairline `border` so it stays visible.
 
-Each component's docs page carries an Accessibility section restating its row. Automated checking belongs to the testing strategy, which is not decided here.
+Each component's docs page carries an Accessibility section restating its row. Automated checking is in the Testing section below: each row becomes assertions in that component's test file, and axe runs over every docs demo in both color modes.
 
 ### Overlays
 
@@ -782,7 +782,7 @@ Offered two ways. The stable URL `https://ultima.frankieramirez.com/tokens.css` 
 
 `pnpm registry:build`:
 
-1. **Stage.** Copy `packages/ui/src/*.tsx` to `registry/ultima/ui/`, and `packages/tokens/src/*.ts` plus `packages/ui/src/lib/*.ts` to `registry/ultima/lib/`. `index.ts` and `prototype/` are not staged. Rewrite `@ultima/tokens/*` and `@ultima/ui/lib/*` to `@/registry/ultima/lib/*`, and any other `@ultima/ui/*` to `@/registry/ultima/ui/*`. Those are the specifiers shadcn's `transformImport` rewrites to the consumer's aliases on install; the workspace specifiers Ultima authors against are not.
+1. **Stage.** Copy `packages/ui/src/*.tsx` to `registry/ultima/ui/`, and `packages/tokens/src/*.ts` plus `packages/ui/src/lib/*.ts` to `registry/ultima/lib/`. `index.ts`, `prototype/`, and `__tests__/` are not staged. Rewrite `@ultima/tokens/*` and `@ultima/ui/lib/*` to `@/registry/ultima/lib/*`, and any other `@ultima/ui/*` to `@/registry/ultima/ui/*`. Those are the specifiers shadcn's `transformImport` rewrites to the consumer's aliases on install; the workspace specifiers Ultima authors against are not.
 2. **Derive.** Each item's `dependencies` come from that file's own imports (`@base-ui/react`, `@stylexjs/stylex`), and its `registryDependencies` from its `@ultima/*` imports.
 3. **Describe.** `title`, `description`, and `docs` come from `registry/items.config.ts`, hand-written.
 4. **Copy through.** `registry/static/**` holds the setup items' files, which are authored, not generated, and are copied untouched.
@@ -895,6 +895,78 @@ The header also carries a theme control offering dark, light, and system. Dark-f
 The repository README is a front door, not documentation. It carries what Ultima is in a few lines, one screenshot, the two install commands, links into the docs site, the stack, a v0-in-development status, and the license. The API surface belongs to the site.
 
 The repository is MIT licensed. A registry-first system hands the consumer its source to own and edit, which is what MIT already describes.
+
+## Testing
+
+Decided on [Testing strategy for v0](https://linear.app/frankie-ramirez/issue/ULT-20). Two things are settled here: what a v0 build ticket must ship as proof, and what runs in CI. The Accessibility contract defers automated checking to this section, and the contrast gate's enforcement is fixed here rather than in the Palette section.
+
+### Environment
+
+One environment: Vitest in browser mode, Playwright's Chromium provider. There is no jsdom project.
+
+Half of what v0 has to prove is only true in a real browser. `:focus-visible` renders an outline, Base UI's popups position against real layout through Floating UI, `[data-starting-style]` transitions fire, and the `Switch.Thumb` hairline exists for a rendering mode. In jsdom each of those degrades into an assertion about an attribute, which proves the test was written and not that the contract holds. A design system whose product is CSS should not prove itself in an environment with no cascade.
+
+StyleX is a compile-time transform, so the test environment needs the unplugin either way. The Vitest config imports the same plugin configuration as the docs build rather than declaring its own, so the two cannot drift. `useCSSLayers` stays `true` in tests: layer ordering is exactly what the consumer reset rule is about, and an unlayered test environment would prove the wrong thing.
+
+### What a build ticket proves
+
+Every v0 component build ticket ships a test file covering its own row of the Accessibility contract and its own axes. Six items:
+
+1. **Every combination renders.** Each `variant` by `size` by `tone` mounts without throwing, and the component with no props matches the declared default.
+2. **The name resolves.** The component is queryable by role and accessible name through the source its contract row names.
+3. **The focus ring lands where the contract says.** The part in the "Focus ring on" column shows an outline after keyboard focus; a part the contract says renders no ring shows none. Menu and Select items assert `data-highlighted` styling instead.
+4. **The primitive is still wired.** One assertion per contract row marked Base UI in the Keyboard column, confirming the composition did not break it: Escape closes, arrows move the highlight, focus returns to the trigger. This is not a re-test of Base UI, which tests itself.
+5. **Documented state drives its style.** Each `data-*` attribute the per-component notes name actually produces its change.
+6. **Typecheck passes.**
+
+One standing rule across all of them: **no test asserts a color value.** A test asserts presence and behavior, such as an outline width that is not `0px`, never `rgb(...)` or a hex literal. Palette values are regenerated, and a suite that pins them turns every regeneration into a day of updating tests. Color correctness belongs to the contrast gate and to axe, neither of which reads a hand-written expectation.
+
+Tests live in `packages/ui/src/__tests__/<name>.test.tsx`. A directory is excluded from registry staging the same way `prototype/` already is, and it cannot be defeated by a future author widening the stage glob. A co-located `<name>.test.tsx` would sit one character away from shipping to a consumer.
+
+### Accessibility checks
+
+`apps/docs` holds one test that walks every demo module through `import.meta.glob`, mounts each in both color modes, and runs axe against it. Adding a demo adds its coverage; no list is maintained.
+
+The default rule set stands, `color-contrast` included. The generator gates the pairings the Palette section declares; axe gates what a component actually composed, which is where a combination the generator's table never anticipated would show up. The two checks answer different questions and both stay on.
+
+The sweep lives in `apps/docs` rather than in `packages/ui` so that component tests never depend on the docs site, and because the demos are the rendered surface a reader will copy.
+
+### The contrast gate
+
+`packages/tokens/scripts/palette.py` runs in CI on every pull request, and it fails the build two ways: a non-zero exit on any pairing below its minimum, and a `--check` mode that regenerates into a temporary file and diffs against the committed `palette.json`. The first catches a palette change that breaks a pairing. The second catches a hand-edited value, which the Principles section forbids and which nothing else would notice.
+
+Until that exit code exists the Principles claim that contrast is a build gate is aspirational: the script prints its failures and exits zero. Making it exit non-zero is part of the first v0 build ticket that touches the tokens package.
+
+### The registry smoke install
+
+The end-to-end install into a fresh Vite app and a fresh Next.js app becomes `scripts/smoke-install.sh`, the scripted form of what `prototypes/ult-8` does by hand.
+
+It does not run on every pull request. It scaffolds two frameworks and drives the shadcn CLI over the network, which is minutes of wall clock and a standing flake risk, and a component change cannot break it. It runs three ways: on a weekly cron, on `workflow_dispatch`, and on pull requests matching a paths filter for the things that can break it, which are `registry/static/**`, `registry/items.config.ts`, and the registry build script. A green run is required before tagging v0.
+
+### CI
+
+One workflow, `.github/workflows/ci.yml`, on `pull_request` and on `push` to `main`. One `check` job, in order:
+
+1. Install.
+2. `pnpm typecheck`.
+3. The Vitest suite, including the axe sweep.
+4. The contrast gate, `palette.py --check`.
+5. `pnpm registry:build`.
+6. The docs site build.
+
+Steps 5 and 6 are in the list because generation breaking is a real failure mode that no unit test observes: the stage globs, the import rewriting, and the dependency derivation all fail silently from a component test's point of view.
+
+No linter in v0. The conventions this system actually cares about are one file per component, the `style` slot with no `className`, and no raw values in component code, and no off-the-shelf configuration checks any of them. A linter that catches unused imports is not worth the configuration it costs. This is worth revisiting when there is a custom rule worth writing, which the authoring skill's arrival is the natural moment for.
+
+`packages/tokens` has no unit tests; its proof is the contrast gate and typecheck. The docs site has no route smoke tests; its proof is that it builds, plus the axe sweep.
+
+### Considered and declined
+
+**Storybook.** It would have bought several of these decisions in one dependency: play functions under Vitest browser mode, an a11y addon running axe per story, and Chromatic for visual regression. It is declined because the docs site already holds that slot and the Docs site section already decided how. Demos are real modules whose printed source is read from the same file through `?raw`, so the running example and the copyable source cannot diverge. Composing stories into those pages would print story boilerplate instead of the JSX a reader copies, which is a real loss for a system whose whole distribution model is copied source. Keeping both stories and demos would give fourteen components three artifacts each, and Storybook would need a second Vite configuration replicating the StyleX setup exactly, where every divergence is a bug class visible in only one of the two builds.
+
+The direction matters more than the verdict: demo modules compose into stories later without loss, and stories do not decompose back into copyable demos. Declining now forecloses nothing.
+
+**Visual regression.** Not in v0. The tempting targets are the four overlays and the two Tabs variants, which are also the flakiest screenshots available: enter and exit transitions, Floating UI positioning, and font rasterization that differs between a local machine and a CI container. Baselines want a container matching CI before they are worth anything, and v0's real color risk is already covered twice, by the contrast gate and by axe. Revisit at the first change after v0, when there is a shipped appearance worth protecting rather than a moving one.
 
 ## Agent surface
 
