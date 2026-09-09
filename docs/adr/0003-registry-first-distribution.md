@@ -8,8 +8,12 @@ Ultima should be usable in any of the author's projects and shareable publicly. 
 
 ## Decision
 
-Distribution is registry-first. Consumers run `npx shadcn init` against Ultima's hosted registry and own the installed code. The docs site hosts the registry. A published npm package for tokens is deferred until a consumer needs it.
+Distribution is registry-first. Consumers install from Ultima's hosted registry with the shadcn CLI and own the installed code. The docs site hosts the registry. A published npm package for tokens is deferred until a consumer needs it.
 
 ## Consequences
 
 Consumers can customize freely, including with coding agents, which is the point. There is no upgrade path beyond re-installing an item, so versioning policy for a copy-source registry is fog on the map. Hosting the registry means the docs site is a v0 deliverable, not an afterthought.
+
+## Amendment (2026-09-09)
+
+The entry point is `npx shadcn add` of a per-target setup item, not `npx shadcn init`: `init` refuses a project without Tailwind on disk (see `docs/research/2026-09-08-shadcn-registry-non-tailwind.md`). The decision stands; only the command changed. The install flow is in the Registry and install section of `docs/spec/ultima.md`.

@@ -46,6 +46,7 @@ Groups and their name shape:
 | `font` (family, weight, leading, tracking) | descriptive | `--ult-font-sans`, `--ult-font-weight-medium`, `--ult-font-leading-tight` |
 | `radius` | t-shirt | `--ult-radius-md`, `--ult-radius-full` |
 | `shadow` | t-shirt | `--ult-shadow-md` |
+| `motion` (durations) | descriptive | `--ult-motion-fast` |
 
 Color roles are conventional: surface, text, border, accent, and the status colors. Fantasy names appear only in palette scales. Interaction states (`-hover`, `-active`) are separate semantic tokens resolved to palette steps, never derived with `color-mix()`, because dark and light modes step in different directions.
 
@@ -195,7 +196,7 @@ Shape, in order:
 
 The `[data-theme]` blocks are not redundant with the media query: they are how a consumer that is not ready for light mode pins the document to dark with one attribute on `<html>`, and how it later opts back into following the operating system by removing it. Mana's report adopts the export that way.
 
-Constraints: plain CSS text, no `@import`, no `url()`, no remote fonts, no `</style>` or `<script` substrings, so it can be pasted into a self-contained HTML document. Written to `packages/tokens/dist/tokens.css` and served from the docs site as a registry file. Palette constants and compile-time groups do not appear. Legacy aliases for a specific consumer (mana's report) live with that consumer, not in the export.
+Constraints: plain CSS text, no `@import`, no `url()`, no remote fonts, no `</style>` or `<script` substrings, so it can be pasted into a self-contained HTML document. Written to `packages/tokens/dist/tokens.css` by `pnpm --filter @ultima/tokens build`, served by the docs site at `/tokens.css`, and wrapped as the `tokens-css` registry item. Palette constants and compile-time groups do not appear. Legacy aliases for a specific consumer (mana's report) live with that consumer, not in the export.
 
 ### Tokens JSON export
 
@@ -217,6 +218,8 @@ One entry per semantic token, carrying its group, the scale and step it resolves
 ```
 
 `packages/tokens/scripts/palette.json` is generator state and stays private: it holds raw scales with no role attached, and its shape is free to change. `tokens.json` is the published contract and carries only what a consumer may rely on. Written to `packages/tokens/dist/tokens.json` and served at `/tokens.json`.
+
+The scale and step per token cannot be read back out of compiled CSS, so the export build reads them from the token sources' step assignments and the scales from `palette.json`, and runs the contrast gate over the same pairings the Palette section lists. One command, `pnpm --filter @ultima/tokens build`, produces both files; the docs site's build depends on it through the workspace.
 ## Palette
 
 Decided on [The palette](https://linear.app/frankie-ramirez/issue/ULT-10). Six scales, twelve steps each, a dark and a light value per step, generated in OKLCH and committed as hex. The reference generator is `packages/tokens/scripts/palette.py`; the v0 build ports it into the tokens package and must reproduce these values exactly.
@@ -478,7 +481,34 @@ Lowest measured ratios today: `text-subtle` on `surface-hover` 4.78 dark and 4.9
 
 ## Components
 
-Decided on [Component authoring conventions](https://linear.app/frankie-ramirez/issue/ULT-11), reacting to the [Button and Card prototype](https://linear.app/frankie-ramirez/issue/ULT-7). Every component in Ultima follows these rules so a second author or an agent produces the same shape.
+Decided on [Component authoring conventions](https://linear.app/frankie-ramirez/issue/ULT-11), reacting to the [Button and Card prototype](https://linear.app/frankie-ramirez/issue/ULT-7). Every component in Ultima follows these rules so a second author or an agent produces the same shape. The v0 set itself is listed first; the rules follow.
+
+### The v0 set
+
+Fourteen components: the report set, which is the nine mana's audit report needs, plus five form and overlay components. Each is one file and one registry item. Parts follow the compound rule below: a component built on a Base UI primitive exposes every Base UI part under its own name, styled or passed through, and a plain component names its parts for what they are. The accessible name, focus ring, and element per component are in the Accessibility contract.
+
+| Component | Item | Built on | Parts | Axes decided so far |
+| --- | --- | --- | --- | --- |
+| Button | `button` | Base UI `Button` | single | `variant`: `solid`, `outline`, `ghost`. `size`: `sm`, `md`, `lg` |
+| Badge | `badge` | `<span>` | single | none yet |
+| Card | `card` | plain, `useRender` on Root | `Root`, `Header`, `Title`, `Description`, `Body`, `Footer` | none |
+| Table | `table` | native `<table>` | `Root`, `Head`, `Body`, `Row`, `HeadCell`, `Cell`, `Caption` | none |
+| Tabs | `tabs` | Base UI `Tabs` | `Root`, `List`, `Tab`, `Indicator`, `Panel` | none yet |
+| Meter | `meter` | Base UI `Meter` | `Root`, `Label`, `Track`, `Indicator`, `Value` | none yet |
+| Stat | `stat` | plain | `Root`, `Label`, `Value` | none |
+| Code | `code` | `<code>`, or `<pre><code>` | single | `variant`: `inline`, `block` |
+| Tooltip | `tooltip` | Base UI `Tooltip` | every Base UI part | none |
+| Dialog | `dialog` | Base UI `Dialog` | every Base UI part | none yet |
+| Dropdown Menu | `dropdown-menu` | Base UI `Menu` | every Base UI part | none yet |
+| Select | `select` | Base UI `Select` | every Base UI part | `size` on `Trigger`: `sm`, `md`, `lg` |
+| Input | `input` | Base UI `Input` | single | `size`: `sm`, `md`, `lg` |
+| Switch | `switch` | Base UI `Switch` | `Root`, `Thumb` | none yet |
+
+The `size` values on Button, Input, and Select are the three control heights from the space scale (steps 9, 10, 11), so `md` is the same height on all three. Card's parts are the prototype's six slots, accepted on the prototype reaction. Table's, Stat's, and Code's shapes were fixed with the accessibility contract.
+
+"None yet" marks a component whose axes, and which of its parts carry Ultima styles rather than pass through, are decided on [Per-component contracts for the v0 set](https://linear.app/frankie-ramirez/issue/ULT-19). The conventions below do not depend on that answer; the component files do.
+
+Toast is the one adjacent Base UI primitive the report has no use for, and it is not in v0.
 
 ### One file per component
 
@@ -488,7 +518,7 @@ Every file starts with `'use client'`. Base UI parts carry their own client boun
 
 ### The shared lib
 
-One registry item, `lib/component.ts`, holds the helper types every component uses. Components depend on it the way shadcn components depend on `lib/utils`.
+One registry item, `lib/component.ts`, holds the helper types every component uses. Components depend on it the way shadcn components depend on `lib/utils`. In the workspace it lives at `packages/ui/src/lib/component.ts` and a component imports it as `@ultima/ui/lib/component`; the registry build stages it beside the token sources so it installs to `@/lib/component.ts`.
 
 ```ts
 import type * as stylex from '@stylexjs/stylex';
@@ -621,7 +651,7 @@ Every item lives under the `@ultima` namespace.
 | Item | Type | Contents |
 | --- | --- | --- |
 | `tokens` | `registry:lib` | the token and theme sources from `packages/tokens` |
-| `lib` | `registry:lib` | `lib/component.ts`, the shared helper types |
+| `lib` | `registry:lib` | `component.ts`, the shared helper types, installed to `@/lib/component.ts` |
 | `<component>` | `registry:ui` | one component, one file |
 | `setup-vite` | `registry:item` | `components.json`, `ultima.vite.ts` |
 | `setup-next` | `registry:item` | `components.json`, `babel.config.js`, `postcss.config.js`, `app/ultima.css` |
@@ -680,13 +710,61 @@ Offered two ways. The stable URL `https://ultima.frankieramirez.com/tokens.css` 
 
 `pnpm registry:build`:
 
-1. **Stage.** Copy `packages/ui/src/*.tsx` to `registry/ultima/ui/` and `packages/tokens/src/*.ts` to `registry/ultima/lib/`, rewriting `@ultima/tokens/*` to `@/registry/ultima/lib/*` and `@ultima/ui/*` to `@/registry/ultima/ui/*`. Those are the specifiers shadcn's `transformImport` rewrites to the consumer's aliases on install; the workspace specifiers Ultima authors against are not.
+1. **Stage.** Copy `packages/ui/src/*.tsx` to `registry/ultima/ui/`, and `packages/tokens/src/*.ts` plus `packages/ui/src/lib/*.ts` to `registry/ultima/lib/`. `index.ts` and `prototype/` are not staged. Rewrite `@ultima/tokens/*` and `@ultima/ui/lib/*` to `@/registry/ultima/lib/*`, and any other `@ultima/ui/*` to `@/registry/ultima/ui/*`. Those are the specifiers shadcn's `transformImport` rewrites to the consumer's aliases on install; the workspace specifiers Ultima authors against are not.
 2. **Derive.** Each item's `dependencies` come from that file's own imports (`@base-ui/react`, `@stylexjs/stylex`), and its `registryDependencies` from its `@ultima/*` imports.
 3. **Describe.** `title`, `description`, and `docs` come from `registry/items.config.ts`, hand-written.
 4. **Copy through.** `registry/static/**` holds the setup items' files, which are authored, not generated, and are copied untouched.
 5. **Build.** `shadcn build registry.json -c registry -o ../apps/docs/public/r`. The `-c` is required: `shadcn build` resolves `files[].path` from the cwd, not from the directory of the `registry.json` its error message names.
+6. **Publish the exports.** Copy `packages/tokens/dist/tokens.css` and `tokens.json` into `apps/docs/public/`, and write `apps/docs/public/llms.txt` from this specification and `registry/items.config.ts`. The `tokens-css` item's file is the same `tokens.css`, staged in step 1.
 
-`registry/ultima/`, `registry/registry.json`, and `apps/docs/public/r/*.json` are all gitignored. The docs site's build script runs `registry:build` first, so a deploy publishes the registry and the site together from one command.
+`registry/ultima/`, `registry/registry.json`, `apps/docs/public/r/*.json`, and the three published exports are all gitignored. The docs site's build script runs `registry:build` first, so a deploy publishes the registry and the site together from one command.
+
+## Mana report adoption
+
+Decided on [Mana report adoption](https://linear.app/frankie-ramirez/issue/ULT-13), against [how the report is styled today](https://linear.app/frankie-ramirez/issue/ULT-5). Mana's `ultima` audit report is the first true consumer of Ultima, of the tokens CSS export only. It keeps its Python render pipeline, and the work below happens in the mana repository, on the branch that carries the `ultima` skill. It is recorded here because the export's constraints and the `<role>-border` tokens exist for it, and because the checklist is what a build ticket in mana slices.
+
+### Delivery
+
+The report vendors the export: `skills/ultima/assets/ultima-tokens.css` is a copy of `https://ultima.frankieramirez.com/tokens.css` with the source URL and date in a header comment, and the renderer reads it and concatenates it ahead of its own `CSS` constant. Fetching at render time would break the report's no-network promise; pasting the export into the Python string literal would force the export to avoid `"""` and backslashes forever. Refreshing is a hand copy until that hurts.
+
+### Aliases
+
+The report keeps its 21 short names and all 91 `var()` sites. A permanent alias block beside the vendored file, `skills/ultima/assets/ultima-aliases.css`, maps them onto Ultima's names. Legacy aliases for one consumer live with that consumer, never in the export.
+
+| Report | Ultima token |
+| --- | --- |
+| `--bg` | `--ult-color-surface` |
+| `--card` | `--ult-color-surface-raised` |
+| `--glass` | `--ult-color-surface-overlay` |
+| `--tab` | `--ult-color-surface-sunken` |
+| `--hover` | `--ult-color-surface-hover` |
+| `--row`, `--line` | `--ult-color-border` |
+| `--fg`, `--soft` | `--ult-color-text` |
+| `--muted` | `--ult-color-text-muted` |
+| `--dim`, `--gray` | `--ult-color-text-subtle` |
+| `--indigo` | `--ult-color-accent` |
+| `--indigo-line` | `--ult-color-accent-border` |
+| `--cyan` | `--ult-color-highlight-text` |
+| `--amber` | `--ult-color-warning` |
+| `--red` | `--ult-color-danger` |
+| `--green` | `--ult-color-success` |
+| `--sans` | `--ult-font-sans` |
+| `--mono` | `--ult-font-mono` |
+| `--pixel` | stays a literal: Pixelify Sans is mana's brand face, not Ultima's |
+
+Three mappings change what the report looks like, and each is correct: `--tab` becomes lighter than the card because it is a control track, `--row` becomes a visible hairline where it was near-invisible, and `--dim` gets lighter because its fifteen uppercase-label sites were below AA. `--cyan` maps to `highlight-text`, not `highlight`, because every use is text or a link and `#8ff5ff` is the wordmark anchor.
+
+### Checklist for the mana change
+
+1. Add `skills/ultima/assets/ultima-tokens.css`, a copy of the published export, with source URL and date in a header comment.
+2. Add `skills/ultima/assets/ultima-aliases.css` defining the 21 report names per the table above, plus `--pixel` as a literal.
+3. In `cmd_render()`, read both files and concatenate them ahead of the `CSS` constant.
+4. Delete the `:root{...}` rule at the top of `CSS`, keeping the rest untouched.
+5. Add `data-theme="dark"` to the `<html>` tag, so the export's dark block wins regardless of the operating system and nothing changes visually.
+6. Replace the Python `COLOR` dict with `var()` references (`highlight-text`, `warning`, `text-subtle`) and the failed-lens `#c96b6b` with `var(--ult-color-danger)`, so no value drifts.
+7. Replace the fourteen in-CSS literals: the five `#fff` to `--ult-color-text`; the bar track to `surface-sunken`; the two `pre` diff borders to `danger-border` and `success-border`; the wins chip to `success-subtle` and `success-text`; `#b9bedb` to `text-muted`; the two indigo alpha gradients to `color-mix(in oklab, var(--ult-color-accent) 32%, transparent)`. The print rule stays literal.
+8. Render an audit and compare against a current one. Expect exactly three visible changes: a lighter tab track, visible row dividers, and better label contrast.
+9. File the light-mode follow-up as its own mana ticket: the `#fff` literals, the print rule, and dropping `data-theme`. That ticket is out of Ultima's scope.
 
 ## Docs site
 
