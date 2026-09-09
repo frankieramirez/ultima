@@ -1,4 +1,12 @@
+import * as stylex from '@stylexjs/stylex';
+import { space } from '@ultima/tokens/tokens.stylex';
 import { Select } from '@ultima/ui';
+
+const styles = stylex.create({
+  popup: {
+    maxHeight: `calc(${space['--ult-space-12']} * 5)`,
+  },
+});
 
 const items = Array.from({ length: 24 }, (_, index) => ({
   label: `Chapter ${index + 1}`,
@@ -14,7 +22,7 @@ export default function SelectLongList() {
       </Select.Trigger>
       <Select.Portal>
         <Select.Positioner>
-          <Select.Popup>
+          <Select.Popup style={styles.popup}>
             <Select.ScrollUpArrow />
             <Select.List>
               {items.map((item) => (
