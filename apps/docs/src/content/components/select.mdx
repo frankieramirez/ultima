@@ -1,0 +1,73 @@
+import { Demo } from '../../demo';
+import Sizes from '../../demos/select/sizes';
+import sizesSource from '../../demos/select/sizes?raw';
+import Labels from '../../demos/select/labels';
+import labelsSource from '../../demos/select/labels?raw';
+import Groups from '../../demos/select/groups';
+import groupsSource from '../../demos/select/groups?raw';
+import LongList from '../../demos/select/long-list';
+import longListSource from '../../demos/select/long-list?raw';
+import States from '../../demos/select/states';
+import statesSource from '../../demos/select/states?raw';
+
+# Select
+
+A single-value choice built on Base UI's Select, with three control sizes and grouped options.
+
+## Install
+
+```bash
+npx shadcn add @ultima/select
+```
+
+## Sizes
+
+The three heights match Button and Input. Each example starts with a placeholder.
+
+<Demo component={Sizes} source={sizesSource} />
+
+## Labels
+
+Prefer a visible `Select.Label`. When the surrounding interface already supplies the context, put `aria-label` on the trigger.
+
+<Demo component={Labels} source={labelsSource} />
+
+## Groups
+
+Group labels and separators organize longer option sets without changing the selection model.
+
+<Demo component={Groups} source={groupsSource} />
+
+## Long lists
+
+Scroll arrows appear when the list extends beyond its available height.
+
+<Demo component={LongList} source={longListSource} />
+
+## States
+
+Pass `aria-invalid` to the trigger for validation and `disabled` to the root to disable the control.
+
+<Demo component={States} source={statesSource} />
+
+The chevron and check glyphs are private inline SVGs. Registry consumers may edit them in the installed file, and any icon set works for the rest of an interface.
+
+### Content Security Policy
+
+The default aligned popup injects an inline `<style>` to hide native scrollbars. Under a strict CSP, wrap the app in Base UI's `CSPProvider` with a nonce, or pass `disableStyleElements` and supply the `.base-ui-disable-scrollbar` rule yourself.
+
+## Props
+
+Only what Ultima adds. Every inherited part and prop is documented by [Base UI's Select](https://base-ui.com/react/components/select).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Set on `Select.Trigger`; controls its height, padding, and text step. |
+| `style` | `StyleXStyles` | — | Available on every part and merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** From `Select.Label`, or from `aria-label` on Trigger.
+- **Focus ring.** On Trigger.
+- **Keyboard.** Base UI handles arrows, typeahead, selection, and Escape.

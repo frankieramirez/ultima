@@ -1,0 +1,52 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/dialog/basic';
+import basicSource from '../../demos/dialog/basic?raw';
+import IconClose from '../../demos/dialog/icon-close';
+import iconCloseSource from '../../demos/dialog/icon-close?raw';
+import HiddenTitle from '../../demos/dialog/hidden-title';
+import hiddenTitleSource from '../../demos/dialog/hidden-title?raw';
+
+# Dialog
+
+A modal surface built on Base UI's Dialog, with a backdrop, managed focus, and an accessible title.
+
+## Install
+
+```bash
+npx shadcn add @ultima/dialog
+```
+
+## Basic
+
+The trigger and close slots must hold an Ultima Button or an element carrying its own focus ring. The canonical close action uses a text label.
+
+<Demo component={Basic} source={basicSource} />
+
+## Close icon
+
+Ultima ships no close glyph and no icon dependency. Supply a glyph from any icon set and give an icon-only close control an `aria-label`.
+
+<Demo component={IconClose} source={iconCloseSource} />
+
+## Visually hidden title
+
+A `Dialog.Title` is always rendered. When the design has no visible heading, hide the title through its `style` slot rather than omitting it.
+
+<Demo component={HiddenTitle} source={hiddenTitleSource} />
+
+`modal` remains [Base UI's](https://base-ui.com/react/components/dialog) default. Ultima does not set `keepMounted`; pass it when the closed dialog should remain in the DOM.
+
+## Props
+
+Only what Ultima adds. Every inherited part and prop is documented by [Base UI's Dialog](https://base-ui.com/react/components/dialog).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `style` | `StyleXStyles` | — | Available on the styled Viewport, Backdrop, Popup, Title, and Description parts; merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. Trigger and Close are unstyled slots for a control with its own focus ring. |
+
+## Accessibility
+
+- **Name.** From `Dialog.Title`, which is always rendered. `Dialog.Description` is optional.
+- **Focus ring.** On Close and any focusable content, supplied by the element rendered into each slot.
+- **Keyboard.** Base UI loops Tab inside the modal, closes it with Escape, and returns focus to the trigger.
