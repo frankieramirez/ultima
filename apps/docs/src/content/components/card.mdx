@@ -1,0 +1,34 @@
+import { Demo } from '../../demo';
+import Overview from '../../demos/card/overview';
+import overviewSource from '../../demos/card/overview?raw';
+
+# Card
+
+A static surface with a header, body, and footer for grouping related content.
+
+## Install
+
+```bash
+npx shadcn add @ultima/card
+```
+
+## Composition
+
+All six parts compose without hidden layout. `Card.Title` renders an `h3` by default; use `render` when the page hierarchy needs another heading level.
+
+<Demo component={Overview} source={overviewSource} />
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept the props of their [native HTML elements](https://developer.mozilla.org/en-US/docs/Web/HTML/Element).
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root` | `render` | `ReactElement \| function` | — | Changes the root from its default `div`. |
+| `Title` | `render` | `ReactElement \| function` | — | Changes the title from its default `h3`. |
+
+## Accessibility
+
+- **Elements.** Static `div` parts, except `Card.Title`, which is an `h3` by default and can change through `render`.
+- **Focus and keyboard.** None. Card and its parts are static; interactive children keep their own behavior.

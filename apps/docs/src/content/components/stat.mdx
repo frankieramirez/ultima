@@ -1,0 +1,34 @@
+import { Demo } from '../../demo';
+import Summary from '../../demos/stat/summary';
+import summarySource from '../../demos/stat/summary?raw';
+
+# Stat
+
+A labelled number for dashboards, reports, and compact summaries.
+
+## Install
+
+```bash
+npx shadcn add @ultima/stat
+```
+
+## Summary row
+
+Stats can sit in a row, and supporting status text can share the value line.
+
+<Demo component={Summary} source={summarySource} />
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept native [`div`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div) and [`span`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/span) props.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root` | `render` | `ReactElement \| function` | — | Changes the root from its default `div`. |
+
+## Accessibility
+
+- **Elements.** A `div` root with `span` label and value parts.
+- **Reading order.** Put `Stat.Label` before `Stat.Value` in DOM order, as the example does.
+- **Focus and keyboard.** None. Stat is static and uses native reading order.
