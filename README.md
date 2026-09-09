@@ -1,5 +1,3 @@
-# Ultima
-
 ![Ultima wordmark with a cyan and violet crystal spell emblem](docs/assets/ultima-banner.svg)
 
 A fantasy-themed design system built with React, Base UI, and StyleX. Ultima is being built around a shadcn-compatible registry so consumers can own the component source in their projects.
