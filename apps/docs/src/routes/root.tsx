@@ -1,7 +1,9 @@
 import { Outlet } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme } from '@ultima/tokens';
 import { color, font } from '@ultima/tokens/tokens.stylex';
+
+import { Header } from '../header';
+import { ThemeRoot } from '../theme';
 
 const styles = stylex.create({
   shell: {
@@ -14,8 +16,11 @@ const styles = stylex.create({
 
 export function Root() {
   return (
-    <div {...stylex.props(colorScheme.system, styles.shell)}>
-      <Outlet />
-    </div>
+    <ThemeRoot>
+      <div {...stylex.props(styles.shell)}>
+        <Header />
+        <Outlet />
+      </div>
+    </ThemeRoot>
   );
 }
