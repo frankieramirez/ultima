@@ -1,0 +1,34 @@
+import { Demo } from '../../demo';
+import Features from '../../demos/dropdown-menu/features';
+import featuresSource from '../../demos/dropdown-menu/features?raw';
+
+# Dropdown Menu
+
+An action menu built on Base UI's Menu, including links, selection, groups, and submenus.
+
+## Install
+
+```bash
+npx shadcn add @ultima/dropdown-menu
+```
+
+## Features
+
+The trigger slot must hold an Ultima Button or an element carrying its own focus ring. Icons belong in an item's content, and may come from any icon set; Ultima itself ships no icon dependency.
+
+<Demo component={Features} source={featuresSource} />
+
+## Props
+
+Only what Ultima adds. Every inherited part and prop is documented by [Base UI's Menu](https://base-ui.com/react/components/menu).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `style` | `StyleXStyles` | — | Available on styled menu parts and merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. Trigger is an unstyled slot for a control with its own focus ring. |
+
+## Accessibility
+
+- **Name.** From the trigger text, or from `aria-label` on the trigger.
+- **Focus ring.** On the element rendered into Trigger; menu items use a highlighted state instead.
+- **Keyboard.** Base UI loops arrow-key navigation, supports typeahead, and closes the menu with Escape or Tab.

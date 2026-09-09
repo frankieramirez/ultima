@@ -7,8 +7,11 @@ import BadgeContent from './content/components/badge.mdx';
 import ButtonContent from './content/components/button.mdx';
 import CardContent from './content/components/card.mdx';
 import CodeContent from './content/components/code.mdx';
-import TableContent from './content/components/table.mdx';
+import DialogContent from './content/components/dialog.mdx';
+import DropdownMenuContent from './content/components/dropdown-menu.mdx';
+import SelectContent from './content/components/select.mdx';
 import StatContent from './content/components/stat.mdx';
+import TableContent from './content/components/table.mdx';
 import { components } from './components';
 import { Prose } from './prose';
 import { ComponentsPage } from './routes/components';
@@ -78,6 +81,9 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   button: ButtonContent,
   card: CardContent,
   code: CodeContent,
+  dialog: DialogContent,
+  'dropdown-menu': DropdownMenuContent,
+  select: SelectContent,
   stat: StatContent,
   table: TableContent,
 };
