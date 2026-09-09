@@ -37,7 +37,7 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     margin: 0,
     display: 'grid',
-    gridTemplateColumns: `${space['--ult-space-6']} 1fr`,
+    gridTemplateColumns: '1fr',
     alignItems: 'center',
     gap: space['--ult-space-4'],
     borderRadius: radius['--ult-radius-md'],
@@ -53,15 +53,18 @@ const styles = stylex.create({
     outlineStyle: 'none',
     backgroundColor: { default: 'transparent', ':is([data-highlighted])': color['--ult-color-surface-hover'] },
     opacity: { default: 1, ':is([data-disabled])': 0.5 },
+  },
+  selectionItem: {
+    gridTemplateColumns: `${space['--ult-space-6']} 1fr`,
     '::before': { content: '""', gridColumn: '1', gridRow: '1' },
   },
   linkItem: { textDecoration: 'none', color: color['--ult-color-text'] },
   submenuTrigger: {
-    gridTemplateColumns: `${space['--ult-space-6']} 1fr auto`,
+    gridTemplateColumns: '1fr auto',
     backgroundColor: { default: 'transparent', ':is([data-highlighted])': color['--ult-color-surface-hover'], ':is([data-popup-open])': color['--ult-color-surface-hover'] },
   },
   indicator: { gridColumn: '1', gridRow: '1', width: '1em', height: '1em', flexShrink: 0, display: 'flex' },
-  chevron: { gridColumn: '3', gridRow: '1', flexShrink: 0 },
+  chevron: { gridColumn: '2', gridRow: '1', flexShrink: 0 },
   separator: { borderTopWidth: border.hairline, borderTopStyle: 'solid', borderTopColor: color['--ult-color-border'], marginBlock: space['--ult-space-2'] },
   groupLabel: {
     fontFamily: font['--ult-font-sans'],
@@ -156,7 +159,7 @@ function Separator({ style, ...props }: DropdownMenuSeparatorProps) {
 }
 
 function CheckboxItem({ style, ...props }: DropdownMenuCheckboxItemProps) {
-  return <Menu.CheckboxItem {...props} {...stylex.props(styles.item, style)} />;
+  return <Menu.CheckboxItem {...props} {...stylex.props(styles.item, styles.selectionItem, style)} />;
 }
 
 function CheckboxItemIndicator({ style, children, ...props }: DropdownMenuCheckboxItemIndicatorProps) {
@@ -164,7 +167,7 @@ function CheckboxItemIndicator({ style, children, ...props }: DropdownMenuCheckb
 }
 
 function RadioItem({ style, ...props }: DropdownMenuRadioItemProps) {
-  return <Menu.RadioItem {...props} {...stylex.props(styles.item, style)} />;
+  return <Menu.RadioItem {...props} {...stylex.props(styles.item, styles.selectionItem, style)} />;
 }
 
 function RadioItemIndicator({ style, children, ...props }: DropdownMenuRadioItemIndicatorProps) {

@@ -21,7 +21,7 @@ test('the trigger opens a named menu with named items', async () => {
   await expect.element(page.getByRole('menuitem', { name: 'Rename' })).toBeVisible();
 });
 
-test('plain item text reserves the same column as checked and unchecked items', async () => {
+test('plain items omit the indicator inset while selection labels stay aligned', async () => {
   await render(
     <DropdownMenu.Root defaultOpen>
       <DropdownMenu.Trigger>Options</DropdownMenu.Trigger>
@@ -40,7 +40,9 @@ test('plain item text reserves the same column as checked and unchecked items', 
   );
   await expect.element(page.getByRole('menu')).toBeVisible();
   const left = (name: string) => page.getByTestId(name).element().getBoundingClientRect().left;
-  expect(left('plain')).toBe(left('checked'));
+  expect(left('plain')).toBeLessThan(left('checked'));
+  const plain = page.getByRole('menuitem', { name: 'Rename' }).element();
+  expect(left('plain') - plain.getBoundingClientRect().left).toBe(parseFloat(getComputedStyle(plain).paddingLeft));
   expect(left('unchecked')).toBe(left('checked'));
 });
 

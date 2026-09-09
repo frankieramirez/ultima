@@ -758,7 +758,7 @@ Decided on [Iconography in v0](https://linear.app/frankie-ramirez/issue/ULT-21).
 
 `Menu.SubmenuTrigger` is the exception. Its children are the item's label, so its chevron is appended after them and is not overridable in v0.
 
-**The leading indicator slot.** The fixed-width slot the Dropdown Menu and Select notes call for is space step 6 (16px) wide with a space step 4 (8px) gap, reusing the item's own inline padding step. It is present whether or not an indicator renders, so item text aligns down the column.
+**The leading indicator slot.** The fixed-width slot the Dropdown Menu and Select notes call for is space step 6 (16px) wide with a space step 4 (8px) gap, reusing the item's own inline padding step. On Dropdown Menu it is reserved only by checkbox and radio items, whether or not their indicator renders. Regular items, links, and submenu triggers use their normal inline padding with no empty indicator column. Select keeps the slot on every item.
 
 **Dialog's close affordance ships no glyph.** `Dialog.Close` passes through unstyled and is handed the consumer's own element, so there is nothing for Ultima to put an X inside. The Dialog docs page's canonical example is `render={<Button variant="ghost">Close</Button>}` with a text label, and a second example shows a glyph the reader supplies alongside `aria-label`. An X in Ultima's set would exist only to be rendered into a slot Ultima does not style.
 
