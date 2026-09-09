@@ -953,7 +953,7 @@ There is no changelog page in v0; versioning policy for a copy-source registry i
 
 The docs site imports `@ultima/ui` and `@ultima/tokens` from the workspace. It does not `shadcn add` its own registry.
 
-The registry is generated from the workspace source, so an installed copy can only ever be an older version of the same file. A docs site living on installed copies would document a version of Ultima that no longer exists, and every component change would need a reinstall before the page showing it caught up. The install path is proven instead by the fresh-app smoke test in `prototypes/`, the shape [the install prototype](https://linear.app/frankie-ramirez/issue/ULT-8) established.
+The registry is generated from the workspace source, so an installed copy can only ever be an older version of the same file. A docs site living on installed copies would document a version of Ultima that no longer exists, and every component change would need a reinstall before the page showing it caught up. The install path is proven instead by `scripts/smoke-install.sh`, the fresh-app smoke test [the install prototype](https://linear.app/frankie-ramirez/issue/ULT-8) established the shape of.
 
 This makes the docs site a user of the components rather than a consumer in the glossary's sense. Mana's report remains the first true consumer.
 
@@ -1041,7 +1041,7 @@ Until that exit code exists the Principles claim that contrast is a build gate i
 
 ### The registry smoke install
 
-The end-to-end install into a fresh Vite app and a fresh Next.js app becomes `scripts/smoke-install.sh`, the scripted form of what `prototypes/ult-8` does by hand.
+The end-to-end install into a fresh Vite app and a fresh Next.js app is `scripts/smoke-install.sh`, the scripted form of what the ULT-8 prototype did by hand. It retired that prototype.
 
 The smoke install scaffolds both frameworks and installs the released catalogue before building each consumer. It runs on a weekly cron, on `workflow_dispatch`, and on pull requests that change registry inputs: `registry/static/**`, `registry/items.config.ts`, the registry build and smoke scripts, `packages/ui/src/**`, `packages/tokens/**`, workspace dependency manifests, or the lockfile. Component imports and token changes can affect generated dependencies or compilation, so source changes must trigger the check. A green run covering the expanded v0 catalogue is required before tagging v0.
 

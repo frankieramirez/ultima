@@ -1,0 +1,298 @@
+#!/usr/bin/env bash
+#
+# Exits zero only when both targets installed from the registry and built.
+# A non-zero exit names the target that failed.
+#
+#   scripts/smoke-install.sh                 # against a local registry build
+#   scripts/smoke-install.sh --host <url>    # against the deployed site
+#   scripts/smoke-install.sh --keep          # leave the temp directory behind
+set -euo pipefail
+
+usage() {
+  echo "usage: scripts/smoke-install.sh [--host <url>] [--keep]"
+}
+
+HOST=""
+KEEP=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --host)
+      HOST="${2-}"
+      if [ -z "$HOST" ]; then
+        echo "smoke-install: --host needs a url" >&2
+        exit 2
+      fi
+      shift 2
+      ;;
+    --keep) KEEP=1; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "smoke-install: unknown argument $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/ultima-smoke.XXXXXX")"
+SERVER_PID=""
+TARGET=""
+
+finish() {
+  local status=$?
+  if [ -n "$SERVER_PID" ]; then
+    kill "$SERVER_PID" 2>/dev/null || true
+    wait "$SERVER_PID" 2>/dev/null || true
+  fi
+  if [ "$status" -ne 0 ] && [ -n "$TARGET" ]; then
+    echo "smoke-install: FAILED in the $TARGET target" >&2
+  fi
+  if [ "$KEEP" -eq 1 ]; then
+    echo "smoke-install: kept $WORK"
+  else
+    rm -rf "$WORK"
+  fi
+}
+trap finish EXIT
+
+step() {
+  echo
+  echo "── $*"
+}
+
+# The components.json each setup item installs points at the production host, so
+# without this the second `shadcn add` would resolve against the deployed site.
+point_namespace_at_host() {
+  COMPONENTS="$1" REGISTRY_HOST="$HOST" node --input-type=module -e '
+import { readFileSync, writeFileSync } from "node:fs";
+
+const file = process.env.COMPONENTS;
+const json = JSON.parse(readFileSync(file, "utf8"));
+json.registries["@ultima"] = `${process.env.REGISTRY_HOST}/r/{name}.json`;
+writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`);
+'
+}
+
+# Without a paths alias the shadcn CLI writes files into a literal ./@/
+# directory and reports success. create-vite ships none.
+# The comment stripping is for the JSONC the scaffold may ship.
+add_paths_alias() {
+  TSCONFIG="$1" node --input-type=module -e '
+import { readFileSync, writeFileSync } from "node:fs";
+
+const file = process.env.TSCONFIG;
+const source = readFileSync(file, "utf8")
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/^\s*\/\/.*$/gm, "");
+const json = JSON.parse(source);
+json.compilerOptions = { ...json.compilerOptions, paths: { "@/*": ["./src/*"] } };
+writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`);
+'
+}
+
+# Every StyleX rule sits in a cascade layer, so an unlayered
+# scaffold reset such as create-next-app's `* { padding: 0 }` beats component
+# styles, a Button's own padding included.
+layer_reset() {
+  STYLESHEET="$1" node --input-type=module -e '
+import { readFileSync, writeFileSync } from "node:fs";
+
+const file = process.env.STYLESHEET;
+const source = readFileSync(file, "utf8");
+writeFileSync(file, `@layer reset {\n${source}\n}\n`);
+'
+}
+
+setup_add() {
+  local app="$1" item="$2"
+  (cd "$app" && npx -y shadcn@latest add "$HOST/r/$item.json" --yes) 2>&1 | tee "$WORK/$item.log"
+}
+
+assert_docs_printed() {
+  local item="$1"
+  shift
+  local phrase
+  for phrase in "$@"; do
+    if ! grep -qF -- "$phrase" "$WORK/$item.log"; then
+      echo "smoke-install: $item's docs no longer says \"$phrase\"; its hand steps here are out of date" >&2
+      exit 1
+    fi
+  done
+}
+
+replace_in_file() {
+  FILE="$1" FIND="$2" REPLACE="$3" node --input-type=module -e '
+import { readFileSync, writeFileSync } from "node:fs";
+
+const file = process.env.FILE;
+const source = readFileSync(file, "utf8");
+if (!source.includes(process.env.FIND)) {
+  throw new Error(`${file} no longer contains ${JSON.stringify(process.env.FIND)}`);
+}
+writeFileSync(file, source.replace(process.env.FIND, process.env.REPLACE));
+'
+}
+
+serve_local_build() {
+  step "building the registry"
+  (
+    cd "$ROOT"
+    pnpm --filter @ultima/tokens build
+    pnpm registry:build
+    pnpm --filter @ultima/docs build
+  )
+
+  cat > "$WORK/serve.mjs" <<'SERVER'
+import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createServer } from 'node:http';
+import { extname, join, normalize } from 'node:path';
+
+const dist = process.argv[2];
+
+const TYPES = {
+  '.css': 'text/css',
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.json': 'application/json',
+  '.svg': 'image/svg+xml',
+  '.txt': 'text/plain',
+};
+
+const NO_FALLBACK = [/^\/r\//, /^\/tokens\.(css|json)$/, /^\/llms\.txt$/];
+
+function fileFor(path) {
+  const candidate = join(dist, normalize(path));
+  if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+  if (NO_FALLBACK.some((pattern) => pattern.test(path))) return null;
+  const index = join(dist, 'index.html');
+  return existsSync(index) ? index : null;
+}
+
+const server = createServer((request, response) => {
+  const path = decodeURIComponent(new URL(request.url, 'http://127.0.0.1').pathname);
+  const file = fileFor(path);
+  if (!file) {
+    response.writeHead(404).end('not found');
+    return;
+  }
+  response.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' });
+  createReadStream(file).pipe(response);
+});
+
+server.listen(0, '127.0.0.1', () => console.log(server.address().port));
+SERVER
+
+  step "serving apps/docs/dist"
+  node "$WORK/serve.mjs" "$ROOT/apps/docs/dist" >"$WORK/port" 2>"$WORK/server.log" &
+  SERVER_PID=$!
+
+  local port=""
+  local _
+  for _ in $(seq 1 100); do
+    port="$(cat "$WORK/port" 2>/dev/null || true)"
+    if [ -n "$port" ]; then
+      break
+    fi
+    sleep 0.1
+  done
+  if [ -z "$port" ]; then
+    echo "smoke-install: the static server did not start" >&2
+    cat "$WORK/server.log" >&2
+    exit 1
+  fi
+  HOST="http://127.0.0.1:$port"
+  echo "smoke-install: serving $HOST"
+}
+
+vite_target() {
+  TARGET="vite"
+  local app="$WORK/vite-app"
+
+  step "vite: scaffolding"
+  (cd "$WORK" && npm create vite@latest vite-app -- --template react-ts)
+  (cd "$app" && npm install)
+
+  step "vite: npx shadcn add $HOST/r/setup-vite.json"
+  setup_add "$app" setup-vite
+  assert_docs_printed setup-vite \
+    '"paths": { "@/*": ["./src/*"] }' \
+    "import { ultimaStylex } from './ultima.vite.ts'" \
+    'before the React plugin' \
+    'Wrap any global CSS reset in an @layer'
+  point_namespace_at_host "$app/components.json"
+
+  step "vite: the hand steps setup-vite prints"
+  add_paths_alias "$app/tsconfig.json"
+  add_paths_alias "$app/tsconfig.app.json"
+  replace_in_file "$app/vite.config.ts" "plugins: [" \
+    "plugins: [ultimaStylex(), "
+  replace_in_file "$app/vite.config.ts" "import { defineConfig } from 'vite'" \
+    "import { defineConfig } from 'vite'
+import { ultimaStylex } from './ultima.vite.ts'"
+  layer_reset "$app/src/index.css"
+
+  step "vite: npx shadcn add @ultima/button"
+  (cd "$app" && npx -y shadcn@latest add @ultima/button --yes)
+
+  cat > "$app/src/App.tsx" <<'APP'
+import { Button } from '@/components/ui/button';
+
+export default function App() {
+  return <Button>Ultima</Button>;
+}
+APP
+
+  step "vite: npm run build"
+  (cd "$app" && npm run build)
+}
+
+next_target() {
+  TARGET="next"
+  local app="$WORK/next-app"
+
+  step "next: scaffolding"
+  (cd "$WORK" && npx -y create-next-app@latest next-app \
+    --ts --app --no-tailwind --no-src-dir --no-eslint --turbopack \
+    --import-alias "@/*" --use-npm --yes)
+
+  step "next: npx shadcn add $HOST/r/setup-next.json"
+  setup_add "$app" setup-next
+  assert_docs_printed setup-next \
+    "Import './ultima.css' from app/layout.tsx." \
+    'Wrap any global CSS reset in an @layer'
+  point_namespace_at_host "$app/components.json"
+
+  step "next: the hand steps setup-next prints"
+  replace_in_file "$app/app/layout.tsx" 'import "./globals.css";' \
+    'import "./globals.css";
+import "./ultima.css";'
+  layer_reset "$app/app/globals.css"
+
+  step "next: npx shadcn add @ultima/button"
+  (cd "$app" && npx -y shadcn@latest add @ultima/button --yes)
+
+  # The page is a server component and stays one: `rsc: true` does not insert a
+  # "use client" directive, and Base UI's own boundary inside the Button covers
+  # it.
+  cat > "$app/app/page.tsx" <<'PAGE'
+import { Button } from '@/components/ui/button';
+
+export default function Page() {
+  return <Button>Ultima</Button>;
+}
+PAGE
+
+  step "next: npm run build"
+  (cd "$app" && npm run build)
+}
+
+if [ -z "$HOST" ]; then
+  serve_local_build
+fi
+HOST="${HOST%/}"
+
+curl -fsS "$HOST/r/registry.json" >/dev/null
+
+vite_target
+next_target
+TARGET=""
+
+echo
+echo "smoke-install: both targets installed and built against $HOST"
