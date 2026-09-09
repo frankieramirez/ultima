@@ -30,6 +30,18 @@ Dark or light. Dark is the default. Light is a full peer, never best effort.
 
 A generated stylesheet of CSS custom properties carrying the same tokens, for consumers that cannot run StyleX. Mana's audit report is the first such consumer.
 
+## Tokens JSON export
+
+The generated companion to the tokens CSS export: every semantic token with its group, the scale and step it resolves to per color mode, and its resolved value. The machine-readable published contract. Generator state under `packages/tokens/scripts/` is not part of it.
+
+## Agent guide
+
+The generated Markdown at `/llms.txt`: Ultima's principles, conventions, component list, and token names at one fetchable URL. It is how a consumer's agent learns the system, because Ultima installs no documentation into a consumer's repository.
+
+## Forge
+
+Ultima's own component-authoring skill. It knows Base UI composition, StyleX variant tables, and the part-naming rules, so it lives in this repo rather than in mana, whose skills stay general.
+
 ## Registry
 
 The hosted shadcn-compatible index that lets a consumer copy Ultima source into their project with `npx shadcn`. Registry-first means consumers own the code they install.

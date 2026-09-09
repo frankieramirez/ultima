@@ -2,6 +2,21 @@
 
 The owning document for Ultima's conventions, tokens, and component contracts. Each section is written when its decision ticket closes; the map is [Map: Ultima design system spec](https://linear.app/frankie-ramirez/issue/ULT-1). Read `CONTEXT.md` for the glossary and `docs/adr/` for the hard-to-reverse choices.
 
+## Principles
+
+Decided on [Agent-first surface](https://linear.app/frankie-ramirez/issue/ULT-15). These are the generators, not a record. An ADR captures one choice and the alternatives it beat; this section holds what decides the next choice without being argued again. It is the section to read before touching anything.
+
+A principle earns a line here only if it already settled a decision on the map, or would settle one still open. Nothing aspirational.
+
+- **Dark-first, light as a full peer.** Dark is the default and the design target. Light is never best effort: every semantic token, every contrast check, and every demo exists in both modes.
+- **Fantasy in the brand layer only.** The name, the six scale names, page titles, and the 404 carry the theme. Semantic token names, component names, part names, and prop names stay conventional, because they are the surface a stranger has to guess correctly.
+- **One styling engine, one primitive library.** StyleX and Base UI, no Tailwind and no Radix (ADR 0001, ADR 0002). An escape hatch that reintroduces a second system is not an escape hatch, which is why the `style` slot takes StyleX styles and there is no `className`.
+- **The consumer owns what they install.** Registry-first (ADR 0003): Ultima hands over source and gives up control of it. That is right for code and wrong for prose, which is why guidance is hosted rather than installed.
+- **Tokens are the only source of raw values.** A literal in component code is a bug, not a shortcut. A new need becomes a new token.
+- **Semantic names are stable, values are not.** A consumer re-skins at the semantic layer and nothing renames underneath them (ADR 0004).
+- **Contrast is a build gate, not advice.** WCAG 2.2 AA passes or the palette does not ship. APCA is reported beside the pairings and never fails a build.
+- **The docs site is the first user.** It imports from the workspace, so a convention that is painful to use gets felt before it ships.
+
 ## Tokens
 
 Decided on [Token architecture](https://linear.app/frankie-ramirez/issue/ULT-9). The palette and the semantic color values are in the Palette section below; the non-color scales and typefaces are decided on later tickets.
@@ -73,6 +88,27 @@ Shape, in order:
 The `[data-theme]` blocks are not redundant with the media query: they are how a consumer that is not ready for light mode pins the document to dark with one attribute on `<html>`, and how it later opts back into following the operating system by removing it. Mana's report adopts the export that way.
 
 Constraints: plain CSS text, no `@import`, no `url()`, no remote fonts, no `</style>` or `<script` substrings, so it can be pasted into a self-contained HTML document. Written to `packages/tokens/dist/tokens.css` and served from the docs site as a registry file. Palette constants and compile-time groups do not appear. Legacy aliases for a specific consumer (mana's report) live with that consumer, not in the export.
+
+### Tokens JSON export
+
+The same generator run emits `tokens.json` beside `tokens.css`: the machine-readable form, for a tool or an agent that reasons about roles instead of parsing variable names out of a stylesheet.
+
+One entry per semantic token, carrying its group, the scale and step it resolves to in each mode, the resolved value in each mode, and its contrast-gate result where the token appears in a checked pairing.
+
+```json
+{
+  "version": 0,
+  "tokens": {
+    "--ult-color-accent": {
+      "group": "color",
+      "dark": { "scale": "arcane", "step": 9, "value": "#8394ff" },
+      "light": { "scale": "arcane", "step": 9, "value": "#565fde" }
+    }
+  }
+}
+```
+
+`packages/tokens/scripts/palette.json` is generator state and stays private: it holds raw scales with no role attached, and its shape is free to change. `tokens.json` is the published contract and carries only what a consumer may rely on. Written to `packages/tokens/dist/tokens.json` and served at `/tokens.json`.
 ## Palette
 
 Decided on [The palette](https://linear.app/frankie-ramirez/issue/ULT-10). Six scales, twelve steps each, a dark and a light value per step, generated in OKLCH and committed as hex. The reference generator is `packages/tokens/scripts/palette.py`; the v0 build ports it into the tokens package and must reproduce these values exactly.
@@ -519,7 +555,7 @@ Decided on [Docs site scope](https://linear.app/frankie-ramirez/issue/ULT-14). T
 
 `/palette` is the only page that reads the `defineConsts` layer, and the only place a scale name appears outside the token sources. The two contrast readouts are split by what they describe: the WCAG 2.2 AA gate is reported on `/palette` because it is a property of the steps, and the APCA numbers sit beside each semantic pairing on `/tokens` because they are advice about a role, not a build gate.
 
-There is no changelog page in v0; versioning policy for a copy-source registry is not yet decided. There is no agents page here: the agent-first surface is decided separately.
+There is no changelog page in v0; versioning policy for a copy-source registry is not yet decided. There is no agents page: the agent-facing surface is `/llms.txt`, a generated artifact rather than a route, described in the Agent surface section.
 
 ### How the site gets its components
 
@@ -541,7 +577,7 @@ Props tables are hand-written in the MDX and cover only what Ultima adds: `varia
 
 One Vercel project, root directory `apps/docs`, build command `pnpm registry:build && vite build`, serving `ultima.frankieramirez.com` as a CNAME on the existing zone.
 
-The site serves the registry catalogue at `/r/registry.json`, each item at `/r/{name}.json`, and the tokens export at `/tokens.css`. The export is generated into `apps/docs/public/tokens.css` as gitignored build output, the same way the registry JSON is. The SPA fallback rewrite excludes `/r/*` and `/tokens.css`, and both carry `Access-Control-Allow-Origin: *`: the shadcn CLI fetches server-side and mana vendors the export, but a browser-side tool reading either one should not be blocked.
+The site serves the registry catalogue at `/r/registry.json`, each item at `/r/{name}.json`, the tokens exports at `/tokens.css` and `/tokens.json`, and the agent guide at `/llms.txt`. All of them are generated into `apps/docs/public/` as gitignored build output, the same way the registry JSON is. The SPA fallback rewrite excludes `/r/*`, `/tokens.css`, `/tokens.json`, and `/llms.txt`, and all of them carry `Access-Control-Allow-Origin: *`: the shadcn CLI fetches server-side and mana vendors the CSS export, but a browser-side tool or an agent reading any of them should not be blocked.
 
 ### Portfolio surface
 
@@ -556,3 +592,50 @@ The header also carries a theme control offering dark, light, and system. Dark-f
 The repository README is a front door, not documentation. It carries what Ultima is in a few lines, one screenshot, the two install commands, links into the docs site, the stack, a v0-in-development status, and the license. The API surface belongs to the site.
 
 The repository is MIT licensed. A registry-first system hands the consumer its source to own and edit, which is what MIT already describes.
+
+## Agent surface
+
+Decided on [Agent-first surface](https://linear.app/frankie-ramirez/issue/ULT-15). Two audiences that want opposite things: an agent working inside this repository needs to find the rules, and an agent in a consumer's repository needs the conventions without Ultima leaving files behind.
+
+### Contributing to Ultima
+
+`AGENTS.md` at the repository root is the entry point, and it is an index, never a copy. It keeps the `## Agent skills` block mana's setup writes, and adds four sections:
+
+- **Principles** — a pointer to the Principles section of this document, read before touching anything.
+- **Layout** — what lives in `packages/tokens`, `packages/ui`, and `apps/docs`, and that `registry/` is build output.
+- **Rules that are easy to break** — one file per component; the `style` slot and no `className`; no raw values in component code; palette values come from the generator and are never hand-edited; `registry/` is regenerated by `pnpm registry:build`. One line each, each linking its section here.
+- **Commands** — install, dev, build, registry build, palette regeneration.
+
+A rule that needs a paragraph goes in this specification instead. `AGENTS.md` holding a second copy of a convention is how the two drift.
+
+### The consumer's agent
+
+Nothing is installed into the consumer's repository. Ultima ships no `AGENTS.md`, no `DESIGN.md`, and no guide file, for two reasons.
+
+A root-level document is exactly the kind of file the consumer's scaffold owns, and the Registry section already forbids a setup item from overwriting one. More than that, a copied document is stale the day the next decision lands: the consumer has no reason to re-run `add` on prose, and unlike a component they have edited, nothing in their workflow will ever surface the drift. Owning source you modify is the point of registry-first. Owning documentation you never update is a liability Ultima would have handed them.
+
+Guidance is hosted instead, on three surfaces that cannot go stale:
+
+| Surface | Audience | Holds |
+| --- | --- | --- |
+| The `docs` field on each registry item | install time | The import and a minimal usage, printed once by the CLI |
+| `/llms.txt` | an agent in a consumer's repository | The conventions, the token names, and the component list as plain Markdown at one fetchable URL |
+| `/rationale` and the component pages | a human | The long form |
+
+`/llms.txt` is generated build output beside `/tokens.css`, not a hand-written file and not a route. It leads with the Principles section, then the component list with each component's import and the props Ultima adds, then the semantic token names. It is generated from this specification and the registry manifest, so no convention gets a third place to be updated.
+
+### The authoring skill
+
+A component-authoring skill exists, named `forge`, and it lives in this repository at `skills/forge/SKILL.md` rather than in mana.
+
+Mana's skills are general by design, and the `ultima` audit skill's generality is its product. A skill that knows Base UI composition, per-axis StyleX variant tables, and Ultima's part-naming rules is the opposite of general, and it has to version with the conventions it encodes. A repository that wants it installs it from `frankieramirez/ultima`, the way mana's skills are installed from `frankieramirez/mana`.
+
+Writing it is a build ticket after the first v0 components land. A skill with no components to pattern-match against is guesswork.
+
+### The audit skill
+
+Mana's `ultima` audit skill and this design system share a name and nothing else. The relationship runs one way, and through documents only.
+
+The audit skill already reads a repository's `CONTEXT.md`, `docs/adr/`, and decision documents as its prior-decisions block, and already profiles a project for its design-system source of truth and its token values. Ultima's whole obligation is to keep those documents where that profile looks, and to publish `tokens.json` in a shape a generic parser can read.
+
+The audit skill gets no Ultima-aware branch: no import, no special case, no lens that knows the word `mithril`. A project built on Ultima audits well because Ultima's tokens are legible, not because the tool was taught about them. Teaching it Ultima's tokens as a lens was ruled out on [Mana report adoption](https://linear.app/frankie-ramirez/issue/ULT-13) and stays ruled out.
