@@ -23,6 +23,7 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
     opacity: { default: 1, ':is([data-disabled])': 0.5 },
+    textDecoration: 'none',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, border-color, color',
     ':focus-visible': {

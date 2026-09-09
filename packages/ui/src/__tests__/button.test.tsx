@@ -69,6 +69,13 @@ test('render and ref reach the underlying element', async () => {
   expect(ref.current).toHaveAttribute('data-custom', 'yes');
 });
 
+test('rendered as a link, the label keeps no underline', async () => {
+  const screen = await render(<Button render={<a href="#install" />} nativeButton={false}>Install</Button>);
+  const link = screen.getByRole('button', { name: 'Install' }).element();
+  expect(link.tagName).toBe('A');
+  expect(getComputedStyle(link).textDecorationLine).toBe('none');
+});
+
 test('public prop types expose only supported styling axes', () => {
   expectTypeOf<ButtonProps>().not.toHaveProperty('className');
   expectTypeOf<ButtonTone>().toEqualTypeOf<'accent' | 'danger'>();
