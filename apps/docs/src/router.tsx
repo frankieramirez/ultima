@@ -1,20 +1,30 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 
-import { ButtonPage } from './routes/button';
+import type { MDXComponents } from 'mdx/types';
+import type { ComponentType } from 'react';
+
+import BadgeContent from './content/components/badge.mdx';
+import ButtonContent from './content/components/button.mdx';
+import CardContent from './content/components/card.mdx';
+import CodeContent from './content/components/code.mdx';
+import InputContent from './content/components/input.mdx';
+import MeterContent from './content/components/meter.mdx';
+import StatContent from './content/components/stat.mdx';
+import SwitchContent from './content/components/switch.mdx';
+import TableContent from './content/components/table.mdx';
+import TabsContent from './content/components/tabs.mdx';
+import TooltipContent from './content/components/tooltip.mdx';
+import { components } from './components';
+import { Prose } from './prose';
 import { ComponentsPage } from './routes/components';
 import { Home } from './routes/home';
-import { InputPage } from './routes/input';
 import { InstallPage } from './routes/install';
-import { MeterPage } from './routes/meter';
 import { NotFound } from './routes/not-found';
 import { PalettePage } from './routes/palette';
 import { Placeholder } from './routes/placeholder';
 import { RationalePage } from './routes/rationale';
 import { Root } from './routes/root';
-import { SwitchPage } from './routes/switch';
-import { TabsPage } from './routes/tabs';
 import { TokensPage } from './routes/tokens';
-import { TooltipPage } from './routes/tooltip';
 
 const rootRoute = createRootRoute({
   component: Root,
@@ -51,42 +61,6 @@ const componentsRoute = createRoute({
   component: ComponentsPage,
 });
 
-const buttonRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/components/button',
-  component: ButtonPage,
-});
-
-const tabsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/components/tabs',
-  component: TabsPage,
-});
-
-const meterRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/components/meter',
-  component: MeterPage,
-});
-
-const tooltipRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/components/tooltip',
-  component: TooltipPage,
-});
-
-const inputRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/components/input',
-  component: InputPage,
-});
-
-const switchRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/components/switch',
-  component: SwitchPage,
-});
-
 const componentNameRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/components/$name',
@@ -95,8 +69,28 @@ const componentNameRoute = createRoute({
 
 function ComponentNamePage() {
   const { name } = componentNameRoute.useParams();
-  return <Placeholder title={name} ticket="ULT-37 through ULT-39" />;
+  const component = components.find(({ item }) => item === name);
+  const Content = writtenPages[name];
+
+  if (!component) return <NotFound />;
+  if (!Content) return <Placeholder title={component.name} ticket="a later component-page ticket" />;
+
+  return <Prose Content={Content} />;
 }
+
+const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>> = {
+  badge: BadgeContent,
+  button: ButtonContent,
+  card: CardContent,
+  code: CodeContent,
+  input: InputContent,
+  meter: MeterContent,
+  stat: StatContent,
+  switch: SwitchContent,
+  table: TableContent,
+  tabs: TabsContent,
+  tooltip: TooltipContent,
+};
 
 const rationaleRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -110,12 +104,6 @@ const routeTree = rootRoute.addChildren([
   tokensRoute,
   paletteRoute,
   componentsRoute,
-  buttonRoute,
-  tabsRoute,
-  meterRoute,
-  tooltipRoute,
-  inputRoute,
-  switchRoute,
   componentNameRoute,
   rationaleRoute,
 ]);

@@ -1,0 +1,44 @@
+import { Demo } from '../../demo';
+import Variants from '../../demos/badge/variants';
+import variantsSource from '../../demos/badge/variants?raw';
+import InTable from '../../demos/badge/in-table';
+import inTableSource from '../../demos/badge/in-table?raw';
+
+# Badge
+
+A small static label in two variants and six tones.
+
+## Install
+
+```bash
+npx shadcn add @ultima/badge
+```
+
+## Variants and tones
+
+`subtle` annotates a surface; `solid` carries more emphasis. Each variant supports all six tones.
+
+<Demo component={Variants} source={variantsSource} />
+
+## In a Table
+
+Badge works as compact status text inside a data cell.
+
+<Demo component={InTable} source={inTableSource} />
+
+## Props
+
+Only what Ultima adds. Everything else is native; see MDN's [`span`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/span) reference.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `variant` | `'subtle' \| 'solid'` | `'subtle'` | Shape and emphasis. |
+| `tone` | `'neutral' \| 'accent' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `'neutral'` | Color role, including its text or contrast color. |
+| `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Changes the root from its default `span`. |
+
+## Accessibility
+
+- **Name.** The Badge is a static `span` named by its text content.
+- **Meaning.** Color never carries meaning alone. Pair every tone with text that says the status, as the examples do.
+- **Focus and keyboard.** None. Badge is static.

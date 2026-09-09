@@ -1,14 +1,15 @@
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
-import { Button, Card, Stat } from '@ultima/ui';
+import { Badge, Button, Card } from '@ultima/ui';
 
 const styles = stylex.create({
   root: {
     maxWidth: '22rem',
   },
-  stats: {
+  body: {
     display: 'flex',
-    gap: space['--ult-space-8'],
+    flexDirection: 'column',
+    gap: space['--ult-space-3'],
   },
 });
 
@@ -16,18 +17,12 @@ export default function Overview() {
   return (
     <Card.Root style={styles.root}>
       <Card.Header>
-        <Card.Title>Contrast gate</Card.Title>
+        <Card.Title render={<h2 />}>Contrast gate</Card.Title>
         <Card.Description>WCAG 2.2 AA, checked in both color modes.</Card.Description>
       </Card.Header>
-      <Card.Body style={styles.stats}>
-        <Stat.Root>
-          <Stat.Label>Pairings</Stat.Label>
-          <Stat.Value>48</Stat.Value>
-        </Stat.Root>
-        <Stat.Root>
-          <Stat.Label>Passing</Stat.Label>
-          <Stat.Value>48</Stat.Value>
-        </Stat.Root>
+      <Card.Body style={styles.body}>
+        <p>Every required text, border, and focus pairing clears the contrast gate.</p>
+        <Badge tone="success">48 of 48 passing</Badge>
       </Card.Body>
       <Card.Footer>
         <Button variant="outline" size="sm">
