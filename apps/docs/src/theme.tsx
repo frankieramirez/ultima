@@ -1,0 +1,87 @@
+import * as stylex from '@stylexjs/stylex';
+import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+
+export const THEME_STORAGE_KEY = 'ultima-theme';
+export type ThemePreference = 'dark' | 'light' | 'system';
+
+const ThemeContext = createContext<{
+  preference: ThemePreference;
+  setPreference: (preference: ThemePreference) => void;
+}>({
+  preference: 'system',
+  setPreference: () => {},
+});
+
+function isThemePreference(value: string | null): value is ThemePreference {
+  return value === 'dark' || value === 'light' || value === 'system';
+}
+
+function readStored(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    return;
+  }
+}
+
+function readPreference(): ThemePreference {
+  const stored = readStored(THEME_STORAGE_KEY);
+  return isThemePreference(stored) ? stored : 'system';
+}
+
+function themeProps(preference: ThemePreference) {
+  if (preference === 'dark') return stylex.props(darkTheme, colorScheme.dark);
+  if (preference === 'light') return stylex.props(lightTheme, colorScheme.light);
+  return stylex.props(colorScheme.system);
+}
+
+export function useTheme() {
+  return useContext(ThemeContext);
+}
+
+export function ThemeRoot({ children }: { children: ReactNode }) {
+  const [preference, setPreferenceState] = useState<ThemePreference>(readPreference);
+
+  const setPreference = useCallback((next: ThemePreference) => {
+    setPreferenceState(next);
+    writeStored(THEME_STORAGE_KEY, next);
+  }, []);
+
+  useLayoutEffect(() => {
+    const el = document.documentElement;
+    const applied = themeProps(preference);
+    const previousClass = el.getAttribute('class');
+    const previousInline = el.getAttribute('style');
+    if (applied.className) el.setAttribute('class', applied.className);
+    else el.removeAttribute('class');
+    if (applied.style) Object.assign(el.style, applied.style);
+    else el.style.colorScheme = '';
+    return () => {
+      if (previousClass === null) el.removeAttribute('class');
+      else el.setAttribute('class', previousClass);
+      if (previousInline === null) el.removeAttribute('style');
+      else el.setAttribute('style', previousInline);
+    };
+  }, [preference]);
+
+  const value = useMemo(() => ({ preference, setPreference }), [preference, setPreference]);
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
