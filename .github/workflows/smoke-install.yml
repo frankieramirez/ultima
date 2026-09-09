@@ -9,6 +9,7 @@ on:
       - 'registry/static/**'
       - 'registry/items.config.ts'
       - 'scripts/build-registry.ts'
+      - 'scripts/build-agent-guide.ts'
       - 'scripts/smoke-install.sh'
       - 'packages/ui/src/**'
       - 'packages/tokens/**'
