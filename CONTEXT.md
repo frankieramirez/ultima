@@ -12,7 +12,7 @@ A named design value (color, space, radius, type, motion) defined once in Ultima
 
 ## Palette scale
 
-A named ramp of color steps. Scales carry the fantasy names (for example arcane, ember, mithril). Nothing outside the token layer refers to a scale directly.
+A named ramp of color steps. Scales carry the fantasy names (for example arcane, ember, mithril). Scales are compile-time constants: they never appear in CSS, and nothing outside the token layer refers to one except the docs site displaying it.
 
 ## Semantic token
 
@@ -41,3 +41,15 @@ Any project that installs Ultima. The docs site is the first consumer of the com
 ## Report set
 
 The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, Tooltip. The v0 set is the report set plus Dialog, Dropdown Menu, Select, Input, and Switch.
+
+## Token group
+
+One `defineVars` export in `packages/tokens`, named for what it holds: color, space, text, font, radius, shadow. A token's full name is `--ult-<group>-<name>`.
+
+## Theme
+
+A StyleX override of a token group, applied to a root or any subtree. Ultima ships a dark and a light theme; a consumer's re-skin is a theme of the same kind.
+
+## Interaction state token
+
+A semantic token for hover or active, named with a `-hover` or `-active` suffix. States are tokens resolved to palette steps, never colors derived at the use site.
