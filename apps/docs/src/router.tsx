@@ -6,7 +6,6 @@ import { InstallPage } from './routes/install';
 import { NotFound } from './routes/not-found';
 import { PalettePage } from './routes/palette';
 import { Placeholder } from './routes/placeholder';
-import { PrototypeUlt7 } from './routes/prototype-ult7';
 import { RationalePage } from './routes/rationale';
 import { Root } from './routes/root';
 import { TokensPage } from './routes/tokens';
@@ -63,12 +62,6 @@ const rationaleRoute = createRoute({
   component: RationalePage,
 });
 
-const prototypeUlt7Route = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/prototype/ult-7',
-  component: PrototypeUlt7,
-});
-
 const routeTree = rootRoute.addChildren([
   indexRoute,
   installRoute,
@@ -77,7 +70,6 @@ const routeTree = rootRoute.addChildren([
   componentsRoute,
   componentNameRoute,
   rationaleRoute,
-  prototypeUlt7Route,
 ]);
 
 export const router = createRouter({ routeTree });

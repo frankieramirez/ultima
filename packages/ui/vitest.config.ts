@@ -7,6 +7,7 @@ import { stylexOptions } from '../../stylex.options.ts';
 
 export default defineConfig({
   plugins: [stylex.vite(stylexOptions({ dev: true })), react()],
+  optimizeDeps: { include: ['@base-ui/react/button'] },
   test: {
     include: ['src/__tests__/**/*.test.{ts,tsx}'],
     browser: {
