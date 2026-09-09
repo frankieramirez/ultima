@@ -17,6 +17,6 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@ultima": "https://ultima.frankieramirez.com/r/{name}.json"
+    "@ultima": "https://ultima.systems/r/{name}.json"
   }
 }

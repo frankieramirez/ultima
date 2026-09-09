@@ -11,14 +11,14 @@ Ultima is v0 and in development.
 Vite:
 
 ```bash
-npx shadcn add https://ultima.frankieramirez.com/r/setup-vite.json
+npx shadcn add https://ultima.systems/r/setup-vite.json
 npx shadcn add @ultima/button
 ```
 
 Next.js App Router:
 
 ```bash
-npx shadcn add https://ultima.frankieramirez.com/r/setup-next.json
+npx shadcn add https://ultima.systems/r/setup-next.json
 npx shadcn add @ultima/button
 ```
 
@@ -26,10 +26,10 @@ The first command writes `components.json` and the StyleX compiler config. The s
 
 ## Docs
 
-- [Install](https://ultima.frankieramirez.com/install)
-- [Components](https://ultima.frankieramirez.com/components)
-- [Tokens](https://ultima.frankieramirez.com/tokens)
-- [Rationale](https://ultima.frankieramirez.com/rationale)
+- [Install](https://ultima.systems/install)
+- [Components](https://ultima.systems/components)
+- [Tokens](https://ultima.systems/tokens)
+- [Rationale](https://ultima.systems/rationale)
 
 ## Stack
 

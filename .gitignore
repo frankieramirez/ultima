@@ -5,6 +5,8 @@ dist/
 .vite/
 .vitest/
 
+.wrangler/
+
 # Registry build output: only registry/static/ and registry/items.config.ts are authored.
 registry/ultima/
 registry/registry.json

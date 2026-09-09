@@ -9,14 +9,14 @@ Ultima ships as a shadcn-compatible registry. You copy source into your project 
 Vite:
 
 ```bash
-npx shadcn add https://ultima.frankieramirez.com/r/setup-vite.json
+npx shadcn add https://ultima.systems/r/setup-vite.json
 npx shadcn add @ultima/button
 ```
 
 Next.js App Router:
 
 ```bash
-npx shadcn add https://ultima.frankieramirez.com/r/setup-next.json
+npx shadcn add https://ultima.systems/r/setup-next.json
 npx shadcn add @ultima/button
 ```
 
@@ -62,7 +62,7 @@ The `docs` field on each setup item prints a short list at install. This page is
 
 Components need a StyleX compiler. Tokens do not.
 
-The stable URL is `https://ultima.frankieramirez.com/tokens.css`. Mana's audit report fetches or vendors that file and inlines it. The `tokens-css` registry item writes the same generated stylesheet to `~/ultima-tokens.css` if you want it committed next to your source.
+The stable URL is `https://ultima.systems/tokens.css`. Mana's audit report fetches or vendors that file and inlines it. The `tokens-css` registry item writes the same generated stylesheet to `~/ultima-tokens.css` if you want it committed next to your source.
 
 The export is plain CSS: no `@import`, no `url()`, no remote fonts. It follows `prefers-color-scheme` on `:root` and also ships `[data-theme="dark"]` and `[data-theme="light"]` blocks so you can pin a document to one mode with an attribute on `<html>`.
 

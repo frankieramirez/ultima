@@ -22,7 +22,7 @@ const SPEC = join(root, 'docs/spec/ultima.md');
 const TOKENS_DIST = join(root, 'packages/tokens/dist');
 const TOKEN_EXPORTS = ['tokens.css', 'tokens.json'];
 
-const HOMEPAGE = 'https://ultima.frankieramirez.com';
+const HOMEPAGE = 'https://ultima.systems';
 const SHADCN = 'shadcn@4.21.0';
 
 const NEVER_STAGE = new Set(['index.ts', 'prototype', '__tests__']);
