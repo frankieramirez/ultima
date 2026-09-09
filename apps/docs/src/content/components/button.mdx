@@ -1,0 +1,77 @@
+import { Demo } from '../../demo';
+import Variants from '../../demos/button/variants';
+import variantsSource from '../../demos/button/variants?raw';
+import Sizes from '../../demos/button/sizes';
+import sizesSource from '../../demos/button/sizes?raw';
+import Danger from '../../demos/button/danger';
+import dangerSource from '../../demos/button/danger?raw';
+import Disabled from '../../demos/button/disabled';
+import disabledSource from '../../demos/button/disabled?raw';
+import LeadingIcon from '../../demos/button/leading-icon';
+import leadingIconSource from '../../demos/button/leading-icon?raw';
+import IconOnly from '../../demos/button/icon-only';
+import iconOnlySource from '../../demos/button/icon-only?raw';
+
+# Button
+
+A clickable control built on Base UI's Button, with three variants, three sizes, and two tones.
+
+## Install
+
+```bash
+npx shadcn add @ultima/button
+```
+
+## Variants
+
+`solid` is the role fill, `outline` a transparent fill with a border, `ghost` transparent with muted text.
+
+<Demo component={Variants} source={variantsSource} />
+
+## Sizes
+
+The three control heights every Ultima control shares.
+
+<Demo component={Sizes} source={sizesSource} />
+
+## Tones
+
+`tone` picks the color role. `danger` recolors all three variants to the ruin role and brings its own contrast color with it, so you never name a token.
+
+<Demo component={Danger} source={dangerSource} />
+
+## Disabled
+
+`disabled` reaches Base UI, which blocks activation and sets `data-disabled`. Ultima dims the root from that attribute.
+
+<Demo component={Disabled} source={disabledSource} />
+
+## With an icon
+
+Ultima ships no icon dependency, and any set works. These demos use [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency.
+
+An icon before the label needs nothing but the icon: the button's name still comes from its text.
+
+<Demo component={LeadingIcon} source={leadingIconSource} />
+
+There is no `IconButton` and no `iconOnly` prop. An icon-only button is a recipe: `aria-label` for the name, the glyph as the only child, and a `style` override setting `paddingInline` to the size's block padding, so the glyph sits in even padding instead of the wider padding a label needs.
+
+<Demo component={IconOnly} source={iconOnlySource} />
+
+## Props
+
+Only what Ultima adds. Everything else is Base UI's; see [Base UI's Button](https://base-ui.com/react/components/button) for the rest.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `variant` | `'solid' \| 'outline' \| 'ghost'` | `'solid'` | Shape and emphasis. |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Control height, padding, and text step. |
+| `tone` | `'accent' \| 'danger'` | `'accent'` | Color role, contrast color included. |
+| `style` | `StyleXStyles` | — | The style slot: StyleX styles merged last, so they win per property. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. Rendering as an `<a>` also wants `nativeButton={false}`. |
+
+## Accessibility
+
+- **Name.** The button's text content. A button with no text passes `aria-label`.
+- **Focus ring.** On the root, drawn on `:focus-visible` only.
+- **Keyboard.** Base UI's, unchanged. Ultima adds nothing and removes nothing.
