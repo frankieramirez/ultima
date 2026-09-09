@@ -68,7 +68,7 @@ The site at `apps/docs`. Three things at once: Ultima's reference, the host that
 
 ## Report set
 
-The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, Tooltip. The v0 set is the report set plus Dialog, Dropdown Menu, Select, Input, and Switch.
+The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, Tooltip. The foundation set is the report set plus Dialog, Dropdown Menu, Select, Input, and Switch. The v0 release adds Sidebar and the reusable components required to build the docs site.
 
 ## Token group
 
