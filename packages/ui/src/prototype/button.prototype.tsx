@@ -17,18 +17,18 @@ const styles = stylex.create({
   root: {
     alignItems: 'center',
     appearance: 'none',
-    borderRadius: radius.md,
+    borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',
     borderWidth: '1px',
     cursor: { default: 'pointer', ':is([data-disabled])': 'not-allowed' },
     display: 'inline-flex',
-    fontFamily: font.sans,
+    fontFamily: font['--ult-font-sans'],
     fontWeight: 500,
-    gap: space.sm,
+    gap: space['--ult-space-4'],
     justifyContent: 'center',
     lineHeight: 1,
     opacity: { default: 1, ':is([data-disabled])': 0.5 },
-    outlineColor: color.accent,
+    outlineColor: color['--ult-color-accent'],
     outlineOffset: '2px',
     outlineStyle: { default: 'none', ':focus-visible': 'solid' },
     outlineWidth: '2px',
@@ -42,29 +42,29 @@ const styles = stylex.create({
 const variants = stylex.create({
   solid: {
     backgroundColor: {
-      default: color.accent,
-      ':hover': `color-mix(in oklab, ${color.accent} 88%, white)`,
-      ':active': `color-mix(in oklab, ${color.accent} 80%, black)`,
+      default: color['--ult-color-accent'],
+      ':hover': color['--ult-color-accent-hover'],
+      ':active': color['--ult-color-accent-active'],
     },
     borderColor: 'transparent',
-    color: color.accentText,
+    color: color['--ult-color-accent-contrast'],
   },
   outline: {
-    backgroundColor: { default: 'transparent', ':hover': color.surfaceRaised },
-    borderColor: color.border,
-    color: color.text,
+    backgroundColor: { default: 'transparent', ':hover': color['--ult-color-surface-raised'] },
+    borderColor: color['--ult-color-border'],
+    color: color['--ult-color-text'],
   },
   ghost: {
-    backgroundColor: { default: 'transparent', ':hover': color.surfaceRaised },
+    backgroundColor: { default: 'transparent', ':hover': color['--ult-color-surface-raised'] },
     borderColor: 'transparent',
-    color: color.textMuted,
+    color: color['--ult-color-text-muted'],
   },
 });
 
 const sizes = stylex.create({
-  sm: { fontSize: '0.8125rem', minHeight: '1.75rem', paddingBlock: space.xs, paddingInline: space.sm },
-  md: { fontSize: '0.875rem', minHeight: '2.25rem', paddingBlock: space.sm, paddingInline: space.md },
-  lg: { fontSize: '1rem', minHeight: '2.75rem', paddingBlock: space.md, paddingInline: space.lg },
+  sm: { fontSize: '0.8125rem', minHeight: '1.75rem', paddingBlock: space['--ult-space-2'], paddingInline: space['--ult-space-4'] },
+  md: { fontSize: '0.875rem', minHeight: '2.25rem', paddingBlock: space['--ult-space-4'], paddingInline: space['--ult-space-5'] },
+  lg: { fontSize: '1rem', minHeight: '2.75rem', paddingBlock: space['--ult-space-5'], paddingInline: space['--ult-space-6'] },
 });
 
 export type ButtonVariant = keyof typeof variants;

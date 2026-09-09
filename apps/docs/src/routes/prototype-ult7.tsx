@@ -4,43 +4,43 @@
  * Delete once ULT-11 lands conventions.
  */
 import * as stylex from '@stylexjs/stylex';
-import { darkTheme, lightTheme } from '@ultima/tokens';
+import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
 import { color, font, radius, space } from '@ultima/tokens/tokens.stylex';
 import { Button } from '@ultima/ui/prototype/button.prototype';
 import { Card } from '@ultima/ui/prototype/card.prototype';
 import { useState } from 'react';
 
 const styles = stylex.create({
-  page: { margin: '0 auto', maxWidth: '64rem', padding: space.xl },
+  page: { margin: '0 auto', maxWidth: '64rem', padding: space['--ult-space-8'] },
   h1: { fontSize: '1.5rem', margin: 0 },
-  lede: { color: color.textMuted, marginBlock: space.md },
-  modes: { display: 'grid', gap: space.lg, gridTemplateColumns: 'repeat(auto-fit, minmax(20rem, 1fr))' },
+  lede: { color: color['--ult-color-text-muted'], marginBlock: space['--ult-space-5'] },
+  modes: { display: 'grid', gap: space['--ult-space-6'], gridTemplateColumns: 'repeat(auto-fit, minmax(20rem, 1fr))' },
   panel: {
-    backgroundColor: color.surface,
-    borderColor: color.border,
-    borderRadius: radius.lg,
+    backgroundColor: color['--ult-color-surface'],
+    borderColor: color['--ult-color-border'],
+    borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
     borderWidth: '1px',
-    color: color.text,
+    color: color['--ult-color-text'],
     display: 'flex',
     flexDirection: 'column',
-    gap: space.lg,
-    padding: space.lg,
+    gap: space['--ult-space-6'],
+    padding: space['--ult-space-6'],
   },
-  label: { color: color.textMuted, fontFamily: font.mono, fontSize: '0.75rem', margin: 0 },
-  row: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space.sm },
-  state: { fontFamily: font.mono, fontSize: '0.75rem', margin: 0 },
+  label: { color: color['--ult-color-text-muted'], fontFamily: font['--ult-font-mono'], fontSize: '0.75rem', margin: 0 },
+  row: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
+  state: { fontFamily: font['--ult-font-mono'], fontSize: '0.75rem', margin: 0 },
 });
 
 // A caller-side override, to see the escape hatch in use.
 const overrides = stylex.create({
-  wide: { paddingInline: space.xl, borderRadius: '999px' },
+  wide: { paddingInline: space['--ult-space-8'], borderRadius: '999px' },
   danger: { backgroundColor: { default: '#c93b3b', ':hover': '#a72f2f' }, color: 'white' },
 });
 
 function Showcase({ mode }: { mode: 'dark' | 'light' }) {
   const [clicks, setClicks] = useState(0);
-  const theme = mode === 'dark' ? darkTheme : lightTheme;
+  const theme = mode === 'dark' ? [darkTheme, colorScheme.dark] : [lightTheme, colorScheme.light];
   return (
     <section {...stylex.props(theme, styles.panel)}>
       <p {...stylex.props(styles.label)}>{mode}</p>
