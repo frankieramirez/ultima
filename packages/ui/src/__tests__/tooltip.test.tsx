@@ -76,7 +76,7 @@ test('focusing the trigger opens the tooltip and Escape closes it', async () => 
   await userEvent.tab();
   await expect.element(screen.getByRole('tooltip', { name: 'Copied to clipboard' })).toBeVisible();
   await userEvent.keyboard('{Escape}');
-  expect(screen.getByRole('tooltip').query()).toBeNull();
+  await expect.poll(() => screen.getByRole('tooltip').query()).toBeNull();
 });
 
 test('data-starting-style sets opacity to 0', async () => {

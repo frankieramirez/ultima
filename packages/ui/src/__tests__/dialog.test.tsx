@@ -97,7 +97,7 @@ test('Escape closes and returns focus to the trigger, and Tab loops inside', asy
   expect(document.activeElement).toBe(inside);
 
   await userEvent.keyboard('{Escape}');
-  expect(screen.getByRole('dialog').query()).toBeNull();
+  await expect.poll(() => screen.getByRole('dialog').query()).toBeNull();
   expect(document.activeElement).toBe(trigger);
 });
 
