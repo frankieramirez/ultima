@@ -19,7 +19,7 @@ A principle earns a line here only if it already settled a decision on the map, 
 
 ## Tokens
 
-Decided on [Token architecture](https://linear.app/frankie-ramirez/issue/ULT-9). The palette and the semantic color values are in the Palette section below; the non-color scales and typefaces are decided on later tickets.
+Decided on [Token architecture](https://linear.app/frankie-ramirez/issue/ULT-9), with the scales and typefaces behind the non-color groups on [Non-color token values](https://linear.app/frankie-ramirez/issue/ULT-17). The palette and the semantic color values are in the Palette section below.
 
 ### Layers
 
@@ -53,9 +53,117 @@ In component code the key is used as written: `color['--ult-color-surface']`. Th
 
 ### Token groups in v0
 
-Themeable (emitted as custom properties): `color`, `space`, `text`, `font`, `radius`, `shadow`.
+Themeable (emitted as custom properties): `color`, `space`, `text`, `font`, `radius`, `shadow`, and `motion` durations.
 
-Compile-time only (`defineConsts`, never in the CSS export): `motion` (duration, easing) and `z-index`.
+Compile-time only (`defineConsts`, never in the CSS export): `motion` easings, `border` widths, and `z-index`.
+
+Motion durations were compile-time when ULT-9 fixed this list. [Non-color token values](https://linear.app/frankie-ramirez/issue/ULT-17) moved them, because a `defineVars` value can carry `@media (prefers-reduced-motion: reduce)` and collapse every duration to `1ms` in one place, where a `defineConsts` string cannot. Easings stay compile-time: there is nothing to override. `border` is the group added by the same ticket, so a component has a name to read instead of writing `1px`.
+
+### Space
+
+Twelve steps, mirroring the palette's twelve, in `rem` so spacing tracks the root font size. Fine at the bottom where component internals live, doubling at the top where page rhythm lives.
+
+| Step | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| px | 2 | 4 | 6 | 8 | 12 | 16 | 20 | 24 | 32 | 40 | 48 | 64 |
+| rem | 0.125 | 0.25 | 0.375 | 0.5 | 0.75 | 1 | 1.25 | 1.5 | 2 | 2.5 | 3 | 4 |
+
+The space scale is also the sizing scale. The three control heights are steps 9, 10, and 11 (32px, 40px, 48px) for `sm`, `md`, `lg`. A component never writes its own height, so `md` is the same physical height on Button, Input, and Select. There is no separate `size` group.
+
+### Type
+
+Eleven `text` steps, in `rem`. Step 5 is the body size. The bottom two steps exist for the uppercase micro-labels the report leans on.
+
+| Step | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| px | 11 | 12 | 13 | 14 | 16 | 18 | 20 | 24 | 30 | 36 | 48 |
+| rem | 0.6875 | 0.75 | 0.8125 | 0.875 | 1 | 1.125 | 1.25 | 1.5 | 1.875 | 2.25 | 3 |
+
+A `text` step carries a size and nothing else. Leading is a separate token, chosen per use.
+
+The rest of the `font` group:
+
+| Token | Value |
+| --- | --- |
+| `--ult-font-weight-regular` | 400 |
+| `--ult-font-weight-medium` | 500 |
+| `--ult-font-weight-semibold` | 600 |
+| `--ult-font-leading-none` | 1 |
+| `--ult-font-leading-tight` | 1.2 |
+| `--ult-font-leading-snug` | 1.35 |
+| `--ult-font-leading-normal` | 1.55 |
+| `--ult-font-leading-relaxed` | 1.75 |
+| `--ult-font-tracking-tight` | -0.02em |
+| `--ult-font-tracking-normal` | 0 |
+| `--ult-font-tracking-wide` | 0.08em |
+| `--ult-font-tracking-wider` | 0.14em |
+
+There is no `bold` weight in v0. Nothing in the v0 set uses one, and adding a weight later is additive.
+
+### Typefaces
+
+Two families, and Ultima never loads a face.
+
+```
+--ult-font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+--ult-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+```
+
+Each value is a plain stack with a preferred face first and a full system fallback, so it renders correctly whether or not the face is present. No `@font-face` appears in the tokens CSS export, in `packages/tokens`, or in any component: the export must survive being pasted into a self-contained `file://` document, which is how mana's report renders. A project that wants IBM Plex loads it itself; the docs site self-hosts it rather than pulling from a font CDN.
+
+There is no display family. Mana's `--pixel` (Pixelify Sans) stays mana's brand, and Ultima's own brand face is a docs-site concern, not a token, under Fantasy in the brand layer only.
+
+### Radius
+
+Five values, in `px` so corners do not grow with the font size.
+
+| Token | Value | Used by |
+| --- | --- | --- |
+| `--ult-radius-xs` | 2px | swatches, bars, indicator dots |
+| `--ult-radius-sm` | 4px | inline code, small insets |
+| `--ult-radius-md` | 8px | Button, Input, Select trigger, menu items |
+| `--ult-radius-lg` | 12px | Card, Dialog, popups |
+| `--ult-radius-full` | 9999px | Badge and any pill |
+
+### Shadow
+
+Three steps. On a near-black ground a shadow does almost nothing, so elevation in dark comes from surface steps and a border; shadows earn their keep on the overlays (Dialog, Dropdown Menu, Select, Tooltip). Geometry is identical in both modes and only the alpha changes, which is why `shadow` is themeable rather than constant.
+
+| Token | Dark | Light |
+| --- | --- | --- |
+| `--ult-shadow-sm` | `0 1px 2px rgba(0,0,0,.30), 0 1px 3px rgba(0,0,0,.40)` | `0 1px 2px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.10)` |
+| `--ult-shadow-md` | `0 4px 8px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.45)` | `0 4px 8px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.12)` |
+| `--ult-shadow-lg` | `0 12px 24px rgba(0,0,0,.40), 0 24px 48px rgba(0,0,0,.50)` | `0 12px 24px rgba(0,0,0,.12), 0 24px 48px rgba(0,0,0,.18)` |
+
+An overlay sets a border and a shadow together, never a shadow alone.
+
+### Motion
+
+Durations are themeable, so reduced motion is handled once at the token instead of at every transition.
+
+| Token | Default | `@media (prefers-reduced-motion: reduce)` |
+| --- | --- | --- |
+| `--ult-motion-fast` | 120ms | 1ms |
+| `--ult-motion-base` | 200ms | 1ms |
+| `--ult-motion-slow` | 300ms | 1ms |
+
+Easings are compile-time constants: `standard` `cubic-bezier(.2, 0, 0, 1)`, `enter` `cubic-bezier(0, 0, .2, 1)`, `exit` `cubic-bezier(.4, 0, 1, 1)`. A component reads a duration token for `transition-duration` and never writes a millisecond value.
+
+### Border widths and z-index
+
+Compile-time constants, not in the CSS export.
+
+| Constant | Value |
+| --- | --- |
+| `border.hairline` | 1px |
+| `border.focus` | 2px |
+| `border.focusOffset` | 2px |
+| `z.popup` | 50 |
+| `z.toast` | 60 |
+
+One border width across the system. A line that reads too heavy is fixed by dropping a palette step (6 rather than 7), not by thinning the border: `0.5px` is one device pixel on a 2x display and either a washed-out anti-aliased line or nothing at all on a 1x one, and making it resolution-conditional would force border widths into the CSS export for two values no consumer reads.
+
+Base UI portals its popups to the end of `<body>`, but a consumer with its own stacking contexts still needs Ultima's overlays to declare something, which is what the two `z` constants are for. No other layer is tokenised.
 
 ### Color mode
 

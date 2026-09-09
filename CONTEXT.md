@@ -72,7 +72,7 @@ The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, 
 
 ## Token group
 
-One `defineVars` export in `packages/tokens`, named for what it holds: color, space, text, font, radius, shadow. A token's full name is `--ult-<group>-<name>`.
+One export in `packages/tokens`, named for what it holds. The themeable groups are `defineVars` and reach the CSS export: color, space, text, font, radius, shadow, and motion durations. The compile-time groups are `defineConsts` and never leave the build: motion easings, border widths, z-index. A themeable token's full name is `--ult-<group>-<name>`.
 
 ## Theme
 
