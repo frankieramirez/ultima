@@ -64,7 +64,7 @@ A StyleX override of a token group, applied to a root or any subtree. Ultima shi
 
 ## Color role
 
-The conventional name a semantic color token is grouped under: surface, text, border, accent (arcane), highlight (mana), success (verdant), warning (ember), danger (ruin). Each hue role carries a base fill, hover and active fills, a subtle background, a text variant, and a contrast on-color.
+The conventional name a semantic color token is grouped under: surface, text, border, accent (arcane), highlight (mana), success (verdant), warning (ember), danger (ruin). Each hue role carries a base fill, hover and active fills, a subtle background, a hairline border, a text variant, and a contrast on-color.
 
 ## Contrast token
 

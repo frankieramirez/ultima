@@ -70,6 +70,8 @@ Shape, in order:
 [data-theme="light"] { color-scheme: light; --ult-color-surface: ...; }
 ```
 
+The `[data-theme]` blocks are not redundant with the media query: they are how a consumer that is not ready for light mode pins the document to dark with one attribute on `<html>`, and how it later opts back into following the operating system by removing it. Mana's report adopts the export that way.
+
 Constraints: plain CSS text, no `@import`, no `url()`, no remote fonts, no `</style>` or `<script` substrings, so it can be pasted into a self-contained HTML document. Written to `packages/tokens/dist/tokens.css` and served from the docs site as a registry file. Palette constants and compile-time groups do not appear. Legacy aliases for a specific consumer (mana's report) live with that consumer, not in the export.
 ## Palette
 
@@ -202,10 +204,13 @@ For each hue role `accent` (arcane), `highlight` (mana), `success` (verdant), `w
 | `--ult-color-<role>-hover` | step 10 | solid fill on hover |
 | `--ult-color-<role>-active` | step 11 | solid fill when pressed |
 | `--ult-color-<role>-subtle` | step 3 | tinted background for badges, callouts, chips |
+| `--ult-color-<role>-border` | step 7 | hairline in the hue, for a chip, callout, or panel edge |
 | `--ult-color-<role>-text` | step 12 | the hue as text on neutral or subtle surfaces |
 | `--ult-color-<role>-contrast` | mithril1, except `warning-contrast` is mithril12 in light | text on the solid fills |
 
 `highlight` is the cyan role: links, token names, the top strength in the report. `border-focus` is arcane9 so a focus ring matches the accent in both modes.
+
+`<role>-border` was added on [Mana report adoption](https://linear.app/frankie-ramirez/issue/ULT-13), where the first real consumer needed a hairline in the accent hue and the set had no token for one. It is a decorative hairline and is not gated, the same as `--ult-color-border`; a control outline that must be seen uses `border-strong`.
 
 ### Contrast gate
 
@@ -242,30 +247,35 @@ Lowest measured ratios today: `text-subtle` on `surface-hover` 4.78 dark and 4.9
 | `--ult-color-accent-hover` | `#96a7ff` |
 | `--ult-color-accent-active` | `#aab9ff` |
 | `--ult-color-accent-subtle` | `#161a3d` |
+| `--ult-color-accent-border` | `#3a4295` |
 | `--ult-color-accent-text` | `#c3ceff` |
 | `--ult-color-accent-contrast` | `#0b0d17` |
 | `--ult-color-highlight` | `#44d4e1` |
 | `--ult-color-highlight-hover` | `#59e4f2` |
 | `--ult-color-highlight-active` | `#79f0fc` |
 | `--ult-color-highlight-subtle` | `#002327` |
+| `--ult-color-highlight-border` | `#00585f` |
 | `--ult-color-highlight-text` | `#8ff5ff` |
 | `--ult-color-highlight-contrast` | `#0b0d17` |
 | `--ult-color-success` | `#56cb98` |
 | `--ult-color-success-hover` | `#67dba7` |
 | `--ult-color-success-active` | `#81e6b6` |
 | `--ult-color-success-subtle` | `#002516` |
+| `--ult-color-success-border` | `#005c3d` |
 | `--ult-color-success-text` | `#9becc4` |
 | `--ult-color-success-contrast` | `#0b0d17` |
 | `--ult-color-warning` | `#eab352` |
 | `--ult-color-warning-hover` | `#f8c060` |
 | `--ult-color-warning-active` | `#ffcf80` |
 | `--ult-color-warning-subtle` | `#2a1b00` |
+| `--ult-color-warning-border` | `#664600` |
 | `--ult-color-warning-text` | `#ffd898` |
 | `--ult-color-warning-contrast` | `#0b0d17` |
 | `--ult-color-danger` | `#df6769` |
 | `--ult-color-danger-hover` | `#f07778` |
 | `--ult-color-danger-active` | `#fb8c8c` |
 | `--ult-color-danger-subtle` | `#351011` |
+| `--ult-color-danger-border` | `#822b2f` |
 | `--ult-color-danger-text` | `#ffaaa8` |
 | `--ult-color-danger-contrast` | `#0b0d17` |
 | `--ult-color-surface-overlay` | `#11132499` |
@@ -289,30 +299,35 @@ Lowest measured ratios today: `text-subtle` on `surface-hover` 4.78 dark and 4.9
 | `--ult-color-accent-hover` | `#494fcc` |
 | `--ult-color-accent-active` | `#4042bf` |
 | `--ult-color-accent-subtle` | `#eef1ff` |
+| `--ult-color-accent-border` | `#b3c0ff` |
 | `--ult-color-accent-text` | `#343997` |
 | `--ult-color-accent-contrast` | `#fdfdff` |
 | `--ult-color-highlight` | `#00818b` |
 | `--ult-color-highlight-hover` | `#00717a` |
 | `--ult-color-highlight-active` | `#00646c` |
 | `--ult-color-highlight-subtle` | `#dcf8fb` |
+| `--ult-color-highlight-border` | `#85d3db` |
 | `--ult-color-highlight-text` | `#00585f` |
 | `--ult-color-highlight-contrast` | `#fdfdff` |
 | `--ult-color-success` | `#008359` |
 | `--ult-color-success-hover` | `#00734d` |
 | `--ult-color-success-active` | `#006644` |
 | `--ult-color-success-subtle` | `#defaeb` |
+| `--ult-color-success-border` | `#8dd7b2` |
 | `--ult-color-success-text` | `#005c3d` |
 | `--ult-color-success-contrast` | `#fdfdff` |
 | `--ult-color-warning` | `#e7ac3e` |
 | `--ult-color-warning-hover` | `#d39923` |
 | `--ult-color-warning-active` | `#bf8600` |
 | `--ult-color-warning-subtle` | `#fff0d8` |
+| `--ult-color-warning-border` | `#e4be7f` |
 | `--ult-color-warning-text` | `#714e00` |
 | `--ult-color-warning-contrast` | `#181a24` |
 | `--ult-color-danger` | `#cb454c` |
 | `--ult-color-danger-hover` | `#ba343e` |
 | `--ult-color-danger-active` | `#a82131` |
 | `--ult-color-danger-subtle` | `#ffedec` |
+| `--ult-color-danger-border` | `#ffaaa8` |
 | `--ult-color-danger-text` | `#88222b` |
 | `--ult-color-danger-contrast` | `#fdfdff` |
 | `--ult-color-surface-overlay` | `#f7f9ffcc` |
