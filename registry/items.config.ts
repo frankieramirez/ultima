@@ -37,6 +37,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'Monospaced code, inline in a sentence or as a block.',
     docs: "import { Code } from '@/components/ui/code';\n\n<Code>npx shadcn add @ultima/button</Code>\n<Code variant=\"block\">{source}</Code>",
   },
+  meter: {
+    title: 'Meter',
+    description: 'A bounded measurement as a toned bar, on Base UI.',
+    docs: 'import { Meter } from \'@/components/ui/meter\';\n\n<Meter.Root value={72}>\n  <Meter.Label>Disk used</Meter.Label>\n  <Meter.Track>\n    <Meter.Indicator tone="warning" />\n  </Meter.Track>\n  <Meter.Value tone="warning" />\n</Meter.Root>',
+  },
   stat: {
     title: 'Stat',
     description: 'A single number with its label, for dashboards and summaries.',
@@ -46,6 +51,11 @@ export const items: Record<string, RegistryItemDescription> = {
     title: 'Select',
     description: 'A form control for choosing a predefined value from a popup list.',
     docs: "import { Select } from '@/components/ui/select';\n\n<Select.Root>\n  <Select.Label>Fruit</Select.Label>\n  <Select.Trigger>\n    <Select.Value placeholder=\"Pick a fruit\" />\n    <Select.Icon />\n  </Select.Trigger>\n  <Select.Portal>\n    <Select.Positioner>\n      <Select.Popup>\n        <Select.List>\n          <Select.Item value=\"apple\">\n            <Select.ItemIndicator />\n            <Select.ItemText>Apple</Select.ItemText>\n          </Select.Item>\n        </Select.List>\n      </Select.Popup>\n    </Select.Positioner>\n  </Select.Portal>\n</Select.Root>",
+  },
+  tabs: {
+    title: 'Tabs',
+    description: 'Tabbed sections in an underline or a segmented variant, on Base UI.',
+    docs: 'import { Tabs } from \'@/components/ui/tabs\';\n\n<Tabs.Root variant="underline" defaultValue="tokens">\n  <Tabs.List>\n    <Tabs.Tab value="tokens">Tokens</Tabs.Tab>\n    <Tabs.Tab value="themes">Themes</Tabs.Tab>\n    <Tabs.Indicator />\n  </Tabs.List>\n  <Tabs.Panel value="tokens">Anything.</Tabs.Panel>\n</Tabs.Root>',
   },
   'setup-vite': {
     title: 'Ultima setup for Vite',

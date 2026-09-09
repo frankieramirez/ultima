@@ -32,3 +32,21 @@ export {
   type SelectScrollDownArrowProps,
   type SelectArrowProps,
 } from './select';
+export {
+  Tabs,
+  type TabsVariant,
+  type TabsRootProps,
+  type TabsListProps,
+  type TabsTabProps,
+  type TabsIndicatorProps,
+  type TabsPanelProps,
+} from './tabs';
+export {
+  Meter,
+  type MeterTone,
+  type MeterRootProps,
+  type MeterLabelProps,
+  type MeterTrackProps,
+  type MeterIndicatorProps,
+  type MeterValueProps,
+} from './meter';
