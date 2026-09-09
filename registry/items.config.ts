@@ -67,6 +67,16 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'Tabbed sections in an underline or a segmented variant, on Base UI.',
     docs: 'import { Tabs } from \'@/components/ui/tabs\';\n\n<Tabs.Root variant="underline" defaultValue="tokens">\n  <Tabs.List>\n    <Tabs.Tab value="tokens">Tokens</Tabs.Tab>\n    <Tabs.Tab value="themes">Themes</Tabs.Tab>\n    <Tabs.Indicator />\n  </Tabs.List>\n  <Tabs.Panel value="tokens">Anything.</Tabs.Panel>\n</Tabs.Root>',
   },
+  tooltip: {
+    title: 'Tooltip',
+    description: 'A short overlay on hover or focus, labelled through aria-label on its trigger.',
+    docs: "import { Tooltip } from '@/components/ui/tooltip';\n\n<Tooltip.Provider>\n  <Tooltip.Root>\n    <Tooltip.Trigger aria-label=\"Copied\" render={<Button />}>Copy</Tooltip.Trigger>\n    <Tooltip.Portal>\n      <Tooltip.Positioner>\n        <Tooltip.Popup>Copied</Tooltip.Popup>\n      </Tooltip.Positioner>\n    </Tooltip.Portal>\n  </Tooltip.Root>\n</Tooltip.Provider>",
+  },
+  dialog: {
+    title: 'Dialog',
+    description: 'A modal overlay with a title, a description, and a close slot rendered by the caller.',
+    docs: "import { Dialog } from '@/components/ui/dialog';\n\n<Dialog.Root>\n  <Dialog.Trigger render={<Button />}>Open</Dialog.Trigger>\n  <Dialog.Portal>\n    <Dialog.Backdrop />\n    <Dialog.Viewport>\n      <Dialog.Popup>\n        <Dialog.Title>Title</Dialog.Title>\n        <Dialog.Description>Description</Dialog.Description>\n        <Dialog.Close render={<Button variant=\"ghost\">Close</Button>} />\n      </Dialog.Popup>\n    </Dialog.Viewport>\n  </Dialog.Portal>\n</Dialog.Root>",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:
