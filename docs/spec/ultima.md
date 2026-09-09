@@ -405,3 +405,81 @@ Each component's item carries: `name` equal to the file name, `type: registry:ui
 ### The prototype
 
 `packages/ui/src/prototype/` and the `/prototype/ult-7` route stay in place, marked throwaway, until the v0 build writes the real Button and Card and deletes them.
+
+## Registry and install
+
+Decided on [Registry layout and consumer install flow](https://linear.app/frankie-ramirez/issue/ULT-12), reacting to the [end-to-end install prototype](https://linear.app/frankie-ramirez/issue/ULT-8). Distribution is registry-first (ADR 0003); the constraints the shadcn CLI imposes are in `docs/research/2026-09-08-shadcn-registry-non-tailwind.md`.
+
+### Catalogue
+
+Every item lives under the `@ultima` namespace.
+
+| Item | Type | Contents |
+| --- | --- | --- |
+| `tokens` | `registry:lib` | the token and theme sources from `packages/tokens` |
+| `lib` | `registry:lib` | `lib/component.ts`, the shared helper types |
+| `<component>` | `registry:ui` | one component, one file |
+| `setup-vite` | `registry:item` | `components.json`, `ultima.vite.ts` |
+| `setup-next` | `registry:item` | `components.json`, `babel.config.js`, `postcss.config.js`, `app/ultima.css` |
+| `tokens-css` | `registry:item` | the generated tokens stylesheet at `~/ultima-tokens.css` |
+
+Items are atomic. There are no bundles (`report-set`, `all`) and no `registry:base` item in v0: `registryDependencies` already pulls `tokens` and `lib` transitively, `shadcn add` takes several items in one call, and a bundle is a second place to forget a component. Both are additive later.
+
+### Placement in the consumer
+
+Flat, following shadcn's default rules. A `registry:ui` file lands in `aliases.ui` as `@/components/ui/<name>.tsx`; a `registry:lib` file lands in `aliases.lib` as `@/lib/<name>.ts`. Ultima does not namespace its installed files into an `ultima/` subfolder: that costs an explicit `target` on every file and makes the installed tree read as vendored, which fights the premise that the consumer owns the code. Ultima replaces shadcn's components rather than sitting beside them; a consumer who wants both resolves the `button.tsx` collision with `-p`.
+
+### Host and namespace
+
+Registry root `https://ultima.frankieramirez.com`. The catalogue is at `/r/registry.json`, each item at `/r/{name}.json`, and the tokens CSS export at `/tokens.css`. The docs site serves all of it.
+
+The namespace is `@ultima`, written into the `registries` map of the `components.json` each setup item installs, so a consumer never runs `shadcn registry add` by hand.
+
+### Entry point
+
+`npx shadcn init` is not supported and never will be while its preflight requires Tailwind on disk. The documented entry is:
+
+```bash
+npx shadcn add https://ultima.frankieramirez.com/r/setup-vite.json   # or setup-next.json
+npx shadcn add @ultima/button
+```
+
+The setup items are universal `registry:item`s, so the first command installs into a project with no `components.json` and no framework detection, and the second resolves through the namespace the first one wrote.
+
+### Setup items
+
+There is one setup item per target, and a setup item never overwrites a file the consumer's scaffold owns.
+
+**Vite.** Installs `components.json` and `ultima.vite.ts` at the project root. `ultima.vite.ts` exports `ultimaStylex()`, the StyleX unplugin preconfigured with `useCSSLayers: true`, `runtimeInjection: false`, the `unstable_moduleResolution` root, and the `@/` alias. The consumer adds two lines to their own `vite.config.ts`: the import, and `ultimaStylex()` first in `plugins`. Shipping our own `vite.config.ts` would destroy theirs, which the prototype did and a real project cannot accept. `dependencies`: `@stylexjs/stylex`. `devDependencies`: `@stylexjs/unplugin`, `unplugin`.
+
+**Next.js App Router.** Installs `components.json`, `babel.config.js`, `postcss.config.js`, and `app/ultima.css` (the `@stylex;` marker). None of those exist in a fresh App Router app, so nothing is clobbered; Turbopack finds the Babel config on its own. `dependencies`: `@stylexjs/stylex`. `devDependencies`: `@stylexjs/babel-plugin`, `@stylexjs/postcss-plugin`.
+
+The `components.json` both items ship sets `style: "base-ultima"` (the `base-` prefix is what enables Base UI's `render` transform), an empty `tailwind.config`, `tailwind.cssVariables: true` (`false` switches on `transformCssVars`, which rewrites string literals in installed source), the flat aliases above, and `registries["@ultima"]`. `rsc` is `true` for Next and `false` for Vite.
+
+A third target is a third setup item, held to the same rule.
+
+### What the consumer still does by hand
+
+The `docs` field of each setup item carries this as a short imperative list, printed at install. The docs site's install page is the canonical long form with the reasoning. Nothing is installed into the consumer's repo as a README.
+
+- **Vite.** Add `"paths": { "@/*": ["./src/*"] }` to `tsconfig.json` and `tsconfig.app.json`. Without it the CLI writes files into a literal `./@/` directory and reports success. Then add `ultimaStylex()` to `vite.config.ts`, before the React plugin.
+- **Next.js.** Import `./ultima.css` from `app/layout.tsx`.
+- **Both.** Wrap global resets in an `@layer`. Every StyleX rule sits in a cascade layer, so an unlayered reset such as create-next-app's `* { padding: 0 }` beats component styles, including a Button's own padding.
+
+### The tokens CSS export
+
+Offered two ways. The stable URL `https://ultima.frankieramirez.com/tokens.css` is the documented path, and the one mana's audit report uses: it fetches or vendors the file and inlines it, which is why the export carries the self-contained-document constraints in the Tokens section. The `tokens-css` registry item writes the same generated file to `~/ultima-tokens.css` for a project that wants it committed alongside its own source.
+
+### Generation
+
+`registry/` is build output, not source. No file and no dependency list is maintained in two places: a component's source file is the truth for its code and its dependencies, and one manifest holds the prose.
+
+`pnpm registry:build`:
+
+1. **Stage.** Copy `packages/ui/src/*.tsx` to `registry/ultima/ui/` and `packages/tokens/src/*.ts` to `registry/ultima/lib/`, rewriting `@ultima/tokens/*` to `@/registry/ultima/lib/*` and `@ultima/ui/*` to `@/registry/ultima/ui/*`. Those are the specifiers shadcn's `transformImport` rewrites to the consumer's aliases on install; the workspace specifiers Ultima authors against are not.
+2. **Derive.** Each item's `dependencies` come from that file's own imports (`@base-ui/react`, `@stylexjs/stylex`), and its `registryDependencies` from its `@ultima/*` imports.
+3. **Describe.** `title`, `description`, and `docs` come from `registry/items.config.ts`, hand-written.
+4. **Copy through.** `registry/static/**` holds the setup items' files, which are authored, not generated, and are copied untouched.
+5. **Build.** `shadcn build registry.json -c registry -o ../apps/docs/public/r`. The `-c` is required: `shadcn build` resolves `files[].path` from the cwd, not from the directory of the `registry.json` its error message names.
+
+`registry/ultima/`, `registry/registry.json`, and `apps/docs/public/r/*.json` are all gitignored. The docs site's build script runs `registry:build` first, so a deploy publishes the registry and the site together from one command.

@@ -38,6 +38,14 @@ The hosted shadcn-compatible index that lets a consumer copy Ultima source into 
 
 One installable unit in the registry: a component, a style, or a theme, with its files and dependencies.
 
+## Setup item
+
+The universal registry item that prepares a project for Ultima: one per target (Vite, Next.js App Router). It installs `components.json`, the StyleX compiler config, and the namespace entry, and it never overwrites a file the consumer's scaffold already owns.
+
+## Registry build
+
+The step that turns the monorepo into the served registry: it stages component and token sources with their imports rewritten, derives each item's dependencies from those imports, takes the prose from one manifest, and runs `shadcn build`. Everything under `registry/` except the setup items' files is its output.
+
 ## Consumer
 
 Any project that installs Ultima. The docs site is the first consumer of the components. Mana's report is the first consumer of the tokens CSS export.
