@@ -14,6 +14,7 @@ export default defineConfig({
       '@base-ui/react/dialog',
       '@base-ui/react/menu',
       '@base-ui/react/meter',
+      '@base-ui/react/select',
       '@base-ui/react/switch',
       '@base-ui/react/tabs',
       '@base-ui/react/tooltip',
