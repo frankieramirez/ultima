@@ -498,3 +498,61 @@ Offered two ways. The stable URL `https://ultima.frankieramirez.com/tokens.css` 
 5. **Build.** `shadcn build registry.json -c registry -o ../apps/docs/public/r`. The `-c` is required: `shadcn build` resolves `files[].path` from the cwd, not from the directory of the `registry.json` its error message names.
 
 `registry/ultima/`, `registry/registry.json`, and `apps/docs/public/r/*.json` are all gitignored. The docs site's build script runs `registry:build` first, so a deploy publishes the registry and the site together from one command.
+
+## Docs site
+
+Decided on [Docs site scope](https://linear.app/frankie-ramirez/issue/ULT-14). The site at `apps/docs` is three things at once: the reference for Ultima, the host of the registry and the tokens export, and a portfolio piece. It stays the Vite 8 plus TanStack Router SPA that [the scaffold](https://linear.app/frankie-ramirez/issue/ULT-6) built, with code-based routes.
+
+### Page set
+
+| Route | Holds |
+| --- | --- |
+| `/` | The pitch, a live demo strip, the two install commands |
+| `/install` | The canonical long-form install per target, with the reasoning |
+| `/tokens` | Every semantic token by group, live swatches in both modes, the tokens CSS export, and the APCA readout per semantic pairing |
+| `/palette` | The six scales, twelve steps, dark and light values, the step convention, and the WCAG gate results |
+| `/components` | Index of the v0 set |
+| `/components/<name>` | One page per v0 component |
+| `/rationale` | Why StyleX, why Base UI, why registry-first, why dark-first. Links the four ADRs |
+
+`/install` is the long form the `docs` field of each setup item points at; the setup items print a short imperative list and nothing is installed into the consumer's repo as a README.
+
+`/palette` is the only page that reads the `defineConsts` layer, and the only place a scale name appears outside the token sources. The two contrast readouts are split by what they describe: the WCAG 2.2 AA gate is reported on `/palette` because it is a property of the steps, and the APCA numbers sit beside each semantic pairing on `/tokens` because they are advice about a role, not a build gate.
+
+There is no changelog page in v0; versioning policy for a copy-source registry is not yet decided. There is no agents page here: the agent-first surface is decided separately.
+
+### How the site gets its components
+
+The docs site imports `@ultima/ui` and `@ultima/tokens` from the workspace. It does not `shadcn add` its own registry.
+
+The registry is generated from the workspace source, so an installed copy can only ever be an older version of the same file. A docs site living on installed copies would document a version of Ultima that no longer exists, and every component change would need a reinstall before the page showing it caught up. The install path is proven instead by the fresh-app smoke test in `prototypes/`, the shape [the install prototype](https://linear.app/frankie-ramirez/issue/ULT-8) established.
+
+This makes the docs site a user of the components rather than a consumer in the glossary's sense. Mana's report remains the first true consumer.
+
+### Authoring
+
+Content pages are MDX, one file per page under `apps/docs/src/content/`, compiled by `@mdx-js/rollup`. A single `Prose` component carries every typography style; MDX files hold no styling of their own. Routes stay code-based: a page module's default export is a component like any other, so MDX costs one plugin and no routing change.
+
+Demos are real modules at `apps/docs/src/demos/<component>/<name>.tsx`, imported into the MDX and rendered live. The source shown under each demo is the same file read through Vite's `?raw` import, so the running example and the printed code cannot diverge. Each demo block has a copy button.
+
+Props tables are hand-written in the MDX and cover only what Ultima adds: `variants`, `sizes`, the `style` slot, and `render`. The inherited surface links out to Base UI's own documentation. A generator would either dump Base UI's entire prop surface or nothing useful, and it reads namespace-object compound parts badly. Generating them is a later upgrade, not a v0 requirement.
+
+### Hosting
+
+One Vercel project, root directory `apps/docs`, build command `pnpm registry:build && vite build`, serving `ultima.frankieramirez.com` as a CNAME on the existing zone.
+
+The site serves the registry catalogue at `/r/registry.json`, each item at `/r/{name}.json`, and the tokens export at `/tokens.css`. The export is generated into `apps/docs/public/tokens.css` as gitignored build output, the same way the registry JSON is. The SPA fallback rewrite excludes `/r/*` and `/tokens.css`, and both carry `Access-Control-Allow-Origin: *`: the shadcn CLI fetches server-side and mana vendors the export, but a browser-side tool reading either one should not be blocked.
+
+### Portfolio surface
+
+The fantasy voice lives in the brand layer only: the name, the six scale names, hero and page titles, and the 404. Technical prose is plain. The header carries a text wordmark and no icon; whether Ultima ships icons, and where the mana mark sits, is not decided here.
+
+The header also carries a theme control offering dark, light, and system. Dark-first with light as a full peer is a claim the site should demonstrate rather than assert, and the control is the demonstration.
+
+`/rationale` is the page that makes the system legible to a reader who is not installing it: the four ADRs in prose, with the alternatives that were actually on the table.
+
+### README
+
+The repository README is a front door, not documentation. It carries what Ultima is in a few lines, one screenshot, the two install commands, links into the docs site, the stack, a v0-in-development status, and the license. The API surface belongs to the site.
+
+The repository is MIT licensed. A registry-first system hands the consumer its source to own and edit, which is what MIT already describes.

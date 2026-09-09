@@ -48,7 +48,11 @@ The step that turns the monorepo into the served registry: it stages component a
 
 ## Consumer
 
-Any project that installs Ultima. The docs site is the first consumer of the components. Mana's report is the first consumer of the tokens CSS export.
+Any project that installs Ultima. Mana's report is the first consumer of the tokens CSS export. The docs site is not a consumer: it imports the components from the workspace, because the registry is generated from that same source and an installed copy could only be a staler version of it.
+
+## Docs site
+
+The site at `apps/docs`. Three things at once: Ultima's reference, the host that serves the registry and the tokens CSS export, and a portfolio piece. It uses the components by importing them from the workspace, so it is not a consumer.
 
 ## Report set
 
