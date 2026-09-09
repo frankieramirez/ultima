@@ -489,24 +489,26 @@ Fourteen components: the report set, which is the nine mana's audit report needs
 
 | Component | Item | Built on | Parts | Axes decided so far |
 | --- | --- | --- | --- | --- |
-| Button | `button` | Base UI `Button` | single | `variant`: `solid`, `outline`, `ghost`. `size`: `sm`, `md`, `lg` |
-| Badge | `badge` | `<span>` | single | none yet |
+| Button | `button` | Base UI `Button` | single | `variant`: `solid`, `outline`, `ghost`. `size`: `sm`, `md`, `lg`. `tone`: `accent`, `danger` |
+| Badge | `badge` | `<span>` | single | `variant`: `subtle`, `solid`. `tone`: `neutral`, `accent`, `highlight`, `success`, `warning`, `danger` |
 | Card | `card` | plain, `useRender` on Root | `Root`, `Header`, `Title`, `Description`, `Body`, `Footer` | none |
 | Table | `table` | native `<table>` | `Root`, `Head`, `Body`, `Row`, `HeadCell`, `Cell`, `Caption` | none |
-| Tabs | `tabs` | Base UI `Tabs` | `Root`, `List`, `Tab`, `Indicator`, `Panel` | none yet |
-| Meter | `meter` | Base UI `Meter` | `Root`, `Label`, `Track`, `Indicator`, `Value` | none yet |
+| Tabs | `tabs` | Base UI `Tabs` | `Root`, `List`, `Tab`, `Indicator`, `Panel` | `variant`: `underline`, `segmented` |
+| Meter | `meter` | Base UI `Meter` | `Root`, `Label`, `Track`, `Indicator`, `Value` | `tone` on `Indicator` and on `Value`: `neutral`, `highlight`, `success`, `warning`, `danger` |
 | Stat | `stat` | plain | `Root`, `Label`, `Value` | none |
 | Code | `code` | `<code>`, or `<pre><code>` | single | `variant`: `inline`, `block` |
 | Tooltip | `tooltip` | Base UI `Tooltip` | every Base UI part | none |
-| Dialog | `dialog` | Base UI `Dialog` | every Base UI part | none yet |
-| Dropdown Menu | `dropdown-menu` | Base UI `Menu` | every Base UI part | none yet |
+| Dialog | `dialog` | Base UI `Dialog` | every Base UI part | none |
+| Dropdown Menu | `dropdown-menu` | Base UI `Menu` | every Base UI part | none |
 | Select | `select` | Base UI `Select` | every Base UI part | `size` on `Trigger`: `sm`, `md`, `lg` |
 | Input | `input` | Base UI `Input` | single | `size`: `sm`, `md`, `lg` |
-| Switch | `switch` | Base UI `Switch` | `Root`, `Thumb` | none yet |
+| Switch | `switch` | Base UI `Switch` | `Root`, `Thumb` | none |
 
 The `size` values on Button, Input, and Select are the three control heights from the space scale (steps 9, 10, 11), so `md` is the same height on all three. Card's parts are the prototype's six slots, accepted on the prototype reaction. Table's, Stat's, and Code's shapes were fixed with the accessibility contract.
 
-"None yet" marks a component whose axes, and which of its parts carry Ultima styles rather than pass through, are decided on [Per-component contracts for the v0 set](https://linear.app/frankie-ramirez/issue/ULT-19). The conventions below do not depend on that answer; the component files do.
+Defaults, declared in each component's destructure: Button `solid` / `md` / `accent`; Badge `subtle` / `neutral`; Tabs `underline`; Meter `neutral` on both toned parts; Code `inline`; Input and Select `md`.
+
+The axes above, which parts carry Ultima styles, and the per-component notes were decided on [Per-component contracts for the v0 set](https://linear.app/frankie-ramirez/issue/ULT-19). No component in v0 has an axis beyond `variant`, `size`, and `tone`.
 
 Toast is the one adjacent Base UI primitive the report has no use for, and it is not in v0.
 
@@ -546,21 +548,63 @@ A Base UI part is written as `<BasePart {...props} {...stylex.props(styles.part,
 
 A single-part component exports one function: `Button`, `Input`, `Switch`. A multi-part component exports one namespace object of parts, `Card.Root`, `Dialog.Popup`, matching Base UI's part names wherever a primitive exists. Parts Ultima does not style (`Dialog.Portal`, `Tooltip.Provider`) sit on the same object, re-exported unchanged, so a consumer imports one name. Flat `DialogPopup`-style exports do not exist.
 
-### Variants and sizes
+### Styled parts
 
-One `stylex.create` table per axis, indexed by the prop. The axis props are `variant` and `size` across the whole system; the tables are `variants` and `sizes`; the prop unions are `keyof typeof` each table and exported as `<Component>Variant` and `<Component>Size`. Defaults are declared in the destructure. There is no `cva` and no compound-variant table in v0: a value that depends on both variant and size nests as a conditional inside the variant table, and the spec notes it on that component.
+A compound component exposes every Base UI part, but most parts have nothing to paint. Rather than fourteen arbitrary lists, one rule, so a part Ultima has never listed still has an answer:
+
+**A part carries Ultima styles if it paints — background, border, shadow, or color — or if it sets its own type or spacing. A part passes through unstyled if its whole job is to portal, position, or group.** Unstyled by that rule across the system: `Portal`, `Root`, `Group`, `RadioGroup`, `SubmenuRoot`, and `Viewport`, except where a component's row below says otherwise. `Positioner` is a near-exception: it gets `outline: 0` and nothing else, following Base UI's own demos.
+
+**Triggers that wrap the consumer's element pass through unstyled.** `Menu.Trigger`, `Tooltip.Trigger`, `Dialog.Trigger`, and `Dialog.Close` exist to be given the consumer's own button through `render`, and `stylex.props` does not merge foreign class strings, so an Ultima style on the wrapper and an Ultima style on the Button rendered into it collide instead of cascading. Each is documented as `render={<Button />}` and ships no styles at all, not even the reset or the focus ring. `Select.Trigger` is styled, because it *is* the control rather than a wrapper around one.
+
+This qualifies the focus-ring rows in the accessibility contract below: on Dropdown Menu, Tooltip, and Dialog the ring is rendered by whatever the consumer puts in the trigger or close slot, and each docs page says the slot must hold an Ultima Button or an element carrying its own ring.
+
+| Component | Styled | Passed through |
+| --- | --- | --- |
+| Dropdown Menu | `Popup`, `Item`, `LinkItem`, `CheckboxItem`, `RadioItem`, `SubmenuTrigger`, `CheckboxItemIndicator`, `RadioItemIndicator`, `Separator`, `GroupLabel`, `Arrow` | `Root`, `Trigger`, `Portal`, `Backdrop`, `Positioner` (`outline: 0`), `Group`, `RadioGroup`, `SubmenuRoot`, `Viewport` |
+| Select | `Label`, `Trigger`, `Value`, `Icon`, `Popup`, `Item`, `ItemText`, `ItemIndicator`, `ScrollUpArrow`, `ScrollDownArrow`, `Separator`, `GroupLabel` | `Root`, `Portal`, `Backdrop`, `Positioner` (`outline: 0`), `List`, `Group`, `Arrow` |
+| Dialog | `Viewport`, `Backdrop`, `Popup`, `Title`, `Description` | `Root`, `Trigger`, `Portal`, `Close` |
+| Tooltip | `Popup`, `Arrow` | `Provider`, `Root`, `Trigger`, `Portal`, `Positioner` (`outline: 0`), `Viewport` |
+| Tabs | `Root`, `List`, `Tab`, `Indicator`, `Panel` | none |
+| Meter | `Root`, `Label`, `Track`, `Indicator`, `Value` | none |
+| Switch | `Root`, `Thumb` | none |
+
+`Dialog.Viewport` and `Select`'s scroll arrows are the two parts the rule alone would get wrong, and the per-component notes say why each is styled.
+
+The five plain components (Card, Table, Stat, Code, Badge) have no pass-through parts: Ultima writes every element, so every part is styled.
+
+### Variants, sizes, and tones
+
+Three axis props across the whole system, and no others: `variant` (shape and emphasis), `size` (the three control heights), and `tone` (which color role the component wears). A component declares only the axes it needs, and only the values it supports. The tables are `variants`, `sizes`, and `tones`; the prop unions are `keyof typeof` each table, exported as `<Component>Variant`, `<Component>Size`, and `<Component>Tone`. Defaults are declared in the destructure. There is no `cva`.
+
+`tone` was added on [Per-component contracts for the v0 set](https://linear.app/frankie-ramirez/issue/ULT-19), for the three v0 components that let a caller choose a hue: Button, Badge, and Meter. Its values are named for the color roles, so `tone="danger"` reaches `--ult-color-danger` and `--ult-color-danger-contrast` together and the caller never names a token. A component that needs a neutral tone includes `neutral` in its own table; `neutral` is not a color role and has no `--ult-color-neutral`, so each component says which neutral tokens it uses.
+
+One `stylex.create` table per axis, indexed by the prop:
 
 ```tsx
-const variants = stylex.create({ solid: { ... }, outline: { ... }, ghost: { ... } });
 const sizes = stylex.create({ sm: { ... }, md: { ... }, lg: { ... } });
 
-export type ButtonVariant = keyof typeof variants;
 export type ButtonSize = keyof typeof sizes;
+```
 
-export function Button({ variant = 'solid', size = 'md', style, ...props }: ButtonProps) {
-  return <BaseButton {...props} {...stylex.props(styles.root, variants[variant], sizes[size], style)} />;
+**The one compound.** `variant` and `size` never set the same property, so they layer. `variant` and `tone` both set color, so they cannot: whichever comes last in `stylex.props` wins the property outright, and `outline` would lose its transparent background to a tone's fill, or the tone would lose its fill to `outline`. Where a component has both axes they merge into one nested lookup, one `stylex.create` per variant holding that variant's tones, read as `variants[variant][tone]`:
+
+```tsx
+const solid = stylex.create({ accent: { ... }, danger: { ... } });
+const outline = stylex.create({ accent: { ... }, danger: { ... } });
+const ghost = stylex.create({ accent: { ... }, danger: { ... } });
+const variants = { solid, outline, ghost };
+
+export type ButtonVariant = keyof typeof variants;
+export type ButtonTone = keyof typeof solid;
+
+export function Button({ variant = 'solid', size = 'md', tone = 'accent', style, ...props }: ButtonProps) {
+  return <BaseButton {...props} {...stylex.props(styles.root, variants[variant][tone], sizes[size], style)} />;
 }
 ```
+
+Every cell is written out. The tables stay small because each component declares only the tones it supports: six cells on Button, twelve on Badge. A value that depends on both `variant` and `size` still nests as a conditional inside the variant table, and the spec notes it on that component.
+
+The local-custom-property alternative, where `tone` sets `--ult-tone-fill` and one variant table reads it, is closed: StyleX emits `create` rules that set custom properties outside the cascade layer when `useCSSLayers` is on ([#1611](https://github.com/facebook/stylex/issues/1611)), and Ultima keeps `useCSSLayers`. Revisit if that is fixed; the nested tables are a private detail of each file, so the change would not reach consumers' props.
 
 ### State styling
 
@@ -611,6 +655,7 @@ Decided on [Accessibility contract per v0 component](https://linear.app/frankie-
 Rules the table compresses:
 
 - **Types enforce one thing.** `Tooltip.Trigger` requires `'aria-label': string`, because Base UI wires nothing between a tooltip and its trigger for assistive technology. Every other name source varies with context (a visible label, a labelling element, a child part), and a type cannot see children or siblings, so those are documented rules. Requiring `aria-label` on Input would steer authors to the worst of their three options.
+- **Wrapper triggers render the ring, not Ultima.** `Dropdown Menu`, `Tooltip`, and `Dialog` name a Trigger or Close in the focus-ring column, and those parts pass through unstyled under Styled parts above, so the ring comes from the element the consumer renders into the slot. The docs page for each says the slot must hold an Ultima Button or an element carrying its own ring. `Select.Trigger` is styled by Ultima and renders its own ring.
 - **Icon-only Button** is a documented rule, not a component: no `IconButton` and no `iconOnly` prop in v0.
 - **Input has no Field in v0.** Its validation state is the consumer's `aria-invalid`, styled through `':is([aria-invalid="true"])'` with `--ult-color-danger-border`. Base UI's `Field` is a later, additive part.
 - **Dialog always renders a Title.** Base UI sets `aria-labelledby` only when one exists. A design with no visible heading hides the Title through the `style` slot rather than omitting it. `modal` stays Base UI's default (`true`).
@@ -622,6 +667,32 @@ Rules the table compresses:
 
 Each component's docs page carries an Accessibility section restating its row. Automated checking belongs to the testing strategy, which is not decided here.
 
+### Overlays
+
+One recipe for every popup in v0 (Dialog, Dropdown Menu, Select, Tooltip), so four components do not invent four transitions.
+
+- **Surface.** `--ult-color-surface-raised`, a hairline `--ult-color-border`, `--ult-radius-lg`, and `--ult-shadow-md`. An overlay always sets a border and a shadow together, never a shadow alone. `z.popup`.
+- **Transition.** `transform-origin: var(--transform-origin)`, which Base UI's positioner seeds before Floating UI measures. Transition `opacity` and `transform` over `--ult-motion-fast` with the `enter` easing; `[data-starting-style]` and `[data-ending-style]` both sit at `opacity: 0` and `transform: scale(0.98)`, with the `exit` easing on the closing side. Tooltip is the one narrower case: `--ult-radius-sm`, `--ult-shadow-sm`, and text step 2.
+- **Backdrop.** Only Dialog has a visible one: `--ult-color-surface-overlay`, fading opacity alone over `--ult-motion-base`. Menu's and Select's backdrops are invisible click-catchers and stay unstyled.
+- **Reduced motion** needs no rule. Every duration is a token that already collapses to `1ms`, and Base UI's transition-aware unmount still fires at that duration.
+- **`keepMounted` is never set by Ultima.** Base UI's default (unmount when closed) stands, because how much closed DOM a page carries is the consumer's decision and the transition does not need the popup mounted. A consumer who wants it passes it through.
+
+### Per-component notes
+
+What a builder would otherwise guess, beyond the axes, the styled parts, and the accessibility contract.
+
+- **Button.** The `accent` column of `variants[variant][tone]` is the behavior already decided: `solid` is the role fill with `-hover` and `-active` and `<role>-contrast` text; `outline` is a transparent fill with `--ult-color-border` and `--ult-color-text`; `ghost` is transparent with `--ult-color-text-muted`. The `danger` column recolors all three to the ruin role: `outline` takes `--ult-color-danger-border` and `--ult-color-danger-text`, `ghost` takes `--ult-color-danger-text` with a `--ult-color-danger-subtle` hover. Icon-only stays a documented rule, not a prop.
+- **Badge.** One size: text step 2, `--ult-font-tracking-wide`, weight medium, `--ult-radius-full`, padding from space steps 1 and 3. `subtle` is `<role>-subtle` fill, `<role>-text`, `<role>-border` hairline — mana's `.chip` exactly. `solid` is `<role>` fill, `<role>-contrast` text, transparent border. The `neutral` tone has no color role to resolve to, so it names neutral tokens directly: `subtle` takes `--ult-color-surface-sunken`, `--ult-color-text-muted`, `--ult-color-border`; `solid` takes `--ult-color-surface-hover` and `--ult-color-text`, a pairing the contrast gate already covers. Badge is static and carries no interaction states.
+- **Tabs.** `underline` gives `List` a bottom hairline and `Indicator` a 2px `--ult-color-accent` bar; the active `Tab` is `--ult-color-text`, the rest `--ult-color-text-muted`. `segmented` gives `List` a `--ult-color-surface-sunken` ground, `--ult-radius-md`, space step 1 of padding and gap, and `Indicator` becomes a `--ult-color-surface-raised` pill at `--ult-radius-sm` sitting behind the active tab. Both read `data-orientation`; both transition `Indicator` over `--ult-motion-fast`. `Panel` sets spacing only.
+- **Meter.** `Track` is `--ult-color-surface-sunken` at `--ult-radius-full`, height space step 2. `Indicator` is the toned fill: `<role>` for the four hue tones, `--ult-color-border-strong` for `neutral`. `Value` is the toned number: `<role>-text`, or `--ult-color-text` for `neutral`. The two parts take `tone` separately, which is the whole of the "no context in v0" position — a caller wanting both colored passes `tone` twice. `Indicator`'s width is the one place a dynamic style is allowed. `Label` is text step 2 uppercase with `--ult-font-tracking-wide` and `--ult-color-text-subtle`.
+- **Dialog.** `Viewport` is styled and does the centering: `position: fixed`, `inset: 0`, `display: grid`, `place-items: center`, padding from space step 6, `z.popup`. `Popup` therefore sets no position and no transform of its own, which is why the shared `scale(0.98)` transition works on it at all — centering the popup with `translate(-50%, -50%)` would have fought it. `Popup` takes the overlay surface plus a `max-width` and `max-height: 100%` with `overflow: auto`. `Title` is text step 6, semibold, `--ult-font-leading-tight`; `Description` is text step 4 in `--ult-color-text-muted`. `modal` stays Base UI's default, and a Title is always rendered.
+- **Dropdown Menu.** One shared item style is applied to `Item`, `LinkItem`, `CheckboxItem`, `RadioItem`, and `SubmenuTrigger`: `--ult-radius-md`, padding from space steps 2 and 4, text step 4, `data-highlighted` to `--ult-color-surface-hover`, `data-disabled` to reduced opacity, and no focus ring. `SubmenuTrigger` also highlights on `data-popup-open`. Submenus are in v0: the parts are on the namespace by the compound rule either way, so leaving `SubmenuTrigger` unstyled would ship a public part that renders broken. The checkbox and radio indicators are a fixed-width leading slot so item text aligns whether or not one is present. `Separator` is a `--ult-color-border` hairline with space step 2 of margin; `GroupLabel` is text step 2 uppercase, `--ult-font-tracking-wide`, `--ult-color-text-subtle`.
+- **Select.** `Trigger` is the control: the `size` axis heights, `--ult-color-surface-sunken`, `--ult-color-border-strong`, `--ult-radius-md`, the focus ring, and `':is([aria-invalid="true"])'` to `--ult-color-danger-border`, matching Input. `Value` reads `data-placeholder` for `--ult-color-text-subtle`. `Icon` is `--ult-color-text-subtle` and does not rotate — one less transition to keep in step with the popup's. Items share Menu's item style plus a `data-selected` weight change, and `ItemIndicator` is the same fixed leading slot. The scroll arrows are styled against the rule because they paint: a `--ult-color-surface-raised` band that hides the list edge, shown on `data-visible`. `alignItemWithTrigger` keeps Base UI's default; the popup style assumes no side, so `data-side="none"` needs no special case. The Select docs page carries the CSP note, since the aligned popup injects an inline `<style>` to hide scrollbars.
+- **Tooltip.** The narrow overlay: `--ult-radius-sm`, `--ult-shadow-sm`, text step 2, padding from space steps 2 and 3, and a `max-width` so long text wraps. `Arrow` is `--ult-color-surface-raised` with the same hairline. `Tooltip.Trigger` still requires `aria-label` in its types; that is unchanged by its passing through unstyled.
+- **Switch.** One size, from the space scale: track space step 10 wide by step 8 tall at `--ult-radius-full`, thumb space step 7 at `--ult-radius-full` with space step 1 of inset. Track is `--ult-color-border-strong` unchecked and `--ult-color-accent` on `data-checked`; the thumb is `--ult-color-surface` plus the hairline border the forced-colors rule requires. The thumb transitions `translate` over `--ult-motion-fast`. The focus ring is on Root.
+- **Input.** No notes beyond the `size` axis and the accessibility contract: `--ult-color-surface-sunken`, `--ult-color-border-strong`, `--ult-radius-md`, the focus ring, `aria-invalid` to `--ult-color-danger-border`, and `--ult-color-text-subtle` for `::placeholder`.
+- **Card, Table, Stat, Code.** Unchanged. They have no axes beyond Code's `variant`, no pass-through parts, and no state.
+
 ### Naming
 
 | Thing | Rule | Example |
@@ -629,8 +700,9 @@ Each component's docs page carries an Accessibility section restating its row. A
 | File and registry item | kebab-case | `dropdown-menu.tsx`, item `dropdown-menu` |
 | Component and parts | PascalCase | `DropdownMenu`, `DropdownMenu.Item` |
 | Props type | `<Component>Props`, `<Component><Part>Props` | `ButtonProps`, `CardRootProps` |
-| Axis unions | `<Component>Variant`, `<Component>Size` | `ButtonVariant` |
-| Style tables | `styles` keyed by part, `variants`, `sizes` | `styles.root`, `styles.header` |
+| Axis unions | `<Component>Variant`, `<Component>Size`, `<Component>Tone` | `ButtonVariant` |
+| Style tables | `styles` keyed by part, `variants`, `sizes`, `tones` | `styles.root`, `styles.header` |
+| Nested tone tables | one `stylex.create` per variant, named for the variant, collected in `variants` | `solid`, `outline`, `ghost` |
 
 ### The registry item
 

@@ -96,7 +96,19 @@ A semantic token for hover or active, named with a `-hover` or `-active` suffix.
 
 ## Part
 
-One named piece of a compound component, such as `Card.Root` or `Dialog.Popup`. Part names match Base UI's where a primitive exists. A single-part component has no parts, just the component.
+One named piece of a compound component, such as `Card.Root` or `Dialog.Popup`. Part names match Base UI's where a primitive exists. A single-part component has no parts, just the component. A part is either styled by Ultima or passed through: a part that paints, or sets its own type or spacing, is styled; a part that only portals, positions, or groups passes through unchanged.
+
+## Axis
+
+A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role.
+
+## Tone
+
+The axis that lets a caller pick a component's color role by name, so `tone="danger"` reaches that role's fill and its contrast on-color together and the caller never names a token. Button, Badge, and Meter carry one in v0. `neutral` is a tone value but not a color role, so a component using it names the neutral tokens it wants.
+
+## Overlay
+
+A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant.
 
 ## Style slot
 
