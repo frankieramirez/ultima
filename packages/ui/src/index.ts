@@ -84,6 +84,8 @@ export {
   type MeterIndicatorProps,
   type MeterValueProps,
 } from './meter';
+export { Input, type InputProps, type InputSize } from './input';
+export { Switch, type SwitchRootProps, type SwitchThumbProps } from './switch';
 export {
   Dialog,
   type DialogViewportProps,

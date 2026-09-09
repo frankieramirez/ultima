@@ -47,6 +47,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'Monospaced code, inline in a sentence or as a block.',
     docs: "import { Code } from '@/components/ui/code';\n\n<Code>npx shadcn add @ultima/button</Code>\n<Code variant=\"block\">{source}</Code>",
   },
+  input: {
+    title: 'Input',
+    description: 'A text input in three sizes, on Base UI.',
+    docs: 'import { Input } from \'@/components/ui/input\';\n\n<label htmlFor="email">Email</label>\n<Input id="email" size="md" />',
+  },
   meter: {
     title: 'Meter',
     description: 'A bounded measurement as a toned bar, on Base UI.',
@@ -61,6 +66,11 @@ export const items: Record<string, RegistryItemDescription> = {
     title: 'Select',
     description: 'A form control for choosing a predefined value from a popup list.',
     docs: "import { Select } from '@/components/ui/select';\n\n<Select.Root>\n  <Select.Label>Fruit</Select.Label>\n  <Select.Trigger>\n    <Select.Value placeholder=\"Pick a fruit\" />\n    <Select.Icon />\n  </Select.Trigger>\n  <Select.Portal>\n    <Select.Positioner>\n      <Select.Popup>\n        <Select.List>\n          <Select.Item value=\"apple\">\n            <Select.ItemIndicator />\n            <Select.ItemText>Apple</Select.ItemText>\n          </Select.Item>\n        </Select.List>\n      </Select.Popup>\n    </Select.Positioner>\n  </Select.Portal>\n</Select.Root>",
+  },
+  switch: {
+    title: 'Switch',
+    description: 'An on-off toggle with a sliding thumb, on Base UI.',
+    docs: "import { Switch } from '@/components/ui/switch';\n\n<label>\n  Notifications\n  <Switch.Root>\n    <Switch.Thumb />\n  </Switch.Root>\n</label>",
   },
   table: {
     title: 'Table',
