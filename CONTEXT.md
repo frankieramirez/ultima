@@ -105,3 +105,7 @@ The `style` prop every part accepts: StyleX styles from the caller, merged last.
 ## Shared lib
 
 The one registry item, `lib/component.ts`, holding the helper types every component depends on. Installed once, like shadcn's `lib/utils`.
+
+## Accessibility contract
+
+What a component promises for keyboard and screen-reader use beyond what its Base UI primitive gives: the source of its accessible name, which parts render the focus ring, and the element a plain component renders. Base UI owns roles, ARIA state, and keyboard handling; Ultima owns names, focus visibility, and element choice.

@@ -547,6 +547,51 @@ Token groups are imported from the tokens file and read by their literal key: `c
 
 Nothing. StyleX rules sit in a cascade layer, so any unlayered consumer reset beats them. Each component therefore sets its own `box-sizing`, `margin`, `appearance`, `font-family`, and `line-height` on its root. The install flow tells consumers that their global resets must sit inside an `@layer`.
 
+### Focus ring
+
+One rule across the system, written inline in each component beside its base reset:
+
+```ts
+':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
+```
+
+`outline` rather than `box-shadow`, because an outline survives Windows forced-colors mode. The offset is the same everywhere, dense forms included. Which parts render it is fixed per component in the contract below: every part that takes keyboard focus directly gets the ring; Menu and Select items are highlighted through `data-highlighted` with `--ult-color-surface-hover` and render no ring; Dialog, Menu, and Select popups set `outline: none`, since Base UI focuses them only as a fallback container and the popup itself is the visible signal.
+
+### Accessibility contract
+
+Decided on [Accessibility contract per v0 component](https://linear.app/frankie-ramirez/issue/ULT-18). Base UI supplies the roles, ARIA state, keyboard handling, and focus management for every interactive primitive, following the WAI-ARIA Authoring Practices. Ultima adds nothing and removes nothing there. What Ultima owns is the accessible name, the visible focus ring, and the element choice for the plain components. The table records both halves so a builder does not re-implement what the primitive gives.
+
+| Component | Element or primitive | Name source | Focus ring on | Keyboard | Enforced by |
+| --- | --- | --- | --- | --- | --- |
+| Button | Base UI `Button` (`<button>`) | Text content; a Button with no text passes `aria-label` | Root | Base UI | Docs |
+| Input | Base UI `Input` (`<input>`) | Consumer `<label htmlFor>`, `aria-label`, or `aria-labelledby` | Root | Native | Docs |
+| Switch | Base UI `Switch` | Wrapping `<label>`, `aria-label`, or `aria-labelledby` | Root | Base UI (Space, Enter) | Docs |
+| Select | Base UI `Select` | `Select.Label`, or `aria-label` on Trigger | Trigger | Base UI (arrows, typeahead, Escape) | Docs |
+| Dropdown Menu | Base UI `Menu` | Trigger text, or `aria-label` on Trigger | Trigger | Base UI (arrows loop, Enter, Space, typeahead, Escape, Tab closes) | Docs |
+| Dialog | Base UI `Dialog` | `Dialog.Title`, always rendered; `Dialog.Description` optional | Close, and any focusable content | Base UI (Tab loops, Escape closes, focus returns to trigger) | Docs |
+| Tabs | Base UI `Tabs` | Tab text | Tab | Base UI (arrows, `activateOnFocus` and `loopFocus` defaults) | Base UI |
+| Tooltip | Base UI `Tooltip` | `aria-label` on `Tooltip.Trigger`, matching the tooltip text | Trigger's rendered element | Base UI (focus opens, Escape closes) | Types: `'aria-label'` required on `Tooltip.Trigger` |
+| Meter | Base UI `Meter` | `Meter.Label` | None (not focusable) | None | Docs |
+| Table | `<table>` parts | `Table.Caption` optional | None | Static | Native |
+| Stat | `<div>` root, `<span>` label and value | `Stat.Label`, before `Stat.Value` in DOM order | None | Static | Native |
+| Code | `<code>`, or `<pre><code>` for the block variant | Content | None | Static | Native |
+| Badge | `<span>` | Content; color never carries meaning alone | None | Static | Docs |
+| Card | `<div>` parts | `Card.Title` renders `<h3>` by default, changeable through `render` | None | Static | Native |
+
+Rules the table compresses:
+
+- **Types enforce one thing.** `Tooltip.Trigger` requires `'aria-label': string`, because Base UI wires nothing between a tooltip and its trigger for assistive technology. Every other name source varies with context (a visible label, a labelling element, a child part), and a type cannot see children or siblings, so those are documented rules. Requiring `aria-label` on Input would steer authors to the worst of their three options.
+- **Icon-only Button** is a documented rule, not a component: no `IconButton` and no `iconOnly` prop in v0.
+- **Input has no Field in v0.** Its validation state is the consumer's `aria-invalid`, styled through `':is([aria-invalid="true"])'` with `--ult-color-danger-border`. Base UI's `Field` is a later, additive part.
+- **Dialog always renders a Title.** Base UI sets `aria-labelledby` only when one exists. A design with no visible heading hides the Title through the `style` slot rather than omitting it. `modal` stays Base UI's default (`true`).
+- **Table** parts are `Table.Root` `<table>`, `Table.Head` `<thead>`, `Table.Body` `<tbody>`, `Table.Row` `<tr>`, `Table.HeadCell` `<th scope="col">` (scope overridable), `Table.Cell` `<td>`, `Table.Caption` `<caption>`. There is no scroll wrapper: a consumer who needs horizontal scroll wraps the table in a `tabIndex={0}` region, and the docs page says so.
+- **Code** blocks wrap long lines rather than scroll, so the block needs no `tabIndex`.
+- **Plain components are static.** No `tabIndex`, no key handlers.
+- **Reduced motion** is handled entirely by the motion tokens dropping to 1ms. Components never write a `prefers-reduced-motion` query, and every transition reads a duration token, so Base UI's transition-aware unmount still fires.
+- **Forced colors.** No `@media (forced-colors)` rules in v0. Native elements, `outline` rings, and state on real elements degrade on their own. The exception is `Switch.Thumb`, a `<span>` that would lose its fill, so it carries a hairline `border` so it stays visible.
+
+Each component's docs page carries an Accessibility section restating its row. Automated checking belongs to the testing strategy, which is not decided here.
+
 ### Naming
 
 | Thing | Rule | Example |
