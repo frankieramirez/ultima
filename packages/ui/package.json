@@ -5,8 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./lib/component": "./src/lib/component.ts",
-    "./prototype/*": "./src/prototype/*.tsx"
+    "./lib/component": "./src/lib/component.ts"
   },
   "scripts": {
     "build": "echo \"@ultima/ui: source-only, compiled by the consumer\"",
