@@ -10,6 +10,17 @@ export {
 } from './card';
 export { Stat, type StatRootProps, type StatLabelProps, type StatValueProps } from './stat';
 export { Code, type CodeProps, type CodeVariant } from './code';
+export { Badge, type BadgeProps, type BadgeVariant, type BadgeTone } from './badge';
+export {
+  Table,
+  type TableRootProps,
+  type TableHeadProps,
+  type TableBodyProps,
+  type TableRowProps,
+  type TableHeadCellProps,
+  type TableCellProps,
+  type TableCaptionProps,
+} from './table';
 export {
   Tabs,
   type TabsVariant,
@@ -30,3 +41,18 @@ export {
 } from './meter';
 export { Input, type InputProps, type InputSize } from './input';
 export { Switch, type SwitchRootProps, type SwitchThumbProps } from './switch';
+export {
+  Dialog,
+  type DialogViewportProps,
+  type DialogBackdropProps,
+  type DialogPopupProps,
+  type DialogTitleProps,
+  type DialogDescriptionProps,
+} from './dialog';
+export {
+  Tooltip,
+  type TooltipTriggerProps,
+  type TooltipPositionerProps,
+  type TooltipPopupProps,
+  type TooltipArrowProps,
+} from './tooltip';
