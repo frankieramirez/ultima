@@ -277,7 +277,7 @@ export const font = stylex.defineVars({
 export const radius = stylex.defineVars({
   '--ult-radius-xs': '2px',
   '--ult-radius-sm': '4px',
-  '--ult-radius-md': '8px',
+  '--ult-radius-md': '10px',
   '--ult-radius-lg': '12px',
   '--ult-radius-full': '9999px',
 });

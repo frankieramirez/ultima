@@ -47,6 +47,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'Monospaced code, inline in a sentence or as a block.',
     docs: "import { Code } from '@/components/ui/code';\n\n<Code>npx shadcn add @ultima/button</Code>\n<Code variant=\"block\">{source}</Code>",
   },
+  input: {
+    title: 'Input',
+    description: 'A text input in three sizes, on Base UI.',
+    docs: 'import { Input } from \'@/components/ui/input\';\n\n<label htmlFor="email">Email</label>\n<Input id="email" size="md" />',
+  },
   meter: {
     title: 'Meter',
     description: 'A bounded measurement as a toned bar, on Base UI.',
@@ -56,6 +61,11 @@ export const items: Record<string, RegistryItemDescription> = {
     title: 'Stat',
     description: 'A single number with its label, for dashboards and summaries.',
     docs: "import { Stat } from '@/components/ui/stat';\n\n<Stat.Root>\n  <Stat.Label>Tokens</Stat.Label>\n  <Stat.Value>95</Stat.Value>\n</Stat.Root>",
+  },
+  switch: {
+    title: 'Switch',
+    description: 'An on-off toggle with a sliding thumb, on Base UI.',
+    docs: "import { Switch } from '@/components/ui/switch';\n\n<label>\n  Notifications\n  <Switch.Root>\n    <Switch.Thumb />\n  </Switch.Root>\n</label>",
   },
   table: {
     title: 'Table',
