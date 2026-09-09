@@ -11,6 +11,7 @@ export default defineConfig({
     include: [
       '@base-ui/react/button',
       '@base-ui/react/dialog',
+      '@base-ui/react/menu',
       '@base-ui/react/meter',
       '@base-ui/react/tabs',
       '@base-ui/react/tooltip',
