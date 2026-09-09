@@ -1,0 +1,44 @@
+import { Demo } from '../../demo';
+import Report from '../../demos/table/report';
+import reportSource from '../../demos/table/report?raw';
+import HorizontalScroll from '../../demos/table/horizontal-scroll';
+import horizontalScrollSource from '../../demos/table/horizontal-scroll?raw';
+
+# Table
+
+A data table built from seven native table parts, with an optional caption.
+
+## Install
+
+```bash
+npx shadcn add @ultima/table
+```
+
+## Report table
+
+Use a caption to name the table and head cells to label each column.
+
+<Demo component={Report} source={reportSource} />
+
+## Horizontal scrolling
+
+Ultima ships no scroll wrapper. When a wide table needs horizontal scrolling, put it in a labelled `tabIndex={0}` region so keyboard users can reach the overflow.
+
+<Demo component={HorizontalScroll} source={horizontalScrollSource} />
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept the corresponding [native table element props](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table).
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root` | `render` | `ReactElement \| function` | — | Changes the root from its default `table`. |
+| `HeadCell` | `scope` | `'col' \| 'row' \| 'colgroup' \| 'rowgroup'` | `'col'` | Override with `row` for row headers. |
+
+## Accessibility
+
+- **Elements.** Native `table`, `thead`, `tbody`, `tr`, `th`, `td`, and `caption` parts.
+- **Name.** `Table.Caption` is optional and names the table when present.
+- **Headers.** `Table.HeadCell` defaults to `scope="col"`; override it for a row header.
+- **Focus and keyboard.** The table itself is static. Only a consumer-added scroll region, like the recipe above, enters the tab order.
