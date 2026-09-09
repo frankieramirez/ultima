@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "button",
+  "title": "Button",
+  "description": "PROTOTYPE (ULT-8). The ULT-7 Button on Base UI plus StyleX.",
+  "dependencies": [
+    "@base-ui/react",
+    "@stylexjs/stylex"
+  ],
+  "registryDependencies": [
+    "@ultima/tokens"
+  ],
+  "files": [
+    {
+      "path": "ultima/ui/button.tsx",
+      "content": "/**\n * PROTOTYPE (ULT-7 source, copied for ULT-8). Throwaway. Exists to feel the authoring model, not to\n * set conventions. ULT-11 reacts to this and decides the real shape.\n *\n * What it probes:\n * - variants without cva: a lookup table of StyleX style objects\n * - how stylex.props reaches a Base UI part (spread className + style)\n * - state styling through Base UI data attributes, not className functions\n * - an escape hatch: a `style` prop that takes StyleX styles from the caller\n */\nimport { Button as BaseButton } from '@base-ui/react/button';\nimport * as stylex from '@stylexjs/stylex';\nimport { color, font, radius, space } from '@/registry/ultima/lib/tokens.stylex';\nimport type { ComponentProps } from 'react';\n\nconst styles = stylex.create({\n  root: {\n    alignItems: 'center',\n    appearance: 'none',\n    borderRadius: radius.md,\n    borderStyle: 'solid',\n    borderWidth: '1px',\n    cursor: { default: 'pointer', ':is([data-disabled])': 'not-allowed' },\n    display: 'inline-flex',\n    fontFamily: font.sans,\n    fontWeight: 500,\n    gap: space.sm,\n    justifyContent: 'center',\n    lineHeight: 1,\n    opacity: { default: 1, ':is([data-disabled])': 0.5 },\n    outlineColor: color.accent,\n    outlineOffset: '2px',\n    outlineStyle: { default: 'none', ':focus-visible': 'solid' },\n    outlineWidth: '2px',\n    transitionDuration: '120ms',\n    transitionProperty: 'background-color, border-color, color',\n  },\n});\n\n// One style object per variant. Hover/active nest inside the value, so a\n// variant carries its own state palette. No cva, no string class names.\nconst variants = stylex.create({\n  solid: {\n    backgroundColor: {\n      default: color.accent,\n      ':hover': `color-mix(in oklab, ${color.accent} 88%, white)`,\n      ':active': `color-mix(in oklab, ${color.accent} 80%, black)`,\n    },\n    borderColor: 'transparent',\n    color: color.accentText,\n  },\n  outline: {\n    backgroundColor: { default: 'transparent', ':hover': color.surfaceRaised },\n    borderColor: color.border,\n    color: color.text,\n  },\n  ghost: {\n    backgroundColor: { default: 'transparent', ':hover': color.surfaceRaised },\n    borderColor: 'transparent',\n    color: color.textMuted,\n  },\n});\n\nconst sizes = stylex.create({\n  sm: { fontSize: '0.8125rem', minHeight: '1.75rem', paddingBlock: space.xs, paddingInline: space.sm },\n  md: { fontSize: '0.875rem', minHeight: '2.25rem', paddingBlock: space.sm, paddingInline: space.md },\n  lg: { fontSize: '1rem', minHeight: '2.75rem', paddingBlock: space.md, paddingInline: space.lg },\n});\n\nexport type ButtonVariant = keyof typeof variants;\nexport type ButtonSize = keyof typeof sizes;\n\nexport type ButtonProps = Omit<ComponentProps<typeof BaseButton>, 'className' | 'style'> & {\n  variant?: ButtonVariant;\n  size?: ButtonSize;\n  /** Escape hatch: StyleX styles from the caller, merged last so they win. */\n  style?: stylex.StyleXStyles;\n};\n\nexport function Button({ variant = 'solid', size = 'md', style, ...props }: ButtonProps) {\n  return (\n    <BaseButton\n      {...props}\n      {...stylex.props(styles.root, variants[variant], sizes[size], style)}\n    />\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "type": "registry:ui"
+}

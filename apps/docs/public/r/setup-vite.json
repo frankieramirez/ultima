@@ -1,0 +1,29 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "setup-vite",
+  "title": "Ultima setup for Vite",
+  "description": "PROTOTYPE (ULT-8). components.json plus a vite.config.ts with the StyleX unplugin. Universal item: installs without Tailwind.",
+  "dependencies": [
+    "@stylexjs/stylex"
+  ],
+  "devDependencies": [
+    "@stylexjs/unplugin",
+    "unplugin"
+  ],
+  "files": [
+    {
+      "path": "ultima/setup/vite/components.json",
+      "content": "{\n  \"$schema\": \"https://ui.shadcn.com/schema.json\",\n  \"style\": \"base-ultima\",\n  \"rsc\": false,\n  \"tsx\": true,\n  \"tailwind\": {\n    \"config\": \"\",\n    \"css\": \"src/index.css\",\n    \"baseColor\": \"neutral\",\n    \"cssVariables\": true\n  },\n  \"aliases\": {\n    \"components\": \"@/components\",\n    \"utils\": \"@/lib/utils\",\n    \"ui\": \"@/components/ui\",\n    \"lib\": \"@/lib\",\n    \"hooks\": \"@/hooks\"\n  },\n  \"registries\": {\n    \"@ultima\": \"http://localhost:8765/r/{name}.json\"\n  }\n}\n",
+      "type": "registry:file",
+      "target": "~/components.json"
+    },
+    {
+      "path": "ultima/setup/vite/vite.config.ts",
+      "content": "// PROTOTYPE (ULT-8). Installed by the Ultima setup-vite registry item.\nimport path from 'node:path';\nimport stylex from '@stylexjs/unplugin';\nimport react from '@vitejs/plugin-react';\nimport { defineConfig } from 'vite';\n\nconst root = import.meta.dirname;\n\nexport default defineConfig(({ mode }) => ({\n  plugins: [\n    // StyleX must run before @vitejs/plugin-react so Fast Refresh keeps working.\n    stylex.vite({\n      dev: mode !== 'production',\n      runtimeInjection: false,\n      useCSSLayers: true,\n      aliases: { '@/*': [path.join(root, 'src', '*')] },\n      unstable_moduleResolution: { type: 'commonJS', rootDir: root },\n    }),\n    react(),\n  ],\n  resolve: {\n    alias: { '@': path.join(root, 'src') },\n  },\n}));\n",
+      "type": "registry:file",
+      "target": "~/vite.config.ts"
+    }
+  ],
+  "docs": "Ultima on Vite: this replaced vite.config.ts with one that runs @stylexjs/unplugin before the React plugin and aliases @/ to src/. Add \"paths\": { \"@/*\": [\"./src/*\"] } to your tsconfig (the CLI needs it to place files), then run: npx shadcn add @ultima/button",
+  "type": "registry:item"
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "ultima",
+  "homepage": "http://localhost:8765",
+  "items": [
+    {
+      "name": "tokens",
+      "type": "registry:lib",
+      "title": "Ultima tokens",
+      "description": "PROTOTYPE (ULT-8). Provisional StyleX tokens and the dark/light theme pair.",
+      "dependencies": ["@stylexjs/stylex"],
+      "files": [
+        { "path": "ultima/lib/tokens.stylex.ts", "type": "registry:lib" },
+        { "path": "ultima/lib/themes.ts", "type": "registry:lib" }
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "PROTOTYPE (ULT-8). The ULT-7 Button on Base UI plus StyleX.",
+      "dependencies": ["@base-ui/react", "@stylexjs/stylex"],
+      "registryDependencies": ["@ultima/tokens"],
+      "files": [
+        { "path": "ultima/ui/button.tsx", "type": "registry:ui" }
+      ]
+    },
+    {
+      "name": "setup-vite",
+      "type": "registry:item",
+      "title": "Ultima setup for Vite",
+      "description": "PROTOTYPE (ULT-8). components.json plus a vite.config.ts with the StyleX unplugin. Universal item: installs without Tailwind.",
+      "dependencies": ["@stylexjs/stylex"],
+      "devDependencies": ["@stylexjs/unplugin", "unplugin"],
+      "docs": "Ultima on Vite: this replaced vite.config.ts with one that runs @stylexjs/unplugin before the React plugin and aliases @/ to src/. Add \"paths\": { \"@/*\": [\"./src/*\"] } to your tsconfig (the CLI needs it to place files), then run: npx shadcn add @ultima/button",
+      "files": [
+        { "path": "ultima/setup/vite/components.json", "type": "registry:file", "target": "~/components.json" },
+        { "path": "ultima/setup/vite/vite.config.ts", "type": "registry:file", "target": "~/vite.config.ts" }
+      ]
+    },
+    {
+      "name": "setup-next",
+      "type": "registry:item",
+      "title": "Ultima setup for Next.js App Router",
+      "description": "PROTOTYPE (ULT-8). components.json, babel.config.js, postcss.config.js and the @stylex; stylesheet. Universal item: installs without Tailwind.",
+      "dependencies": ["@stylexjs/stylex"],
+      "devDependencies": ["@stylexjs/babel-plugin", "@stylexjs/postcss-plugin"],
+      "docs": "Ultima on Next.js: StyleX compiles through babel.config.js (Turbopack picks it up) and extracts CSS through postcss.config.js. Import app/ultima.css from your root layout, then run: npx shadcn add @ultima/button",
+      "files": [
+        { "path": "ultima/setup/next/components.json", "type": "registry:file", "target": "~/components.json" },
+        { "path": "ultima/setup/next/babel.config.js", "type": "registry:file", "target": "~/babel.config.js" },
+        { "path": "ultima/setup/next/postcss.config.js", "type": "registry:file", "target": "~/postcss.config.js" },
+        { "path": "ultima/setup/next/ultima.css", "type": "registry:file", "target": "~/app/ultima.css" }
+      ]
+    }
+  ]
+}

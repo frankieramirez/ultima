@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "pnpm --filter @ultima/docs dev",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "registry:build": "npx -y shadcn@4.21.0 build registry.json -c registry -o ../apps/docs/public/r"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
