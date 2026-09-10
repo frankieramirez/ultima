@@ -22,6 +22,7 @@ export default defineConfig({
     ],
   },
   test: {
+    fileParallelism: false,
     include: ['src/__tests__/**/*.test.{ts,tsx}'],
     browser: {
       enabled: true,
