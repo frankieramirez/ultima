@@ -6,7 +6,7 @@ import horizontalScrollSource from '../../demos/table/horizontal-scroll?raw';
 
 # Table
 
-A data table built from seven native table parts, with an optional caption.
+A data table built from seven native table parts, with an optional caption and an optional scroll region.
 
 ## Install
 
@@ -22,7 +22,7 @@ Use a caption to name the table and head cells to label each column.
 
 ## Horizontal scrolling
 
-Ultima ships no scroll wrapper. When a wide table needs horizontal scrolling, put it in a labelled `tabIndex={0}` region so keyboard users can reach the overflow.
+Wrap a table wider than its column in `Table.Scroll`. It is a focusable region, so a keyboard user reaches the overflow and scrolls it with the arrow keys, and it takes its name from the caption through `aria-labelledby`. A table that fits needs no region and should omit it. The minimum width goes through the `style` slot on `Table.Root`.
 
 <Demo component={HorizontalScroll} source={horizontalScrollSource} />
 
@@ -34,11 +34,12 @@ Only what Ultima adds. The parts otherwise accept the corresponding [native tabl
 | --- | --- | --- | --- | --- |
 | Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
 | `Root` | `render` | `ReactElement \| function` | — | Changes the root from its default `table`. |
+| `Scroll` | `aria-labelledby` | `string` | — | The `Table.Caption` id, which names the region. |
 | `HeadCell` | `scope` | `'col' \| 'row' \| 'colgroup' \| 'rowgroup'` | `'col'` | Override with `row` for row headers. |
 
 ## Accessibility
 
-- **Elements.** Native `table`, `thead`, `tbody`, `tr`, `th`, `td`, and `caption` parts.
-- **Name.** `Table.Caption` is optional and names the table when present.
+- **Elements.** Native `table`, `thead`, `tbody`, `tr`, `th`, `td`, and `caption` parts, plus `Table.Scroll` as a `div` with `role="region"`.
+- **Name.** `Table.Caption` is optional and names the table when present. It names `Table.Scroll` too, through `aria-labelledby`.
 - **Headers.** `Table.HeadCell` defaults to `scope="col"`; override it for a row header.
-- **Focus and keyboard.** The table itself is static. Only a consumer-added scroll region, like the recipe above, enters the tab order.
+- **Focus and keyboard.** The table itself is static. `Table.Scroll` is the only part that enters the tab order, and it takes the focus ring; without it nothing inside a table is focusable.

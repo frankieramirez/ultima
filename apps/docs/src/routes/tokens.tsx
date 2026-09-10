@@ -1,10 +1,9 @@
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
-import { Code } from '@ultima/ui';
+import { Code, Table } from '@ultima/ui';
 import { APCAcontrast, sRGBtoY } from 'apca-w3';
 
 import { CopyButton } from '../copy-button';
-import { DataTable, Td } from '../data-table';
 import { Note, Page, Section, TextLink } from '../page';
 import { Swatch } from '../swatch';
 import { contrast, tokenGroups, tokensByName, type Token } from '../token-data';
@@ -107,6 +106,19 @@ const styles = stylex.create({
   },
   override: {
     marginBlockStart: space['--ult-space-6'],
+  },
+  scroll: {
+    marginBlockStart: space['--ult-space-6'],
+  },
+  pairings: {
+    minWidth: '48rem',
+  },
+  mono: {
+    fontFamily: font['--ult-font-mono'],
+  },
+  numeric: {
+    fontVariantNumeric: 'tabular-nums',
+    textAlign: 'right',
   },
 });
 
@@ -265,32 +277,48 @@ function Pairings() {
         your browser and never able to fail a build. Lc is shown as a magnitude; its sign only
         records which of the pair is lighter.
       </Note>
-      <DataTable columns={PAIRING_COLUMNS} minWidth="48rem">
-        {contrast.map((pairing) => {
-          const foreground = tokensByName.get(pairing.foreground);
-          const background = tokensByName.get(pairing.background);
-          return (
-            <tr key={`${pairing.foreground} on ${pairing.background}`}>
-              <Td mono>{pairing.foreground}</Td>
-              <Td mono>{pairing.background}</Td>
-              {MODES.map((mode) => (
-                <Td key={mode} numeric>{`${pairing[mode].toFixed(2)}:1`}</Td>
+      <Table.Scroll aria-labelledby="pairings-caption" style={styles.scroll}>
+        <Table.Root style={styles.pairings}>
+          <Table.Caption id="pairings-caption">
+            Every semantic pairing, measured in both color modes.
+          </Table.Caption>
+          <Table.Head>
+            <Table.Row>
+              {PAIRING_COLUMNS.map((column) => (
+                <Table.HeadCell key={column.label} style={column.numeric ? styles.numeric : null}>
+                  {column.label}
+                </Table.HeadCell>
               ))}
-              {MODES.map((mode) => {
-                const lc =
-                  foreground && background
-                    ? lightnessContrast(foreground[mode].value, background[mode].value)
-                    : null;
-                return (
-                  <Td key={mode} numeric>
-                    {lc === null ? '—' : `Lc ${lc}`}
-                  </Td>
-                );
-              })}
-            </tr>
-          );
-        })}
-      </DataTable>
+            </Table.Row>
+          </Table.Head>
+          <Table.Body>
+            {contrast.map((pairing) => {
+              const foreground = tokensByName.get(pairing.foreground);
+              const background = tokensByName.get(pairing.background);
+              return (
+                <Table.Row key={`${pairing.foreground} on ${pairing.background}`}>
+                  <Table.Cell style={styles.mono}>{pairing.foreground}</Table.Cell>
+                  <Table.Cell style={styles.mono}>{pairing.background}</Table.Cell>
+                  {MODES.map((mode) => (
+                    <Table.Cell key={mode} style={styles.numeric}>{`${pairing[mode].toFixed(2)}:1`}</Table.Cell>
+                  ))}
+                  {MODES.map((mode) => {
+                    const lc =
+                      foreground && background
+                        ? lightnessContrast(foreground[mode].value, background[mode].value)
+                        : null;
+                    return (
+                      <Table.Cell key={mode} style={styles.numeric}>
+                        {lc === null ? '—' : `Lc ${lc}`}
+                      </Table.Cell>
+                    );
+                  })}
+                </Table.Row>
+              );
+            })}
+          </Table.Body>
+        </Table.Root>
+      </Table.Scroll>
     </Section>
   );
 }

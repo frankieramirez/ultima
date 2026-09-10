@@ -1,8 +1,8 @@
 import * as stylex from '@stylexjs/stylex';
 import { palette } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { Table } from '@ultima/ui';
 
-import { DataTable, Td } from '../data-table';
 import { Note, Page, Section, TextLink } from '../page';
 import { Swatch } from '../swatch';
 import { contrast } from '../token-data';
@@ -76,6 +76,22 @@ const styles = stylex.create({
   fail: {
     color: color['--ult-color-danger-text'],
   },
+  scroll: {
+    marginBlockStart: space['--ult-space-6'],
+  },
+  steps: {
+    minWidth: '24rem',
+  },
+  gate: {
+    minWidth: '40rem',
+  },
+  mono: {
+    fontFamily: font['--ult-font-mono'],
+  },
+  numeric: {
+    fontVariantNumeric: 'tabular-nums',
+    textAlign: 'right',
+  },
 });
 
 export function PalettePage() {
@@ -123,17 +139,25 @@ export function PalettePage() {
           steps collapse into 12. The neutral has no solid fills, so its steps 9 to 11 serve as
           subtle, muted, and ordinary text weights.
         </Note>
-        <DataTable
-          columns={[{ label: 'Step', numeric: true }, { label: 'Meaning' }]}
-          minWidth="24rem"
-        >
-          {STEP_CONVENTION.map((meaning, index) => (
-            <tr key={meaning}>
-              <Td numeric>{index + 1}</Td>
-              <Td>{meaning}</Td>
-            </tr>
-          ))}
-        </DataTable>
+        <Table.Scroll aria-labelledby="steps-caption" style={styles.scroll}>
+          <Table.Root style={styles.steps}>
+            <Table.Caption id="steps-caption">What each of the twelve steps is for.</Table.Caption>
+            <Table.Head>
+              <Table.Row>
+                <Table.HeadCell style={styles.numeric}>Step</Table.HeadCell>
+                <Table.HeadCell>Meaning</Table.HeadCell>
+              </Table.Row>
+            </Table.Head>
+            <Table.Body>
+              {STEP_CONVENTION.map((meaning, index) => (
+                <Table.Row key={meaning}>
+                  <Table.Cell style={styles.numeric}>{index + 1}</Table.Cell>
+                  <Table.Cell>{meaning}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </Table.Scroll>
       </Section>
 
       <Section title="Contrast gate">
@@ -144,23 +168,39 @@ export function PalettePage() {
           <TextLink href="/tokens">/tokens</TextLink> instead, beside the semantic pairings, because
           they are advice about a role rather than a property of the steps.
         </Note>
-        <DataTable columns={GATE_COLUMNS} minWidth="40rem">
-          {contrast.map((pairing) => (
-            <tr key={`${pairing.foreground} on ${pairing.background}`}>
-              <Td mono>{pairing.foreground}</Td>
-              <Td mono>{pairing.background}</Td>
-              <Td numeric>{`${pairing.minimum}:1`}</Td>
-              {MODES.map((mode) => (
-                <Td key={mode} numeric>{`${pairing[mode].toFixed(2)}:1`}</Td>
+        <Table.Scroll aria-labelledby="gate-caption" style={styles.scroll}>
+          <Table.Root style={styles.gate}>
+            <Table.Caption id="gate-caption">
+              Every gated pairing, its minimum, and the measured ratio in each mode.
+            </Table.Caption>
+            <Table.Head>
+              <Table.Row>
+                {GATE_COLUMNS.map((column) => (
+                  <Table.HeadCell key={column.label} style={column.numeric ? styles.numeric : null}>
+                    {column.label}
+                  </Table.HeadCell>
+                ))}
+              </Table.Row>
+            </Table.Head>
+            <Table.Body>
+              {contrast.map((pairing) => (
+                <Table.Row key={`${pairing.foreground} on ${pairing.background}`}>
+                  <Table.Cell style={styles.mono}>{pairing.foreground}</Table.Cell>
+                  <Table.Cell style={styles.mono}>{pairing.background}</Table.Cell>
+                  <Table.Cell style={styles.numeric}>{`${pairing.minimum}:1`}</Table.Cell>
+                  {MODES.map((mode) => (
+                    <Table.Cell key={mode} style={styles.numeric}>{`${pairing[mode].toFixed(2)}:1`}</Table.Cell>
+                  ))}
+                  <Table.Cell>
+                    <span {...stylex.props(pairing.pass ? styles.pass : styles.fail)}>
+                      {pairing.pass ? 'Pass' : 'Fail'}
+                    </span>
+                  </Table.Cell>
+                </Table.Row>
               ))}
-              <Td>
-                <span {...stylex.props(pairing.pass ? styles.pass : styles.fail)}>
-                  {pairing.pass ? 'Pass' : 'Fail'}
-                </span>
-              </Td>
-            </tr>
-          ))}
-        </DataTable>
+            </Table.Body>
+          </Table.Root>
+        </Table.Scroll>
       </Section>
     </Page>
   );

@@ -36,6 +36,14 @@ const styles = stylex.create({
     paddingBlock: space['--ult-space-3'],
     paddingInline: space['--ult-space-4'],
   },
+  scroll: {
+    boxSizing: 'border-box',
+    overflow: 'auto',
+    ':focus-visible': {
+      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      outlineOffset: border.focusOffset,
+    },
+  },
   caption: {
     captionSide: 'bottom',
     color: color['--ult-color-text-muted'],
@@ -44,6 +52,7 @@ const styles = stylex.create({
   },
 });
 
+type TableScrollProps = PlainProps<'div'>;
 type TableRootProps = PartProps<useRender.ComponentProps<'table'>>;
 type TableHeadProps = PlainProps<'thead'>;
 type TableBodyProps = PlainProps<'tbody'>;
@@ -52,7 +61,11 @@ type TableHeadCellProps = PlainProps<'th'>;
 type TableCellProps = PlainProps<'td'>;
 type TableCaptionProps = PlainProps<'caption'>;
 
-/** There is no scroll wrapper: a consumer needing horizontal scroll wraps this in a `tabIndex={0}` region. */
+/** Name it with `aria-labelledby` pointing at the `Table.Caption` id. */
+function Scroll({ style, ...props }: TableScrollProps) {
+  return <div role="region" tabIndex={0} {...props} {...stylex.props(styles.scroll, style)} />;
+}
+
 function Root({ ref, render, style, ...props }: TableRootProps) {
   return useRender({ defaultTagName: 'table', ref, render, props: { ...props, ...stylex.props(styles.root, style) } });
 }
@@ -81,10 +94,11 @@ function Caption({ style, ...props }: TableCaptionProps) {
   return <caption {...props} {...stylex.props(styles.caption, style)} />;
 }
 
-const Table = { Root, Head, Body, Row, HeadCell, Cell, Caption };
+const Table = { Scroll, Root, Head, Body, Row, HeadCell, Cell, Caption };
 
 export {
   Table,
+  type TableScrollProps,
   type TableRootProps,
   type TableHeadProps,
   type TableBodyProps,
