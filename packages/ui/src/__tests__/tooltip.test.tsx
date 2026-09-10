@@ -58,25 +58,27 @@ test('the popup has no outline', async () => {
 });
 
 test('focusing the trigger opens the tooltip and Escape closes it', async () => {
+  const text = 'Keyboard tooltip';
   const screen = await render(
     <Tooltip.Provider delay={0}>
       <Tooltip.Root>
-        <Tooltip.Trigger aria-label="Copied to clipboard" render={<button type="button" />}>
+        <Tooltip.Trigger aria-label={text} render={<button type="button" />}>
           Copy
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Positioner>
-            <Tooltip.Popup>Copied to clipboard</Tooltip.Popup>
+            <Tooltip.Popup>{text}</Tooltip.Popup>
           </Tooltip.Positioner>
         </Tooltip.Portal>
       </Tooltip.Root>
     </Tooltip.Provider>,
   );
-  expect(screen.getByRole('tooltip').query()).toBeNull();
+  const tooltip = screen.getByRole('tooltip', { name: text });
+  expect(tooltip.query()).toBeNull();
   await userEvent.tab();
-  await expect.element(screen.getByRole('tooltip', { name: 'Copied to clipboard' })).toBeVisible();
+  await expect.element(tooltip).toBeVisible();
   await userEvent.keyboard('{Escape}');
-  await expect.poll(() => screen.getByRole('tooltip').query()).toBeNull();
+  await expect.poll(() => tooltip.query()).toBeNull();
 });
 
 test('data-starting-style sets opacity to 0', async () => {

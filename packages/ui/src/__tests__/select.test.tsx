@@ -142,13 +142,13 @@ test('arrows, typeahead, escape, and enter keep the primitive wired', async () =
   expect(apple).toHaveAttribute('data-highlighted');
   await userEvent.keyboard('{Escape}');
   await expect.poll(() => trigger.getAttribute('aria-expanded')).toBe('false');
-  expect(document.activeElement).toBe(trigger);
+  await expect.poll(() => document.activeElement).toBe(trigger);
   await userEvent.keyboard('{ArrowDown}');
   await userEvent.keyboard('a');
   await userEvent.keyboard('{Enter}');
   await expect.poll(() => trigger.getAttribute('aria-expanded')).toBe('false');
   expect(trigger).toHaveTextContent('Apple');
-  expect(document.activeElement).toBe(trigger);
+  await expect.poll(() => document.activeElement).toBe(trigger);
 });
 
 test('placeholder, highlight, selected, and invalid change computed styles without naming a value', async () => {
