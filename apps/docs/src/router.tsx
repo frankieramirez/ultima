@@ -13,6 +13,7 @@ import DropdownMenuContent from './content/components/dropdown-menu.mdx';
 import InputContent from './content/components/input.mdx';
 import MeterContent from './content/components/meter.mdx';
 import SelectContent from './content/components/select.mdx';
+import SidebarContent from './content/components/sidebar.mdx';
 import StatContent from './content/components/stat.mdx';
 import SwitchContent from './content/components/switch.mdx';
 import TableContent from './content/components/table.mdx';
@@ -93,6 +94,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   input: InputContent,
   meter: MeterContent,
   select: SelectContent,
+  sidebar: SidebarContent,
   stat: StatContent,
   switch: SwitchContent,
   table: TableContent,

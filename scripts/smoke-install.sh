@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Exits zero only when both targets installed from the registry and built.
+# Exits zero only when every target installed from the registry and built.
 # A non-zero exit names the target that failed.
 #
 #   scripts/smoke-install.sh                 # against a local registry build
@@ -112,6 +112,30 @@ assert_docs_printed() {
   for phrase in "$@"; do
     if ! grep -qF -- "$phrase" "$WORK/$item.log"; then
       echo "smoke-install: $item's docs no longer says \"$phrase\"; its hand steps here are out of date" >&2
+      exit 1
+    fi
+  done
+}
+
+assert_installed() {
+  local app="$1"
+  shift
+  local path
+  for path in "$@"; do
+    if [ ! -f "$app/src/$path" ]; then
+      echo "smoke-install: $path did not arrive; the registry item's dependencies are wrong" >&2
+      exit 1
+    fi
+  done
+}
+
+assert_not_installed() {
+  local app="$1"
+  shift
+  local path
+  for path in "$@"; do
+    if [ -f "$app/src/$path" ]; then
+      echo "smoke-install: $path arrived; the registry item declares a dependency it does not have" >&2
       exit 1
     fi
   done
@@ -283,6 +307,62 @@ PAGE
   (cd "$app" && npm run build)
 }
 
+sidebar_target() {
+  TARGET="sidebar"
+  local app="$WORK/sidebar-app"
+
+  step "sidebar: scaffolding"
+  (cd "$WORK" && npm create vite@latest sidebar-app -- --template react-ts)
+  (cd "$app" && npm install)
+
+  step "sidebar: npx shadcn add $HOST/r/setup-vite.json"
+  setup_add "$app" setup-vite
+  point_namespace_at_host "$app/components.json"
+  add_paths_alias "$app/tsconfig.json"
+  add_paths_alias "$app/tsconfig.app.json"
+  replace_in_file "$app/vite.config.ts" "plugins: [" \
+    "plugins: [ultimaStylex(), "
+  replace_in_file "$app/vite.config.ts" "import { defineConfig } from 'vite'" \
+    "import { defineConfig } from 'vite'
+import { ultimaStylex } from './ultima.vite.ts'"
+  layer_reset "$app/src/index.css"
+
+  step "sidebar: npx shadcn add @ultima/sidebar"
+  (cd "$app" && npx -y shadcn@latest add @ultima/sidebar --yes)
+
+  step "sidebar: dialog, the tokens, and the shared lib arrive with it"
+  assert_installed "$app" \
+    components/ui/sidebar.tsx \
+    components/ui/dialog.tsx \
+    lib/tokens.stylex.ts \
+    lib/component.ts
+  assert_not_installed "$app" components/ui/button.tsx components/ui/collapsible.tsx
+
+  cat > "$app/src/App.tsx" <<'APP'
+import { Sidebar } from '@/components/ui/sidebar';
+
+export default function App() {
+  return (
+    <Sidebar.Root>
+      <Sidebar.Trigger>Toggle navigation</Sidebar.Trigger>
+      <Sidebar.Panel aria-label="Main">
+        <Sidebar.List>
+          <Sidebar.Item>
+            <Sidebar.Link href="/" active>
+              Home
+            </Sidebar.Link>
+          </Sidebar.Item>
+        </Sidebar.List>
+      </Sidebar.Panel>
+    </Sidebar.Root>
+  );
+}
+APP
+
+  step "sidebar: npm run build"
+  (cd "$app" && npm run build)
+}
+
 if [ -z "$HOST" ]; then
   serve_local_build
 fi
@@ -292,7 +372,8 @@ curl -fsS "$HOST/r/registry.json" >/dev/null
 
 vite_target
 next_target
+sidebar_target
 TARGET=""
 
 echo
-echo "smoke-install: both targets installed and built against $HOST"
+echo "smoke-install: every target installed and built against $HOST"
