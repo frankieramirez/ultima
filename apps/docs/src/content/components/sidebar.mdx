@@ -1,0 +1,87 @@
+import { Demo } from '../../demo';
+import Parts from '../../demos/sidebar/parts';
+import partsSource from '../../demos/sidebar/parts?raw';
+import Current from '../../demos/sidebar/current';
+import currentSource from '../../demos/sidebar/current?raw';
+import Nested from '../../demos/sidebar/nested';
+import nestedSource from '../../demos/sidebar/nested?raw';
+import Collapse from '../../demos/sidebar/collapse';
+import collapseSource from '../../demos/sidebar/collapse?raw';
+import Scroll from '../../demos/sidebar/scroll';
+import scrollSource from '../../demos/sidebar/scroll?raw';
+
+# Sidebar
+
+Application navigation as ten plain parts: a `Root` that holds the state, a `Panel` that is the `nav` landmark and the scroll container, and the groups, lists, links, and buttons inside it. Ultima paints the panel and the rows; routing stays yours, because `Sidebar.Link` takes your router's link through `render`.
+
+## Install
+
+```bash
+npx shadcn add @ultima/sidebar
+```
+
+Installing Sidebar installs Dialog with it. `Sidebar.Root` composes `Dialog.Root` for the mobile menu, so the registry derives the dependency rather than asking you to remember it.
+
+## The parts
+
+`Root` sets no layout: the page decides where the panel and the content sit. `Group` spaces a section, `GroupLabel` is a real `h3`, `List` is a reset `ul`, and `Item` is a bare `li`. `Link` and `Button` share one row style, so a destination and an in-place action look alike.
+
+<Demo component={Parts} source={partsSource} />
+
+## The current page
+
+`Sidebar.Link` takes `active`, and Base UI emits `aria-current="page"` and `data-active` when it is true. The current row differs from a resting one by fill, by weight, and by an inline-start bar, so it never depends on hue alone.
+
+The style reads `aria-current` as well as `data-active`, which means a router link that sets the attribute itself, as TanStack Router's does, is styled with no `active` prop at all.
+
+<Demo component={Current} source={currentSource} />
+
+## A nested group
+
+There is no `SubList` part. A nested group is `Collapsible.Root` around an `Item`, `Collapsible.Trigger render={<Sidebar.Button />}`, and a nested `Sidebar.List` inside `Collapsible.Panel`. Each `List` reads how deep it sits and indents itself, so the levels compound with no prop.
+
+<Demo component={Nested} source={nestedSource} />
+
+## Collapsing the panel
+
+`Sidebar.Trigger` toggles the desktop collapse and carries `aria-expanded` and `aria-controls` for the panel. The panel animates its inline size to zero over `--ult-motion-base`, so content beside it reflows rather than a box vanishing. Width is an ordinary property: change it through the `style` slot on `Panel`.
+
+<Demo component={Collapse} source={collapseSource} />
+
+## A scrolling panel
+
+`Panel` is the scroll container. It sets no block size, so it is content-sized inside a page that gives it one; set a height through the `style` slot when you want the navigation to scroll on its own.
+
+<Demo component={Scroll} source={scrollSource} />
+
+## The state, and useSidebar
+
+`Root` holds two states, because a desktop collapse is a preference and a mobile menu is a transient overlay. Both follow the controlled-or-uncontrolled pattern, resolved per render, so you can move between the two.
+
+`useSidebar()` is exported beside `Sidebar` and returns `{ open, setOpen, mobileOpen, setMobileOpen, isMobile, toggle }`. It is how you build a part of your own — a keyboard shortcut, a persisted preference — that reads or sets the same state. It throws `useSidebar must be used inside Sidebar.Root` when called outside the root, because a silent no-op would hide your bug.
+
+**Below the breakpoint, the panel is not finished yet.** The mobile menu — the panel's children inside a Dialog popup, `Trigger` as the dialog's trigger, `Close`, and choosing a link dismissing it — lands with the responsive completion ticket. Until it does, `isMobile` is always `false`, `Sidebar.Close` renders nothing, and this component is desktop navigation. The state model and the return type above are final: they are the shape the mobile half fills in, not names that will change under you.
+
+## Props
+
+Sidebar has no axis. Every part takes `render` and the `style` slot.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `open`, `defaultOpen`, `onOpenChange` | `boolean`, `boolean`, `(open: boolean) => void` | `defaultOpen` is `true` | The desktop collapse. |
+| `Root` | `mobileOpen`, `defaultMobileOpen`, `onMobileOpenChange` | `boolean`, `boolean`, `(open: boolean) => void` | `defaultMobileOpen` is `false` | The mobile menu, completed by its own ticket. |
+| `Panel` | `aria-label` or `aria-labelledby` | `string` | — | Required, as a union. The type rejects an unnamed panel. |
+| `Link` | `active` | `boolean` | `false` | Emits `aria-current="page"` and `data-active`. |
+| every part | `render` | `ReactElement \| function` | — | Base UI's render prop, through `useRender`. |
+| every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+
+`Panel` carries `data-open` or `data-closed` from the root's state, so a style of yours can follow the collapse.
+
+## Accessibility
+
+- **Name.** `aria-label` or `aria-labelledby` on `Sidebar.Panel`, which the type requires: a page with a sidebar has at least two navigation landmarks, and an unnamed one fails the unique-label rule. The elements rendered into `Trigger` and `Close` carry their own `aria-label` when they are icon-only.
+- **Focus ring.** On `Link` and `Button`. `Trigger` and `Close` are wrapper triggers and ship no styles at all, so the slot must hold an Ultima Button or an element carrying its own ring.
+- **Keyboard.** Native. `Link` is an `a`, `Button` is a `button`, and Tab, Enter, and Space are the browser's. Group disclosure is Collapsible's. Navigation is a list with disclosure buttons, never `role="tree"` or `role="menu"`.
+- **Elements.** `nav` on `Panel`, `ul` and `li` on `List` and `Item`, `h3` on `GroupLabel`, changeable through `render` like `Card.Title`.
+
+Three obligations are the consumer's, not Sidebar's: one link current per set, a name on the panel, and moving focus to the new page's heading on a client-side route change.

@@ -96,10 +96,14 @@ function exportedName({ name, source }: GuideComponent): string {
     .split(',')
     .map((entry) => entry.trim())
     .filter((entry) => entry.length > 0 && !entry.startsWith('type '));
-  if (values.length !== 1) {
-    throw new Error(`${name}.tsx exports ${values.length} values; a component file exports exactly one`);
+  const [component, ...rest] = values;
+  if (!component) throw new Error(`${name}.tsx exports no value; a component file exports its component`);
+  if (rest.length > 1 || rest.some((value) => value !== `use${component}`)) {
+    throw new Error(
+      `${name}.tsx exports ${values.join(', ')}; a component file exports ${component} and at most use${component}`,
+    );
   }
-  return values[0] as string;
+  return component;
 }
 
 function describeComponent(component: GuideComponent): string {
