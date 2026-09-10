@@ -1,8 +1,9 @@
-import { Sidebar } from '@ultima/ui';
+import { Button, Sidebar } from '@ultima/ui';
 
 export default function SidebarParts() {
   return (
     <Sidebar.Root>
+      <Sidebar.Trigger render={<Button variant="ghost" />}>Toggle the parts</Sidebar.Trigger>
       <Sidebar.Panel aria-label="Sidebar parts">
         <Sidebar.Group>
           <Sidebar.GroupLabel>Reference</Sidebar.GroupLabel>
@@ -26,6 +27,7 @@ export default function SidebarParts() {
             </Sidebar.Item>
           </Sidebar.List>
         </Sidebar.Group>
+        <Sidebar.Close render={<Button variant="ghost" />}>Close the parts</Sidebar.Close>
       </Sidebar.Panel>
     </Sidebar.Root>
   );

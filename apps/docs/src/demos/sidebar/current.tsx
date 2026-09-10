@@ -1,8 +1,9 @@
-import { Sidebar } from '@ultima/ui';
+import { Button, Sidebar } from '@ultima/ui';
 
 export default function SidebarCurrent() {
   return (
     <Sidebar.Root>
+      <Sidebar.Trigger render={<Button variant="ghost" />}>Toggle the current page</Sidebar.Trigger>
       <Sidebar.Panel aria-label="Current page">
         <Sidebar.List>
           <Sidebar.Item>
