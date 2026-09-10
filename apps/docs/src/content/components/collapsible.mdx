@@ -1,0 +1,64 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/collapsible/basic';
+import basicSource from '../../demos/collapsible/basic?raw';
+import Caret from '../../demos/collapsible/caret';
+import caretSource from '../../demos/collapsible/caret?raw';
+import Controlled from '../../demos/collapsible/controlled';
+import controlledSource from '../../demos/collapsible/controlled?raw';
+import FindInPage from '../../demos/collapsible/find-in-page';
+import findInPageSource from '../../demos/collapsible/find-in-page?raw';
+
+# Collapsible
+
+A disclosure built on Base UI's Collapsible: a `Root`, a `Trigger`, and the `Panel` it shows and hides. Ultima styles the panel and nothing else.
+
+## Install
+
+```bash
+npx shadcn add @ultima/collapsible
+```
+
+## The trigger is yours
+
+`Collapsible.Trigger` is a wrapper. It carries `aria-expanded` and `aria-controls` and ships no styles at all, not even the focus ring, so the slot must hold an Ultima Button or an element that draws its own ring. Give it one through `render`.
+
+<Demo component={Basic} source={basicSource} />
+
+## A caret
+
+Collapsible ships no glyph. Bring your own and turn it when the panel opens. Base UI's `render` takes a function and hands you the state, which is the shortest way to reach it; the trigger also carries `data-panel-open` while the panel is open, for a styling layer that can select a descendant.
+
+<Demo component={Caret} source={caretSource} />
+
+## Controlled
+
+Pass `open` and `onOpenChange` to drive the disclosure yourself. Without them, `defaultOpen` sets the starting state and the component keeps its own.
+
+<Demo component={Controlled} source={controlledSource} />
+
+## Find-in-page
+
+`hiddenUntilFound` keeps the panel in the DOM as `hidden="until-found"`, so the browser's own page search can find the text inside and open the panel to show it.
+
+<Demo component={FindInPage} source={findInPageSource} />
+
+## Props
+
+Ultima adds no axis to Collapsible. Everything else is Base UI's; see [Base UI's Collapsible](https://base-ui.com/react/components/collapsible) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `open`, `defaultOpen`, `onOpenChange` | — | `defaultOpen` is `false` | Base UI's controlled and uncontrolled disclosure. |
+| `Panel` | `hiddenUntilFound` | `boolean` | `false` | Keeps the panel mounted as `hidden="until-found"`. |
+| `Panel` | `keepMounted` | `boolean` | `false` | Keeps the panel mounted while closed. Ignored under `hiddenUntilFound`. |
+| `Panel` | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root`, `Trigger`, `Panel` | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+The panel animates its height between zero and `--collapsible-panel-height` over `--ult-motion-base`. Setting `display` through the style slot lays your content out while the panel is open and does not leak a closed panel back onto the page.
+
+## Accessibility
+
+- **Name.** The trigger's own text. Base UI wires `aria-expanded` and `aria-controls` to the panel.
+- **Focus ring.** On the element rendered into `Trigger`, never on the wrapper itself.
+- **Keyboard.** A native button: Space and Enter toggle. There are no arrow keys and no Escape.
+- **Find-in-page.** `hiddenUntilFound` is what makes closed content findable. Without it a closed panel leaves the DOM.

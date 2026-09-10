@@ -42,6 +42,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A surface with a header, body, and footer for grouping related content.',
     docs: "import { Card } from '@/components/ui/card';\n\n<Card.Root>\n  <Card.Header>\n    <Card.Title>Ultima</Card.Title>\n    <Card.Description>A design system.</Card.Description>\n  </Card.Header>\n  <Card.Body>Anything.</Card.Body>\n</Card.Root>",
   },
+  collapsible: {
+    title: 'Collapsible',
+    description: 'A disclosure that animates its panel open and closed, on Base UI.',
+    docs: "import { Button } from '@/components/ui/button';\nimport { Collapsible } from '@/components/ui/collapsible';\n\n<Collapsible.Root>\n  <Collapsible.Trigger render={<Button variant=\"ghost\" />}>Details</Collapsible.Trigger>\n  <Collapsible.Panel>Anything.</Collapsible.Panel>\n</Collapsible.Root>",
+  },
   code: {
     title: 'Code',
     description: 'Monospaced code, inline in a sentence or as a block.',

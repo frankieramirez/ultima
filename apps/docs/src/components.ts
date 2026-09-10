@@ -51,4 +51,9 @@ export const components = [
   },
   { name: 'Input', item: 'input', description: 'A text input in three sizes, on Base UI.' },
   { name: 'Switch', item: 'switch', description: 'An on-off toggle with a sliding thumb, on Base UI.' },
+  {
+    name: 'Collapsible',
+    item: 'collapsible',
+    description: 'A disclosure that animates its panel open and closed, on Base UI.',
+  },
 ] satisfies ComponentEntry[];

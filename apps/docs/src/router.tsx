@@ -7,6 +7,7 @@ import BadgeContent from './content/components/badge.mdx';
 import ButtonContent from './content/components/button.mdx';
 import CardContent from './content/components/card.mdx';
 import CodeContent from './content/components/code.mdx';
+import CollapsibleContent from './content/components/collapsible.mdx';
 import DialogContent from './content/components/dialog.mdx';
 import DropdownMenuContent from './content/components/dropdown-menu.mdx';
 import InputContent from './content/components/input.mdx';
@@ -86,6 +87,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   button: ButtonContent,
   card: CardContent,
   code: CodeContent,
+  collapsible: CollapsibleContent,
   dialog: DialogContent,
   'dropdown-menu': DropdownMenuContent,
   input: InputContent,
