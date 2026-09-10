@@ -1,0 +1,67 @@
+import { Demo } from '../../demo';
+import AlwaysSelected from '../../demos/toggle-group/always-selected';
+import alwaysSelectedSource from '../../demos/toggle-group/always-selected?raw';
+import Basic from '../../demos/toggle-group/basic';
+import basicSource from '../../demos/toggle-group/basic?raw';
+import Multiple from '../../demos/toggle-group/multiple';
+import multipleSource from '../../demos/toggle-group/multiple?raw';
+import Vertical from '../../demos/toggle-group/vertical';
+import verticalSource from '../../demos/toggle-group/vertical?raw';
+
+# Toggle Group
+
+A segmented control built on Base UI's ToggleGroup and Toggle: a `Root` that holds the pressed values and the `Item`s that set them. Ultima styles both parts and ships no glyph, so an item's content is entirely yours.
+
+## Install
+
+```bash
+npx shadcn add @ultima/toggle-group
+```
+
+## A single selection
+
+The default. One item at a time, and the value is an array either way, so switching to `multiple` later changes no other code.
+
+<Demo component={Basic} source={basicSource} />
+
+## Keeping a selection
+
+Pressing the pressed item empties a single-selection group: Base UI reports `[]` and clears it. There is no `required` prop. Cancel the change instead, which Base UI honours before it sets state.
+
+<Demo component={AlwaysSelected} source={alwaysSelectedSource} />
+
+## Multiple
+
+With `multiple`, every pressed item is in the value and pressing one never unpresses another. An `Item` takes `disabled` of its own; `Root` takes it for the whole group.
+
+<Demo component={Multiple} source={multipleSource} />
+
+## Vertical
+
+`orientation="vertical"` stacks the items and moves the arrow keys onto the vertical axis.
+
+<Demo component={Vertical} source={verticalSource} />
+
+## Props
+
+Ultima adds no axis to Toggle Group. Everything else is Base UI's; see [Base UI's Toggle Group](https://base-ui.com/react/components/toggle-group) and [Toggle](https://base-ui.com/react/components/toggle) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `value`, `defaultValue`, `onValueChange` | `Value[]` | `[]` | An array in both the single and the multiple case. |
+| `Root` | `multiple` | `boolean` | `false` | When `false`, pressing the pressed item emits `[]`. |
+| `Root` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Sets the layout and the arrow-key axis together. |
+| `Root` | `loopFocus` | `boolean` | `true` | Whether the arrows wrap at the ends. |
+| `Root`, `Item` | `disabled` | `boolean` | `false` | On `Root` it disables the group. |
+| `Item` | `value` | `Value` | — | The string this item contributes to the group's value. |
+| `Root`, `Item` | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root`, `Item` | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+`Root` is generic over its value: `<ToggleGroup.Root<View>>` narrows both `value` and every `Item`'s `value` to your own union.
+
+## Accessibility
+
+- **Name.** `aria-label` or `aria-labelledby` on `Root`, which renders `role="group"`. No child part can name it. Each `Item` is named by its text, or by `aria-label` when its content is a glyph.
+- **Focus ring.** On `Item`. The group is a roving-tabindex container and draws none.
+- **Keyboard.** Base UI's: one tab stop for the group, arrows along the orientation, Home and End for the ends, Space and Enter to toggle.
+- **State.** Each item carries `aria-pressed`, plus `data-pressed` and `data-disabled` for styling.

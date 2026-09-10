@@ -20,5 +20,6 @@ test('the component catalogue exposes the v0 set in specification order', () => 
     'switch',
     'sidebar',
     'collapsible',
+    'toggle-group',
   ]);
 });

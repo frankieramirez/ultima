@@ -18,6 +18,7 @@ import StatContent from './content/components/stat.mdx';
 import SwitchContent from './content/components/switch.mdx';
 import TableContent from './content/components/table.mdx';
 import TabsContent from './content/components/tabs.mdx';
+import ToggleGroupContent from './content/components/toggle-group.mdx';
 import TooltipContent from './content/components/tooltip.mdx';
 import { components } from './components';
 import { Prose } from './prose';
@@ -99,6 +100,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   switch: SwitchContent,
   table: TableContent,
   tabs: TabsContent,
+  'toggle-group': ToggleGroupContent,
   tooltip: TooltipContent,
 };
 

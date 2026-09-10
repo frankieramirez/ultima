@@ -122,3 +122,8 @@ export {
   type SidebarLinkProps,
   type SidebarButtonProps,
 } from './sidebar';
+export {
+  ToggleGroup,
+  type ToggleGroupRootProps,
+  type ToggleGroupItemProps,
+} from './toggle-group';
