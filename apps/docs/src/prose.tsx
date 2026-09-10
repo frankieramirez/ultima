@@ -1,7 +1,8 @@
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { Code as UltimaCode, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
-import type { ComponentProps, ComponentType } from 'react';
+import { isValidElement, type ComponentProps, type ComponentType, type ReactNode } from 'react';
 
 const styles = stylex.create({
   root: {
@@ -57,33 +58,8 @@ const styles = stylex.create({
     textDecoration: 'underline',
     textUnderlineOffset: space['--ult-space-2'],
   },
-  inlineCode: {
-    backgroundColor: color['--ult-color-surface-sunken'],
-    borderRadius: radius['--ult-radius-sm'],
-    color: color['--ult-color-text'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-4'],
-    paddingBlock: space['--ult-space-1'],
-    paddingInline: space['--ult-space-2'],
-  },
-  pre: {
-    backgroundColor: color['--ult-color-surface-sunken'],
-    borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-md'],
-    borderStyle: 'solid',
-    borderWidth: border.hairline,
-    color: color['--ult-color-text'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-4'],
-    lineHeight: font['--ult-font-leading-normal'],
+  code: {
     marginBlock: space['--ult-space-6'],
-    overflow: 'auto',
-    padding: space['--ult-space-6'],
-  },
-  preCode: {
-    backgroundColor: 'transparent',
-    fontSize: 'inherit',
-    padding: 0,
   },
   blockquote: {
     borderLeftColor: color['--ult-color-border-strong'],
@@ -94,32 +70,11 @@ const styles = stylex.create({
     marginInline: 0,
     paddingInlineStart: space['--ult-space-6'],
   },
-  tableWrap: {
+  uncaptionedTableOverflow: {
     marginBlock: space['--ult-space-6'],
     overflow: 'auto',
   },
-  table: {
-    borderCollapse: 'collapse',
-    fontSize: text['--ult-text-4'],
-    width: '100%',
-  },
-  th: {
-    borderBottomColor: color['--ult-color-border-strong'],
-    borderBottomStyle: 'solid',
-    borderBottomWidth: border.hairline,
-    color: color['--ult-color-text'],
-    fontWeight: font['--ult-font-weight-semibold'],
-    paddingBlock: space['--ult-space-3'],
-    paddingInline: space['--ult-space-4'],
-    textAlign: 'left',
-  },
-  td: {
-    borderBottomColor: color['--ult-color-border'],
-    borderBottomStyle: 'solid',
-    borderBottomWidth: border.hairline,
-    color: color['--ult-color-text'],
-    paddingBlock: space['--ult-space-3'],
-    paddingInline: space['--ult-space-4'],
+  cell: {
     verticalAlign: 'top',
   },
 });
@@ -148,28 +103,36 @@ function Li(props: ComponentProps<'li'>) {
 function A(props: ComponentProps<'a'>) {
   return <a {...props} {...stylex.props(styles.a)} />;
 }
-function Code(props: ComponentProps<'code'>) {
-  const block = Boolean(props.className);
-  return <code {...props} {...stylex.props(block ? styles.preCode : styles.inlineCode)} />;
+function Code({ children }: ComponentProps<'code'>) {
+  return <UltimaCode>{children}</UltimaCode>;
 }
-function Pre(props: ComponentProps<'pre'>) {
-  return <pre {...props} {...stylex.props(styles.pre)} />;
+/** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
+function Pre({ children }: ComponentProps<'pre'>) {
+  const fence = isValidElement<{ children?: ReactNode }>(children) ? children.props.children : children;
+  return (
+    <UltimaCode variant="block" style={styles.code}>
+      {fence}
+    </UltimaCode>
+  );
 }
 function Blockquote(props: ComponentProps<'blockquote'>) {
   return <blockquote {...props} {...stylex.props(styles.blockquote)} />;
 }
-function Table(props: ComponentProps<'table'>) {
+/** MDX writes no `style` on these, and an Ultima part's slot takes StyleX styles rather than a DOM one. */
+type MdxTableProps<E extends 'table' | 'th' | 'td'> = Omit<ComponentProps<E>, 'style'>;
+
+function UncaptionedTable(props: MdxTableProps<'table'>) {
   return (
-    <div {...stylex.props(styles.tableWrap)}>
-      <table {...props} {...stylex.props(styles.table)} />
+    <div {...stylex.props(styles.uncaptionedTableOverflow)}>
+      <Table.Root {...props} />
     </div>
   );
 }
-function Th(props: ComponentProps<'th'>) {
-  return <th {...props} {...stylex.props(styles.th)} />;
+function Th(props: MdxTableProps<'th'>) {
+  return <Table.HeadCell {...props} />;
 }
-function Td(props: ComponentProps<'td'>) {
-  return <td {...props} {...stylex.props(styles.td)} />;
+function Td(props: MdxTableProps<'td'>) {
+  return <Table.Cell {...props} style={styles.cell} />;
 }
 
 const components = {
@@ -184,7 +147,7 @@ const components = {
   code: Code,
   pre: Pre,
   blockquote: Blockquote,
-  table: Table,
+  table: UncaptionedTable,
   th: Th,
   td: Td,
 } satisfies MDXComponents;

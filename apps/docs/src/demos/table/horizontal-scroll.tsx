@@ -3,7 +3,6 @@ import { space } from '@ultima/tokens/tokens.stylex';
 import { Table } from '@ultima/ui';
 
 const styles = stylex.create({
-  region: { overflowX: 'auto' },
   table: { minWidth: '48rem' },
   note: { marginBlockEnd: space['--ult-space-4'], marginBlockStart: 0 },
 });
@@ -12,9 +11,9 @@ export default function HorizontalScroll() {
   return (
     <div>
       <p {...stylex.props(styles.note)}>Tab to the labelled region, then scroll it horizontally.</p>
-      <div role="region" aria-label="Deployment matrix" tabIndex={0} {...stylex.props(styles.region)}>
+      <Table.Scroll aria-labelledby="deployment-status">
         <Table.Root style={styles.table}>
-          <Table.Caption>Deployment status by environment</Table.Caption>
+          <Table.Caption id="deployment-status">Deployment status by environment</Table.Caption>
           <Table.Head>
             <Table.Row>
               <Table.HeadCell>Package</Table.HeadCell>
@@ -38,7 +37,7 @@ export default function HorizontalScroll() {
             </Table.Row>
           </Table.Body>
         </Table.Root>
-      </div>
+      </Table.Scroll>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import * as stylex from '@stylexjs/stylex';
 import { createRef } from 'react';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
@@ -9,7 +10,13 @@ import {
   type TableHeadCellProps,
   type TableRootProps,
   type TableRowProps,
+  type TableScrollProps,
 } from '@ultima/ui';
+
+const styles = stylex.create({
+  viewport: { maxWidth: '20rem' },
+  wide: { minWidth: '48rem' },
+});
 
 function FullTable() {
   return (
@@ -28,6 +35,32 @@ function FullTable() {
         </Table.Row>
       </Table.Body>
     </Table.Root>
+  );
+}
+
+function ScrollingTable() {
+  return (
+    <Table.Scroll aria-labelledby="deployments" data-testid="scroll" style={styles.viewport}>
+      <Table.Root style={styles.wide}>
+        <Table.Caption id="deployments">Deployment status by environment</Table.Caption>
+        <Table.Head>
+          <Table.Row>
+            <Table.HeadCell>Package</Table.HeadCell>
+            <Table.HeadCell>Development</Table.HeadCell>
+            <Table.HeadCell>Preview</Table.HeadCell>
+            <Table.HeadCell>Production</Table.HeadCell>
+          </Table.Row>
+        </Table.Head>
+        <Table.Body>
+          <Table.Row>
+            <Table.HeadCell scope="row">Tokens</Table.HeadCell>
+            <Table.Cell>Ready</Table.Cell>
+            <Table.Cell>Ready</Table.Cell>
+            <Table.Cell>Ready</Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table.Root>
+    </Table.Scroll>
   );
 }
 
@@ -108,6 +141,34 @@ test('the table carries no state: no part emits a data attribute of its own', as
   }
 });
 
+test('the scroll region is a div that overflows, takes focus, and shows the ring', async () => {
+  const screen = await render(<ScrollingTable />);
+  const region = screen.getByTestId('scroll').element() as HTMLElement;
+  expect(region.tagName).toBe('DIV');
+  expect(region.scrollWidth).toBeGreaterThan(region.clientWidth);
+  await userEvent.tab();
+  expect(document.activeElement).toBe(region);
+  const ring = getComputedStyle(region);
+  expect(ring.outlineStyle).toBe('solid');
+  expect(ring.outlineWidth).not.toBe('0px');
+});
+
+test('the caption names the scroll region through aria-labelledby', async () => {
+  const screen = await render(<ScrollingTable />);
+  await expect
+    .element(screen.getByRole('region', { name: 'Deployment status by environment' }))
+    .toBeVisible();
+});
+
+test('a focused scroll region scrolls with the arrow keys', async () => {
+  const screen = await render(<ScrollingTable />);
+  const region = screen.getByTestId('scroll').element() as HTMLElement;
+  await userEvent.tab();
+  expect(document.activeElement).toBe(region);
+  await userEvent.keyboard('{ArrowRight}');
+  await expect.poll(() => region.scrollLeft).toBeGreaterThan(0);
+});
+
 test('public prop types carry the style slot and no className', () => {
   expectTypeOf<TableRootProps>().not.toHaveProperty('className');
   expectTypeOf<TableCellProps>().not.toHaveProperty('className');
@@ -116,4 +177,6 @@ test('public prop types carry the style slot and no className', () => {
   expectTypeOf<TableRootProps>().toHaveProperty('render');
   expectTypeOf<TableHeadCellProps>().toHaveProperty('scope');
   expectTypeOf<TableCellProps>().toHaveProperty('style');
+  expectTypeOf<TableScrollProps>().not.toHaveProperty('className');
+  expectTypeOf<TableScrollProps>().toHaveProperty('style');
 });

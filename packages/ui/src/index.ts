@@ -13,6 +13,7 @@ export { Code, type CodeProps, type CodeVariant } from './code';
 export { Badge, type BadgeProps, type BadgeVariant, type BadgeTone } from './badge';
 export {
   Table,
+  type TableScrollProps,
   type TableRootProps,
   type TableHeadProps,
   type TableBodyProps,
