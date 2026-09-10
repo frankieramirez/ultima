@@ -87,6 +87,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'Tabbed sections in an underline or a segmented variant, on Base UI.',
     docs: 'import { Tabs } from \'@/components/ui/tabs\';\n\n<Tabs.Root variant="underline" defaultValue="tokens">\n  <Tabs.List>\n    <Tabs.Tab value="tokens">Tokens</Tabs.Tab>\n    <Tabs.Tab value="themes">Themes</Tabs.Tab>\n    <Tabs.Indicator />\n  </Tabs.List>\n  <Tabs.Panel value="tokens">Anything.</Tabs.Panel>\n</Tabs.Root>',
   },
+  'toggle-group': {
+    title: 'Toggle Group',
+    description: 'A segmented group of toggle buttons with roving focus, on Base UI.',
+    docs: 'import { ToggleGroup } from \'@/components/ui/toggle-group\';\n\n<ToggleGroup.Root aria-label="Layout" defaultValue={[\'list\']}>\n  <ToggleGroup.Item value="list">List</ToggleGroup.Item>\n  <ToggleGroup.Item value="grid">Grid</ToggleGroup.Item>\n</ToggleGroup.Root>',
+  },
   tooltip: {
     title: 'Tooltip',
     description: 'A short overlay on hover or focus, labelled through aria-label on its trigger.',

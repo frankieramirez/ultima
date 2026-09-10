@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { ToggleGroup } from '@ultima/ui';
 
 import { useTheme, type ThemePreference } from './theme';
 import { BrandLogo } from './brand-logo';
@@ -49,36 +50,6 @@ const styles = stylex.create({
     display: 'flex',
     gap: space['--ult-space-6'],
   },
-  control: {
-    borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-md'],
-    borderStyle: 'solid',
-    borderWidth: border.hairline,
-    display: 'flex',
-    overflow: 'hidden',
-  },
-  option: {
-    appearance: 'none',
-    backgroundColor: {
-      default: 'transparent',
-      ':is([aria-pressed="true"])': color['--ult-color-surface-hover'],
-    },
-    borderWidth: 0,
-    color: {
-      default: color['--ult-color-text-muted'],
-      ':is([aria-pressed="true"])': color['--ult-color-text'],
-    },
-    cursor: 'pointer',
-    fontFamily: font['--ult-font-sans'],
-    fontSize: text['--ult-text-2'],
-    fontWeight: font['--ult-font-weight-medium'],
-    paddingBlock: space['--ult-space-3'],
-    paddingInline: space['--ult-space-4'],
-    outlineColor: color['--ult-color-border-focus'],
-    outlineOffset: border.focusOffset,
-    outlineStyle: { default: 'none', ':focus-visible': 'solid' },
-    outlineWidth: border.focus,
-  },
 });
 
 const NAV = [
@@ -112,19 +83,26 @@ export function Header() {
           ))}
         </nav>
       </div>
-      <div {...stylex.props(styles.control)} role="group" aria-label="Color mode">
+      <ToggleGroup.Root
+        aria-label="Color mode"
+        onValueChange={(next, eventDetails) => {
+          const [preferred] = next;
+          // Base UI reports [] when the pressed option is pressed again, and honours
+          // cancel() before it sets state. Without this a mode would stop being in force.
+          if (!preferred) {
+            eventDetails.cancel();
+            return;
+          }
+          setPreference(preferred);
+        }}
+        value={[preference]}
+      >
         {OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={preference === option.value}
-            onClick={() => setPreference(option.value)}
-            {...stylex.props(styles.option)}
-          >
+          <ToggleGroup.Item key={option.value} value={option.value}>
             {option.label}
-          </button>
+          </ToggleGroup.Item>
         ))}
-      </div>
+      </ToggleGroup.Root>
     </header>
   );
 }

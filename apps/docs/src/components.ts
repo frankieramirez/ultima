@@ -56,4 +56,9 @@ export const components = [
     item: 'collapsible',
     description: 'A disclosure that animates its panel open and closed, on Base UI.',
   },
+  {
+    name: 'Toggle Group',
+    item: 'toggle-group',
+    description: 'A segmented group of toggle buttons with roving focus, on Base UI.',
+  },
 ] satisfies ComponentEntry[];

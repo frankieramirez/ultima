@@ -19,5 +19,6 @@ test('the component catalogue exposes the v0 set in specification order', () => 
     'input',
     'switch',
     'collapsible',
+    'toggle-group',
   ]);
 });

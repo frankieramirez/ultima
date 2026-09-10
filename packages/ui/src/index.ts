@@ -107,3 +107,8 @@ export {
   type CollapsibleTriggerProps,
   type CollapsiblePanelProps,
 } from './collapsible';
+export {
+  ToggleGroup,
+  type ToggleGroupRootProps,
+  type ToggleGroupItemProps,
+} from './toggle-group';
