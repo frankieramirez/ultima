@@ -66,9 +66,13 @@ Any project that installs Ultima. Mana's report is the first consumer of the tok
 
 The site at `apps/docs`. Three things at once: Ultima's reference, the host that serves the registry and the tokens CSS export, and a portfolio piece. It uses the components by importing them from the workspace, so it is not a consumer.
 
+## Page layout
+
+The docs-local side of the line between an Ultima component and the site's own chrome. Page layout arranges content and sets type and flow spacing. It never builds a control from plain elements and never paints a surface, meaning a background, a border, a shadow, or a radius. Anything that does one of those comes from a component, or becomes one. A control here is anything the user reaches with a keyboard, so a tabbable scroll region counts even though it presses nothing.
+
 ## Report set
 
-The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, Tooltip. The foundation set is the report set plus Dialog, Dropdown Menu, Select, Input, and Switch. The v0 release adds Sidebar and the reusable components required to build the docs site.
+The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, Tooltip. The foundation set is the report set plus Dialog, Dropdown Menu, Select, Input, and Switch, which is fourteen. The v0 set is seventeen: the foundation plus Sidebar, Collapsible, and Toggle Group, the three the docs application turned out to need.
 
 ## Token group
 
@@ -96,7 +100,31 @@ A semantic token for hover or active, named with a `-hover` or `-active` suffix.
 
 ## Part
 
-One named piece of a compound component, such as `Card.Root` or `Dialog.Popup`. Part names match Base UI's where a primitive exists. A single-part component has no parts, just the component. A part is either styled by Ultima or passed through: a part that paints, or sets its own type or spacing, is styled; a part that only portals, positions, or groups passes through unchanged.
+One named piece of a compound component, such as `Card.Root` or `Dialog.Popup`. Part names match Base UI's wherever a primitive supplies them, so `ToggleGroup.Item` is the only name Ultima invents: Base UI ships toggle group and toggle as two components rather than one namespace. A single-part component has no parts, just the component. A part is either styled by Ultima or passed through: a part that paints, or sets its own type or spacing, is styled, and so is a part whose primitive depends on CSS the primitive does not supply; a part that only portals, positions, or groups passes through unchanged.
+
+## Cross-part state
+
+A value a compound component's parts must agree on, such as Tabs' `variant` or Sidebar's open state. It lives in a context private to the component file, with `Root` as the provider. A value that can differ per part stays a prop on the part.
+
+## Breakpoint
+
+The one viewport width at which Sidebar switches between its inline desktop panel and its mobile menu, `48rem`. It is a named module constant in the component that uses it, not a token: a custom property cannot appear in a media condition, so nothing themeable can hold it.
+
+## Responsive state
+
+Sidebar's two open states: `open`, the persisted desktop collapse, and `mobileOpen`, the transient mobile menu. CSS decides what is visible below the breakpoint; a JavaScript read of the same query decides what is mounted. The server render is the desktop shape.
+
+## Mobile menu
+
+How Sidebar presents its panel below the breakpoint: the panel's children inside a Dialog popup anchored to the inline start, sliding in over the page. Opened by `Sidebar.Trigger`, closed by `Sidebar.Close`, Escape, the backdrop, or choosing a link.
+
+## Component hook
+
+The `use<Component>()` export of a component with shared runtime state, `useSidebar()` first. It is how a consumer builds a part of their own that reads or sets that state. It throws outside the component's `Root`. A component whose context carries only an axis has no hook.
+
+## Wrapper trigger
+
+A part that exists to be handed the consumer's own element through `render`, such as `Dialog.Trigger`, `Dialog.Close`, `Sidebar.Trigger`, `Sidebar.Close`, or `Collapsible.Trigger`. It wires behavior and ARIA and ships no styles at all, so the element rendered into it carries its own reset and focus ring. The docs say the slot holds an Ultima Button or an element with its own ring.
 
 ## Axis
 
@@ -108,7 +136,7 @@ The axis that lets a caller pick a component's color role by name, so `tone="dan
 
 ## Overlay
 
-A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant.
+A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition.
 
 ## Style slot
 
@@ -128,8 +156,16 @@ What a component promises for keyboard and screen-reader use beyond what its Bas
 
 ## Demo
 
-A real component module under `apps/docs/src/demos/`, rendered live on a docs page with its own source printed beneath it. A demo is three things at once: the running example, the copyable source, and the surface the accessibility sweep runs axe over.
+A real component module under `apps/docs/src/demos/`, rendered live on a docs page with its own source printed beneath it. A demo is three things at once: the running example, the copyable source, and the surface the accessibility sweep runs axe over. It renders at the reader's real viewport and never fakes another one, so a component that changes shape with the width changes shape in its demos too.
+
+## Live demonstration
+
+A claim the site proves by using Ultima rather than by writing it down. The header's theme control is how the site shows that light is a full peer of dark; the site's own menu is how it shows a whole Sidebar. Where one exists, the component's page points at it and its own demos each show one narrower thing.
 
 ## Smoke install
 
 The scripted end-to-end proof that the registry still installs: a fresh Vite app and a fresh Next.js app run the documented `shadcn add` commands against the built registry and then build. It runs on a schedule and on registry changes, not on every pull request.
+
+## Proof bar
+
+The eight items every component build ticket ships as its test file: every combination renders, the name resolves, the focus ring lands, the primitive is still wired, documented state drives its style, typecheck passes, behavior Ultima wires itself is exercised, and CSS the primitive reads is asserted. It is a bar rather than a suite, so a component with no axes and no state still costs a file, and the last two items exist for behavior a static screenshot would pass.
