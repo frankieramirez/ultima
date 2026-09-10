@@ -3,6 +3,7 @@ import * as stylex from '@stylexjs/stylex';
 import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
 
 import { useTheme, type ThemePreference } from './theme';
+import { BrandLogo } from './brand-logo';
 
 const styles = stylex.create({
   bar: {
@@ -18,12 +19,14 @@ const styles = stylex.create({
     paddingInline: space['--ult-space-6'],
   },
   brand: {
-    color: color['--ult-color-text'],
-    fontFamily: font['--ult-font-sans'],
-    fontSize: text['--ult-text-6'],
-    fontWeight: font['--ult-font-weight-semibold'],
-    letterSpacing: font['--ult-font-tracking-tight'],
+    alignItems: 'center',
+    display: 'flex',
     textDecoration: 'none',
+  },
+  brandLogo: {
+    display: 'block',
+    height: '1.5rem',
+    width: 'auto',
   },
   nav: {
     alignItems: 'center',
@@ -99,7 +102,7 @@ export function Header() {
     <header {...stylex.props(styles.bar)}>
       <div {...stylex.props(styles.cluster)}>
         <Link to="/" {...stylex.props(styles.brand)}>
-          Ultima
+          <BrandLogo alt="Ultima" width={1287} height={261} style={styles.brandLogo} />
         </Link>
         <nav {...stylex.props(styles.nav)} aria-label="Primary">
           {NAV.map((item) => (

@@ -4,6 +4,7 @@ import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.
 import { Button, Code } from '@ultima/ui';
 
 import { CopyButton } from '../copy-button';
+import { BrandLogo } from '../brand-logo';
 import CardOverview from '../demos/card/overview';
 import CodeBlock from '../demos/code/block';
 import ButtonVariants from '../demos/button/variants';
@@ -183,7 +184,7 @@ export function Home() {
     <main {...stylex.props(styles.page)}>
       <section {...stylex.props(styles.hero)}>
         <h1 {...stylex.props(styles.wordmark)}>
-          <img src="/ultima-banner.svg" alt="Ultima" width={2172} height={724} {...stylex.props(styles.logo)} />
+          <BrandLogo alt="Ultima" width={1287} height={261} style={styles.logo} />
         </h1>
         <p {...stylex.props(styles.pitch)}>The final spell for the interfaces you build.</p>
         <p {...stylex.props(styles.prose)}>
