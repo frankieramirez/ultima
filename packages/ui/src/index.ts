@@ -107,3 +107,18 @@ export {
   type CollapsibleTriggerProps,
   type CollapsiblePanelProps,
 } from './collapsible';
+export {
+  Sidebar,
+  useSidebar,
+  type SidebarState,
+  type SidebarRootProps,
+  type SidebarPanelProps,
+  type SidebarTriggerProps,
+  type SidebarCloseProps,
+  type SidebarGroupProps,
+  type SidebarGroupLabelProps,
+  type SidebarListProps,
+  type SidebarItemProps,
+  type SidebarLinkProps,
+  type SidebarButtonProps,
+} from './sidebar';
