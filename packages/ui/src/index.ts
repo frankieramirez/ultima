@@ -101,3 +101,9 @@ export {
   type TooltipPopupProps,
   type TooltipArrowProps,
 } from './tooltip';
+export {
+  Collapsible,
+  type CollapsibleRootProps,
+  type CollapsibleTriggerProps,
+  type CollapsiblePanelProps,
+} from './collapsible';

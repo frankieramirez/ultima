@@ -10,6 +10,7 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       '@base-ui/react/button',
+      '@base-ui/react/collapsible',
       '@base-ui/react/input',
       '@base-ui/react/dialog',
       '@base-ui/react/menu',
@@ -29,6 +30,7 @@ export default defineConfig({
       headless: true,
       provider: playwright(),
       instances: [{ browser: 'chromium' }],
+      viewport: { width: 1280, height: 720 },
     },
   },
 });
