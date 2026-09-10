@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { Sidebar } from '@ultima/ui';
+import { Button, Sidebar } from '@ultima/ui';
 
 const styles = stylex.create({
   panel: {
@@ -29,6 +29,7 @@ const pages = [
 export default function SidebarScroll() {
   return (
     <Sidebar.Root>
+      <Sidebar.Trigger render={<Button variant="ghost" />}>Toggle the catalogue</Sidebar.Trigger>
       <Sidebar.Panel aria-label="Scrolling catalogue" style={styles.panel}>
         <Sidebar.List>
           {pages.map((page) => (

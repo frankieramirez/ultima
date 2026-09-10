@@ -5,27 +5,49 @@ import * as stylex from '@stylexjs/stylex';
 import { border, color, easing, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import { Dialog } from '@ultima/ui/dialog';
 import type { PartProps } from '@ultima/ui/lib/component';
-import { createContext, use, useCallback, useId, useMemo, useState } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+import { createContext, use, useCallback, useEffect, useId, useMemo, useState, useSyncExternalStore } from 'react';
+
+/**
+ * The one breakpoint, above which Sidebar is an inline panel. Both halves of the switch read this
+ * string: the at-rule keys below, and the `matchMedia` subscription that decides what mounts. A
+ * runtime value cannot sit in a StyleX media condition, so it is a module constant and not a prop.
+ */
+const DESKTOP = '@media (min-width: 48rem)';
+
+const DESKTOP_CONDITION = DESKTOP.slice('@media '.length);
 
 const styles = stylex.create({
+  /**
+   * The inline panel, and the CSS half of the breakpoint. It is hidden below `DESKTOP` so a narrow
+   * server render never flashes the desktop layout, and every collapse condition is nested inside
+   * the query, because a bare media query outranks every state condition written beside it.
+   */
   panel: {
     backgroundColor: color['--ult-color-surface'],
     borderInlineEndColor: color['--ult-color-border'],
     borderInlineEndStyle: 'solid',
-    borderInlineEndWidth: { default: border.hairline, ':is([data-closed])': 0 },
+    borderInlineEndWidth: { default: 0, [DESKTOP]: { default: border.hairline, ':is([data-closed])': 0 } },
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
+    display: { default: 'none', [DESKTOP]: 'block' },
     fontFamily: font['--ult-font-sans'],
-    inlineSize: { default: `calc(4 * ${space['--ult-space-12']})`, ':is([data-closed])': 0 },
+    inlineSize: {
+      default: `min(calc(4 * ${space['--ult-space-12']}), 100%)`,
+      [DESKTOP]: { default: `min(calc(4 * ${space['--ult-space-12']}), 100%)`, ':is([data-closed])': 0 },
+    },
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
-    overflow: { default: 'auto', ':is([data-closed])': 'hidden' },
+    overflow: { default: 'auto', [DESKTOP]: { default: 'auto', ':is([data-closed])': 'hidden' } },
     paddingBlock: space['--ult-space-4'],
-    paddingInline: { default: space['--ult-space-4'], ':is([data-closed])': 0 },
+    paddingInline: {
+      default: space['--ult-space-4'],
+      [DESKTOP]: { default: space['--ult-space-4'], ':is([data-closed])': 0 },
+    },
     transitionDuration: motion['--ult-motion-base'],
     transitionProperty: 'inline-size, padding-inline, border-inline-end-width, visibility',
     transitionTimingFunction: easing.standard,
-    visibility: { default: 'visible', ':is([data-closed])': 'hidden' },
+    visibility: { default: 'visible', [DESKTOP]: { default: 'visible', ':is([data-closed])': 'hidden' } },
   },
   group: {
     display: 'flex',
@@ -107,6 +129,40 @@ const styles = stylex.create({
   },
 });
 
+/**
+ * StyleX merges a property one condition at a time, so the popup's `transform` names all three of
+ * its states: a state left out here would keep Dialog's own `scale(0.98)` underneath the slide.
+ */
+const mobile = stylex.create({
+  viewport: {
+    display: 'flex',
+    justifyContent: 'flex-start',
+    padding: 0,
+  },
+  popup: {
+    blockSize: '100%',
+    borderInlineEndWidth: border.hairline,
+    borderRadius: 0,
+    borderWidth: 0,
+    inlineSize: `min(calc(4 * ${space['--ult-space-12']}), 100%)`,
+    maxWidth: 'none',
+    padding: 0,
+    transform: {
+      default: 'translateX(0)',
+      ':is([data-starting-style])': 'translateX(-100%)',
+      ':is([data-ending-style])': 'translateX(-100%)',
+    },
+    transitionDuration: motion['--ult-motion-base'],
+    transitionProperty: 'opacity, transform',
+  },
+  panel: {
+    blockSize: '100%',
+    // A later plain value replaces the whole property, media query and all, so this lifts the
+    // panel style's `display: none` rather than losing to it on StyleX's at-rule priority.
+    display: 'block',
+  },
+});
+
 const depths = stylex.create({
   root: { paddingInlineStart: 0 },
   nested: { paddingInlineStart: space['--ult-space-6'] },
@@ -136,9 +192,22 @@ function useSidebar(): SidebarState {
   return useRoot('useSidebar').state;
 }
 
-/** Reads the viewport half of the breakpoint. Both halves land together on ULT-64; until then every width is desktop. */
-function useIsMobile(): boolean {
+function subscribeToDesktop(onChange: () => void) {
+  const query = window.matchMedia(DESKTOP_CONDITION);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+function readIsMobile(): boolean {
+  return !window.matchMedia(DESKTOP_CONDITION).matches;
+}
+
+function serverIsMobile(): boolean {
   return false;
+}
+
+function useIsMobile(): boolean {
+  return useSyncExternalStore(subscribeToDesktop, readIsMobile, serverIsMobile);
 }
 
 type SidebarRootProps = PartProps<useRender.ComponentProps<'div'>> & {
@@ -152,6 +221,8 @@ type SidebarRootProps = PartProps<useRender.ComponentProps<'div'>> & {
 
 type SidebarPanelProps = PartProps<useRender.ComponentProps<'nav'>> &
   ({ 'aria-label': string } | { 'aria-labelledby': string });
+
+type SidebarPanelName = { 'aria-label'?: string; 'aria-labelledby'?: string };
 
 type SidebarTriggerProps = PartProps<useRender.ComponentProps<'button'>>;
 type SidebarCloseProps = PartProps<useRender.ComponentProps<'button'>>;
@@ -199,6 +270,10 @@ function Root({
 
   const isMobile = useIsMobile();
 
+  useEffect(() => {
+    if (!isMobile && resolvedMobileOpen) setMobileOpen(false);
+  }, [isMobile, resolvedMobileOpen, setMobileOpen]);
+
   const state = useMemo<SidebarState>(
     () => ({
       open: resolvedOpen,
@@ -229,8 +304,9 @@ function Root({
 
 function Panel({ ref, render, style, id, ...props }: SidebarPanelProps) {
   const { state, panelId } = useRoot('Sidebar.Panel');
+  const { 'aria-label': label, 'aria-labelledby': labelledBy }: SidebarPanelName = props;
 
-  return useRender({
+  const nav = useRender({
     defaultTagName: 'nav',
     ref,
     render,
@@ -238,17 +314,35 @@ function Panel({ ref, render, style, id, ...props }: SidebarPanelProps) {
     stateAttributesMapping: {
       open: (value: boolean): Record<string, string> => (value ? { 'data-open': '' } : { 'data-closed': '' }),
     },
-    props: { id: id ?? panelId, ...props, ...stylex.props(styles.panel, style) },
+    props: {
+      id: id ?? panelId,
+      ...props,
+      ...stylex.props(styles.panel, state.isMobile && mobile.panel, style),
+    },
   });
+
+  if (!state.isMobile) return nav;
+
+  return (
+    <Dialog.Portal>
+      <Dialog.Backdrop />
+      <Dialog.Viewport style={mobile.viewport}>
+        <Dialog.Popup style={mobile.popup} aria-label={label} aria-labelledby={labelledBy}>
+          {nav}
+        </Dialog.Popup>
+      </Dialog.Viewport>
+    </Dialog.Portal>
+  );
 }
 
 function Trigger({ ref, render, style, ...props }: SidebarTriggerProps) {
   const { state, panelId } = useRoot('Sidebar.Trigger');
 
-  return useRender({
+  const desktop = useRender({
     defaultTagName: 'button',
     ref,
     render,
+    enabled: !state.isMobile,
     props: {
       type: 'button',
       'aria-controls': panelId,
@@ -258,23 +352,18 @@ function Trigger({ ref, render, style, ...props }: SidebarTriggerProps) {
       ...stylex.props(style),
     },
   });
+
+  if (state.isMobile) return <Dialog.Trigger ref={ref} render={render} {...props} {...stylex.props(style)} />;
+
+  return desktop;
 }
 
 function Close({ ref, render, style, ...props }: SidebarCloseProps) {
   const { state } = useRoot('Sidebar.Close');
 
-  return useRender({
-    defaultTagName: 'button',
-    ref,
-    render,
-    enabled: state.isMobile,
-    props: {
-      type: 'button',
-      onClick: () => state.setMobileOpen(false),
-      ...props,
-      ...stylex.props(style),
-    },
-  });
+  if (!state.isMobile) return null;
+
+  return <Dialog.Close ref={ref} render={render} {...props} {...stylex.props(style)} />;
 }
 
 function Group({ ref, render, style, ...props }: SidebarGroupProps) {
@@ -311,7 +400,9 @@ function Item({ ref, render, style, ...props }: SidebarItemProps) {
   return useRender({ defaultTagName: 'li', ref, render, props: { ...props, ...stylex.props(style) } });
 }
 
-function Link({ ref, render, style, active = false, ...props }: SidebarLinkProps) {
+function Link({ ref, render, style, active = false, onClick, ...props }: SidebarLinkProps) {
+  const { state } = useRoot('Sidebar.Link');
+
   return useRender({
     defaultTagName: 'a',
     ref,
@@ -321,7 +412,14 @@ function Link({ ref, render, style, active = false, ...props }: SidebarLinkProps
       active: (value: boolean): Record<string, string> | null =>
         value ? { 'data-active': '', 'aria-current': 'page' } : null,
     },
-    props: { ...props, ...stylex.props(styles.row, styles.link, style) },
+    props: {
+      ...props,
+      onClick: (event: ReactMouseEvent<HTMLAnchorElement>) => {
+        onClick?.(event);
+        if (state.isMobile) state.setMobileOpen(false);
+      },
+      ...stylex.props(styles.row, styles.link, style),
+    },
   });
 }
 

@@ -1,8 +1,9 @@
-import { Collapsible, Sidebar } from '@ultima/ui';
+import { Button, Collapsible, Sidebar } from '@ultima/ui';
 
 export default function SidebarNested() {
   return (
     <Sidebar.Root>
+      <Sidebar.Trigger render={<Button variant="ghost" />}>Toggle the nested groups</Sidebar.Trigger>
       <Sidebar.Panel aria-label="Nested groups">
         <Sidebar.List>
           <Sidebar.Item>

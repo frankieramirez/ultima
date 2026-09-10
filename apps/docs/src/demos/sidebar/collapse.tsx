@@ -32,7 +32,7 @@ export default function SidebarCollapse() {
         </Sidebar.List>
       </Sidebar.Panel>
       <div {...stylex.props(styles.content)}>
-        <Sidebar.Trigger render={<Button variant="ghost" />}>Toggle navigation</Sidebar.Trigger>
+        <Sidebar.Trigger render={<Button variant="ghost" />}>Toggle the collapsing navigation</Sidebar.Trigger>
         <p>
           The panel animates its inline size, so collapsing it reflows the page beside it rather than sliding a box off
           the edge.
