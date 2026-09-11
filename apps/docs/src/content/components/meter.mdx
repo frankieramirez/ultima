@@ -1,4 +1,6 @@
 import { Demo } from '../../demo';
+import Override from '../../demos/meter/override';
+import overrideSource from '../../demos/meter/override?raw';
 import Report from '../../demos/meter/report';
 import reportSource from '../../demos/meter/report?raw';
 import Tones from '../../demos/meter/tones';
@@ -6,7 +8,7 @@ import tonesSource from '../../demos/meter/tones?raw';
 
 # Meter
 
-A static measurement built on Base UI's Meter, with separately toned fills and values.
+A static measurement built on Base UI's Meter, with one tone for the fill and the number.
 
 ## Install
 
@@ -16,15 +18,21 @@ npx shadcn add @ultima/meter
 
 ## Report meter
 
-Compose `Label`, `Track`, `Indicator`, and `Value` for a compact report-style measurement.
+Compose `Label`, `Track`, `Indicator`, and `Value` for a compact report-style measurement. `tone` on `Root` colors the fill and the number together.
 
 <Demo component={Report} source={reportSource} />
 
 ## Tones
 
-`tone` belongs separately to `Indicator` and `Value`; there is no Meter color context. The danger example passes the same tone to both parts, while the others tone only the indicator.
+`tone` is set once on `Root` and reaches `Indicator` and `Value` through a context private to the component. `neutral` is the default.
 
 <Demo component={Tones} source={tonesSource} />
+
+## Overriding one part
+
+`Indicator` and `Value` each accept their own `tone`, which wins over the one `Root` provides. A neutral number under a colored bar is one extra prop.
+
+<Demo component={Override} source={overrideSource} />
 
 ## Props
 
@@ -32,10 +40,13 @@ Only what Ultima adds. Everything else is Base UI's; see [Base UI's Meter](https
 
 | Part | Prop | Type | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `Indicator` | `tone` | `'neutral' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `'neutral'` | Colors the fill. |
-| `Value` | `tone` | `'neutral' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `'neutral'` | Colors the rendered number independently. |
+| `Root` | `tone` | `'neutral' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `'neutral'` | Colors the fill and the number. |
+| `Indicator` | `tone` | `'neutral' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `Root`'s tone | Overrides the fill alone. |
+| `Value` | `tone` | `'neutral' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `Root`'s tone | Overrides the rendered number alone. |
 | Every styled part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
 | Every part | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+`Indicator` and `Value` read the tone from `Root`. Rendered outside one they fall back to `neutral` rather than throwing.
 
 ## Accessibility
 

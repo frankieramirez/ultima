@@ -60,7 +60,7 @@ export const items: Record<string, RegistryItemDescription> = {
   meter: {
     title: 'Meter',
     description: 'A bounded measurement as a toned bar, on Base UI.',
-    docs: 'import { Meter } from \'@/components/ui/meter\';\n\n<Meter.Root value={72}>\n  <Meter.Label>Disk used</Meter.Label>\n  <Meter.Track>\n    <Meter.Indicator tone="warning" />\n  </Meter.Track>\n  <Meter.Value tone="warning" />\n</Meter.Root>',
+    docs: 'import { Meter } from \'@/components/ui/meter\';\n\n<Meter.Root value={72} tone="warning">\n  <Meter.Label>Disk used</Meter.Label>\n  <Meter.Track>\n    <Meter.Indicator />\n  </Meter.Track>\n  <Meter.Value />\n</Meter.Root>',
   },
   stat: {
     title: 'Stat',
