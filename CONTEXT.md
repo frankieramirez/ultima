@@ -50,6 +50,14 @@ The hosted shadcn-compatible index that lets a consumer copy Ultima source into 
 
 One installable unit in the registry: a component, a style, or a theme, with its files and dependencies.
 
+## Recipe
+
+A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Sheet is a recipe over Dialog; Data Table is a recipe over Table and an engine. Where a recipe hands the user a control, that control still comes from a component.
+
+## Engine
+
+A headless dependency that supplies a model rather than an interaction: TanStack Table's row model, and whatever Calendar and Chart turn out to need. An engine renders no DOM and no styles, and supplies no roles, ARIA, keyboard handling, or focus management, which is the whole difference between it and a primitive. It belongs to the consumer, never to a registry item, so a composition that needs one is a recipe.
+
 ## Setup item
 
 The universal registry item that prepares a project for Ultima: one per target (Vite, Next.js App Router). It installs `components.json`, the StyleX compiler config, and the namespace entry, and it never overwrites a file the consumer's scaffold already owns.
