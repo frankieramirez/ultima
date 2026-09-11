@@ -10,6 +10,8 @@ import {
   type ReactNode,
 } from 'react';
 
+import { readStored, writeStored } from './storage';
+
 export const THEME_STORAGE_KEY = 'ultima-theme';
 export type ThemePreference = 'dark' | 'light' | 'system';
 
@@ -23,22 +25,6 @@ const ThemeContext = createContext<{
 
 function isThemePreference(value: string | null): value is ThemePreference {
   return value === 'dark' || value === 'light' || value === 'system';
-}
-
-function readStored(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writeStored(key: string, value: string) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    return;
-  }
 }
 
 function readPreference(): ThemePreference {

@@ -1,7 +1,7 @@
-import { Link } from '@tanstack/react-router';
+import { ListIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { ToggleGroup } from '@ultima/ui';
+import { border, color, space } from '@ultima/tokens/tokens.stylex';
+import { Button, Sidebar, ToggleGroup } from '@ultima/ui';
 
 import { useTheme, type ThemePreference } from './theme';
 import { BrandLogo } from './brand-logo';
@@ -19,46 +19,20 @@ const styles = stylex.create({
     paddingBlock: space['--ult-space-4'],
     paddingInline: space['--ult-space-6'],
   },
-  brand: {
-    alignItems: 'center',
-    display: 'flex',
-    textDecoration: 'none',
-  },
   brandLogo: {
     display: 'block',
     height: '1.5rem',
     width: 'auto',
-  },
-  nav: {
-    alignItems: 'center',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: space['--ult-space-5'],
-  },
-  link: {
-    color: {
-      default: color['--ult-color-text-muted'],
-      ':hover': color['--ult-color-text'],
-      ':is([data-status="active"])': color['--ult-color-text'],
-    },
-    fontSize: text['--ult-text-4'],
-    fontWeight: font['--ult-font-weight-medium'],
-    textDecoration: 'none',
   },
   cluster: {
     alignItems: 'center',
     display: 'flex',
     gap: space['--ult-space-6'],
   },
+  trigger: {
+    paddingInline: space['--ult-space-4'],
+  },
 });
-
-const NAV = [
-  { to: '/install' as const, label: 'Install' },
-  { to: '/tokens' as const, label: 'Tokens' },
-  { to: '/palette' as const, label: 'Palette' },
-  { to: '/components' as const, label: 'Components' },
-  { to: '/rationale' as const, label: 'Rationale' },
-];
 
 const OPTIONS: { value: ThemePreference; label: string }[] = [
   { value: 'dark', label: 'Dark' },
@@ -72,16 +46,12 @@ export function Header() {
   return (
     <header {...stylex.props(styles.bar)}>
       <div {...stylex.props(styles.cluster)}>
-        <Link to="/" {...stylex.props(styles.brand)}>
-          <BrandLogo alt="Ultima" width={1287} height={261} style={styles.brandLogo} />
-        </Link>
-        <nav {...stylex.props(styles.nav)} aria-label="Primary">
-          {NAV.map((item) => (
-            <Link key={item.to} to={item.to} {...stylex.props(styles.link)}>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <Sidebar.Trigger
+          render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}
+        >
+          <ListIcon />
+        </Sidebar.Trigger>
+        <BrandLogo alt="Ultima" width={1287} height={261} style={styles.brandLogo} />
       </div>
       <ToggleGroup.Root
         aria-label="Color mode"

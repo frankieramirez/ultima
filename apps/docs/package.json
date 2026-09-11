@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "pnpm -w run registry:build && vite build",
     "preview": "vite preview",
-    "test": "vitest run --reporter=verbose",
+    "test": "pnpm --filter @ultima/tokens build && vitest run --reporter=verbose",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
