@@ -136,11 +136,11 @@ A part that exists to be handed the consumer's own element through `render`, suc
 
 ## Axis
 
-A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow.
+A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow. Combobox's `size` sits on `InputGroup`, the visual box. Slider has no `size`.
 
 ## Tone
 
-The axis that lets a caller pick a component's color role by name, so `tone="danger"` reaches that role's fill and its contrast on-color together and the caller never names a token. Button, Badge, and Meter carry one in v0. `neutral` is a tone value but not a color role, so a component using it names the neutral tokens it wants.
+The axis that lets a caller pick a component's color role by name, so `tone="danger"` reaches that role's fill and its contrast on-color together and the caller never names a token. Button, Badge, and Meter carry one in v0. Slider does not: it is a value picker, not a measurement. `neutral` is a tone value but not a color role, so a component using it names the neutral tokens it wants.
 
 ## Field
 
@@ -148,7 +148,7 @@ The component that binds one control to its label, its description, and its erro
 
 ## Control slot
 
-The one element inside a Field that is the field's control, and the thing the label names and the validation state lands on. Ultima's own controls fill it by being themselves, because Base UI's input primitive is the field's control part, so a control registers itself rather than being wrapped. `Field.Control` is the part for a control Ultima does not ship. A checkbox or radio group is one control slot rather than several, which is why a group takes one name and one error.
+The one element inside a Field that is the field's control, and the thing the label names and the validation state lands on. Ultima's own controls fill it by being themselves, because Base UI's input primitive is the field's control part, so a control registers itself rather than being wrapped. `Field.Control` is the part for a control Ultima does not ship. A checkbox or radio group is one control slot rather than several, which is why a group takes one name and one error. Combobox's control is the Input in the canonical pattern; Slider's is `Root`, a group.
 
 ## Validation state
 
@@ -158,9 +158,13 @@ Whether a field is currently valid, and the attributes that carry it: a data att
 
 A checkbox that is neither checked nor unchecked: some but not all of a related set are selected. It is a pass-through Base UI prop, announced as `aria-checked="mixed"`, and shown with a dash rather than a check. Data Table's select-all is this state on a standalone checkbox; a select-all that lives in the same group as its items uses the group's parent checkbox instead.
 
+## Combobox
+
+A filterable input whose value is restricted to the item set. It is a sibling of Select, not a variant of it. Autocomplete is the free-text primitive Base UI ships beside it and is not in v0.1. `Combobox.Label` names the trigger, not the input.
+
 ## Overlay
 
-A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition.
+A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it.
 
 ## Style slot
 
@@ -172,7 +176,7 @@ The one registry item, `lib/component.ts`, holding the helper types every compon
 
 ## Glyph slot
 
-A Base UI part whose only content is an icon: `Select.Icon`, `Select.ItemIndicator`, `Menu.CheckboxItemIndicator`, `Menu.RadioItemIndicator`, `Checkbox.Indicator`, `RadioGroup.Indicator`. Ultima fills each with a `1em` inline SVG private to the component file, and accepts `children` as a replacement. Checkbox's slot holds two glyphs, the check and the dash, chosen by whether the box is checked or mixed. Ultima ships no icon dependency, so a slot Base UI leaves empty is the only place an Ultima glyph appears.
+A Base UI part whose only content is an icon: `Select.Icon`, `Select.ItemIndicator`, `Menu.CheckboxItemIndicator`, `Menu.RadioItemIndicator`, `Checkbox.Indicator`, `RadioGroup.Indicator`, `Combobox.Icon`, `Combobox.ItemIndicator`, `Combobox.Clear`, `Combobox.ChipRemove`. Ultima fills each with a `1em` inline SVG private to the component file, and accepts `children` as a replacement. Checkbox's slot holds two glyphs, the check and the dash, chosen by whether the box is checked or mixed. Combobox's clear and chip-remove slots share an x. Ultima ships no icon dependency, so a slot Base UI leaves empty is the only place an Ultima glyph appears.
 
 ## Accessibility contract
 
