@@ -16,6 +16,8 @@ import {
   type SelectValueProps,
 } from '@ultima/ui';
 
+import { themeDocument, themes, violations } from './axe';
+
 function FruitSelect({
   size,
   name,
@@ -53,7 +55,7 @@ function FruitSelect({
       <Select.Portal>
         <Select.Backdrop />
         <Select.Positioner>
-          <Select.Popup>
+          <Select.Popup data-testid="popup">
             <Select.ScrollUpArrow />
             <Select.List>
               <Select.Group>
@@ -195,3 +197,18 @@ test('public prop types expose size on Trigger only and no className on styled p
   expectTypeOf<SelectItemIndicatorProps>().not.toHaveProperty('className');
   expectTypeOf<SelectSeparatorProps>().not.toHaveProperty('className');
 });
+
+for (const mode of themes) {
+  test(`the open popup has no axe violations in ${mode.name}`, async () => {
+    themeDocument(mode);
+    const screen = await render(
+      <main>
+        <FruitSelect labelled />
+      </main>,
+    );
+    await userEvent.click(screen.getByRole('combobox', { name: 'Fruit' }).element());
+    await expect.element(screen.getByRole('listbox')).toBeVisible();
+
+    expect(await violations(screen.getByTestId('popup').element())).toEqual([]);
+  });
+}

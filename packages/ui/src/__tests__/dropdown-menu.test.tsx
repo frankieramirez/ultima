@@ -3,6 +3,8 @@ import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import { Button, DropdownMenu, type DropdownMenuItemProps, type DropdownMenuPopupProps } from '@ultima/ui';
 
+import { themeDocument, themes, violations } from './axe';
+
 test('the trigger opens a named menu with named items', async () => {
   const screen = await render(
     <DropdownMenu.Root>
@@ -182,3 +184,37 @@ test('styled parts reject className', () => {
   expectTypeOf<DropdownMenuItemProps>().not.toHaveProperty('className');
   expectTypeOf<DropdownMenuPopupProps>().not.toHaveProperty('className');
 });
+
+for (const mode of themes) {
+  test(`the open popup has no axe violations in ${mode.name}`, async () => {
+    themeDocument(mode);
+    const screen = await render(
+      <main>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger render={<Button />}>Actions</DropdownMenu.Trigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Positioner>
+              <DropdownMenu.Popup>
+                <DropdownMenu.Group>
+                  <DropdownMenu.GroupLabel>Run</DropdownMenu.GroupLabel>
+                  <DropdownMenu.Item>Rename</DropdownMenu.Item>
+                </DropdownMenu.Group>
+                <DropdownMenu.Separator />
+                <DropdownMenu.CheckboxItem defaultChecked>
+                  <DropdownMenu.CheckboxItemIndicator />
+                  Pinned
+                </DropdownMenu.CheckboxItem>
+                <DropdownMenu.Item disabled>Delete</DropdownMenu.Item>
+              </DropdownMenu.Popup>
+            </DropdownMenu.Positioner>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+      </main>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Actions' }).element());
+    const popup = page.getByRole('menu', { name: 'Actions' });
+    await expect.element(popup).toBeVisible();
+
+    expect(await violations(popup.element())).toEqual([]);
+  });
+}

@@ -100,6 +100,58 @@ writeFileSync(file, `@layer reset {\n${source}\n}\n`);
 '
 }
 
+catalogue() {
+  curl -fsS "$HOST/r/registry.json" | node --input-type=module -e '
+import { readFileSync } from "node:fs";
+
+const registry = JSON.parse(readFileSync(0, "utf8"));
+const names = registry.items.filter((item) => item.type === "registry:ui").map((item) => item.name);
+if (names.length === 0) throw new Error("the served registry lists no components");
+process.stdout.write(`${names.join("\n")}\n`);
+'
+}
+
+# `root` is the directory the consumer's `@/` alias points at: create-vite's src/, and the
+# Next.js scaffold's own root, which is scaffolded with --no-src-dir.
+add_catalogue() {
+  local app="$1" root="$2" name
+  local specifiers=()
+  for name in $CATALOGUE; do
+    specifiers+=("@ultima/$name")
+  done
+  (cd "$app" && npx -y shadcn@latest add "${specifiers[@]}" --yes)
+  for name in $CATALOGUE; do
+    if [ ! -f "$root/components/ui/$name.tsx" ]; then
+      echo "smoke-install: $name did not arrive; the catalogue install is incomplete" >&2
+      exit 1
+    fi
+  done
+}
+
+# Imports every installed component and reads the array, so the consumer's bundler compiles all of
+# them. Without the reference it drops the imports and the build proves only that the files parsed.
+write_catalogue_module() {
+  FILE="$1" COMPONENT="$2" NAMES="$CATALOGUE" node --input-type=module -e '
+import { writeFileSync } from "node:fs";
+
+const names = process.env.NAMES.split(/\s+/).filter(Boolean);
+const identifier = (name) => name.replace(/(?:^|-)([a-z])/g, (_, letter) => letter.toUpperCase());
+writeFileSync(
+  process.env.FILE,
+  [
+    ...names.map((name) => `import * as ${identifier(name)} from "@/components/ui/${name}";`),
+    "",
+    `const catalogue = [${names.map(identifier).join(", ")}];`,
+    "",
+    `export default function ${process.env.COMPONENT}() {`,
+    "  return <p>{catalogue.length} Ultima components</p>;",
+    "}",
+    "",
+  ].join("\n"),
+);
+'
+}
+
 setup_add() {
   local app="$1" item="$2"
   (cd "$app" && npx -y shadcn@latest add "$HOST/r/$item.json" --yes) 2>&1 | tee "$WORK/$item.log"
@@ -252,16 +304,9 @@ vite_target() {
 import { ultimaStylex } from './ultima.vite.ts'"
   layer_reset "$app/src/index.css"
 
-  step "vite: npx shadcn add @ultima/button"
-  (cd "$app" && npx -y shadcn@latest add @ultima/button --yes)
-
-  cat > "$app/src/App.tsx" <<'APP'
-import { Button } from '@/components/ui/button';
-
-export default function App() {
-  return <Button>Ultima</Button>;
-}
-APP
+  step "vite: npx shadcn add the catalogue"
+  add_catalogue "$app" "$app/src"
+  write_catalogue_module "$app/src/App.tsx" App
 
   step "vite: npm run build"
   (cd "$app" && npm run build)
@@ -289,19 +334,12 @@ next_target() {
 import "./ultima.css";'
   layer_reset "$app/app/globals.css"
 
-  step "next: npx shadcn add @ultima/button"
-  (cd "$app" && npx -y shadcn@latest add @ultima/button --yes)
+  step "next: npx shadcn add the catalogue"
+  add_catalogue "$app" "$app"
 
   # The page is a server component and stays one: `rsc: true` does not insert a
-  # "use client" directive, and Base UI's own boundary inside the Button covers
-  # it.
-  cat > "$app/app/page.tsx" <<'PAGE'
-import { Button } from '@/components/ui/button';
-
-export default function Page() {
-  return <Button>Ultima</Button>;
-}
-PAGE
+  # "use client" directive, and each component's own boundary covers it.
+  write_catalogue_module "$app/app/page.tsx" Page
 
   step "next: npm run build"
   (cd "$app" && npm run build)
@@ -369,6 +407,9 @@ fi
 HOST="${HOST%/}"
 
 curl -fsS "$HOST/r/registry.json" >/dev/null
+
+CATALOGUE="$(catalogue)"
+echo "smoke-install: the catalogue is $(echo "$CATALOGUE" | wc -w | tr -d ' ') components"
 
 vite_target
 next_target

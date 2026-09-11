@@ -14,13 +14,14 @@ on:
       - 'packages/ui/src/**'
       - 'packages/tokens/**'
       - '**/package.json'
+      - 'pnpm-workspace.yaml'
       - 'pnpm-lock.yaml'
       - '.github/workflows/smoke-install.yml'
 
 jobs:
   smoke-install:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
 

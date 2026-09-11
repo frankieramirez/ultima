@@ -506,13 +506,13 @@ The checklist below is planned scope, not a statement that components have shipp
 
 #### v0: foundation and docs application
 
-- [ ] Ship the fourteen foundation components in The v0 set below.
-- [ ] Ship Sidebar as a reusable component and use it for the docs menu. Its acceptance criteria are in the Docs site section, and its contract is in Per-component notes.
-- [ ] Ship Collapsible and Toggle Group, the two components the docs application adds to the catalogue. Collapsible is what a nested Sidebar group composes; Toggle Group is what the header's theme control composes.
-- [ ] Add `Table.Scroll` to Table, which the docs' three scrolling tables need and no consumer currently has a way to write.
-- [ ] Rebuild the docs' hand-painted surfaces on Ultima components and delete `data-table.tsx`, per the sorted inventory in the Docs site section under The line between a component and page layout. Ship the source-reading gate in the same work, or the rule has nothing behind it.
-- [ ] Verify the docs at desktop and mobile widths in both color modes, including keyboard navigation and focus restoration after closing the mobile menu.
-- [ ] Complete the registry generation pipeline, component documentation, and CI gates defined in this specification.
+- [x] Ship the fourteen foundation components in The v0 set below.
+- [x] Ship Sidebar as a reusable component and use it for the docs menu. Its acceptance criteria are in the Docs site section, and its contract is in Per-component notes.
+- [x] Ship Collapsible and Toggle Group, the two components the docs application adds to the catalogue. Collapsible is what a nested Sidebar group composes; Toggle Group is what the header's theme control composes.
+- [x] Add `Table.Scroll` to Table, which the docs' three scrolling tables need and no consumer currently has a way to write.
+- [x] Rebuild the docs' hand-painted surfaces on Ultima components and delete `data-table.tsx`, per the sorted inventory in the Docs site section under The line between a component and page layout. Ship the source-reading gate in the same work, or the rule has nothing behind it.
+- [x] Verify the docs at desktop and mobile widths in both color modes, including keyboard navigation and focus restoration after closing the mobile menu.
+- [x] Complete the registry generation pipeline, component documentation, and CI gates defined in this specification.
 
 The catalogue is closed for v0. The three additions above are what the docs application needed, and the section below records how that was determined rather than leaving the next author to re-run the test.
 
