@@ -108,7 +108,7 @@ A semantic token for hover or active, named with a `-hover` or `-active` suffix.
 
 ## Part
 
-One named piece of a compound component, such as `Card.Root` or `Dialog.Popup`. Part names match Base UI's wherever a primitive supplies them, so `ToggleGroup.Item` is the only name Ultima invents: Base UI ships toggle group and toggle as two components rather than one namespace. A single-part component has no parts, just the component. A part is either styled by Ultima or passed through: a part that paints, or sets its own type or spacing, is styled, and so is a part whose primitive depends on CSS the primitive does not supply; a part that only portals, positions, or groups passes through unchanged.
+One named piece of a compound component, such as `Card.Root` or `Dialog.Popup`. Part names match Base UI's wherever a primitive supplies them. Ultima invents a name only when Base UI ships two components rather than one namespace: `ToggleGroup.Item`, `Checkbox.Group`, and `RadioGroup.Item`. A single-part component has no parts, just the component. A part is either styled by Ultima or passed through: a part that paints, or sets its own type or spacing, is styled, and so is a part whose primitive depends on CSS the primitive does not supply; a part that only portals, positions, or groups passes through unchanged.
 
 ## Cross-part state
 
@@ -136,7 +136,7 @@ A part that exists to be handed the consumer's own element through `render`, suc
 
 ## Axis
 
-A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role.
+A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow.
 
 ## Tone
 
@@ -154,6 +154,10 @@ The one element inside a Field that is the field's control, and the thing the la
 
 Whether a field is currently valid, and the attributes that carry it: a data attribute for styling and `aria-invalid` for announcement. The two do not always agree, and the difference is deliberate rather than a bug. A control disabled while invalid keeps the styling attribute and loses the announced one, because it still shows its error but is no longer something the user can fix. Validation state has one source: a Field owns it where one exists, and the consumer owns it where one does not.
 
+## Indeterminate
+
+A checkbox that is neither checked nor unchecked: some but not all of a related set are selected. It is a pass-through Base UI prop, announced as `aria-checked="mixed"`, and shown with a dash rather than a check. Data Table's select-all is this state on a standalone checkbox; a select-all that lives in the same group as its items uses the group's parent checkbox instead.
+
 ## Overlay
 
 A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition.
@@ -168,7 +172,7 @@ The one registry item, `lib/component.ts`, holding the helper types every compon
 
 ## Glyph slot
 
-A Base UI part whose only content is an icon: `Select.Icon`, `Select.ItemIndicator`, `Menu.CheckboxItemIndicator`, `Menu.RadioItemIndicator`. Ultima fills each with a `1em` inline SVG private to the component file, and accepts `children` as a replacement. Ultima ships four glyphs in total and no icon dependency, so a slot Base UI leaves empty is the only place an Ultima glyph appears.
+A Base UI part whose only content is an icon: `Select.Icon`, `Select.ItemIndicator`, `Menu.CheckboxItemIndicator`, `Menu.RadioItemIndicator`, `Checkbox.Indicator`, `RadioGroup.Indicator`. Ultima fills each with a `1em` inline SVG private to the component file, and accepts `children` as a replacement. Checkbox's slot holds two glyphs, the check and the dash, chosen by whether the box is checked or mixed. Ultima ships no icon dependency, so a slot Base UI leaves empty is the only place an Ultima glyph appears.
 
 ## Accessibility contract
 
