@@ -44,7 +44,7 @@ export function Swatch({
 }) {
   return (
     <div {...stylex.props(styles.root)}>
-      <div {...stylex.props(styles.chip, fill.chip(value))} />
+      <div aria-hidden {...stylex.props(styles.chip, fill.chip(value))} />
       <span {...stylex.props(styles.caption)}>{caption}</span>
       {note ? <span {...stylex.props(styles.note)}>{note}</span> : null}
     </div>

@@ -1,6 +1,6 @@
 import { ListIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, space } from '@ultima/tokens/tokens.stylex';
+import { space } from '@ultima/tokens/tokens.stylex';
 import { Button, Sidebar, ToggleGroup } from '@ultima/ui';
 
 import { useTheme, type ThemePreference } from './theme';
@@ -9,9 +9,6 @@ import { BrandLogo } from './brand-logo';
 const styles = stylex.create({
   bar: {
     alignItems: 'center',
-    borderBottomColor: color['--ult-color-border'],
-    borderBottomStyle: 'solid',
-    borderBottomWidth: border.hairline,
     display: 'flex',
     flexWrap: 'wrap',
     gap: space['--ult-space-6'],

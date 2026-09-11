@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Code } from '@ultima/ui';
+import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
+import { Button, Card, Code } from '@ultima/ui';
 
 import { CopyButton } from '../copy-button';
 import { pages } from '../navigation';
@@ -90,63 +90,37 @@ const styles = stylex.create({
     gridTemplateColumns: 'repeat(auto-fit, minmax(18rem, 1fr))',
   },
   tile: {
-    borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-lg'],
-    borderStyle: 'solid',
-    borderWidth: border.hairline,
     display: 'flex',
     flexDirection: 'column',
-    overflow: 'hidden',
   },
   stage: {
-    backgroundColor: color['--ult-color-surface-raised'],
     flexGrow: 1,
     padding: space['--ult-space-7'],
   },
-  caption: {
-    borderTopColor: color['--ult-color-border'],
-    borderTopStyle: 'solid',
-    borderTopWidth: border.hairline,
-    color: color['--ult-color-text-muted'],
-    fontSize: text['--ult-text-3'],
-    paddingBlock: space['--ult-space-3'],
-    paddingInline: space['--ult-space-5'],
-  },
   captionLink: {
-    color: {
-      default: color['--ult-color-text-muted'],
-      ':hover': color['--ult-color-text'],
-    },
+    color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
+    fontSize: text['--ult-text-3'],
     textDecoration: 'none',
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'color',
+    ':focus-visible': {
+      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      outlineOffset: border.focusOffset,
+    },
   },
   install: {
     display: 'grid',
     gap: space['--ult-space-6'],
     gridTemplateColumns: 'repeat(auto-fit, minmax(20rem, 1fr))',
   },
-  block: {
-    borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-lg'],
-    borderStyle: 'solid',
-    borderWidth: border.hairline,
-    overflow: 'hidden',
-  },
   blockBar: {
     alignItems: 'center',
-    borderBottomColor: color['--ult-color-border'],
-    borderBottomStyle: 'solid',
-    borderBottomWidth: border.hairline,
-    color: color['--ult-color-text'],
-    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  blockTarget: {
     fontSize: text['--ult-text-3'],
     fontWeight: font['--ult-font-weight-medium'],
-    justifyContent: 'space-between',
-    paddingBlock: space['--ult-space-2'],
-    paddingInline: space['--ult-space-5'],
-  },
-  commands: {
-    borderRadius: 0,
-    borderWidth: 0,
   },
   links: {
     display: 'flex',
@@ -155,9 +129,6 @@ const styles = stylex.create({
   },
   footer: {
     alignItems: 'center',
-    borderTopColor: color['--ult-color-border'],
-    borderTopStyle: 'solid',
-    borderTopWidth: border.hairline,
     color: color['--ult-color-text-muted'],
     display: 'flex',
     flexWrap: 'wrap',
@@ -197,16 +168,20 @@ export function Home() {
         </h2>
         <div {...stylex.props(styles.strip)}>
           {DEMOS.map(({ name, slug, component: Demo }) => (
-            <div key={name} {...stylex.props(styles.tile)}>
-              <div {...stylex.props(styles.stage)}>
+            <Card.Root key={name} style={styles.tile}>
+              <Card.Body style={styles.stage}>
                 <Demo />
-              </div>
-              <div {...stylex.props(styles.caption)}>
-                <Link to="/components/$name" params={{ name: slug }} {...stylex.props(styles.captionLink)}>
+              </Card.Body>
+              <Card.Footer>
+                <Link
+                  to="/components/$name"
+                  params={{ name: slug }}
+                  {...stylex.props(styles.captionLink)}
+                >
                   {name}
                 </Link>
-              </div>
-            </div>
+              </Card.Footer>
+            </Card.Root>
           ))}
         </div>
       </section>
@@ -217,15 +192,17 @@ export function Home() {
         </h2>
         <div {...stylex.props(styles.install)}>
           {INSTALL.map(({ target, commands }) => (
-            <div key={target} {...stylex.props(styles.block)}>
-              <div {...stylex.props(styles.blockBar)}>
-                {target}
-                <CopyButton text={commands} />
-              </div>
-              <Code variant="block" style={styles.commands}>
-                {commands}
-              </Code>
-            </div>
+            <Card.Root key={target}>
+              <Card.Header style={styles.blockBar}>
+                <Card.Title render={<span />} style={styles.blockTarget}>
+                  {target}
+                </Card.Title>
+                <CopyButton text={commands} ariaLabel={`Copy the ${target} install commands`} />
+              </Card.Header>
+              <Card.Body>
+                <Code variant="block">{commands}</Code>
+              </Card.Body>
+            </Card.Root>
           ))}
         </div>
         <div {...stylex.props(styles.links)}>

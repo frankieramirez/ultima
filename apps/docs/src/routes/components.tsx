@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, motion, space } from '@ultima/tokens/tokens.stylex';
+import { Card } from '@ultima/ui';
 
 import { components } from '../components';
 import { Page } from '../page';
@@ -14,28 +15,19 @@ const styles = stylex.create({
     margin: 0,
     padding: 0,
   },
+  // Card ships no interaction states and the spec asks these entries to gain both, so the ring and
+  // the hover are written here. The anchor's element, role, and keyboard reach are still the browser's.
   link: {
-    borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-lg'],
-    borderStyle: 'solid',
-    borderWidth: border.hairline,
+    blockSize: '100%',
+    color: { default: color['--ult-color-text'], ':hover': color['--ult-color-highlight-text'] },
     display: 'block',
-    padding: space['--ult-space-6'],
     textDecoration: 'none',
-  },
-  name: {
-    color: color['--ult-color-text'],
-    display: 'block',
-    fontSize: text['--ult-text-5'],
-    fontWeight: font['--ult-font-weight-semibold'],
-    lineHeight: font['--ult-font-leading-snug'],
-  },
-  description: {
-    color: color['--ult-color-text-muted'],
-    display: 'block',
-    fontSize: text['--ult-text-4'],
-    lineHeight: font['--ult-font-leading-normal'],
-    marginBlockStart: space['--ult-space-2'],
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'color',
+    ':focus-visible': {
+      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      outlineOffset: border.focusOffset,
+    },
   },
 });
 
@@ -45,14 +37,15 @@ export function ComponentsPage() {
       <ul {...stylex.props(styles.list)}>
         {components.map((component) => (
           <li key={component.item}>
-            <Link
-              to="/components/$name"
-              params={{ name: component.item }}
-              {...stylex.props(styles.link)}
+            <Card.Root
+              render={<Link to="/components/$name" params={{ name: component.item }} />}
+              style={styles.link}
             >
-              <span {...stylex.props(styles.name)}>{component.name}</span>
-              <span {...stylex.props(styles.description)}>{component.description}</span>
-            </Link>
+              <Card.Header>
+                <Card.Title render={<span />}>{component.name}</Card.Title>
+                <Card.Description>{component.description}</Card.Description>
+              </Card.Header>
+            </Card.Root>
           </li>
         ))}
       </ul>

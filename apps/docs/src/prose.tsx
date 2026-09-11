@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code as UltimaCode, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import { isValidElement, type ComponentProps, type ComponentType, type ReactNode } from 'react';
@@ -62,9 +62,6 @@ const styles = stylex.create({
     marginBlock: space['--ult-space-6'],
   },
   blockquote: {
-    borderLeftColor: color['--ult-color-border-strong'],
-    borderLeftStyle: 'solid',
-    borderLeftWidth: border.focus,
     color: color['--ult-color-text-muted'],
     marginBlock: space['--ult-space-6'],
     marginInline: 0,

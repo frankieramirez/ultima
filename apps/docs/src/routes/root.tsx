@@ -14,7 +14,6 @@ export const NAVIGATION_STORAGE_KEY = 'ultima-navigation';
 
 const styles = stylex.create({
   shell: {
-    backgroundColor: color['--ult-color-surface'],
     blockSize: '100dvh',
     color: color['--ult-color-text'],
     display: 'flex',
