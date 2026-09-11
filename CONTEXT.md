@@ -52,11 +52,11 @@ One installable unit in the registry: a component, a style, or a theme, with its
 
 ## Recipe
 
-A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Sheet is a recipe over Dialog; Data Table is a recipe over Table and an engine. Where a recipe hands the user a control, that control still comes from a component.
+A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Sheet is a recipe over Dialog; Data Table is a recipe over Table and an engine; the React Hook Form example is a recipe over Field and an engine. Where a recipe hands the user a control, that control still comes from a component.
 
 ## Engine
 
-A headless dependency that supplies a model rather than an interaction: TanStack Table's row model, and whatever Calendar and Chart turn out to need. An engine renders no DOM and no styles, and supplies no roles, ARIA, keyboard handling, or focus management, which is the whole difference between it and a primitive. It belongs to the consumer, never to a registry item, so a composition that needs one is a recipe.
+A headless dependency that supplies a model rather than an interaction: TanStack Table's row model, React Hook Form's form state, and whatever Calendar and Chart turn out to need. An engine renders no DOM and no styles, and supplies no roles, ARIA, keyboard handling, or focus management, which is the whole difference between it and a primitive. It belongs to the consumer, never to a registry item, so a composition that needs one is a recipe. An engine a composition only may use is the same: Field is complete without a form library, and the library is a recipe over it.
 
 ## Setup item
 
