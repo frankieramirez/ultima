@@ -15,7 +15,7 @@ Every rule lives in [`docs/spec/ultima.md`](../../docs/spec/ultima.md). This ski
 ## 1. Read before writing
 
 - [Principles](../../docs/spec/ultima.md#principles). The generators, not a record. Read them every time, before anything else.
-- [The v0 set](../../docs/spec/ultima.md#the-v0-set). Find the component's row: what it is built on, its parts, its axes, its defaults. That row is the contract. A component with no row yet needs the same four answers from its ticket before you write; where the ticket is silent, the table's neighbours decide, and a component whose contract is genuinely unsettled is a decision ticket rather than a build ([Release scope and core coverage](../../docs/spec/ultima.md#release-scope-and-core-coverage)).
+- [The v0 set](../../docs/spec/ultima.md#the-v0-set), or [The v0.1 set](../../docs/spec/ultima.md#the-v01-set) for a component from that release. Find the component's row: what it is built on, its parts, its axes, its defaults. That row is the contract, and the v0.1 table carries its own styled split and its own prose beneath it rather than adding rows to the v0 tables above. A component with no row yet needs the same four answers from its ticket before you write; where the ticket is silent, the table's neighbours decide, and a component whose contract is genuinely unsettled is a decision ticket rather than a build ([Release scope and core coverage](../../docs/spec/ultima.md#release-scope-and-core-coverage)).
 - [Accessibility contract](../../docs/spec/ultima.md#accessibility-contract). The same row again: element or primitive, name source, which part carries the focus ring, who owns the keyboard. Base UI owns roles, ARIA state, and keyboard handling. Ultima owns names, focus visibility, and element choice.
 - [Per-component notes](../../docs/spec/ultima.md#per-component-notes). What you would otherwise guess.
 - [`CONTEXT.md`](../../CONTEXT.md). The project's own words. Use them for parts, props, and prose.
@@ -39,7 +39,7 @@ Order inside the file: imports, the StyleX tables at module scope, any private g
 
 **The one compound.** `variant` and `size` layer, because they never set the same property. `variant` and `tone` both set color, so where a component has both they merge into one nested lookup read as `variants[variant][tone]`: one `stylex.create` per variant, named for the variant, collected in `variants`. Every cell is written out. There is no `cva`, and no component invents a fourth axis.
 
-Defaults are declared in the destructure, and they match the defaults [The v0 set](../../docs/spec/ultima.md#the-v0-set) names.
+Defaults are declared in the destructure, and they match the defaults the component's own set table names, [The v0 set](../../docs/spec/ultima.md#the-v0-set) or [The v0.1 set](../../docs/spec/ultima.md#the-v01-set).
 
 ## 4. Props
 
@@ -55,13 +55,13 @@ Defaults are declared in the destructure, and they match the defaults [The v0 se
 - **State.** Pointer states use pseudo-classes and the `-hover` and `-active` tokens, never a color derived at the use site. Component state uses Base UI's data attributes inside the value, `':is([data-disabled])'` and its siblings, so the class stays static. Dynamic styles are for runtime numbers only ([State styling](../../docs/spec/ultima.md#state-styling)).
 - **The reset.** A component may assume nothing about the consumer's CSS, so every root sets its own `box-sizing`, `margin`, `appearance`, `font-family`, and `line-height` ([What a component may assume about the consumer's CSS](../../docs/spec/ultima.md#what-a-component-may-assume-about-the-consumers-css)).
 - **The ring.** One rule, copied verbatim beside the reset, on the parts the contract names and nowhere else ([Focus ring](../../docs/spec/ultima.md#focus-ring)).
-- **No media queries for motion or forced colors.** The motion tokens already collapse, and native elements degrade on their own ([Accessibility contract](../../docs/spec/ultima.md#accessibility-contract)).
+- **No media queries for motion or forced colors, with one exception.** Transitions need none: the duration tokens already collapse to `1ms`, and native elements degrade on their own ([Accessibility contract](../../docs/spec/ultima.md#accessibility-contract)). A **looping** animation is the exception, because collapsing a loop to `1ms` is a strobe: it reads `--ult-motion-loop`, which goes to `0s`, and the file also writes `@media (prefers-reduced-motion: reduce)` to set `animation-name: none` and whatever static shape the component rests at ([Motion](../../docs/spec/ultima.md#motion)). Progress, Spinner, and Skeleton are the three that do.
 
 ## 6. Overlays and glyphs
 
 Only if the component portals a floating surface, or fills a slot Base UI leaves empty.
 
-- [Overlays](../../docs/spec/ultima.md#overlays). One surface recipe and one enter and exit transition across all four. Border and shadow always together, never a shadow alone. `keepMounted` is never set by Ultima.
+- [Overlays](../../docs/spec/ultima.md#overlays). One surface recipe and one enter and exit transition across all seven: Dialog, Dropdown Menu, Select, Tooltip, Sidebar's mobile menu, Combobox, and Alert Dialog. A new overlay joins the recipe rather than varying it, and restates the tokens in its own file rather than importing a sibling. Toast is not an overlay: it reads `z.toast`, not `z.popup`, and keeps its own enter and exit. Border and shadow always together, never a shadow alone. `keepMounted` is never set by Ultima.
 - [Iconography](../../docs/spec/ultima.md#iconography). Glyphs are inline SVG private to the file that uses them: not exported, not a shared lib item, and no icon package is imported by any registry item. They size at `1em` with `flex-shrink: 0` and take their color from `currentColor`, so a glyph never names a token. A slot whose whole content is a glyph renders the default and takes `children` as a replacement.
 
 ## 7. Wire it up
@@ -73,7 +73,7 @@ Six files outside the component itself, and missing one fails a different comman
 | `packages/ui/src/index.ts` | The component and every props and axis type it exports. |
 | `packages/ui/vitest.config.ts` | Its Base UI entry point in `optimizeDeps.include`. Missing, every test in the file dies against a second React copy. |
 | `registry/items.config.ts` | One entry keyed by the file name, with `title`, `description`, and `docs` ([The registry item](../../docs/spec/ultima.md#the-registry-item)). Missing, `pnpm build` throws and `pnpm test` does not. |
-| `apps/docs/src/components.ts` and `apps/docs/src/__tests__/components.test.ts` | The catalogue entry and the same name in the same position; the test pins specification order. A component from a later milestone goes after the v0 set, in its own release's order, and the test's name changes with it ([Release scope and core coverage](../../docs/spec/ultima.md#release-scope-and-core-coverage)). |
+| `apps/docs/src/components.ts` and `apps/docs/src/__tests__/components.test.ts` | The catalogue entry and the same name in the same position; the test pins specification order. A component from a later milestone goes after the v0 set, in its own release's order, carries the docs-only `release` field the nav's two disclosures derive from, and the test's expected array grows with it ([Release scope and core coverage](../../docs/spec/ultima.md#release-scope-and-core-coverage)). |
 | `apps/docs/src/content/components/<name>.mdx` and `apps/docs/src/demos/<name>/` | The page and its demos ([Authoring](../../docs/spec/ultima.md#authoring)). Demos are real modules the page imports twice, once as the component and once as `?raw` source, so the running example and the printed code cannot diverge. The page carries Install, a section per behavior, a Props table covering only what Ultima adds, and an Accessibility section restating the contract row. |
 | `apps/docs/src/router.tsx` | The MDX import and its `writtenPages` entry, or the route falls back to the placeholder. |
 
@@ -81,7 +81,7 @@ Adding a demo adds its axe coverage; no list is maintained ([Accessibility check
 
 ## 8. The proof bar
 
-Six items in `packages/ui/src/__tests__/<name>.test.tsx`, never beside the component ([What a build ticket proves](../../docs/spec/ultima.md#what-a-build-ticket-proves)). Copy the checklist out of [`references/proof-bar.md`](references/proof-bar.md) into the test file and answer each line for this component. That reference also carries the browser-environment traps, which read as broken components and are not.
+Eight items in `packages/ui/src/__tests__/<name>.test.tsx`, never beside the component ([What a build ticket proves](../../docs/spec/ultima.md#what-a-build-ticket-proves)). The last two exist for what a static screenshot would pass: behavior Ultima wires itself, and a declaration the primitive reads. Copy the checklist out of [`references/proof-bar.md`](references/proof-bar.md) into the test file and answer each line for this component. That reference also carries the browser-environment traps, which read as broken components and are not.
 
 One standing rule: **no test asserts a color value.**
 
@@ -92,7 +92,7 @@ Read the diff against this list before you commit. Each line is a rule above, in
 - [ ] No raw color, length, or duration literal outside a token read, the `border` and `z` constants, SVG geometry, and the overlay's own `scale()` and `opacity`.
 - [ ] No fourth axis, and no axis value the component's row does not list.
 - [ ] No `className`: not in the props, not in the types, not in a test fixture.
-- [ ] No `@font-face`, no `prefers-reduced-motion`, no `forced-colors`.
+- [ ] No `@font-face` and no `forced-colors`. No `prefers-reduced-motion` either, unless the component loops: then exactly one, setting `animation-name: none` and the resting shape.
 - [ ] No `keepMounted`.
 - [ ] No icon package imported.
 - [ ] `'use client'` on the first line; tables at module scope.

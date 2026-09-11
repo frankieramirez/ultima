@@ -1,6 +1,6 @@
 # The proof bar
 
-Every component ticket ships a test file at `packages/ui/src/__tests__/<name>.test.tsx` covering the component's own row of the [Accessibility contract](../../../docs/spec/ultima.md#accessibility-contract) and its own axes. The six items are fixed by [What a build ticket proves](../../../docs/spec/ultima.md#what-a-build-ticket-proves); this is the form to copy into the file and answer.
+Every component ticket ships a test file at `packages/ui/src/__tests__/<name>.test.tsx` covering the component's own row of the [Accessibility contract](../../../docs/spec/ultima.md#accessibility-contract) and its own axes. The eight items are fixed by [What a build ticket proves](../../../docs/spec/ultima.md#what-a-build-ticket-proves); this is the form to copy into the file and answer. It is a bar, not a suite: a component with no axes and no state still costs a file, and an item with no instance is answered "none, because ____" rather than deleted.
 
 ## The checklist
 
@@ -15,6 +15,8 @@ Paste this at the top of the new test file, replace each blank with what this co
  * 4. The primitive is still wired: ____.
  * 5. Documented state drives its style: ____.
  * 6. Typecheck passes: className is rejected, and each axis union is exactly its values.
+ * 7. Behavior this component wires itself: ____ (none, because every interaction is ____).
+ * 8. CSS the primitive reads: ____.
  */
 ```
 
@@ -26,6 +28,8 @@ Item by item:
 4. **The primitive is still wired.** One assertion per contract row marked Base UI in the Keyboard column: Escape closes, arrows move and loop, focus returns to the trigger. This confirms the composition did not break Base UI. It is not a re-test of Base UI, which tests itself.
 5. **Documented state drives its style.** Each `data-*` attribute the [per-component notes](../../../docs/spec/ultima.md#per-component-notes) name actually produces its change. Assert the change, not the value: read the computed style, flip the attribute, read it again, and compare the two.
 6. **Typecheck passes.** `expectTypeOf<Props>().not.toHaveProperty('className')`, and each axis union equals exactly its values.
+7. **Behavior the component wires itself.** Every behavior in the per-component notes that is neither the primitive's nor a style. Item 4 covers what Base UI does; this covers what Ultima does on top of it, and nothing else in the bar reaches it. The v0 instances are `Sidebar.Link` closing the mobile menu, `Sidebar.Trigger` toggling whichever state the current width applies, `Table.Scroll` taking focus and scrolling when its content really overflows, and a single-selection Toggle Group emptying along with the `eventDetails.cancel()` that prevents it. **No v0.1 component fills it**, so a v0.1 file answers the line with the reason: every interaction is the primitive's, which is item 4, or a style reacting to a `data-*` attribute, which is items 5 and 8. Writing a pointer handler, a focus move, or a state change that is not in the contract means the contract did not anticipate it — stop and say so rather than testing it in.
+8. **CSS the primitive reads.** A part styled under the second clause of [Styled parts](../../../docs/spec/ultima.md#styled-parts) asserts the declaration the primitive depends on, because these failures look correct in a screenshot and item 5 cannot see them. `Collapsible.Panel` is the worked case: `transition-duration` is not `0s`, `animation-name` is `none`, and `display` is not overridden while the panel is `[hidden]`. The named v0.1 successors are `Combobox.List` as a scroll container and `Combobox.Popup` tracking `--anchor-width`; `Slider.Control`'s `touch-action: none` and `user-select: none`, and `Slider.Track`'s explicit cross-axis size; `Toast.Root`'s intra-stack `z-index`, its height clamp reading `--toast-frontmost-height`, and its swipe vars in `transform`; `Progress.Track`'s explicit height and `overflow: hidden`, plus the `animation-name` split every looping part owes — not `none` by default, `none` under `prefers-reduced-motion: reduce` — which Skeleton and Spinner assert the same way.
 
 **No test asserts a color value.** An outline width that is not `0px`, a background that differs from its resting background: yes. An `rgb(...)` or a hex literal: never. Palette values are regenerated, and a suite that pins them turns every regeneration into a day of updating tests.
 
