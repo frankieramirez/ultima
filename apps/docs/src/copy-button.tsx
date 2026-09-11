@@ -2,6 +2,9 @@ import * as stylex from '@stylexjs/stylex';
 import { Button } from '@ultima/ui';
 import { useEffect, useRef, useState } from 'react';
 
+// Word Joiner: invisible and zero-width. Same string twice is not a live-region change; this is.
+const WORD_JOINER = '\u2060';
+
 const styles = stylex.create({
   // The confirmation is a label swap on a button that often carries an `aria-label`, so nothing
   // announces it. This region is in the tree from the first render, which is what makes it speak.
@@ -16,25 +19,25 @@ const styles = stylex.create({
 });
 
 export function CopyButton({ text, ariaLabel }: { text: string; ariaLabel?: string }) {
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState('');
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
   async function copy() {
     await navigator.clipboard.writeText(text);
-    setCopied(true);
+    setStatus((current) => (current === 'Copied' ? `Copied${WORD_JOINER}` : 'Copied'));
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setCopied(false), 2000);
+    timer.current = setTimeout(() => setStatus(''), 2000);
   }
 
   return (
     <>
       <Button variant="ghost" size="sm" onClick={copy} aria-label={ariaLabel}>
-        {copied ? 'Copied' : 'Copy'}
+        {status ? 'Copied' : 'Copy'}
       </Button>
-      <span role="status" {...stylex.props(styles.status)}>
-        {copied ? 'Copied' : ''}
+      <span role="status" aria-atomic="true" {...stylex.props(styles.status)}>
+        {status}
       </span>
     </>
   );
