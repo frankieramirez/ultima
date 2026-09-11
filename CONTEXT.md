@@ -52,7 +52,7 @@ One installable unit in the registry: a component, a style, or a theme, with its
 
 ## Recipe
 
-A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Sheet is a recipe over Dialog; Data Table is a recipe over Table and an engine; the React Hook Form example is a recipe over Field and an engine. Where a recipe hands the user a control, that control still comes from a component.
+A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Sheet is a recipe over Dialog; Alert Dialog is not — Base UI ships it as its own Root, so it is a catalogue item. Data Table is a recipe over Table and an engine; the React Hook Form example is a recipe over Field and an engine. Where a recipe hands the user a control, that control still comes from a component.
 
 ## Engine
 
@@ -132,15 +132,15 @@ The `use<Component>()` export of a component with shared runtime state, `useSide
 
 ## Wrapper trigger
 
-A part that exists to be handed the consumer's own element through `render`, such as `Dialog.Trigger`, `Dialog.Close`, `Sidebar.Trigger`, `Sidebar.Close`, or `Collapsible.Trigger`. It wires behavior and ARIA and ships no styles at all, so the element rendered into it carries its own reset and focus ring. The docs say the slot holds an Ultima Button or an element with its own ring.
+A part that exists to be handed the consumer's own element through `render`, such as `Dialog.Trigger`, `Dialog.Close`, `AlertDialog.Trigger`, `AlertDialog.Close`, `Sidebar.Trigger`, `Sidebar.Close`, or `Collapsible.Trigger`. It wires behavior and ARIA and ships no styles at all, so the element rendered into it carries its own reset and focus ring. The docs say the slot holds an Ultima Button or an element with its own ring.
 
 ## Axis
 
-A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow. Combobox's `size` sits on `InputGroup`, the visual box. Slider has no `size`.
+A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow. Combobox's `size` sits on `InputGroup`, the visual box. Slider has no `size`. Alert has `tone` and neither of the other two.
 
 ## Tone
 
-The axis that lets a caller pick a component's color role by name, so `tone="danger"` reaches that role's fill and its contrast on-color together and the caller never names a token. Button, Badge, and Meter carry one in v0. Slider does not: it is a value picker, not a measurement. `neutral` is a tone value but not a color role, so a component using it names the neutral tokens it wants.
+The axis that lets a caller pick a component's color role by name, so `tone="danger"` reaches that role's fill and its contrast on-color together and the caller never names a token. Button, Badge, and Meter carry one in v0. Alert carries Badge's six tones in v0.1, and no `variant`. Slider does not: it is a value picker, not a measurement. `neutral` is a tone value but not a color role, so a component using it names the neutral tokens it wants.
 
 ## Field
 
@@ -162,9 +162,17 @@ A checkbox that is neither checked nor unchecked: some but not all of a related 
 
 A filterable input whose value is restricted to the item set. It is a sibling of Select, not a variant of it. Autocomplete is the free-text primitive Base UI ships beside it and is not in v0.1. `Combobox.Label` names the trigger, not the input.
 
+## Alert
+
+A static in-page callout. It is not a live region and not an Alert Dialog. Tone is its only axis. The docs' `Note` is not this component: `Note` stays a styled paragraph until it paints a surface.
+
+## Alert Dialog
+
+A modal confirmation overlay, a separate component from Dialog. Escape closes it; a backdrop click does not. It is the seventh overlay and does not vary the recipe.
+
 ## Overlay
 
-A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it.
+A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it. Alert Dialog is the seventh: it joins the recipe and does not vary it.
 
 ## Style slot
 
