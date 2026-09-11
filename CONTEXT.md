@@ -84,7 +84,7 @@ The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, 
 
 ## Token group
 
-One export in `packages/tokens`, named for what it holds. The themeable groups are `defineVars` and reach the CSS export: color, space, text, font, radius, shadow, and motion durations. The compile-time groups are `defineConsts` and never leave the build: motion easings, border widths, z-index. A themeable token's full name is `--ult-<group>-<name>`.
+One export in `packages/tokens`, named for what it holds. The themeable groups are `defineVars` and reach the CSS export: color, space, text, font, radius, shadow, and motion durations including `--ult-motion-loop`. The compile-time groups are `defineConsts` and never leave the build: motion easings, border widths, z-index. A themeable token's full name is `--ult-<group>-<name>`. `--ult-motion-loop` is the repeating-animation duration: it collapses to `0s` under reduced motion, not `1ms`, because a one-millisecond loop is a strobe.
 
 ## Theme
 
@@ -136,11 +136,11 @@ A part that exists to be handed the consumer's own element through `render`, suc
 
 ## Axis
 
-A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow. Combobox's `size` sits on `InputGroup`, the visual box. Slider has no `size`. Alert has `tone` and neither of the other two. Toast has the same six tones, forwarded as Base UI `type` / `data-type` rather than as a prop on Root.
+A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow. Combobox's `size` sits on `InputGroup`, the visual box. Slider has no `size`. Alert has `tone` and neither of the other two. Toast has the same six tones, forwarded as Base UI `type` / `data-type` rather than as a prop on Root. Progress has Meter's five tones on `Root`. Skeleton, Spinner, and Empty have none.
 
 ## Tone
 
-The axis that lets a caller pick a component's color role by name, so `tone="danger"` reaches that role's fill and its contrast on-color together and the caller never names a token. Button, Badge, and Meter carry one in v0. Alert carries Badge's six tones in v0.1, and no `variant`. Toast carries the same six as Base UI `type` on `add()`, styled against `data-type`; `error` paints as `danger` and `loading` as `neutral` so `promise()` works, and those two strings are aliases rather than extra axis values. Slider does not: it is a value picker, not a measurement. `neutral` is a tone value but not a color role, so a component using it names the neutral tokens it wants.
+The axis that lets a caller pick a component's color role by name, so `tone="danger"` reaches that role's fill and its contrast on-color together and the caller never names a token. Button, Badge, and Meter carry one in v0. Alert carries Badge's six tones in v0.1, and no `variant`. Toast carries the same six as Base UI `type` on `add()`, styled against `data-type`; `error` paints as `danger` and `loading` as `neutral` so `promise()` works, and those two strings are aliases rather than extra axis values. Progress carries Meter's five on `Root`. Slider does not: it is a value picker, not a measurement. Spinner does not: it is a decorative mark. `neutral` is a tone value but not a color role, so a component using it names the neutral tokens it wants.
 
 ## Field
 
@@ -174,9 +174,25 @@ A modal confirmation overlay, a separate component from Dialog. Escape closes it
 
 A stacked notification. It is not an overlay: Viewport reads `z.toast`, Root restates overlay surface tokens without the overlay enter/exit. Colour is `tone` forwarded as Base UI `type` / `data-type`. The consumer mounts Provider, Portal, and Viewport once; those three stay mounted when the stack is empty. Ultima writes no context for it and does not invent `useToast()`.
 
+## Progress
+
+A task-completion bar. Meter remains the bounded measurement. Same five parts as Meter, restated rather than imported, with `tone` on Root. Indeterminate is still Progress: CSS on `[data-indeterminate]`, not a Spinner.
+
+## Skeleton
+
+A placeholder surface for content that is not there yet. Decorative: `aria-hidden`, with `aria-busy` on the container it stands in for. Its pulse is a looping animation.
+
+## Spinner
+
+A circular looping mark for a busy region with no task fraction. Decorative: `aria-hidden`, with `aria-busy` on the busy container. Not indeterminate Progress, and not a live region.
+
+## Empty
+
+The absence of a collection: title, description, optional icon, and an action as children. Not Card, not Alert, and not `Combobox.Empty`. Static, like Alert: Root is a `<div>`.
+
 ## Live region
 
-A documented pattern, not a catalogue component and not a shared announcer. Pre-mount the region empty; Ultima-written UI uses `role="status"` with `aria-atomic="true"` and Word Joiner for a repeat of the same text; clip-hide, never `display: none`. Toast inherits Base UI's viewport and high-priority `role="alert"` clone. Field.Error is not a live region. Alert is not a live region. Copy-button keeps its own region. Data Table's row-count announcement follows the pattern when that recipe ships.
+A documented pattern, not a catalogue component and not a shared announcer. Pre-mount the region empty; Ultima-written UI uses `role="status"` with `aria-atomic="true"` and Word Joiner for a repeat of the same text; clip-hide, never `display: none`. Toast inherits Base UI's viewport and high-priority `role="alert"` clone. Field.Error is not a live region. Alert is not a live region. Progress is a `progressbar`, not a live region. Spinner and Skeleton are `aria-hidden`; they are not live regions. Empty is a static `<div>`, like Alert. Copy-button keeps its own region. Data Table's row-count announcement follows the pattern when that recipe ships.
 
 ## Overlay
 
