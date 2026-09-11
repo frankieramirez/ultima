@@ -82,6 +82,10 @@ The docs-local side of the line between an Ultima component and the site's own c
 
 The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, Tooltip. The foundation set is the report set plus Dialog, Dropdown Menu, Select, Input, and Switch, which is fourteen. The v0 set is seventeen: the foundation plus Sidebar, Collapsible, and Toggle Group, the three the docs application turned out to need. The v0.1 set is fourteen more, Fieldset its own item, thirty-one in the catalogue once they ship.
 
+## Feedback set
+
+The seven v0.1 components that report a state rather than collect a value: Alert, Alert Dialog, Toast, Progress, Skeleton, Spinner, and Empty. The other seven in that release are the form components, which is why the release is forms and feedback and why the section holding both contracts is The v0.1 set rather than a form set.
+
 ## Token group
 
 One export in `packages/tokens`, named for what it holds. The themeable groups are `defineVars` and reach the CSS export: color, space, text, font, radius, shadow, and motion durations including `--ult-motion-loop`. The compile-time groups are `defineConsts` and never leave the build: motion easings, border widths, z-index. A themeable token's full name is `--ult-<group>-<name>`. `--ult-motion-loop` is the repeating-animation duration: it collapses to `0s` under reduced motion, not `1ms`, because a one-millisecond loop is a strobe.
@@ -145,6 +149,10 @@ The axis that lets a caller pick a component's color role by name, so `tone="dan
 ## Field
 
 The component that binds one control to its label, its description, and its error message, so the three are associated without the consumer writing an id. A Field paints no control of its own: it arranges the four and owns the spacing between them. Field is not required, and every control Ultima ships works standalone.
+
+## Form integration
+
+The documented path from a Field to a submitted form: Base UI's own `Form` and `Field` over the platform's constraint validation. It costs a consumer nothing, because `Form` is a primitive Ultima already adopted and paints nothing, so it ships no item of its own. A form library is an engine layered on top rather than a replacement, and the one Ultima writes a recipe for is React Hook Form. Each rule is declared once: a constraint the platform has an attribute for belongs to the primitive, and a cross-field, schema, or async rule belongs to the engine.
 
 ## Control slot
 
@@ -228,4 +236,4 @@ The scripted end-to-end proof that the registry still installs: a fresh Vite app
 
 ## Proof bar
 
-The eight items every component build ticket ships as its test file: every combination renders, the name resolves, the focus ring lands, the primitive is still wired, documented state drives its style, typecheck passes, behavior Ultima wires itself is exercised, and CSS the primitive reads is asserted. It is a bar rather than a suite, so a component with no axes and no state still costs a file, and the last two items exist for behavior a static screenshot would pass. v0.1 did not add a ninth item. Live-region structure is items 2 and 4; a looping `animation-name` is item 8; a form ticket asserts association and invalid, not submit.
+The eight items every component build ticket ships as its test file: every combination renders, the name resolves, the focus ring lands, the primitive is still wired, documented state drives its style, typecheck passes, behavior Ultima wires itself is exercised, and CSS the primitive reads is asserted. It is a bar rather than a suite, so a component with no axes and no state still costs a file, and the last two items exist for behavior a static screenshot would pass. v0.1 did not add a ninth item, and filled item 7 with nothing: every v0.1 interaction is the primitive's or a style. Live-region structure is items 2 and 4; a looping `animation-name` is item 8; a form ticket asserts association and invalid, not submit.
