@@ -9,6 +9,8 @@ import {
   type TooltipTriggerProps,
 } from '@ultima/ui';
 
+import { themeDocument, themes, violations } from './axe';
+
 function OpenTooltip({ text = 'Copied to clipboard' }: { text?: string }) {
   return (
     <Tooltip.Provider delay={0}>
@@ -98,3 +100,17 @@ test('public prop types require aria-label on Trigger and drop className on styl
   expectTypeOf<TooltipArrowProps>().not.toHaveProperty('className');
   expectTypeOf<TooltipPopupProps>().toHaveProperty('style');
 });
+
+for (const mode of themes) {
+  test(`the open popup has no axe violations in ${mode.name}`, async () => {
+    themeDocument(mode);
+    const screen = await render(
+      <main>
+        <OpenTooltip />
+      </main>,
+    );
+    await expect.element(screen.getByRole('tooltip', { name: 'Copied to clipboard' })).toBeVisible();
+
+    expect(await violations(screen.getByTestId('popup').element())).toEqual([]);
+  });
+}

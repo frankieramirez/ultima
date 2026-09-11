@@ -1,5 +1,3 @@
-import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
-import axe from 'axe-core';
 import * as stylex from '@stylexjs/stylex';
 import { Button, Collapsible, Sidebar, useSidebar, type SidebarPanelProps } from '@ultima/ui';
 import type { ReactNode } from 'react';
@@ -8,14 +6,11 @@ import { page, userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, onTestFinished, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 
+import { themeDocument, themes, violations } from './axe';
+
 const styles = stylex.create({
   scroll: { blockSize: '8rem' },
 });
-
-const themes = [
-  { name: 'dark', theme: darkTheme, scheme: colorScheme.dark },
-  { name: 'light', theme: lightTheme, scheme: colorScheme.light },
-];
 
 function Sample({ name = 'Docs', children }: { name?: string; children?: ReactNode }) {
   return (
@@ -559,9 +554,7 @@ describe('below the breakpoint', () => {
 
   for (const mode of themes) {
     test(`the open menu has no axe violations in ${mode.name}`, async () => {
-      const classes = stylex.props(mode.theme, mode.scheme).className?.split(/\s+/).filter(Boolean) ?? [];
-      document.documentElement.classList.add(...classes);
-      onTestFinished(() => document.documentElement.classList.remove(...classes));
+      themeDocument(mode);
 
       // Route hrefs rather than the fragments the other samples use: axe reads a fragment link
       // with no target in the page as a broken skip link, which is the fixture and not Sidebar.
@@ -591,8 +584,7 @@ describe('below the breakpoint', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Toggle navigation' }).element());
       await expect.element(screen.getByRole('dialog', { name: 'Docs' })).toBeVisible();
 
-      const results = await axe.run(document.body);
-      expect(results.violations.map((violation) => `${violation.id}: ${violation.nodes[0]?.html}`)).toEqual([]);
+      expect(await violations()).toEqual([]);
     });
   }
 });

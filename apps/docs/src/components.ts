@@ -19,7 +19,7 @@ export const components = [
   {
     name: 'Table',
     item: 'table',
-    description: 'A data table as native table parts, with an optional caption.',
+    description: 'A data table as native table parts, with an optional caption and scroll region.',
   },
   {
     name: 'Tabs',

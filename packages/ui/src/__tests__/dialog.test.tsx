@@ -12,6 +12,8 @@ import {
   type DialogViewportProps,
 } from '@ultima/ui';
 
+import { themeDocument, themes, violations } from './axe';
+
 function SampleDialog({
   open,
   title = 'Archive run',
@@ -122,3 +124,18 @@ test('public prop types drop className on styled parts', () => {
   expectTypeOf<DialogDescriptionProps>().not.toHaveProperty('className');
   expectTypeOf<DialogPopupProps>().toHaveProperty('style');
 });
+
+for (const mode of themes) {
+  test(`the open popup has no axe violations in ${mode.name}`, async () => {
+    themeDocument(mode);
+    const screen = await render(
+      <main>
+        <SampleDialog extra={<Button data-testid="inside">Continue</Button>} />
+      </main>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Open' }).element());
+    await expect.element(screen.getByRole('dialog', { name: 'Archive run' })).toBeVisible();
+
+    expect(await violations()).toEqual([]);
+  });
+}
