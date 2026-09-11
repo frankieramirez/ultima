@@ -1,0 +1,17 @@
+{
+  "name": "Ultima",
+  "install": "pnpm install --frozen-lockfile && pnpm --filter @ultima/ui exec playwright install --with-deps chromium",
+  "terminals": [
+    {
+      "name": "docs-dev",
+      "command": "pnpm dev",
+      "description": "The Ultima docs site (Vite) on http://localhost:5173, which also serves the registry at /r/*.json."
+    }
+  ],
+  "ports": [
+    {
+      "name": "docs",
+      "port": 5173
+    }
+  ]
+}
