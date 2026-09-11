@@ -4,7 +4,7 @@ import { Meter as BaseMeter } from '@base-ui/react/meter';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
-import type { ComponentProps } from 'react';
+import { createContext, use, type ComponentProps } from 'react';
 
 const styles = stylex.create({
   root: {
@@ -56,14 +56,20 @@ const valueTones = stylex.create({
 
 type MeterTone = keyof typeof indicatorTones;
 
-type MeterRootProps = PartProps<ComponentProps<typeof BaseMeter.Root>>;
+const ToneContext = createContext<MeterTone>('neutral');
+
+type MeterRootProps = PartProps<ComponentProps<typeof BaseMeter.Root>> & { tone?: MeterTone };
 type MeterLabelProps = PartProps<ComponentProps<typeof BaseMeter.Label>>;
 type MeterTrackProps = PartProps<ComponentProps<typeof BaseMeter.Track>>;
 type MeterIndicatorProps = PartProps<ComponentProps<typeof BaseMeter.Indicator>> & { tone?: MeterTone };
 type MeterValueProps = PartProps<ComponentProps<typeof BaseMeter.Value>> & { tone?: MeterTone };
 
-function Root({ style, ...props }: MeterRootProps) {
-  return <BaseMeter.Root {...props} {...stylex.props(styles.root, style)} />;
+function Root({ tone = 'neutral', style, ...props }: MeterRootProps) {
+  return (
+    <ToneContext value={tone}>
+      <BaseMeter.Root {...props} {...stylex.props(styles.root, style)} />
+    </ToneContext>
+  );
 }
 
 function Label({ style, ...props }: MeterLabelProps) {
@@ -74,12 +80,14 @@ function Track({ style, ...props }: MeterTrackProps) {
   return <BaseMeter.Track {...props} {...stylex.props(styles.track, style)} />;
 }
 
-function Indicator({ tone = 'neutral', style, ...props }: MeterIndicatorProps) {
-  return <BaseMeter.Indicator {...props} {...stylex.props(styles.indicator, indicatorTones[tone], style)} />;
+function Indicator({ tone, style, ...props }: MeterIndicatorProps) {
+  const inherited = use(ToneContext);
+  return <BaseMeter.Indicator {...props} {...stylex.props(styles.indicator, indicatorTones[tone ?? inherited], style)} />;
 }
 
-function Value({ tone = 'neutral', style, ...props }: MeterValueProps) {
-  return <BaseMeter.Value {...props} {...stylex.props(styles.value, valueTones[tone], style)} />;
+function Value({ tone, style, ...props }: MeterValueProps) {
+  const inherited = use(ToneContext);
+  return <BaseMeter.Value {...props} {...stylex.props(styles.value, valueTones[tone ?? inherited], style)} />;
 }
 
 const Meter = { Root, Label, Track, Indicator, Value };

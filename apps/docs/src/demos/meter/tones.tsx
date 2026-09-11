@@ -15,12 +15,12 @@ export default function Tones() {
   return (
     <div {...stylex.props(styles.stack)}>
       {tones.map((tone, index) => (
-        <Meter.Root key={tone} value={(index + 1) * 16}>
+        <Meter.Root key={tone} value={(index + 1) * 16} tone={tone}>
           <Meter.Label>{tone}</Meter.Label>
           <Meter.Track>
-            <Meter.Indicator tone={tone} />
+            <Meter.Indicator />
           </Meter.Track>
-          <Meter.Value tone={tone === 'danger' ? tone : undefined} />
+          <Meter.Value />
         </Meter.Root>
       ))}
     </div>
