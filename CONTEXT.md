@@ -142,6 +142,18 @@ A prop that selects one of a component's alternative appearances. Ultima has exa
 
 The axis that lets a caller pick a component's color role by name, so `tone="danger"` reaches that role's fill and its contrast on-color together and the caller never names a token. Button, Badge, and Meter carry one in v0. `neutral` is a tone value but not a color role, so a component using it names the neutral tokens it wants.
 
+## Field
+
+The component that binds one control to its label, its description, and its error message, so the three are associated without the consumer writing an id. A Field paints no control of its own: it arranges the four and owns the spacing between them. Field is not required, and every control Ultima ships works standalone.
+
+## Control slot
+
+The one element inside a Field that is the field's control, and the thing the label names and the validation state lands on. Ultima's own controls fill it by being themselves, because Base UI's input primitive is the field's control part, so a control registers itself rather than being wrapped. `Field.Control` is the part for a control Ultima does not ship. A checkbox or radio group is one control slot rather than several, which is why a group takes one name and one error.
+
+## Validation state
+
+Whether a field is currently valid, and the attributes that carry it: a data attribute for styling and `aria-invalid` for announcement. The two do not always agree, and the difference is deliberate rather than a bug. A control disabled while invalid keeps the styling attribute and loses the announced one, because it still shows its error but is no longer something the user can fix. Validation state has one source: a Field owns it where one exists, and the consumer owns it where one does not.
+
 ## Overlay
 
 A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition.
