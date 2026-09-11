@@ -52,7 +52,7 @@ One installable unit in the registry: a component, a style, or a theme, with its
 
 ## Recipe
 
-A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Sheet is a recipe over Dialog; Alert Dialog is not — Base UI ships it as its own Root, so it is a catalogue item. Data Table is a recipe over Table and an engine; the React Hook Form example is a recipe over Field and an engine. Where a recipe hands the user a control, that control still comes from a component.
+A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Those checks are the live demo in the axe sweep and the documented states on the page, not a `packages/ui` install of the engine. Sheet is a recipe over Dialog; Alert Dialog is not — Base UI ships it as its own Root, so it is a catalogue item. Data Table is a recipe over Table and an engine; the React Hook Form example is a recipe over Field and an engine. Where a recipe hands the user a control, that control still comes from a component.
 
 ## Engine
 
@@ -80,7 +80,7 @@ The docs-local side of the line between an Ultima component and the site's own c
 
 ## Report set
 
-The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, Tooltip. The foundation set is the report set plus Dialog, Dropdown Menu, Select, Input, and Switch, which is fourteen. The v0 set is seventeen: the foundation plus Sidebar, Collapsible, and Toggle Group, the three the docs application turned out to need.
+The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, Tooltip. The foundation set is the report set plus Dialog, Dropdown Menu, Select, Input, and Switch, which is fourteen. The v0 set is seventeen: the foundation plus Sidebar, Collapsible, and Toggle Group, the three the docs application turned out to need. The v0.1 set is fourteen more, Fieldset its own item, thirty-one in the catalogue once they ship.
 
 ## Token group
 
@@ -216,7 +216,7 @@ What a component promises for keyboard and screen-reader use beyond what its Bas
 
 ## Demo
 
-A real component module under `apps/docs/src/demos/`, rendered live on a docs page with its own source printed beneath it. A demo is three things at once: the running example, the copyable source, and the surface the accessibility sweep runs axe over. It renders at the reader's real viewport and never fakes another one, so a component that changes shape with the width changes shape in its demos too.
+A real component module under `apps/docs/src/demos/`, rendered live on a docs page with its own source printed beneath it. A demo is three things at once: the running example, the copyable source, and the surface the accessibility sweep runs axe over. It renders at the reader's real viewport and never fakes another one, so a component that changes shape with the width changes shape in its demos too. The sweep mounts each demo's default state and never interacts; open overlays and high-priority toasts are proven in the component file.
 
 ## Live demonstration
 
@@ -224,8 +224,8 @@ A claim the site proves by using Ultima rather than by writing it down. The head
 
 ## Smoke install
 
-The scripted end-to-end proof that the registry still installs: a fresh Vite app and a fresh Next.js app run the documented `shadcn add` commands against the built registry and then build. It runs on a schedule and on registry changes, not on every pull request.
+The scripted end-to-end proof that the registry still installs: a fresh Vite app and a fresh Next.js app run the documented `shadcn add` commands against the built registry and then build. It enumerates every `registry:ui` item, not a representative subset, and also installs `sidebar` alone to prove a derived composition. It runs on a schedule and on pull requests that change registry inputs.
 
 ## Proof bar
 
-The eight items every component build ticket ships as its test file: every combination renders, the name resolves, the focus ring lands, the primitive is still wired, documented state drives its style, typecheck passes, behavior Ultima wires itself is exercised, and CSS the primitive reads is asserted. It is a bar rather than a suite, so a component with no axes and no state still costs a file, and the last two items exist for behavior a static screenshot would pass.
+The eight items every component build ticket ships as its test file: every combination renders, the name resolves, the focus ring lands, the primitive is still wired, documented state drives its style, typecheck passes, behavior Ultima wires itself is exercised, and CSS the primitive reads is asserted. It is a bar rather than a suite, so a component with no axes and no state still costs a file, and the last two items exist for behavior a static screenshot would pass. v0.1 did not add a ninth item. Live-region structure is items 2 and 4; a looping `animation-name` is item 8; a form ticket asserts association and invalid, not submit.
