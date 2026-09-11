@@ -35,7 +35,7 @@
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/dispel/SKILL.md",
-      "computedHash": "ed3c57e29b4a4c6c49f274626d7e8d45b2d55a98e53b3195065c0c5fc4d027ce"
+      "computedHash": "b757d7f1aaee665750b8c0be97c9dcfa79b7a5cb9b95ce1bf1288acd8b6a15ee"
     },
     "mend": {
       "source": "frankieramirez/mana",
@@ -71,7 +71,7 @@
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/scry/SKILL.md",
-      "computedHash": "cc00e62430e65c94c7d9697412b4eb95b0f5c4ff935fce63475960f540e5797c"
+      "computedHash": "5ef9319758f8315225fcd62dfb7554f19b14766f9dfd42f4fe586791c1d5b64b"
     },
     "setup-mana": {
       "source": "frankieramirez/mana",
@@ -83,7 +83,7 @@
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/sift/SKILL.md",
-      "computedHash": "3691067ef4f52b4f77c19f9e22515493fcfd0c4a405f478b745d0f0968c955a0"
+      "computedHash": "5e743a592e631f7d2bb52fb0944188778c047de49e6f55798509f4ed13faf52d"
     },
     "ultima": {
       "source": "frankieramirez/mana",
