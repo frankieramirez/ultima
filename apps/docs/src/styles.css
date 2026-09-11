@@ -56,5 +56,6 @@
   body {
     margin: 0;
     font-family: var(--ult-font-sans);
+    background-color: var(--ult-color-surface);
   }
 }

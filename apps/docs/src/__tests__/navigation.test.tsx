@@ -12,6 +12,9 @@ import { router, routeTree } from '../router';
 import { NAVIGATION_STORAGE_KEY } from '../routes/root';
 import { THEME_STORAGE_KEY } from '../theme';
 import { MENU_LABEL } from '../site-menu';
+// axe resolves a text contrast against the nearest painted ancestor, and the application's ground
+// is on `body` rather than on a component, so without this the shell is measured over nothing.
+import '../styles.css';
 
 function mount(path: string) {
   const history = createMemoryHistory({ initialEntries: [path] });

@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code, Table } from '@ultima/ui';
 import { APCAcontrast, sRGBtoY } from 'apca-w3';
 
@@ -20,20 +20,16 @@ const DESKTOP = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
   rows: {
-    borderTopColor: color['--ult-color-border'],
-    borderTopStyle: 'solid',
-    borderTopWidth: border.hairline,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space['--ult-space-7'],
     marginBlockStart: space['--ult-space-6'],
   },
   row: {
     alignItems: 'start',
-    borderBottomColor: color['--ult-color-border'],
-    borderBottomStyle: 'solid',
-    borderBottomWidth: border.hairline,
     display: 'grid',
     gap: space['--ult-space-6'],
     gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)' },
-    paddingBlock: space['--ult-space-6'],
   },
   identity: {
     alignItems: 'baseline',
