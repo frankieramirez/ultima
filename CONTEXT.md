@@ -128,19 +128,19 @@ How Sidebar presents its panel below the breakpoint: the panel's children inside
 
 ## Component hook
 
-The `use<Component>()` export of a component with shared runtime state, `useSidebar()` first. It is how a consumer builds a part of their own that reads or sets that state. It throws outside the component's `Root`. A component whose context carries only an axis has no hook.
+The `use<Component>()` export of a component with shared runtime state, `useSidebar()` first. It is how a consumer builds a part of their own that reads or sets that state. It throws outside the component's `Root`. A component whose context carries only an axis has no hook. `Toast.useToastManager` is Base UI's, sits on the Toast namespace, and is not `useToast()`.
 
 ## Wrapper trigger
 
-A part that exists to be handed the consumer's own element through `render`, such as `Dialog.Trigger`, `Dialog.Close`, `AlertDialog.Trigger`, `AlertDialog.Close`, `Sidebar.Trigger`, `Sidebar.Close`, or `Collapsible.Trigger`. It wires behavior and ARIA and ships no styles at all, so the element rendered into it carries its own reset and focus ring. The docs say the slot holds an Ultima Button or an element with its own ring.
+A part that exists to be handed the consumer's own element through `render`, such as `Dialog.Trigger`, `Dialog.Close`, `AlertDialog.Trigger`, `AlertDialog.Close`, `Toast.Action`, `Toast.Close`, `Sidebar.Trigger`, `Sidebar.Close`, or `Collapsible.Trigger`. It wires behavior and ARIA and ships no styles at all, so the element rendered into it carries its own reset and focus ring. The docs say the slot holds an Ultima Button or an element with its own ring.
 
 ## Axis
 
-A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow. Combobox's `size` sits on `InputGroup`, the visual box. Slider has no `size`. Alert has `tone` and neither of the other two.
+A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow. Combobox's `size` sits on `InputGroup`, the visual box. Slider has no `size`. Alert has `tone` and neither of the other two. Toast has the same six tones, forwarded as Base UI `type` / `data-type` rather than as a prop on Root.
 
 ## Tone
 
-The axis that lets a caller pick a component's color role by name, so `tone="danger"` reaches that role's fill and its contrast on-color together and the caller never names a token. Button, Badge, and Meter carry one in v0. Alert carries Badge's six tones in v0.1, and no `variant`. Slider does not: it is a value picker, not a measurement. `neutral` is a tone value but not a color role, so a component using it names the neutral tokens it wants.
+The axis that lets a caller pick a component's color role by name, so `tone="danger"` reaches that role's fill and its contrast on-color together and the caller never names a token. Button, Badge, and Meter carry one in v0. Alert carries Badge's six tones in v0.1, and no `variant`. Toast carries the same six as Base UI `type` on `add()`, styled against `data-type`; `error` paints as `danger` and `loading` as `neutral` so `promise()` works, and those two strings are aliases rather than extra axis values. Slider does not: it is a value picker, not a measurement. `neutral` is a tone value but not a color role, so a component using it names the neutral tokens it wants.
 
 ## Field
 
@@ -170,9 +170,17 @@ A static in-page callout. It is not a live region and not an Alert Dialog. Tone 
 
 A modal confirmation overlay, a separate component from Dialog. Escape closes it; a backdrop click does not. It is the seventh overlay and does not vary the recipe.
 
+## Toast
+
+A stacked notification. It is not an overlay: Viewport reads `z.toast`, Root restates overlay surface tokens without the overlay enter/exit. Colour is `tone` forwarded as Base UI `type` / `data-type`. The consumer mounts Provider, Portal, and Viewport once; those three stay mounted when the stack is empty. Ultima writes no context for it and does not invent `useToast()`.
+
+## Live region
+
+A documented pattern, not a catalogue component and not a shared announcer. Pre-mount the region empty; Ultima-written UI uses `role="status"` with `aria-atomic="true"` and Word Joiner for a repeat of the same text; clip-hide, never `display: none`. Toast inherits Base UI's viewport and high-priority `role="alert"` clone. Field.Error is not a live region. Alert is not a live region. Copy-button keeps its own region. Data Table's row-count announcement follows the pattern when that recipe ships.
+
 ## Overlay
 
-A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it. Alert Dialog is the seventh: it joins the recipe and does not vary it.
+A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it. Alert Dialog is the seventh: it joins the recipe and does not vary it. Toast is not an overlay.
 
 ## Style slot
 
