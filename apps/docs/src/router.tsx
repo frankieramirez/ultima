@@ -110,7 +110,7 @@ const rationaleRoute = createRoute({
   component: RationalePage,
 });
 
-const routeTree = rootRoute.addChildren([
+export const routeTree = rootRoute.addChildren([
   indexRoute,
   installRoute,
   tokensRoute,

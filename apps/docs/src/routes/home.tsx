@@ -4,6 +4,7 @@ import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.
 import { Button, Code } from '@ultima/ui';
 
 import { CopyButton } from '../copy-button';
+import { pages } from '../navigation';
 import { BrandLogo } from '../brand-logo';
 import CardOverview from '../demos/card/overview';
 import CodeBlock from '../demos/code/block';
@@ -29,12 +30,7 @@ const DEMOS = [
   { name: 'Code', slug: 'code', component: CodeBlock },
 ];
 
-const PAGES = [
-  { to: '/install' as const, label: 'Install' },
-  { to: '/components' as const, label: 'Components' },
-  { to: '/tokens' as const, label: 'Tokens' },
-  { to: '/rationale' as const, label: 'Rationale' },
-];
+const PAGES = pages.filter(({ to }) => to !== '/');
 
 const styles = stylex.create({
   page: {
@@ -234,7 +230,7 @@ export function Home() {
         </div>
         <div {...stylex.props(styles.links)}>
           {PAGES.map(({ to, label }) => (
-            <Button key={to} variant="outline" render={<Link to={to} />} nativeButton={false}>
+            <Button key={label} variant="outline" render={<Link to={to} />} nativeButton={false}>
               {label}
             </Button>
           ))}

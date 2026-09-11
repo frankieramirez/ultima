@@ -16,6 +16,8 @@ Application navigation as ten plain parts: a `Root` that holds the state, a `Pan
 
 Above `48rem` the panel sits inline and collapses in place. Below it, the same children become a menu that slides in over the page. You write them once.
 
+The menu beside this page is this component, and it is the whole-navigation example: its groups, its nested set of component pages, its current row, the collapse control in the header, and the menu you get at a narrow width are all the parts below, wired to the site's router. The demos on this page each show one narrower thing.
+
 ## Install
 
 ```bash
@@ -66,7 +68,7 @@ Below it, `Panel` puts its children inside Ultima's Dialog: a backdrop, a popup 
 
 The server render is the desktop shape, which is the crawlable one, and the media query keeps it out of sight on a narrow viewport until the mobile branch mounts.
 
-**A desktop reader cannot be shown the menu on this page, by any construction**, so this page does not try. There is no iframe and no second demo composing Dialog by hand, which would copy this file's private overrides and then drift from them. Narrow your window instead: every demo above carries its own `Sidebar.Trigger`, so each one becomes the real menu at a real width rather than a picture of it. The site's own navigation is the whole-navigation demonstration; the demos here each show one narrower thing.
+**A desktop reader cannot be shown the menu on this page, by any construction**, so this page does not try. There is no iframe and no second demo composing Dialog by hand, which would copy this file's private overrides and then drift from them. Narrow your window instead: the site's own menu and every demo above carry a `Sidebar.Trigger`, so each one becomes the real menu at a real width rather than a picture of it.
 
 ## The state, and useSidebar
 
@@ -97,4 +99,4 @@ Sidebar has no axis. Every part takes `render` and the `style` slot.
 - **Keyboard.** Native. `Link` is an `a`, `Button` is a `button`, and Tab, Enter, and Space are the browser's. Group disclosure is Collapsible's, and the mobile menu is Dialog's: Tab loops inside it, Escape closes it, and focus returns to the trigger. Navigation is a list with disclosure buttons, never `role="tree"` or `role="menu"`.
 - **Elements.** `nav` on `Panel`, `ul` and `li` on `List` and `Item`, `h3` on `GroupLabel`, changeable through `render` like `Card.Title`.
 
-Three obligations are the consumer's, not Sidebar's: one link current per set, a name on the panel, and moving focus to the new page's heading on a client-side route change.
+Three obligations are the consumer's, not Sidebar's: one link current per set, a name on the panel, and moving focus to the new page's heading on a client-side route change. This site meets all three in `apps/docs`: its links are TanStack Router links passed through `render`, which set `aria-current` themselves and match exactly so only one row is current; the panel is named `Ultima`; and the shell moves focus to the destination's `h1` once the route resolves.
