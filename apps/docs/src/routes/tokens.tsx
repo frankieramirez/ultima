@@ -1,9 +1,14 @@
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code, Table } from '@ultima/ui';
 import { APCAcontrast, sRGBtoY } from 'apca-w3';
 
 import { CopyButton } from '../copy-button';
+import MotionTrack from '../demos/tokens/motion';
+import RadiusSpecimen from '../demos/tokens/radius';
+import ShadowSpecimen from '../demos/tokens/shadow';
+import SpaceBar from '../demos/tokens/space';
+import TypeSample from '../demos/tokens/text';
 import { Note, Page, Section, TextLink } from '../page';
 import { Swatch } from '../swatch';
 import { contrast, tokenGroups, tokensByName, type Token } from '../token-data';
@@ -11,7 +16,7 @@ import { describeToken } from '../token-roles';
 
 const MODES = ['dark', 'light'] as const;
 
-const slide = stylex.keyframes({ from: { marginInlineStart: 0 }, to: { marginInlineStart: '75%' } });
+const DESKTOP = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
   rows: {
@@ -27,7 +32,7 @@ const styles = stylex.create({
     borderBottomWidth: border.hairline,
     display: 'grid',
     gap: space['--ult-space-6'],
-    gridTemplateColumns: 'minmax(16rem, 22rem) 1fr',
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)' },
     paddingBlock: space['--ult-space-6'],
   },
   identity: {
@@ -64,46 +69,6 @@ const styles = stylex.create({
     fontSize: text['--ult-text-3'],
     minWidth: '10rem',
   },
-  bar: {
-    backgroundColor: color['--ult-color-accent'],
-    borderRadius: radius['--ult-radius-xs'],
-    height: space['--ult-space-5'],
-  },
-  sample: {
-    color: color['--ult-color-text'],
-    lineHeight: font['--ult-font-leading-tight'],
-  },
-  square: {
-    backgroundColor: color['--ult-color-surface-hover'],
-    borderColor: color['--ult-color-border-strong'],
-    borderStyle: 'solid',
-    borderWidth: border.hairline,
-    height: space['--ult-space-11'],
-    width: space['--ult-space-11'],
-  },
-  tile: {
-    backgroundColor: color['--ult-color-surface-raised'],
-    borderRadius: radius['--ult-radius-md'],
-    height: space['--ult-space-11'],
-    width: space['--ult-space-12'],
-  },
-  track: {
-    backgroundColor: color['--ult-color-surface-sunken'],
-    borderRadius: radius['--ult-radius-full'],
-    height: space['--ult-space-6'],
-    overflow: 'hidden',
-    width: space['--ult-space-12'],
-  },
-  dot: {
-    animationDirection: 'alternate',
-    animationIterationCount: 'infinite',
-    animationName: slide,
-    animationTimingFunction: 'ease-in-out',
-    backgroundColor: color['--ult-color-highlight'],
-    borderRadius: radius['--ult-radius-full'],
-    height: space['--ult-space-6'],
-    width: space['--ult-space-6'],
-  },
   override: {
     marginBlockStart: space['--ult-space-6'],
   },
@@ -120,17 +85,6 @@ const styles = stylex.create({
     fontVariantNumeric: 'tabular-nums',
     textAlign: 'right',
   },
-});
-
-const example = stylex.create({
-  width: (value: string) => ({ width: value }),
-  fontSize: (value: string) => ({ fontSize: value }),
-  radius: (value: string) => ({ borderRadius: value }),
-  shadow: (value: string) => ({ boxShadow: value }),
-});
-
-const durationFromToken = stylex.create({
-  value: (token: string) => ({ animationDuration: `var(${token})` }),
 });
 
 const PAIRING_COLUMNS = [
@@ -231,22 +185,17 @@ function OtherValue({ token }: { token: Token }) {
 }
 
 function Example({ token }: { token: Token }) {
-  const value = token.dark.value;
   switch (token.group) {
     case 'space':
-      return <div {...stylex.props(styles.bar, example.width(value))} />;
+      return <SpaceBar token={token.name} />;
     case 'text':
-      return <span {...stylex.props(styles.sample, example.fontSize(value))}>Ag</span>;
+      return <TypeSample token={token.name} />;
     case 'radius':
-      return <div {...stylex.props(styles.square, example.radius(value))} />;
+      return <RadiusSpecimen token={token.name} />;
     case 'shadow':
-      return <div {...stylex.props(styles.tile, example.shadow(value))} />;
+      return <ShadowSpecimen token={token.name} />;
     case 'motion':
-      return (
-        <div {...stylex.props(styles.track)}>
-          <div {...stylex.props(styles.dot, durationFromToken.value(token.name))} />
-        </div>
-      );
+      return <MotionTrack token={token.name} />;
     default:
       return null;
   }
