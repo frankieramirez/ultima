@@ -5,7 +5,6 @@ import { Button, Card, Code } from '@ultima/ui';
 
 import { CopyButton } from '../copy-button';
 import { pages } from '../navigation';
-import { BrandLogo } from '../brand-logo';
 import CardOverview from '../demos/card/overview';
 import CodeBlock from '../demos/code/block';
 import ButtonVariants from '../demos/button/variants';
@@ -46,15 +45,6 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-5'],
-  },
-  wordmark: {
-    margin: 0,
-  },
-  logo: {
-    display: 'block',
-    height: 'auto',
-    maxWidth: '34rem',
-    width: '100%',
   },
   pitch: {
     color: color['--ult-color-text'],
@@ -150,10 +140,7 @@ export function Home() {
   return (
     <main {...stylex.props(styles.page)}>
       <section {...stylex.props(styles.hero)}>
-        <h1 {...stylex.props(styles.wordmark)}>
-          <BrandLogo alt="Ultima" width={4970} height={762} style={styles.logo} />
-        </h1>
-        <p {...stylex.props(styles.pitch)}>The final spell for the interfaces you build.</p>
+        <h1 {...stylex.props(styles.pitch)}>The final spell for the interfaces you build.</h1>
         <p {...stylex.props(styles.prose)}>
           Ultima is a design system of tokens and React components, authored on Base UI and StyleX
           and distributed registry-first: the shadcn CLI copies the source into your project and you
