@@ -151,7 +151,7 @@ export function Home() {
     <main {...stylex.props(styles.page)}>
       <section {...stylex.props(styles.hero)}>
         <h1 {...stylex.props(styles.wordmark)}>
-          <BrandLogo alt="Ultima" width={1287} height={261} style={styles.logo} />
+          <BrandLogo alt="Ultima" width={4970} height={762} style={styles.logo} />
         </h1>
         <p {...stylex.props(styles.pitch)}>The final spell for the interfaces you build.</p>
         <p {...stylex.props(styles.prose)}>
