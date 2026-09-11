@@ -48,7 +48,7 @@ export function Header() {
         >
           <ListIcon />
         </Sidebar.Trigger>
-        <BrandLogo alt="Ultima" width={1287} height={261} style={styles.brandLogo} />
+        <BrandLogo alt="Ultima" width={4970} height={762} style={styles.brandLogo} />
       </div>
       <ToggleGroup.Root
         aria-label="Color mode"
