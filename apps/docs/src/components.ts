@@ -66,4 +66,5 @@ export const components = [
     item: 'toggle-group',
     description: 'A segmented group of toggle buttons with roving focus, on Base UI.',
   },
+  { name: 'Separator', item: 'separator', description: 'A horizontal or vertical divider between sections of content.' },
 ] satisfies ComponentEntry[];

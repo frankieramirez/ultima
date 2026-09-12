@@ -3,18 +3,16 @@ import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code as UltimaCode, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import { isValidElement, type ComponentProps, type ComponentType, type ReactNode } from 'react';
+import { DocumentLayout } from './document-layout';
 
 const styles = stylex.create({
   root: {
-    marginInline: 'auto',
-    maxWidth: '44rem',
-    paddingBlock: space['--ult-space-9'],
-    paddingInline: space['--ult-space-6'],
+    minInlineSize: 0,
   },
   h1: {
     color: color['--ult-color-text'],
-    fontSize: text['--ult-text-9'],
-    fontWeight: font['--ult-font-weight-semibold'],
+    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': '3.5rem' },
+    fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
     marginBlock: 0,
@@ -22,8 +20,8 @@ const styles = stylex.create({
   },
   h2: {
     color: color['--ult-color-text'],
-    fontSize: text['--ult-text-7'],
-    fontWeight: font['--ult-font-weight-semibold'],
+    fontSize: '1.625rem',
+    fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
     marginBottom: space['--ult-space-4'],
@@ -154,9 +152,5 @@ export function Prose({
 }: {
   Content: ComponentType<{ components?: MDXComponents }>;
 }) {
-  return (
-    <article {...stylex.props(styles.root)}>
-      <Content components={components} />
-    </article>
-  );
+  return <DocumentLayout><div {...stylex.props(styles.root)}><Content components={components} /></div></DocumentLayout>;
 }

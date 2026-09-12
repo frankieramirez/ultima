@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Code, Table } from '@ultima/ui';
+import { Code, Separator, Table } from '@ultima/ui';
 import { APCAcontrast, sRGBtoY } from 'apca-w3';
 
 import { CopyButton } from '../copy-button';
@@ -16,7 +16,7 @@ import { describeToken } from '../token-roles';
 
 const MODES = ['dark', 'light'] as const;
 
-const DESKTOP = '@media (min-width: 48rem)';
+const DESKTOP = '@media (min-width: 64rem)';
 
 const styles = stylex.create({
   rows: {
@@ -31,6 +31,11 @@ const styles = stylex.create({
     gap: space['--ult-space-6'],
     gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)' },
   },
+  colorRow: {
+    columnGap: space['--ult-space-9'],
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)', '@media (min-width: 80rem)': 'minmax(18rem, 30rem) minmax(0, 1fr)' },
+  },
+  divider: { gridColumn: '1 / -1' },
   identity: {
     alignItems: 'baseline',
     display: 'flex',
@@ -41,6 +46,7 @@ const styles = stylex.create({
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-3'],
+    overflowWrap: 'anywhere',
   },
   description: {
     color: color['--ult-color-text-muted'],
@@ -51,12 +57,13 @@ const styles = stylex.create({
   swatches: {
     display: 'grid',
     gap: space['--ult-space-5'],
-    gridTemplateColumns: 'repeat(2, minmax(6rem, 12rem))',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
   },
   example: {
     alignItems: 'center',
     display: 'flex',
     gap: space['--ult-space-6'],
+    justifyContent: 'space-between',
     minHeight: space['--ult-space-11'],
   },
   value: {
@@ -142,13 +149,14 @@ export function TokensPage() {
 function Row({ token }: { token: Token }) {
   const description = describeToken(token.name);
   return (
-    <div {...stylex.props(styles.row)}>
+    <div {...stylex.props(styles.row, token.group === 'color' && styles.colorRow)}>
       <div {...stylex.props(styles.identity)}>
         <code {...stylex.props(styles.name)}>{token.name}</code>
         <CopyButton text={token.name} ariaLabel={`Copy ${token.name}`} />
         {description ? <span {...stylex.props(styles.description)}>{description}</span> : null}
       </div>
       {token.group === 'color' ? <ModeSwatches token={token} /> : <OtherValue token={token} />}
+      {token.group === 'color' && <Separator style={styles.divider} />}
     </div>
   );
 }

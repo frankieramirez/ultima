@@ -51,7 +51,7 @@ Groups and their name shape:
 | `shadow` | t-shirt | `--ult-shadow-md` |
 | `motion` (durations) | descriptive | `--ult-motion-fast` |
 
-Color roles are conventional: surface, text, border, accent, and the status colors. Fantasy names appear only in palette scales. Interaction states (`-hover`, `-active`) are separate semantic tokens resolved to palette steps, never derived with `color-mix()`, because dark and light modes step in different directions.
+Color roles are conventional: surface, text, border, accent, action, and the status colors. Fantasy names appear only in palette scales. Interaction states (`-hover`, `-active`) are separate semantic tokens resolved to palette steps, never derived with `color-mix()`, because dark and light modes step in different directions. `action` is the mana based role for prominent page actions such as landing page calls to action; its contrast token is checked against the default, hover, and active fills. It does not add a component API axis: components that already expose `tone` keep their existing role choices, while a consumer can map an action theme onto an accent surface.
 
 In component code the key is used as written: `color['--ult-color-surface']`. That ergonomic cost is accepted for stable names.
 
@@ -521,9 +521,11 @@ Settled again on [What v0.1 changes about the proof bar, the release gate, and t
 - [x] Verify the docs at desktop and mobile widths in both color modes, including keyboard navigation and focus restoration after closing the mobile menu.
 - [x] Complete the registry generation pipeline, component documentation, and CI gates defined in this specification.
 
-The catalogue is closed for v0. The three additions above are what the docs application needed, and the section below records how that was determined rather than leaving the next author to re-run the test.
+The original v0 catalogue closed with the three additions above. The section below records that decision; the September 12, 2026 designs subsequently added Separator for the docs application's dividers.
 
 Sidebar's public parts, responsive state model, and dependencies need contracts before implementation. Reuse Dialog for mobile navigation if it satisfies that contract. If the implementation needs a separate Sheet or Drawer, promote that component from v0.2 into v0. That test was applied on [Mobile navigation: reuse Dialog, or promote Drawer into v0](https://linear.app/frankie-ramirez/issue/ULT-55): Dialog satisfies it, Sidebar composes Dialog for its mobile menu, and Drawer stays in v0.2. The same rule applies to Breadcrumb, Collapsible, Separator, Scroll Area, or any other reusable pattern the docs needs. Applied to the docs' actual inventory on [Where the line falls between an Ultima component and docs-local page layout](https://linear.app/frankie-ramirez/issue/ULT-56), it promotes two components and no more: Collapsible, already brought forward for Sidebar's nested groups, and Toggle Group, for the theme control. Breadcrumb, Separator, Scroll Area, Toolbar, and Navigation Menu stay in v0.2, because nothing the docs actually renders needs them and the catalogue grows from demonstrated need rather than from anticipation. Both promoted components have contracts to the same bar as the fourteen, settled on [Contracts for the reusable patterns the docs pulls into v0](https://linear.app/frankie-ramirez/issue/ULT-57), which also added `Table.Scroll` and qualified the Styled parts rule. Search is not required for v0; adding it brings its missing component dependencies into the same release.
+
+The Separator deferral in that inventory is superseded by `ultima.pen`: the landing sections, token rows, and article index now consume the component. The v0 table below includes its contract.
 
 #### v0.1: everyday forms and feedback
 
@@ -545,7 +547,7 @@ The form examples must demonstrate submission and validation with a documented f
 - [ ] Breadcrumb, Pagination, and Navigation Menu. Two things were priced on [ULT-49](https://linear.app/frankie-ramirez/issue/ULT-49) and deliberately left undecided on [ULT-57](https://linear.app/frankie-ramirez/issue/ULT-57), because neither component is promoted: whether Breadcrumb's separator is a markup node with a swappable glyph or a CSS pseudo-element kept out of the accessibility tree, and the fact that Navigation Menu renders two nested unlabelled `<nav>` elements, both of which need a name from Ultima or the consumer. Detail in `docs/research/2026-09-09-base-ui-docs-patterns.md`.
 - [ ] Popover, Sheet, and Drawer. Sheet is a documented Dialog recipe, the edge-anchored overrides Sidebar's mobile menu already uses; Drawer is Base UI's `Drawer`, which adds swipe gestures and the Android back gesture, priced on [Base UI Drawer measured against Dialog](https://linear.app/frankie-ramirez/issue/ULT-48). Neither moved into v0.
 - [ ] Context Menu, Menubar, and Hover Card.
-- [ ] Avatar, Separator, and Scroll Area. Scroll Area's two open items are already answered elsewhere: the CSP note is in Registry and install, and `ScrollArea.Viewport` copies `Table.Scroll`'s focus-ring row, since a tabbable region that is neither a control nor a popup is the same shape. Detail in `docs/research/2026-09-09-base-ui-docs-patterns.md`.
+- [ ] Avatar and Scroll Area. Separator moved into v0 for the September 2026 docs designs. Scroll Area's two open items are already answered elsewhere: the CSP note is in Registry and install, and `ScrollArea.Viewport` copies `Table.Scroll`'s focus-ring row, since a tabbable region that is neither a control nor a popup is the same shape. Detail in `docs/research/2026-09-09-base-ui-docs-patterns.md`.
 - [ ] Toggle and Toggle Group. Toggle Group moved into v0 on [Where the line falls between an Ultima component and docs-local page layout](https://linear.app/frankie-ramirez/issue/ULT-56), because the docs' theme control is a single-selection pressed-button group and nothing else in v0 carries that shape. Toggle on its own stays here.
 - [ ] Button Group, Input Group, Input OTP, and Native Select.
 - [ ] Aspect Ratio, Resizable, and Carousel.
@@ -584,6 +586,7 @@ Release labels here describe delivery milestones. They do not settle that update
 | Sidebar | `sidebar` | plain, `useRender` on every part; composes Dialog below the breakpoint | `Root`, `Panel`, `Trigger`, `Close`, `Group`, `GroupLabel`, `List`, `Item`, `Link`, `Button` | none |
 | Collapsible | `collapsible` | Base UI `Collapsible` | `Root`, `Trigger`, `Panel` | none |
 | Toggle Group | `toggle-group` | Base UI `ToggleGroup` and `Toggle` | `Root`, `Item` | none |
+| Separator | `separator` | Base UI `Separator` (`<div role="separator">`) | single | none; forwards Base UI `orientation` |
 
 The `size` values on Button, Input, and Select are the three control heights from the space scale (steps 9, 10, 11), so `md` is the same height on all three. Card's parts are the prototype's six slots, accepted on the prototype reaction. Table's, Stat's, and Code's shapes were fixed with the accessibility contract.
 
@@ -845,6 +848,7 @@ Decided on [Accessibility contract per v0 component](https://linear.app/frankie-
 | Code | `<code>`, or `<pre><code>` for the block variant | Content | None | Static | Native |
 | Badge | `<span>` | Content; color never carries meaning alone | None | Static | Docs |
 | Card | `<div>` parts | `Card.Title` renders `<h3>` by default, changeable through `render` | None | Static | Native |
+| Separator | Base UI `Separator` (`<div role="separator">`) | Optional accessible label from the consumer | None | Static | Base UI |
 | Sidebar | `<nav>` on `Panel`; `<ul>`, `<li>`, `<a>`, `<button>`, `<h3>` on the rest; Dialog around `Panel` below the breakpoint | `aria-label` or `aria-labelledby` on `Sidebar.Panel`, which the mobile popup reuses; `aria-label` on the elements rendered into `Sidebar.Trigger` and `Sidebar.Close` | `Link`, `Button`; `Trigger`'s and `Close`'s rendered elements | Native (Tab, Enter, Space); Collapsible for group disclosure; Dialog for the mobile menu (Tab loops, Escape closes, focus returns to the trigger) | Types: one of `'aria-label'` or `'aria-labelledby'` required on `Sidebar.Panel` |
 | Collapsible | Base UI `Collapsible` | `Trigger` text | `Trigger`'s rendered element | Base UI (native button: Space, Enter; no arrows, no Escape) | Docs |
 | Toggle Group | Base UI `ToggleGroup` and `Toggle` | `aria-label` or `aria-labelledby` on `ToggleGroup.Root`; text or `aria-label` on each `Item` | `Item` | Base UI (roving tabindex, arrows along the orientation, Home and End, Space and Enter toggle) | Docs |
@@ -1292,7 +1296,7 @@ A docs-local wrapper that adds application behavior around an Ultima component s
 
 #### The inventory, sorted
 
-**Promoted into the v0 catalogue.** Toggle Group, for the theme control, recorded in Release scope and core coverage above. Collapsible was already promoted for Sidebar's nested groups. Nothing else. Breadcrumb, Separator, Scroll Area, Toolbar, and Navigation Menu stay in v0.2.
+**Promoted into the v0 catalogue.** Toggle Group, for the theme control, and Collapsible, for Sidebar's nested groups. The September 12, 2026 designs in `ultima.pen` also require Separator for landing sections, token rows, and the article index. Separator reads the border token, forwards Base UI's horizontal or vertical orientation, and accepts the standard style slot. Breadcrumb, Scroll Area, Toolbar, and Navigation Menu stay in v0.2.
 
 **Rebuilt on existing components.** The demo block chrome, the home page's demo tiles, the home page's install blocks, and the `/components` index cards each compose Card instead of drawing their own container. The index cards render no hover and no focus-visible styling at all today, which the change fixes rather than preserves. `data-table.tsx` is deleted and its three call sites on `/tokens` and `/palette` use Table, which also gives them a real caption. Those tables carry a `minWidth` of 40 to 48rem inside an `overflowX: 'auto'` wrapper that has no `tabIndex` and no focus ring, so the scroll region is keyboard-inaccessible today; the call sites move to `Table.Scroll`, added for them on [Contracts for the reusable patterns the docs pulls into v0](https://linear.app/frankie-ramirez/issue/ULT-57), and the minimum width goes through the `style` slot on `Table.Root`. The first prong is what catches this: a tabbable scroll region's keyboard handling and focus ring cannot come from plain elements in `apps/docs`, and the source-reading gate would not have caught it either, since `outline` is not one of the four properties it reads. The `code` and `pre` mappings in `prose.tsx` delegate to Code, and its `table`, `th`, and `td` mappings delegate to Table.
 
@@ -1308,7 +1312,7 @@ Once Sidebar carries the menu, a second navigation in the header would put two `
 
 Route data is one module that Sidebar reads. Today it is four partial copies that already disagree: the header's own list, a second list in the home page missing `/palette` and in a different order, the component catalogue, and the router's page map. The catalogue stays the data it is; the navigation tree derives from it.
 
-Settled on [ULT-85](https://linear.app/frankie-ramirez/issue/ULT-85/what-v01-changes-about-the-proof-bar-the-release-gate-and-the-docs): `apps/docs/src/components.ts` remains one flat array in specification order, v0 then the v0.1 table. A docs-only `release: 'v0' | 'v0.1'` on the entry splits the derived menu into two nested disclosures, labelled "The v0 set" and "The v0.1 set", without slicing at a magic index. The index page sections the same way. That split is docs chrome (`navigation.ts` and `site-menu.tsx`); it does not reach Sidebar's public parts, which already expose Group and nested Collapsible. One landmark, and the header still holds no links. Do not group by domain. Revisit when a later release makes one set unscanable.
+The September 12, 2026 designs in `ultima.pen` replace the nested release disclosures planned in [ULT-85](https://linear.app/frankie-ramirez/issue/ULT-85/what-v01-changes-about-the-proof-bar-the-release-gate-and-the-docs) with a flat catalogue. `apps/docs/src/components.ts` remains the source in specification order. Navigation uses `::root` and `@components` group labels and `--`-prefixed destination labels. Sidebar retains its reusable nested-list parts. The wordmark is the navigation toggle at both widths, so the header keeps its compact shape and the menu remains keyboard accessible. Documentation articles include a separate section index derived from their headings; it hides below 80rem. Token and palette pages use the full content width.
 
 The theme control stays docs-local, composed from Toggle Group. Ultima ships the widget and nothing more. The preference, its storage key, and applying the theme class to the document are the application's job, and a component that shipped them would assert a storage key and a root element on every consumer.
 

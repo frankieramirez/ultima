@@ -1,34 +1,22 @@
-import { ListIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Button, Sidebar, ToggleGroup } from '@ultima/ui';
 
-import { useTheme, type ThemePreference } from './theme';
 import { BrandLogo } from './brand-logo';
+import { useTheme, type ThemePreference } from './theme';
 
 const styles = stylex.create({
   bar: {
     alignItems: 'center',
     display: 'flex',
-    flexWrap: 'wrap',
+    flexShrink: 0,
     gap: space['--ult-space-6'],
     justifyContent: 'space-between',
-    paddingBlock: space['--ult-space-4'],
-    paddingInline: space['--ult-space-6'],
+    minHeight: '4.25rem',
+    paddingInline: { default: space['--ult-space-6'], '@media (min-width: 48rem)': '1.75rem' },
   },
-  brandLogo: {
-    display: 'block',
-    height: '1.5rem',
-    width: 'auto',
-  },
-  cluster: {
-    alignItems: 'center',
-    display: 'flex',
-    gap: space['--ult-space-6'],
-  },
-  trigger: {
-    paddingInline: space['--ult-space-4'],
-  },
+  brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
+  trigger: { paddingInline: 0 },
 });
 
 const OPTIONS: { value: ThemePreference; label: string }[] = [
@@ -42,20 +30,15 @@ export function Header() {
 
   return (
     <header {...stylex.props(styles.bar)}>
-      <div {...stylex.props(styles.cluster)}>
-        <Sidebar.Trigger
-          render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}
-        >
-          <ListIcon />
-        </Sidebar.Trigger>
-        <BrandLogo alt="Ultima" width={4970} height={762} style={styles.brandLogo} />
-      </div>
+      <Sidebar.Trigger
+        render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}
+      >
+        <BrandLogo alt="Ultima" width={140} height={20} style={styles.brandLogo} />
+      </Sidebar.Trigger>
       <ToggleGroup.Root
         aria-label="Color mode"
         onValueChange={(next, eventDetails) => {
           const [preferred] = next;
-          // Base UI reports [] when the pressed option is pressed again, and honours
-          // cancel() before it sets state. Without this a mode would stop being in force.
           if (!preferred) {
             eventDetails.cancel();
             return;

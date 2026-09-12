@@ -9,6 +9,7 @@ export {
   type CardFooterProps,
 } from './card';
 export { Stat, type StatRootProps, type StatLabelProps, type StatValueProps } from './stat';
+export { Separator, type SeparatorProps, type SeparatorOrientation } from './separator';
 export { Code, type CodeProps, type CodeVariant } from './code';
 export { Badge, type BadgeProps, type BadgeVariant, type BadgeTone } from './badge';
 export {

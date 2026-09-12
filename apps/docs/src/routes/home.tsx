@@ -1,213 +1,151 @@
+import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Card, Code } from '@ultima/ui';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { Button, Separator } from '@ultima/ui';
 
-import { CopyButton } from '../copy-button';
-import { pages } from '../navigation';
-import CardOverview from '../demos/card/overview';
-import CodeBlock from '../demos/code/block';
-import ButtonVariants from '../demos/button/variants';
+import Playground from '../demos/home/playground';
+import { actionStyles } from '../demos/home/action';
 
-const REPO = 'https://github.com/frankieramirez/ultima';
-const HOST = 'https://ultima.systems';
 
-const INSTALL = [
+
+const FEATURES = [
   {
-    target: 'Vite',
-    commands: `npx shadcn add ${HOST}/r/setup-vite.json\nnpx shadcn add @ultima/button`,
+    title: 'StyleX at the core',
+    description: 'A component vocabulary that speaks StyleX, from your first token to your final interface.',
   },
   {
-    target: 'Next.js App Router',
-    commands: `npx shadcn add ${HOST}/r/setup-next.json\nnpx shadcn add @ultima/button`,
+    title: 'Make it unmistakably yours',
+    description: 'Shape the color, rhythm, and feel of your product through a shared token foundation.',
+  },
+  {
+    title: 'Own every detail',
+    description: 'Bring the components into your codebase. Compose, adapt, and build beyond the defaults.',
   },
 ];
 
-const DEMOS = [
-  { name: 'Button', slug: 'button', component: ButtonVariants },
-  { name: 'Card and Stat', slug: 'card', component: CardOverview },
-  { name: 'Code', slug: 'code', component: CodeBlock },
-];
-
-const PAGES = pages.filter(({ to }) => to !== '/');
+const DESKTOP = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
   page: {
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-10'],
-    marginInline: 'auto',
-    maxWidth: '64rem',
     paddingBlock: space['--ult-space-10'],
-    paddingInline: space['--ult-space-6'],
+    paddingInlineStart: { default: space['--ult-space-6'], [DESKTOP]: '3.5rem' },
+    paddingInlineEnd: { default: space['--ult-space-6'], [DESKTOP]: space['--ult-space-12'] },
   },
-  hero: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space['--ult-space-5'],
+  hero: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-8'] },
+  eyebrow: {
+    color: color['--ult-color-accent-text'],
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-2'],
+    letterSpacing: '0.1em',
+    margin: 0,
   },
   pitch: {
     color: color['--ult-color-text'],
-    fontSize: text['--ult-text-8'],
+    fontSize: { default: 'clamp(2.25rem, 6vw, 4.5rem)', [DESKTOP]: 'clamp(2.75rem, 4.5vw, 4.5rem)' },
     fontWeight: font['--ult-font-weight-medium'],
-    lineHeight: font['--ult-font-leading-snug'],
+    letterSpacing: '-0.04em',
+    lineHeight: 1.04,
     margin: 0,
-    maxWidth: '36rem',
   },
   prose: {
     color: color['--ult-color-text-muted'],
-    fontSize: text['--ult-text-5'],
-    lineHeight: font['--ult-font-leading-normal'],
-    margin: 0,
-    maxWidth: '44rem',
-  },
-  section: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space['--ult-space-6'],
-  },
-  heading: {
-    color: color['--ult-color-text'],
-    fontSize: text['--ult-text-7'],
-    fontWeight: font['--ult-font-weight-semibold'],
-    letterSpacing: font['--ult-font-tracking-tight'],
-    lineHeight: font['--ult-font-leading-tight'],
+    fontSize: { default: text['--ult-text-6'], [DESKTOP]: text['--ult-text-7'] },
+    lineHeight: 1.5,
     margin: 0,
   },
-  strip: {
-    display: 'grid',
-    gap: space['--ult-space-6'],
-    gridTemplateColumns: 'repeat(auto-fit, minmax(18rem, 1fr))',
-  },
-  tile: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  stage: {
-    flexGrow: 1,
-    padding: space['--ult-space-7'],
-  },
-  captionLink: {
-    color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
-    fontSize: text['--ult-text-3'],
-    textDecoration: 'none',
-    transitionDuration: motion['--ult-motion-fast'],
-    transitionProperty: 'color',
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
-    },
-  },
-  install: {
-    display: 'grid',
-    gap: space['--ult-space-6'],
-    gridTemplateColumns: 'repeat(auto-fit, minmax(20rem, 1fr))',
-  },
-  blockBar: {
+  actions: {
     alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  blockTarget: {
-    fontSize: text['--ult-text-3'],
-    fontWeight: font['--ult-font-weight-medium'],
-  },
-  links: {
     display: 'flex',
     flexWrap: 'wrap',
-    gap: space['--ult-space-4'],
+    gap: space['--ult-space-5'],
+    paddingBlockStart: space['--ult-space-4'],
   },
-  footer: {
-    alignItems: 'center',
-    color: color['--ult-color-text-muted'],
-    display: 'flex',
-    flexWrap: 'wrap',
-    fontSize: text['--ult-text-3'],
-    gap: space['--ult-space-6'],
-    paddingBlockStart: space['--ult-space-6'],
+  mono: { fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'] },
+  muted: { color: color['--ult-color-text-subtle'] },
+  features: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-8'], paddingBlock: space['--ult-space-4'] },
+  marker: { color: color['--ult-color-accent-text'], fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'], fontWeight: font['--ult-font-weight-regular'], margin: 0 },
+  columns: {
+    display: 'grid',
+    gap: space['--ult-space-10'],
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', '@media (min-width: 64rem)': 'repeat(3, minmax(0, 1fr))' },
   },
-  footerLink: {
-    color: {
-      default: color['--ult-color-text-muted'],
-      ':hover': color['--ult-color-text'],
-    },
-    textDecoration: 'underline',
-    textUnderlineOffset: space['--ult-space-2'],
-  },
+  feature: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-5'] },
+  number: { paddingBlockStart: space['--ult-space-2'] },
+  heading: { color: color['--ult-color-text'], fontSize: text['--ult-text-7'], fontWeight: font['--ult-font-weight-medium'], margin: 0 },
+  description: { color: color['--ult-color-text-muted'], fontSize: text['--ult-text-4'], lineHeight: font['--ult-font-leading-relaxed'], margin: 0 },
+  invitation: { display: 'flex', flexDirection: 'column', gap: '1.75rem' },
+  closing: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-8'], justifyContent: 'space-between' },
+  closingCopy: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-4'] },
+  closingTitle: { fontSize: text['--ult-text-9'], fontWeight: font['--ult-font-weight-medium'], margin: 0 },
+  closingNote: { color: color['--ult-color-text-muted'], fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'], margin: 0 },
+  footer: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-6'], justifyContent: 'space-between' },
+  footerLinks: { display: 'flex', gap: space['--ult-space-6'] },
+  footerLink: { fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'], paddingInline: 0 },
 });
 
 export function Home() {
   return (
     <main {...stylex.props(styles.page)}>
       <section {...stylex.props(styles.hero)}>
-        <h1 {...stylex.props(styles.pitch)}>The final spell for the interfaces you build.</h1>
+        <p {...stylex.props(styles.eyebrow)}>ULTIMA / UI FOR STYLEX</p>
+        <h1 {...stylex.props(styles.pitch)}>Exceptional interfaces.<br />Down to the variable.</h1>
         <p {...stylex.props(styles.prose)}>
-          Ultima is a design system of tokens and React components, authored on Base UI and StyleX
-          and distributed registry-first: the shadcn CLI copies the source into your project and you
-          own it from there. It is for React projects that compile StyleX and want a dark-first kit
-          whose light mode is a full peer. Ultima is v0 and in development.
+          Beautiful components. Expressive tokens. Code you own.<br />
+          Built on Base UI and StyleX. Installed through the shadcn CLI.
         </p>
-      </section>
-
-      <section {...stylex.props(styles.section)} aria-labelledby="demos">
-        <h2 id="demos" {...stylex.props(styles.heading)}>
-          Live
-        </h2>
-        <div {...stylex.props(styles.strip)}>
-          {DEMOS.map(({ name, slug, component: Demo }) => (
-            <Card.Root key={name} style={styles.tile}>
-              <Card.Body style={styles.stage}>
-                <Demo />
-              </Card.Body>
-              <Card.Footer>
-                <Link
-                  to="/components/$name"
-                  params={{ name: slug }}
-                  {...stylex.props(styles.captionLink)}
-                >
-                  {name}
-                </Link>
-              </Card.Footer>
-            </Card.Root>
-          ))}
+        <div {...stylex.props(styles.actions)}>
+          <Button style={actionStyles.root} render={<Link to="/install" />} nativeButton={false}>Start building</Button>
+          <Button variant="outline" render={<Link to="/components" />} nativeButton={false}>
+            Explore components <ArrowUpRightIcon aria-hidden />
+          </Button>
+          <span {...stylex.props(styles.mono, styles.muted)}>Built with StyleX</span>
         </div>
       </section>
 
-      <section {...stylex.props(styles.section)} aria-labelledby="install">
-        <h2 id="install" {...stylex.props(styles.heading)}>
-          Install
-        </h2>
-        <div {...stylex.props(styles.install)}>
-          {INSTALL.map(({ target, commands }) => (
-            <Card.Root key={target}>
-              <Card.Header style={styles.blockBar}>
-                <Card.Title render={<span />} style={styles.blockTarget}>
-                  {target}
-                </Card.Title>
-                <CopyButton text={commands} ariaLabel={`Copy the ${target} install commands`} />
-              </Card.Header>
-              <Card.Body>
-                <Code variant="block">{commands}</Code>
-              </Card.Body>
-            </Card.Root>
+      <Playground />
+
+      <section aria-labelledby="built-different" {...stylex.props(styles.features)}>
+        <h2 id="built-different" {...stylex.props(styles.marker)}>--built-different</h2>
+        <div {...stylex.props(styles.columns)}>
+          {FEATURES.map(({ title, description }, index) => (
+            <div key={title} {...stylex.props(styles.feature)}>
+              <Separator />
+              <span {...stylex.props(styles.mono, styles.muted, styles.number)}>0{index + 1}</span>
+              <h3 {...stylex.props(styles.heading)}>{title}</h3>
+              <p {...stylex.props(styles.description)}>{description}</p>
+            </div>
           ))}
         </div>
-        <div {...stylex.props(styles.links)}>
-          {PAGES.map(({ to, label }) => (
-            <Button key={label} variant="outline" render={<Link to={to} />} nativeButton={false}>
-              {label}
-            </Button>
-          ))}
+      </section>
+
+      <section {...stylex.props(styles.invitation)}>
+        <Separator />
+        <div {...stylex.props(styles.closing)}>
+          <div {...stylex.props(styles.closingCopy)}>
+            <h2 {...stylex.props(styles.closingTitle)}>Your next interface starts here.</h2>
+            <p {...stylex.props(styles.closingNote)}>A new foundation. Entirely your own.</p>
+          </div>
+          <Button style={actionStyles.root} render={<Link to="/components" />} nativeButton={false}>
+            Browse the components <ArrowUpRightIcon aria-hidden />
+          </Button>
         </div>
+        <Separator />
       </section>
 
       <footer {...stylex.props(styles.footer)}>
-        <a href={REPO} {...stylex.props(styles.footerLink)}>
-          GitHub
-        </a>
-        <a href={`${REPO}/blob/main/LICENSE`} {...stylex.props(styles.footerLink)}>
-          MIT license
-        </a>
+        <span {...stylex.props(styles.mono, styles.muted)}>ULTIMA&nbsp; / &nbsp;The final spell for your interfaces.</span>
+        <div {...stylex.props(styles.footerLinks)}>
+          <Button variant="ghost" nativeButton={false} render={<a href="https://github.com/frankieramirez/ultima" />} style={styles.footerLink}>
+            GitHub <ArrowUpRightIcon aria-hidden />
+          </Button>
+          <Button variant="ghost" nativeButton={false} render={<Link to="/install" />} style={styles.footerLink}>
+            Documentation <ArrowUpRightIcon aria-hidden />
+          </Button>
+        </div>
       </footer>
     </main>
   );

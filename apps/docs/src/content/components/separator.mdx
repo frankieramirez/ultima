@@ -1,0 +1,34 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/separator/basic';
+import basicSource from '../../demos/separator/basic?raw';
+
+# Separator
+
+A thin divider for separating related sections of content, horizontally or vertically.
+
+## Install
+
+```bash
+npx shadcn add @ultima/separator
+```
+
+## Basic
+
+Use `Separator` between sections that need a visual boundary. Pass `orientation="vertical"` when the divider runs between columns.
+
+<Demo component={Basic} source={basicSource} />
+
+## Props
+
+The root accepts Base UI Separator props. Ultima adds the `style` slot; Base UI provides `orientation` and `render`.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Sets the divider direction and its separator semantics. |
+| `render` | `ReactElement \| function` | — | Changes the root from its default `div`. |
+
+## Accessibility
+
+- **Name.** The root has the `separator` role; add an accessible label when the divider needs one.
+- **Focus and keyboard.** The separator is static and does not enter the tab order.

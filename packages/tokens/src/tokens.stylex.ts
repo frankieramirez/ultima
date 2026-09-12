@@ -186,6 +186,11 @@ export const color = stylex.defineVars({
   '--ult-color-border-strong': { default: mithril.dark8, [LIGHT]: mithril.light8 },
   '--ult-color-border-focus': { default: arcane.dark9, [LIGHT]: arcane.light9 },
 
+  '--ult-color-action': { default: mana.dark9, [LIGHT]: mana.light9 },
+  '--ult-color-action-hover': { default: mana.dark10, [LIGHT]: mana.light10 },
+  '--ult-color-action-active': { default: mana.dark11, [LIGHT]: mana.light11 },
+  '--ult-color-action-contrast': { default: mithril.dark1, [LIGHT]: mithril.light1 },
+
   '--ult-color-accent': { default: arcane.dark9, [LIGHT]: arcane.light9 },
   '--ult-color-accent-hover': { default: arcane.dark10, [LIGHT]: arcane.light10 },
   '--ult-color-accent-active': { default: arcane.dark11, [LIGHT]: arcane.light11 },

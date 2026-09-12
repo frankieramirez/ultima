@@ -38,10 +38,8 @@ function prefer(mode: keyof typeof modes) {
   onTestFinished(() => localStorage.removeItem(THEME_STORAGE_KEY));
 }
 
-const SET = 'The v0 set';
-
 const menu = () => page.getByRole('navigation', { name: MENU_LABEL, exact: true });
-const menuLink = (name: string) => menu().getByRole('link', { name, exact: true });
+const menuLink = (name: string) => menu().getByRole('link', { name: `--${name.toLowerCase().replaceAll(' ', '-')}`, exact: true });
 
 beforeEach(() => {
   localStorage.removeItem(NAVIGATION_STORAGE_KEY);
@@ -57,7 +55,7 @@ test('every destination in the menu is a route the router serves', () => {
 
 test('the menu derives its component entries from the catalogue', () => {
   expect(componentPages.map(({ params }) => params?.name)).toEqual(components.map(({ item }) => item));
-  expect(componentPages.map(({ label }) => label)).toEqual(components.map(({ name }) => name));
+  expect(componentPages.map(({ label }) => label)).toEqual(components.map(({ item }) => `--${item}`));
 });
 
 test('the site has one navigation landmark and the header holds no links', async () => {
@@ -71,20 +69,19 @@ test('the site has one navigation landmark and the header holds no links', async
   await expect.element(screen.getByRole('group', { name: 'Color mode' })).toBeVisible();
 });
 
-test('a direct load of a component page marks that link current and opens the set holding it', async () => {
-  const screen = await mount('/components/sidebar');
+test('a direct load of a component page marks that link current in the flat catalogue', async () => {
+  await mount('/components/sidebar');
   await expect.element(menuLink('Sidebar')).toBeVisible();
 
   expect(menuLink('Sidebar').element()).toHaveAttribute('aria-current', 'page');
   expect(menu().element().querySelectorAll('[aria-current="page"]').length).toBe(1);
-  expect(screen.getByRole('button', { name: SET }).element()).toHaveAttribute('aria-expanded', 'true');
+  await expect.element(menuLink('Button')).toBeVisible();
 });
 
 test('the overview link stays resting on a component page, so one link is current per set', async () => {
   await mount('/components/button');
   await expect.element(menuLink('Button')).toBeVisible();
 
-  expect(menuLink('Components').element()).not.toHaveAttribute('aria-current');
   expect(menuLink('Home').element()).not.toHaveAttribute('aria-current');
   expect(menuLink('Button').element()).toHaveAttribute('aria-current', 'page');
 });
@@ -108,16 +105,10 @@ test('a direct load leaves focus alone', async () => {
   expect(document.activeElement).toBe(document.body);
 });
 
-test('the nested set opens from the keyboard and its links follow in the tab order', async () => {
-  const screen = await mount('/install');
+test('the flat catalogue follows the page links in keyboard order', async () => {
+  await mount('/install');
   await expect.element(menuLink('Install')).toBeVisible();
-  const disclosure = screen.getByRole('button', { name: SET }).element() as HTMLElement;
-
-  expect(disclosure).toHaveAttribute('aria-expanded', 'false');
-  disclosure.focus();
-  await userEvent.keyboard('{Enter}');
-
-  await expect.poll(() => disclosure.getAttribute('aria-expanded')).toBe('true');
+  (menuLink('Rationale').element() as HTMLElement).focus();
   await userEvent.keyboard('{Tab}');
   expect(document.activeElement).toBe(menuLink('Button').element());
 });
@@ -153,7 +144,23 @@ test('the panel scrolls the whole catalogue inside the viewport', async () => {
   expect(panel.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
 });
 
+test('long component examples scroll inside the shell without a second page scrollbar', async () => {
+  await mount('/components/button');
+  await expect.element(page.getByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
+
+  expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
+});
+
 for (const theme of ['dark', 'light'] as const) {
+  test(`the landing page passes axe in ${theme}`, async () => {
+    prefer(theme);
+    const screen = await mount('/');
+    await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+
+    const results = await axe.run(document.body);
+    expect(results.violations.map(describe)).toEqual([]);
+  });
+
   test(`the shell passes axe in ${theme}`, async () => {
     prefer(theme);
     const screen = await mount('/components');
