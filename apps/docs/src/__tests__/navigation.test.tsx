@@ -53,9 +53,10 @@ test('every destination in the menu is a route the router serves', () => {
   expect(destinations.filter((to) => !served.has(to))).toEqual([]);
 });
 
-test('the menu derives its component entries from the catalogue', () => {
+test('the menu derives its component entries from the catalogue release field', () => {
   expect(componentPages.map(({ params }) => params?.name)).toEqual(components.map(({ item }) => item));
   expect(componentPages.map(({ label }) => label)).toEqual(components.map(({ item }) => `--${item}`));
+  expect(components.map(({ release }) => release)).toEqual(components.map(() => 'v0'));
 });
 
 test('the header offers a home link and hides the menu trigger on desktop', async () => {

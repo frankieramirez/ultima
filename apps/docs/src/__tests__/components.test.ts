@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 
 import { items } from '../../../../registry/items.config';
-import { components } from '../components';
+import { RELEASES, components, componentsInRelease } from '../components';
 
 const NOT_A_COMPONENT = ['tokens', 'lib', 'setup-vite', 'setup-next', 'tokens-css'];
 
@@ -29,6 +29,15 @@ test('the component catalogue exposes the v0 set in specification order', () => 
     'toggle-group',
     'separator',
   ]);
+});
+
+test('every catalogue entry carries a release, and the menu derives from that field', () => {
+  expect(components.every((entry) => entry.release === 'v0' || entry.release === 'v0.1')).toBe(true);
+  expect(components.every((entry) => entry.release === 'v0')).toBe(true);
+  expect(RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item))).toEqual(
+    components.map(({ item }) => item),
+  );
+  expect(componentsInRelease('v0.1')).toEqual([]);
 });
 
 test('the catalogue and the registry manifest name the same components', () => {
