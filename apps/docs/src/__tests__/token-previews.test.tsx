@@ -8,6 +8,7 @@ import ShadowSpecimen from '../demos/tokens/shadow';
 import SpaceBar from '../demos/tokens/space';
 import TypeSample from '../demos/tokens/text';
 import { TokensPage } from '../routes/tokens';
+import { tokenGroups, tokensByName } from '../token-data';
 
 function fromToken(property: string, token: string): string {
   const probe = document.createElement('div');
@@ -49,6 +50,13 @@ for (const { name, Preview, token, property, specimen } of previews) {
     expect(getComputedStyle(element).getPropertyValue(property)).toBe(fromToken(property, token));
   });
 }
+
+test('the motion group publishes --ult-motion-loop at 1s', () => {
+  const motion = tokenGroups.find((group) => group.name === 'motion');
+  expect(motion?.tokens.map((token) => token.name)).toContain('--ult-motion-loop');
+  expect(tokensByName.get('--ult-motion-loop')?.dark.value).toBe('1s');
+  expect(tokensByName.get('--ult-motion-loop')?.light.value).toBe('1s');
+});
 
 test('the moving preview drops its animation under reduced motion', async () => {
   const { container } = await render(<MotionTrack token="--ult-motion-slow" />);
