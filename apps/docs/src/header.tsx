@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { space } from '@ultima/tokens/tokens.stylex';
+import { border, space } from '@ultima/tokens/tokens.stylex';
 import { Button, Sidebar, ToggleGroup } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
@@ -18,7 +18,7 @@ const styles = stylex.create({
     paddingInline: space['--ult-space-6'],
   },
   brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
-  trigger: { paddingInline: 0, borderWidth: 0 },
+  trigger: { paddingInline: 0, marginInlineStart: `calc(-1 * ${border.hairline})` },
 });
 
 const OPTIONS: { value: ThemePreference; label: string }[] = [

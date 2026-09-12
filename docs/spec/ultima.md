@@ -245,7 +245,7 @@ Decided on [The palette](https://linear.app/frankie-ramirez/issue/ULT-10). Six s
 | `ember` | warning | 79 |
 | `ruin` | danger | 21 |
 
-The hues come from mana's audit report. Two values are brand anchors and stay exact: `mithril1` dark is `#0b0d17` (the report page background) and `mana12` dark is `#8ff5ff` (the wordmark cyan). Every other value is generated and may move if the contrast gate demands it.
+The hues come from mana's audit report. Two values are brand anchors and stay exact: `mithril1` dark is `#101011` (the neutral page background) and `mana12` dark is `#8ff5ff` (the wordmark cyan). Every other value is generated and may move if the contrast gate demands it.
 
 ### Step convention
 
@@ -287,7 +287,7 @@ Each value is `oklch(L, C, H)` with the scale's hue, then clipped into sRGB by r
 | ember | .80 .84 .88 .90 | .78 .72 .66 .45 |
 | ruin | .66 .71 .76 .82 | .58 .53 .48 .42 |
 
-Chroma is a peak per scale (dark and light: mithril .055 and .020, arcane .17 and .19, mana .12, verdant .13 and .14, ember .13 and .14, ruin .15 and .17) times a per-step fraction: dark `.15 .25 .4 .5 .6 .7 .8 .9 1 1 .9 .75`, light `.05 .12 .25 .35 .45 .55 .65 .8 1 1 1 .8`. Mithril uses its own fractions so the navy tint survives at every step: dark `.4 .6 .8 .9 1 1 1 1 1 1 .8 .4`, light `.3 .45 .6 .7 .85 1 1 1 1 1 1 1`.
+Chroma is a peak per scale (dark and light: mithril .005 and .020, arcane .17 and .19, mana .12, verdant .13 and .14, ember .13 and .14, ruin .15 and .17) times a per-step fraction: dark `.15 .25 .4 .5 .6 .7 .8 .9 1 1 .9 .75`, light `.05 .12 .25 .35 .45 .55 .65 .8 1 1 1 .8`. Mithril uses its own fractions so the near-neutral charcoal tint stays subtle: dark `.4 .6 .8 .9 1 1 1 1 1 1 .8 .4`, light `.3 .45 .6 .7 .85 1 1 1 1 1 1 1`.
 
 ### Values
 
@@ -296,7 +296,7 @@ Chroma is a peak per scale (dark and light: mithril .055 and .020, arcane .17 an
 
 | Mode | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| dark | `#0b0d17` | `#111324` | `#181c33` | `#212540` | `#2a2f4d` | `#353a5a` | `#454b6b` | `#5a6183` | `#777ea2` | `#8990b4` | `#afb6d4` | `#e3e7f7` |
+| dark | `#101011` | `#141516` | `#1d1e20` | `#27272a` | `#313134` | `#3c3d40` | `#4c4d50` | `#626366` | `#7f8083` | `#919295` | `#b6b7ba` | `#e7e8e9` |
 | light | `#fdfdff` | `#f7f9ff` | `#eff1fa` | `#e7e9f3` | `#dcdfeb` | `#d0d3e2` | `#b4b7c5` | `#888b99` | `#717481` | `#60636f` | `#4f525e` | `#181a24` |
 
 **arcane**

@@ -22,19 +22,24 @@ const styles = stylex.create({
   grid: {
     display: 'grid',
     gap: space['--ult-space-9'],
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(11.5rem, 1fr) minmax(0, 50rem) minmax(11.5rem, 1fr)' },
+    gridTemplateColumns: 'minmax(0, 1fr)',
   },
   article: {
     minInlineSize: 0,
     inlineSize: '100%',
     maxInlineSize: '50rem',
     marginInline: 'auto',
-    gridColumn: { default: 'auto', [DESKTOP]: '2' },
+
   },
   wideArticle: { gridColumn: '1', maxInlineSize: '64rem' },
   fullWidth: { gridTemplateColumns: 'minmax(0, 1fr)' },
   index: {
-    gridColumn: '3',
+    position: 'fixed',
+    insetBlockStart: '5.5rem',
+    insetBlockEnd: space['--ult-space-9'],
+    insetInlineEnd: space['--ult-space-9'],
+    overflow: 'auto',
+    scrollbarWidth: 'none',
     inlineSize: '11.5rem',
     justifySelf: 'end',
     display: { default: 'none', [DESKTOP]: 'block' },

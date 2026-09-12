@@ -233,3 +233,17 @@ for (const theme of ['dark', 'light'] as const) {
 function describe(violation: axe.Result) {
   return `${violation.id}: ${violation.nodes.map((node) => node.html).join(', ')}`;
 }
+
+
+test('wide articles are centered on the viewport and the menu scrolls without a visible bar', async () => {
+  await page.viewport(2304, 720);
+  onTestFinished(() => page.viewport(1280, 720));
+  await mount('/install');
+  await expect.element(page.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
+  const article = document.querySelector('article')!.getBoundingClientRect();
+  expect(Math.abs(article.left + article.width / 2 - window.innerWidth / 2)).toBeLessThan(1);
+  const navigation = document.querySelector('nav')!;
+  expect(getComputedStyle(navigation).scrollbarWidth).toBe('none');
+  navigation.scrollTop = 100;
+  expect(navigation.scrollTop).toBeGreaterThan(0);
+});

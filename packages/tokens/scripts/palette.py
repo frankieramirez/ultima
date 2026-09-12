@@ -38,7 +38,7 @@ def cr(a,b):
 
 # ---------- scale recipes ----------
 HUE={'mithril':276,'arcane':275,'mana':204,'verdant':162,'ember':79,'ruin':21}
-PEAK={'mithril':{'dark':0.055,'light':0.020},'arcane':{'dark':0.17,'light':0.19},'mana':{'dark':0.12,'light':0.12},
+PEAK={'mithril':{'dark':0.005,'light':0.020},'arcane':{'dark':0.17,'light':0.19},'mana':{'dark':0.12,'light':0.12},
       'verdant':{'dark':0.13,'light':0.14},'ember':{'dark':0.13,'light':0.14},'ruin':{'dark':0.15,'light':0.17}}
 # lightness per step, 1..12. Steps 1-8 shared; 9-12 per scale.
 L_DARK_BG=[0.162,0.195,0.235,0.275,0.315,0.36,0.42,0.50]
@@ -55,7 +55,7 @@ L78={'mithril':{'light':(0.78,0.64)}}
 CF_OVR={'mithril':{'dark':[0.4,0.6,0.8,0.9,1,1,1,1,1,1,0.8,0.4],'light':[0.3,0.45,0.6,0.7,0.85,1,1,1,1,1,1,1]}}
 CF={'dark':[0.15,0.25,0.4,0.5,0.6,0.7,0.8,0.9,1,1,0.9,0.75],
     'light':[0.05,0.12,0.25,0.35,0.45,0.55,0.65,0.8,1,1,1,0.8]}
-PIN={('mithril','dark',1):'#0b0d17',('mana','dark',12):'#8ff5ff'}
+PIN={('mithril','dark',1):'#101011',('mana','dark',12):'#8ff5ff'}
 
 def build():
     out={}

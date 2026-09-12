@@ -27,6 +27,7 @@ const styles = stylex.create({
     // Without this the row refuses to shrink below its content and the panel scrolls the page.
     minBlockSize: 0,
   },
+  balancedRails: { marginInlineEnd: { default: 0, '@media (min-width: 80rem)': '16rem' } },
   content: {
     flexGrow: 1,
     minInlineSize: 0,
@@ -84,7 +85,7 @@ function Shell() {
       <Header />
       <div {...stylex.props(styles.body)}>
         <SiteMenu />
-        <div ref={content} {...stylex.props(styles.content)}>
+        <div ref={content} {...stylex.props(styles.content, open && styles.balancedRails)}>
           <Outlet />
         </div>
       </div>
