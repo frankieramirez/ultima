@@ -9,10 +9,8 @@ const WIDE = '@media (min-width: 48rem)';
 const styles = stylex.create({
   main: {
     paddingBlockStart: space['--ult-space-7'],
-    maxInlineSize: '64rem',
     paddingBlockEnd: space['--ult-space-12'],
-    marginInlineStart: { default: space['--ult-space-6'], [WIDE]: '3.5rem' },
-    marginInlineEnd: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
+    marginInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
   },
   breadcrumb: {
     color: color['--ult-color-accent-text'],
@@ -23,14 +21,22 @@ const styles = stylex.create({
   },
   grid: {
     display: 'grid',
-    gap: space['--ult-space-10'],
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(0, 1fr) 11.5rem' },
+    gap: space['--ult-space-9'],
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(11.5rem, 1fr) minmax(0, 50rem) minmax(11.5rem, 1fr)' },
   },
   article: {
     minInlineSize: 0,
+    inlineSize: '100%',
+    maxInlineSize: '50rem',
+    marginInline: 'auto',
+    gridColumn: { default: 'auto', [DESKTOP]: '2' },
   },
+  wideArticle: { gridColumn: '1', maxInlineSize: '64rem' },
   fullWidth: { gridTemplateColumns: 'minmax(0, 1fr)' },
   index: {
+    gridColumn: '3',
+    inlineSize: '11.5rem',
+    justifySelf: 'end',
     display: { default: 'none', [DESKTOP]: 'block' },
     minInlineSize: 0,
   },
@@ -103,7 +109,7 @@ export function DocumentLayout({ children, breadcrumb, index = true }: { childre
   return (
     <main {...stylex.props(styles.main)}>
       <div {...stylex.props(styles.grid, !index && styles.fullWidth)}>
-        <article ref={article} data-document-article {...stylex.props(styles.article)}>
+        <article ref={article} data-document-article {...stylex.props(styles.article, !index && styles.wideArticle)}>
           <div {...stylex.props(styles.breadcrumb)}>{breadcrumb ?? defaultBreadcrumb()}</div>
           {children}
         </article>

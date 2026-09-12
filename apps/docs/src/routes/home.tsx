@@ -34,8 +34,8 @@ const styles = stylex.create({
     paddingBlockStart: space['--ult-space-7'],
     paddingBlockEnd: space['--ult-space-10'],
     maxInlineSize: '64rem',
-    marginInlineStart: { default: space['--ult-space-6'], [DESKTOP]: '3.5rem' },
-    marginInlineEnd: { default: space['--ult-space-6'], [DESKTOP]: space['--ult-space-12'] },
+    inlineSize: { default: 'calc(100% - 2rem)', [DESKTOP]: 'calc(100% - 7rem)' },
+    marginInline: 'auto',
   },
   hero: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-8'] },
   eyebrow: {
