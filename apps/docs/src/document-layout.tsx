@@ -8,16 +8,17 @@ const WIDE = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
   main: {
-    paddingBlockStart: space['--ult-space-10'],
+    paddingBlockStart: space['--ult-space-7'],
+    maxInlineSize: '64rem',
     paddingBlockEnd: space['--ult-space-12'],
-    paddingInlineStart: { default: space['--ult-space-6'], [WIDE]: '3.5rem' },
-    paddingInlineEnd: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
+    marginInlineStart: { default: space['--ult-space-6'], [WIDE]: '3.5rem' },
+    marginInlineEnd: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
   },
   breadcrumb: {
     color: color['--ult-color-accent-text'],
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-2'],
-    lineHeight: font['--ult-font-leading-normal'],
+    lineHeight: font['--ult-font-leading-none'],
     marginBlockEnd: space['--ult-space-8'],
   },
   grid: {

@@ -31,9 +31,11 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-10'],
-    paddingBlock: space['--ult-space-10'],
-    paddingInlineStart: { default: space['--ult-space-6'], [DESKTOP]: '3.5rem' },
-    paddingInlineEnd: { default: space['--ult-space-6'], [DESKTOP]: space['--ult-space-12'] },
+    paddingBlockStart: space['--ult-space-7'],
+    paddingBlockEnd: space['--ult-space-10'],
+    maxInlineSize: '64rem',
+    marginInlineStart: { default: space['--ult-space-6'], [DESKTOP]: '3.5rem' },
+    marginInlineEnd: { default: space['--ult-space-6'], [DESKTOP]: space['--ult-space-12'] },
   },
   hero: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-8'] },
   eyebrow: {
@@ -41,6 +43,7 @@ const styles = stylex.create({
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-2'],
     letterSpacing: '0.1em',
+    lineHeight: font['--ult-font-leading-none'],
     margin: 0,
   },
   pitch: {
