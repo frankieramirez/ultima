@@ -301,6 +301,7 @@ export const motion = stylex.defineVars({
   '--ult-motion-fast': { default: '120ms', [REDUCED_MOTION]: '1ms' },
   '--ult-motion-base': { default: '200ms', [REDUCED_MOTION]: '1ms' },
   '--ult-motion-slow': { default: '300ms', [REDUCED_MOTION]: '1ms' },
+  '--ult-motion-loop': { default: '1s', [REDUCED_MOTION]: '0s' },
 });
 
 export const easing = stylex.defineConsts({
