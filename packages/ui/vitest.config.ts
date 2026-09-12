@@ -10,6 +10,7 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       '@base-ui/react/button',
+      '@base-ui/react/separator',
       '@base-ui/react/collapsible',
       '@base-ui/react/input',
       '@base-ui/react/dialog',

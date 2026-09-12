@@ -399,6 +399,9 @@ function pairings(): Pairing[] {
       add(`${role}-contrast`, background, 4.5);
     }
   }
+  for (const background of ['action', 'action-hover', 'action-active']) {
+    add('action-contrast', background, 4.5);
+  }
   return table;
 }
 

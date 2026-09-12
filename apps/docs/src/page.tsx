@@ -1,18 +1,17 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import type { ComponentProps, ReactNode } from 'react';
+import { DocumentLayout } from './document-layout';
 
 const styles = stylex.create({
   page: {
-    marginInline: 'auto',
-    maxWidth: '76rem',
-    paddingBlock: space['--ult-space-9'],
-    paddingInline: space['--ult-space-6'],
+    display: 'flex',
+    flexDirection: 'column',
   },
   title: {
     color: color['--ult-color-text'],
-    fontSize: text['--ult-text-9'],
-    fontWeight: font['--ult-font-weight-semibold'],
+    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': '3.5rem' },
+    fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
     margin: 0,
@@ -21,16 +20,16 @@ const styles = stylex.create({
     color: color['--ult-color-text-muted'],
     fontSize: text['--ult-text-5'],
     lineHeight: font['--ult-font-leading-normal'],
-    marginBlock: space['--ult-space-5'],
-    maxWidth: '44rem',
+    marginBlockStart: space['--ult-space-5'],
+    marginBlockEnd: 0,
   },
   section: {
     marginBlockStart: space['--ult-space-11'],
   },
   sectionTitle: {
     color: color['--ult-color-text'],
-    fontSize: text['--ult-text-7'],
-    fontWeight: font['--ult-font-weight-semibold'],
+    fontSize: '1.625rem',
+    fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
     marginBlock: 0,
@@ -59,11 +58,13 @@ export function Page({
   children: ReactNode;
 }) {
   return (
-    <main {...stylex.props(styles.page)}>
-      <h1 {...stylex.props(styles.title)}>{title}</h1>
-      <p {...stylex.props(styles.lede)}>{lede}</p>
-      {children}
-    </main>
+    <DocumentLayout breadcrumb={`::root / --${title.toLowerCase()}`} index={title !== 'Tokens' && title !== 'Palette'}>
+      <div {...stylex.props(styles.page)}>
+        <h1 {...stylex.props(styles.title)}>{title}</h1>
+        <p {...stylex.props(styles.lede)}>{lede}</p>
+        {children}
+      </div>
+    </DocumentLayout>
   );
 }
 

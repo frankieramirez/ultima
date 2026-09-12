@@ -92,6 +92,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A segmented group of toggle buttons with roving focus, on Base UI.',
     docs: 'import { ToggleGroup } from \'@/components/ui/toggle-group\';\n\n<ToggleGroup.Root aria-label="Layout" defaultValue={[\'list\']}>\n  <ToggleGroup.Item value="list">List</ToggleGroup.Item>\n  <ToggleGroup.Item value="grid">Grid</ToggleGroup.Item>\n</ToggleGroup.Root>',
   },
+  separator: {
+    title: 'Separator',
+    description: 'A horizontal or vertical divider between sections of content.',
+    docs: "import { Separator } from '@/components/ui/separator';\n\n<Separator />",
+  },
   tooltip: {
     title: 'Tooltip',
     description: 'A short overlay on hover or focus, labelled through aria-label on its trigger.',

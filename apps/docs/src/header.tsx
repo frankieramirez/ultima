@@ -1,34 +1,31 @@
 import { ListIcon } from '@phosphor-icons/react';
+import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { space } from '@ultima/tokens/tokens.stylex';
+import { border, color, space } from '@ultima/tokens/tokens.stylex';
 import { Button, Sidebar, ToggleGroup } from '@ultima/ui';
 
-import { useTheme, type ThemePreference } from './theme';
 import { BrandLogo } from './brand-logo';
+import { useTheme, type ThemePreference } from './theme';
 
 const styles = stylex.create({
   bar: {
+    boxSizing: 'border-box',
+    inlineSize: '100%',
     alignItems: 'center',
     display: 'flex',
-    flexWrap: 'wrap',
+    flexShrink: 0,
     gap: space['--ult-space-6'],
     justifyContent: 'space-between',
-    paddingBlock: space['--ult-space-4'],
+    minHeight: '4.25rem',
     paddingInline: space['--ult-space-6'],
   },
-  brandLogo: {
-    display: 'block',
-    height: '1.5rem',
-    width: 'auto',
+  brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
+  brand: {
+    display: 'inline-flex', alignItems: 'center', minHeight: space['--ult-space-10'],
+    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
   },
-  cluster: {
-    alignItems: 'center',
-    display: 'flex',
-    gap: space['--ult-space-6'],
-  },
-  trigger: {
-    paddingInline: space['--ult-space-4'],
-  },
+  cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
+  trigger: { display: { default: 'inline-flex', '@media (min-width: 48rem)': 'none' }, paddingInline: space['--ult-space-4'] },
 });
 
 const OPTIONS: { value: ThemePreference; label: string }[] = [
@@ -43,19 +40,17 @@ export function Header() {
   return (
     <header {...stylex.props(styles.bar)}>
       <div {...stylex.props(styles.cluster)}>
-        <Sidebar.Trigger
-          render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}
-        >
-          <ListIcon />
+        <Link to="/" aria-label="Ultima home" {...stylex.props(styles.brand)}>
+          <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
+        </Link>
+        <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}>
+          <ListIcon aria-hidden />
         </Sidebar.Trigger>
-        <BrandLogo alt="Ultima" width={4970} height={762} style={styles.brandLogo} />
       </div>
       <ToggleGroup.Root
         aria-label="Color mode"
         onValueChange={(next, eventDetails) => {
           const [preferred] = next;
-          // Base UI reports [] when the pressed option is pressed again, and honours
-          // cancel() before it sets state. Without this a mode would stop being in force.
           if (!preferred) {
             eventDetails.cancel();
             return;
