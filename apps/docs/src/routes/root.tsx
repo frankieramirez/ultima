@@ -3,14 +3,12 @@ import { Outlet, useRouterState } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font } from '@ultima/tokens/tokens.stylex';
 import { Sidebar } from '@ultima/ui';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { Header } from '../header';
 import { SiteMenu } from '../site-menu';
-import { readStored, writeStored } from '../storage';
 import { ThemeRoot } from '../theme';
 
-export const NAVIGATION_STORAGE_KEY = 'ultima-navigation';
 
 const styles = stylex.create({
   shell: {
@@ -57,7 +55,6 @@ export function Root() {
 }
 
 function Shell() {
-  const [open, setOpen] = useState(readNavigationOpen);
   const content = useRef<HTMLDivElement>(null);
   // The resolved location and not the requested one: `location` moves when the navigation starts,
   // which is a render where the outgoing page is still the one on screen to take the focus.
@@ -65,11 +62,6 @@ function Shell() {
     select: (state) => state.resolvedLocation?.pathname ?? state.location.pathname,
   });
   const focused = useRef(pathname);
-
-  const remember = useCallback((next: boolean) => {
-    setOpen(next);
-    writeStored(NAVIGATION_STORAGE_KEY, next ? 'open' : 'closed');
-  }, []);
 
   useEffect(() => {
     if (focused.current === pathname) return;
@@ -81,18 +73,14 @@ function Shell() {
   }, [pathname]);
 
   return (
-    <Sidebar.Root open={open} onOpenChange={remember} style={styles.shell}>
+    <Sidebar.Root open={true} style={styles.shell}>
       <Header />
       <div {...stylex.props(styles.body)}>
         <SiteMenu />
-        <div ref={content} {...stylex.props(styles.content, open && styles.balancedRails)}>
+        <div ref={content} {...stylex.props(styles.content, styles.balancedRails)}>
           <Outlet />
         </div>
       </div>
     </Sidebar.Root>
   );
-}
-
-function readNavigationOpen(): boolean {
-  return readStored(NAVIGATION_STORAGE_KEY) !== 'closed';
 }

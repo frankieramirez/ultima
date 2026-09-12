@@ -1,5 +1,7 @@
+import { ListIcon } from '@phosphor-icons/react';
+import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, space } from '@ultima/tokens/tokens.stylex';
+import { border, color, space } from '@ultima/tokens/tokens.stylex';
 import { Button, Sidebar, ToggleGroup } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
@@ -18,7 +20,12 @@ const styles = stylex.create({
     paddingInline: space['--ult-space-6'],
   },
   brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
-  trigger: { paddingInline: 0, marginInlineStart: `calc(-1 * ${border.hairline})` },
+  brand: {
+    display: 'inline-flex', alignItems: 'center', minHeight: space['--ult-space-10'],
+    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
+  },
+  cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
+  trigger: { display: { default: 'inline-flex', '@media (min-width: 48rem)': 'none' }, paddingInline: space['--ult-space-4'] },
 });
 
 const OPTIONS: { value: ThemePreference; label: string }[] = [
@@ -32,11 +39,14 @@ export function Header() {
 
   return (
     <header {...stylex.props(styles.bar)}>
-      <Sidebar.Trigger
-        render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}
-      >
-        <BrandLogo alt="Ultima" width={140} height={20} style={styles.brandLogo} />
-      </Sidebar.Trigger>
+      <div {...stylex.props(styles.cluster)}>
+        <Link to="/" aria-label="Ultima home" {...stylex.props(styles.brand)}>
+          <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
+        </Link>
+        <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}>
+          <ListIcon aria-hidden />
+        </Sidebar.Trigger>
+      </div>
       <ToggleGroup.Root
         aria-label="Color mode"
         onValueChange={(next, eventDetails) => {

@@ -9,7 +9,7 @@ import { render } from 'vitest-browser-react';
 import { components } from '../components';
 import { componentPages, pages } from '../navigation';
 import { router, routeTree } from '../router';
-import { NAVIGATION_STORAGE_KEY } from '../routes/root';
+const NAVIGATION_STORAGE_KEY = 'ultima-navigation';
 import { THEME_STORAGE_KEY } from '../theme';
 import { MENU_LABEL } from '../site-menu';
 // axe resolves a text contrast against the nearest painted ancestor, and the application's ground
@@ -58,14 +58,14 @@ test('the menu derives its component entries from the catalogue', () => {
   expect(componentPages.map(({ label }) => label)).toEqual(components.map(({ item }) => `--${item}`));
 });
 
-test('the site has one navigation landmark and the header holds no links', async () => {
+test('the header offers a home link and hides the menu trigger on desktop', async () => {
   const screen = await mount('/');
 
   const navigations = document.querySelectorAll('nav');
   expect(navigations.length).toBe(1);
   expect(navigations[0]).toHaveAttribute('aria-label', MENU_LABEL);
-  expect(screen.container.querySelector('header a')).toBeNull();
-  await expect.element(screen.getByRole('button', { name: 'Toggle navigation' })).toBeVisible();
+  await expect.element(screen.getByRole('link', { name: 'Ultima home' })).toBeVisible();
+  expect(getComputedStyle(screen.container.querySelector('header button[aria-label="Toggle navigation"]')!).display).toBe('none');
   await expect.element(screen.getByRole('group', { name: 'Color mode' })).toBeVisible();
 });
 
@@ -113,26 +113,17 @@ test('the flat catalogue follows the page links in keyboard order', async () => 
   expect(document.activeElement).toBe(menuLink('Button').element());
 });
 
-test('the header trigger collapses the panel, and the site remembers the preference', async () => {
-  const screen = await mount('/');
-  const panel = menu().element();
-  const trigger = screen.getByRole('button', { name: 'Toggle navigation' }).element();
-
-  expect(panel).toHaveAttribute('data-open');
-  expect(trigger).toHaveAttribute('aria-expanded', 'true');
-
-  await userEvent.click(trigger);
-
-  await expect.poll(() => panel.hasAttribute('data-closed')).toBe(true);
-  expect(trigger).toHaveAttribute('aria-expanded', 'false');
-  expect(localStorage.getItem(NAVIGATION_STORAGE_KEY)).toBe('closed');
+test('the logo returns to home without hiding desktop navigation', async () => {
+  const screen = await mount('/install');
+  await userEvent.click(screen.getByRole('link', { name: 'Ultima home' }).element());
+  await expect.element(screen.getByRole('heading', { level: 1, name: 'Exceptional interfaces. Down to the variable.' })).toBeVisible();
+  expect(document.querySelector('nav')).toHaveAttribute('data-open');
 });
 
-test('a remembered collapse survives the next load', async () => {
+test('a legacy collapsed preference cannot hide desktop navigation', async () => {
   localStorage.setItem(NAVIGATION_STORAGE_KEY, 'closed');
   await mount('/');
-
-  expect(document.querySelector('nav')).toHaveAttribute('data-closed');
+  expect(document.querySelector('nav')).toHaveAttribute('data-open');
 });
 
 test('the panel scrolls the whole catalogue inside the viewport', async () => {
