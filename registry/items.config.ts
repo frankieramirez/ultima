@@ -52,6 +52,16 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'Monospaced code, inline in a sentence or as a block.',
     docs: "import { Code } from '@/components/ui/code';\n\n<Code>npx shadcn add @ultima/button</Code>\n<Code variant=\"block\">{source}</Code>",
   },
+  field: {
+    title: 'Field',
+    description: 'A label, description, and error bound to one control, on Base UI.',
+    docs: "import { Field } from '@/components/ui/field';\nimport { Input } from '@/components/ui/input';\n\n<Field.Root name=\"email\">\n  <Field.Label>Email</Field.Label>\n  <Input type=\"email\" required />\n  <Field.Description>We never share this.</Field.Description>\n  <Field.Error />\n</Field.Root>",
+  },
+  fieldset: {
+    title: 'Fieldset',
+    description: 'A legend and related controls as a real fieldset, on Base UI.',
+    docs: "import { Field } from '@/components/ui/field';\nimport { Fieldset } from '@/components/ui/fieldset';\nimport { Input } from '@/components/ui/input';\n\n<Fieldset.Root>\n  <Fieldset.Legend>Account</Fieldset.Legend>\n  <Field.Root name=\"email\">\n    <Field.Label>Email</Field.Label>\n    <Input type=\"email\" />\n  </Field.Root>\n</Fieldset.Root>",
+  },
   input: {
     title: 'Input',
     description: 'A text input in three sizes, on Base UI.',

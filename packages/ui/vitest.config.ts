@@ -13,6 +13,8 @@ export default defineConfig({
       '@base-ui/react/separator',
       '@base-ui/react/collapsible',
       '@base-ui/react/input',
+      '@base-ui/react/field',
+      '@base-ui/react/fieldset',
       '@base-ui/react/dialog',
       '@base-ui/react/menu',
       '@base-ui/react/meter',

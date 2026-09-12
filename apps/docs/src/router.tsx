@@ -10,6 +10,8 @@ import CodeContent from './content/components/code.mdx';
 import CollapsibleContent from './content/components/collapsible.mdx';
 import DialogContent from './content/components/dialog.mdx';
 import DropdownMenuContent from './content/components/dropdown-menu.mdx';
+import FieldContent from './content/components/field.mdx';
+import FieldsetContent from './content/components/fieldset.mdx';
 import InputContent from './content/components/input.mdx';
 import MeterContent from './content/components/meter.mdx';
 import SelectContent from './content/components/select.mdx';
@@ -93,6 +95,8 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   collapsible: CollapsibleContent,
   dialog: DialogContent,
   'dropdown-menu': DropdownMenuContent,
+  field: FieldContent,
+  fieldset: FieldsetContent,
   input: InputContent,
   meter: MeterContent,
   select: SelectContent,

@@ -8,7 +8,7 @@ const NOT_A_COMPONENT = ['tokens', 'lib', 'setup-vite', 'setup-next', 'tokens-cs
 const pages = import.meta.glob('../content/components/*.mdx');
 const demos = import.meta.glob('../demos/*/*.tsx');
 
-test('the component catalogue exposes the v0 set in specification order', () => {
+test('the component catalogue exposes the v0 and v0.1 sets in specification order', () => {
   expect(components.map(({ item }) => item)).toEqual([
     'button',
     'badge',
@@ -28,16 +28,37 @@ test('the component catalogue exposes the v0 set in specification order', () => 
     'collapsible',
     'toggle-group',
     'separator',
+    'field',
+    'fieldset',
   ]);
 });
 
 test('every catalogue entry carries a release, and the menu derives from that field', () => {
   expect(components.every((entry) => entry.release === 'v0' || entry.release === 'v0.1')).toBe(true);
-  expect(components.every((entry) => entry.release === 'v0')).toBe(true);
+  expect(componentsInRelease('v0').map(({ item }) => item)).toEqual([
+    'button',
+    'badge',
+    'card',
+    'table',
+    'tabs',
+    'meter',
+    'stat',
+    'code',
+    'tooltip',
+    'dialog',
+    'dropdown-menu',
+    'select',
+    'input',
+    'switch',
+    'sidebar',
+    'collapsible',
+    'toggle-group',
+    'separator',
+  ]);
+  expect(componentsInRelease('v0.1').map(({ item }) => item)).toEqual(['field', 'fieldset']);
   expect(RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item))).toEqual(
     components.map(({ item }) => item),
   );
-  expect(componentsInRelease('v0.1')).toEqual([]);
 });
 
 test('the catalogue and the registry manifest name the same components', () => {
