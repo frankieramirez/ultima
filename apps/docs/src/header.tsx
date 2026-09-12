@@ -15,10 +15,10 @@ const styles = stylex.create({
     gap: space['--ult-space-6'],
     justifyContent: 'space-between',
     minHeight: '4.25rem',
-    paddingInline: { default: space['--ult-space-6'], '@media (min-width: 48rem)': '1.75rem' },
+    paddingInline: space['--ult-space-6'],
   },
   brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
-  trigger: { paddingInline: 0 },
+  trigger: { paddingInline: 0, borderWidth: 0 },
 });
 
 const OPTIONS: { value: ThemePreference; label: string }[] = [
