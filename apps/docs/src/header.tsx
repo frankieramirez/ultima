@@ -9,8 +9,6 @@ const styles = stylex.create({
   bar: {
     boxSizing: 'border-box',
     inlineSize: '100%',
-    maxInlineSize: '87.5rem',
-    marginInline: 'auto',
     alignItems: 'center',
     display: 'flex',
     flexShrink: 0,

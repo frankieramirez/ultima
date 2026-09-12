@@ -23,8 +23,6 @@ const styles = stylex.create({
   body: {
     display: 'flex',
     inlineSize: '100%',
-    maxInlineSize: '87.5rem',
-    marginInline: 'auto',
     flexGrow: 1,
     // Without this the row refuses to shrink below its content and the panel scrolls the page.
     minBlockSize: 0,
@@ -33,6 +31,7 @@ const styles = stylex.create({
     flexGrow: 1,
     minInlineSize: 0,
     overflow: 'auto',
+    scrollbarWidth: 'none',
     position: 'relative',
   },
 });
