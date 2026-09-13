@@ -6,7 +6,7 @@ import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import { components } from '../components';
+import { RELEASES, components, componentsInRelease } from '../components';
 import { componentPages, pages } from '../navigation';
 import { router, routeTree } from '../router';
 const NAVIGATION_STORAGE_KEY = 'ultima-navigation';
@@ -56,7 +56,9 @@ test('every destination in the menu is a route the router serves', () => {
 test('the menu derives its component entries from the catalogue release field', () => {
   expect(componentPages.map(({ params }) => params?.name)).toEqual(components.map(({ item }) => item));
   expect(componentPages.map(({ label }) => label)).toEqual(components.map(({ item }) => `--${item}`));
-  expect(components.map(({ release }) => release)).toEqual(components.map(() => 'v0'));
+  expect(componentPages.map(({ params }) => params?.name)).toEqual(
+    RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item)),
+  );
 });
 
 test('the header offers a home link and hides the menu trigger on desktop', async () => {
