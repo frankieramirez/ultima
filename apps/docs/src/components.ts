@@ -137,6 +137,24 @@ export const components = [
     release: 'v0.1',
   },
   {
+    name: 'Checkbox',
+    item: 'checkbox',
+    description: 'A checkbox with a check, a dash for mixed, and an optional group, on Base UI.',
+    release: 'v0.1',
+  },
+  {
+    name: 'Radio Group',
+    item: 'radio-group',
+    description: 'A radio group with a filled-circle indicator, on Base UI.',
+    release: 'v0.1',
+  },
+  {
+    name: 'Textarea',
+    item: 'textarea',
+    description: 'A multiline text field in three sizes, on Base UI.',
+    release: 'v0.1',
+  },
+  {
     name: 'Alert',
     item: 'alert',
     description: 'A static in-page callout in six tones.',

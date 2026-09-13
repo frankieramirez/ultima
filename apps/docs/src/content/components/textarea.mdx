@@ -1,0 +1,45 @@
+import { Demo } from '../../demo';
+import Sizes from '../../demos/textarea/sizes';
+import sizesSource from '../../demos/textarea/sizes?raw';
+import FieldStates from '../../demos/textarea/field-states';
+import fieldStatesSource from '../../demos/textarea/field-states?raw';
+
+# Textarea
+
+A multiline field on Base UI's Input, rendered as a `<textarea>`. `size` is a starting height, so the field can grow. Enter inserts a newline.
+
+## Install
+
+```bash
+npx shadcn add @ultima/textarea
+```
+
+## Sizes
+
+`sm`, `md`, and `lg` use the same three space steps as Input, as `min-height`. `md` is the default. Resize is vertical.
+
+<Demo component={Sizes} source={sizesSource} />
+
+## Inside a Field
+
+Disabled, required, and invalid live on the Field page's submission examples. This page shows those states inside a Field and does not submit.
+
+<Demo component={FieldStates} source={fieldStatesSource} />
+
+Prefer Field when you need a label, description, and error wired together.
+
+## Props
+
+Only what Ultima adds. Everything else is Base UI's Input; see [Base UI's Input](https://base-ui.com/react/components/input) for the inherited surface. `rows` and `cols` pass through.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Starting height (`min-height`), padding, and text step. |
+| `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | `<textarea />` | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** A consumer `<label htmlFor>`, `aria-label`, `aria-labelledby`, or a `Field.Label`.
+- **Focus ring.** On the textarea root, drawn on `:focus-visible` only.
+- **Keyboard.** Native textarea behavior. Enter inserts a newline and does not submit.

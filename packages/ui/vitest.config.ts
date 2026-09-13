@@ -11,6 +11,8 @@ export default defineConfig({
     include: [
       '@base-ui/react/button',
       '@base-ui/react/separator',
+      '@base-ui/react/checkbox',
+      '@base-ui/react/checkbox-group',
       '@base-ui/react/collapsible',
       '@base-ui/react/input',
       '@base-ui/react/field',
@@ -18,6 +20,8 @@ export default defineConfig({
       '@base-ui/react/dialog',
       '@base-ui/react/menu',
       '@base-ui/react/meter',
+      '@base-ui/react/radio',
+      '@base-ui/react/radio-group',
       '@base-ui/react/select',
       '@base-ui/react/switch',
       '@base-ui/react/tabs',
