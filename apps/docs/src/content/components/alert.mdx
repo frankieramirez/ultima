@@ -1,0 +1,46 @@
+import { Demo } from '../../demo';
+import Tones from '../../demos/alert/tones';
+import tonesSource from '../../demos/alert/tones?raw';
+import WithIcon from '../../demos/alert/with-icon';
+import withIconSource from '../../demos/alert/with-icon?raw';
+
+# Alert
+
+A static in-page callout. Tone is its only axis. It is not a live region and not an Alert Dialog.
+
+## Install
+
+```bash
+npx shadcn add @ultima/alert
+```
+
+## Tones
+
+`tone` paints Badge's `subtle` column: a role fill, text, and hairline. `neutral` is the default. Color never carries meaning alone, so the title says the status.
+
+<Demo component={Tones} source={tonesSource} />
+
+## Icon
+
+`Icon` is the caller's glyph, omitted when unused, and `aria-hidden`. Ultima ships no icon dependency, and any set works. This demo uses [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency. An icon-only Alert fails the visible-text rule.
+
+`Alert.Title` renders an `h3` by default; use `render` when the page hierarchy needs another heading level.
+
+<Demo component={WithIcon} source={withIconSource} />
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept the props of their [native HTML elements](https://developer.mozilla.org/en-US/docs/Web/HTML/Element).
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `tone` | `'neutral' \| 'accent' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `'neutral'` | Color role. Title, Description, and Icon inherit the text color. |
+| `Root` | `render` | `ReactElement \| function` | — | Changes the root from its default `div`. |
+| `Title` | `render` | `ReactElement \| function` | — | Changes the title from its default `h3`. |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+
+## Accessibility
+
+- **Elements.** `Root` is a `div` with no live role. `Title` is an `h3` by default and can change through `render`. `Icon` is decorative and `aria-hidden`.
+- **Name.** Visible text: `Title`, or `Description` when there is no `Title`. Color never carries meaning alone.
+- **Focus and keyboard.** None. Alert and its parts are static; interactive children keep their own behavior.

@@ -30,6 +30,7 @@ test('the component catalogue exposes the v0 and v0.1 sets in specification orde
     'separator',
     'field',
     'fieldset',
+    'alert',
   ]);
 });
 
@@ -55,7 +56,7 @@ test('every catalogue entry carries a release, and the menu derives from that fi
     'toggle-group',
     'separator',
   ]);
-  expect(componentsInRelease('v0.1').map(({ item }) => item)).toEqual(['field', 'fieldset']);
+  expect(componentsInRelease('v0.1').map(({ item }) => item)).toEqual(['field', 'fieldset', 'alert']);
   expect(RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item))).toEqual(
     components.map(({ item }) => item),
   );

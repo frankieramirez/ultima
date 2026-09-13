@@ -62,6 +62,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A legend and related controls as a real fieldset, on Base UI.',
     docs: "import { Field } from '@/components/ui/field';\nimport { Fieldset } from '@/components/ui/fieldset';\nimport { Input } from '@/components/ui/input';\n\n<Fieldset.Root>\n  <Fieldset.Legend>Account</Fieldset.Legend>\n  <Field.Root name=\"email\">\n    <Field.Label>Email</Field.Label>\n    <Input type=\"email\" />\n  </Field.Root>\n</Fieldset.Root>",
   },
+  alert: {
+    title: 'Alert',
+    description: 'A static in-page callout in six tones.',
+    docs: "import { Alert } from '@/components/ui/alert';\n\n<Alert.Root tone=\"warning\">\n  <Alert.Title>Disk almost full</Alert.Title>\n  <Alert.Description>87% of 500 GB used.</Alert.Description>\n</Alert.Root>",
+  },
   input: {
     title: 'Input',
     description: 'A text input in three sizes, on Base UI.',

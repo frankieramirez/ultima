@@ -98,6 +98,14 @@ export {
   type FieldValidityProps,
 } from './field';
 export { Fieldset, type FieldsetRootProps, type FieldsetLegendProps } from './fieldset';
+export {
+  Alert,
+  type AlertRootProps,
+  type AlertTitleProps,
+  type AlertDescriptionProps,
+  type AlertIconProps,
+  type AlertTone,
+} from './alert';
 export { Switch, type SwitchRootProps, type SwitchThumbProps } from './switch';
 export {
   Dialog,
