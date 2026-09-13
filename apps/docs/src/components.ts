@@ -162,7 +162,6 @@ export const components = [
   },
 ] satisfies ComponentEntry[];
 
-/** Catalogue rows for one release, in specification order. Never slice the array by a magic index. */
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
   return components.filter((entry) => entry.release === release);
 }
