@@ -87,6 +87,19 @@ export {
   type MeterValueProps,
 } from './meter';
 export { Input, type InputProps, type InputSize } from './input';
+export { Textarea, type TextareaProps, type TextareaSize } from './textarea';
+export {
+  Checkbox,
+  type CheckboxRootProps,
+  type CheckboxIndicatorProps,
+  type CheckboxGroupProps,
+} from './checkbox';
+export {
+  RadioGroup,
+  type RadioGroupRootProps,
+  type RadioGroupItemProps,
+  type RadioGroupIndicatorProps,
+} from './radio-group';
 export {
   Field,
   type FieldRootProps,

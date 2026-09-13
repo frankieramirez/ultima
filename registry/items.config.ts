@@ -67,6 +67,21 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A static in-page callout in six tones.',
     docs: "import { Alert } from '@/components/ui/alert';\n\n<Alert.Root tone=\"warning\">\n  <Alert.Title>Disk almost full</Alert.Title>\n  <Alert.Description>87% of 500 GB used.</Alert.Description>\n</Alert.Root>",
   },
+  checkbox: {
+    title: 'Checkbox',
+    description: 'A checkbox with a check, a dash for mixed, and an optional group, on Base UI.',
+    docs: "import { Checkbox } from '@/components/ui/checkbox';\n\n<label>\n  Accept terms\n  <Checkbox.Root>\n    <Checkbox.Indicator />\n  </Checkbox.Root>\n</label>",
+  },
+  'radio-group': {
+    title: 'Radio Group',
+    description: 'A radio group with a filled-circle indicator, on Base UI.',
+    docs: "import { RadioGroup } from '@/components/ui/radio-group';\n\n<RadioGroup.Root aria-label=\"Plan\" defaultValue=\"pro\">\n  <RadioGroup.Item value=\"hobby\">\n    <RadioGroup.Indicator />\n  </RadioGroup.Item>\n  <RadioGroup.Item value=\"pro\">\n    <RadioGroup.Indicator />\n  </RadioGroup.Item>\n</RadioGroup.Root>",
+  },
+  textarea: {
+    title: 'Textarea',
+    description: 'A multiline text field in three sizes, on Base UI.',
+    docs: 'import { Textarea } from \'@/components/ui/textarea\';\n\n<label htmlFor="bio">Biography</label>\n<Textarea id="bio" size="md" />',
+  },
   input: {
     title: 'Input',
     description: 'A text input in three sizes, on Base UI.',

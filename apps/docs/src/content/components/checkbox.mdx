@@ -1,0 +1,46 @@
+import { Demo } from '../../demo';
+import States from '../../demos/checkbox/states';
+import statesSource from '../../demos/checkbox/states?raw';
+import FieldGroup from '../../demos/checkbox/field-group';
+import fieldGroupSource from '../../demos/checkbox/field-group?raw';
+
+# Checkbox
+
+A checkbox on Base UI, with a check glyph, a dash when mixed, and an optional group. There is no size axis. `nativeButton` stays false, so a wrapping `<label>` is legal.
+
+Ultima ships no icon dependency, and any set works. The check and dash are private SVGs in this file; `children` on `Indicator` replace them.
+
+## Install
+
+```bash
+npx shadcn add @ultima/checkbox
+```
+
+## Checked, mixed, and disabled
+
+Use `defaultChecked` for an initially checked box. `indeterminate` is the mixed state, announced as `aria-checked="mixed"` and shown with the dash. Color is not the signal.
+
+<Demo component={States} source={statesSource} />
+
+## Inside a Fieldset
+
+A group is named by `Fieldset.Legend`. Put the word "required" in the legend when the group is required. One error for the whole group; `Field.Item` never carries an error. This page does not submit.
+
+<Demo component={FieldGroup} source={fieldGroupSource} />
+
+## Props
+
+Ultima adds no axis to Checkbox. Everything else is Base UI's; see [Base UI's Checkbox](https://base-ui.com/react/components/checkbox) and [Checkbox Group](https://base-ui.com/react/components/checkbox-group) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `indeterminate`, `parent` | `boolean` | `false` | Pass-through. Ultima does not set the native `indeterminate` property. |
+| `Root`, `Indicator`, `Group` | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root`, `Indicator`, `Group` | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** A wrapping `<label>`, `aria-label`, `aria-labelledby`, or a `Field.Label`. A group is named by `Fieldset.Legend`.
+- **Focus ring.** On `Root`, drawn on `:focus-visible` only.
+- **Keyboard.** Space toggles through Base UI. Enter submits a wrapping form, matching a native checkbox.
+- **Mixed.** `aria-checked="mixed"` from the `indeterminate` prop. The dash is the visible signal.

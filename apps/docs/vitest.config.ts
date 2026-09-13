@@ -18,6 +18,8 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       '@base-ui/react/button',
+      '@base-ui/react/checkbox',
+      '@base-ui/react/checkbox-group',
       '@base-ui/react/collapsible',
       '@base-ui/react/dialog',
       '@base-ui/react/input',
@@ -26,6 +28,8 @@ export default defineConfig({
       '@base-ui/react/form',
       '@base-ui/react/menu',
       '@base-ui/react/meter',
+      '@base-ui/react/radio',
+      '@base-ui/react/radio-group',
       '@base-ui/react/select',
       '@base-ui/react/separator',
       '@base-ui/react/switch',

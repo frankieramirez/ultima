@@ -1,0 +1,44 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/radio-group/basic';
+import basicSource from '../../demos/radio-group/basic?raw';
+import FieldGroup from '../../demos/radio-group/field-group';
+import fieldGroupSource from '../../demos/radio-group/field-group?raw';
+
+# Radio Group
+
+A radio group on Base UI. Radio is not its own catalogue item: `Item` wraps `Radio.Root` on this namespace. There is no size axis. The indicator is the same filled-circle glyph the menu uses.
+
+Ultima ships no icon dependency, and any set works. The dot is a private SVG in this file; `children` on `Indicator` replace it.
+
+## Install
+
+```bash
+npx shadcn add @ultima/radio-group
+```
+
+## Anatomy
+
+`Root` is the group. `Item` is each radio. `Indicator` holds the dot.
+
+<Demo component={Basic} source={basicSource} />
+
+## Inside a Fieldset
+
+A group is named by `Fieldset.Legend`. Put the word "required" in the legend when the group is required (`aria-required` on a radio group fails on TalkBack). One error for the whole group. This page does not submit.
+
+<Demo component={FieldGroup} source={fieldGroupSource} />
+
+## Props
+
+Ultima adds no axis to Radio Group. Everything else is Base UI's; see [Base UI's Radio](https://base-ui.com/react/components/radio) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root`, `Item`, `Indicator` | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root`, `Item`, `Indicator` | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** `Fieldset.Legend`, or `aria-label` / `aria-labelledby` on `Root`. Each `Item` takes a wrapping `<label>` or a `Field.Label`.
+- **Focus ring.** On `Item`, drawn on `:focus-visible` only.
+- **Keyboard.** Roving tabindex. Arrows move and select, looping. Home and End do nothing. Space selects.

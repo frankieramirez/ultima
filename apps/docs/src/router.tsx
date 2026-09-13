@@ -7,6 +7,7 @@ import AlertContent from './content/components/alert.mdx';
 import BadgeContent from './content/components/badge.mdx';
 import ButtonContent from './content/components/button.mdx';
 import CardContent from './content/components/card.mdx';
+import CheckboxContent from './content/components/checkbox.mdx';
 import CodeContent from './content/components/code.mdx';
 import CollapsibleContent from './content/components/collapsible.mdx';
 import DialogContent from './content/components/dialog.mdx';
@@ -15,6 +16,7 @@ import FieldContent from './content/components/field.mdx';
 import FieldsetContent from './content/components/fieldset.mdx';
 import InputContent from './content/components/input.mdx';
 import MeterContent from './content/components/meter.mdx';
+import RadioGroupContent from './content/components/radio-group.mdx';
 import SelectContent from './content/components/select.mdx';
 import SeparatorContent from './content/components/separator.mdx';
 import SidebarContent from './content/components/sidebar.mdx';
@@ -22,6 +24,7 @@ import StatContent from './content/components/stat.mdx';
 import SwitchContent from './content/components/switch.mdx';
 import TableContent from './content/components/table.mdx';
 import TabsContent from './content/components/tabs.mdx';
+import TextareaContent from './content/components/textarea.mdx';
 import ToggleGroupContent from './content/components/toggle-group.mdx';
 import TooltipContent from './content/components/tooltip.mdx';
 import { components } from './components';
@@ -93,6 +96,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   badge: BadgeContent,
   button: ButtonContent,
   card: CardContent,
+  checkbox: CheckboxContent,
   code: CodeContent,
   collapsible: CollapsibleContent,
   dialog: DialogContent,
@@ -101,6 +105,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   fieldset: FieldsetContent,
   input: InputContent,
   meter: MeterContent,
+  'radio-group': RadioGroupContent,
   select: SelectContent,
   separator: SeparatorContent,
   sidebar: SidebarContent,
@@ -108,6 +113,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   switch: SwitchContent,
   table: TableContent,
   tabs: TabsContent,
+  textarea: TextareaContent,
   'toggle-group': ToggleGroupContent,
   tooltip: TooltipContent,
 };
