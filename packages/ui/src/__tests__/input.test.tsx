@@ -66,6 +66,19 @@ test('aria-invalid recolors the border', async () => {
   expect(invalid.borderTopColor).not.toBe(valid.borderTopColor);
 });
 
+test('data-invalid recolors the border without aria-invalid', async () => {
+  const screen = await render(
+    <>
+      <Input aria-label="Valid" />
+      <Input aria-label="Invalid" data-invalid="" />
+    </>,
+  );
+  const valid = getComputedStyle(screen.getByRole('textbox', { name: 'Valid' }).element());
+  const invalid = screen.getByRole('textbox', { name: 'Invalid' }).element();
+  expect(invalid).not.toHaveAttribute('aria-invalid');
+  expect(getComputedStyle(invalid).borderTopColor).not.toBe(valid.borderTopColor);
+});
+
 test('disabled dims the input', async () => {
   const screen = await render(
     <>

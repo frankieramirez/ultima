@@ -30,9 +30,11 @@ Prefer a visible `<label htmlFor>` when the interface has one. `aria-label` name
 
 ## Validation and disabled state
 
-There is no Field component in v0. Validation state belongs to the consumer's `aria-invalid`; connect the error text with `aria-describedby`.
+Standalone, validation state belongs to the consumer's `aria-invalid`; connect the error text with `aria-describedby`. Inside a `Field.Root`, Base UI owns `aria-invalid`, `data-invalid`, and the description merge — Input needs no new prop. The danger border matches `':is([aria-invalid="true"], [data-invalid])'`, so a control that is disabled while invalid keeps the border.
 
 <Demo component={Validation} source={validationSource} />
+
+Prefer Field when you need a label, description, and error wired together. See the Field page for form integration.
 
 ## Props
 

@@ -124,6 +124,18 @@ export const components = [
     description: 'A horizontal or vertical divider between sections of content.',
     release: 'v0',
   },
+  {
+    name: 'Field',
+    item: 'field',
+    description: 'A label, description, and error bound to one control, on Base UI.',
+    release: 'v0.1',
+  },
+  {
+    name: 'Fieldset',
+    item: 'fieldset',
+    description: 'A legend and related controls as a real fieldset, on Base UI.',
+    release: 'v0.1',
+  },
 ] satisfies ComponentEntry[];
 
 /** Catalogue rows for one release, in specification order. Never slice the array by a magic index. */

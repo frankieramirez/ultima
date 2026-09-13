@@ -1,0 +1,43 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/fieldset/basic';
+import basicSource from '../../demos/fieldset/basic?raw';
+import RequiredGroup from '../../demos/fieldset/required-group';
+import requiredGroupSource from '../../demos/fieldset/required-group?raw';
+
+# Fieldset
+
+A real `<fieldset>` with a legend for a named group of controls. Ultima resets the UA border and padding, then lays the group out as a column.
+
+## Install
+
+```bash
+npx shadcn add @ultima/fieldset @ultima/field @ultima/input
+```
+
+## Anatomy
+
+`Root` is the fieldset. `Legend` is what `Root` points `aria-labelledby` at. Put Fields (and later Checkbox or Radio groups) inside.
+
+<Demo component={Basic} source={basicSource} />
+
+## Required groups
+
+`aria-required` on a radio group fails on TalkBack, so a required **group** puts the word "required" in its legend. A single control needs no such workaround.
+
+<Demo component={RequiredGroup} source={requiredGroupSource} />
+
+## Props
+
+Ultima adds no axes to Fieldset. Everything else is Base UI's; see [Base UI's Fieldset](https://base-ui.com/react/components/fieldset) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `disabled` | `boolean` | `false` | Disables every control in the set. |
+| every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| every part | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** `Fieldset.Legend`, which `Fieldset.Root` points `aria-labelledby` at.
+- **Focus ring.** None. Fieldset is static.
+- **Keyboard.** Static.

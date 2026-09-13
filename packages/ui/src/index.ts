@@ -87,6 +87,17 @@ export {
   type MeterValueProps,
 } from './meter';
 export { Input, type InputProps, type InputSize } from './input';
+export {
+  Field,
+  type FieldRootProps,
+  type FieldLabelProps,
+  type FieldDescriptionProps,
+  type FieldErrorProps,
+  type FieldItemProps,
+  type FieldControlProps,
+  type FieldValidityProps,
+} from './field';
+export { Fieldset, type FieldsetRootProps, type FieldsetLegendProps } from './fieldset';
 export { Switch, type SwitchRootProps, type SwitchThumbProps } from './switch';
 export {
   Dialog,

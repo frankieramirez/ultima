@@ -1,0 +1,70 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/field/basic';
+import basicSource from '../../demos/field/basic?raw';
+import ConstraintForm from '../../demos/field/constraint-form';
+import constraintFormSource from '../../demos/field/constraint-form?raw';
+import Invalid from '../../demos/field/invalid';
+import invalidSource from '../../demos/field/invalid?raw';
+import ReactHookFormRecipe from '../../demos/field/react-hook-form';
+import reactHookFormSource from '../../demos/field/react-hook-form?raw';
+
+# Field
+
+Binds one control to its label, description, and error so the three are associated without writing an id. Field paints no control of its own: put an Ultima component in the control slot. `Input` is the documented case.
+
+## Install
+
+```bash
+npx shadcn add @ultima/field @ultima/input
+```
+
+## Anatomy
+
+`Root` owns the vertical rhythm. `Label` is a real `<label>`. `Description` and `Error` join the control through Base UI's `aria-describedby` merge. `Control` and `Validity` pass through unstyled. `Item` is the row layout for a control beside its own label.
+
+<Demo component={Basic} source={basicSource} />
+
+## Invalid
+
+A static invalid field keeps `aria-invalid` and the error text in the axe sweep. `Field.Error` is not a live region: Base UI's `Form` focuses the first invalid control on submit, and a live role on the error would break the description association.
+
+<Demo component={Invalid} source={invalidSource} />
+
+## Form integration
+
+The documented path is Base UI's own `Form` and `Field` over the platform's constraint validation. Import `Form` from `@base-ui/react/form` beside the Field you installed. Ultima ships no `form` item: `Form` paints nothing. Platform attributes (`required`, `minLength`, `pattern`, and friends) belong on the control. Submit focuses the first invalid control.
+
+<Demo component={ConstraintForm} source={constraintFormSource} />
+
+## React Hook Form
+
+A form library is an engine. The recipe Ultima writes is React Hook Form over Field. Install `react-hook-form` yourself. For schema rules, install `@hookform/resolvers` and a validator as a second step. Map `fieldState` onto `Field.Root`'s `invalid`, `dirty`, and `touched`. No Ultima file imports the engine.
+
+Component dependencies: `field`, `input`, `button`.
+
+<Demo component={ReactHookFormRecipe} source={reactHookFormSource} />
+
+## Next.js server actions
+
+A server action is a variation on the same components, not a second integration. Feed field-keyed errors from `useActionState` into Base UI `Form`'s `errors` prop; each clears on change. There are no extra checks for this path.
+
+## Props
+
+Ultima adds no axes to Field. Everything else is Base UI's; see [Base UI's Field](https://base-ui.com/react/components/field) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `invalid`, `dirty`, `touched` | `boolean` | — | Pass-through for an engine. |
+| `Root` | `name`, `disabled`, `validate`, `validationMode` | — | `validationMode` is `onSubmit` | Base UI's field registration and validation. |
+| `Label` | `nativeLabel` | `boolean` | `true` | Set `false` when the control is not a labelable element. |
+| `Error` | `match` | `boolean \| keyof ValidityState` | — | `true` always shows the message for an engine. |
+| every styled part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| every Base UI part | `render` | `ReactElement \| function` | — | Base UI's render prop. `Validity` takes a function child instead. |
+
+## Accessibility
+
+- **Name.** None of Field's own. `Field.Label` names the control in the slot; `Description` and `Error` describe it through `aria-describedby`.
+- **Focus ring.** None. Every interactive element inside a Field brings its own.
+- **Keyboard.** Static. The control owns its keys.
+- **Validation.** `aria-invalid` when invalid and not disabled; `data-invalid` survives a disabled control. `Field.Error` has no live role.
+- **Blur without focus move.** A consumer who validates on blur without moving focus owns a live region themselves.
