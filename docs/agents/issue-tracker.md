@@ -1,28 +1,24 @@
-# Issue tracker: Linear
+# Issue tracker: GitHub
 
-Tracker: linear
-Project: ULT
-Adapter flags: --tracker linear --project ULT
-Auth: `LINEAR_API_KEY` in the environment (a personal API key from Linear settings), or the host's Linear connector, which `orca linear` is inside an Orca worktree. Never in a file.
-Keys: `ULT-42`. A bare number is not a ticket here.
-Host: https://linear.app/frankie-ramirez
+Tracker: github
+Project: frankieramirez/ultima
+Adapter flags: --repo frankieramirez/ultima
+Auth: `gh auth login`. A token that can write issues. Nothing in this file.
+Keys: `#42`. Issues and pull requests share one number space.
+Host: github.com
 
 ## Conventions
 
-Every write goes through the adapter script the skills carry (`tickets.sh --tracker linear --project ULT`): create, wire, next, claim, label, comment, close. `view` and `list` read. Labels are Linear labels on this team; the triage states are labels too, not workflow states. "Open" means any workflow state that is not completed or canceled. `close` moves the issue to the team's first completed state.
-
-Pull requests stay on GitHub. A pull request that resolves a Linear issue puts the key in its branch name or title and ends its body with `Closes ULT-42`, which Linear's GitHub integration reads.
+Every write goes through the adapter script the skills carry (`tickets.sh`): create, attach, wire, next, claim, label, comment, update-body, close. Reads may use `gh issue view` and `gh issue list` directly.
 
 ## Pull requests as a request surface
 
-No.
+No. Set to `yes` when external pull requests should enter triage as requests with attached code. A bare `#42` is then resolved with `gh pr view 42` first and `gh issue view 42` second.
 
 ## External authors
 
-Anyone who is not a member of the workspace.
+Anyone whose `authorAssociation` is `CONTRIBUTOR`, `FIRST_TIME_CONTRIBUTOR`, or `NONE`.
 
 ## Wayfinding operations
 
-The map is an issue on this team labelled `scry:map`. Tickets are its sub-issues (`parentId`), labelled `scry:<type>`. Blocking is a `blocks` relation from the blocker to the ticket. The frontier is every open sub-issue with no assignee and no open blocker, oldest first. Claim is assignment. Resolve is a comment, a move to the completed state, and one gist line appended to the map's description under Decisions so far.
-
-Do these with the Linear connector the host exposes when there is one. Otherwise use the GraphQL API at `https://api.linear.app/graphql` with `LINEAR_API_KEY` as the `Authorization` header: `issueCreate`, `issueRelationCreate`, `issueUpdate`, `commentCreate`, and `issues(filter:)`.
+Default. The map is an issue labelled `scry:map`; tickets are its sub-issues, labelled `scry:<type>`, with `Part of #<map>` as the fallback link. Blocking uses GitHub's issue dependencies, with a `Blocked by: #n` line as the fallback. Claim is assignment. Resolve is a comment, a close, and one gist line on the map. The bundled `map.sh` does all of this.

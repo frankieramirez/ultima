@@ -33,5 +33,5 @@ Read the [Principles](docs/spec/ultima.md#principles) section of the specificati
 
 ## Agent skills
 
-Issue tracker: Linear team ULT. See `docs/agents/issue-tracker.md`.
-Triage labels: mapped. See `docs/agents/triage-labels.md`.
+Issue tracker: GitHub frankieramirez/ultima. See `docs/agents/issue-tracker.md`.
+Validation: `pnpm test`
