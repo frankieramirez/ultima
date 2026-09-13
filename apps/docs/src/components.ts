@@ -136,6 +136,12 @@ export const components = [
     description: 'A legend and related controls as a real fieldset, on Base UI.',
     release: 'v0.1',
   },
+  {
+    name: 'Alert',
+    item: 'alert',
+    description: 'A static in-page callout in six tones.',
+    release: 'v0.1',
+  },
 ] satisfies ComponentEntry[];
 
 /** Catalogue rows for one release, in specification order. Never slice the array by a magic index. */

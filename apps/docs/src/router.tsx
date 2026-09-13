@@ -3,6 +3,7 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentType } from 'react';
 
+import AlertContent from './content/components/alert.mdx';
 import BadgeContent from './content/components/badge.mdx';
 import ButtonContent from './content/components/button.mdx';
 import CardContent from './content/components/card.mdx';
@@ -88,6 +89,7 @@ function ComponentNamePage() {
 }
 
 const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>> = {
+  alert: AlertContent,
   badge: BadgeContent,
   button: ButtonContent,
   card: CardContent,
