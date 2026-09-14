@@ -1,0 +1,36 @@
+import { Demo } from '../../demo';
+import Confirm from '../../demos/alert-dialog/confirm';
+import confirmSource from '../../demos/alert-dialog/confirm?raw';
+
+# Alert Dialog
+
+A confirmation overlay built on Base UI's Alert Dialog. Escape closes it; a backdrop click does not. Title and Description are always rendered.
+
+## Install
+
+```bash
+npx shadcn add @ultima/alert-dialog
+```
+
+## Confirm
+
+The trigger and close slots must hold an Ultima Button or an element carrying its own focus ring. Cancel comes first in the DOM so initial focus is not the destructive action. Ultima sets neither `initialFocus` nor `finalFocus`.
+
+<Demo component={Confirm} source={confirmSource} />
+
+`modal` and `disablePointerDismissal` are not props: Base UI forces both `true`. Hide Title or Description through the `style` slot rather than omitting them. `Handle` and `createHandle` pass through as values. Ultima does not set `keepMounted`; pass it when the closed dialog should remain in the DOM.
+
+## Props
+
+Only what Ultima adds. Every inherited part and prop is documented by [Base UI's Alert Dialog](https://base-ui.com/react/components/alert-dialog).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `style` | `StyleXStyles` | — | Available on the styled Viewport, Backdrop, Popup, Title, and Description parts; merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. Trigger and Close are unstyled slots for a control with its own focus ring. |
+
+## Accessibility
+
+- **Name.** From `AlertDialog.Title`, which is always rendered. `AlertDialog.Description` is always rendered too, so the popup has `aria-describedby`.
+- **Focus ring.** On Close and any focusable content, supplied by the element rendered into each slot.
+- **Keyboard.** Base UI loops Tab inside the modal, closes it with Escape, does not close it on a backdrop click, and returns focus to the trigger.

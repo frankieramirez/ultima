@@ -160,6 +160,12 @@ export const components = [
     description: 'A static in-page callout in six tones.',
     release: 'v0.1',
   },
+  {
+    name: 'Alert Dialog',
+    item: 'alert-dialog',
+    description: 'A confirmation overlay that Escape closes and a backdrop click does not, on Base UI.',
+    release: 'v0.1',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
