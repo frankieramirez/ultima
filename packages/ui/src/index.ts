@@ -119,6 +119,14 @@ export {
   type AlertIconProps,
   type AlertTone,
 } from './alert';
+export {
+  AlertDialog,
+  type AlertDialogViewportProps,
+  type AlertDialogBackdropProps,
+  type AlertDialogPopupProps,
+  type AlertDialogTitleProps,
+  type AlertDialogDescriptionProps,
+} from './alert-dialog';
 export { Switch, type SwitchRootProps, type SwitchThumbProps } from './switch';
 export {
   Dialog,

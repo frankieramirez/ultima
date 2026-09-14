@@ -21,6 +21,7 @@ export default defineConfig({
       '@base-ui/react/checkbox',
       '@base-ui/react/checkbox-group',
       '@base-ui/react/collapsible',
+      '@base-ui/react/alert-dialog',
       '@base-ui/react/dialog',
       '@base-ui/react/input',
       '@base-ui/react/field',

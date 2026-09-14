@@ -17,6 +17,7 @@ export default defineConfig({
       '@base-ui/react/input',
       '@base-ui/react/field',
       '@base-ui/react/fieldset',
+      '@base-ui/react/alert-dialog',
       '@base-ui/react/dialog',
       '@base-ui/react/menu',
       '@base-ui/react/meter',
