@@ -1,0 +1,75 @@
+import { Demo } from '../../demo';
+import Stacked from '../../demos/toast/stacked';
+import stackedSource from '../../demos/toast/stacked?raw';
+
+# Toast
+
+A stacked notification built on Base UI's Toast. It is not an overlay: it sits above the popup layer on its own `z.toast`, and it keeps its own enter and exit rather than the shared popup transition.
+
+## Install
+
+```bash
+npx shadcn add @ultima/toast
+```
+
+## Stacked
+
+Mount `Toast.Provider`, `Toast.Portal`, and `Toast.Viewport` once in your tree. Portal and Viewport stay mounted when the stack is empty, and that is deliberate: the Viewport *is* the live region, and a region inserted at the same moment its text arrives announces nothing. Queue a toast from anywhere under the Provider with `Toast.useToastManager()`.
+
+<Demo component={Stacked} source={stackedSource} />
+
+The stack collapses to the frontmost toast's height and expands on hover or focus. `Toast.Action` and `Toast.Close` are unstyled slots for a control with its own focus ring; the canonical fill is `render={<Button variant="ghost" size="sm" />}`. Swipe-to-dismiss is Base UI's, along with `limit`, `timeout`, `swipeDirection`, and `priority`, which pass through and are not axes.
+
+## Tone
+
+`tone` is not a prop on `Toast.Root`. Pass Base UI's `type` to `add()` or `promise()` and Ultima styles `[data-type]`, so a caller never names a token:
+
+```tsx
+toasts.add({ title: 'Report exported', type: 'success' });
+```
+
+The six values are Badge's: `neutral`, `accent`, `highlight`, `success`, `warning`, `danger`. A toast added with no `type` paints `neutral`. Two more strings are aliases rather than extra values, so `promise()` works without a wrapper: `error` paints as `danger`, and `loading` paints as `neutral`.
+
+Colour never carries meaning alone. The Title, or the Description when there is no Title, is the signal.
+
+## Queueing from outside React
+
+`Toast.createToastManager()` builds a manager you can hold outside the tree and hand to the Provider. It exposes the same `add`, `close`, `update`, and `promise` as the hook, without the reactive `toasts` array:
+
+```tsx
+export const toasts = Toast.createToastManager();
+
+<Toast.Provider toastManager={toasts}>{/* ... */}</Toast.Provider>;
+```
+
+Both sit on the `Toast` namespace as values. Ultima ships no `useToast()` and does not wrap `add()`.
+
+## The live-region pattern
+
+Ultima owns a documented pattern here rather than a component. There is no announcer to install, and `Toast.Viewport` is the only live region Ultima's own UI gets for free.
+
+- **The region is in the tree before the text changes.** Core-AAM only maps changes *inside* a live region; inserting the region itself is silent. Mount it empty, and never hide it with `display: none`, `hidden`, `aria-hidden`, or conditional rendering. Gating `Toast.Portal` on `toasts.length` defeats it.
+- **Your own regions use `role="status"` with an explicit `aria-atomic="true"`.** `role="alert"` is for a form error or an equally imperative message. Identical consecutive text is not a change, so append Word Joiner (U+2060) when the same string is announced twice.
+- **A visually hidden region is clip-hidden**, `clip-path: inset(50%)` inside a 1px box, not `display: none`.
+- **Announcements are not assertable.** axe has no live-region rule, and its `region` rule skips `status`, `log`, and `alert` subtrees. There is no build step that can catch a missing region, which is why this is written down rather than enforced.
+
+## Anchored toasts
+
+`Toast.Positioner` and `Toast.Arrow` sit on the namespace for a toast anchored to an element, with `positionerProps` on the toast object. That composition is Base UI's and Ultima documents no example of it in v0.1.
+
+## Props
+
+Only what Ultima adds. Every inherited part and prop is documented by [Base UI's Toast](https://base-ui.com/react/components/toast).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `style` | `StyleXStyles` | — | Available on the styled Viewport, Positioner, Root, Content, Title, Description, and Arrow parts; merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. Action and Close are unstyled slots for a control with its own focus ring. |
+| `type` | `'neutral' \| 'accent' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `neutral` | Base UI's own option on `add()`, styled by Ultima through `data-type`. `error` and `loading` are aliases for `danger` and `neutral`. |
+
+## Accessibility
+
+- **Name.** `Toast.Viewport` is a `role="region"` labelled `Notifications`, with `aria-live="polite"`. Each `Toast.Root` is a `role="dialog"` named by `Toast.Title` and described by `Toast.Description`, with `aria-modal={false}`.
+- **High priority.** `priority: 'high'` makes the Root a `role="alertdialog"` and announces it through Base UI's own visually hidden `role="alert"` clone of the title and description. The visible Root stays `aria-hidden` until the viewport is focused. Ultima does not restyle, wrap, or replace that clone.
+- **Focus ring.** On the elements rendered into `Toast.Action` and `Toast.Close`. The slots ship no styles at all, so the ring is the Button's.
+- **Keyboard.** Base UI owns it: <kbd>F6</kbd> jumps into the viewport, and a swipe past the threshold dismisses. Base UI keeps Close `aria-hidden` while the stack is collapsed and untouched, so a toast that is only an announcement reads as its title and description alone.

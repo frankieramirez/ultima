@@ -36,6 +36,7 @@ test('the component catalogue exposes the v0 and v0.1 sets in specification orde
     'combobox',
     'alert',
     'alert-dialog',
+    'toast',
   ]);
 });
 
@@ -70,6 +71,7 @@ test('every catalogue entry carries a release, and the menu derives from that fi
     'combobox',
     'alert',
     'alert-dialog',
+    'toast',
   ]);
   expect(RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item))).toEqual(
     components.map(({ item }) => item),

@@ -172,6 +172,12 @@ export const components = [
     description: 'A confirmation overlay that Escape closes and a backdrop click does not, on Base UI.',
     release: 'v0.1',
   },
+  {
+    name: 'Toast',
+    item: 'toast',
+    description: 'A stacked notification in six tones, queued from a manager, on Base UI.',
+    release: 'v0.1',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
