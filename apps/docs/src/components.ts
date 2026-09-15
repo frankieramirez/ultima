@@ -178,6 +178,12 @@ export const components = [
     description: 'A stacked notification in six tones, queued from a manager, on Base UI.',
     release: 'v0.1',
   },
+  {
+    name: 'Progress',
+    item: 'progress',
+    description: 'A task completion bar in five tones, determinate or indeterminate, on Base UI.',
+    release: 'v0.1',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {

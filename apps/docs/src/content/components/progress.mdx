@@ -1,0 +1,48 @@
+import { Demo } from '../../demo';
+import Indeterminate from '../../demos/progress/indeterminate';
+import indeterminateSource from '../../demos/progress/indeterminate?raw';
+import Upload from '../../demos/progress/upload';
+import uploadSource from '../../demos/progress/upload?raw';
+
+# Progress
+
+Task completion built on Base UI's Progress, with one tone for the fill and the number. Progress is how far a task has run; Meter is a bounded measurement that is not going anywhere.
+
+## Install
+
+```bash
+npx shadcn add @ultima/progress
+```
+
+## Determinate
+
+Compose `Label`, `Track`, `Indicator`, and `Value`. Base UI sets the fill width from `value`, and the width transition runs over `--ult-motion-base`, so a changing value slides rather than jumps. `tone` on `Root` colors the fill and the number together.
+
+<Demo component={Upload} source={uploadSource} />
+
+## Indeterminate
+
+Pass `value={null}` for a task with no measurable progress. The bar loops over `--ult-motion-loop`, the primitive keeps the `progressbar` role, drops `aria-valuenow`, and reads `indeterminate progress`. Under `prefers-reduced-motion: reduce` the loop stops and the bar rests at a quarter of the track. There is no `variant` for this; it is the value being `null`.
+
+<Demo component={Indeterminate} source={indeterminateSource} />
+
+## Props
+
+Only what Ultima adds. Everything else is Base UI's; see [Base UI's Progress](https://base-ui.com/react/components/progress) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `tone` | `'neutral' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `'neutral'` | Colors the fill and the number. |
+| `Indicator` | `tone` | `'neutral' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `Root`'s tone | Overrides the fill alone. |
+| `Value` | `tone` | `'neutral' \| 'highlight' \| 'success' \| 'warning' \| 'danger'` | `Root`'s tone | Overrides the rendered number alone. |
+| Every styled part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| Every part | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+`Indicator` and `Value` read the tone from `Root`. Rendered outside one they fall back to `neutral` rather than throwing.
+
+## Accessibility
+
+- **Name.** `Progress.Label` names the progress bar.
+- **Focus ring.** None. A progress bar is not focusable.
+- **Keyboard.** None. The value is set by the task, not by the reader.
+- **Live region.** None. The primitive's `progressbar` role carries the value; Ultima adds no announcement.
