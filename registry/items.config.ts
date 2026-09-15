@@ -72,6 +72,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A confirmation overlay that Escape closes and a backdrop click does not, on Base UI.',
     docs: "import { AlertDialog } from '@/components/ui/alert-dialog';\nimport { Button } from '@/components/ui/button';\n\n<AlertDialog.Root>\n  <AlertDialog.Trigger render={<Button />}>Delete report</AlertDialog.Trigger>\n  <AlertDialog.Portal>\n    <AlertDialog.Backdrop />\n    <AlertDialog.Viewport>\n      <AlertDialog.Popup>\n        <AlertDialog.Title>Delete report</AlertDialog.Title>\n        <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>\n        <AlertDialog.Close render={<Button variant=\"ghost\" />}>Cancel</AlertDialog.Close>\n        <AlertDialog.Close render={<Button tone=\"danger\" />}>Delete</AlertDialog.Close>\n      </AlertDialog.Popup>\n    </AlertDialog.Viewport>\n  </AlertDialog.Portal>\n</AlertDialog.Root>",
   },
+  slider: {
+    title: 'Slider',
+    description: 'A value picker with one thumb per value and an accent fill, on Base UI.',
+    docs: "import { Slider } from '@/components/ui/slider';\n\n<Slider.Root defaultValue={40}>\n  <Slider.Label>Volume</Slider.Label>\n  <Slider.Value />\n  <Slider.Control>\n    <Slider.Track>\n      <Slider.Indicator />\n      <Slider.Thumb />\n    </Slider.Track>\n  </Slider.Control>\n</Slider.Root>\n\nFor a range, pass an array to defaultValue and render one Thumb per value with its own index.",
+  },
   progress: {
     title: 'Progress',
     description: 'A task completion bar in five tones, determinate or indeterminate, on Base UI.',

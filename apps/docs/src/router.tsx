@@ -23,6 +23,7 @@ import RadioGroupContent from './content/components/radio-group.mdx';
 import SelectContent from './content/components/select.mdx';
 import SeparatorContent from './content/components/separator.mdx';
 import SidebarContent from './content/components/sidebar.mdx';
+import SliderContent from './content/components/slider.mdx';
 import StatContent from './content/components/stat.mdx';
 import SwitchContent from './content/components/switch.mdx';
 import TableContent from './content/components/table.mdx';
@@ -116,6 +117,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   select: SelectContent,
   separator: SeparatorContent,
   sidebar: SidebarContent,
+  slider: SliderContent,
   stat: StatContent,
   switch: SwitchContent,
   table: TableContent,

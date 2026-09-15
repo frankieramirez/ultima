@@ -215,3 +215,13 @@ export {
   type ProgressIndicatorProps,
   type ProgressValueProps,
 } from './progress';
+export {
+  Slider,
+  type SliderRootProps,
+  type SliderLabelProps,
+  type SliderValueProps,
+  type SliderControlProps,
+  type SliderTrackProps,
+  type SliderIndicatorProps,
+  type SliderThumbProps,
+} from './slider';
