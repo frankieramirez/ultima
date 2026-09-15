@@ -1,0 +1,57 @@
+import { Demo } from '../../demo';
+import InField from '../../demos/slider/in-field';
+import inFieldSource from '../../demos/slider/in-field?raw';
+import Range from '../../demos/slider/range';
+import rangeSource from '../../demos/slider/range?raw';
+import Volume from '../../demos/slider/volume';
+import volumeSource from '../../demos/slider/volume?raw';
+
+# Slider
+
+A value picker built on Base UI's Slider. The fill is always accent: a Slider sets a value rather than reporting one, so there is no `tone` here. A bounded reading that is not going anywhere is a [Meter](/components/meter), and a task running to completion is a [Progress](/components/progress).
+
+## Install
+
+```bash
+npx shadcn add @ultima/slider
+```
+
+## Value
+
+Compose `Label`, `Value`, `Control`, `Track`, `Indicator`, and `Thumb`. `Value` renders an `<output>` holding the locale-formatted number. `min`, `max`, `step`, `largeStep`, and `orientation` pass through to Base UI.
+
+<Demo component={Volume} source={volumeSource} />
+
+## Range
+
+Pass an array and render one `Thumb` per value. `index` is what pairs a thumb with its value on the server, and each thumb needs its own `aria-label` when there is no visible `Label` naming it — the group name alone does not say which end a reader is on.
+
+<Demo component={Range} source={rangeSource} />
+
+## In a field
+
+`Slider.Root` is the field's control, and it is a `role="group"` rather than a labelable element, so `Field.Label` takes `nativeLabel={false}`. Drop `Slider.Label` when the field already carries one.
+
+<Demo component={InField} source={inFieldSource} />
+
+## Props
+
+Only what Ultima adds. Everything else is Base UI's; see [Base UI's Slider](https://base-ui.com/react/components/slider) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| Every part | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+There are no axes. `Root` only groups, so it carries no Ultima styles and the layout of the parts inside it is yours through its `style` slot. `Label`, `Value`, `Control`, `Track`, `Indicator`, and `Thumb` are styled. The fill color is the `style` slot on `Indicator`.
+
+## Content Security Policy
+
+`Slider.Thumb` emits an inline `<script>` when `thumbAlignment="edge"`, which a strict `script-src` blocks. The default `"center"` injects nothing. If you need `"edge"`, wrap the app in Base UI's `CSPProvider` with a nonce, or use `"edge-client-only"`, which skips the script and positions after hydration.
+
+## Accessibility
+
+- **Name.** `Slider.Label`, or an `aria-label` on each `Thumb`, or a `Field.Label` with `nativeLabel={false}`.
+- **Focus ring.** On `Thumb`, through `:has(:focus-visible)`: the focusable element is a nested visually hidden `<input type="range">`, so `:focus-visible` on the thumb itself never matches.
+- **Keyboard.** Base UI's, and RTL-aware. Arrows move by `step`, Shift+arrow and Page Up / Page Down by `largeStep`, Home and End jump to `min` and `max`.
+- **Value.** The nested input carries `aria-valuetext`, locale-formatted by default and overridable per thumb. `Slider.Value` is `aria-live="off"`, so a drag does not announce on every frame.

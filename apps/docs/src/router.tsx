@@ -25,6 +25,7 @@ import SelectContent from './content/components/select.mdx';
 import SeparatorContent from './content/components/separator.mdx';
 import SidebarContent from './content/components/sidebar.mdx';
 import SkeletonContent from './content/components/skeleton.mdx';
+import SliderContent from './content/components/slider.mdx';
 import SpinnerContent from './content/components/spinner.mdx';
 import StatContent from './content/components/stat.mdx';
 import SwitchContent from './content/components/switch.mdx';
@@ -121,6 +122,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   separator: SeparatorContent,
   sidebar: SidebarContent,
   skeleton: SkeletonContent,
+  slider: SliderContent,
   spinner: SpinnerContent,
   stat: StatContent,
   switch: SwitchContent,

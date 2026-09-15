@@ -161,6 +161,12 @@ export const components = [
     release: 'v0.1',
   },
   {
+    name: 'Slider',
+    item: 'slider',
+    description: 'A value picker with one thumb per value and an accent fill, on Base UI.',
+    release: 'v0.1',
+  },
+  {
     name: 'Alert',
     item: 'alert',
     description: 'A static in-page callout in six tones.',
