@@ -80,7 +80,7 @@ The docs-local side of the line between an Ultima component and the site's own c
 
 ## Report set
 
-The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, Tooltip. The foundation set is the report set plus Dialog, Dropdown Menu, Select, Input, and Switch, which is fourteen. The v0 set is seventeen: the foundation plus Sidebar, Collapsible, and Toggle Group, the three the docs application turned out to need. The v0.1 set is fourteen more, Fieldset its own item, thirty-one in the catalogue once they ship.
+The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, Tooltip. The foundation set is the report set plus Dialog, Dropdown Menu, Select, Input, and Switch, which is fourteen. The v0 set is eighteen: the foundation plus Sidebar, Collapsible, Toggle Group, and Separator, the four the docs application turned out to need. The v0.1 set is fourteen more, Fieldset its own item, thirty-two in the catalogue once they ship.
 
 ## Feedback set
 
