@@ -14,6 +14,7 @@ import CollapsibleContent from './content/components/collapsible.mdx';
 import ComboboxContent from './content/components/combobox.mdx';
 import DialogContent from './content/components/dialog.mdx';
 import DropdownMenuContent from './content/components/dropdown-menu.mdx';
+import EmptyContent from './content/components/empty.mdx';
 import FieldContent from './content/components/field.mdx';
 import FieldsetContent from './content/components/fieldset.mdx';
 import InputContent from './content/components/input.mdx';
@@ -23,7 +24,9 @@ import RadioGroupContent from './content/components/radio-group.mdx';
 import SelectContent from './content/components/select.mdx';
 import SeparatorContent from './content/components/separator.mdx';
 import SidebarContent from './content/components/sidebar.mdx';
+import SkeletonContent from './content/components/skeleton.mdx';
 import SliderContent from './content/components/slider.mdx';
+import SpinnerContent from './content/components/spinner.mdx';
 import StatContent from './content/components/stat.mdx';
 import SwitchContent from './content/components/switch.mdx';
 import TableContent from './content/components/table.mdx';
@@ -108,6 +111,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   combobox: ComboboxContent,
   dialog: DialogContent,
   'dropdown-menu': DropdownMenuContent,
+  empty: EmptyContent,
   field: FieldContent,
   fieldset: FieldsetContent,
   input: InputContent,
@@ -117,7 +121,9 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   select: SelectContent,
   separator: SeparatorContent,
   sidebar: SidebarContent,
+  skeleton: SkeletonContent,
   slider: SliderContent,
+  spinner: SpinnerContent,
   stat: StatContent,
   switch: SwitchContent,
   table: TableContent,

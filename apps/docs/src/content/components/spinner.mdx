@@ -1,0 +1,52 @@
+import { Demo } from '../../demo';
+import InAButton from '../../demos/spinner/in-a-button';
+import inAButtonSource from '../../demos/spinner/in-a-button?raw';
+import Inline from '../../demos/spinner/inline';
+import inlineSource from '../../demos/spinner/inline?raw';
+
+# Spinner
+
+The loading mark for a wait with no measurable progress. It is drawn in CSS rather than shipped as an icon asset, so Ultima adds no icon dependency to use it. One part, no axes, no `tone`.
+
+## Install
+
+```bash
+npx shadcn add @ultima/spinner
+```
+
+## Beside text
+
+The mark is `1em` square and takes its color from `currentColor`, so it sits with whatever text surrounds it and inherits that text's size and color. The visible words are the caller's; the spinner never carries the name.
+
+<Demo component={Inline} source={inlineSource} />
+
+## In a control
+
+A button that is working keeps its label and adds the mark. The button is the thing that is disabled and named, not the spinner.
+
+<Demo component={InAButton} source={inAButtonSource} />
+
+## Spinner, Progress, or Toast
+
+- **Spinner** is a wait with no measurable progress, and no role.
+- **[Progress](/components/progress)** with `value={null}` is an indeterminate task that still reports as a `progressbar`. Use it when the wait belongs to a named task; a Spinner is not a Progress recipe.
+- **[Toast](/components/toast)** with `type="loading"` is a queued notification that happens to be pending. It stays a toast.
+
+## Motion
+
+The rotation loops over `--ult-motion-loop`, which a consumer can slow at the token. Under `prefers-reduced-motion: reduce` the loop stops by name and the mark rests as a static ring, so the layout does not collapse and nothing strobes.
+
+## Props
+
+Only what Ultima adds. The root otherwise accepts the props of a [native `div`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `style` | `StyleXStyles` | — | The style slot, merged last. Size it with `fontSize`, since the mark is `1em`. There is no `className`. |
+
+## Accessibility
+
+- **Element.** A `div` with `aria-hidden="true"`. It is decorative, so it never reaches the accessibility tree.
+- **Name.** None. Put `aria-busy="true"` on the container being waited on; any visible text beside the mark is the caller's.
+- **Focus and keyboard.** None. A spinner is static and takes no focus.
+- **Live region.** None on the glyph. Do not put `role="status"` on a spinner: a looping live region announces forever. When the start and end of a wait need speech, mount a `role="status"` region with `aria-atomic="true"` before the wait begins and change its text once at each end.

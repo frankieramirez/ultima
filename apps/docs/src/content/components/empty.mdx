@@ -1,0 +1,53 @@
+import { Demo } from '../../demo';
+import NoReports from '../../demos/empty/no-reports';
+import noReportsSource from '../../demos/empty/no-reports?raw';
+import WithIcon from '../../demos/empty/with-icon';
+import withIconSource from '../../demos/empty/with-icon?raw';
+
+# Empty
+
+The placeholder for a collection with nothing in it. Four parts, Alert's shape, and no axes: an empty list is not a status with a color.
+
+## Install
+
+```bash
+npx shadcn add @ultima/empty
+```
+
+## An empty collection
+
+`Root` owns the centered column, the gap, and the sunken surface, so a page does not paint one itself. `Title` says what is missing and `Description` says what to do about it. The action is **children**, a catalogue [Button](/components/button), not a fifth part and not a plain `button`.
+
+<Demo component={NoReports} source={noReportsSource} />
+
+## Icon
+
+`Icon` is the caller's glyph, omitted when unused, and `aria-hidden`. Ultima ships no icon dependency and no built-in empty-state glyph; any set works. This demo uses [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency.
+
+`Empty.Title` renders an `h3` by default; use `render` when the page hierarchy needs another heading level.
+
+<Demo component={WithIcon} source={withIconSource} />
+
+## Empty, Card, or Alert
+
+- **Empty** is the absence of a collection, and it hands the reader the way out.
+- **[Card](/components/card)** is content that exists. An empty state is not a card with nothing in it.
+- **[Alert](/components/alert)** is a callout about a condition, in six tones. An empty list is not a warning.
+- **`Combobox.Empty`** is a different thing again: the mounted `role="status"` inside a combobox list that announces when a filter matches nothing. Leave it where it is rather than replacing it with this item.
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept the props of their [native HTML elements](https://developer.mozilla.org/en-US/docs/Web/HTML/Element).
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `render` | `ReactElement \| function` | — | Changes the root from its default `div`. |
+| `Title` | `render` | `ReactElement \| function` | — | Changes the title from its default `h3`. |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+
+## Accessibility
+
+- **Elements.** `Root` is a `div` with no live role. `Title` is an `h3` by default and can change through `render`. `Icon` is decorative and `aria-hidden`.
+- **Name.** Visible text: `Title`, or `Description` when there is no `Title`.
+- **Focus and keyboard.** None on the parts Empty paints. An action in children is a Button and keeps its own ring and keyboard behavior.
+- **Live region.** None. An empty state that was in the page at first paint has nothing to announce. When a list becomes empty as the result of a filter, announce that through a pre-mounted `role="status"` region rather than by mounting this component.
