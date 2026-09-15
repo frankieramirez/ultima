@@ -184,6 +184,24 @@ export const components = [
     description: 'A task completion bar in five tones, determinate or indeterminate, on Base UI.',
     release: 'v0.1',
   },
+  {
+    name: 'Skeleton',
+    item: 'skeleton',
+    description: 'A sunken placeholder that pulses while its content loads.',
+    release: 'v0.1',
+  },
+  {
+    name: 'Spinner',
+    item: 'spinner',
+    description: 'A looping loading mark drawn in CSS, sized and colored by its surrounding text.',
+    release: 'v0.1',
+  },
+  {
+    name: 'Empty',
+    item: 'empty',
+    description: 'A centered placeholder for a collection with nothing in it.',
+    release: 'v0.1',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {

@@ -82,6 +82,21 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A stacked notification in six tones, queued from a manager, on Base UI.',
     docs: "import { Button } from '@/components/ui/button';\nimport { Toast } from '@/components/ui/toast';\n\nMount Provider, Portal, and Viewport once; they stay mounted when the stack is empty.\n\n<Toast.Provider>\n  <Toast.Portal>\n    <Toast.Viewport>{/* map Toast.useToastManager().toasts to Toast.Root */}</Toast.Viewport>\n  </Toast.Portal>\n</Toast.Provider>\n\nToast.useToastManager().add({ title: 'Report exported', type: 'success' });",
   },
+  skeleton: {
+    title: 'Skeleton',
+    description: 'A sunken placeholder that pulses while its content loads.',
+    docs: "import { Skeleton } from '@/components/ui/skeleton';\n\n<Skeleton />\n\nSize it through the style slot, and put aria-busy on the container it stands in for. The pulse stops under prefers-reduced-motion.",
+  },
+  spinner: {
+    title: 'Spinner',
+    description: 'A looping loading mark drawn in CSS, sized and colored by its surrounding text.',
+    docs: "import { Spinner } from '@/components/ui/spinner';\n\n<Spinner />\n\nThe mark is aria-hidden. Put aria-busy on the container being waited on, and announce the wait through a live region rather than the glyph.",
+  },
+  empty: {
+    title: 'Empty',
+    description: 'A centered placeholder for a collection with nothing in it.',
+    docs: "import { Button } from '@/components/ui/button';\nimport { Empty } from '@/components/ui/empty';\n\n<Empty.Root>\n  <Empty.Title>No reports yet</Empty.Title>\n  <Empty.Description>Run an audit to see its findings here.</Empty.Description>\n  <Button>Run an audit</Button>\n</Empty.Root>\n\nThe action is children, a Button, not a part.",
+  },
   checkbox: {
     title: 'Checkbox',
     description: 'A checkbox with a check, a dash for mixed, and an optional group, on Base UI.',

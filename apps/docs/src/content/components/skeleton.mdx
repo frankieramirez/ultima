@@ -1,0 +1,46 @@
+import { Demo } from '../../demo';
+import CardPlaceholder from '../../demos/skeleton/card';
+import cardSource from '../../demos/skeleton/card?raw';
+import Shapes from '../../demos/skeleton/shapes';
+import shapesSource from '../../demos/skeleton/shapes?raw';
+
+# Skeleton
+
+A sunken placeholder that stands in for content still loading. One part, no axes, and nothing to announce: the container it stands in for carries `aria-busy`, and the placeholder itself is hidden.
+
+## Install
+
+```bash
+npx shadcn add @ultima/skeleton
+```
+
+## Placeholder content
+
+A skeleton with no props is one line of body text at full width. Stack a few inside the surface the content will fill, and put `aria-busy="true"` on that container so a screen reader knows the region is still working.
+
+<Demo component={CardPlaceholder} source={cardSource} />
+
+## Size and shape
+
+Size is the `style` slot. Heights come from the space scale, widths are whatever the real content will be, and `borderRadius` turns a line into an avatar. There is no `size` axis, because a placeholder matches the thing it replaces rather than one of three heights.
+
+<Demo component={Shapes} source={shapesSource} />
+
+## Motion
+
+The pulse loops over `--ult-motion-loop`, which a consumer can slow at the token. Under `prefers-reduced-motion: reduce` the loop stops by name and the placeholder rests fully opaque, so the layout does not move and nothing strobes.
+
+## Props
+
+Only what Ultima adds. The root otherwise accepts the props of a [native `div`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `style` | `StyleXStyles` | — | The style slot, merged last, and where size and radius come from. There is no `className`. |
+
+## Accessibility
+
+- **Element.** A `div` with `aria-hidden="true"`. It is decorative, so it never reaches the accessibility tree.
+- **Name.** None. Put `aria-busy="true"` on the container being replaced; the loaded content carries the name.
+- **Focus and keyboard.** None. A skeleton is static and takes no focus.
+- **Live region.** None. A skeleton is not a `progressbar`, and a looping live region would announce forever. Speak the start and the end of a wait through a pre-mounted `role="status"` region instead.

@@ -12,6 +12,8 @@ import {
   type ProgressValueProps,
 } from '@ultima/ui';
 
+import { reducedMotionRules } from './reduced-motion';
+
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
  * 1. Every combination renders: five tones on Root, on Indicator, and on Value, and no props matches `neutral`.
@@ -259,32 +261,6 @@ test('reduced motion turns the loop off by name rather than by duration alone', 
   expect(stopped.length).toBeGreaterThan(0);
   for (const rule of stopped) expect(rule.style.getPropertyValue('animation-name')).toBe('none');
 });
-
-function reducedMotionRules(property: string) {
-  const found: CSSStyleRule[] = [];
-
-  function walk(rules: CSSRuleList, reduced: boolean) {
-    for (const rule of Array.from(rules)) {
-      if (rule instanceof CSSMediaRule) {
-        walk(rule.cssRules, reduced || rule.conditionText.includes('prefers-reduced-motion'));
-      } else if (rule instanceof CSSGroupingRule) {
-        walk(rule.cssRules, reduced);
-      } else if (reduced && rule instanceof CSSStyleRule && rule.style.getPropertyValue(property)) {
-        found.push(rule);
-      }
-    }
-  }
-
-  for (const sheet of Array.from(document.styleSheets)) {
-    try {
-      walk(sheet.cssRules, false);
-    } catch {
-      continue;
-    }
-  }
-
-  return found;
-}
 
 test('public prop types expose only supported styling axes', () => {
   expectTypeOf<ProgressTone>().toEqualTypeOf<'neutral' | 'highlight' | 'success' | 'warning' | 'danger'>();
