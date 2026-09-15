@@ -27,6 +27,7 @@ import SwitchContent from './content/components/switch.mdx';
 import TableContent from './content/components/table.mdx';
 import TabsContent from './content/components/tabs.mdx';
 import TextareaContent from './content/components/textarea.mdx';
+import ToastContent from './content/components/toast.mdx';
 import ToggleGroupContent from './content/components/toggle-group.mdx';
 import TooltipContent from './content/components/tooltip.mdx';
 import { components } from './components';
@@ -118,6 +119,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   table: TableContent,
   tabs: TabsContent,
   textarea: TextareaContent,
+  toast: ToastContent,
   'toggle-group': ToggleGroupContent,
   tooltip: TooltipContent,
 };
