@@ -11,6 +11,7 @@ import CardContent from './content/components/card.mdx';
 import CheckboxContent from './content/components/checkbox.mdx';
 import CodeContent from './content/components/code.mdx';
 import CollapsibleContent from './content/components/collapsible.mdx';
+import ComboboxContent from './content/components/combobox.mdx';
 import DialogContent from './content/components/dialog.mdx';
 import DropdownMenuContent from './content/components/dropdown-menu.mdx';
 import FieldContent from './content/components/field.mdx';
@@ -101,6 +102,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   checkbox: CheckboxContent,
   code: CodeContent,
   collapsible: CollapsibleContent,
+  combobox: ComboboxContent,
   dialog: DialogContent,
   'dropdown-menu': DropdownMenuContent,
   field: FieldContent,

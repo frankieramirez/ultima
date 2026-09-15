@@ -1,0 +1,62 @@
+import { Demo } from '../../demo';
+import Canonical from '../../demos/combobox/canonical';
+import canonicalSource from '../../demos/combobox/canonical?raw';
+import LabelTrap from '../../demos/combobox/label-trap';
+import labelTrapSource from '../../demos/combobox/label-trap?raw';
+import Chips from '../../demos/combobox/chips';
+import chipsSource from '../../demos/combobox/chips?raw';
+
+# Combobox
+
+A filterable input whose value is restricted to the item set, built on Base UI's Combobox. It is a sibling of Select rather than a variant of it, and it is not Autocomplete: the value is always one of the items.
+
+## Install
+
+```bash
+npx shadcn add @ultima/combobox
+```
+
+## The input as the control
+
+`Combobox.InputGroup` is the visual box. It carries `size`, the sunken surface, the border, the radius, and the focus ring through `:focus-within`, and `Combobox.Input` sits borderless inside it beside `Combobox.Clear` and `Combobox.Trigger`. Pass `items` to the root and Base UI filters them as the reader types.
+
+<Demo component={Canonical} source={canonicalSource} />
+
+`Combobox.Empty` and `Combobox.Status` stay mounted so a screen reader hears the text change. Put the empty message in `Empty`; do not swap in the `Empty` component, which is a different thing.
+
+## Labels
+
+`Combobox.Label` names the **Trigger**, not the Input. In the pattern above the control is the input, so a `Field.Label` keeps its default `nativeLabel`. Move the input into the popup and the Trigger becomes the control, which needs `nativeLabel={false}` on `Field.Label` or `Combobox.Label` in its place. Base UI wants a non-`<label>` element behind `nativeLabel={false}`, so pass `render={<span />}` with it.
+
+<Demo component={LabelTrap} source={labelTrapSource} />
+
+## Multiple values
+
+`multiple` on the root turns the selection into an array. `Combobox.Chips` holds one `Combobox.Chip` per value, each with its own `Combobox.ChipRemove`.
+
+<Demo component={Chips} source={chipsSource} />
+
+The chevron, check, and x glyphs are private inline SVGs. Registry consumers may edit them in the installed file, and any icon set works for the rest of an interface.
+
+## Grids and long lists
+
+`Combobox.List` is the scroll container, so a long filtered list scrolls inside the popup and the keyboard highlight has somewhere to move. `Combobox.Row` and the `grid` prop on the root turn the list into a grid; both stay on the namespace without a documented example here.
+
+## Props
+
+Only what Ultima adds. Every inherited part and prop is documented by [Base UI's Combobox](https://base-ui.com/react/components/combobox).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Set on `Combobox.InputGroup`; controls its height, inline padding, and text step. |
+| `style` | `StyleXStyles` | — | Available on every part and merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+`Combobox.useFilter`, `Combobox.useFilteredItems`, and `Combobox.createItems` sit on the same namespace. Ultima ships no filter algorithm of its own.
+
+## Accessibility
+
+- **Name.** From a `Field.Label`, a `<label htmlFor>`, `aria-label`, or `aria-labelledby` on the input. `Combobox.Label` names the Trigger, so it belongs to the pattern where the Trigger is the control.
+- **Focus ring.** On `Combobox.InputGroup` through `:focus-within`, and on `Combobox.Trigger` where the Trigger is the control.
+- **Keyboard.** Base UI handles arrows, Enter, Escape, and typeahead on the Trigger.
+- **Announcements.** `Combobox.Empty` and `Combobox.Status` are `role="status"` regions that stay in the DOM. Hiding or unmounting them silences the announcement.
