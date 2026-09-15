@@ -33,6 +33,7 @@ test('the component catalogue exposes the v0 and v0.1 sets in specification orde
     'checkbox',
     'radio-group',
     'textarea',
+    'combobox',
     'alert',
     'alert-dialog',
   ]);
@@ -66,6 +67,7 @@ test('every catalogue entry carries a release, and the menu derives from that fi
     'checkbox',
     'radio-group',
     'textarea',
+    'combobox',
     'alert',
     'alert-dialog',
   ]);

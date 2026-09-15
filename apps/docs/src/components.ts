@@ -155,6 +155,12 @@ export const components = [
     release: 'v0.1',
   },
   {
+    name: 'Combobox',
+    item: 'combobox',
+    description: 'A filterable input whose value is restricted to the item set, on Base UI.',
+    release: 'v0.1',
+  },
+  {
     name: 'Alert',
     item: 'alert',
     description: 'A static in-page callout in six tones.',

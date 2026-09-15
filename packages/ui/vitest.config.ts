@@ -14,6 +14,7 @@ export default defineConfig({
       '@base-ui/react/checkbox',
       '@base-ui/react/checkbox-group',
       '@base-ui/react/collapsible',
+      '@base-ui/react/combobox',
       '@base-ui/react/input',
       '@base-ui/react/field',
       '@base-ui/react/fieldset',

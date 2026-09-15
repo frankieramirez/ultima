@@ -82,6 +82,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A radio group with a filled-circle indicator, on Base UI.',
     docs: "import { RadioGroup } from '@/components/ui/radio-group';\n\n<RadioGroup.Root aria-label=\"Plan\" defaultValue=\"pro\">\n  <RadioGroup.Item value=\"hobby\">\n    <RadioGroup.Indicator />\n  </RadioGroup.Item>\n  <RadioGroup.Item value=\"pro\">\n    <RadioGroup.Indicator />\n  </RadioGroup.Item>\n</RadioGroup.Root>",
   },
+  combobox: {
+    title: 'Combobox',
+    description: 'A filterable input whose value is restricted to the item set, on Base UI.',
+    docs: "import { Combobox } from '@/components/ui/combobox';\n\n<Combobox.Root items={['Apple', 'Banana']}>\n  <Combobox.InputGroup>\n    <Combobox.Input placeholder=\"Search fruit\" />\n    <Combobox.Clear />\n    <Combobox.Trigger>\n      <Combobox.Icon />\n    </Combobox.Trigger>\n  </Combobox.InputGroup>\n  <Combobox.Portal>\n    <Combobox.Positioner>\n      <Combobox.Popup>\n        <Combobox.Empty>No fruit matches.</Combobox.Empty>\n        <Combobox.List>\n          {(item) => (\n            <Combobox.Item key={item} value={item}>\n              <Combobox.ItemIndicator />\n              {item}\n            </Combobox.Item>\n          )}\n        </Combobox.List>\n      </Combobox.Popup>\n    </Combobox.Positioner>\n  </Combobox.Portal>\n</Combobox.Root>",
+  },
   textarea: {
     title: 'Textarea',
     description: 'A multiline text field in three sizes, on Base UI.',
