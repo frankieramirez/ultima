@@ -206,3 +206,12 @@ export {
   type ToastPositionerProps,
   type ToastArrowProps,
 } from './toast';
+export {
+  Progress,
+  type ProgressTone,
+  type ProgressRootProps,
+  type ProgressLabelProps,
+  type ProgressTrackProps,
+  type ProgressIndicatorProps,
+  type ProgressValueProps,
+} from './progress';

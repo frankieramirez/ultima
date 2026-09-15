@@ -18,6 +18,7 @@ import FieldContent from './content/components/field.mdx';
 import FieldsetContent from './content/components/fieldset.mdx';
 import InputContent from './content/components/input.mdx';
 import MeterContent from './content/components/meter.mdx';
+import ProgressContent from './content/components/progress.mdx';
 import RadioGroupContent from './content/components/radio-group.mdx';
 import SelectContent from './content/components/select.mdx';
 import SeparatorContent from './content/components/separator.mdx';
@@ -110,6 +111,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   fieldset: FieldsetContent,
   input: InputContent,
   meter: MeterContent,
+  progress: ProgressContent,
   'radio-group': RadioGroupContent,
   select: SelectContent,
   separator: SeparatorContent,

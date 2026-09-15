@@ -72,6 +72,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A confirmation overlay that Escape closes and a backdrop click does not, on Base UI.',
     docs: "import { AlertDialog } from '@/components/ui/alert-dialog';\nimport { Button } from '@/components/ui/button';\n\n<AlertDialog.Root>\n  <AlertDialog.Trigger render={<Button />}>Delete report</AlertDialog.Trigger>\n  <AlertDialog.Portal>\n    <AlertDialog.Backdrop />\n    <AlertDialog.Viewport>\n      <AlertDialog.Popup>\n        <AlertDialog.Title>Delete report</AlertDialog.Title>\n        <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>\n        <AlertDialog.Close render={<Button variant=\"ghost\" />}>Cancel</AlertDialog.Close>\n        <AlertDialog.Close render={<Button tone=\"danger\" />}>Delete</AlertDialog.Close>\n      </AlertDialog.Popup>\n    </AlertDialog.Viewport>\n  </AlertDialog.Portal>\n</AlertDialog.Root>",
   },
+  progress: {
+    title: 'Progress',
+    description: 'A task completion bar in five tones, determinate or indeterminate, on Base UI.',
+    docs: 'import { Progress } from \'@/components/ui/progress\';\n\n<Progress.Root value={64} tone="highlight">\n  <Progress.Label>Uploading</Progress.Label>\n  <Progress.Track>\n    <Progress.Indicator />\n  </Progress.Track>\n  <Progress.Value />\n</Progress.Root>\n\nPass value={null} for an indeterminate bar.',
+  },
   toast: {
     title: 'Toast',
     description: 'A stacked notification in six tones, queued from a manager, on Base UI.',
