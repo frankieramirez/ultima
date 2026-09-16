@@ -86,6 +86,14 @@ The components needed to rebuild mana's audit report: Badge, Card, Table, Tabs, 
 
 The seven v0.1 components that report a state rather than collect a value: Alert, Alert Dialog, Toast, Progress, Skeleton, Spinner, and Empty. The other seven in that release are the form components, which is why the release is forms and feedback and why the section holding both contracts is The v0.1 set rather than a form set.
 
+## Navigation set
+
+Breadcrumb, Pagination, and Navigation Menu, the three v0.2 components that render a navigation landmark. Named for what they hold rather than for the release, because v0.2 is fourteen checklist lines and these are three of them. One rule follows from the landmark and reaches all three: Ultima's default name is emitted only when the caller named nothing, and distinguishing a second instance on a page is the consumer's.
+
+## Page window
+
+The list of page slots a pagination control shows, with the runs it hides collapsed to an ellipsis. Ultima computes it from a current page and a total; the caller renders it, because a page item is often the consumer's router link.
+
 ## Token group
 
 One export in `packages/tokens`, named for what it holds. The themeable groups are `defineVars` and reach the CSS export: color, space, text, font, radius, shadow, and motion durations including `--ult-motion-loop`. The compile-time groups are `defineConsts` and never leave the build: motion easings, border widths, z-index. A themeable token's full name is `--ult-<group>-<name>`. `--ult-motion-loop` is the repeating-animation duration: it collapses to `0s` under reduced motion, not `1ms`, because a one-millisecond loop is a strobe.
@@ -204,7 +212,7 @@ A documented pattern, not a catalogue component and not a shared announcer. Pre-
 
 ## Overlay
 
-A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it. Alert Dialog is the seventh: it joins the recipe and does not vary it. Toast is not an overlay.
+A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it. Alert Dialog is the seventh: it joins the recipe and does not vary it. Navigation Menu is the eighth: it joins the recipe and varies the transition, the second component to do so after Sidebar's mobile menu, dropping the shared `scale(0.98)` because a transform cannot fight an animated width and height. Toast is not an overlay.
 
 ## Style slot
 
@@ -216,7 +224,7 @@ The one registry item, `lib/component.ts`, holding the helper types every compon
 
 ## Glyph slot
 
-A Base UI part whose only content is an icon: `Select.Icon`, `Select.ItemIndicator`, `Menu.CheckboxItemIndicator`, `Menu.RadioItemIndicator`, `Checkbox.Indicator`, `RadioGroup.Indicator`, `Combobox.Icon`, `Combobox.ItemIndicator`, `Combobox.Clear`, `Combobox.ChipRemove`. Ultima fills each with a `1em` inline SVG private to the component file, and accepts `children` as a replacement. Checkbox's slot holds two glyphs, the check and the dash, chosen by whether the box is checked or mixed. Combobox's clear and chip-remove slots share an x. Ultima ships no icon dependency, so a slot Base UI leaves empty is the only place an Ultima glyph appears.
+A part whose only content is an icon Ultima supplies. Usually a Base UI part: `Select.Icon`, `Select.ItemIndicator`, `Menu.CheckboxItemIndicator`, `Menu.RadioItemIndicator`, `Checkbox.Indicator`, `RadioGroup.Indicator`, `Combobox.Icon`, `Combobox.ItemIndicator`, `Combobox.Clear`, `Combobox.ChipRemove`. Ultima fills each with a `1em` inline SVG private to the component file, and accepts `children` as a replacement. Checkbox's slot holds two glyphs, the check and the dash, chosen by whether the box is checked or mixed. Combobox's clear and chip-remove slots share an x. `Breadcrumb.Separator` and `Pagination.Ellipsis` are the first slots Ultima writes itself rather than fills, and they take `children` the same way. A layout slot the caller fills, such as `Alert.Icon` or `Empty.Icon`, is not one of these: Ultima ships no default there.
 
 ## Accessibility contract
 
