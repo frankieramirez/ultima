@@ -45,6 +45,7 @@ export default defineConfig({
       '@phosphor-icons/react',
       '@stylexjs/stylex',
       '@tanstack/react-router',
+      '@tanstack/react-table',
       'apca-w3',
       'axe-core',
       'react-hook-form',
