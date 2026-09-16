@@ -215,6 +215,12 @@ export const components = [
     description: 'A trail of links to the current page, with a swappable separator glyph.',
     release: 'v0.2',
   },
+  {
+    name: 'Pagination',
+    item: 'pagination',
+    description: 'A page window with truncation, disabled ends, and a pure function that computes the window.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {

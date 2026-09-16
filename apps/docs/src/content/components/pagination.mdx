@@ -1,0 +1,85 @@
+import { Demo } from '../../demo';
+import PageWindow from '../../demos/pagination/window';
+import pageWindowSource from '../../demos/pagination/window?raw';
+import LinkedPages from '../../demos/pagination/links';
+import linkedPagesSource from '../../demos/pagination/links?raw';
+import WindowSize from '../../demos/pagination/window-size';
+import windowSizeSource from '../../demos/pagination/window-size?raw';
+
+# Pagination
+
+A page window with truncation and two ends. Seven plain parts, no axes, one glyph, and one pure function you call yourself.
+
+## Install
+
+```bash
+npx shadcn add @ultima/pagination
+```
+
+## The window
+
+`Pagination.getPages` computes which page slots to show and where the hidden runs collapse. You render the result, because a page item is usually your router's link and no data prop can take one.
+
+```ts
+Pagination.getPages({ page, count, siblingCount = 1, boundaryCount = 1 });
+// → [{ type: 'page', page: 1 }, { type: 'ellipsis' }, { type: 'page', page: 9 }, …]
+```
+
+It is a value on the namespace rather than `usePagination()`. It reads no context, holds no state, and runs no effect, so it is pure arithmetic — and a `use*` name would forbid calling it in a loop or a condition, which is exactly where you want it. `siblingCount` and `boundaryCount` are MUI's names, kept because you already know them.
+
+A run of exactly one hidden page is rendered rather than collapsed: an ellipsis standing in for a single number costs a click and saves no room.
+
+<Demo component={PageWindow} source={pageWindowSource} />
+
+## Links or buttons
+
+`Page`, `Previous`, and `Next` are `a` elements by default, which is the URL-driven control: each page is a real address, and the browser does the navigating. Pass `render={<button />}` when the page is client state instead, as the demo above does.
+
+<Demo component={LinkedPages} source={linkedPagesSource} />
+
+## How wide the window is
+
+`siblingCount` is how many pages sit either side of the current one; `boundaryCount` is how many stay pinned at each end.
+
+<Demo component={WindowSize} source={windowSizeSource} />
+
+## The ends
+
+`Previous` and `Next` take `disabled`, which emits `aria-disabled="true"` and `data-disabled=""` and never the native `disabled` attribute. Ultima swallows the activation itself.
+
+That is deliberate, and it is the whole reason the prop is not passed through. A natively disabled control is not focusable, so pressing it at the last page drops focus to `<body>` and the reader loses their place in the list — a bug MUI shipped a refocus workaround for. Keeping the element focusable means there is nothing to work around. It is also the only form that works for both elements: an anchor has no `disabled` attribute, and an anchor without `href` is not focusable either.
+
+Disabled styling is reduced opacity and `cursor: default`. `pointer-events` is untouched on purpose, since `none` would kill the hover state along with the click.
+
+Give a disabled end an `href` anyway — the current page's is the honest one. It keeps the element focusable, and Ultima stops the navigation.
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept the props of their [native HTML elements](https://developer.mozilla.org/en-US/docs/Web/HTML/Element).
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Page` | `current` | `boolean` | `false` | Emits `aria-current="page"` and `data-active=""`, and paints the current page. |
+| `Previous`, `Next` | `disabled` | `boolean` | `false` | The ARIA pair, never the native attribute. Swallows the activation and keeps focus. |
+| `Ellipsis` | `children` | `ReactNode` | the glyph | Replaces the built-in glyph. |
+| Every part | `render` | `ReactElement \| function` | — | Changes the element. `Root` is a `nav`, `List` a `ul`, `Item` an `li`, `Page`, `Previous`, and `Next` an `a`, `Ellipsis` a `span`. |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+
+`Pagination.getPages` takes `{ page, count, siblingCount?, boundaryCount? }` and returns `PaginationPage[]`, which is `{ type: 'page'; page: number } | { type: 'ellipsis' }`.
+
+## Do not put a Button in these parts
+
+`Page`, `Previous`, and `Next` carry Ultima's own row style. Rendering an Ultima [Button](/components/button) into one gives the element two Ultima styles, and they collide rather than cascade: `stylex.props` cannot merge a foreign class string. Pagination declares no Button dependency for the same reason — it restates the row rather than borrowing it, and the shared tokens are what keep the two in step.
+
+`render={<button />}` is the plain element and is exactly right. It is an Ultima `Button` component that is not.
+
+## Accessibility
+
+- **Elements.** `nav` on `Root`; `ul`, `li`, and `a` on the rest. `Ellipsis` is an `aria-hidden` `span`.
+- **Name.** `aria-label="Pagination"` on `Root` by default, emitted only when you supplied neither `aria-label` nor `aria-labelledby`.
+- **Focus ring.** On `Page`, `Previous`, and `Next`. `Root`, `List`, `Item`, and `Ellipsis` take no focus and paint no ring.
+- **Keyboard.** Native. Tab reaches each control and Enter follows it; the only thing Ultima wires is swallowing a disabled end's activation.
+- **The current page.** `current` emits `aria-current="page"` alongside `data-active=""`, and the current style matches either. A router link that sets `aria-current` itself is styled with no prop. It is `"page"` and never `"true"`.
+- **A `ul`, not an `ol`.** A list's item count collides with a page's number, so "item 3 of 7" read over page 42 is worse than no count, and `aria-posinset` and `aria-setsize` are not permitted on `link`. A page window is a set with holes punched in it.
+- **A second control on one page needs its own name.** Pagination above and below a table is the common case, and the two take distinct names. This departs knowingly from the APG's advice that they share one: axe's `landmark-unique` fails a duplicate role with a duplicate name, and two identically named landmarks are ambiguous in a landmark list either way.
+- **No live region.** Pagination sees pages and never items, so it cannot announce "Showing 21 through 40 of 312". On the URL-driven default the page navigates and there is nothing to announce. An item-range announcement is yours, through the [live-region pattern](/components/toast).

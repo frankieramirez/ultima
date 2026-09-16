@@ -244,3 +244,14 @@ export {
   type BreadcrumbLinkProps,
   type BreadcrumbSeparatorProps,
 } from './breadcrumb';
+export {
+  Pagination,
+  type PaginationPage,
+  type PaginationRootProps,
+  type PaginationListProps,
+  type PaginationItemProps,
+  type PaginationPageProps,
+  type PaginationPreviousProps,
+  type PaginationNextProps,
+  type PaginationEllipsisProps,
+} from './pagination';
