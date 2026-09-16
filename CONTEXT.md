@@ -228,7 +228,7 @@ A real component module under `apps/docs/src/demos/`, rendered live on a docs pa
 
 ## Live demonstration
 
-A claim the site proves by using Ultima rather than by writing it down. The header's theme control is how the site shows that light is a full peer of dark; the site's own menu is how it shows a whole Sidebar. Where one exists, the component's page points at it and its own demos each show one narrower thing.
+A claim the site proves by using Ultima rather than by writing it down. The header's theme control is how the site shows that light is a full peer of dark; the site's own menu is how it shows a whole Sidebar. Where one exists, the component's page points at it and its own demos each show one narrower thing. Most components have none and owe none: four are in the site's chrome, and a live demonstration is not part of the release gate.
 
 ## Smoke install
 
