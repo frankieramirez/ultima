@@ -1,0 +1,64 @@
+import { Demo } from '../../demo';
+import Trail from '../../demos/breadcrumb/trail';
+import trailSource from '../../demos/breadcrumb/trail?raw';
+import CustomSeparator from '../../demos/breadcrumb/separator';
+import customSeparatorSource from '../../demos/breadcrumb/separator?raw';
+import CollapsedTrail from '../../demos/breadcrumb/collapsed';
+import collapsedTrailSource from '../../demos/breadcrumb/collapsed?raw';
+
+# Breadcrumb
+
+The trail from the site root to the page the reader is on. Five plain parts, no axes, and one glyph.
+
+## Install
+
+```bash
+npx shadcn add @ultima/breadcrumb
+```
+
+## The trail
+
+`Root` is the `nav` and carries the landmark name. `List` is an `ol`, reset to no marker and wrapping when the trail outgrows its container. Each crumb is an `Item` holding a `Link`, and a `Separator` sits between them.
+
+The last crumb stays a real `a href` and takes `active`, which is what the [APG example](https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/examples/breadcrumb/) and Primer render. A link that goes to the page you are already on is still a link, so Ultima does not announce it as one and then refuse to navigate.
+
+<Demo component={Trail} source={trailSource} />
+
+## The separator
+
+`Separator` ships a chevron and takes `children` as a replacement, the same override every glyph slot in Ultima takes. It is an `li` with `role="presentation"` and `aria-hidden="true"`, so it stays out of the list's item count and its glyph never reaches a screen reader.
+
+Ultima ships no icon dependency and any set works. This separator is a text character, which is all a slash needs.
+
+<Demo component={CustomSeparator} source={customSeparatorSource} />
+
+## A trail too long for its container
+
+There is no `Ellipsis` part. A trail that outgrows its width wraps, because `List` is a wrapping flex row. When a design calls for the middle of the trail to collapse instead, put a [Dropdown Menu](/components/dropdown-menu) inside an `Item`: its trigger is a `...` [Button](/components/button) with an `aria-label`, and its items are the hidden crumbs. That keeps every crumb reachable and in the accessibility tree, which a visually hidden label inside an `aria-hidden` span does not.
+
+<Demo component={CollapsedTrail} source={collapsedTrailSource} />
+
+## Two obligations that stay yours
+
+- **A second breadcrumb on one page needs its own name.** Ultima's `aria-label="Breadcrumb"` is emitted only when you supplied neither `aria-label` nor `aria-labelledby`, so passing either replaces it rather than competing with it. Two landmarks with the same role and the same name are ambiguous in a landmark list, and axe's `landmark-unique` fails them.
+- **The trail's last crumb is the current page.** `active` is what says so. Ultima cannot check that the crumb you marked is the page the reader is on.
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept the props of their [native HTML elements](https://developer.mozilla.org/en-US/docs/Web/HTML/Element).
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Link` | `active` | `boolean` | `false` | Emits `aria-current="page"` and `data-active=""`, and paints the current crumb. |
+| `Separator` | `children` | `ReactNode` | the chevron | Replaces the built-in glyph. |
+| Every part | `render` | `ReactElement \| function` | — | Changes the element. `Root` is a `nav`, `List` an `ol`, `Item` and `Separator` an `li`, `Link` an `a`. |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+
+## Accessibility
+
+- **Elements.** `nav` on `Root`; `ol`, `li`, and `a` on the rest. `Separator` is an `li` with `role="presentation"` and `aria-hidden="true"`.
+- **Name.** `aria-label="Breadcrumb"` on `Root` by default, emitted only when you supplied neither `aria-label` nor `aria-labelledby`.
+- **Focus ring.** On `Link`. No other part takes focus or paints a ring.
+- **Keyboard.** Native. Tab reaches each link and Enter follows it; Ultima wires nothing of its own.
+- **The current crumb.** `active` emits `aria-current="page"` alongside `data-active=""`, and the current style matches either. A router link that sets `aria-current` itself is styled with no prop. It is `"page"` and never `"true"`.
+- **A non-navigable final crumb.** `render={<span />}`, which the APG permits. Ultima does not ship `<span role="link" aria-disabled="true">`: it announces "link" for something that does not navigate.

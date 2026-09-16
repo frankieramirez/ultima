@@ -1,4 +1,4 @@
-export type ComponentRelease = 'v0' | 'v0.1';
+export type ComponentRelease = 'v0' | 'v0.1' | 'v0.2';
 
 export type ComponentEntry = {
   name: string;
@@ -8,11 +8,12 @@ export type ComponentEntry = {
   release: ComponentRelease;
 };
 
-export const RELEASES = ['v0', 'v0.1'] as const satisfies readonly ComponentRelease[];
+export const RELEASES = ['v0', 'v0.1', 'v0.2'] as const satisfies readonly ComponentRelease[];
 
 export const RELEASE_LABELS: Record<ComponentRelease, string> = {
   v0: 'The v0 set',
   'v0.1': 'The v0.1 set',
+  'v0.2': 'The v0.2 set',
 };
 
 export const components = [
@@ -207,6 +208,12 @@ export const components = [
     item: 'empty',
     description: 'A centered placeholder for a collection with nothing in it.',
     release: 'v0.1',
+  },
+  {
+    name: 'Breadcrumb',
+    item: 'breadcrumb',
+    description: 'A trail of links to the current page, with a swappable separator glyph.',
+    release: 'v0.2',
   },
 ] satisfies ComponentEntry[];
 

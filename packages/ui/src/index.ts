@@ -236,3 +236,11 @@ export {
   type EmptyDescriptionProps,
   type EmptyIconProps,
 } from './empty';
+export {
+  Breadcrumb,
+  type BreadcrumbRootProps,
+  type BreadcrumbListProps,
+  type BreadcrumbItemProps,
+  type BreadcrumbLinkProps,
+  type BreadcrumbSeparatorProps,
+} from './breadcrumb';

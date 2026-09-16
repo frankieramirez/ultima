@@ -22,7 +22,7 @@ export const pages = [
   { label: '--components', to: '/components' },
 ] satisfies NavLink[];
 
-/** Flat catalogue in release order: every v0 row, then every v0.1 row, derived from `release`. */
+/** Flat catalogue in release order: every set's rows in turn, derived from `release`. */
 export const componentPages: NavLink[] = RELEASES.flatMap((release) =>
   componentsInRelease(release).map(({ item }) => ({
     label: `--${item}`,
