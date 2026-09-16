@@ -22,6 +22,7 @@ export default defineConfig({
       '@base-ui/react/dialog',
       '@base-ui/react/menu',
       '@base-ui/react/meter',
+      '@base-ui/react/navigation-menu',
       '@base-ui/react/progress',
       '@base-ui/react/radio',
       '@base-ui/react/radio-group',

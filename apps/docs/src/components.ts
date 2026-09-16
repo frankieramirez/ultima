@@ -221,6 +221,12 @@ export const components = [
     description: 'A page window with truncation, disabled ends, and a pure function that computes the window.',
     release: 'v0.2',
   },
+  {
+    name: 'Navigation Menu',
+    item: 'navigation-menu',
+    description: 'A top-level navigation whose panels morph between one another, on two nav landmarks.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
