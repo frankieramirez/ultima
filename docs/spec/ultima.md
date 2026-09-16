@@ -831,11 +831,69 @@ The local-custom-property alternative, where `tone` sets `--ult-tone-fill` and o
 
 **How StyleX actually orders these**, measured on [Responsive styling in StyleX 0.19.0](https://linear.app/frankie-ramirez/issue/ULT-51) against this repo's installed compiler and written down here because both findings are already true of the components that shipped before Sidebar, and neither is in StyleX's documentation.
 
-Conditions in one property value do not compete on CSS specificity. Each becomes its own rule carrying a StyleX priority number, which is the property's priority plus a contribution per condition, and under `useCSSLayers` that number also picks the cascade layer (`Math.floor(priority / 1000)`). Equal priorities are broken by an alphabetical comparison of the rule text, which is not a rule anyone should rely on.
+Each condition in one property value becomes its own rule carrying a StyleX priority number: the property's priority plus a contribution per condition. Under `useCSSLayers`, that number also picks the cascade layer (`Math.floor(priority / 1000)`). Within a layer, CSS specificity still applies. StyleX sorts equal-priority rules by an alphabetical comparison of the rule text; source order decides only when the matching rules also tie on specificity. Do not rely on that alphabetical tiebreak.
 
 - **`':focus-visible'` sorts below `':hover'`, not above it.** StyleX's pseudo-class priority table spells two of its keys in camelCase, `':focusVisible': 160` and `':focusWithin': 140`, which are not CSS pseudo-class names. The real spellings miss the lookup and take the default contribution of 40, so `':focus-visible'` lands at 3040 rather than the documented 3160. Writing the camelCase form to reach 160 is not a workaround: it emits `:focusVisible` into the selector, which matches nothing. The practical order for the conditions Ultima writes is `:focus-visible`, `:focus-within`, and `:is([data-*])` tied at 3040, then `:hover` at 3130, then `:active` at 3170. Ultima's ring survives this only because it is an `outline` and the hover state sets background and color, so the two never contend for a property. A component that ever wants a focused appearance to beat a hovered one on the same property nests the focus condition inside the hover one rather than trusting the order.
 - **A transition cancelled with the `transition` shorthand silently never wins.** Measured in Chromium on [Can StyleX express Navigation Menu's size morph, and what does it cost at the emitted-CSS level](https://github.com/frankieramirez/ultima/issues/85). Base UI's own demos write `&[data-instant] { transition: none }`, which compiles to priority 2040 and therefore lands in an *earlier* cascade layer than the `transition-duration` longhand at 3000, so the cancel loses and the transition runs anyway — reported at `0.2s` with `data-instant` present. Written as `transitionDuration: { ':is([data-instant])': '0s' }` it compiles to 3040, the same layer as every other `:is([data-*])`, and reports `0s`. **Ultima writes the longhand, never the shorthand**, and this holds for every Base UI demo rule that cancels a transition rather than only for Navigation Menu's. `width`, `height`, and `max-width` sit at 4000, a later layer than all `transition-*` at 3000, which is why a size morph's dimensions are never in contention with its timing.
 - **A bare media query at 3200 outranks all of them, `:hover` included.** That is what the nesting rule above is protecting against, and it is why the rule is stated as nesting rather than as ordering: there is no order of sibling keys that makes a hover inside a breakpoint work.
+- **The current unplugin pipeline lowers `:dir(rtl)` to language matching.** Measured on [#118](https://github.com/frankieramirez/ultima/issues/118) with StyleX 0.19.0 and Lightning CSS 1.33.0. Babel preserves `':is([data-starting-style]:dir(rtl))'` at priority 3040, alongside the base state's 3040. Both land in the same cascade layer; the RTL selector has higher CSS specificity and wins even with source order reversed when native `:dir()` survives. Nesting `':dir(rtl)'` inside the state raises the StyleX priority to 3090, still in that layer. The failure happens afterward: `@stylexjs/unplugin` runs Lightning CSS with `browserslist()` targets, and this checkout's default query lowers both forms to a list of RTL `:lang()` selectors. Those selectors miss a page with `dir="rtl"` and no matching language. Chromium measured the candidate Sidebar popup at `translateX(-256px)` under that condition, despite the popup matching native `:dir(rtl)`. Modern Chrome-only targets preserve the selector, but changing browser targets or the consumer pipeline is outside this ticket. Sidebar keeps its physical mobile slide and narrows its RTL claim.
+
+<details>
+<summary>Reproduce #118's compiler measurement</summary>
+
+Run from the repository root after `pnpm install`. This uses the Babel options in `stylex.options.ts` and the same Lightning CSS target resolution as the unplugin:
+
+```sh
+node --input-type=module <<'JS'
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+import { stylexOptions } from './stylex.options.ts';
+const tokens = createRequire(resolve('packages/tokens/package.json'));
+const ui = createRequire(resolve('packages/ui/package.json'));
+const unplugin = createRequire(ui.resolve('@stylexjs/unplugin'));
+const { transformSync } = tokens('@babel/core');
+const plugin = tokens('@stylexjs/babel-plugin');
+const { transform, browserslistToTargets } = unplugin('lightningcss');
+const browserslist = unplugin('browserslist');
+const source = `import * as stylex from '@stylexjs/stylex';
+export const styles = stylex.create({ popup: { transform: {
+  default: 'translateX(0)',
+  ':is([data-starting-style])': 'translateX(-100%)',
+  ':is([data-starting-style]:dir(rtl))': 'translateX(100%)',
+  ':is([data-ending-style])': 'translateX(-100%)',
+  ':is([data-ending-style]:dir(rtl))': 'translateX(100%)'
+} } });`;
+const { metadata } = transformSync(source, {
+  filename: resolve('packages/ui/src/rtl-measure.js'),
+  babelrc: false, configFile: false,
+  plugins: [[plugin, stylexOptions({ dev: false })]]
+});
+for (const [, rule, priority] of metadata.stylex) console.log(priority, rule.ltr);
+const css = plugin.processStylexRules(metadata.stylex, { useLayers: true });
+console.log(css);
+for (const query of [undefined, 'last 2 chrome versions']) {
+  const { code } = transform({
+    filename: 'stylex.css', code: Buffer.from(css),
+    targets: browserslistToTargets(browserslist(query))
+  });
+  console.log(query ?? 'defaults', code.toString());
+}
+JS
+```
+
+The installed compiler emitted these rules, in this order inside `@layer priority1`:
+
+```css
+.xbryuvx{transform:translateX(0)}
+.x11l5x2q:is([data-ending-style]){transform:translateX(-100%)}
+.xni10eo:is([data-starting-style]){transform:translateX(-100%)}
+.x1sps7nv:is([data-starting-style]:dir(rtl)){transform:translateX(100%)}
+.x1vs1xg5:is([data-ending-style]:dir(rtl)){transform:translateX(100%)}
+```
+
+The default rule has priority 3000; all four state rules have priority 3040. Lightning CSS then replaces `:dir(rtl)` in both RTL rules with `:is(:lang(ae), :lang(ar), :lang(arc), :lang(bcc), :lang(bqi), :lang(ckb), :lang(dv), :lang(fa), :lang(glk), :lang(he), :lang(ku), :lang(mzn), :lang(nqo), :lang(pnb), :lang(ps), :lang(sd), :lang(ug), :lang(ur), :lang(yi))` for the default targets. The Chrome-only run keeps `:dir(rtl)`. Browser targets can change as Browserslist data updates; this records the installed versions on 2026-09-16.
+
+</details>
 
 ### Tokens in component code
 
@@ -1065,7 +1123,7 @@ Three tickets settled this component and a builder needs all three at once: [Sid
 **Parts and styling.** Every part is plain and rendered through `useRender`, so each takes `render`.
 
 - `Root` is a `<div>` that provides context and groups. It sets no layout, so the page owns where the panel and the content sit. It also always renders a `Dialog.Root` bound to the mobile state, described under Mobile menu.
-- `Panel` is the `<nav>` landmark and the scroll container: `--ult-color-surface`, an inline-end hairline `--ult-color-border`, `inline-size: calc(4 * space step 12)` (16rem) written as a `calc` of the token, padding from space step 4, `overflow: auto`, and `data-open` / `data-closed` from the root's state. Closed on desktop is offcanvas rather than an icon rail, because the docs navigation is text: `inline-size: 0`, `overflow: hidden`, `visibility: hidden`, transitioning `inline-size` over `--ult-motion-base`. Width changes through the `style` slot, since `inline-size` is an ordinary property; shadcn's caller-set custom property cannot exist here and is not missed. The panel sits at the inline start and uses logical properties throughout, so there is no `side` prop and RTL follows.
+- `Panel` is the `<nav>` landmark and the scroll container: `--ult-color-surface`, an inline-end hairline `--ult-color-border`, `inline-size: calc(4 * space step 12)` (16rem) written as a `calc` of the token, padding from space step 4, `overflow: auto`, and `data-open` / `data-closed` from the root's state. Closed on desktop is offcanvas rather than an icon rail, because the docs navigation is text: `inline-size: 0`, `overflow: hidden`, `visibility: hidden`, transitioning `inline-size` over `--ult-motion-base`. Width changes through the `style` slot, since `inline-size` is an ordinary property; shadcn's caller-set custom property cannot exist here and is not missed. The panel sits at the inline start and uses logical properties throughout, so there is no `side` prop and the inline panel follows RTL; the mobile slide does not, measured on [#118](https://github.com/frankieramirez/ultima/issues/118) and stated under State styling.
 - `Trigger` is a wrapper trigger handed the consumer's Button. `render={<Button variant="ghost" aria-label="Toggle navigation" />}` is the canonical example. One part serves both the desktop collapse control and the mobile menu control, and what it wires depends on which side of the breakpoint it is on: on desktop it sets `onClick` to `toggle`, `aria-expanded`, and `aria-controls` to the panel's id itself; below the breakpoint it renders as `Dialog.Trigger` and Base UI sets all of that. See Mobile menu below.
 - `Close` is a wrapper trigger too, documented as `render={<Button variant="ghost" aria-label="Close navigation" />}`. It exists for the mobile menu and returns null above the breakpoint.
 - `Group` sets spacing only. `GroupLabel` is a real heading, `<h3>` by default and changeable through `render` like `Card.Title`, styled as `Meter.Label`: text step 2, uppercase, `--ult-font-tracking-wide`, `--ult-color-text-subtle`.
@@ -1101,7 +1159,7 @@ The overrides are private `style` values in `sidebar.tsx`, so Dialog itself is u
 - `Viewport` becomes `display: flex`, `justify-content: flex-start`, no padding.
 - `Popup` becomes `inline-size: min(16rem, 100%)`, `block-size: 100%`, no `max-width`, `border-radius: 0`, an inline-end hairline only, and no padding, keeping the overlay surface and shadow.
 - `Panel` keeps `min(16rem, 100%)` in both layouts.
-- The transition is a slide from the inline start: `transform: translateX(-100%)` on `[data-starting-style]` and `[data-ending-style]`, `translateX(0)` at rest, over `--ult-motion-base` with the enter and exit easings, the same duration as the desktop collapse. Dialog's opacity fade stays beneath it. The override redeclares `transform` for all three states and `transitionProperty`, and nothing else, because a state left unnamed keeps Dialog's `scale(0.98)`. Backdrop is Dialog's, untouched.
+- The transition slides from the physical left of the resting position (the inline start in LTR): `transform: translateX(-100%)` on `[data-starting-style]` and `[data-ending-style]`, `translateX(0)` at rest, over `--ult-motion-base` with the enter and exit easings, the same duration as the desktop collapse. Dialog's opacity fade stays beneath it. The override redeclares `transform` for all three states and `transitionProperty`, and nothing else, because a state left unnamed keeps Dialog's `scale(0.98)`. Backdrop is Dialog's, untouched. The slide is physical and does not mirror under RTL: `justify-content` follows `direction` and `translateX` does not, so a right-to-left page slides from the wrong side. Measured on [#118](https://github.com/frankieramirez/ultima/issues/118); State styling records why the measured `:dir()` variants fail with the current pipeline.
 
 The popup takes the `aria-label` or `aria-labelledby` that `Panel` was given and renders no `Dialog.Title`, the one stated exception to the always-render-a-Title rule under the Accessibility contract. `Trigger` renders as `Dialog.Trigger` below the breakpoint, so Base UI owns `aria-expanded`, `aria-controls`, `aria-haspopup`, and focus return to the trigger; on desktop it is the plain button wired to `toggle`. `Close` renders as `Dialog.Close`. `modal` stays the default and `keepMounted` is never set, so scroll lock, Escape, and backdrop dismissal come with the primitive.
 
