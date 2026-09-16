@@ -58,6 +58,8 @@ The `docs` field on each setup item prints a short list at install. This page is
 }
 ```
 
+**Only if you follow the Data Table recipe.** `@tanstack/react-table` v9 is ESM-only. It ships no CJS and no UMD build and declares `engines.node >= 20`, so a toolchain that `require()`s it cannot load it: a CJS config path, or a test runner without ESM support. Nothing else Ultima documents asks this of you, and Ultima does not pin the last dual-published major to buy CJS back — it is more than a year old, and a toolchain that cannot resolve ESM cannot compile StyleX either.
+
 ## Tokens without StyleX
 
 Components need a StyleX compiler. Tokens do not.

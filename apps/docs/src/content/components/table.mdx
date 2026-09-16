@@ -5,6 +5,8 @@ import HorizontalScroll from '../../demos/table/horizontal-scroll';
 import horizontalScrollSource from '../../demos/table/horizontal-scroll?raw';
 import SortableHeader from '../../demos/table/sortable-header';
 import sortableHeaderSource from '../../demos/table/sortable-header?raw';
+import DataTableSorting from '../../demos/table/data-table-sorting';
+import dataTableSortingSource from '../../demos/table/data-table-sorting?raw';
 
 # Table
 
@@ -43,6 +45,24 @@ Give a `Table.HeadCell` a `sort` of `ascending`, `descending`, or `none` and it 
 Sorting the rows is not Ultima's. Both parts are presentational: the cell announces the state you hand it and the button is a slot. The Data Table recipe is where the row model lives.
 
 <Demo component={SortableHeader} source={sortableHeaderSource} />
+
+## Data Table
+
+Data Table is a recipe, not a component: there is nothing to install from Ultima beyond the parts above. The row model is [TanStack Table](https://tanstack.com/table) v9, and it is your dependency.
+
+```bash
+npm install @tanstack/react-table
+```
+
+That package is ESM-only and declares `engines.node >= 20`, so a toolchain that `require()`s it cannot load it. The [long form is on the install page](/install#steps-you-still-do-by-hand). No file in `@ultima/ui` imports the engine, so no registry item declares it and nothing arrives with `@ultima/table`.
+
+Component dependencies: `table`, `button`.
+
+Register features per example. v9 computes the table's type from `tableFeatures()`, so the APIs of a feature you did not register do not exist — sorting registers `rowSortingFeature`, its row model, and the sorting functions its columns use, and nothing else. Read the engine's sort state onto the cell with `sort` and put the control inside it with `SortButton`; the arrow direction a number column opens with is the engine's default, not Ultima's.
+
+The announcement is the third obligation, and it is yours. A sort moves rows silently: the `aria-sort` change speaks only while focus is on the button that changed it. Mount a `role="status" aria-atomic="true"` region empty, clip-hide it rather than setting `display: none`, and write the new order into it. Two columns can land the same rows in the same order, and identical consecutive text is not a change, so a repeat appends a Word Joiner. The text is application-specific, which is why no part and no shared announcer ships it.
+
+<Demo component={DataTableSorting} source={dataTableSortingSource} />
 
 ## Props
 
