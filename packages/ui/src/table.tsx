@@ -52,12 +52,15 @@ const styles = stylex.create({
   },
 });
 
+type TableSort = 'ascending' | 'descending' | 'none';
+
 type TableScrollProps = PlainProps<'div'>;
 type TableRootProps = PartProps<useRender.ComponentProps<'table'>>;
 type TableHeadProps = PlainProps<'thead'>;
 type TableBodyProps = PlainProps<'tbody'>;
 type TableRowProps = PlainProps<'tr'>;
-type TableHeadCellProps = PlainProps<'th'>;
+type TableHeadCellProps = PartProps<useRender.ComponentProps<'th'>> & { sort?: TableSort };
+type TableSortButtonProps = PartProps<useRender.ComponentProps<'button'>>;
 type TableCellProps = PlainProps<'td'>;
 type TableCaptionProps = PlainProps<'caption'>;
 
@@ -82,8 +85,27 @@ function Row({ style, ...props }: TableRowProps) {
   return <tr {...props} {...stylex.props(styles.row, style)} />;
 }
 
-function HeadCell({ scope = 'col', style, ...props }: TableHeadCellProps) {
-  return <th scope={scope} {...props} {...stylex.props(styles.headCell, style)} />;
+function HeadCell({ ref, render, scope = 'col', sort, style, ...props }: TableHeadCellProps) {
+  return useRender({
+    defaultTagName: 'th',
+    ref,
+    render,
+    state: { sort },
+    stateAttributesMapping: {
+      sort: (value: TableSort | undefined): Record<string, string> | null =>
+        value ? { 'aria-sort': value, 'data-sort': value } : null,
+    },
+    props: { scope, ...props, ...stylex.props(styles.headCell, style) },
+  });
+}
+
+function SortButton({ ref, render, style, ...props }: TableSortButtonProps) {
+  return useRender({
+    defaultTagName: 'button',
+    ref,
+    render,
+    props: { type: 'button', ...props, ...stylex.props(style) },
+  });
 }
 
 function Cell({ style, ...props }: TableCellProps) {
@@ -94,7 +116,7 @@ function Caption({ style, ...props }: TableCaptionProps) {
   return <caption {...props} {...stylex.props(styles.caption, style)} />;
 }
 
-const Table = { Scroll, Root, Head, Body, Row, HeadCell, Cell, Caption };
+const Table = { Scroll, Root, Head, Body, Row, HeadCell, SortButton, Cell, Caption };
 
 export {
   Table,
@@ -104,6 +126,8 @@ export {
   type TableBodyProps,
   type TableRowProps,
   type TableHeadCellProps,
+  type TableSortButtonProps,
   type TableCellProps,
   type TableCaptionProps,
+  type TableSort,
 };

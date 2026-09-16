@@ -20,8 +20,10 @@ export {
   type TableBodyProps,
   type TableRowProps,
   type TableHeadCellProps,
+  type TableSortButtonProps,
   type TableCellProps,
   type TableCaptionProps,
+  type TableSort,
 } from './table';
 export {
   DropdownMenu,

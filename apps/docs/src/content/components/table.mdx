@@ -3,16 +3,24 @@ import Report from '../../demos/table/report';
 import reportSource from '../../demos/table/report?raw';
 import HorizontalScroll from '../../demos/table/horizontal-scroll';
 import horizontalScrollSource from '../../demos/table/horizontal-scroll?raw';
+import SortableHeader from '../../demos/table/sortable-header';
+import sortableHeaderSource from '../../demos/table/sortable-header?raw';
 
 # Table
 
-A data table built from seven native table parts, with an optional caption and an optional scroll region.
+A data table built from native table parts, with an optional caption, an optional scroll region, and a sortable column header.
 
 ## Install
 
 ```bash
 npx shadcn add @ultima/table
 ```
+
+## Anatomy
+
+`Root` is the `table`. `Head`, `Body`, `Row`, `HeadCell`, and `Cell` are the `thead`, `tbody`, `tr`, `th`, and `td` inside it. `Caption` names the table, and `Scroll` is the optional region around it.
+
+`HeadCell` also takes a `sort`, and `SortButton` is the control that sits inside it. Those two arrived in v0.2 for the Data Table recipe; the other eight parts are v0.
 
 ## Report table
 
@@ -26,6 +34,16 @@ Wrap a table wider than its column in `Table.Scroll`. It is a focusable region, 
 
 <Demo component={HorizontalScroll} source={horizontalScrollSource} />
 
+## Sortable columns
+
+Give a `Table.HeadCell` a `sort` of `ascending`, `descending`, or `none` and it emits both `aria-sort`, which a screen reader announces, and `data-sort`, which your CSS can read. A head cell with no `sort` emits neither, so only the columns a reader can actually sort advertise one.
+
+`Table.SortButton` is the control inside the cell, and it ships no styles at all: hand it your own button through `render`, the way you would `Dialog.Trigger`. `render={<Button variant="ghost" />}` is the canonical fill, and the focus ring a keyboard user sees is that Button's. The glyph is yours too. The demo's caret turns on `data-sort` and takes its value from the same place the cell does, so the arrow and the announcement cannot disagree.
+
+Sorting the rows is not Ultima's. Both parts are presentational: the cell announces the state you hand it and the button is a slot. The Data Table recipe is where the row model lives.
+
+<Demo component={SortableHeader} source={sortableHeaderSource} />
+
 ## Props
 
 Only what Ultima adds. The parts otherwise accept the corresponding [native table element props](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table).
@@ -36,10 +54,13 @@ Only what Ultima adds. The parts otherwise accept the corresponding [native tabl
 | `Root` | `render` | `ReactElement \| function` | — | Changes the root from its default `table`. |
 | `Scroll` | `aria-labelledby` | `string` | — | The `Table.Caption` id, which names the region. |
 | `HeadCell` | `scope` | `'col' \| 'row' \| 'colgroup' \| 'rowgroup'` | `'col'` | Override with `row` for row headers. |
+| `HeadCell` | `sort` | `'ascending' \| 'descending' \| 'none'` | — | v0.2. Emits `aria-sort` and `data-sort`; omitted, it emits neither. |
+| `HeadCell` | `render` | `ReactElement \| function` | — | Changes the cell from its default `th`. |
+| `SortButton` | `render` | `ReactElement \| function` | — | v0.2. The slot for your own button. Unstyled, so what you render carries the reset and the ring. |
 
 ## Accessibility
 
 - **Elements.** Native `table`, `thead`, `tbody`, `tr`, `th`, `td`, and `caption` parts, plus `Table.Scroll` as a `div` with `role="region"`.
 - **Name.** `Table.Caption` is optional and names the table when present. It names `Table.Scroll` too, through `aria-labelledby`.
-- **Headers.** `Table.HeadCell` defaults to `scope="col"`; override it for a row header.
-- **Focus and keyboard.** The table itself is static. `Table.Scroll` is the only part that enters the tab order, and it takes the focus ring; without it nothing inside a table is focusable.
+- **Headers.** `Table.HeadCell` defaults to `scope="col"`; override it for a row header. Its `sort` emits `aria-sort` on the same `th`, which is where a screen reader looks for it.
+- **Focus and keyboard.** The table itself is static. `Table.Scroll` is the only part that enters the tab order, and it takes the focus ring; without it nothing inside a table is focusable. `Table.SortButton` is a wrapper trigger, so the element you render into it must carry its own focus ring: an Ultima `Button` does.
