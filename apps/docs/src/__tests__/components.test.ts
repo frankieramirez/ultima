@@ -43,6 +43,7 @@ test('the component catalogue exposes the v0, v0.1, and v0.2 sets in specificati
     'spinner',
     'empty',
     'breadcrumb',
+    'pagination',
   ]);
 });
 
@@ -84,7 +85,7 @@ test('every catalogue entry carries a release, and the menu derives from that fi
     'spinner',
     'empty',
   ]);
-  expect(componentsInRelease('v0.2').map(({ item }) => item)).toEqual(['breadcrumb']);
+  expect(componentsInRelease('v0.2').map(({ item }) => item)).toEqual(['breadcrumb', 'pagination']);
   expect(RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item))).toEqual(
     components.map(({ item }) => item),
   );
