@@ -1,0 +1,65 @@
+import { Demo } from '../../demo';
+import Menu from '../../demos/navigation-menu/menu';
+import menuSource from '../../demos/navigation-menu/menu?raw';
+import VerticalMenu from '../../demos/navigation-menu/vertical';
+import verticalSource from '../../demos/navigation-menu/vertical?raw';
+import ReplacedGlyph from '../../demos/navigation-menu/glyph';
+import replacedGlyphSource from '../../demos/navigation-menu/glyph?raw';
+
+# Navigation Menu
+
+A top-level navigation with panels that morph between one another. Thirteen parts on Base UI's `NavigationMenu`, no axes, and one glyph.
+
+## Install
+
+```bash
+npx shadcn add @ultima/navigation-menu
+```
+
+## The menu
+
+`Root` is the outer `nav`. `List` holds an `Item` per section, each with a `Trigger` and the `Content` that trigger opens. The floating side is one `Portal` for the whole menu rather than one per item: `Positioner` anchors it, `Popup` is the surface, and `Viewport` is where the active `Content` is portalled to.
+
+Open one panel and then hover or arrow to its neighbour. The popup resizes to the new panel rather than closing and reopening, and the panel slides in from the side you came from.
+
+<Demo component={Menu} source={menuSource} />
+
+## A vertical menu
+
+`orientation="vertical"` is Base UI's pass-through and not an [axis](/#axes). It changes which arrow keys move between triggers and which one opens a panel: `ArrowDown` opens a horizontal menu, and `ArrowRight` or `ArrowLeft` opens a vertical one depending on the reading direction. Lay the `List` out to match through the style slot, and anchor the `Positioner` to the side.
+
+<Demo component={VerticalMenu} source={verticalSource} />
+
+## The glyph
+
+`Icon` renders Ultima's chevron and takes `children` as a replacement, the same override every glyph slot in Ultima takes. It replaces a default rather than filling a blank: Base UI ships a `▼` text character there.
+
+It does not rotate when the panel opens. The `Trigger` already carries `data-popup-open` and paints with it, and the popup is running a size morph, a position transition, and a directional slide at once — a fourth transition to keep in step with those buys nothing.
+
+<Demo component={ReplacedGlyph} source={replacedGlyphSource} />
+
+## What you keep
+
+- **Both landmarks are `nav` elements, and naming the second instance is yours.** `Root` is a `nav` at the top level and a `div` when nested, so Ultima names it in prose rather than in the types: a type cannot see nesting and would force a meaningless attribute onto a nested menu. Give `Root` an `aria-label` or an `aria-labelledby`. `Popup` is a second `nav` and defaults to `aria-label="Submenu"`, emitted only when you supplied neither, so passing either replaces the default rather than competing with it. Two menus on one page need two names.
+- **Two global rules come with portalling.** `isolation: isolate` on your app root and `body { position: relative }` for iOS 26 Safari, the same two every portalling Ultima component asks for.
+- **A `Content` panel is laid out by you.** Ultima gives it padding and the enter and exit motion. Columns, headings, and featured cards inside it are yours.
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept their [Base UI props](https://base-ui.com/react/components/navigation-menu).
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Popup` | `aria-label` | `string` | `"Submenu"` | The default is emitted only when you supplied neither `aria-label` nor `aria-labelledby`. |
+| `Icon` | `children` | `ReactNode` | the chevron | Replaces the built-in glyph. |
+| `Link` | `active` | `boolean` | `false` | Base UI's own prop. Emits `aria-current="page"` with `data-active=""`, and paints the current page. |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+
+## Accessibility
+
+- **Elements.** `nav` on `Root`, or `div` when it is nested inside another menu. `ul` on `List`, `li` on `Item`, `button` on `Trigger`, `a` on `Link`, and a second `nav` with `tabindex="-1"` on `Popup`.
+- **Name.** Yours on `Root`. `aria-label="Submenu"` on `Popup` unless you named it. Each `Trigger` by its own text.
+- **Focus ring.** On `Trigger` and on `Link`. `Popup` renders none: Base UI focuses it only as a fallback container, and the panel itself is the visible signal.
+- **Keyboard.** Base UI's. Arrows move between triggers, `ArrowDown` opens a horizontal menu, `ArrowRight` and `ArrowLeft` open a vertical one by reading direction, and `Escape` or a press outside dismisses. Focus returns to the trigger on close, except when the close came from hover, an outside press, or focus leaving the menu.
+- **Every trigger stays in the tab order.** `tabindex="0"` is applied after the composite's roving `-1`, so roving does not govern tabbing here. If you have come from [Toolbar](https://base-ui.com/react/components/toolbar) or [Toggle Group](/components/toggle-group), this is the opposite of what those do.
+- **The current link.** `active` emits `aria-current="page"` alongside `data-active=""`, and the current style matches either. A router link that sets `aria-current` itself is styled with no prop. It is `"page"` and never `"true"`.

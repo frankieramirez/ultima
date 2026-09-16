@@ -255,3 +255,19 @@ export {
   type PaginationNextProps,
   type PaginationEllipsisProps,
 } from './pagination';
+export {
+  NavigationMenu,
+  type NavigationMenuRootProps,
+  type NavigationMenuListProps,
+  type NavigationMenuItemProps,
+  type NavigationMenuTriggerProps,
+  type NavigationMenuIconProps,
+  type NavigationMenuContentProps,
+  type NavigationMenuPortalProps,
+  type NavigationMenuPositionerProps,
+  type NavigationMenuPopupProps,
+  type NavigationMenuViewportProps,
+  type NavigationMenuBackdropProps,
+  type NavigationMenuArrowProps,
+  type NavigationMenuLinkProps,
+} from './navigation-menu';

@@ -20,8 +20,12 @@ export function themeDocument(mode: (typeof themes)[number]) {
  * the document reports axe's region rule against the fixture rather than against the
  * component. Those callers pass their popup; axe still resolves a contrast against the real
  * painted ancestors above it. A modal popup needs no target: everything outside it is inert.
+ *
+ * A context object rather than an element is for a primitive that renders its own focus guards
+ * inside the part under test, which axe reports as `aria-hidden-focus` and which are not
+ * Ultima's to fix. Navigation Menu's Viewport is the only one.
  */
-export async function violations(target: Element = document.body): Promise<string[]> {
+export async function violations(target: axe.ElementContext = document.body): Promise<string[]> {
   const results = await axe.run(target);
   return results.violations.map((violation) => `${violation.id}: ${violation.nodes.map((node) => node.html).join(', ')}`);
 }
