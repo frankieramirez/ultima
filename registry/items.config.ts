@@ -182,6 +182,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A collapsible navigation panel with groups, nested lists, and an active-page indication.',
     docs: "import { Button } from '@/components/ui/button';\nimport { Sidebar, useSidebar } from '@/components/ui/sidebar';\n\n<Sidebar.Root>\n  <Sidebar.Trigger render={<Button variant=\"ghost\" aria-label=\"Toggle navigation\" />} />\n  <Sidebar.Panel aria-label=\"Main\">\n    <Sidebar.Group>\n      <Sidebar.GroupLabel>Reference</Sidebar.GroupLabel>\n      <Sidebar.List>\n        <Sidebar.Item>\n          <Sidebar.Link href=\"/tokens\" active>Tokens</Sidebar.Link>\n        </Sidebar.Item>\n      </Sidebar.List>\n    </Sidebar.Group>\n  </Sidebar.Panel>\n</Sidebar.Root>",
   },
+  breadcrumb: {
+    title: 'Breadcrumb',
+    description: 'A trail of links to the current page, with a swappable separator glyph.',
+    docs: "import { Breadcrumb } from '@/components/ui/breadcrumb';\n\n<Breadcrumb.Root>\n  <Breadcrumb.List>\n    <Breadcrumb.Item>\n      <Breadcrumb.Link href=\"/\">Home</Breadcrumb.Link>\n    </Breadcrumb.Item>\n    <Breadcrumb.Separator />\n    <Breadcrumb.Item>\n      <Breadcrumb.Link href=\"/settings\" active>Settings</Breadcrumb.Link>\n    </Breadcrumb.Item>\n  </Breadcrumb.List>\n</Breadcrumb.Root>\n\nRoot carries aria-label=\"Breadcrumb\" unless you name it yourself. A second trail on one page needs its own name.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:

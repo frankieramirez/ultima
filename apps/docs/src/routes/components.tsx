@@ -38,7 +38,7 @@ const styles = stylex.create({
 
 export function ComponentsPage() {
   return (
-    <Page title="Components" lede="The catalogue, sectioned by release: the v0 set, then v0.1.">
+    <Page title="Components" lede="The catalogue, sectioned by release, oldest set first.">
       {RELEASES.map((release) => {
         const entries = componentsInRelease(release);
         return (

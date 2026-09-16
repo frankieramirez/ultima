@@ -1295,7 +1295,7 @@ Decided on [Docs site scope](https://linear.app/frankie-ramirez/issue/ULT-14). T
 | `/install` | The canonical long-form install per target, with the reasoning |
 | `/tokens` | Every semantic token by group, live swatches in both modes, the tokens CSS export, and the APCA readout per semantic pairing |
 | `/palette` | The six scales, twelve steps, dark and light values, the step convention, and the WCAG gate results |
-| `/components` | Index of the catalogue, sectioned v0 then v0.1 |
+| `/components` | Index of the catalogue, sectioned v0, then v0.1, then v0.2 |
 | `/components/<name>` | One page per catalogue component |
 | `/rationale` | Why StyleX, why Base UI, why registry-first, why dark-first. Links the ADRs |
 

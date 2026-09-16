@@ -6,6 +6,7 @@ import type { ComponentType } from 'react';
 import AlertContent from './content/components/alert.mdx';
 import AlertDialogContent from './content/components/alert-dialog.mdx';
 import BadgeContent from './content/components/badge.mdx';
+import BreadcrumbContent from './content/components/breadcrumb.mdx';
 import ButtonContent from './content/components/button.mdx';
 import CardContent from './content/components/card.mdx';
 import CheckboxContent from './content/components/checkbox.mdx';
@@ -103,6 +104,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   alert: AlertContent,
   'alert-dialog': AlertDialogContent,
   badge: BadgeContent,
+  breadcrumb: BreadcrumbContent,
   button: ButtonContent,
   card: CardContent,
   checkbox: CheckboxContent,

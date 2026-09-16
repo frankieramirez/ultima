@@ -8,7 +8,7 @@ const NOT_A_COMPONENT = ['tokens', 'lib', 'setup-vite', 'setup-next', 'tokens-cs
 const pages = import.meta.glob('../content/components/*.mdx');
 const demos = import.meta.glob('../demos/*/*.tsx');
 
-test('the component catalogue exposes the v0 and v0.1 sets in specification order', () => {
+test('the component catalogue exposes the v0, v0.1, and v0.2 sets in specification order', () => {
   expect(components.map(({ item }) => item)).toEqual([
     'button',
     'badge',
@@ -42,11 +42,12 @@ test('the component catalogue exposes the v0 and v0.1 sets in specification orde
     'skeleton',
     'spinner',
     'empty',
+    'breadcrumb',
   ]);
 });
 
 test('every catalogue entry carries a release, and the menu derives from that field', () => {
-  expect(components.every((entry) => entry.release === 'v0' || entry.release === 'v0.1')).toBe(true);
+  expect(components.every((entry) => RELEASES.includes(entry.release))).toBe(true);
   expect(componentsInRelease('v0').map(({ item }) => item)).toEqual([
     'button',
     'badge',
@@ -83,6 +84,7 @@ test('every catalogue entry carries a release, and the menu derives from that fi
     'spinner',
     'empty',
   ]);
+  expect(componentsInRelease('v0.2').map(({ item }) => item)).toEqual(['breadcrumb']);
   expect(RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item))).toEqual(
     components.map(({ item }) => item),
   );
