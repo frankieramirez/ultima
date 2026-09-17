@@ -1,0 +1,72 @@
+import { Demo } from '../../demo';
+import Prose from '../../demos/hover-card/prose';
+import proseSource from '../../demos/hover-card/prose?raw';
+
+# Hover Card
+
+A preview of where a link goes, opened by hovering or focusing the link itself. Eight parts on Base UI's `PreviewCard`, no axes, and no glyph. It is the twelfth overlay and wears the same surface and transition as the other eleven.
+
+The item is `hover-card` while the primitive is `PreviewCard`, which is the name a consumer searches for. The subpath keeps the primitive's name: `hover-card.tsx` imports `@base-ui/react/preview-card`.
+
+## Install
+
+```bash
+npx shadcn add @ultima/hover-card
+```
+
+## A link in prose
+
+`Trigger` **is** the link. It renders the `<a>` itself with your `href` passed straight through, inline in your own paragraph, so it is not a slot for a control the way `Popover.Trigger` is. Ultima styles it, and it is the one part in the system that underlines.
+
+<Demo component={Prose} source={proseSource} />
+
+## The rule this component comes with
+
+**Everything in the card must also exist at the link's destination.** No other Ultima page asks for this, and it is not politeness.
+
+The card never opens on touch, so a phone reader only ever gets the link. A screen-reader user who Tabs to the link does open the card, but Base UI emits no association between the two at all: no `aria-expanded`, no `aria-controls`, no role on the popup. The content arrives as unlabelled text at the end of the document rather than as a panel belonging to that link. Nothing hides it either, so it cannot simply be ignored.
+
+WCAG 2.1.1 is what governs, and its requirement is that a keyboard user can perform comparable actions, not that every pointer gesture has a keyboard twin. The destination is what discharges it. **Anything that exists only in the card fails at Level A**, and duplicating the content is also what makes the orphaned text harmless rather than confusing.
+
+So a demo with `href="#"`, or a trigger that is not an anchor, demonstrates the failure rather than the pattern. Ultima does not enforce this in the types: `render` is open on every Base UI part for your router's link, so a required `href` would either forbid `render` or be met by a dummy whenever it is used. The rule is that the content lives at another URL, which no type can express.
+
+## What you keep
+
+- **`Trigger` is styled, and it underlines.** Every other link Ultima ships sits in chrome, where a hover ground or a button shape carries the linkness. This one sits in your prose, which supplies none, so it takes an underline, an offset, a small radius so the ring fits an inline box, and the standard focus ring. It sets `color: inherit`, so it takes the colour of the paragraph around it rather than asserting `--ult-color-text` over a muted one.
+- **There is no `Title`, no `Description`, and no `Close`.** Popover has all three. A hover card has none: it is dismissed by leaving it or by Escape, and its content is yours to lay out inside `Popup`.
+- **`delay` and `closeDelay` are `Trigger` props**, defaulting to 600 and 300. Ultima sets neither. They are not `Root`'s, which is a change Base UI made in `v1.0.0-beta.5`.
+- **`Backdrop` is an inert styling hook, not a click-catcher.** Base UI hard-codes `pointer-events: none` on it, so it cannot receive a click and dismissal comes from document-level listeners instead. It ships unstyled. `Root` is modal in no sense: no focus trap, no scroll lock, and nothing outside is hidden.
+- **`Popup` sets no `outline: none`,** the one place it departs from Popover's and Dialog's popups. `PreviewCard` mounts no focus manager, so although the popup carries `tabIndex="-1"` nothing ever focuses it and the declaration would be dead.
+- **`Viewport` is optional and carries one declaration.** Use it when several triggers share one card. It is `position: relative` and nothing else, which keeps the outgoing snapshot inside the popup instead of riding the page flow.
+- **`Handle` and `createHandle` pass through as values.** `HoverCard.createHandle()` builds one and `HoverCard.Handle` is its class. `Handle` is never rendered, so it is not a ninth part.
+- **Two global rules come with portalling.** `isolation: isolate` on your app root and `body { position: relative }` for iOS 26 Safari, the same two every portalling Ultima component asks for.
+
+## Hover Card, Tooltip, or Popover
+
+Base UI's own test is what the trigger is for, and there are three answers.
+
+| | The trigger | The popup |
+| --- | --- | --- |
+| [Tooltip](/components/tooltip) | Has no purpose of its own; the popup names it | One line, and it *is* the trigger's accessible name |
+| [Popover](/components/popover) | Exists to open the popup | A labelled `role="dialog"` |
+| Hover Card | Navigates somewhere | A panel previewing that destination |
+
+A hover card cannot be a Tooltip, and the reason is mechanical rather than a matter of taste: Tooltip's contract requires `aria-label` on its trigger matching the tooltip text, and a panel cannot be an `aria-label`.
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept their [Base UI props](https://base-ui.com/react/components/preview-card).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `href` | `string` | — | On `Trigger`, passed through to the `<a>`. Not required by the types, and required by the rule above. |
+| `delay` / `closeDelay` | `number` | `600` / `300` | On `Trigger`, not on `Root`. Ultima sets neither. |
+| `style` | `StyleXStyles` | — | Available on the styled Trigger, Positioner, Popup, Arrow, and Viewport parts; merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop, on every part. Use it on `Trigger` for your router's link; it carries no Ultima styles and does not collide. |
+
+## Accessibility
+
+- **Elements.** An `<a>` for `Trigger`, carrying only its own `id`. `Popup` is a `<div tabindex="-1">` with no role and no `id`. `Arrow` is `aria-hidden`, and `Backdrop` and `Positioner` are `role="presentation"`.
+- **Name.** None, deliberately. The trigger is a link named by its own text, and the popup has no role, so there is nothing to name. Ultima adds no ARIA the primitive does not emit, and naming the popup would mean giving it a role.
+- **Focus ring.** On `Trigger`, and it is Ultima's own rather than a caller's element. No other part shows one, because no other part is ever focused.
+- **Keyboard and pointer.** Base UI's. Hover opens it after 600ms for a mouse or pen only; `:focus-visible` opens it at the same delay; the pointer may travel from the link into the card without it closing; Escape and an outside press close it. **It never opens on touch.** Everything in the card must also be at the destination, which is the rule above.

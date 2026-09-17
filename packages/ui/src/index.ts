@@ -308,3 +308,14 @@ export {
   type ContextMenuSubmenuTriggerProps,
 } from './context-menu';
 export { Menubar, type MenubarProps, type MenubarOrientation } from './menubar';
+export {
+  HoverCard,
+  type HoverCardArrowProps,
+  type HoverCardBackdropProps,
+  type HoverCardPopupProps,
+  type HoverCardPortalProps,
+  type HoverCardPositionerProps,
+  type HoverCardRootProps,
+  type HoverCardTriggerProps,
+  type HoverCardViewportProps,
+} from './hover-card';
