@@ -202,6 +202,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'An anchored panel of rich content, opened from a control and dismissed without blocking the page.',
     docs: "import { Popover } from '@/components/ui/popover';\n\n<Popover.Root>\n  <Popover.Trigger render={<Button />}>Share</Popover.Trigger>\n  <Popover.Portal>\n    <Popover.Positioner sideOffset={8}>\n      <Popover.Popup>\n        <Popover.Arrow />\n        <Popover.Title>Share this report</Popover.Title>\n        <Popover.Description>Anyone with the link can read it.</Popover.Description>\n      </Popover.Popup>\n    </Popover.Positioner>\n  </Popover.Portal>\n</Popover.Root>\n\nTrigger and Close are unstyled slots: render an Ultima Button or an element with its own focus ring. Name the popup with Popover.Title, or with aria-label on Popup when it has no visible heading. openOnHover, delay, and closeDelay are Trigger props, not Root's.",
   },
+  'context-menu': {
+    title: 'Context Menu',
+    description: 'A menu opened by right click or long press, anchored to the pointer rather than to a control.',
+    docs: "import { ContextMenu } from '@/components/ui/context-menu';\n\n<ContextMenu.Root>\n  <ContextMenu.Trigger>Quarterly report</ContextMenu.Trigger>\n  <ContextMenu.Portal>\n    <ContextMenu.Backdrop />\n    <ContextMenu.Positioner>\n      <ContextMenu.Popup aria-label=\"Quarterly report\">\n        <ContextMenu.Item>Rename</ContextMenu.Item>\n        <ContextMenu.Separator />\n        <ContextMenu.Item>Archive</ContextMenu.Item>\n      </ContextMenu.Popup>\n    </ContextMenu.Positioner>\n  </ContextMenu.Portal>\n</ContextMenu.Root>\n\nTrigger is the region you right-click, wrapping your own content: no role, no ARIA, not focusable, and never a Button. Put the same actions on a visible control too, or a keyboard user cannot reach them. Name the popup with aria-label; a submenu popup is named by its SubmenuTrigger. Portalling needs isolation: isolate on your app root and body { position: relative } for iOS 26 Safari.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:

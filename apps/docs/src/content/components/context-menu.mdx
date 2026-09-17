@@ -1,0 +1,46 @@
+import { Demo } from '../../demo';
+import Actions from '../../demos/context-menu/actions';
+import actionsSource from '../../demos/context-menu/actions?raw';
+
+# Context Menu
+
+A menu opened by right click or long press, anchored to the pointer rather than to a control. Nineteen parts on Base UI's `ContextMenu`, no axes, and three glyphs. It is the eleventh overlay and wears the same surface and transition as the other eleven.
+
+## Install
+
+```bash
+npx shadcn add @ultima/context-menu
+```
+
+## A context menu, paired with a visible control
+
+`Trigger` is the region the user right-clicks. It wraps your own content, carries no styles and no ARIA, and is not focusable, so **the same actions also sit on a control a keyboard can reach** — here a [Dropdown Menu](/components/dropdown-menu) behind a button. That pairing is the pattern, not a nicety.
+
+<Demo component={Actions} source={actionsSource} />
+
+## What you keep
+
+- **The trigger is yours to dress.** Base UI sets one declaration on it, `-webkit-touch-callout: none`, and Ultima sets none. A visible affordance and `user-select: none` are yours: forcing them over arbitrary wrapped content would remove text selection you wanted. The demo above sets `user-select` and nothing else.
+- **It is always modal, and Base UI is what forces that.** There is no `modal` prop. While the menu is open, Base UI renders its own fixed backdrop that swallows outside clicks; that element is not a part and is not styleable. `ContextMenu.Backdrop` is the public one, an unstyled click-catcher, exactly as Dropdown Menu's is.
+- **The popup names itself or nothing does.** There is no trigger text to inherit, so a root popup takes `aria-label` from you. A submenu popup does not: Base UI names it from its `SubmenuTrigger`.
+- **`Arrow` is there for submenus.** A root popup anchors to the pointer with `arrowPadding` forced to `0`, so an arrow on it points at nothing and the demo renders none. A submenu popup anchors to its trigger like any other menu, and the part is styled so it renders correctly there.
+- **There is no `Viewport` and no `Handle`.** Dropdown Menu has all three; this namespace is nineteen parts where that one is twenty.
+- **The paint is Dropdown Menu's, written out here rather than imported.** Every behavior comes from `@base-ui/react/context-menu`, which hands back the same part objects unstyled, so importing `dropdown-menu` would carry appearance alone. The two files read the same tokens, so a palette or spacing change moves them together.
+- **Two global rules come with portalling.** `isolation: isolate` on your app root and `body { position: relative }` for iOS 26 Safari, the same two every portalling Ultima component asks for.
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept their [Base UI props](https://base-ui.com/react/components/context-menu).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `style` | `StyleXStyles` | — | Available on the styled Positioner, Popup, Arrow, Item, LinkItem, GroupLabel, Separator, CheckboxItem, CheckboxItemIndicator, RadioItem, RadioItemIndicator, and SubmenuTrigger parts; merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop, on every part. Trigger is a region wrapping your content, never a slot for a Button. |
+
+## Accessibility
+
+- **A context menu must never be the only way to reach its actions.** `ContextMenu.Trigger` emits no role and no `aria-*` attribute, is not focusable, and has no keyboard opener, so a keyboard-only or screen-reader user has no path to the menu at all. Every action it offers also belongs on a visible control, which is what the demo above shows.
+- **Elements.** `role="menu"` on `Popup`, with `menuitem`, `menuitemcheckbox`, and `menuitemradio` on the items. `Trigger` is a plain `<div>` with no role.
+- **Name.** `aria-label` on `Popup`, yours to supply. A submenu's popup is named by its `SubmenuTrigger` instead, which is why the attribute is documented rather than required by the types.
+- **Focus ring.** Nowhere. The trigger is not focusable and carries no Ultima styles; items show a highlighted background on `data-highlighted`, as Dropdown Menu's and Select's do.
+- **Keyboard.** Opening is pointer-only: a right click, or a 500ms long press on touch. Once open it is Base UI's — arrows loop, typeahead matches, Enter and Space activate, Escape closes, and Tab closes.
