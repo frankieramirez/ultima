@@ -1,0 +1,54 @@
+import { Demo } from '../../demo';
+import Document from '../../demos/menubar/document';
+import documentSource from '../../demos/menubar/document?raw';
+
+# Menubar
+
+A persistent bar of menu titles, in page flow rather than floating. Base UI ships the primitive as one container with no parts, so Ultima ships **one function and invents no part name**. It is not an overlay: it portals nothing and floats nothing. The overlays a menubar holds are the Dropdown Menu popups inside it.
+
+## Install
+
+```bash
+npx shadcn add @ultima/menubar
+```
+
+```bash
+npx shadcn add @ultima/dropdown-menu
+```
+
+**The second command is not optional.** A bar's contents must be Ultima's Dropdown Menu or the menus have no paint: `menubar` ships the bar and nothing else, and it declares no registry dependency because the menus are yours, not the item's. This is unlike a wrapper trigger's `render={<Button />}`, where your own element is genuinely permitted and the example only degrades.
+
+## A document menubar
+
+Four menus, each trigger a ghost `sm` Button, one of them with a submenu. Everything inside the bar is your own `DropdownMenu`.
+
+<Demo component={Document} source={documentSource} />
+
+## What you keep
+
+- **One component, no parts.** `@base-ui/react/menubar` exports a single `Menubar` and nothing else, so there is no `Menubar.Menu` or `Menubar.Content` to reach for. The menus are `DropdownMenu.Root` elements as children.
+- **A Dropdown Menu behaves differently inside a bar, and Base UI does all of it.** Each trigger becomes a `menuitem` in a roving tab stop, hover opens the next menu while any menu is open, focus returns to its trigger on close, popups default to `bottom` and `start`, and `modal` on an inner menu is ignored because the bar owns modality. You write none of that.
+- **The bar is sized to its triggers, and that is load-bearing.** `modal` defaults to `true`, so an open menu renders an internal backdrop whose click-through hole is cut from the bar's own `getBoundingClientRect()`. A full-width bar would make that hole a full-width strip where clicks neither dismiss the menu nor reach the page. For full-bleed chrome, set an inline size through `style` and accept that trade knowingly.
+- **No shadow.** Shadows earn their keep on the overlays, and a menubar is not one. It is raised chrome: a surface, a hairline border, and a radius that nests exactly around the `md` radius of its ghost triggers.
+- **`orientation` is a pass-through, not an axis.** It sets `flex-direction` from a two-value table and defaults to `horizontal`, exactly as Separator's does.
+- **`data-has-submenu-open` is yours through a selector.** Ultima styles nothing on it, and neither Ultima nor you can read it programmatically: Base UI's state function lives on `className`, which Ultima's `style` slot replaces. Style `':is([data-has-submenu-open])'` through the slot if you want it.
+
+## Props
+
+Only what Ultima adds or narrows. The bar otherwise accepts its [Base UI props](https://base-ui.com/react/components/menubar).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `aria-label` / `aria-labelledby` | `string` | — | **Required**, as one or the other. The types reject a bar with neither. |
+| `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Narrowed pass-through; sets `flex-direction` and Base UI's arrow-key axis. |
+| `style` | `StyleXStyles` | — | Merged last, so it wins per property. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+`modal`, `disabled`, and `loopFocus` pass through at Base UI's own defaults, which for `modal` is `true`.
+
+## Accessibility
+
+- **Name.** Required by the types, as `aria-label` or `aria-labelledby`. No child part can name the bar, because its children are Menu roots. This is the third type-enforced attribute in Ultima, after `Tooltip.Trigger` and `Sidebar.Panel`, and the reason is that the pattern demands a name with no opt-out while no automated check would ever flag a missing one: axe-core has no menubar rule.
+- **Elements.** A `<div role="menubar">` with `aria-orientation` always emitted, including the redundant default.
+- **Focus ring.** Nowhere on the bar. The ring is whatever you render into each trigger, which is the same rule every wrapper trigger follows — an Ultima Button, or an element carrying its own ring.
+- **Keyboard.** Base UI's. One tab stop for the whole bar; Arrow Right and Left, or Down and Up by orientation, move between triggers; Home and End jump to the ends; the movement loops. There is no typeahead across triggers, and Tab leaves the bar rather than closing a menu.

@@ -207,6 +207,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A menu opened by right click or long press, anchored to the pointer rather than to a control.',
     docs: "import { ContextMenu } from '@/components/ui/context-menu';\n\n<ContextMenu.Root>\n  <ContextMenu.Trigger>Quarterly report</ContextMenu.Trigger>\n  <ContextMenu.Portal>\n    <ContextMenu.Backdrop />\n    <ContextMenu.Positioner>\n      <ContextMenu.Popup aria-label=\"Quarterly report\">\n        <ContextMenu.Item>Rename</ContextMenu.Item>\n        <ContextMenu.Separator />\n        <ContextMenu.Item>Archive</ContextMenu.Item>\n      </ContextMenu.Popup>\n    </ContextMenu.Positioner>\n  </ContextMenu.Portal>\n</ContextMenu.Root>\n\nTrigger is the region you right-click, wrapping your own content: no role, no ARIA, not focusable, and never a Button. Put the same actions on a visible control too, or a keyboard user cannot reach them. Name the popup with aria-label; a submenu popup is named by its SubmenuTrigger. Portalling needs isolation: isolate on your app root and body { position: relative } for iOS 26 Safari.",
   },
+  menubar: {
+    title: 'Menubar',
+    description: 'A persistent bar of menu titles, holding your own Dropdown Menus and sized to its triggers.',
+    docs: "import { Menubar } from '@/components/ui/menubar';\n\n<Menubar aria-label=\"Document\">\n  <DropdownMenu.Root>\n    <DropdownMenu.Trigger render={<Button variant=\"ghost\" size=\"sm\" />}>File</DropdownMenu.Trigger>\n    <DropdownMenu.Portal>\n      <DropdownMenu.Positioner>\n        <DropdownMenu.Popup>\n          <DropdownMenu.Item>New</DropdownMenu.Item>\n        </DropdownMenu.Popup>\n      </DropdownMenu.Positioner>\n    </DropdownMenu.Portal>\n  </DropdownMenu.Root>\n</Menubar>\n\nThe menus are yours: install @ultima/dropdown-menu alongside this, because the bar declares no dependency on it and ships none of its paint. One component, no parts. The accessible name is required by the types, as aria-label or aria-labelledby. The bar is sized to its triggers, since a modal menu cuts its backdrop hole from that box; set an inline size through style for full-bleed chrome.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:
