@@ -15,6 +15,7 @@ import CollapsibleContent from './content/components/collapsible.mdx';
 import ComboboxContent from './content/components/combobox.mdx';
 import ContextMenuContent from './content/components/context-menu.mdx';
 import DialogContent from './content/components/dialog.mdx';
+import DrawerContent from './content/components/drawer.mdx';
 import DropdownMenuContent from './content/components/dropdown-menu.mdx';
 import EmptyContent from './content/components/empty.mdx';
 import FieldContent from './content/components/field.mdx';
@@ -119,6 +120,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   combobox: ComboboxContent,
   'context-menu': ContextMenuContent,
   dialog: DialogContent,
+  drawer: DrawerContent,
   'dropdown-menu': DropdownMenuContent,
   empty: EmptyContent,
   field: FieldContent,

@@ -319,3 +319,21 @@ export {
   type HoverCardTriggerProps,
   type HoverCardViewportProps,
 } from './hover-card';
+export {
+  Drawer,
+  type DrawerRootProps,
+  type DrawerProviderProps,
+  type DrawerTriggerProps,
+  type DrawerPortalProps,
+  type DrawerBackdropProps,
+  type DrawerViewportProps,
+  type DrawerPopupProps,
+  type DrawerContentProps,
+  type DrawerTitleProps,
+  type DrawerDescriptionProps,
+  type DrawerCloseProps,
+  type DrawerIndentProps,
+  type DrawerIndentBackgroundProps,
+  type DrawerSwipeAreaProps,
+  type DrawerVirtualKeyboardProviderProps,
+} from './drawer';

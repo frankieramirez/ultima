@@ -35,13 +35,19 @@ function escapeForRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+const DETAILS_APPENDIX = /^<details>[\s\S]*?^<\/details>[^\n]*\n?/gm;
+
 function section(spec: string, heading: string): string {
   const found = new RegExp(`^(#{2,4}) ${escapeForRegExp(heading)}\\s*$`, 'm').exec(spec);
   if (!found) throw new Error(`docs/spec/ultima.md has no heading "${heading}"`);
   const level = (found[1] as string).length;
   const body = spec.slice(found.index + found[0].length);
   const sameOrHigher = new RegExp(`^#{1,${level}} `, 'm').exec(body);
-  return body.slice(0, sameOrHigher ? sameOrHigher.index : undefined).trim();
+  return body
+    .slice(0, sameOrHigher ? sameOrHigher.index : undefined)
+    .replace(DETAILS_APPENDIX, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 const KEY = /^(?:'([^']+)'|"([^"]+)"|([A-Za-z_$][\w$]*))\s*(?=[:,}])/;

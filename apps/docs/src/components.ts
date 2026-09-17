@@ -234,6 +234,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Drawer',
+    item: 'drawer',
+    description: 'An edge-anchored panel with swipe gestures, snap points, and the Android back gesture.',
+    release: 'v0.2',
+  },
+  {
     name: 'Context Menu',
     item: 'context-menu',
     description: 'A menu opened by right click or long press, anchored to the pointer rather than to a control.',
