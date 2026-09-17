@@ -5,7 +5,7 @@
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/attune/SKILL.md",
-      "computedHash": "2c24e988d3d1af8a550d41e59ce848c2bcb40c840c28c72c949a60ecec758ad0"
+      "computedHash": "5aa582c40113123bfa370d1329b09272bd4bd98aa358e5ca2a17efcc5ededccf"
     },
     "augur": {
       "source": "frankieramirez/mana",
@@ -29,7 +29,7 @@
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/conjure/SKILL.md",
-      "computedHash": "ad8f51e60af879c5daef76346079a66f71e9977f922d08130abb1f1074a12ca0"
+      "computedHash": "4ebaca3107632605270cc15fa3405bdee9625b1e34bc7104e656509d88a0a795"
     },
     "dispel": {
       "source": "frankieramirez/mana",
@@ -53,7 +53,7 @@
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/portal/SKILL.md",
-      "computedHash": "4d3515df39a2c6a39bbafbf246cd084d050561875d5de6f57313a0dea508e36d"
+      "computedHash": "9d6cc0f9b9ba8debfa3b22425974dc1bfcd732f304394d259db8293a0f5bca74"
     },
     "remedy": {
       "source": "frankieramirez/mana",
@@ -77,13 +77,13 @@
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/scry/SKILL.md",
-      "computedHash": "7943a6d1f2cc0b09fc0cadcc0ce29b92239ad579a3cfbeb960a4113e6b9a8756"
+      "computedHash": "4f05ee9c76e9954ba221a80f4a60873fde2fe98d59df1b0582967a26493cd4a4"
     },
     "setup-mana": {
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/setup-mana/SKILL.md",
-      "computedHash": "1679695083a29f9b0faef730d4e87d8570aad1a3dfc8a02ddf7ce469c017b64d"
+      "computedHash": "4d4305af1466c2feb5e2038e2190f89711b1c16728265306539bd02400887fd8"
     },
     "sift": {
       "source": "frankieramirez/mana",
@@ -96,6 +96,12 @@
       "sourceType": "github",
       "skillPath": "skills/ultima/SKILL.md",
       "computedHash": "cc7b3e159b0c827dc01c8bad96eccd8bbbe5a84528eb76d7da88baf5605ac7cd"
+    },
+    "vision": {
+      "source": "frankieramirez/mana",
+      "sourceType": "github",
+      "skillPath": "skills/vision/SKILL.md",
+      "computedHash": "d016f91e20b1ef48a040b16195e2fddbec25811669c90067a35de307a9d64466"
     },
     "ward": {
       "source": "frankieramirez/mana",
