@@ -26,6 +26,7 @@ export default defineConfig({
       '@base-ui/react/meter',
       '@base-ui/react/navigation-menu',
       '@base-ui/react/popover',
+      '@base-ui/react/preview-card',
       '@base-ui/react/progress',
       '@base-ui/react/radio',
       '@base-ui/react/radio-group',

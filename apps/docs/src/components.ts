@@ -240,6 +240,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Hover Card',
+    item: 'hover-card',
+    description: 'A preview of where a link goes, opened by hovering or focusing the link itself.',
+    release: 'v0.2',
+  },
+  {
     name: 'Menubar',
     item: 'menubar',
     description: 'A persistent bar of menu titles, holding your own Dropdown Menus and sized to its triggers.',

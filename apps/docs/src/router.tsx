@@ -19,6 +19,7 @@ import DropdownMenuContent from './content/components/dropdown-menu.mdx';
 import EmptyContent from './content/components/empty.mdx';
 import FieldContent from './content/components/field.mdx';
 import FieldsetContent from './content/components/fieldset.mdx';
+import HoverCardContent from './content/components/hover-card.mdx';
 import InputContent from './content/components/input.mdx';
 import MenubarContent from './content/components/menubar.mdx';
 import MeterContent from './content/components/meter.mdx';
@@ -122,6 +123,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   empty: EmptyContent,
   field: FieldContent,
   fieldset: FieldsetContent,
+  'hover-card': HoverCardContent,
   input: InputContent,
   menubar: MenubarContent,
   meter: MeterContent,
