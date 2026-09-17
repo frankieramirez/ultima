@@ -197,6 +197,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A top-level navigation whose panels morph between one another, on two nav landmarks.',
     docs: "import { NavigationMenu } from '@/components/ui/navigation-menu';\n\n<NavigationMenu.Root aria-label=\"Main\">\n  <NavigationMenu.List>\n    <NavigationMenu.Item>\n      <NavigationMenu.Trigger>Components<NavigationMenu.Icon /></NavigationMenu.Trigger>\n      <NavigationMenu.Content>\n        <NavigationMenu.Link href=\"/components/button\">Button</NavigationMenu.Link>\n      </NavigationMenu.Content>\n    </NavigationMenu.Item>\n  </NavigationMenu.List>\n  <NavigationMenu.Portal>\n    <NavigationMenu.Positioner sideOffset={8}>\n      <NavigationMenu.Popup>\n        <NavigationMenu.Arrow />\n        <NavigationMenu.Viewport />\n      </NavigationMenu.Popup>\n    </NavigationMenu.Positioner>\n  </NavigationMenu.Portal>\n</NavigationMenu.Root>\n\nOne Portal for the whole menu, not one per Item: the active Content is portalled into the Viewport. Name Root yourself; Popup carries aria-label=\"Submenu\" unless you name it. Portalling needs isolation: isolate on your app root and body { position: relative } for iOS 26 Safari.",
   },
+  popover: {
+    title: 'Popover',
+    description: 'An anchored panel of rich content, opened from a control and dismissed without blocking the page.',
+    docs: "import { Popover } from '@/components/ui/popover';\n\n<Popover.Root>\n  <Popover.Trigger render={<Button />}>Share</Popover.Trigger>\n  <Popover.Portal>\n    <Popover.Positioner sideOffset={8}>\n      <Popover.Popup>\n        <Popover.Arrow />\n        <Popover.Title>Share this report</Popover.Title>\n        <Popover.Description>Anyone with the link can read it.</Popover.Description>\n      </Popover.Popup>\n    </Popover.Positioner>\n  </Popover.Portal>\n</Popover.Root>\n\nTrigger and Close are unstyled slots: render an Ultima Button or an element with its own focus ring. Name the popup with Popover.Title, or with aria-label on Popup when it has no visible heading. openOnHover, delay, and closeDelay are Trigger props, not Root's.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:
