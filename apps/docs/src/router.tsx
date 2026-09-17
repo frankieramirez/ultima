@@ -13,6 +13,7 @@ import CheckboxContent from './content/components/checkbox.mdx';
 import CodeContent from './content/components/code.mdx';
 import CollapsibleContent from './content/components/collapsible.mdx';
 import ComboboxContent from './content/components/combobox.mdx';
+import ContextMenuContent from './content/components/context-menu.mdx';
 import DialogContent from './content/components/dialog.mdx';
 import DropdownMenuContent from './content/components/dropdown-menu.mdx';
 import EmptyContent from './content/components/empty.mdx';
@@ -114,6 +115,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   code: CodeContent,
   collapsible: CollapsibleContent,
   combobox: ComboboxContent,
+  'context-menu': ContextMenuContent,
   dialog: DialogContent,
   'dropdown-menu': DropdownMenuContent,
   empty: EmptyContent,

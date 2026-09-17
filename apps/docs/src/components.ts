@@ -233,6 +233,12 @@ export const components = [
     description: 'An anchored panel of rich content, opened from a control and dismissed without blocking the page.',
     release: 'v0.2',
   },
+  {
+    name: 'Context Menu',
+    item: 'context-menu',
+    description: 'A menu opened by right click or long press, anchored to the pointer rather than to a control.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
