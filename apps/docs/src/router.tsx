@@ -20,6 +20,7 @@ import EmptyContent from './content/components/empty.mdx';
 import FieldContent from './content/components/field.mdx';
 import FieldsetContent from './content/components/fieldset.mdx';
 import InputContent from './content/components/input.mdx';
+import MenubarContent from './content/components/menubar.mdx';
 import MeterContent from './content/components/meter.mdx';
 import NavigationMenuContent from './content/components/navigation-menu.mdx';
 import PaginationContent from './content/components/pagination.mdx';
@@ -122,6 +123,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   field: FieldContent,
   fieldset: FieldsetContent,
   input: InputContent,
+  menubar: MenubarContent,
   meter: MeterContent,
   'navigation-menu': NavigationMenuContent,
   pagination: PaginationContent,

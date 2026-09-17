@@ -22,6 +22,7 @@ export default defineConfig({
       '@base-ui/react/alert-dialog',
       '@base-ui/react/dialog',
       '@base-ui/react/menu',
+      '@base-ui/react/menubar',
       '@base-ui/react/meter',
       '@base-ui/react/navigation-menu',
       '@base-ui/react/popover',

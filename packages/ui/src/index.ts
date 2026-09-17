@@ -307,3 +307,4 @@ export {
   type ContextMenuSubmenuRootProps,
   type ContextMenuSubmenuTriggerProps,
 } from './context-menu';
+export { Menubar, type MenubarProps, type MenubarOrientation } from './menubar';

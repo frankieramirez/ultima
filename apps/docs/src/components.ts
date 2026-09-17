@@ -239,6 +239,12 @@ export const components = [
     description: 'A menu opened by right click or long press, anchored to the pointer rather than to a control.',
     release: 'v0.2',
   },
+  {
+    name: 'Menubar',
+    item: 'menubar',
+    description: 'A persistent bar of menu titles, holding your own Dropdown Menus and sized to its triggers.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
