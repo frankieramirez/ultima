@@ -212,7 +212,27 @@ A documented pattern, not a catalogue component and not a shared announcer. Pre-
 
 ## Overlay
 
-A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it. Alert Dialog is the seventh: it joins the recipe and does not vary it. Navigation Menu is the eighth: it joins the recipe and varies the transition, the second component to do so after Sidebar's mobile menu, dropping the shared `scale(0.98)` because a transform cannot fight an animated width and height. Toast is not an overlay.
+A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it. Alert Dialog is the seventh: it joins the recipe and does not vary it. Navigation Menu is the eighth: it joins the recipe and varies the transition, the second component to do so after Sidebar's mobile menu, dropping the shared `scale(0.98)` because a transform cannot fight an animated width and height. v0.2's overlay set takes the recipe to twelve: Popover ninth, Drawer tenth, Context Menu eleventh, Hover Card twelfth. Popover, Context Menu, and Hover Card join unvaried; Drawer is the third stated variation, dropping the scale because a swipe owns `transform`. Toast is not an overlay, and neither is Menubar: it portals nothing and floats nothing, and the overlays a menubar holds are the Dropdown Menu popups inside it. Sheet takes no number, because it introduces no component.
+
+## Context Menu
+
+A menu opened by right click or long press, anchored to the pointer rather than to a control. Nineteen parts, seventeen of them the same component object as Dropdown Menu's, and its styled split is Dropdown Menu's minus the `Viewport` it lacks. `context-menu.tsx` restates that paint rather than importing `dropdown-menu`, because the behavior all comes from the primitive. Its trigger is a region wrapping the consumer's content, not a wrapper trigger, so it carries no styles and takes no Button. It is always modal and Base UI forces that. It is never the only way to reach its actions: the trigger has no role, no ARIA, and no keyboard opener, so the same actions also sit on a visible control.
+
+## Drawer
+
+An edge-anchored panel with gestures, built on its own Base UI primitive rather than on Dialog. All fifteen parts ship, six are styled, and the edge is not a prop: the drawer sits on the edge it dismisses toward, and Ultima styles all four cases from the attribute the primitive emits. Reach for it when the panel needs a gesture, and for Sheet otherwise; the deciding capability is the Android back gesture, which Dialog cannot answer. Its two app-shell parts pass through unstyled, because styling them means shipping an app shell.
+
+## Hover Card
+
+A panel previewing where a link goes, opened by hovering or focusing the link. Base UI calls the primitive `PreviewCard`; the item is `hover-card`, because a component's name is Ultima's own and only its parts mirror the primitive. Its trigger is the anchor itself, not a slot for one, which makes it the only Ultima link in prose and so the only part that underlines. It is not a labelled region: the primitive emits nothing that names or associates the popup, and adding a role is not Ultima's to do. It opens on hover and on keyboard focus and never on touch, so everything in it also lives at the link's destination.
+
+## Menubar
+
+A persistent bar of menu titles, in page flow rather than floating. Base UI ships it as one container component with no parts, so Ultima ships one function and invents no part name; the menus inside it are the consumer's own Dropdown Menus, named as a companion install rather than declared as a dependency. Its one part is styled twice over: it paints, and its box is read back by the backdrop an open menu renders, so the bar is sized to its contents. It is not an overlay. Its accessible name is required by the types, the third such attribute in the system, because the pattern demands a name and no automated check would ever catch a missing one.
+
+## Restatement
+
+One component writing another's appearance into its own file instead of importing it. An item declares another Ultima component as a dependency only when it composes that component's behavior; appearance is always restated. Tokens keep the values in step, because both files read the same semantic tokens. Nothing keeps the arrangement in step, which is a difference where the two arrangements should differ, as Pagination's does from Button's, and an accepted risk where they are meant to be identical, as Alert Dialog's is to Dialog's and Context Menu's to Dropdown Menu's. Sidebar composing Dialog is the one import in the tree, and it is on the behavior side.
 
 ## Style slot
 
