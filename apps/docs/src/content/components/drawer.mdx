@@ -1,0 +1,145 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/drawer/basic';
+import basicSource from '../../demos/drawer/basic?raw';
+import Edges from '../../demos/drawer/edges';
+import edgesSource from '../../demos/drawer/edges?raw';
+import SwipeArea from '../../demos/drawer/swipe-area';
+import swipeAreaSource from '../../demos/drawer/swipe-area?raw';
+
+# Drawer
+
+An edge-anchored panel with swipe gestures, snap points, and the Android back gesture. Fifteen parts on Base UI's `Drawer`, no axes, and no glyph. It is the tenth overlay and the third component to vary the recipe: it keeps the surface, the visible backdrop, and the stacking, and slides from its edge instead of scaling.
+
+## Install
+
+```bash
+npx shadcn add @ultima/drawer
+```
+
+## A drawer
+
+`Root > Portal > Viewport > Popup` is the minimum working spine. `Viewport` is not optional the way Popover's is: it is the gesture root, and without it the swipe handling and the touch scroll locking are both off, which Base UI warns about in development.
+
+`Trigger` and `Close` ship no styles at all, so both are written as `render={<Button />}`: the slot must hold an Ultima Button or an element carrying its own focus ring.
+
+<Demo component={Basic} source={basicSource} />
+
+## The edge is `swipeDirection`
+
+There is no `side` prop. `swipeDirection` is the direction the drawer is **dismissed** toward, and a drawer sits on the edge it dismisses toward, so the two are the same choice. It defaults to `down`, and its four values are physical rather than logical: they do not flip under RTL, because the direction is yours to pick rather than Ultima's to resolve.
+
+Base UI emits that value as `data-swipe-direction` on `Popup` and on `SwipeArea`, always, and Ultima styles all four cases from it. The panel takes the matching edge, keeps its radius only on the corners that face the page, and slides off the same edge when it closes.
+
+<Demo component={Edges} source={edgesSource} />
+
+**Snap points work on a vertical drawer only.** Base UI ignores `snapPoints` entirely unless `swipeDirection` is `up` or `down`, so a left- or right-anchored drawer cannot use them.
+
+## Swipe to open
+
+`SwipeArea` is an invisible strip along the edge the drawer comes from, and swiping across it opens the drawer. Base UI gives it its `touch-action` and nothing dimensional, so Ultima gives it the strip: an unstyled one is a zero-area element and the gesture does not exist.
+
+**Ship a `Trigger` alongside any `SwipeArea`.** Every other Drawer gesture has a non-gesture equivalent already in the part list, but swiping a drawer *open* has none, so a drawer whose only opener is a `SwipeArea` cannot be opened from a keyboard at all.
+
+<Demo component={SwipeArea} source={swipeAreaSource} />
+
+## Scaling the page behind the drawer
+
+`Indent` and `IndentBackground` are the iOS-style effect where the whole page scales down and slides back while a drawer is open. Ultima ships them **unstyled**, because the element they wrap is your entire application: the scale, the translate, the radius, and the colour are all decisions about content Ultima does not own, and `Indent` is where a component would stop being a component and start being an app shell.
+
+What Base UI supplies is `data-active` on both parts, plus two live custom properties on `Indent`: `--drawer-swipe-progress`, a number that rises as the drawer is dragged, and `--drawer-height`. The rest is yours. `Provider` goes above `Root`, and the pair goes inside a positioned, clipping wrapper.
+
+Both parts pass through unstyled, which means they keep Base UI's own `className`, so the recipe below is written the way Base UI's demos are rather than through Ultima's `style` slot.
+
+```jsx
+<Drawer.Provider>
+  <div className="app-shell">
+    <Drawer.IndentBackground className="app-shell-backdrop" />
+    <Drawer.Indent className="app-shell-page">
+      {/* your entire application, including the Drawer.Root */}
+    </Drawer.Indent>
+  </div>
+</Drawer.Provider>
+```
+
+```css
+.app-shell {
+  position: relative;
+  overflow: hidden; /* clips the scaled page */
+}
+
+.app-shell-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: black;
+}
+
+.app-shell-page {
+  --indent-radius: calc(1rem * (1 - var(--drawer-swipe-progress)));
+  /* Collapses the duration to zero the moment a swipe starts, so the page tracks the finger. */
+  --indent-transition: calc(1 - clamp(0, calc(var(--drawer-swipe-progress) * 100000), 1));
+  position: relative;
+  transform-origin: center top;
+  will-change: transform;
+  contain: layout;
+  transition:
+    transform var(--ult-motion-slow) cubic-bezier(0.32, 0.72, 0, 1),
+    border-radius var(--ult-motion-base) cubic-bezier(0.32, 0.72, 0, 1);
+  transition-duration:
+    calc(var(--ult-motion-slow) * var(--indent-transition)),
+    calc(var(--ult-motion-base) * var(--indent-transition));
+}
+
+.app-shell-page[data-active] {
+  transform: scale(calc(0.98 + (0.02 * var(--drawer-swipe-progress))))
+    translateY(calc(0.5rem * (1 - var(--drawer-swipe-progress))));
+  border-top-left-radius: var(--indent-radius);
+  border-top-right-radius: var(--indent-radius);
+}
+```
+
+Three warnings come with adopting it, and the first is the sharpest.
+
+- **A transformed `Indent` becomes a containing block for `position: fixed` descendants.** Anything already inside it that is `position: fixed` — a sticky header, a toast region, another overlay — is pinned to the scaled page rather than to the viewport for as long as any drawer is open. This follows from CSS rather than from Base UI, and nothing warns you about it.
+- **Five of the nine variables are registered `inherits: false`.** A rule on a *descendant* of `Indent` that reads `--drawer-swipe-progress` silently gets the registered initial value and stays there. Read each variable on the element that seeds it, which is what the CSS above does.
+- **The app-root form is not settled by Base UI.** Every published demo scopes the effect to a local box and portals into it. At a real app root the drawer portals to `<body>`, and where the background layer then belongs is yours to decide.
+
+## What you keep
+
+- **`modal` is three-valued.** `true` is Base UI's default: focus trapped, page scroll locked, outside pointer interaction disabled. `false` leaves the page usable. `'trap-focus'` traps focus without locking scroll or disabling outside pointers.
+- **`Popup`'s transform and height are Ultima's, and both are load-bearing.** Its resting `transform` reads `--drawer-swipe-movement-x` and `-y`, because Base UI drops its inline drag styles when you let go and a `transform: none` underneath would snap the panel back for a frame. Its `height` is `var(--drawer-height, auto)`, because that variable is absent unless a nested drawer is open or this one is exiting. Overriding either through the `style` slot breaks the gesture; override the sizes around them instead.
+- **`Viewport` sets no `overflow`, and you should be careful where you add one.** The gesture walks up from the touched node to the viewport, so a scroller on the swipe axis takes the gesture except at its scroll edge. Put scrolling content in a child of `Popup` on the axis the drawer does not dismiss along.
+- **`Backdrop` does not render when the root is nested, and an app shell is enough to make it nested.** Base UI counts any surrounding dialog root, and [Sidebar](/components/sidebar) is one: `Sidebar.Root` wraps its children in a `Dialog.Root` for the mobile menu, so a drawer anywhere inside an Ultima app shell loses its scrim. Pass `forceRender`, which every demo on this page does. Leave it off for a drawer genuinely stacked on another drawer, where the one scrim underneath is the point.
+- **`Content` is a marker, not a surface.** Its whole implementation is an attribute that suppresses a *mouse* swipe starting over your content. It ships unstyled.
+- **`VirtualKeyboardProvider` goes inside `Root`, not above it.** It throws outside `Root` and quietly does nothing without a `Viewport`. While a field is focused it writes `overflow-anchor`, `padding-bottom`, and `scroll-padding-bottom` as inline styles onto whichever of your elements it finds scrollable, computed from the existing values and restored on cleanup, and it reads `prefers-reduced-motion` itself to choose its scroll behaviour.
+- **`Provider` is optional and fails silently.** Without it the indent parts render inert forever and everything else is unaffected.
+- **`Handle` and `createHandle` pass through as values.** `Drawer.createHandle()` builds one and `Drawer.Handle` is its class, so a drawer can be opened from outside its own tree. `Handle` is never rendered.
+- **Two global rules come with portalling.** `isolation: isolate` on your app root and `body { position: relative }` for iOS 26 Safari, the same two every portalling Ultima component asks for.
+- **Ultima does not set `keepMounted`.** Pass it when the closed popup should stay in the DOM.
+
+## Drawer or Dialog
+
+Base UI states the test itself: Drawer extends Dialog with gesture support, snap points, and indent effects, and a panel that slides in from an edge and needs none of those is a positioned [Dialog](/components/dialog).
+
+The deciding capability is the **Android back gesture**. A Dialog positioned against an edge can be made to look identical to a Drawer and can never answer it: the gesture runs on `CloseWatcher`, which Base UI mounts in `Drawer.Root` and which appears nowhere in Dialog. Everything else on the list — swipe-to-dismiss, swipe-to-open, snap points, nested stacking, the virtual-keyboard layer — is a refinement you can go without.
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept their [Base UI props](https://base-ui.com/react/components/drawer).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `swipeDirection` | `'up' \| 'down' \| 'left' \| 'right'` | `'down'` | On `Root`, passed through. The dismiss direction, and so the edge. Physical, not logical. |
+| `modal` | `boolean \| 'trap-focus'` | `true` | On `Root`, passed through. |
+| `snapPoints` | `DrawerSnapPoint[]` | — | On `Root`, passed through. Ignored unless `swipeDirection` is `'up'` or `'down'`. |
+| `forceRender` | `boolean` | `false` | On `Backdrop`, passed through. Renders the scrim for a nested drawer. |
+| `disabled` | `boolean` | `false` | On `SwipeArea`, passed through. |
+| `style` | `StyleXStyles` | — | Available on the styled Viewport, Backdrop, Popup, Title, Description, and SwipeArea parts; merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop, on every part that renders an element. Use it on `Trigger` and `Close` to supply your own control. |
+
+## Accessibility
+
+- **Elements.** `Popup` is a `role="dialog"` with `aria-labelledby` and `aria-describedby`, inside a focus manager that restores focus. `Backdrop`, `Viewport`, and `SwipeArea` are `role="presentation"`, and `SwipeArea` is `aria-hidden`. `Root`, `Provider`, and `VirtualKeyboardProvider` render no element at all.
+- **Name.** `Drawer.Title`, always rendered. `Drawer.Description` is optional. Both are Dialog's own components, so this is Dialog's contract unchanged. Hide a title visually through the `style` slot rather than omitting it.
+- **Focus ring.** On whatever you render into `Close`, and on any focusable content inside the popup. `Popup` itself carries `outline: none`, like Dialog's.
+- **Keyboard.** Base UI's. Tab loops inside the popup, Escape closes it, focus returns to the trigger, and a backdrop press dismisses it.
+- **Every gesture has a non-gesture equivalent, with one exception that is a part rather than the component.** Swipe-to-dismiss is also `Close`, also Escape, also a backdrop press. The Android back gesture is also Escape. Snap points refine a panel that opens and closes without them. **Swipe-to-open does not**, which is why a `SwipeArea` always ships beside a `Trigger`.

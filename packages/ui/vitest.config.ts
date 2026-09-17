@@ -21,6 +21,7 @@ export default defineConfig({
       '@base-ui/react/fieldset',
       '@base-ui/react/alert-dialog',
       '@base-ui/react/dialog',
+      '@base-ui/react/drawer',
       '@base-ui/react/menu',
       '@base-ui/react/menubar',
       '@base-ui/react/meter',
