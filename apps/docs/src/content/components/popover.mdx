@@ -1,0 +1,54 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/popover/basic';
+import basicSource from '../../demos/popover/basic?raw';
+import Unnamed from '../../demos/popover/unnamed';
+import unnamedSource from '../../demos/popover/unnamed?raw';
+
+# Popover
+
+An anchored panel of rich content, opened from a control. Eleven parts on Base UI's `Popover`, no axes, and no glyph. It is the ninth overlay and wears the same surface and transition as the other eight.
+
+## Install
+
+```bash
+npx shadcn add @ultima/popover
+```
+
+## A popover
+
+`Trigger` opens it, `Portal` and `Positioner` place it, and `Popup` is the surface. `Title`, `Description`, `Arrow`, and `Viewport` are the rest of what Ultima paints. `Backdrop` catches an outside click without blocking the page.
+
+`Trigger` and `Close` ship no styles at all, so both are written as `render={<Button />}`: the slot must hold an Ultima Button or an element carrying its own focus ring.
+
+<Demo component={Basic} source={basicSource} />
+
+## A popover with no heading
+
+`Title` is optional, unlike Dialog's. A popover with no visible heading names its popup with `aria-label` or `aria-labelledby` instead, and the trigger never names it.
+
+<Demo component={Unnamed} source={unnamedSource} />
+
+## What you keep
+
+- **It blocks nothing.** `modal` keeps Base UI's `false` default: the page stays scrollable, Tab walks out of the popup, and the `Backdrop` is an invisible click-catcher rather than a scrim. Pass `modal` yourself when a popover should behave like a Dialog, and reach for [Dialog](/components/dialog) when it always should.
+- **The hover props are `Trigger`'s.** `openOnHover` defaults to `false`; `delay` (300) and `closeDelay` (0) both require it. They sit on `Trigger` rather than on `Root`, and Ultima sets none of the three. A panel that only previews where a link goes is Hover Card's job rather than this one's.
+- **`Viewport` is optional and carries one declaration.** Use it when several triggers share one popup and the content should swap rather than the popup closing and reopening. It is `position: relative` and nothing else, which is what keeps the outgoing snapshot inside the popup instead of riding the page flow.
+- **Two global rules come with portalling.** `isolation: isolate` on your app root and `body { position: relative }` for iOS 26 Safari, the same two every portalling Ultima component asks for.
+- **`Handle` and `createHandle` pass through as values.** `Popover.createHandle()` builds one and `Popover.Handle` is its class, so a popover can be opened from outside its own tree. `Handle` is never rendered.
+- **Ultima does not set `keepMounted`.** Pass it when the closed popup should stay in the DOM.
+
+## Props
+
+Only what Ultima adds. The parts otherwise accept their [Base UI props](https://base-ui.com/react/components/popover).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `style` | `StyleXStyles` | — | Available on the styled Positioner, Popup, Title, Description, Arrow, and Viewport parts; merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop, on every part. Trigger and Close are unstyled slots for a control with its own focus ring. |
+
+## Accessibility
+
+- **Elements.** `role="dialog"` on `Popup`. `Trigger` is whatever you render into it, carrying `aria-haspopup="dialog"`, `aria-expanded`, and `aria-controls`.
+- **Name.** `Popover.Title` when you render one. Otherwise `aria-label` or `aria-labelledby` on `Popup`, yours to supply. The trigger never names the popup, so a popup with neither is an unnamed dialog.
+- **Focus ring.** On the element rendered into `Trigger`, and on any focusable content in the popup. The trigger slot must hold an Ultima [Button](/components/button) or an element carrying its own ring, because `Trigger` and `Close` ship no styles at all. `Popup` renders none: Base UI focuses it only as a fallback container.
+- **Keyboard.** Base UI's. Tab leaves the popup rather than looping inside it, `Escape` closes it, an outside press dismisses it, and focus returns to the trigger.

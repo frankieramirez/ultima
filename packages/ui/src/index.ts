@@ -271,3 +271,17 @@ export {
   type NavigationMenuArrowProps,
   type NavigationMenuLinkProps,
 } from './navigation-menu';
+export {
+  Popover,
+  type PopoverRootProps,
+  type PopoverTriggerProps,
+  type PopoverPortalProps,
+  type PopoverBackdropProps,
+  type PopoverCloseProps,
+  type PopoverPositionerProps,
+  type PopoverPopupProps,
+  type PopoverTitleProps,
+  type PopoverDescriptionProps,
+  type PopoverArrowProps,
+  type PopoverViewportProps,
+} from './popover';

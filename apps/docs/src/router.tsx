@@ -22,6 +22,7 @@ import InputContent from './content/components/input.mdx';
 import MeterContent from './content/components/meter.mdx';
 import NavigationMenuContent from './content/components/navigation-menu.mdx';
 import PaginationContent from './content/components/pagination.mdx';
+import PopoverContent from './content/components/popover.mdx';
 import ProgressContent from './content/components/progress.mdx';
 import RadioGroupContent from './content/components/radio-group.mdx';
 import SelectContent from './content/components/select.mdx';
@@ -122,6 +123,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   meter: MeterContent,
   'navigation-menu': NavigationMenuContent,
   pagination: PaginationContent,
+  popover: PopoverContent,
   progress: ProgressContent,
   'radio-group': RadioGroupContent,
   select: SelectContent,

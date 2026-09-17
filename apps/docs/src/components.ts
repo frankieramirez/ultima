@@ -227,6 +227,12 @@ export const components = [
     description: 'A top-level navigation whose panels morph between one another, on two nav landmarks.',
     release: 'v0.2',
   },
+  {
+    name: 'Popover',
+    item: 'popover',
+    description: 'An anchored panel of rich content, opened from a control and dismissed without blocking the page.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
