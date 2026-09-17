@@ -5,6 +5,8 @@ import IconClose from '../../demos/dialog/icon-close';
 import iconCloseSource from '../../demos/dialog/icon-close?raw';
 import HiddenTitle from '../../demos/dialog/hidden-title';
 import hiddenTitleSource from '../../demos/dialog/hidden-title?raw';
+import Sheet from '../../demos/dialog/sheet';
+import sheetSource from '../../demos/dialog/sheet?raw';
 
 # Dialog
 
@@ -35,6 +37,28 @@ A `Dialog.Title` is always rendered. When the design has no visible heading, hid
 <Demo component={HiddenTitle} source={hiddenTitleSource} />
 
 `modal` remains [Base UI's](https://base-ui.com/react/components/dialog) default. Ultima does not set `keepMounted`; pass it when the closed dialog should remain in the DOM.
+
+## Sheet
+
+A sheet is a Dialog anchored to an edge of the viewport instead of centred in it. It is a recipe rather than a component: there is no `@ultima/sheet` item and no file to install, because every part it needs is already Dialog's and the difference is `style` overrides written at the call site.
+
+Component dependencies: `dialog` and `button`.
+
+```bash
+npx shadcn add @ultima/dialog @ultima/button
+```
+
+`Dialog.Viewport` zeroes its padding and swaps `placeItems: center` for the edge. `Dialog.Popup` drops its radius and its measure cap, keeps a hairline on the side facing the page, and slides in from its edge over `--ult-motion-base` in place of the shared `scale(0.98)`. The four edges are physical rather than logical, because CSS has no logical transform.
+
+**The override names the resting, starting, and ending transforms, or Dialog's scale survives underneath the slide.** `Dialog.Popup` carries `scale(0.98)` on both `[data-starting-style]` and `[data-ending-style]`, and StyleX merges a property one condition at a time. An override that sets only the resting transform leaves the scale in place for the other two states, and the panel scales while it travels.
+
+<Demo component={Sheet} source={sheetSource} />
+
+[Sidebar](/components/sidebar)'s mobile menu is this same variation with one edge hard-coded, and it keeps its own private copy rather than consuming the recipe: a recipe has no importable unit. It is also the `aria-label` case rather than the `Dialog.Title` case above, because a navigation panel has no visible heading.
+
+### Sheet or Drawer
+
+The test is a capability rather than a taste, and Base UI states it in its own words: a panel that slides in from an edge and needs no gesture support is a positioned Dialog, which is what a sheet is. Reach for [Drawer](/components/drawer) when the panel needs swipe-to-dismiss, swipe-to-open, snap points, or the Android back gesture. **The last of those decides it**: that gesture runs on `CloseWatcher`, which Drawer mounts and which appears nowhere in Dialog, so a sheet can be made to look identical and can never answer it.
 
 ## Props
 
