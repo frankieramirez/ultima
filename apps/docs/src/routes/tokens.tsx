@@ -4,6 +4,7 @@ import { Code, Separator, Table } from '@ultima/ui';
 import { APCAcontrast, sRGBtoY } from 'apca-w3';
 
 import { CopyButton } from '../copy-button';
+import { HighlightedCode } from '../highlighted-code';
 import MotionTrack from '../demos/tokens/motion';
 import RadiusSpecimen from '../demos/tokens/radius';
 import ShadowSpecimen from '../demos/tokens/shadow';
@@ -284,12 +285,8 @@ function Overriding() {
         export re-skins with plain CSS on the root. A consumer compiling with StyleX gets the same
         result from <Code>createTheme</Code>, which returns a class to put on any subtree.
       </Note>
-      <Code variant="block" style={styles.override}>
-        {OVERRIDE_CSS}
-      </Code>
-      <Code variant="block" style={styles.override}>
-        {OVERRIDE_STYLEX}
-      </Code>
+      <HighlightedCode code={OVERRIDE_CSS} lang="css" style={styles.override} />
+      <HighlightedCode code={OVERRIDE_STYLEX} lang="ts" style={styles.override} />
     </Section>
   );
 }

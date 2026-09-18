@@ -26,6 +26,9 @@ importers:
       '@stylexjs/stylex':
         specifier: ^0.19.0
         version: 0.19.0
+      '@tanstack/highlight':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@tanstack/react-router':
         specifier: ^1.170.33
         version: 1.170.33(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -675,6 +678,10 @@ packages:
     resolution: {integrity: sha512-2QwNYovSwarC/M8DLD78857F6MEi4eQ3UYzgdmyg/K7562M/rV1KWptiATxcKgujlUT6ToNy778SOXf4bGK+Bw==}
     peerDependencies:
       unplugin: ^2.3.11
+
+  '@tanstack/highlight@0.1.0':
+    resolution: {integrity: sha512-B/NdJETsgoQ7ludUbflIiYQk74bE6VSgP3kLR99P1OsRX1Gepr3EVg6oVLRZ+duKWs+P4lrhWC4vVJsrRSnV2g==}
+    engines: {node: '>=18'}
 
   '@tanstack/history@1.162.2':
     resolution: {integrity: sha512-Lemp3DJbzNqcin/nZpWxycDaEqySDbnIshDbyHJMMCapD4ZQMe57szRpBXOfzfP6fyWAtHNrLrcBUyANJ6Vlow==}
@@ -2147,6 +2154,8 @@ snapshots:
       unplugin: 2.3.11
     transitivePeerDependencies:
       - supports-color
+
+  '@tanstack/highlight@0.1.0': {}
 
   '@tanstack/history@1.162.2': {}
 

@@ -15,6 +15,7 @@
     "@base-ui/react": "^1.8.0",
     "@mdx-js/rollup": "^3.1.1",
     "@stylexjs/stylex": "^0.19.0",
+    "@tanstack/highlight": "^0.1.0",
     "@tanstack/react-router": "^1.170.33",
     "@ultima/tokens": "workspace:*",
     "@ultima/ui": "workspace:*",

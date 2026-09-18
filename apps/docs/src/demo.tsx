@@ -1,9 +1,10 @@
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
-import { Card, Code } from '@ultima/ui';
+import { Card } from '@ultima/ui';
 import type { ComponentType } from 'react';
 
 import { CopyButton } from './copy-button';
+import { HighlightedCode } from './highlighted-code';
 
 const styles = stylex.create({
   figure: {
@@ -31,7 +32,7 @@ export function Demo({
         <Component />
       </Card.Body>
       <Card.Body>
-        <Code variant="block">{source}</Code>
+        <HighlightedCode code={source} lang="tsx" />
       </Card.Body>
       <Card.Footer style={styles.bar}>
         <CopyButton text={source} ariaLabel="Copy example source" />
