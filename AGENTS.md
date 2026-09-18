@@ -34,4 +34,5 @@ Read the [Principles](docs/spec/ultima.md#principles) section of the specificati
 ## Agent skills
 
 Issue tracker: GitHub frankieramirez/ultima. See `docs/agents/issue-tracker.md`.
+Roadmap: https://github.com/frankieramirez/ultima/issues/161
 Validation: `pnpm test`
