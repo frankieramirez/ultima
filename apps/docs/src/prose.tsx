@@ -3,7 +3,9 @@ import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code as UltimaCode, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import { isValidElement, type ComponentProps, type ComponentType, type ReactNode } from 'react';
+
 import { DocumentLayout } from './document-layout';
+import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
 
 const styles = stylex.create({
   root: {
@@ -103,11 +105,15 @@ function Code({ children }: ComponentProps<'code'>) {
 }
 /** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
 function Pre({ children }: ComponentProps<'pre'>) {
-  const fence = isValidElement<{ children?: ReactNode }>(children) ? children.props.children : children;
+  const nested = isValidElement<{ children?: ReactNode; className?: string }>(children)
+    ? children
+    : undefined;
   return (
-    <UltimaCode variant="block" style={styles.code}>
-      {fence}
-    </UltimaCode>
+    <HighlightedCode
+      code={nodeText(nested ? nested.props.children : children)}
+      lang={fenceLanguage(nested?.props.className)}
+      style={styles.code}
+    />
   );
 }
 function Blockquote(props: ComponentProps<'blockquote'>) {
