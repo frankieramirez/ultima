@@ -5,7 +5,7 @@
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/attune/SKILL.md",
-      "computedHash": "5aa582c40113123bfa370d1329b09272bd4bd98aa358e5ca2a17efcc5ededccf"
+      "computedHash": "186f8fb175a0b63bd45652a03f51e877627dcfa8a75a607324147ec06751edd4"
     },
     "augur": {
       "source": "frankieramirez/mana",
@@ -53,7 +53,7 @@
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/portal/SKILL.md",
-      "computedHash": "9d6cc0f9b9ba8debfa3b22425974dc1bfcd732f304394d259db8293a0f5bca74"
+      "computedHash": "004b2aa881cc4b8a9c089be122752e26f9378e824e0e814e81f60e150ebcc737"
     },
     "remedy": {
       "source": "frankieramirez/mana",
@@ -101,7 +101,7 @@
       "source": "frankieramirez/mana",
       "sourceType": "github",
       "skillPath": "skills/vision/SKILL.md",
-      "computedHash": "d016f91e20b1ef48a040b16195e2fddbec25811669c90067a35de307a9d64466"
+      "computedHash": "62c9d529722c58255bfc45cfdc1a1c7669399d3f916afd1faa60e80c99a09552"
     },
     "ward": {
       "source": "frankieramirez/mana",
