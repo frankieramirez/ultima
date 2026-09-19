@@ -264,6 +264,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Avatar',
+    item: 'avatar',
+    description: 'An image that falls back to whatever you put behind it, at whatever size you set.',
+    release: 'v0.2',
+  },
+  {
     name: 'Scroll Area',
     item: 'scroll-area',
     description: 'A native scroll container with scrollbars you can see and a viewport a keyboard can reach.',

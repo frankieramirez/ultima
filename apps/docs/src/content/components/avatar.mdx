@@ -1,0 +1,111 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/avatar/basic';
+import basicSource from '../../demos/avatar/basic?raw';
+import Fallback from '../../demos/avatar/fallback';
+import fallbackSource from '../../demos/avatar/fallback?raw';
+import KeepMounted from '../../demos/avatar/keep-mounted';
+import keepMountedSource from '../../demos/avatar/keep-mounted?raw';
+
+# Avatar
+
+An image that falls back to whatever you put behind it, at whatever size you set. `Root` is the visible circle — the sunken ground, the full radius, and the `overflow: hidden` that clips the image to it. `Image` is the picture, and `Fallback` is what shows until the image loads and whenever it cannot. Ultima styles all three parts; nothing passes through.
+
+## Install
+
+```bash
+npx shadcn add @ultima/avatar
+```
+
+## Fallback goes first
+
+`Fallback` comes before `Image` in DOM order. Both sit absolutely over the same box, so the loaded image paints on top, and the not-yet-loaded image is hidden with `visibility` — never `display`, which is what keeps a kept-mounted lazy image loading at all. The stacking CSS ships unconditionally, so flipping `keepMounted` cannot break the component.
+
+`Fallback` is a layout slot you fill: initials, a glyph, anything. Ultima ships no default content in it and no `name` prop to derive initials from. A caller who wants a person icon renders one into the same slot — Ultima ships no icon dependency, and any set works:
+
+```tsx
+<Avatar.Root>
+  <Avatar.Fallback>
+    <UserIcon aria-hidden />
+  </Avatar.Fallback>
+</Avatar.Root>
+```
+
+<Demo component={Basic} source={basicSource} />
+
+## When the image cannot load
+
+A broken `src` leaves the fallback showing, which is also the state initials sit in before a slow image arrives.
+
+<Demo component={Fallback} source={fallbackSource} />
+
+## Optimized and lazy images
+
+`keepMounted` mounts the `<img>` immediately and reads the load status off the element itself instead of preloading a detached copy — the only mode in which `loading="lazy"` and optimized image components such as `next/image` work at all. `Fallback`'s `delay` is a first-render gate so a fast image never flashes initials. Ultima sets neither prop; both pass through at Base UI's defaults.
+
+<Demo component={KeepMounted} source={keepMountedSource} />
+
+## Size and shape
+
+There is no `size`, `shape`, or `radius` prop — the box and the radius are each one unconditional declaration, so they are the `style` slot. The initials track the box on their own: `Root` is an inline-size container and `Fallback`'s `font-size` is `40cqi`, so a resized avatar needs nothing else coordinated. A square avatar and a resized one are one override each:
+
+```tsx
+import * as stylex from '@stylexjs/stylex';
+
+const overrides = stylex.create({
+  square: { borderRadius: 'var(--ult-radius-md)' },
+  large: { inlineSize: 'var(--ult-space-12)', blockSize: 'var(--ult-space-12)' },
+});
+
+<Avatar.Root style={overrides.square}>…</Avatar.Root>
+<Avatar.Root style={overrides.large}>…</Avatar.Root>
+```
+
+## A group
+
+An avatar group is a documented composition, not a component: negative inline spacing, a ring, and an overflow count, all through `style` on the parts Avatar already ships. The ring is the page ground drawn as a ring — `boxShadow`, not `border`, so it sits outside the circle rather than eating into the clipped image — and a group on a raised surface swaps `--ult-color-surface` for that surface's token. All three parts are already positioned, so paint order is DOM order and no `z-index` is written. The overflow count is a plain `Avatar.Root` with the count in its `Fallback` and no `Image`, and `40cqi` makes it track the box for free.
+
+```tsx
+const group = stylex.create({
+  ring: { boxShadow: '0 0 0 2px var(--ult-color-surface)' },
+  overlap: { marginInlineStart: 'calc(var(--ult-space-4) * -1)' },
+});
+
+<div>
+  <Avatar.Root style={group.ring}>
+    <Avatar.Fallback>FR</Avatar.Fallback>
+    <Avatar.Image src="/frankie.png" alt="" />
+  </Avatar.Root>
+  <Avatar.Root style={[group.ring, group.overlap]}>
+    <Avatar.Fallback>LT</Avatar.Fallback>
+    <Avatar.Image src="/linnea.png" alt="" />
+  </Avatar.Root>
+  <Avatar.Root style={[group.ring, group.overlap]}>
+    <Avatar.Fallback>+3</Avatar.Fallback>
+  </Avatar.Root>
+</div>
+```
+
+A group has no role and no name — it is an arrangement of `<span>`s, and a name has nowhere to land. A group meaning "and 3 others" puts that phrase in the surrounding text, the same move the decorative case makes when it lets the visible name beside the avatar do the work.
+
+## Props
+
+Ultima adds no prop to Avatar — no `size`, `shape`, `radius`, or `name`. Everything else is Base UI's and the native `<img>`'s; see [Base UI's Avatar](https://base-ui.com/react/components/avatar) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Image` | `src`, `srcSet`, `sizes`, `crossOrigin`, `referrerPolicy` | `string` | — | The native `<img>` source props. |
+| `Image` | `alt` | `string` | — | The accessible name, documented below. Ultima sets no default. |
+| `Image` | `loading` | `'eager' \| 'lazy'` | — | Native. Only defers under `keepMounted`. |
+| `Image` | `keepMounted` | `boolean` | `false` | Mounts the `<img>` immediately instead of preloading a detached copy. |
+| `Image` | `onLoadingStatusChange` | `(status) => void` | — | The primitive's status callback. |
+| `Fallback` | `delay` | `number` | `0` | Milliseconds before the fallback shows. |
+| `Root`, `Image`, `Fallback` | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root`, `Image`, `Fallback` | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** `alt` on `Image`, the consumer's. Two cases: `alt=""` where a visible name sits beside the avatar, and `alt` naming the person where the avatar stands alone. Ultima sets no default `alt`, so a missing attribute stays a violation axe's `image-alt` rule can catch.
+- **Decorative whole.** `Root` is a `<span>` with no role and is never named. An avatar beside a visible name takes `alt=""` and `aria-hidden` on `Root` rather than on `Image` — hiding `Image` alone would expose the initials whenever the image failed.
+- **Fallback text.** `Fallback`'s own text is the accessible text whenever the image is absent, still loading, or failed. Under `keepMounted`, Base UI puts `aria-hidden` on the not-yet-loaded image so the fallback owns the name; Ultima neither adds to that nor removes it.
+- **Focus and keyboard.** None. An avatar is static and takes no focus and no focus ring.
+- **A group.** No role and no name — an arrangement of `<span>`s. Say "and 3 others" in the surrounding text; the `+3` fallback is not the sentence.

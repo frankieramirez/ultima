@@ -317,6 +317,12 @@ export {
   type AccordionPanelProps,
 } from './accordion';
 export {
+  Avatar,
+  type AvatarRootProps,
+  type AvatarImageProps,
+  type AvatarFallbackProps,
+} from './avatar';
+export {
   ScrollArea,
   type ScrollAreaRootProps,
   type ScrollAreaViewportProps,
