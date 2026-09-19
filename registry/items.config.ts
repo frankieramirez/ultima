@@ -271,4 +271,10 @@ export const items: Record<string, RegistryItemDescription> = {
     docs: '<script type="module" src="./ult-button.js"></script>\n\n<ult-button variant="solid" size="md" tone="accent">Save</ult-button>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nAxes are attributes carrying the React prop values verbatim: variant, size, tone, and disabled.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
     registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
   },
+  'ult-card': {
+    title: 'Card element',
+    description: 'Ultima Card as a custom element family, vendored for a host that cannot run React.',
+    docs: '<script type="module" src="./ult-card.js"></script>\n\n<ult-card>\n  <ult-card-header>\n    <ult-card-title>Latency</ult-card-title>\n    <ult-card-description>p95 over the last hour</ult-card-description>\n  </ult-card-header>\n  <ult-card-body>Body</ult-card-body>\n  <ult-card-footer>Footer</ult-card-footer>\n</ult-card>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nAxes are attributes carrying the React prop values verbatim; Card declares none.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
+    registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
+  },
 };
