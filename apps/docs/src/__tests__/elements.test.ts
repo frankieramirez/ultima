@@ -10,6 +10,7 @@ const ELEMENTS = [
   'ult-meter',
   'ult-stat',
   'ult-table',
+  'ult-tabs',
   'ult-tooltip',
 ] as const;
 
@@ -18,8 +19,10 @@ const PROOF_PART: Record<(typeof ELEMENTS)[number], string> = {
   'ult-button': 'root',
   'ult-card': 'root',
   'ult-code': 'root',
+  'ult-meter': 'root',
   'ult-stat': 'root',
   'ult-table': 'root',
+  'ult-tabs': 'root',
   'ult-tooltip': 'popup',
 };
 

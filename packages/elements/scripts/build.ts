@@ -23,10 +23,12 @@ const TOKEN_SOURCES = [
   join(tokensDir, 'src/themes.ts'),
 ];
 
-// Gzipped KB budgets; the Zag 1.44.0 measurements are recorded in ADR 0008's consequences.
+// Gzipped KB budgets; the Zag 1.44.0 prototype measurements are recorded in ADR
+// 0008's consequences, and the shipped family with its full part set measures
+// above the prototype's number.
 const BUDGET_KB: Record<string, number> = {
   'ult-button': 5,
-  'ult-tabs': 12.9,
+  'ult-tabs': 17,
   'ult-tooltip': 26,
   ultima: 40,
 };

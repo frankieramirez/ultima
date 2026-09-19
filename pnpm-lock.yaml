@@ -111,6 +111,9 @@ importers:
       '@ultima/tokens':
         specifier: workspace:*
         version: link:../tokens
+      '@zag-js/tabs':
+        specifier: 1.44.0
+        version: 1.44.0
       '@zag-js/tooltip':
         specifier: 1.44.0
         version: 1.44.0
@@ -1062,6 +1065,9 @@ packages:
 
   '@zag-js/store@1.44.0':
     resolution: {integrity: sha512-syjbybsc1e2zro50Eu+SaloeJbiXTY78wa+m8iUzswdmVzpts+7KSk3Oogso7jxZ7L91vNAQDhSqZR73Il3KOA==}
+
+  '@zag-js/tabs@1.44.0':
+    resolution: {integrity: sha512-RZq89qz3SRVDHa1Og/Apco1gGPt0qK9tfoiWf61NA/ckV8r2LGf8IxvilGgUuHc5TUYWh938ERzZ4vjqWzGRug==}
 
   '@zag-js/tooltip@1.44.0':
     resolution: {integrity: sha512-OnOQ3NSXDe9YAoekKWMnbEVvoAa5R3ZdXyHx3UEFxIRjPB+J5xk8+8MVNR6715ifndLmBjexVm/UR//Bf47tpA==}
@@ -2688,6 +2694,14 @@ snapshots:
   '@zag-js/store@1.44.0':
     dependencies:
       proxy-compare: 3.0.1
+
+  '@zag-js/tabs@1.44.0':
+    dependencies:
+      '@zag-js/anatomy': 1.44.0
+      '@zag-js/core': 1.44.0
+      '@zag-js/dom-query': 1.44.0
+      '@zag-js/types': 1.44.0
+      '@zag-js/utils': 1.44.0
 
   '@zag-js/tooltip@1.44.0':
     dependencies:
