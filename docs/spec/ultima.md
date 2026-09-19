@@ -1,6 +1,6 @@
 # Ultima specification
 
-The owning document for Ultima's conventions, tokens, and component contracts. Each section is written when its decision ticket closes. Two maps have fed it: [Map: Ultima design system spec](https://linear.app/frankie-ramirez/issue/ULT-1), which settled the system, and [Map: Sidebar and the docs application in v0](https://linear.app/frankie-ramirez/issue/ULT-47), which settled Sidebar and what the docs site being a real application costs the catalogue. Read `CONTEXT.md` for the glossary and `docs/adr/` for the hard-to-reverse choices.
+The owning document for Ultima's conventions, tokens, and component contracts. Each section is written when its decision ticket closes. Three maps have fed it: [Map: Ultima design system spec](https://linear.app/frankie-ramirez/issue/ULT-1), which settled the system, [Map: Sidebar and the docs application in v0](https://linear.app/frankie-ramirez/issue/ULT-47), which settled Sidebar and what the docs site being a real application costs the catalogue, and [Map: web component support for Ultima](https://github.com/frankieramirez/ultima/issues/148), which settled the element catalogue. Read `CONTEXT.md` for the glossary and `docs/adr/` for the hard-to-reverse choices.
 
 Nothing in v0 is now waiting on a decision. The next work is building it.
 
@@ -1550,6 +1550,68 @@ Offered two ways. The stable URL `https://ultima.systems/tokens.css` is the docu
 
 `registry/ultima/`, `registry/registry.json`, `apps/docs/public/r/*.json`, and the three published exports are all gitignored. The docs site's build script runs `registry:build` first, so a deploy publishes the registry and the site together from one command.
 
+The same run carries the element catalogue: `registry:build` first builds `packages/elements`, copies its `dist/` into `apps/docs/public/elements/`, and embeds the same bytes in each element's universal item. The contract that produces is the Web components section below.
+
+## Web components
+
+Decided on [Map: web component support for Ultima](https://github.com/frankieramirez/ultima/issues/148) and assembled on [Where the spec section and ADR land, and which release the element catalogue belongs to](https://github.com/frankieramirez/ultima/issues/160). A second render target: the report set re-implemented as custom elements for hosts that cannot run React. It is not the React catalogue wrapped — wrapping drags React into hosts that chose not to run it, ruled out when the destination was named. Every rule in the Components section above is written for the React target and governs that target. This section is the whole contract for the element target, and it is the one place the element conventions live: `CONTEXT.md` glosses the terms, the tickets hold the reasoning, and the guide at `/llms.txt` is generated from this document rather than maintained beside it.
+
+### Scope and release track
+
+Nine elements, the report set: Badge, Card, Table, Tabs, Button, Meter, Stat, Code, and Tooltip as `ult-badge`, `ult-card`, `ult-table`, `ult-tabs`, `ult-button`, `ult-meter`, `ult-stat`, `ult-code`, and `ult-tooltip`. The report set was chosen because it forces one interactive component — Tabs and Tooltip — so the primitive question got answered rather than dodged. Parity beyond the report set is out of scope.
+
+Elements ship on their own release track beside the v0.x line, settled on [#160](https://github.com/frankieramirez/ultima/issues/160). The release labels under Release scope measure React catalogue coverage, and no element is a checklist entry there; the element catalogue's gate is stated under What an element build ticket proves below. On the roadmap the track is its own milestone, sequenced independently of the v0.2 and v1 work: nothing in v1's dependable-default definition depends on it, and it can run in parallel.
+
+### Naming grammar
+
+Settled on [The naming grammar for elements](https://github.com/frankieramirez/ultima/issues/156). Tag names are `ult-` plus the registry item name. A compound component is a family of elements named `ult-<item>-<part>` uniformly (`ult-tabs-list`, `ult-tabs-tab`, `ult-card-body`): shared part names such as Indicator and Panel turn any shortened convention into an exception list.
+
+Axes are attributes carrying the React prop values verbatim (`variant="solid"`, `tone="danger"`, `size="sm"`). They sit on the root where the React contract puts the axis in context, and are settable per part where the prop-wins rule applies. `disabled` is authored as an attribute; the element mirrors it into the primitive's `data-*` vocabulary on inner DOM. Machine state is `data-*` on the part elements themselves (`data-selected`, `data-orientation`), directly targetable in light DOM, so `:state()` is declined. `part=` marks only the inner styling targets an element renders itself, valued with kebab-cased part names.
+
+### Light DOM
+
+Settled on [Shadow DOM or light DOM](https://github.com/frankieramirez/ultima/issues/154). Elements render into light DOM, never shadow. A shadow boundary seals the element off from `data-theme` and consumer `--ult-*` overrides, breaking ADR 0004's re-skin promise, and ARIA idrefs cannot cross it, which kills portaled overlays. The cost is that the page's CSS reaches element internals; the sanctioned override surface is `part=` attributes on the inner parts, targeted with plain attribute selectors in the consumer's own CSS, plus the `style` attribute on the host for per-instance tweaks. The `style` slot's element equivalent is therefore the platform's own tools, and re-skinning by semantic token override works unchanged.
+
+### Styling
+
+Settled on [How StyleX output reaches a custom element](https://github.com/frankieramirez/ultima/issues/151) and proven on [the Button prototype](https://github.com/frankieramirez/ultima/issues/153). Elements are styled by the same StyleX engine: `stylex.attrs` runs without React, and the element build compiles the token sources and each element's own `stylex.create` tables with the repo's own toolchain into the stylesheet the artifact carries. Styling from the tokens CSS export alone would be a second engine under ADR 0001's words, so it is ruled out. The prototype at `packages/ui/prototype/` compiled to a dependency-free script plus a document sheet; light DOM re-themes and accepts consumer overrides, and React 19 renders the elements with attributes.
+
+### The primitive layer
+
+ADR 0008, settled on [the primitive-layer ticket](https://github.com/frankieramirez/ultima/issues/155) and measured on [the Zag evaluation](https://github.com/frankieramirez/ultima/issues/163): Zag.js through `@zag-js/vanilla`, bundled inside the vendored artifact so a consumer never installs it. ADR 0002's Base UI still governs the React catalogue; the principle "one styling engine, one primitive library" reads per render target. Elements inherit Zag's `data-part` attribute vocabulary rather than Base UI's, so parity between the catalogues is the parity gate's job, not something the primitive supplies. Zag's measured deviations are patched at the element layer: `aria-controls` lands on the selected tab only, its `aria-label` prop is never passed, and its positioner and arrow inline styles are reached through the CSS variables it exposes.
+
+### One file per element
+
+Settled on [the parity ticket](https://github.com/frankieramirez/ultima/issues/158). The one-file rule reads per render target: `packages/ui/src/<name>.tsx` stays untouched, and `packages/elements/src/ult-<name>.element.ts` holds the whole element family for that component. The element file restates the React component's StyleX tables under the system's restatement rule, kept honest by the parity gate rather than by an import the target cannot run. Forge authors the React file only; the gate is the feedback loop for the element file.
+
+### Parity gate
+
+Settled on [#158](https://github.com/frankieramirez/ultima/issues/158). A `parity.test.ts` suite in `packages/elements/src/__tests__/` fails the build when an element file and its React source disagree on styled parts, axes, token reads, or state selectors — the last through a per-element declared map from Base UI's `data-*` vocabulary to Zag's. It is the element catalogue's answer to what Restatement leaves unchecked inside the React catalogue.
+
+### Distribution
+
+Settled on [the CLI ticket](https://github.com/frankieramirez/ultima/issues/152) and [the distribution ticket](https://github.com/frankieramirez/ultima/issues/157), recorded as ADR 0009. Two surfaces, one build: a universal `registry:item` per element for hosts that can run the CLI, and the same bundled file served at a stable URL beside `/tokens.css` for hosts that cannot. The item is never `registry:ui`; its `dependencies` stay empty and its `registryDependencies` is a manifest-declared URL to `tokens-css`. The element is a vendored artifact, not copy-source: customization is tokens, attributes, and parts, and a consumer who needs different behavior forks the repository.
+
+Versioning follows the same possession contract as the React catalogue, settled on [the pinning ticket](https://github.com/frankieramirez/ultima/issues/185): the served URL always carries the latest build, pinning means vendoring the file, an upgrade is a re-fetch or a reinstall that overwrites local edits, and each bundle carries a build stamp so drift is a diff away. Durable versioned URLs wait on registry-wide versioning, which is undecided.
+
+### The build
+
+Settled on [the build ticket](https://github.com/frankieramirez/ultima/issues/186). `packages/elements` is a new React-free workspace package that owns its build and emits `dist/` per-element files plus the combined `ultima.js`. It is seeded by the prototype's Babel-and-StyleX script and gains a bundler when Zag lands. `pnpm registry:build` chains that build the way it chains `@ultima/tokens`, copies the files to `apps/docs/public/elements/`, and embeds the same bytes in each element's universal item, so one artifact feeds both surfaces.
+
+### The fixture page and the first consumer
+
+Settled on [the consumer ticket](https://github.com/frankieramirez/ultima/issues/149) and [the fixture ticket](https://github.com/frankieramirez/ultima/issues/184). The first consumer is a static, non-React HTML page hosted on the docs site: a checked-in fixture under `apps/docs/public/`, served verbatim outside the router like `/tokens.css`, loading the generated bundle and `/tokens.css`. It holds one demo per report-set element in both color modes and is axe-swept in the docs site's Playwright browser suite. The bundle is held to mana's self-contained, no-network, `file://` contract so mana can adopt later; mana keeps its no-script rule until then, and adoption is a mana-repo decision.
+
+### What an element build ticket proves
+
+Settled on [the proof-bar ticket](https://github.com/frankieramirez/ultima/issues/159). The eight items read in element terms: axes mount as attributes on an element created by script or by the parser and changed after connection; the primitive-wiring item reads Zag where the React bar reads Base UI; the element-wired item carries the lifecycle — connect starts the machine, disconnect stops it and drops its listeners; the CSS-the-primitive-reads item has no report-set instance, because Zag never reads element styles the way a Base UI panel does. Tests run in `packages/elements/src/__tests__/` in the same browser-mode environment against a plain document with no React, and open-state axe lives in the element's own file the way open overlays live in a component's. The contrast gate needs no change: elements resolve the same tokens, and a pairing the table never declared stays axe's question. The smoke install gains a targeted element-item install the way it gained sidebar's, since universal `registry:item`s fall outside its `registry:ui` enumeration, and the fixture page doubles as the no-package-manager host's smoke.
+
+### What the front door says
+
+Settled on [#160](https://github.com/frankieramirez/ultima/issues/160) and [the agent-surface ticket](https://github.com/frankieramirez/ultima/issues/187). The README's own contract above is a front door that carries what ships, so it says nothing about elements until the first one lands; then it gains one bullet under What ships naming the served bundle and the registry item, and a Zag.js line under Stack. `/llms.txt` gains a generated Elements section once the first element item ships — same build step, same never-hand-edited rule — one compact block per element giving the tag, both acquisition paths (`npx shadcn add @ultima/ult-<item>` and the served file under `/elements/`, with `ultima.js` for the set), and its axes as attributes carrying the React prop values verbatim, behind a lead-in that states the grammar once and points at the fixture page. The guide's opening paragraph stops saying "a design system for React" and names the two render targets; the React entries are untouched. Each element item's `docs` field speaks markup, not imports: a script-tag load line, one minimal usage line, the tokens pairing, the attribute grammar in one line, and the vendored caveat that reinstall overwrites and edits are forfeit. Forge stays React-only — every convention it encodes is React-shaped, and elements are authored by hand against this section with the parity gate as the check; whether any skill learns element authoring is deferred until the report set ships elements to pattern-match against.
+
+Carried from the map as out of scope: wrapping the React catalogue as custom elements; hosting third-party web components inside Ultima React apps; parity beyond the report set and any Tailwind or Radix reintroduction; an npm package for the element catalogue, ADR 0003's deferral holding since no consumer has asked; and versioned registry history, which takes the same latest-channel contract as the React catalogue rather than a scheme of its own.
+
 ## Mana report adoption
 
 Decided on [Mana report adoption](https://linear.app/frankie-ramirez/issue/ULT-13), against [how the report is styled today](https://linear.app/frankie-ramirez/issue/ULT-5). Mana's `ultima` audit report is the first true consumer of Ultima, of the tokens CSS export only. It keeps its Python render pipeline, and the work below happens in the mana repository, on the branch that carries the `ultima` skill. It is recorded here because the export's constraints and the `<role>-border` tokens exist for it, and because the checklist is what a build ticket in mana slices.
@@ -1869,7 +1931,7 @@ A component-authoring skill exists, named `forge`, and it lives in this reposito
 
 Mana's skills are general by design, and the `ultima` audit skill's generality is its product. A skill that knows Base UI composition, per-axis StyleX variant tables, and Ultima's part-naming rules is the opposite of general, and it has to version with the conventions it encodes. A repository that wants it installs it from `frankieramirez/ultima`, the way mana's skills are installed from `frankieramirez/mana`.
 
-It was written after the first v0 components landed, for the reason it had to be: a skill with no components to pattern-match against is guesswork. Because it encodes the conventions rather than pointing at them in one place only, it versions with them, so a release that moves a rule moves the skill in the same pass. v0.1's eight-item proof bar and its one reduced-motion exception reached it on the assembly ticket.
+It was written after the first v0 components landed, for the reason it had to be: a skill with no components to pattern-match against is guesswork. Because it encodes the conventions rather than pointing at them in one place only, it versions with them, so a release that moves a rule moves the skill in the same pass. v0.1's eight-item proof bar and its one reduced-motion exception reached it on the assembly ticket. Its scope is the React catalogue only, settled on [the element agent-surface ticket](https://github.com/frankieramirez/ultima/issues/187): every convention it encodes is React-shaped, and element files are authored by hand against the Web components section with the parity gate as the check. Whether any skill learns element authoring is deferred until the report set ships elements to pattern-match against, the same reason forge itself waited for the first v0 components; if one comes it lives in this repository for the same versions-with-the-conventions reason, and second-skill versus forge-mode is a choice for that moment.
 
 ### The audit skill
 
