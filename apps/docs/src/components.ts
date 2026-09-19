@@ -263,6 +263,12 @@ export const components = [
     description: 'Disclosure sections under one shared value, on Base UI, with the heading level left to you.',
     release: 'v0.2',
   },
+  {
+    name: 'Avatar',
+    item: 'avatar',
+    description: 'An image that falls back to whatever you put behind it, at whatever size you set.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
