@@ -15,11 +15,12 @@ const INNER = `
 `;
 
 function part(host: Element, name: (typeof PARTS)[number]): HTMLElement {
-  const found = name === 'root' ? host : host.querySelector(`[part="${name}"]`);
+  const found = host.querySelector(`[part="${name}"]`);
   if (!found) throw new Error(`ult-meter rendered no part "${name}"`);
   return found as HTMLElement;
 }
 
+const rootOf = (meter: Element) => part(meter, 'root');
 const fillOf = (meter: Element) => part(meter, 'indicator');
 const trackOf = (meter: Element) => part(meter, 'track');
 const valueOf = (meter: Element) => part(meter, 'value');
@@ -151,15 +152,14 @@ test('parts outside a meter fall back to neutral', () => {
   const rooted = mount({ value: '40', tone: 'neutral' });
   const looseIndicator = loose.querySelector('ult-meter-indicator') as HTMLElement;
   const looseValue = loose.querySelector('ult-meter-value') as HTMLElement;
-  expect(looseIndicator.className).toBe(fillOf(rooted).className);
-  expect(looseValue.className).toBe(valueOf(rooted).className);
+  expect(part(looseIndicator, 'indicator').className).toBe(fillOf(rooted).className);
+  expect(part(looseValue, 'value').className).toBe(valueOf(rooted).className);
 });
 
 test('the label names the meter', async () => {
   const host = mount({ value: '40' });
   await expect.element(page.getByRole('meter', { name: 'Disk used' })).toBeVisible();
-  const label = host.querySelector('ult-meter-label') as HTMLElement;
-  expect(host.getAttribute('aria-labelledby')).toBe(label.id);
+  expect(rootOf(host).getAttribute('aria-labelledby')).toBe(part(host, 'label').id);
 });
 
 test('aria-label on the meter names it when there is no label part', async () => {
@@ -182,9 +182,9 @@ test('nothing in a meter takes focus', async () => {
 test('the value reaches aria and the indicator fills that share of the track', async () => {
   const host = mount({ value: '40' });
   await expect.element(host).toBeVisible();
-  expect(host).toHaveAttribute('aria-valuenow', '40');
-  expect(host).toHaveAttribute('aria-valuemin', '0');
-  expect(host).toHaveAttribute('aria-valuemax', '100');
+  expect(rootOf(host)).toHaveAttribute('aria-valuenow', '40');
+  expect(rootOf(host)).toHaveAttribute('aria-valuemin', '0');
+  expect(rootOf(host)).toHaveAttribute('aria-valuemax', '100');
   expect(fillOf(host).getBoundingClientRect().width).toBeCloseTo(
     trackOf(host).getBoundingClientRect().width * 0.4,
     1,
@@ -194,9 +194,9 @@ test('the value reaches aria and the indicator fills that share of the track', a
 
 test('min and max bound the reading', () => {
   const host = mount({ value: '40', min: '20', max: '60' });
-  expect(host).toHaveAttribute('aria-valuemin', '20');
-  expect(host).toHaveAttribute('aria-valuemax', '60');
-  expect(host).toHaveAttribute('aria-valuenow', '40');
+  expect(rootOf(host)).toHaveAttribute('aria-valuemin', '20');
+  expect(rootOf(host)).toHaveAttribute('aria-valuemax', '60');
+  expect(rootOf(host)).toHaveAttribute('aria-valuenow', '40');
   expect(fillOf(host).getBoundingClientRect().width).toBeCloseTo(
     trackOf(host).getBoundingClientRect().width * 0.5,
     1,
@@ -205,30 +205,30 @@ test('min and max bound the reading', () => {
 
 test('an out-of-range value clamps to the range', () => {
   const host = mount({ value: '120' });
-  expect(host).toHaveAttribute('aria-valuenow', '100');
+  expect(rootOf(host)).toHaveAttribute('aria-valuenow', '100');
   expect(fillOf(host).style.width).toBe('100%');
 });
 
 test('value set after connection updates aria, fill, and text', () => {
   const host = mount({ value: '40' });
   host.setAttribute('value', '80');
-  expect(host).toHaveAttribute('aria-valuenow', '80');
-  expect(part(host, 'value').textContent).toBe('80%');
+  expect(rootOf(host)).toHaveAttribute('aria-valuenow', '80');
+  expect(valueOf(host).textContent).toBe('80%');
   expect(fillOf(host).style.width).toBe('80%');
 });
 
 test('an explicit aria-valuetext wins over the formatted value', () => {
   const host = mount({ value: '40', 'aria-valuetext': '4 of 10 bars' });
-  expect(host).toHaveAttribute('aria-valuetext', '4 of 10 bars');
+  expect(rootOf(host)).toHaveAttribute('aria-valuetext', '4 of 10 bars');
   host.setAttribute('value', '80');
-  expect(host).toHaveAttribute('aria-valuetext', '4 of 10 bars');
+  expect(rootOf(host)).toHaveAttribute('aria-valuetext', '4 of 10 bars');
 });
 
 test('removing the label drops the registered name', () => {
   const host = mount({ value: '40' });
-  expect(host.hasAttribute('aria-labelledby')).toBe(true);
+  expect(rootOf(host).hasAttribute('aria-labelledby')).toBe(true);
   (host.querySelector('ult-meter-label') as HTMLElement).remove();
-  expect(host.hasAttribute('aria-labelledby')).toBe(false);
+  expect(rootOf(host).hasAttribute('aria-labelledby')).toBe(false);
 });
 
 test('disconnect and reconnect keep the element live', () => {
@@ -295,6 +295,14 @@ test('the emitted bundles carry no runtime stylex or external imports', () => {
   for (const bundle of [perElementBundle, ultimaBundle]) {
     expect(bundle).not.toMatch(/^import |^export |stylex\.(create|attrs|props)/m);
     expect(bundle).toContain('data-ultima-elements');
-    expect(bundle).toContain("customElements.define('ult-meter'");
+    for (const tag of [
+      'ult-meter',
+      'ult-meter-label',
+      'ult-meter-track',
+      'ult-meter-indicator',
+      'ult-meter-value',
+    ]) {
+      expect(bundle).toMatch(new RegExp(`customElements\\.define\\(["']${tag}["']`));
+    }
   }
 });

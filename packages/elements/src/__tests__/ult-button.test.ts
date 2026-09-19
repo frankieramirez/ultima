@@ -140,6 +140,14 @@ test('data-theme re-themes through the tokens stylesheet', async () => {
 });
 
 test('a consumer --ult-* override reaches the part', async () => {
+  // A preceding file's hover leaves the pointer where this mount lands; parked on
+  // the button it would read the -hover token, which the --ult-color-accent
+  // override cannot move.
+  const away = document.createElement('div');
+  away.style.cssText = 'position:fixed;inset-block-end:0;inset-inline-end:0;width:2px;height:2px';
+  document.body.appendChild(away);
+  await userEvent.hover(away);
+  away.remove();
   const wrapper = document.createElement('div');
   document.body.appendChild(wrapper);
   const host = mount({ variant: 'solid' }, 'Overridden', wrapper);
@@ -158,6 +166,6 @@ test('the emitted bundles carry no runtime stylex or external imports', () => {
   for (const bundle of [perElementBundle, ultimaBundle]) {
     expect(bundle).not.toMatch(/^import |^export |stylex\.(create|attrs|props)/m);
     expect(bundle).toContain('data-ultima-elements');
-    expect(bundle).toContain("customElements.define('ult-button'");
+    expect(bundle).toMatch(/customElements\.define\(["']ult-button["']/);
   }
 });

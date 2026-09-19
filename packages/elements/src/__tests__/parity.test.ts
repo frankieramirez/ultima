@@ -1,9 +1,17 @@
 import { describe, expect, test } from 'vitest';
 
+import elementBadge from '../ult-badge.element.ts?raw';
 import elementButton from '../ult-button.element.ts?raw';
+import elementCard from '../ult-card.element.ts?raw';
+import elementCode from '../ult-code.element.ts?raw';
 import elementMeter from '../ult-meter.element.ts?raw';
+import elementStat from '../ult-stat.element.ts?raw';
+import reactBadge from '../../../ui/src/badge.tsx?raw';
 import reactButton from '../../../ui/src/button.tsx?raw';
+import reactCard from '../../../ui/src/card.tsx?raw';
+import reactCode from '../../../ui/src/code.tsx?raw';
 import reactMeter from '../../../ui/src/meter.tsx?raw';
+import reactStat from '../../../ui/src/stat.tsx?raw';
 
 type ElementParity = {
   tag: string;
@@ -15,6 +23,17 @@ type ElementParity = {
 };
 
 const ELEMENTS: ElementParity[] = [
+  {
+    tag: 'ult-badge',
+    element: elementBadge,
+    react: reactBadge,
+    axes: {
+      variant: ['subtle', 'solid'],
+      tone: ['neutral', 'accent', 'highlight', 'success', 'warning', 'danger'],
+    },
+    parts: ['root'],
+    stateMap: {},
+  },
   {
     tag: 'ult-button',
     element: elementButton,
@@ -28,6 +47,22 @@ const ELEMENTS: ElementParity[] = [
     stateMap: { 'data-disabled': 'data-disabled' },
   },
   {
+    tag: 'ult-card',
+    element: elementCard,
+    react: reactCard,
+    axes: {},
+    parts: ['root', 'header', 'title', 'description', 'body', 'footer'],
+    stateMap: {},
+  },
+  {
+    tag: 'ult-code',
+    element: elementCode,
+    react: reactCode,
+    axes: { variant: ['inline', 'block'] },
+    parts: ['root'],
+    stateMap: {},
+  },
+  {
     tag: 'ult-meter',
     element: elementMeter,
     react: reactMeter,
@@ -36,6 +71,14 @@ const ELEMENTS: ElementParity[] = [
     },
     parts: ['root', 'label', 'track', 'indicator', 'value'],
     stateMap: { ToneContext: "closest('ult-meter')" },
+  },
+  {
+    tag: 'ult-stat',
+    element: elementStat,
+    react: reactStat,
+    axes: {},
+    parts: ['root', 'label', 'value'],
+    stateMap: {},
   },
 ];
 
@@ -126,7 +169,7 @@ describe.each(ELEMENTS)('$tag', (decl) => {
     expect(() => assertParity(drifted)).toThrow(/stylex tables differ|token reads differ/);
   });
 
-  test('fails when an axis drifts', () => {
+  test.skipIf(Object.keys(decl.axes).length === 0)('fails when an axis drifts', () => {
     const axis = Object.keys(decl.axes)[0] as string;
     const missing = {
       ...decl,
@@ -140,14 +183,14 @@ describe.each(ELEMENTS)('$tag', (decl) => {
   test('fails when a styled part drifts', () => {
     const drifted = {
       ...decl,
-      element: decl.element.replace("setAttribute('part', 'root')", "setAttribute('part', 'base')"),
+      element: decl.element.replace(`setAttribute('part', '${decl.parts[0]}')`, "setAttribute('part', 'base')"),
     };
     expect(() => assertParity(drifted)).toThrow(/part= targets differ/);
   });
 
-  test.runIf(Object.keys(decl.stateMap).length > 0)('fails when a state selector drifts', () => {
-    const marker = Object.values(decl.stateMap)[0] as string;
-    const drifted = { ...decl, element: decl.element.replaceAll(marker, 'data-inert') };
+  test.skipIf(Object.keys(decl.stateMap).length === 0)('fails when a state selector drifts', () => {
+    const elementState = Object.values(decl.stateMap)[0] as string;
+    const drifted = { ...decl, element: decl.element.replaceAll(elementState, 'data-inert') };
     expect(() => assertParity(drifted)).toThrow();
   });
 });

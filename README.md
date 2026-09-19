@@ -50,7 +50,7 @@ import { Button } from '@/components/ui/button';
 - **Tokens as CSS** at [`/tokens.css`](https://ultima.systems/tokens.css), for consumers that cannot run StyleX.
 - **An agent guide** at [`/llms.txt`](https://ultima.systems/llms.txt): principles, conventions, component list, and token names in one plain Markdown file. Ultima installs no documentation into your repository, so this is how a consumer's agent learns the system.
 - **The registry** at [`/r/registry.json`](https://ultima.systems/r/registry.json), one item per component.
-- **Elements** at [`/elements/ultima.js`](https://ultima.systems/elements/ultima.js): the report set as custom elements for hosts that cannot run React. Each element also ships as a registry item, starting with `ult-button`.
+- **Elements** at [`/elements/ultima.js`](https://ultima.systems/elements/ultima.js): the report set as custom elements for hosts that cannot run React. Each element also ships as a registry item: `ult-badge`, `ult-button`, `ult-code`, and `ult-stat` so far.
 
 ## How it is built
 
@@ -65,6 +65,7 @@ The [rationale](https://ultima.systems/rationale) page and the [ADRs](docs/adr) 
 ## Stack
 
 - [Base UI](https://base-ui.com) for the primitives.
+- [Zag.js](https://zagjs.com) for the element primitives, bundled inside each vendored artifact.
 - [StyleX](https://stylexjs.com) for styling.
 - A [shadcn](https://ui.shadcn.com/docs/registry) registry for distribution.
 - Vite and TanStack Router for the docs site, which also serves the registry, the token exports, and the agent guide.

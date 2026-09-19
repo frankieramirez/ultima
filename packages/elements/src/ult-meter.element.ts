@@ -77,11 +77,11 @@ function pick<T extends string>(value: string | null, allowed: readonly T[], fal
   return allowed.includes(value as T) ? (value as T) : fallback;
 }
 
-function applyStyles(host: HTMLElement, classString: string) {
-  const previous = appliedStyles.get(host);
-  if (previous) for (const name of previous.split(' ')) host.classList.remove(name);
-  appliedStyles.set(host, classString);
-  for (const name of classString.split(' ')) host.classList.add(name);
+function applyStyles(target: HTMLElement, classString: string) {
+  const previous = appliedStyles.get(target);
+  if (previous) for (const name of previous.split(' ')) target.classList.remove(name);
+  appliedStyles.set(target, classString);
+  for (const name of classString.split(' ')) target.classList.add(name);
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -114,62 +114,118 @@ function toneOf(part: HTMLElement, meter: HTMLElement | null): MeterTone {
   return pick(part.getAttribute('tone') ?? meter?.getAttribute('tone') ?? null, TONES, 'neutral');
 }
 
-function syncIndicator(host: HTMLElement) {
+function syncIndicator(host: UltMeterIndicator) {
+  const target = host.target;
+  if (!target) return;
   const meter = meterOf(host);
-  applyStyles(host, mergeStyles(styles.indicator, indicatorTones[toneOf(host, meter)]));
-  host.style.width = `${meter ? measurement(meter).percentage : 0}%`;
+  applyStyles(target, mergeStyles(styles.indicator, indicatorTones[toneOf(host, meter)]));
+  target.style.width = `${meter ? measurement(meter).percentage : 0}%`;
 }
 
-function syncValue(host: HTMLElement) {
+function syncValue(host: UltMeterValue) {
+  const target = host.target;
+  if (!target) return;
   const meter = meterOf(host);
-  applyStyles(host, mergeStyles(styles.value, valueTones[toneOf(host, meter)]));
-  host.textContent = meter ? measurement(meter).formatted : '';
+  applyStyles(target, mergeStyles(styles.value, valueTones[toneOf(host, meter)]));
+  target.textContent = meter ? measurement(meter).formatted : '';
 }
 
-function syncMeter(host: HTMLElement) {
+const FORWARDED = ['aria-label', 'aria-labelledby', 'aria-describedby', 'aria-valuetext'];
+
+function syncMeter(host: UltMeter) {
+  const root = host.target;
+  if (!root) return;
   const { min, max, value, formatted } = measurement(host);
-  host.setAttribute('aria-valuemin', String(min));
-  host.setAttribute('aria-valuemax', String(max));
-  host.setAttribute('aria-valuenow', String(value));
-  const own = ownAttributes.get(host) ?? {};
-  if (host.getAttribute('aria-valuetext') === (own['aria-valuetext'] ?? null)) {
-    host.setAttribute('aria-valuetext', formatted);
+  root.setAttribute('aria-valuemin', String(min));
+  root.setAttribute('aria-valuemax', String(max));
+  root.setAttribute('aria-valuenow', String(value));
+  const own = ownAttributes.get(root) ?? {};
+  for (const name of FORWARDED) {
+    const forwarded = host.getAttribute(name);
+    if (forwarded !== null) {
+      root.setAttribute(name, forwarded);
+      own[`forwarded:${name}`] = forwarded;
+      delete own[name];
+    } else if (own[`forwarded:${name}`] !== undefined) {
+      if (root.getAttribute(name) === own[`forwarded:${name}`]) root.removeAttribute(name);
+      delete own[`forwarded:${name}`];
+    }
+  }
+  if (
+    !host.hasAttribute('aria-valuetext') &&
+    root.getAttribute('aria-valuetext') === (own['aria-valuetext'] ?? null)
+  ) {
+    root.setAttribute('aria-valuetext', formatted);
     own['aria-valuetext'] = formatted;
   }
-  const registered = labelIds.get(host);
-  const labelledby = host.getAttribute('aria-labelledby');
-  if (registered && (labelledby === null || labelledby === own['aria-labelledby'])) {
-    host.setAttribute('aria-labelledby', registered);
-    own['aria-labelledby'] = registered;
-  } else if (!registered && labelledby !== null && labelledby === own['aria-labelledby']) {
-    host.removeAttribute('aria-labelledby');
-    delete own['aria-labelledby'];
+  if (!host.hasAttribute('aria-labelledby')) {
+    const registered = labelIds.get(host);
+    const labelledby = root.getAttribute('aria-labelledby');
+    if (registered && (labelledby === null || labelledby === own['aria-labelledby'])) {
+      root.setAttribute('aria-labelledby', registered);
+      own['aria-labelledby'] = registered;
+    } else if (!registered && labelledby !== null && labelledby === own['aria-labelledby']) {
+      root.removeAttribute('aria-labelledby');
+      delete own['aria-labelledby'];
+    }
   }
-  ownAttributes.set(host, own);
+  ownAttributes.set(root, own);
   for (const part of host.querySelectorAll('ult-meter-indicator')) {
-    if (part.closest('ult-meter') === host) syncIndicator(part as HTMLElement);
+    if (part.closest('ult-meter') === host) syncIndicator(part as UltMeterIndicator);
   }
   for (const part of host.querySelectorAll('ult-meter-value')) {
-    if (part.closest('ult-meter') === host) syncValue(part as HTMLElement);
+    if (part.closest('ult-meter') === host) syncValue(part as UltMeterValue);
   }
 }
 
-class UltMeter extends HTMLElement {
-  static observedAttributes = ['value', 'min', 'max', 'tone'];
-  private rendered = false;
+abstract class UltMeterPart extends HTMLElement {
+  target: HTMLElement | null = null;
 
   connectedCallback() {
-    if (!this.rendered) {
-      this.rendered = true;
-      this.setAttribute('part', 'root');
-      this.setAttribute('role', 'meter');
-      applyStyles(this, mergeStyles(styles.root));
+    if (!this.target) {
+      const target = this.renderTarget();
+      while (this.firstChild) target.appendChild(this.firstChild);
+      this.appendChild(target);
+      this.target = target;
+    }
+    this.mounted();
+  }
+
+  protected abstract renderTarget(): HTMLElement;
+
+  protected mounted() {}
+}
+
+class UltMeter extends UltMeterPart {
+  static observedAttributes = [
+    'value',
+    'min',
+    'max',
+    'tone',
+    'aria-label',
+    'aria-labelledby',
+    'aria-describedby',
+    'aria-valuetext',
+  ];
+  private tailed = false;
+
+  protected renderTarget() {
+    const root = document.createElement('div');
+    root.setAttribute('part', 'root');
+    root.setAttribute('role', 'meter');
+    applyStyles(root, mergeStyles(styles.root));
+    return root;
+  }
+
+  protected mounted() {
+    if (!this.tailed) {
+      this.tailed = true;
       const tail = document.createElement('span');
       tail.setAttribute('role', 'presentation');
       tail.style.cssText =
         'border:0;clip-path:inset(50%);height:1px;left:0;margin:-1px;overflow:hidden;padding:0;position:fixed;top:0;white-space:nowrap;width:1px';
       tail.textContent = 'x';
-      this.appendChild(tail);
+      this.target?.appendChild(tail);
     }
     syncMeter(this);
   }
@@ -179,51 +235,58 @@ class UltMeter extends HTMLElement {
   }
 }
 
-class UltMeterLabel extends HTMLElement {
+class UltMeterLabel extends UltMeterPart {
   private meter: HTMLElement | null = null;
 
-  connectedCallback() {
-    if (!this.hasAttribute('part')) {
-      this.setAttribute('part', 'label');
-      this.setAttribute('role', 'presentation');
-      applyStyles(this, mergeStyles(styles.label));
-    }
+  protected renderTarget() {
+    const label = document.createElement('span');
+    label.setAttribute('part', 'label');
+    label.setAttribute('role', 'presentation');
+    applyStyles(label, mergeStyles(styles.label));
+    return label;
+  }
+
+  protected mounted() {
     this.meter = meterOf(this);
-    if (this.meter) {
-      if (!this.id) this.id = `ult-meter-label-${++labelCount}`;
-      labelIds.set(this.meter, this.id);
-      syncMeter(this.meter);
+    if (this.meter && this.target) {
+      if (!this.target.id) this.target.id = `ult-meter-label-${++labelCount}`;
+      labelIds.set(this.meter, this.target.id);
+      syncMeter(this.meter as UltMeter);
     }
   }
 
   disconnectedCallback() {
     const meter = this.meter;
     this.meter = null;
-    if (meter && this.id && labelIds.get(meter) === this.id) {
+    const id = this.target?.id;
+    if (meter && id && labelIds.get(meter) === id) {
       labelIds.delete(meter);
-      syncMeter(meter);
+      syncMeter(meter as UltMeter);
     }
   }
 }
 
-class UltMeterTrack extends HTMLElement {
-  connectedCallback() {
-    if (this.hasAttribute('part')) return;
-    this.setAttribute('part', 'track');
-    applyStyles(this, mergeStyles(styles.track));
+class UltMeterTrack extends UltMeterPart {
+  protected renderTarget() {
+    const track = document.createElement('div');
+    track.setAttribute('part', 'track');
+    applyStyles(track, mergeStyles(styles.track));
+    return track;
   }
 }
 
-class UltMeterIndicator extends HTMLElement {
+class UltMeterIndicator extends UltMeterPart {
   static observedAttributes = ['tone'];
 
-  connectedCallback() {
-    if (!this.hasAttribute('part')) {
-      this.setAttribute('part', 'indicator');
-      this.style.display = 'block';
-      this.style.insetInlineStart = '0';
-      this.style.height = 'inherit';
-    }
+  protected renderTarget() {
+    const indicator = document.createElement('div');
+    indicator.setAttribute('part', 'indicator');
+    indicator.style.insetInlineStart = '0';
+    indicator.style.height = 'inherit';
+    return indicator;
+  }
+
+  protected mounted() {
     syncIndicator(this);
   }
 
@@ -232,14 +295,17 @@ class UltMeterIndicator extends HTMLElement {
   }
 }
 
-class UltMeterValue extends HTMLElement {
+class UltMeterValue extends UltMeterPart {
   static observedAttributes = ['tone'];
 
-  connectedCallback() {
-    if (!this.hasAttribute('part')) {
-      this.setAttribute('part', 'value');
-      this.setAttribute('aria-hidden', 'true');
-    }
+  protected renderTarget() {
+    const value = document.createElement('span');
+    value.setAttribute('part', 'value');
+    value.setAttribute('aria-hidden', 'true');
+    return value;
+  }
+
+  protected mounted() {
     syncValue(this);
   }
 
