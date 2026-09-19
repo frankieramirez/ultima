@@ -9,6 +9,8 @@ export type RegistryItemDescription = {
   /** Setup items only: their files are authored, so their npm packages cannot be derived. */
   dependencies?: string[];
   devDependencies?: string[];
+  /** Element items only: a vendored bundle has no imports to derive from, so the tokens-css URL is declared here. */
+  registryDependencies?: string[];
 };
 
 export const items: Record<string, RegistryItemDescription> = {
@@ -262,5 +264,11 @@ export const items: Record<string, RegistryItemDescription> = {
     title: 'Ultima tokens as CSS',
     description: 'The generated token stylesheet, for a project that cannot run StyleX.',
     docs: "Import './ultima-tokens.css' once, from your root layout or entry stylesheet, then read the tokens with var(--ult-color-surface) and friends. Set data-theme=\"dark\" or \"light\" on <html> to pin a mode; without it the file follows the operating system.",
+  },
+  'ult-button': {
+    title: 'Button element',
+    description: 'Ultima Button as a custom element, vendored for a host that cannot run React.',
+    docs: '<script type="module" src="./ult-button.js"></script>\n\n<ult-button variant="solid" size="md" tone="accent">Save</ult-button>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nAxes are attributes carrying the React prop values verbatim: variant, size, tone, and disabled.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
+    registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
   },
 };

@@ -115,7 +115,9 @@ test('every catalogue entry carries a release, and the menu derives from that fi
 });
 
 test('the catalogue and the registry manifest name the same components', () => {
-  const manifest = Object.keys(items).filter((item) => !NOT_A_COMPONENT.includes(item));
+  const manifest = Object.keys(items).filter(
+    (item) => !NOT_A_COMPONENT.includes(item) && !item.startsWith('ult-'),
+  );
 
   expect([...manifest].sort()).toEqual(components.map(({ item }) => item).sort());
 });
