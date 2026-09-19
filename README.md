@@ -65,6 +65,7 @@ The [rationale](https://ultima.systems/rationale) page and the [ADRs](docs/adr) 
 ## Stack
 
 - [Base UI](https://base-ui.com) for the primitives.
+- [Zag.js](https://zagjs.com) for the element primitives, bundled inside each vendored artifact.
 - [StyleX](https://stylexjs.com) for styling.
 - A [shadcn](https://ui.shadcn.com/docs/registry) registry for distribution.
 - Vite and TanStack Router for the docs site, which also serves the registry, the token exports, and the agent guide.
