@@ -6,12 +6,14 @@ import elementCard from '../ult-card.element.ts?raw';
 import elementCode from '../ult-code.element.ts?raw';
 import elementStat from '../ult-stat.element.ts?raw';
 import elementTable from '../ult-table.element.ts?raw';
+import elementTabs from '../ult-tabs.element.ts?raw';
 import reactBadge from '../../../ui/src/badge.tsx?raw';
 import reactButton from '../../../ui/src/button.tsx?raw';
 import reactCard from '../../../ui/src/card.tsx?raw';
 import reactCode from '../../../ui/src/code.tsx?raw';
 import reactStat from '../../../ui/src/stat.tsx?raw';
 import reactTable from '../../../ui/src/table.tsx?raw';
+import reactTabs from '../../../ui/src/tabs.tsx?raw';
 
 type ElementParity = {
   tag: string;
@@ -77,6 +79,21 @@ const ELEMENTS: ElementParity[] = [
     axes: {},
     parts: ['caption', 'cell', 'head-cell', 'root', 'row', 'scroll'],
     stateMap: { 'data-sort': 'data-sort', 'aria-sort': 'aria-sort' },
+  },
+  {
+    tag: 'ult-tabs',
+    element: elementTabs,
+    react: reactTabs,
+    axes: { variant: ['underline', 'segmented'] },
+    parts: ['indicator', 'list', 'panel', 'root', 'tab'],
+    // Base UI marks the selected tab data-active and Zag marks it
+    // data-selected; the element reads Zag's attribute and mirrors Base UI's,
+    // so the substitution is declared here rather than renamed in the styles.
+    stateMap: {
+      'data-active': 'data-selected',
+      'data-disabled': 'data-disabled',
+      'data-orientation': 'data-orientation',
+    },
   },
 ];
 

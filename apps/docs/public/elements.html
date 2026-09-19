@@ -99,6 +99,26 @@
         <p>Run <ult-code>npx shadcn add @ultima/button</ult-code> to install.</p>
         <ult-code variant="block">pnpm install
 pnpm dev</ult-code>
+        <ult-tabs value="overview">
+          <ult-tabs-list aria-label="Report views">
+            <ult-tabs-tab value="overview">Overview</ult-tabs-tab>
+            <ult-tabs-tab value="findings">Findings</ult-tabs-tab>
+            <ult-tabs-tab value="archive" disabled>Archive</ult-tabs-tab>
+            <ult-tabs-indicator></ult-tabs-indicator>
+          </ult-tabs-list>
+          <ult-tabs-panel value="overview">Overview of the latest audit.</ult-tabs-panel>
+          <ult-tabs-panel value="findings">Findings from the latest audit.</ult-tabs-panel>
+          <ult-tabs-panel value="archive">Archived audits.</ult-tabs-panel>
+        </ult-tabs>
+        <ult-tabs variant="segmented" value="grid" style="max-width: 22rem">
+          <ult-tabs-list aria-label="Result layout">
+            <ult-tabs-tab value="list">List</ult-tabs-tab>
+            <ult-tabs-tab value="grid">Grid</ult-tabs-tab>
+            <ult-tabs-indicator></ult-tabs-indicator>
+          </ult-tabs-list>
+          <ult-tabs-panel value="list">Results as a list.</ult-tabs-panel>
+          <ult-tabs-panel value="grid">Results as a grid.</ult-tabs-panel>
+        </ult-tabs>
         <ult-table-scroll aria-labelledby="dark-latency" style="max-width: 22rem">
           <ult-table style="min-width: 34rem">
             <ult-table-caption id="dark-latency">Latency by region</ult-table-caption>
@@ -172,6 +192,26 @@ pnpm dev</ult-code>
         <p>Run <ult-code>npx shadcn add @ultima/button</ult-code> to install.</p>
         <ult-code variant="block">pnpm install
 pnpm dev</ult-code>
+        <ult-tabs value="overview">
+          <ult-tabs-list aria-label="Report views">
+            <ult-tabs-tab value="overview">Overview</ult-tabs-tab>
+            <ult-tabs-tab value="findings">Findings</ult-tabs-tab>
+            <ult-tabs-tab value="archive" disabled>Archive</ult-tabs-tab>
+            <ult-tabs-indicator></ult-tabs-indicator>
+          </ult-tabs-list>
+          <ult-tabs-panel value="overview">Overview of the latest audit.</ult-tabs-panel>
+          <ult-tabs-panel value="findings">Findings from the latest audit.</ult-tabs-panel>
+          <ult-tabs-panel value="archive">Archived audits.</ult-tabs-panel>
+        </ult-tabs>
+        <ult-tabs variant="segmented" value="grid" style="max-width: 22rem">
+          <ult-tabs-list aria-label="Result layout">
+            <ult-tabs-tab value="list">List</ult-tabs-tab>
+            <ult-tabs-tab value="grid">Grid</ult-tabs-tab>
+            <ult-tabs-indicator></ult-tabs-indicator>
+          </ult-tabs-list>
+          <ult-tabs-panel value="list">Results as a list.</ult-tabs-panel>
+          <ult-tabs-panel value="grid">Results as a grid.</ult-tabs-panel>
+        </ult-tabs>
         <ult-table-scroll aria-labelledby="light-deploys" style="max-width: 22rem">
           <ult-table style="min-width: 34rem">
             <ult-table-caption id="light-deploys">Deploys by environment</ult-table-caption>

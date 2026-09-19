@@ -9,6 +9,7 @@ const ELEMENTS = [
   'ult-code',
   'ult-stat',
   'ult-table',
+  'ult-tabs',
 ] as const;
 
 const frames: HTMLIFrameElement[] = [];
