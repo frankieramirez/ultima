@@ -17,6 +17,7 @@ export default defineConfig({
   // flake rather than a failure, so the application's dependencies are declared up front.
   optimizeDeps: {
     include: [
+      '@base-ui/react/accordion',
       '@base-ui/react/button',
       '@base-ui/react/checkbox',
       '@base-ui/react/checkbox-group',

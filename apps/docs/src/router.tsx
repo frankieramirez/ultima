@@ -3,6 +3,7 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentType } from 'react';
 
+import AccordionContent from './content/components/accordion.mdx';
 import AlertContent from './content/components/alert.mdx';
 import AlertDialogContent from './content/components/alert-dialog.mdx';
 import BadgeContent from './content/components/badge.mdx';
@@ -108,6 +109,7 @@ function ComponentNamePage() {
 }
 
 const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>> = {
+  accordion: AccordionContent,
   alert: AlertContent,
   'alert-dialog': AlertDialogContent,
   badge: BadgeContent,

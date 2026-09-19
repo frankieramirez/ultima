@@ -309,6 +309,14 @@ export {
 } from './context-menu';
 export { Menubar, type MenubarProps, type MenubarOrientation } from './menubar';
 export {
+  Accordion,
+  type AccordionRootProps,
+  type AccordionItemProps,
+  type AccordionHeaderProps,
+  type AccordionTriggerProps,
+  type AccordionPanelProps,
+} from './accordion';
+export {
   HoverCard,
   type HoverCardArrowProps,
   type HoverCardBackdropProps,

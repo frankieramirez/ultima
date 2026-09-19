@@ -222,6 +222,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A persistent bar of menu titles, holding your own Dropdown Menus and sized to its triggers.',
     docs: "import { Menubar } from '@/components/ui/menubar';\n\n<Menubar aria-label=\"Document\">\n  <DropdownMenu.Root>\n    <DropdownMenu.Trigger render={<Button variant=\"ghost\" size=\"sm\" />}>File</DropdownMenu.Trigger>\n    <DropdownMenu.Portal>\n      <DropdownMenu.Positioner>\n        <DropdownMenu.Popup>\n          <DropdownMenu.Item>New</DropdownMenu.Item>\n        </DropdownMenu.Popup>\n      </DropdownMenu.Positioner>\n    </DropdownMenu.Portal>\n  </DropdownMenu.Root>\n</Menubar>\n\nThe menus are yours: install @ultima/dropdown-menu alongside this, because the bar declares no dependency on it and ships none of its paint. One component, no parts. The accessible name is required by the types, as aria-label or aria-labelledby. The bar is sized to its triggers, since a modal menu cuts its backdrop hole from that box; set an inline size through style for full-bleed chrome.",
   },
+  accordion: {
+    title: 'Accordion',
+    description: 'Disclosure sections under one shared value, on Base UI, with the heading level left to you.',
+    docs: "import { Accordion } from '@/components/ui/accordion';\n\n<Accordion.Root>\n  <Accordion.Item value=\"a\">\n    <Accordion.Header>\n      <Accordion.Trigger>Details</Accordion.Trigger>\n    </Accordion.Header>\n    <Accordion.Panel>\n      <div style={{ padding: '1rem' }}>Anything.</div>\n    </Accordion.Panel>\n  </Accordion.Item>\n</Accordion.Root>\n\nThe heading level is yours: Header renders an h3 by default, change it through render. Do not pass a Button through render on Trigger; it is the styled control and paints its own full-measure row. The panel's content padding goes on a wrapper inside the panel, never on the panel itself.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:
