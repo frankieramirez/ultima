@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Code as UltimaCode, Table } from '@ultima/ui';
+import { Code as UltimaCode, ScrollArea, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import { isValidElement, type ComponentProps, type ComponentType, type ReactNode } from 'react';
 
@@ -67,9 +67,8 @@ const styles = stylex.create({
     marginInline: 0,
     paddingInlineStart: space['--ult-space-6'],
   },
-  uncaptionedTableOverflow: {
+  uncaptionedTable: {
     marginBlock: space['--ult-space-6'],
-    overflow: 'auto',
   },
   cell: {
     verticalAlign: 'top',
@@ -122,11 +121,19 @@ function Blockquote(props: ComponentProps<'blockquote'>) {
 /** MDX writes no `style` on these, and an Ultima part's slot takes StyleX styles rather than a DOM one. */
 type MdxTableProps<E extends 'table' | 'th' | 'td'> = Omit<ComponentProps<E>, 'style'>;
 
+/** A GFM table has no caption to name a `Table.Scroll` region from, so it takes a Scroll Area. */
 function UncaptionedTable(props: MdxTableProps<'table'>) {
   return (
-    <div {...stylex.props(styles.uncaptionedTableOverflow)}>
-      <Table.Root {...props} />
-    </div>
+    <ScrollArea.Root style={styles.uncaptionedTable}>
+      <ScrollArea.Viewport>
+        <ScrollArea.Content>
+          <Table.Root {...props} />
+        </ScrollArea.Content>
+      </ScrollArea.Viewport>
+      <ScrollArea.Scrollbar orientation="horizontal">
+        <ScrollArea.Thumb />
+      </ScrollArea.Scrollbar>
+    </ScrollArea.Root>
   );
 }
 function Th(props: MdxTableProps<'th'>) {

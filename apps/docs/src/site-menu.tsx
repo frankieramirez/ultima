@@ -9,7 +9,7 @@ import { navigation, type NavLink } from './navigation';
 export const MENU_LABEL = 'Ultima';
 
 const styles = stylex.create({
-  panel: { blockSize: '100%', flexShrink: 0, scrollbarWidth: 'none' },
+  panel: { blockSize: '100%', flexShrink: 0 },
   dismiss: { display: 'flex', justifyContent: 'flex-end' },
   close: { paddingInline: space['--ult-space-4'] },
   groupLabel: { fontFamily: font['--ult-font-mono'], textTransform: 'lowercase' },
