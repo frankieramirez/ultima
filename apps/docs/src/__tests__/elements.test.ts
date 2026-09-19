@@ -2,7 +2,7 @@ import axe from 'axe-core';
 import { afterEach, expect, test } from 'vitest';
 
 const FIXTURE_URL = '/elements.html';
-const ELEMENTS = ['ult-button', 'ult-card'] as const;
+const ELEMENTS = ['ult-badge', 'ult-button', 'ult-card', 'ult-code', 'ult-stat'] as const;
 
 const frames: HTMLIFrameElement[] = [];
 
@@ -46,7 +46,7 @@ test('the fixture page renders every element in both color modes', async () => {
       const hosts = doc.querySelectorAll(`[data-theme="${theme}"] ${tag}`);
       expect(hosts.length, `no ${tag} demos in the ${theme} section`).toBeGreaterThan(0);
       for (const host of hosts) {
-        expect(host.querySelector('[part]'), `${tag} rendered no inner part`).not.toBeNull();
+        expect(host.querySelector('[part="root"]'), `${tag} rendered no root part`).not.toBeNull();
       }
     }
   }
