@@ -382,7 +382,7 @@ test('the emitted bundles carry no runtime stylex or external imports', () => {
       'ult-table-cell',
       'ult-table-caption',
     ]) {
-      expect(bundle).toContain(`customElements.define('${tag}'`);
+      expect(bundle).toMatch(new RegExp(`customElements\\.define\\(["']${tag}["']`));
     }
   }
 });

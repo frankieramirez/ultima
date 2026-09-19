@@ -2,11 +2,7 @@ import axe from 'axe-core';
 import { afterEach, expect, test } from 'vitest';
 
 const FIXTURE_URL = '/elements.html';
-
-const ELEMENTS = [
-  { tag: 'ult-button', inner: 'button' },
-  { tag: 'ult-table', inner: 'table' },
-] as const;
+const ELEMENTS = ['ult-button', 'ult-card', 'ult-table'] as const;
 
 const frames: HTMLIFrameElement[] = [];
 
@@ -29,9 +25,9 @@ async function loadFixture(): Promise<HTMLIFrameElement> {
   const win = iframe.contentWindow;
   if (!win) throw new Error('the fixture iframe has no window');
   await Promise.race([
-    Promise.all(ELEMENTS.map(({ tag }) => win.customElements.whenDefined(tag))),
+    Promise.all(ELEMENTS.map((tag) => win.customElements.whenDefined(tag))),
     new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`${FIXTURE_URL} did not define the elements`)), 5000),
+      setTimeout(() => reject(new Error(`${FIXTURE_URL} did not define every element`)), 5000),
     ),
   ]);
   return iframe;
@@ -46,28 +42,28 @@ test('the fixture page renders every element in both color modes', async () => {
   const doc = iframe.contentDocument;
   if (!doc) throw new Error('the fixture iframe has no document');
   for (const theme of ['dark', 'light']) {
-    for (const { tag, inner } of ELEMENTS) {
+    for (const tag of ELEMENTS) {
       const hosts = doc.querySelectorAll(`[data-theme="${theme}"] ${tag}`);
       expect(hosts.length, `no ${tag} demos in the ${theme} section`).toBeGreaterThan(0);
       for (const host of hosts) {
-        expect(host.querySelector(inner), `${tag} rendered no inner ${inner}`).not.toBeNull();
+        expect(host.querySelector('[part]'), `${tag} rendered no inner part`).not.toBeNull();
       }
     }
   }
 });
 
-test('each registry item embeds the bytes the served bundle carries', async () => {
-  for (const { tag } of ELEMENTS) {
-    const itemUrl = `/r/${tag}.json`;
-    const bundleUrl = `/elements/${tag}.js`;
+for (const tag of ELEMENTS) {
+  test(`the ${tag} registry item embeds the bytes the served bundle carries`, async () => {
     const [itemResponse, bundleResponse] = await Promise.all([
-      fetch(itemUrl),
-      fetch(bundleUrl),
+      fetch(`/r/${tag}.json`),
+      fetch(`/elements/${tag}.js`),
     ]);
-    expect(itemResponse.headers.get('content-type'), `${itemUrl} was not served`).toMatch(/json/);
+    expect(itemResponse.headers.get('content-type'), `/r/${tag}.json was not served`).toMatch(
+      /json/,
+    );
     expect(
       bundleResponse.headers.get('content-type'),
-      `${bundleUrl} was not served`,
+      `/elements/${tag}.js was not served`,
     ).toMatch(/javascript/);
     const item = (await itemResponse.json()) as {
       type: string;
@@ -75,8 +71,8 @@ test('each registry item embeds the bytes the served bundle carries', async () =
     };
     expect(item.type).toBe('registry:item');
     expect(item.files[0]?.content).toBe(await bundleResponse.text());
-  }
-});
+  });
+}
 
 test('the fixture page has no axe violations', async () => {
   const iframe = await loadFixture();

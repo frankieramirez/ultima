@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'vitest';
 
 import elementButton from '../ult-button.element.ts?raw';
+import elementCard from '../ult-card.element.ts?raw';
 import elementTable from '../ult-table.element.ts?raw';
 import reactButton from '../../../ui/src/button.tsx?raw';
+import reactCard from '../../../ui/src/card.tsx?raw';
 import reactTable from '../../../ui/src/table.tsx?raw';
 
 type ElementParity = {
@@ -12,7 +14,6 @@ type ElementParity = {
   axes: Record<string, readonly string[]>;
   parts: readonly string[];
   stateMap: Record<string, string>;
-  drift: { token: readonly [string, string] };
 };
 
 const ELEMENTS: ElementParity[] = [
@@ -27,7 +28,14 @@ const ELEMENTS: ElementParity[] = [
     },
     parts: ['root'],
     stateMap: { 'data-disabled': 'data-disabled' },
-    drift: { token: ['--ult-color-accent-hover', '--ult-color-surface-hover'] },
+  },
+  {
+    tag: 'ult-card',
+    element: elementCard,
+    react: reactCard,
+    axes: {},
+    parts: ['root', 'header', 'title', 'description', 'body', 'footer'],
+    stateMap: {},
   },
   {
     tag: 'ult-table',
@@ -36,7 +44,6 @@ const ELEMENTS: ElementParity[] = [
     axes: {},
     parts: ['caption', 'cell', 'head-cell', 'root', 'row', 'scroll'],
     stateMap: { 'data-sort': 'data-sort', 'aria-sort': 'aria-sort' },
-    drift: { token: ['--ult-color-surface-hover', '--ult-color-accent'] },
   },
 ];
 
@@ -123,8 +130,8 @@ describe.each(ELEMENTS)('$tag', (decl) => {
   });
 
   test('fails when a stylex table drifts', () => {
-    const [from, to] = decl.drift.token;
-    const drifted = { ...decl, element: decl.element.replace(from, to) };
+    const token = tokenReads(decl.element)[0] as string;
+    const drifted = { ...decl, element: decl.element.replace(token, '--ult-color-surface') };
     expect(() => assertParity(drifted)).toThrow(/stylex tables differ|token reads differ/);
   });
 
@@ -134,7 +141,9 @@ describe.each(ELEMENTS)('$tag', (decl) => {
       ...decl,
       element: decl.element.replace(`getAttribute('${axis}')`, `getAttribute('bogus')`),
     };
-    expect(() => assertParity(missing)).toThrow(`axis ${axis} is not read as an attribute`);
+    expect(() => assertParity(missing)).toThrow(
+      new RegExp(`axis ${axis} is not read as an attribute`),
+    );
   });
 
   test('fails when a styled part drifts', () => {
@@ -145,9 +154,9 @@ describe.each(ELEMENTS)('$tag', (decl) => {
     expect(() => assertParity(drifted)).toThrow(/part= targets differ/);
   });
 
-  test('fails when a state selector drifts', () => {
-    const state = Object.values(decl.stateMap)[0] as string;
-    const drifted = { ...decl, element: decl.element.replaceAll(state, 'data-inert') };
+  test.skipIf(Object.keys(decl.stateMap).length === 0)('fails when a state selector drifts', () => {
+    const elementState = Object.values(decl.stateMap)[0] as string;
+    const drifted = { ...decl, element: decl.element.replaceAll(elementState, 'data-inert') };
     expect(() => assertParity(drifted)).toThrow();
   });
 });
