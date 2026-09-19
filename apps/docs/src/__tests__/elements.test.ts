@@ -7,6 +7,7 @@ const ELEMENTS = [
   'ult-button',
   'ult-card',
   'ult-code',
+  'ult-meter',
   'ult-stat',
   'ult-table',
 ] as const;

@@ -289,6 +289,12 @@ export const items: Record<string, RegistryItemDescription> = {
     docs: '<script type="module" src="./ult-code.js"></script>\n\n<ult-code>npx shadcn add @ultima/button</ult-code>\n<ult-code variant="block">pnpm install\npnpm dev</ult-code>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nAxes are attributes carrying the React prop values verbatim: variant.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
     registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
   },
+  'ult-meter': {
+    title: 'Meter element',
+    description: 'Ultima Meter as custom elements, vendored for a host that cannot run React.',
+    docs: '<script type="module" src="./ult-meter.js"></script>\n\n<ult-meter value="72" tone="warning">\n  <ult-meter-label>Disk used</ult-meter-label>\n  <ult-meter-track>\n    <ult-meter-indicator></ult-meter-indicator>\n  </ult-meter-track>\n  <ult-meter-value></ult-meter-value>\n</ult-meter>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nAxes are attributes carrying the React prop values verbatim: tone sits on ult-meter and a part-level tone on ult-meter-indicator or ult-meter-value wins; value, min, and max carry the reading.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
+    registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
+  },
   'ult-stat': {
     title: 'Stat element',
     description: 'Ultima Stat as a family of custom elements, vendored for a host that cannot run React.',
