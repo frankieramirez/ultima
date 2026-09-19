@@ -237,6 +237,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A native scroll container with scrollbars you can see and a viewport a keyboard can reach.',
     docs: "import { ScrollArea } from '@/components/ui/scroll-area';\n\n<ScrollArea.Root style={styles.bounds}>\n  <ScrollArea.Viewport>\n    <ScrollArea.Content>Anything.</ScrollArea.Content>\n  </ScrollArea.Viewport>\n  <ScrollArea.Scrollbar>\n    <ScrollArea.Thumb />\n  </ScrollArea.Scrollbar>\n</ScrollArea.Root>\n\nThe bound is yours: give Root a block size through the style slot, or nothing scrolls. A horizontal bar is a second Scrollbar with orientation=\"horizontal\", and Corner fills the intersection when both overflow. The bar is visible whenever its axis overflows; there is no type prop and no hide delay.",
   },
+  toggle: {
+    title: 'Toggle',
+    description: 'A two-state button in two variants and three sizes, on Base UI.',
+    docs: 'import { Toggle } from \'@/components/ui/toggle\';\n\n<Toggle>Bold</Toggle>\n\nThe name is the text content; an icon-only toggle passes aria-label and squares the box with a style override on paddingInline. There is no value prop: value identifies a toggle to a ToggleGroup, and a toggle inside one is ToggleGroup.Item, which keeps both.',
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:

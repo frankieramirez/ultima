@@ -1,0 +1,49 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/toggle/basic';
+import basicSource from '../../demos/toggle/basic?raw';
+import IconOnly from '../../demos/toggle/icon-only';
+import iconOnlySource from '../../demos/toggle/icon-only?raw';
+
+# Toggle
+
+A two-state button on Base UI's Toggle: one function, no parts, named by its own text. The pressed state wears the accent role, so a standalone toggle reads as on or off without a sibling to compare against.
+
+## Install
+
+```bash
+npx shadcn add @ultima/toggle
+```
+
+## Variants and sizes
+
+`variant` is `outline` (the default) or `ghost`; `size` is `sm`, `md` (the default), and `lg`, matching Button's three control heights so a toggle lines up beside one. There is no `tone` and no `solid`: a toggle whose resting state is a solid fill reads as already pressed.
+
+<Demo component={Basic} source={basicSource} />
+
+## Icon only
+
+An icon-only toggle passes `aria-label`, carries your glyph as the only child, and squares the box by overriding `paddingInline` to the block padding through the `style` slot.
+
+<Demo component={IconOnly} source={iconOnlySource} />
+
+## Props
+
+Two axes, `variant` and `size`, plus the pressed props. Everything else is Base UI's; see [Base UI's Toggle](https://base-ui.com/react/components/toggle) for the inherited surface.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `variant` | `'outline' \| 'ghost'` | `'outline'` | Border and colour. |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Button's three control heights. |
+| `pressed`, `defaultPressed`, `onPressedChange` | `boolean`, callback | `false` | Controlled or uncontrolled, as usual. |
+| `disabled`, `nativeButton` | `boolean` | `false` | Passed through to the primitive. |
+| `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+There is no `value` prop and the type is not generic: `value` exists to identify a toggle to a `ToggleGroup`, and a standalone one has none. A toggle inside a Toggle Group is `ToggleGroup.Item`, which keeps both.
+
+## Accessibility
+
+- **Name.** The text content names the button. An icon-only toggle passes `aria-label`.
+- **Focus ring.** On the button itself, on `:focus-visible`.
+- **Keyboard.** A native tab stop, one per toggle, not a roving one. Space and Enter toggle it, which is the primitive's wiring.
+- **State.** The button carries `aria-pressed`, plus `data-pressed` and `data-disabled` for styling.

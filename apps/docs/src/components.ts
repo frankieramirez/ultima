@@ -275,6 +275,12 @@ export const components = [
     description: 'A native scroll container with scrollbars you can see and a viewport a keyboard can reach.',
     release: 'v0.2',
   },
+  {
+    name: 'Toggle',
+    item: 'toggle',
+    description: 'A two-state button in two variants and three sizes, on Base UI.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
