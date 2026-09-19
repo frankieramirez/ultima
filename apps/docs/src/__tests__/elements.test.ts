@@ -2,8 +2,7 @@ import axe from 'axe-core';
 import { afterEach, expect, test } from 'vitest';
 
 const FIXTURE_URL = '/elements.html';
-const BUNDLE_URL = '/elements/ult-button.js';
-const ITEM_URL = '/r/ult-button.json';
+const ELEMENT_ITEMS = ['ult-button', 'ult-meter'] as const;
 
 const frames: HTMLIFrameElement[] = [];
 
@@ -51,20 +50,43 @@ test('the fixture page renders ult-button in both color modes', async () => {
   }
 });
 
-test('the registry item embeds the bytes the served bundle carries', async () => {
-  const [itemResponse, bundleResponse] = await Promise.all([fetch(ITEM_URL), fetch(BUNDLE_URL)]);
-  expect(itemResponse.headers.get('content-type'), `${ITEM_URL} was not served`).toMatch(/json/);
-  expect(
-    bundleResponse.headers.get('content-type'),
-    `${BUNDLE_URL} was not served`,
-  ).toMatch(/javascript/);
-  const item = (await itemResponse.json()) as {
-    type: string;
-    files: { content: string }[];
-  };
-  expect(item.type).toBe('registry:item');
-  expect(item.files[0]?.content).toBe(await bundleResponse.text());
+test('the fixture page renders ult-meter in both color modes', async () => {
+  const iframe = await loadFixture();
+  const doc = iframe.contentDocument;
+  if (!doc) throw new Error('the fixture iframe has no document');
+  for (const theme of ['dark', 'light']) {
+    const hosts = doc.querySelectorAll(`[data-theme="${theme}"] ult-meter`);
+    expect(hosts.length, `no ult-meter demos in the ${theme} section`).toBeGreaterThan(0);
+    for (const host of hosts) {
+      expect(host.getAttribute('part'), 'ult-meter is not marked part="root"').toBe('root');
+      expect(
+        host.querySelector('ult-meter-indicator'),
+        'ult-meter holds no ult-meter-indicator',
+      ).not.toBeNull();
+    }
+  }
 });
+
+for (const name of ELEMENT_ITEMS) {
+  test(`the ${name} registry item embeds the bytes the served bundle carries`, async () => {
+    const itemUrl = `/r/${name}.json`;
+    const bundleUrl = `/elements/${name}.js`;
+    const [itemResponse, bundleResponse] = await Promise.all([
+      fetch(itemUrl),
+      fetch(bundleUrl),
+    ]);
+    expect(itemResponse.headers.get('content-type'), `${itemUrl} was not served`).toMatch(/json/);
+    expect(bundleResponse.headers.get('content-type'), `${bundleUrl} was not served`).toMatch(
+      /javascript/,
+    );
+    const item = (await itemResponse.json()) as {
+      type: string;
+      files: { content: string }[];
+    };
+    expect(item.type).toBe('registry:item');
+    expect(item.files[0]?.content).toBe(await bundleResponse.text());
+  });
+}
 
 test('the fixture page has no axe violations', async () => {
   const iframe = await loadFixture();
