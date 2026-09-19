@@ -227,6 +227,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'Disclosure sections under one shared value, on Base UI, with the heading level left to you.',
     docs: "import { Accordion } from '@/components/ui/accordion';\n\n<Accordion.Root>\n  <Accordion.Item value=\"a\">\n    <Accordion.Header>\n      <Accordion.Trigger>Details</Accordion.Trigger>\n    </Accordion.Header>\n    <Accordion.Panel>\n      <div style={{ padding: '1rem' }}>Anything.</div>\n    </Accordion.Panel>\n  </Accordion.Item>\n</Accordion.Root>\n\nThe heading level is yours: Header renders an h3 by default, change it through render. Do not pass a Button through render on Trigger; it is the styled control and paints its own full-measure row. The panel's content padding goes on a wrapper inside the panel, never on the panel itself.",
   },
+  'scroll-area': {
+    title: 'Scroll Area',
+    description: 'A native scroll container with scrollbars you can see and a viewport a keyboard can reach.',
+    docs: "import { ScrollArea } from '@/components/ui/scroll-area';\n\n<ScrollArea.Root style={styles.bounds}>\n  <ScrollArea.Viewport>\n    <ScrollArea.Content>Anything.</ScrollArea.Content>\n  </ScrollArea.Viewport>\n  <ScrollArea.Scrollbar>\n    <ScrollArea.Thumb />\n  </ScrollArea.Scrollbar>\n</ScrollArea.Root>\n\nThe bound is yours: give Root a block size through the style slot, or nothing scrolls. A horizontal bar is a second Scrollbar with orientation=\"horizontal\", and Corner fills the intersection when both overflow. The bar is visible whenever its axis overflows; there is no type prop and no hide delay.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:

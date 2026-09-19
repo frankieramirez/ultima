@@ -263,6 +263,12 @@ export const components = [
     description: 'Disclosure sections under one shared value, on Base UI, with the heading level left to you.',
     release: 'v0.2',
   },
+  {
+    name: 'Scroll Area',
+    item: 'scroll-area',
+    description: 'A native scroll container with scrollbars you can see and a viewport a keyboard can reach.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
