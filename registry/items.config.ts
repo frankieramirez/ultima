@@ -227,6 +227,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'Disclosure sections under one shared value, on Base UI, with the heading level left to you.',
     docs: "import { Accordion } from '@/components/ui/accordion';\n\n<Accordion.Root>\n  <Accordion.Item value=\"a\">\n    <Accordion.Header>\n      <Accordion.Trigger>Details</Accordion.Trigger>\n    </Accordion.Header>\n    <Accordion.Panel>\n      <div style={{ padding: '1rem' }}>Anything.</div>\n    </Accordion.Panel>\n  </Accordion.Item>\n</Accordion.Root>\n\nThe heading level is yours: Header renders an h3 by default, change it through render. Do not pass a Button through render on Trigger; it is the styled control and paints its own full-measure row. The panel's content padding goes on a wrapper inside the panel, never on the panel itself.",
   },
+  avatar: {
+    title: 'Avatar',
+    description: 'An image that falls back to whatever you put behind it, at whatever size you set.',
+    docs: "import { Avatar } from '@/components/ui/avatar';\n\n<Avatar.Root>\n  <Avatar.Fallback>FR</Avatar.Fallback>\n  <Avatar.Image src=\"/avatar.png\" alt=\"Frankie\" />\n</Avatar.Root>\n\nFallback goes before Image in DOM order; the not-yet-loaded image is hidden with visibility, never display, so keepMounted and lazy loading work. alt is yours: empty beside a visible name, a name when the avatar stands alone. The box and the radius are the style slot: there is no size or shape prop.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:
