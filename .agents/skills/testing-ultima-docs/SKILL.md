@@ -1,0 +1,25 @@
+---
+name: testing-ultima-docs
+description: How to run and end-to-end test the Ultima docs site (apps/docs) when asked to verify a component page, demo, or docs change in a browser. Covers dev server startup, page structure, theme switching, and how to verify component states.
+---
+
+# Testing the Ultima docs site
+
+## Dev server
+
+- Node is not on PATH by default: `export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"` (node v24, pnpm via corepack).
+- From the repo root: `pnpm dev` serves the docs site at http://localhost:5173. Log to a file (e.g. /tmp/docs-dev.log) when backgrounding.
+- Component pages live at `/components/<item>` where `<item>` is the kebab-case `item` field in `apps/docs/src/components.ts` (e.g. `/components/toggle`).
+
+## Page structure
+
+- Sidebar nav (`apps/docs/src/navigation.ts`) renders `@components` group with labels `--<item>` for every catalogue entry; `::root` holds top pages. New components appear automatically once added to `components.ts` and `router.tsx`.
+- `/components` is the catalogue index, grouped by release set (v0, v0.1, v0.2); the newest component is the last card of the last set.
+- Theme switcher is a `ToggleGroup` in the header with Dark / Light / System buttons (`apps/docs/src/header.tsx`); preference persists in localStorage key `ultima-theme`.
+- Each component MDX page embeds live demos from `apps/docs/src/demos/<item>/` inside `<figure>` elements, each followed by its source code and a Copy button.
+
+## Verifying component state
+
+- Components are Base UI primitives: pressed toggles carry `aria-pressed` and `data-pressed`; disabled carries `data-disabled`. Query `main figure button` in the console to inspect demo controls; `read_dom` output strips these attributes, so use `browser_console` + `getComputedStyle`/`getAttribute` for definitive state checks.
+- Focus ring appears on `:focus-visible` (accent outline). Reach a demo toggle by clicking it once (sets focus), then press Tab to move to the next toggle with a visible ring.
+- Accent tokens flip between light and dark themes; verify pressed/accent states in both via the header Dark button, then restore System.
