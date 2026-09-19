@@ -86,6 +86,10 @@ The site at `apps/docs`. Three things at once: Ultima's reference, the host that
 
 The docs-local side of the line between an Ultima component and the site's own chrome. Page layout arranges content and sets type and flow spacing. It never builds a control from plain elements and never paints a surface, meaning a background, a border, a shadow, or a radius. Anything that does one of those comes from a component, or becomes one. A control here is anything the user reaches with a keyboard, so a tabbable scroll region counts even though it presses nothing. A third prong arrived with Scroll Area: page layout may rely on a native scrollbar and may not hide one without painting a replacement, since the first two prongs are about building something badly and this one is about removing something the platform already gave you.
 
+## Studio chrome
+
+The theme studio's own application surface: the editor rail, group headers, shuffle bar, validation and inspector panels, and the preview scaffold. It is not page layout, so it may paint surfaces, but every keyboard-reachable control in it is a catalogue component. Its fixed appearance is Ultima's stock dark theme pinned on the editor subtree; the draft theme applies only inside the preview panes, whose boundary is also the per-pane portal container.
+
 ## Set
 
 A section of the specification holding one contract effort's output: its components' parts and axes in one table, their styled splits, and the prose a builder would otherwise guess. A set is named for what it holds. A release name is honest only where the section holds that release whole, which is why The v0 set and The v0.1 set carry one and no fraction of v0.2 may. Where the members share a property, the name is that property: The navigation set's landmark, The overlay set's recipe. Where they share nothing, the name lists them, which is The Toggle, Accordion, Avatar, and Scroll Area set and the reason it is the one section not named for an idea. Report set and Feedback set are groupings inside a release rather than sections.
@@ -305,3 +309,35 @@ The check that keeps an element file in step with the React component it restate
 ## Proof bar
 
 The eight items every component build ticket ships as its test file: every combination renders, the name resolves, the focus ring lands, the primitive is still wired, documented state drives its style, typecheck passes, behavior Ultima wires itself is exercised, and CSS the primitive reads is asserted. It is a bar rather than a suite, so a component with no axes and no state still costs a file, and the last two items exist for behavior a static screenshot would pass. v0.1 did not add a ninth item, and filled item 7 with nothing: every v0.1 interaction is the primitive's or a style. Live-region structure is items 2 and 4; a looping `animation-name` is item 8; a form ticket asserts association and invalid, not submit.
+
+## Scale seed
+
+The theme studio's color input for one palette scale: a hue and a saturation factor on the recipe's chroma peak, settable from a picked color or as sliders. One set of seeds generates both color modes, and the stock palette's pinned brand values do not carry into a generated theme.
+
+## Token override
+
+A manual semantic-token value set in the theme studio. It pins the token's resolved value in one color mode, detaches it from derivation, and survives regeneration and Shuffle until reset. Editing both modes at once is the default; a token can be unlinked per mode.
+
+## Density
+
+The theme studio axis that scales the `space` group: compact, cosy, and roomy presets. Control heights follow because they read space steps. Density never touches type size, leading, or radius; those belong to typography and shape.
+
+## Editor chrome
+
+The earlier name for **Studio chrome**, settled on [#217](https://github.com/frankieramirez/ultima/issues/217). It is not page layout, and its fixed appearance comes from the pinned stock dark theme rather than its own values.
+
+## Shuffle
+
+The theme studio's coordinated redraw: a control on each guided group plus one global control that rerolls every unlocked group through a seeded generator. A color shuffle is a bounded search that accepts only a candidate passing the contrast gate in both modes and reports exhaustion without changing anything; the other groups draw once, since they cannot fail the gate. A shuffle never applies a failing candidate and never releases a lock. Broad draws fresh parameters; subtle perturbs the current draft.
+
+## Lock
+
+A per-group switch in the theme studio that exempts the group from Shuffle. Token-level locking needs no switch because a token override already pins its value through regeneration. Locks are absolute: they can make a color search unsatisfiable, and an exhausted shuffle names them rather than overriding them.
+
+## Theme draft
+
+The theme studio's working state: guided parameters, per-mode overrides, locks, and the seed each shuffle recorded. Guided parameters plus overrides plus the recipe version fully determine the generated output. One linear undo history holds committed snapshots of the draft for the session; persistence across sessions belongs to export.
+
+## Draft document
+
+The versioned serialization of a theme draft, downloaded as `ultima-theme.json` and carried inside the installable registry item. It is the single artifact the studio's preview, downloads, installation, and reopening all derive from; resolved token values are products of it, never the editable form. A fragment-encoded copy is the shareable URL.

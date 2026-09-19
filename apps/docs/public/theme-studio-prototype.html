@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theme studio — PROTOTYPE</title>
+<style>
+/* ===== editor chrome: fixed neutral scheme, deliberately NOT themed ===== */
+:root {
+  --ed-bg:#101011; --ed-raised:#141516; --ed-sunken:#1d1e20; --ed-hover:#27272a;
+  --ed-border:#3c3d40; --ed-border-strong:#626366;
+  --ed-text:#e7e8e9; --ed-muted:#b6b7ba; --ed-subtle:#919295;
+  --ed-accent:#8394ff; --ed-danger:#df6769; --ed-warn:#eab352; --ed-ok:#56cb98;
+}
+* { box-sizing: border-box; }
+html,body { margin:0; height:100%; }
+body {
+  background:var(--ed-bg); color:var(--ed-text);
+  font:14px/1.5 ui-sans-serif, system-ui, sans-serif;
+  display:flex; flex-direction:column; height:100vh; overflow:hidden;
+}
+button, input, select { font:inherit; color:inherit; }
+:focus-visible { outline:2px solid var(--ed-accent); outline-offset:2px; }
+
+/* ===== top chrome ===== */
+#chrome {
+  display:flex; align-items:center; gap:12px; padding:8px 12px;
+  background:var(--ed-raised); border-bottom:1px solid var(--ed-border);
+  flex-wrap:wrap; flex:none;
+}
+#chrome .brand { font-weight:600; letter-spacing:.02em; white-space:nowrap; }
+#chrome .proto-tag {
+  font-size:11px; padding:1px 7px; border:1px dashed var(--ed-warn);
+  color:var(--ed-warn); border-radius:9999px; text-transform:uppercase; letter-spacing:.08em;
+}
+.seg { display:inline-flex; border:1px solid var(--ed-border); border-radius:8px; overflow:hidden; }
+.seg button {
+  background:transparent; border:0; padding:4px 10px; cursor:pointer; color:var(--ed-muted);
+  border-right:1px solid var(--ed-border); font-size:12.5px;
+}
+.seg button:last-child { border-right:0; }
+.seg button[aria-pressed="true"] { background:var(--ed-hover); color:var(--ed-text); }
+.seg-label { font-size:11px; color:var(--ed-subtle); text-transform:uppercase; letter-spacing:.07em; margin-right:2px; }
+.btn {
+  background:var(--ed-sunken); border:1px solid var(--ed-border); border-radius:8px;
+  padding:4px 12px; cursor:pointer; color:var(--ed-text); font-size:12.5px;
+}
+.btn:hover { background:var(--ed-hover); }
+.btn.primary { background:var(--ed-accent); border-color:transparent; color:#101011; font-weight:600; }
+.btn.icon { padding:4px 8px; }
+.spacer { flex:1; }
+
+/* ===== layout variants ===== */
+#app { flex:1; display:flex; min-height:0; }
+#app[data-variant="rail"] { flex-direction:row; }
+#app[data-variant="inspector"] { flex-direction:row-reverse; }
+#app[data-variant="sheet"] { flex-direction:column-reverse; }
+
+#editor {
+  background:var(--ed-raised); overflow-y:auto; flex:none;
+  display:flex; flex-direction:column;
+}
+#app[data-variant="rail"] #editor { width:340px; border-right:1px solid var(--ed-border); }
+#app[data-variant="inspector"] #editor { width:380px; border-left:1px solid var(--ed-border); }
+#app[data-variant="sheet"] #editor { height:42%; border-top:1px solid var(--ed-border); }
+
+#stage { flex:1; overflow:auto; padding:20px; display:flex; gap:16px; align-items:flex-start; justify-content:center; }
+
+/* narrow screens: every variant falls back to the bottom sheet */
+@media (max-width:840px) {
+  #app[data-variant] { flex-direction:column-reverse; }
+  #app[data-variant] #editor { width:auto; height:44%; border:0; border-top:1px solid var(--ed-border); }
+  #chrome { gap:8px; }
+}
+
+/* ===== shuffle bar ===== */
+#shufflebar {
+  position:sticky; top:0; z-index:2; display:flex; gap:6px; align-items:center;
+  padding:10px 12px; background:var(--ed-raised); border-bottom:1px solid var(--ed-border);
+}
+#shufflebar .seed { font-family:ui-monospace,monospace; font-size:11px; color:var(--ed-subtle); }
+#contrast-status { font-size:11px; padding:10px 12px 0; }
+#contrast-status .ok { color:var(--ed-ok); }
+#contrast-status .bad { color:var(--ed-danger); }
+
+/* ===== editor groups ===== */
+.group { border-bottom:1px solid var(--ed-border); }
+.group > header {
+  display:flex; align-items:center; gap:6px; padding:10px 12px 6px;
+}
+.group > header h2 { font-size:12px; margin:0; text-transform:uppercase; letter-spacing:.08em; color:var(--ed-muted); flex:1; }
+.group .ctl { padding:4px 12px 12px; display:flex; flex-direction:column; gap:8px; }
+.row { display:flex; align-items:center; gap:8px; }
+.row label { font-size:12.5px; color:var(--ed-muted); min-width:92px; }
+.row input[type="range"] { flex:1; accent-color:var(--ed-accent); }
+.row output { font-size:11px; font-family:ui-monospace,monospace; color:var(--ed-subtle); min-width:56px; text-align:right; }
+.row select, .row input[type="text"], .row input[type="number"] {
+  background:var(--ed-sunken); border:1px solid var(--ed-border); border-radius:6px;
+  padding:3px 8px; font-size:12.5px; flex:1; min-width:0;
+}
+.icon-btn {
+  background:transparent; border:1px solid transparent; border-radius:6px; cursor:pointer;
+  color:var(--ed-subtle); padding:2px 6px; font-size:12px; line-height:1;
+}
+.icon-btn:hover { background:var(--ed-hover); color:var(--ed-text); }
+.icon-btn[aria-pressed="true"] { color:var(--ed-warn); border-color:var(--ed-warn); }
+.swatch {
+  width:22px; height:22px; border-radius:6px; border:1px solid var(--ed-border-strong);
+  cursor:pointer; padding:0; flex:none;
+}
+.swatch input[type="color"] { position:absolute; opacity:0; pointer-events:none; width:0; height:0; }
+
+/* override rows */
+.ov { border-top:1px dashed var(--ed-border); margin:0 12px; padding:8px 0; display:none; }
+.group.open .ov { display:block; }
+.ov .ovrow { display:flex; align-items:center; gap:6px; padding:2px 0; font-size:11.5px; }
+.ov .ovrow code { flex:1; color:var(--ed-subtle); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ov .ovrow input {
+  width:76px; background:var(--ed-sunken); border:1px solid var(--ed-border);
+  border-radius:5px; padding:2px 6px; font-size:11px; font-family:ui-monospace,monospace;
+}
+.ov .ovrow input.changed { border-color:var(--ed-warn); }
+.ov .mode-tag { font-size:9.5px; color:var(--ed-subtle); width:14px; text-align:center; }
+
+/* ===== preview panes ===== */
+.pv-wrap { display:flex; flex-direction:column; gap:8px; flex:1; min-width:0; }
+.pv-wrap .pv-label {
+  font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ed-subtle); text-align:center;
+}
+.pv {
+  border:1px solid var(--ed-border); border-radius:12px; overflow:auto;
+  min-height:320px; max-height:calc(100vh - 140px); position:relative;
+  background:var(--ult-color-surface); color:var(--ult-color-text);
+  transition:none;
+}
+.pv-inner { padding:28px; display:flex; flex-direction:column; gap:34px; min-width:0; }
+.pv h3.scene {
+  font-size:var(--ult-text-1); letter-spacing:var(--ult-font-tracking-wider); text-transform:uppercase;
+  color:var(--ult-color-text-subtle); margin:0 0 14px; font-weight:var(--ult-font-weight-medium);
+}
+.pv [data-inspect] { cursor:default; }
+#stage.inspecting .pv [data-inspect]:hover { outline:2px dashed var(--ult-color-border-focus); outline-offset:2px; }
+
+/* mock components inside preview — themed through --ult-* only */
+.u-btn {
+  display:inline-flex; align-items:center; border-radius:var(--ult-radius-md);
+  padding:0 var(--ult-space-4); height:var(--ult-space-10); border:1px solid transparent;
+  font-size:var(--ult-text-4); font-weight:var(--ult-font-weight-medium); cursor:pointer;
+  transition:background var(--ult-motion-fast), color var(--ult-motion-fast);
+}
+.u-btn.solid { background:var(--ult-color-accent); color:var(--ult-color-accent-contrast); }
+.u-btn.solid:hover, .u-btn.solid.fx-hover { background:var(--ult-color-accent-hover); }
+.u-btn.solid:active, .u-btn.solid.fx-active { background:var(--ult-color-accent-active); }
+.u-btn.subtle { background:var(--ult-color-accent-subtle); color:var(--ult-color-accent-text); }
+.u-btn.subtle:hover, .u-btn.subtle.fx-hover { background:var(--ult-color-surface-hover); }
+.u-btn.outline { background:transparent; border-color:var(--ult-color-border-strong); color:var(--ult-color-text); }
+.u-btn.outline:hover, .u-btn.outline.fx-hover { background:var(--ult-color-surface-hover); }
+.u-btn.danger { background:var(--ult-color-danger); color:var(--ult-color-danger-contrast); }
+.u-btn.danger:hover, .u-btn.danger.fx-hover { background:var(--ult-color-danger-hover); }
+.u-field { display:flex; flex-direction:column; gap:var(--ult-space-2); max-width:340px; }
+.u-field label { font-size:var(--ult-text-3); font-weight:var(--ult-font-weight-medium); }
+.u-field .hint { font-size:var(--ult-text-2); color:var(--ult-color-text-subtle); }
+.u-input {
+  height:var(--ult-space-10); border-radius:var(--ult-radius-md); border:1px solid var(--ult-color-border);
+  background:var(--ult-color-surface-sunken); color:var(--ult-color-text); padding:0 var(--ult-space-3);
+  font-size:var(--ult-text-4);
+}
+.u-input::placeholder { color:var(--ult-color-text-subtle); }
+.u-input:focus { outline:none; border-color:var(--ult-color-border-focus); box-shadow:0 0 0 2px var(--ult-color-surface), 0 0 0 4px var(--ult-color-border-focus); }
+.u-chip {
+  display:inline-flex; align-items:center; gap:var(--ult-space-2); border-radius:var(--ult-radius-full);
+  padding:var(--ult-space-1) var(--ult-space-3); font-size:var(--ult-text-2);
+  font-weight:var(--ult-font-weight-medium); border:1px solid var(--ult-color-border);
+}
+.u-chip .dot { width:6px; height:6px; border-radius:99px; background:currentColor; }
+.u-card {
+  background:var(--ult-color-surface-raised); border:1px solid var(--ult-color-border);
+  border-radius:var(--ult-radius-lg); padding:var(--ult-space-6); box-shadow:var(--ult-shadow-md);
+  display:flex; flex-direction:column; gap:var(--ult-space-3); max-width:420px;
+}
+.u-card h4 { margin:0; font-size:var(--ult-text-6); font-weight:var(--ult-font-weight-semibold); letter-spacing:var(--ult-font-tracking-tight); }
+.u-card p { margin:0; font-size:var(--ult-text-4); color:var(--ult-color-text-muted); line-height:var(--ult-font-leading-normal); }
+.u-link { color:var(--ult-color-highlight-text); font-size:var(--ult-text-4); }
+.u-rows { border:1px solid var(--ult-color-border); border-radius:var(--ult-radius-md); overflow:hidden; }
+.u-rows .r { display:flex; justify-content:space-between; padding:var(--ult-space-3) var(--ult-space-4); font-size:var(--ult-text-4); }
+.u-rows .r + .r { border-top:1px solid var(--ult-color-border); }
+.u-rows .r:hover, .u-rows .r.fx-hover { background:var(--ult-color-surface-hover); }
+.u-rows .r .k { color:var(--ult-color-text-subtle); font-size:var(--ult-text-3); }
+.u-overlay-demo { position:relative; }
+.u-backdrop {
+  position:absolute; inset:0; background:var(--ult-color-surface-overlay);
+  display:flex; align-items:center; justify-content:center; border-radius:var(--ult-radius-lg); z-index:1;
+}
+.u-popup {
+  background:var(--ult-color-surface-raised); border:1px solid var(--ult-color-border-strong);
+  border-radius:var(--ult-radius-lg); box-shadow:var(--ult-shadow-lg); padding:var(--ult-space-5);
+  width:min(320px, 80%); display:flex; flex-direction:column; gap:var(--ult-space-3);
+}
+.u-popup h5 { margin:0; font-size:var(--ult-text-5); font-weight:var(--ult-font-weight-semibold); }
+.u-popup p { margin:0; font-size:var(--ult-text-3); color:var(--ult-color-text-muted); }
+.u-menu { position:absolute; background:var(--ult-color-surface-raised); border:1px solid var(--ult-color-border); border-radius:var(--ult-radius-md); box-shadow:var(--ult-shadow-sm); padding:var(--ult-space-1); z-index:2; min-width:150px; }
+.u-menu .mi { padding:var(--ult-space-2) var(--ult-space-3); border-radius:var(--ult-radius-sm); font-size:var(--ult-text-3); }
+.u-menu .mi:hover, .u-menu .mi.fx-hover { background:var(--ult-color-surface-hover); }
+.u-typo h1 { font-size:var(--ult-text-9); margin:0; letter-spacing:var(--ult-font-tracking-tight); font-weight:var(--ult-font-weight-semibold); line-height:var(--ult-font-leading-tight); }
+.u-typo h2 { font-size:var(--ult-text-7); margin:0; font-weight:var(--ult-font-weight-semibold); line-height:var(--ult-font-leading-snug); }
+.u-typo p { font-size:var(--ult-text-5); line-height:var(--ult-font-leading-normal); margin:0; color:var(--ult-color-text-muted); max-width:56ch; }
+.u-typo code { font-family:var(--ult-font-mono); font-size:var(--ult-text-3); background:var(--ult-color-surface-sunken); padding:1px 6px; border-radius:var(--ult-radius-sm); color:var(--ult-color-highlight-text); }
+.u-motion-box { display:flex; gap:var(--ult-space-4); align-items:center; }
+.u-spin {
+  width:20px; height:20px; border-radius:99px; border:2px solid var(--ult-color-border-strong);
+  border-top-color:var(--ult-color-accent); animation:proto-spin var(--ult-motion-loop) linear infinite;
+}
+@keyframes proto-spin { to { transform:rotate(360deg) } }
+@media (prefers-reduced-motion: reduce) { .u-spin { animation-name:none; } }
+.u-lift { transition:transform var(--ult-motion-base), box-shadow var(--ult-motion-base); }
+.u-lift:hover { transform:translateY(-2px); box-shadow:var(--ult-shadow-lg); }
+.state-note { font-size:var(--ult-text-2); color:var(--ult-color-text-subtle); margin-bottom:var(--ult-space-2); }
+
+/* inspector panel */
+#inspector {
+  position:fixed; right:12px; bottom:12px; z-index:20; width:300px; max-height:50vh; overflow:auto;
+  background:var(--ed-raised); border:1px solid var(--ed-border-strong); border-radius:10px;
+  box-shadow:0 12px 32px rgba(0,0,0,.5); padding:10px 12px; display:none; font-size:12px;
+}
+#inspector.open { display:block; }
+#inspector h3 { margin:0 0 6px; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ed-subtle); }
+#inspector .tk { display:flex; justify-content:space-between; gap:8px; padding:2px 0; }
+#inspector .tk code { color:var(--ed-muted); font-size:11px; }
+#inspector .tk b { font-family:ui-monospace,monospace; font-weight:400; font-size:11px; }
+
+/* export dialog (mock) */
+#exportdlg { position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:30; }
+#exportdlg.open { display:flex; }
+#exportdlg .box { background:var(--ed-raised); border:1px solid var(--ed-border-strong); border-radius:12px; padding:20px; width:380px; display:flex; flex-direction:column; gap:10px; }
+#exportdlg h3 { margin:0; font-size:15px; }
+#exportdlg .opt { display:flex; justify-content:space-between; align-items:center; border:1px solid var(--ed-border); border-radius:8px; padding:10px 12px; font-size:12.5px; }
+#exportdlg .opt span { color:var(--ed-subtle); font-size:11px; }
+#exportdlg .mock { font-size:11px; color:var(--ed-warn); }
+</style>
+</head>
+<body>
+
+<header id="chrome">
+  <span class="brand">Theme studio</span>
+  <span class="proto-tag">prototype</span>
+  <span class="seg-label">Layout</span>
+  <span class="seg" id="variant-seg" role="group" aria-label="Editor layout variant">
+    <button data-v="rail" aria-pressed="true">Rail</button>
+    <button data-v="inspector" aria-pressed="false">Inspector</button>
+    <button data-v="sheet" aria-pressed="false">Sheet</button>
+  </span>
+  <span class="seg-label">Mode</span>
+  <span class="seg" id="mode-seg" role="group" aria-label="Preview color mode">
+    <button data-m="dark" aria-pressed="true">Dark</button>
+    <button data-m="light" aria-pressed="false">Light</button>
+    <button data-m="compare" aria-pressed="false">Compare</button>
+  </span>
+  <span class="seg-label">Viewport</span>
+  <span class="seg" id="vp-seg" role="group" aria-label="Preview viewport width">
+    <button data-w="0" aria-pressed="true">Fill</button>
+    <button data-w="1280" aria-pressed="false">1280</button>
+    <button data-w="768" aria-pressed="false">768</button>
+    <button data-w="390" aria-pressed="false">390</button>
+  </span>
+  <span class="spacer"></span>
+  <button class="btn" id="inspect-btn" aria-pressed="false">Inspect tokens</button>
+  <button class="btn primary" id="export-btn">Export…</button>
+</header>
+
+<div id="app" data-variant="rail">
+  <aside id="editor" aria-label="Theme controls">
+    <div id="shufflebar">
+      <button class="btn primary" id="shuffle">Shuffle</button>
+      <span class="seg" id="shuffle-mode" role="group" aria-label="Shuffle variation">
+        <button data-sm="broad" aria-pressed="true" style="font-size:11px;padding:3px 8px">Broad</button>
+        <button data-sm="subtle" aria-pressed="false" style="font-size:11px;padding:3px 8px">Subtle</button>
+      </span>
+      <button class="btn icon" id="undo" title="Undo" aria-label="Undo">&#x21a9;</button>
+      <button class="btn icon" id="redo" title="Redo" aria-label="Redo">&#x21ba;</button>
+      <span class="spacer"></span>
+      <span class="seed" id="seedline" title="Theme state fingerprint">seed —</span>
+    </div>
+    <div id="contrast-status"></div>
+    <div id="groups"></div>
+  </aside>
+  <main id="stage">
+    <div class="pv-wrap" id="wrap-a">
+      <div class="pv" data-mode="dark" id="pv-a" tabindex="0" aria-label="Dark preview"></div>
+      <div class="pv-label">dark</div>
+    </div>
+    <div class="pv-wrap" id="wrap-b" hidden>
+      <div class="pv" data-mode="light" id="pv-b" tabindex="0" aria-label="Light preview"></div>
+      <div class="pv-label">light</div>
+    </div>
+  </main>
+</div>
+
+<div id="inspector" role="status" aria-live="polite">
+  <h3>Token inspector</h3>
+  <div id="inspector-body">Click a preview element.</div>
+</div>
+
+<div id="exportdlg" role="dialog" aria-modal="true" aria-label="Export theme">
+  <div class="box">
+    <h3>Export theme</h3>
+    <div class="opt">tokens.css <button class="btn">Download</button></div>
+    <div class="opt">ultima-theme.json <span>registry item</span> <button class="btn">Download</button></div>
+    <div class="opt"><code style="font-size:11px">npx shadcn@latest add ./ultima-theme.json</code></div>
+    <div class="opt">theme.stylex.ts <span>StyleX source</span> <button class="btn">Download</button></div>
+    <p class="mock">Mock dialog — export formats are ticket #210's contract.</p>
+    <button class="btn" id="export-close">Close</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   PROTOTYPE — throwaway. Single file, in-memory state only.
+   The OKLCH recipe below is a direct port of packages/tokens/scripts/palette.py
+   (lightness tables, chroma fractions, gamut search) with the brand pins off,
+   matching the seed contract decided on issue #207.
+   ===================================================================== */
+
+// ---------- color math (port of palette.py) ----------
+const linToSrgb = c => c <= 0.0031308 ? 12.92*c : 1.055*Math.pow(c, 1/2.4) - 0.055;
+const srgbToLin = c => c <= 0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+function oklchToRgb(L, C, H) {
+  const a = C*Math.cos(H*Math.PI/180), b = C*Math.sin(H*Math.PI/180);
+  const l_ = L+0.3963377774*a+0.2158037573*b, m_ = L-0.1055613458*a-0.0638541728*b, s_ = L-0.0894841775*a-1.2914855480*b;
+  const l = l_**3, m = m_**3, s = s_**3;
+  return [4.0767416621*l-3.3077115913*m+0.2309699292*s, -1.2684380046*l+2.6097574011*m-0.3413193965*s, -0.0041960863*l-0.7034186147*m+1.7076147010*s];
+}
+const inGamut = rgb => rgb.every(c => -1e-4 <= c && c <= 1+1e-4);
+function oklchToHex(L, C, H) {
+  let lo = 0, hi = C;
+  if (!inGamut(oklchToRgb(L, C, H))) {
+    for (let i = 0; i < 40; i++) { const mid = (lo+hi)/2; if (inGamut(oklchToRgb(L, mid, H))) lo = mid; else hi = mid; }
+    C = lo;
+  }
+  return '#' + oklchToRgb(L, C, H).map(c => Math.round(linToSrgb(Math.min(1, Math.max(0, c)))*255).toString(16).padStart(2, '0')).join('');
+}
+const lum = h => { const n = parseInt(h.slice(1), 16); const r = srgbToLin((n>>16&255)/255), g = srgbToLin((n>>8&255)/255), b = srgbToLin((n&255)/255); return 0.2126*r+0.7152*g+0.0722*b; };
+const cr = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la,lb)+0.05)/(Math.min(la,lb)+0.05); };
+
+// ---------- recipe tables (verbatim from palette.py) ----------
+const L_DARK_BG = [0.162,0.195,0.235,0.275,0.315,0.36,0.42,0.50];
+const L_LIGHT_BG = [0.995,0.982,0.960,0.935,0.905,0.870,0.820,0.740];
+const L_TOP = {
+  mithril:{dark:[0.60,0.66,0.78,0.93], light:[0.56,0.50,0.44,0.22]},
+  arcane:{dark:[0.70,0.75,0.80,0.86], light:[0.55,0.50,0.46,0.40]},
+  mana:{dark:[0.80,0.85,0.89,0.912], light:[0.55,0.50,0.46,0.42]},
+  verdant:{dark:[0.76,0.81,0.85,0.88], light:[0.54,0.49,0.45,0.42]},
+  ember:{dark:[0.80,0.84,0.88,0.90], light:[0.78,0.72,0.66,0.45]},
+  ruin:{dark:[0.66,0.71,0.76,0.82], light:[0.58,0.53,0.48,0.42]},
+};
+const L78 = { mithril:{light:[0.78,0.64]} };
+const PEAK = {
+  mithril:{dark:0.005, light:0.020}, arcane:{dark:0.17, light:0.19}, mana:{dark:0.12, light:0.12},
+  verdant:{dark:0.13, light:0.14}, ember:{dark:0.13, light:0.14}, ruin:{dark:0.15, light:0.17},
+};
+const CF = { dark:[0.15,0.25,0.4,0.5,0.6,0.7,0.8,0.9,1,1,0.9,0.75], light:[0.05,0.12,0.25,0.35,0.45,0.55,0.65,0.8,1,1,1,0.8] };
+const CF_OVR = { mithril:{dark:[0.4,0.6,0.8,0.9,1,1,1,1,1,1,0.8,0.4], light:[0.3,0.45,0.6,0.7,0.85,1,1,1,1,1,1,1]} };
+const SCALES = ['mithril','arcane','mana','verdant','ember','ruin'];
+const ROLE_SCALE = { accent:'arcane', highlight:'mana', success:'verdant', warning:'ember', danger:'ruin' };
+const ROLES = Object.keys(ROLE_SCALE);
+const SCALE_LABEL = { mithril:'Neutral', arcane:'Accent', mana:'Highlight', verdant:'Success', ember:'Warning', ruin:'Danger' };
+const DEFAULT_HUE = { mithril:276, arcane:275, mana:204, verdant:162, ember:79, ruin:21 };
+
+function buildScales(seeds) {
+  const out = {};
+  for (const name of SCALES) {
+    out[name] = {};
+    for (const mode of ['dark','light']) {
+      const Ls = [...(mode === 'dark' ? L_DARK_BG : L_LIGHT_BG), ...L_TOP[name][mode]];
+      if (L78[name] && L78[name][mode]) { Ls[6] = L78[name][mode][0]; Ls[7] = L78[name][mode][1]; }
+      const cf = (CF_OVR[name] && CF_OVR[name][mode]) || CF[mode];
+      const peak = PEAK[name][mode] * seeds[name].sat;
+      out[name][mode] = Ls.map((L, i) => oklchToHex(L, peak*cf[i], seeds[name].hue));
+    }
+  }
+  return out;
+}
+
+function semantic(p, mode) {
+  const m = (s, i) => p[s][mode][i-1];
+  const t = {
+    'surface':m('mithril',1),'surface-raised':m('mithril',2),'surface-sunken':m('mithril',3),'surface-hover':m('mithril',4),
+    'surface-overlay':m('mithril',2)+(mode==='dark'?'99':'cc'),
+    'text':m('mithril',12),'text-muted':m('mithril',11),'text-subtle':m('mithril',10),'text-inverse':m('mithril',1),
+    'border':m('mithril',6),'border-strong':m('mithril',8),'border-focus':m('arcane',9),
+    'action':m('mana',9),'action-hover':m('mana',10),'action-active':m('mana',11),'action-contrast':m('mithril',1),
+  };
+  for (const [role, s] of Object.entries(ROLE_SCALE)) {
+    t[role]=m(s,9); t[role+'-hover']=m(s,10); t[role+'-active']=m(s,11);
+    t[role+'-subtle']=m(s,3); t[role+'-border']=m(s,7); t[role+'-text']=m(s,12);
+    const cands = [m('mithril',1), m('mithril',12)];
+    t[role+'-contrast'] = cands.reduce((best,c) => {
+      const score = x => Math.min(cr(x,t[role]),cr(x,t[role+'-hover']),cr(x,t[role+'-active']));
+      return score(c) > score(best) ? c : best;
+    });
+  }
+  return t;
+}
+
+function gateCount(t, mode) {
+  let fails = 0, total = 0;
+  const chk = (fg, bg, min) => { total++; if (cr(t[fg], t[bg]) < min) fails++; };
+  for (const fg of ['text','text-muted','text-subtle'])
+    for (const bg of ['surface','surface-raised','surface-sunken','surface-hover']) chk(fg, bg, 4.5);
+  for (const bg of ['surface','surface-raised']) { chk('border-strong', bg, 3); chk('border-focus', bg, 3); }
+  for (const role of ROLES) {
+    for (const bg of ['surface','surface-raised',role+'-subtle']) chk(role+'-text', bg, 4.5);
+    for (const bg of [role,role+'-hover',role+'-active']) chk(role+'-contrast', bg, 4.5);
+  }
+  return { fails, total };
+}
+
+// ---------- non-color tables ----------
+const SPACE_PX = [2,4,6,8,12,16,20,24,32,40,48,64];
+const TEXT_PX = [11,12,13,14,16,18,20,24,30,36,48];
+const FAMILIES = {
+  'IBM Plex Sans': "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif",
+  'System': "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+  'Serif': "Georgia, 'Times New Roman', serif",
+  'Humanist': "'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+};
+const MONO = "'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace";
+const LEADINGS = {
+  default: { none:1, tight:1.2, snug:1.35, normal:1.55, relaxed:1.75 },
+  compact: { none:1, tight:1.15, snug:1.3, normal:1.45, relaxed:1.6 },
+  loose:   { none:1, tight:1.3, snug:1.45, normal:1.65, relaxed:1.85 },
+};
+const TRACKINGS = {
+  default: { tight:'-0.02em', normal:'0', wide:'0.08em', wider:'0.14em' },
+  tight:   { tight:'-0.03em', normal:'-0.01em', wide:'0.06em', wider:'0.12em' },
+  loose:   { tight:'-0.01em', normal:'0.01em', wide:'0.1em', wider:'0.18em' },
+};
+const RADII = {
+  sharp:   { xs:0, sm:2, md:4, lg:6 },
+  default: { xs:2, sm:4, md:10, lg:12 },
+  round:   { xs:6, sm:10, md:16, lg:24 },
+};
+const shadow = k => ({
+  dark: {
+    sm: k===0 ? 'none' : `0 1px 2px rgba(0,0,0,${(.30*k).toFixed(2)}), 0 1px 3px rgba(0,0,0,${(.40*k).toFixed(2)})`,
+    md: k===0 ? 'none' : `0 4px 8px rgba(0,0,0,${(.35*k).toFixed(2)}), 0 8px 24px rgba(0,0,0,${(.45*k).toFixed(2)})`,
+    lg: k===0 ? 'none' : `0 12px 24px rgba(0,0,0,${(.40*k).toFixed(2)}), 0 24px 48px rgba(0,0,0,${(.50*k).toFixed(2)})`,
+  },
+  light: {
+    sm: k===0 ? 'none' : `0 1px 2px rgba(0,0,0,${(.06*k).toFixed(2)}), 0 1px 3px rgba(0,0,0,${(.10*k).toFixed(2)})`,
+    md: k===0 ? 'none' : `0 4px 8px rgba(0,0,0,${(.08*k).toFixed(2)}), 0 8px 24px rgba(0,0,0,${(.12*k).toFixed(2)})`,
+    lg: k===0 ? 'none' : `0 12px 24px rgba(0,0,0,${(.12*k).toFixed(2)}), 0 24px 48px rgba(0,0,0,${(.18*k).toFixed(2)})`,
+  },
+});
+
+// ---------- state ----------
+const state = {
+  seeds: Object.fromEntries(SCALES.map(s => [s, { hue: DEFAULT_HUE[s], sat: 1 }])),
+  family: 'IBM Plex Sans', customFamily: '', base: 16, typeScale: 'ultima',
+  leading: 'default', tracking: 'default',
+  density: 1, shape: 'default', elevation: 1, motion: 1,
+  locks: { color: false, typography: false, density: false, shape: false, elevation: false, motion: false },
+  shuffleMode: 'broad',
+  overrides: { dark: {}, light: {} },   // token -> value, per mode
+};
+const history = { past: [], future: [] };
+function commit() { history.past.push(JSON.stringify(state)); if (history.past.length > 60) history.past.shift(); history.future = []; }
+function restore(json) { const s = JSON.parse(json); Object.assign(state, s); }
+document.getElementById('undo').onclick = () => { if (!history.past.length) return; history.future.push(JSON.stringify(state)); restore(history.past.pop()); syncEditor(); apply(); };
+document.getElementById('redo').onclick = () => { if (!history.future.length) return; history.past.push(JSON.stringify(state)); restore(history.future.pop()); syncEditor(); apply(); };
+
+// ---------- theme resolution ----------
+function tokensFor(mode) {
+  const p = buildScales(state.seeds);
+  const t = semantic(p, mode);
+  const snap = n => Math.max(1, Math.round(n*2)/2);
+  const rem = px => (px/16).toFixed(4).replace(/0+$/,'').replace(/\.$/,'') + 'rem';
+  SPACE_PX.forEach((px, i) => t['space-'+(i+1)] = rem(snap(px*state.density)));
+  const ts = TEXT_PX.map((px, i) => state.typeScale === 'ultima'
+    ? px * state.base/16
+    : state.base * Math.pow(parseFloat(state.typeScale), i-4));
+  ts.forEach((px, i) => t['text-'+(i+1)] = rem(Math.round(px*4)/4));
+  const fam = state.family === 'Custom' ? (state.customFamily || 'ui-sans-serif, system-ui, sans-serif') : FAMILIES[state.family];
+  t['font-sans'] = fam; t['font-mono'] = MONO;
+  t['font-weight-regular']=400; t['font-weight-medium']=500; t['font-weight-semibold']=600;
+  for (const [k,v] of Object.entries(LEADINGS[state.leading])) t['font-leading-'+k] = v;
+  for (const [k,v] of Object.entries(TRACKINGS[state.tracking])) t['font-tracking-'+k] = v;
+  for (const [k,v] of Object.entries(RADII[state.shape])) t['radius-'+k] = v+'px';
+  t['radius-full'] = '9999px';
+  const sh = shadow(state.elevation)[mode];
+  for (const [k,v] of Object.entries(sh)) t['shadow-'+k] = v;
+  const ms = x => Math.round(x*state.motion/10)*10 + 'ms';
+  t['motion-fast']=ms(120); t['motion-base']=ms(200); t['motion-slow']=ms(300); t['motion-loop']=ms(1000);
+  for (const [k,v] of Object.entries(state.overrides[mode])) if (k in t || k.startsWith('color-')) t[k.replace(/^color-/,'')] = v;
+  return t;
+}
+const varName = k => '--ult-' + (k.startsWith('space-')||k.startsWith('text-')||k.startsWith('font-')||k.startsWith('radius-')||k.startsWith('shadow-')||k.startsWith('motion-') ? k : 'color-'+k);
+
+function apply() {
+  for (const pv of document.querySelectorAll('.pv')) {
+    const t = tokensFor(pv.dataset.mode);
+    for (const [k, v] of Object.entries(t)) pv.style.setProperty(varName(k), v);
+    pv.dataset.mode === 'dark' ? pv.style.colorScheme='dark' : pv.style.colorScheme='light';
+  }
+  // contrast status
+  const p = buildScales(state.seeds);
+  let fails = 0, total = 0;
+  for (const mode of ['dark','light']) { const g = gateCount({...semantic(p,mode), ...mapOv(mode)}, mode); fails += g.fails; total += g.total; }
+  document.getElementById('contrast-status').innerHTML =
+    fails === 0 ? `<span class="ok">AA gate: ${total} pairings pass</span>` : `<span class="bad">AA gate: ${fails}/${total} pairings fail</span>`;
+  // seed fingerprint
+  let h = 0; const s = JSON.stringify(state.seeds)+state.density+state.shape+state.elevation+state.motion+state.base+state.typeScale;
+  for (const c of s) h = (h*31 + c.charCodeAt(0)) >>> 0;
+  document.getElementById('seedline').textContent = 'seed ' + h.toString(16).slice(0,6);
+}
+function mapOv(mode) { const o = {}; for (const [k,v] of Object.entries(state.overrides[mode])) o[k.replace(/^color-/,'')] = v; return o; }
+
+// ---------- preview scene ----------
+const sceneHTML = `
+<div class="pv-inner">
+  <section class="u-typo">
+    <h3 class="scene">Typography</h3>
+    <h1 data-inspect data-tk="text-9,font-sans,font-tracking-tight">Mireval at dusk</h1>
+    <h2 data-inspect data-tk="text-7">The archive opens after the third bell</h2>
+    <p data-inspect data-tk="text-5,font-leading-normal,color-text-muted">Body copy rides on <code data-inspect data-tk="font-mono,color-highlight-text">--ult-text-5</code> with muted color, and inline code keeps the mono stack. Density never moves these; only the typography group does.</p>
+  </section>
+  <section>
+    <h3 class="scene">Controls</h3>
+    <div style="display:flex;gap:var(--ult-space-3);flex-wrap:wrap;align-items:center">
+      <button class="u-btn solid" data-inspect data-tk="color-accent,color-accent-contrast,radius-md,space-10">Continue</button>
+      <button class="u-btn subtle" data-inspect data-tk="color-accent-subtle,color-accent-text">Details</button>
+      <button class="u-btn outline" data-inspect data-tk="color-border-strong">Cancel</button>
+      <button class="u-btn danger" data-inspect data-tk="color-danger,color-danger-contrast">Delete</button>
+    </div>
+    <div style="height:var(--ult-space-4)"></div>
+    <div class="u-field">
+      <label for="f1">Character name</label>
+      <input class="u-input" id="f1" placeholder="e.g. Sable of the Ninth House" data-inspect data-tk="color-surface-sunken,color-border,color-border-focus">
+      <span class="hint" data-inspect data-tk="color-text-subtle,text-2">Shown on your license. Placeholder uses text-subtle.</span>
+    </div>
+    <div style="height:var(--ult-space-4)"></div>
+    <div style="display:flex;gap:var(--ult-space-2);flex-wrap:wrap">
+      <span class="u-chip" style="color:var(--ult-color-success-text);background:var(--ult-color-success-subtle);border-color:var(--ult-color-success-border)" data-inspect data-tk="color-success-subtle,color-success-text,color-success-border"><span class="dot"></span>Verified</span>
+      <span class="u-chip" style="color:var(--ult-color-warning-text);background:var(--ult-color-warning-subtle);border-color:var(--ult-color-warning-border)" data-inspect data-tk="color-warning-*"><span class="dot"></span>Pending</span>
+      <span class="u-chip" style="color:var(--ult-color-danger-text);background:var(--ult-color-danger-subtle);border-color:var(--ult-color-danger-border)" data-inspect data-tk="color-danger-*"><span class="dot"></span>Revoked</span>
+      <span class="u-chip" style="color:var(--ult-color-highlight-text);background:var(--ult-color-highlight-subtle);border-color:var(--ult-color-highlight-border)" data-inspect data-tk="color-highlight-*"><span class="dot"></span>Mana</span>
+    </div>
+  </section>
+  <section>
+    <h3 class="scene">Surfaces</h3>
+    <div class="u-card u-lift" data-inspect data-tk="color-surface-raised,color-border,shadow-md,radius-lg">
+      <h4>Cartographer's ledger</h4>
+      <p>Cards sit on <code>surface-raised</code> with a hairline border and <code>shadow-md</code>. Hover me — the lift runs on <code>--ult-motion-base</code>.</p>
+      <a class="u-link" href="#" onclick="return false" data-inspect data-tk="color-highlight-text">Open the ledger</a>
+    </div>
+    <div style="height:var(--ult-space-4)"></div>
+    <div class="u-rows" data-inspect data-tk="color-border">
+      <div class="r"><span>Ember archive</span><span class="k">row · hover uses surface-hover</span></div>
+      <div class="r"><span>Ruin index</span><span class="k">density sets this padding</span></div>
+      <div class="r"><span>Mithril vault</span><span class="k">border uses color-border</span></div>
+    </div>
+  </section>
+  <section>
+    <h3 class="scene">Overlays</h3>
+    <div class="u-overlay-demo">
+      <button class="u-btn outline" onclick="this.nextElementSibling.hidden=false">Open mock dialog</button>
+      <div class="u-backdrop" hidden onclick="if(event.target===this)this.hidden=true" data-inspect data-tk="color-surface-overlay">
+        <div class="u-popup" data-inspect data-tk="color-surface-raised,color-border-strong,shadow-lg">
+          <h5>Seal the bargain?</h5>
+          <p>Popups and menus must render inside the preview's theme boundary — the real build scopes Base UI portals to the pane.</p>
+          <div style="display:flex;gap:var(--ult-space-2);justify-content:flex-end">
+            <button class="u-btn subtle" onclick="this.closest('.u-backdrop').hidden=true">Keep looking</button>
+            <button class="u-btn solid" onclick="this.closest('.u-backdrop').hidden=true">Seal it</button>
+          </div>
+        </div>
+      </div>
+      <div style="position:relative;height:var(--ult-space-8);margin-top:var(--ult-space-3)">
+        <div class="u-menu" data-inspect data-tk="color-surface-raised,shadow-sm">
+          <div class="mi">Duplicate theme</div>
+          <div class="mi fx-hover">Rename… (forced hover)</div>
+          <div class="mi">Copy seed</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h3 class="scene">Forced states</h3>
+    <p class="state-note">Rest / fx-hover / fx-active — real interaction also works.</p>
+    <div style="display:flex;gap:var(--ult-space-3);flex-wrap:wrap">
+      <button class="u-btn solid">Rest</button>
+      <button class="u-btn solid fx-hover">Hover</button>
+      <button class="u-btn solid fx-active">Active</button>
+      <button class="u-btn danger">Rest</button>
+      <button class="u-btn danger fx-hover">Hover</button>
+    </div>
+  </section>
+  <section>
+    <h3 class="scene">Motion</h3>
+    <div class="u-motion-box">
+      <span class="u-spin" data-inspect data-tk="motion-loop"></span>
+      <span style="font-size:var(--ult-text-3);color:var(--ult-color-text-subtle)">loop = <code class="loop-ms">1s</code> · transitions use fast/base/slow</span>
+    </div>
+  </section>
+</div>`;
+document.getElementById('pv-a').innerHTML = sceneHTML;
+document.getElementById('pv-b').innerHTML = sceneHTML;
+
+// ---------- editor ----------
+const GROUPS = [
+  { id:'color', label:'Color' },
+  { id:'typography', label:'Typography' },
+  { id:'density', label:'Density' },
+  { id:'shape', label:'Shape' },
+  { id:'elevation', label:'Elevation' },
+  { id:'motion', label:'Motion' },
+];
+const seg = (name, opts, cur) => `<span class="seg" data-seg="${name}">` +
+  opts.map(([v,l]) => `<button data-v="${v}" aria-pressed="${String(v)===String(cur)}" style="font-size:11.5px;padding:3px 9px">${l}</button>`).join('') + '</span>';
+
+function editorControls(id) {
+  switch (id) {
+    case 'color':
+      return SCALES.map(s => `
+        <div class="row">
+          <button class="swatch" data-scale="${s}" style="background:var(--sw-${s})" title="Pick seed color for ${SCALE_LABEL[s]}">
+            <input type="color" data-color="${s}"></button>
+          <label style="min-width:70px">${SCALE_LABEL[s]}</label>
+          <input type="range" min="0" max="359" step="1" data-hue="${s}" aria-label="${SCALE_LABEL[s]} hue">
+          <output data-hue-out="${s}"></output>
+          <input type="range" min="0" max="150" step="5" data-sat="${s}" aria-label="${SCALE_LABEL[s]} saturation" style="max-width:70px">
+        </div>`).join('');
+    case 'typography': return `
+      <div class="row"><label>Family</label><select data-k="family">${[...Object.keys(FAMILIES),'Custom'].map(f=>`<option>${f}</option>`).join('')}</select></div>
+      <div class="row" data-row="customFamily" hidden><label>Custom stack</label><input type="text" data-k="customFamily" placeholder="'My Font', system-ui, sans-serif"></div>
+      <div class="row"><label>Base size</label><input type="range" min="14" max="18" step="0.5" data-k="base"><output data-out="base"></output></div>
+      <div class="row"><label>Scale</label>${seg('typeScale',[['ultima','Ultima'],['1.125','1.125'],['1.2','1.2'],['1.25','1.25'],['1.333','1.333']],state.typeScale)}</div>
+      <div class="row"><label>Leading</label>${seg('leading',[['compact','Compact'],['default','Default'],['loose','Loose']],state.leading)}</div>
+      <div class="row"><label>Tracking</label>${seg('tracking',[['tight','Tight'],['default','Default'],['loose','Loose']],state.tracking)}</div>`;
+    case 'density': return `<div class="row"><label>Preset</label>${seg('density',[['0.75','Compact'],['1','Cosy'],['1.25','Roomy']],state.density)}</div>
+      <div class="row"><span style="font-size:11px;color:var(--ed-subtle)">Scales all 12 space steps; control heights follow (steps 9–11). Independent of typography.</span></div>`;
+    case 'shape': return `<div class="row"><label>Radius</label>${seg('shape',[['sharp','Sharp'],['default','Default'],['round','Round']],state.shape)}</div>
+      <div class="row"><span style="font-size:11px;color:var(--ed-subtle)">radius-full stays 9999px.</span></div>`;
+    case 'elevation': return `<div class="row"><label>Strength</label>${seg('elevation',[['0','Flat'],['0.5','Subtle'],['1','Default'],['1.5','Pronounced']],state.elevation)}</div>
+      <div class="row"><span style="font-size:11px;color:var(--ed-subtle)">Scales shadow alpha in both modes; geometry fixed.</span></div>`;
+    case 'motion': return `<div class="row"><label>Speed</label>${seg('motion',[['0.6','Brisk'],['1','Default'],['1.5','Gentle']],state.motion)}</div>
+      <div class="row"><span style="font-size:11px;color:var(--ed-subtle)">Reduced-motion collapse (1ms/0s) never changes.</span></div>`;
+  }
+}
+
+const COLOR_TOKENS = ['surface','surface-raised','surface-sunken','surface-hover','text','text-muted','text-subtle','text-inverse','border','border-strong','border-focus','action','action-hover','action-active','action-contrast',
+  ...ROLES.flatMap(r => [r,r+'-hover',r+'-active',r+'-subtle',r+'-border',r+'-text',r+'-contrast'])];
+const GROUP_TOKENS = {
+  color: COLOR_TOKENS.map(t => 'color-'+t),
+  typography: [...Array(11)].map((_,i)=>'text-'+(i+1)).concat(['font-sans','font-mono','font-leading-none','font-leading-tight','font-leading-snug','font-leading-normal','font-leading-relaxed','font-tracking-tight','font-tracking-normal','font-tracking-wide','font-tracking-wider','font-weight-regular','font-weight-medium','font-weight-semibold']),
+  density: [...Array(12)].map((_,i)=>'space-'+(i+1)),
+  shape: ['radius-xs','radius-sm','radius-md','radius-lg','radius-full'],
+  elevation: ['shadow-sm','shadow-md','shadow-lg'],
+  motion: ['motion-fast','motion-base','motion-slow','motion-loop'],
+};
+
+function buildEditor() {
+  document.getElementById('groups').innerHTML = GROUPS.map(g => `
+    <section class="group" data-group="${g.id}">
+      <header>
+        <h2>${g.label}</h2>
+        <button class="icon-btn" data-gshuffle="${g.id}" title="Shuffle ${g.label} only">&#x1f3b2;</button>
+        <button class="icon-btn" data-lock="${g.id}" aria-pressed="false" title="Lock group against Shuffle">&#x1f513;</button>
+        <button class="icon-btn" data-reset="${g.id}" title="Reset group">&#x27f2;</button>
+        <button class="icon-btn" data-expand="${g.id}" title="Token overrides" aria-expanded="false">&#x25be; tokens</button>
+      </header>
+      <div class="ctl">${editorControls(g.id)}</div>
+      <div class="ov" data-ov="${g.id}"></div>
+    </section>`).join('');
+
+  // overrides rows
+  for (const g of GROUPS) {
+    const box = document.querySelector(`[data-ov="${g.id}"]`);
+    const perMode = g.id === 'color' || g.id === 'elevation';
+    box.innerHTML = GROUP_TOKENS[g.id].map(t => `
+      <div class="ovrow">
+        <code>--ult-${t}</code>
+        ${perMode
+          ? `<span class="mode-tag">D</span><input data-ovt="${t}" data-mode="dark"><span class="mode-tag">L</span><input data-ovt="${t}" data-mode="light">`
+          : `<input data-ovt="${t}" data-mode="both" style="width:120px">`}
+        <button class="icon-btn" data-ovr="${t}" title="Reset token">&#x27f2;</button>
+      </div>`).join('');
+  }
+
+  // wire controls
+  document.querySelectorAll('[data-hue]').forEach(el => el.oninput = () => { commit(); state.seeds[el.dataset.hue].hue = +el.value; apply(); syncSwatches(); });
+  document.querySelectorAll('[data-sat]').forEach(el => el.oninput = () => { commit(); state.seeds[el.dataset.sat].sat = +el.value/100; apply(); });
+  document.querySelectorAll('[data-color]').forEach(el => el.oninput = () => {
+    commit();
+    const { h, c } = hexToOklch(el.value);
+    state.seeds[el.dataset.color].hue = Math.round(h);
+    state.seeds[el.dataset.color].sat = Math.min(1.5, Math.max(0.1, c/PEAK[el.dataset.color].dark));
+    syncEditor(); apply();
+  });
+  document.querySelectorAll('.swatch').forEach(sw => sw.onclick = e => { if (e.target === sw) sw.querySelector('input').click(); });
+  document.querySelectorAll('[data-k]').forEach(el => el.onchange = () => { commit(); state[el.dataset.k] = el.type === 'range' || el.type === 'number' ? +el.value : el.value; syncEditor(); apply(); });
+  document.querySelectorAll('.ctl [data-seg]').forEach(s => s.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    commit();
+    const k = s.dataset.seg;
+    state[k] = (k === 'density' || k === 'elevation' || k === 'motion') ? +b.dataset.v : b.dataset.v;
+    syncEditor(); apply();
+  }));
+  document.querySelectorAll('[data-lock]').forEach(el => el.onclick = () => { state.locks[el.dataset.lock] = !state.locks[el.dataset.lock]; syncLocks(); });
+  document.querySelectorAll('[data-gshuffle]').forEach(el => el.onclick = () => { commit(); shuffleGroup(el.dataset.gshuffle); syncEditor(); apply(); });
+  document.querySelectorAll('[data-reset]').forEach(el => el.onclick = () => { commit(); resetGroup(el.dataset.reset); syncEditor(); apply(); });
+  document.querySelectorAll('[data-expand]').forEach(el => el.onclick = () => {
+    const g = el.closest('.group'); g.classList.toggle('open');
+    el.setAttribute('aria-expanded', g.classList.contains('open'));
+  });
+  document.querySelectorAll('[data-ovt]').forEach(el => el.onchange = () => {
+    commit();
+    const t = el.dataset.ovt, m = el.dataset.mode;
+    const v = el.value.trim();
+    if (!v) { delete state.overrides.dark[t]; delete state.overrides.light[t]; }
+    else if (m === 'both') { state.overrides.dark[t] = v; state.overrides.light[t] = v; }
+    else state.overrides[m][t] = v;
+    syncOverrides(); apply();
+  });
+  document.querySelectorAll('[data-ovr]').forEach(el => el.onclick = () => {
+    commit(); delete state.overrides.dark[el.dataset.ovr]; delete state.overrides.light[el.dataset.ovr];
+    syncOverrides(); apply();
+  });
+  syncEditor();
+}
+
+function hexToOklch(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = srgbToLin((n>>16&255)/255), g = srgbToLin((n>>8&255)/255), b = srgbToLin((n&255)/255);
+  const l = Math.cbrt(0.4122214708*r+0.5363325363*g+0.0514459929*b);
+  const m = Math.cbrt(0.2119034982*r+0.6806995451*g+0.1073969566*b);
+  const s = Math.cbrt(0.0883024619*r+0.2817188376*g+0.6299787005*b);
+  const L = 0.2104542553*l+0.7936177850*m-0.0040720468*s;
+  const a = 1.9779984951*l-2.4285922050*m+0.4505937099*s;
+  const bb = 0.0259040371*l+0.7827717662*m-0.8086757660*s;
+  return { h: (Math.atan2(bb, a)*180/Math.PI+360)%360, c: Math.hypot(a, bb) };
+}
+
+function resetGroup(id) {
+  if (id === 'color') { for (const s of SCALES) state.seeds[s] = { hue: DEFAULT_HUE[s], sat: 1 }; state.overrides.dark = pickNonColor(state.overrides.dark); state.overrides.light = pickNonColor(state.overrides.light); }
+  if (id === 'typography') Object.assign(state, { family:'IBM Plex Sans', customFamily:'', base:16, typeScale:'ultima', leading:'default', tracking:'default' });
+  if (id === 'density') state.density = 1;
+  if (id === 'shape') state.shape = 'default';
+  if (id === 'elevation') state.elevation = 1;
+  if (id === 'motion') state.motion = 1;
+  for (const t of GROUP_TOKENS[id]) { delete state.overrides.dark[t]; delete state.overrides.light[t]; }
+}
+function pickNonColor(o) { const n = {}; for (const [k,v] of Object.entries(o)) if (!k.startsWith('color-')) n[k] = v; return n; }
+
+function syncSwatches() {
+  const p = buildScales(state.seeds);
+  for (const s of SCALES) {
+    const sw = document.querySelector(`.swatch[data-scale="${s}"]`);
+    if (sw) sw.style.setProperty('--sw-'+s, p[s].dark[8]);
+  }
+}
+function syncLocks() {
+  document.querySelectorAll('[data-lock]').forEach(el => {
+    const on = state.locks[el.dataset.lock]; el.setAttribute('aria-pressed', on);
+    el.innerHTML = on ? '&#x1f512;' : '&#x1f513;';
+  });
+}
+function syncOverrides() {
+  document.querySelectorAll('[data-ovt]').forEach(el => {
+    const t = el.dataset.ovt, m = el.dataset.mode;
+    const val = m === 'both' ? (state.overrides.dark[t] || '') : (state.overrides[m][t] || '');
+    el.value = val; el.classList.toggle('changed', !!val);
+  });
+}
+function syncEditor() {
+  for (const s of SCALES) {
+    const hue = document.querySelector(`[data-hue="${s}"]`), sat = document.querySelector(`[data-sat="${s}"]`);
+    if (hue) { hue.value = state.seeds[s].hue; document.querySelector(`[data-hue-out="${s}"]`).textContent = state.seeds[s].hue + '°'; }
+    if (sat) sat.value = Math.round(state.seeds[s].sat*100);
+  }
+  document.querySelectorAll('[data-k]').forEach(el => { el.value = state[el.dataset.k]; });
+  document.querySelector('[data-out="base"]').textContent = state.base + 'px';
+  document.querySelector('[data-row="customFamily"]').hidden = state.family !== 'Custom';
+  document.querySelectorAll('.ctl [data-seg]').forEach(sg => {
+    const k = sg.dataset.seg;
+    sg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(state[k]) === b.dataset.v));
+  });
+  syncLocks(); syncOverrides(); syncSwatches();
+}
+
+// ---------- shuffle ----------
+// Per the #209 contract: group-level locks only, per-group shuffle plus one
+// global Shuffle, and broad/subtle variation modes.
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const near = (a, cur) => { const i = a.findIndex(x => String(x)===String(cur)); const j = Math.max(0, Math.min(a.length-1, i + (Math.random()<0.5?-1:1))); return a[j]; };
+function shuffleGroup(id) {
+  const subtle = state.shuffleMode === 'subtle';
+  if (id === 'color') for (const s of SCALES) {
+    const sd = state.seeds[s];
+    state.seeds[s] = subtle
+      ? { hue: (sd.hue + Math.round(Math.random()*30-15) + 360)%360, sat: Math.min(1.5, Math.max(0, sd.sat + (Math.random()*0.3-0.15))) }
+      : { hue: Math.floor(Math.random()*360), sat: 0.6 + Math.random()*0.7 };
+  }
+  if (id === 'typography') {
+    state.base = subtle ? Math.min(18, Math.max(14, state.base + pick([-1,-0.5,0.5,1]))) : 14 + Math.floor(Math.random()*9)*0.5;
+    state.typeScale = subtle ? near(['ultima','1.125','1.2','1.25','1.333'], state.typeScale) : pick(['ultima','1.125','1.2','1.25','1.333']);
+    state.leading = subtle ? near(['compact','default','loose'], state.leading) : pick(['compact','default','loose']);
+    state.tracking = subtle ? near(['tight','default','loose'], state.tracking) : pick(['tight','default','loose']);
+  }
+  if (id === 'density') state.density = subtle ? near([0.75,1,1.25], state.density) : pick([0.75,1,1.25]);
+  if (id === 'shape') state.shape = subtle ? near(['sharp','default','round'], state.shape) : pick(['sharp','default','round']);
+  if (id === 'elevation') state.elevation = subtle ? Math.min(2, Math.max(0, state.elevation + pick([-0.1,0.1]))) : pick([0,0.5,1,1.5]);
+  if (id === 'motion') state.motion = subtle ? Math.min(2, Math.max(0.5, state.motion + pick([-0.1,0.1]))) : pick([0.6,1,1.5]);
+}
+document.getElementById('shuffle').onclick = () => {
+  commit();
+  for (const g of GROUPS) if (!state.locks[g.id]) shuffleGroup(g.id);
+  syncEditor(); apply();
+};
+document.getElementById('shuffle-mode').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.shuffleMode = b.dataset.sm;
+  document.querySelectorAll('#shuffle-mode button').forEach(x => x.setAttribute('aria-pressed', x === b));
+});
+
+// ---------- chrome ----------
+const app = document.getElementById('app');
+document.getElementById('variant-seg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  app.dataset.variant = b.dataset.v;
+  document.querySelectorAll('#variant-seg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+});
+const wrapA = document.getElementById('wrap-a'), wrapB = document.getElementById('wrap-b'), pvA = document.getElementById('pv-a'), pvB = document.getElementById('pv-b');
+document.getElementById('mode-seg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#mode-seg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  const m = b.dataset.m;
+  wrapB.hidden = m !== 'compare';
+  pvA.dataset.mode = m === 'light' ? 'light' : 'dark';
+  apply();
+});
+document.getElementById('vp-seg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#vp-seg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  const w = +b.dataset.w;
+  for (const pv of [pvA, pvB]) pv.style.maxWidth = w ? w+'px' : '';
+  document.getElementById('stage').style.flexDirection = w && w < 700 ? 'column' : 'row';
+});
+const inspBtn = document.getElementById('inspect-btn'), inspPanel = document.getElementById('inspector');
+inspBtn.onclick = () => {
+  const on = inspBtn.getAttribute('aria-pressed') !== 'true';
+  inspBtn.setAttribute('aria-pressed', on);
+  document.getElementById('stage').classList.toggle('inspecting', on);
+  inspPanel.classList.toggle('open', on);
+};
+document.getElementById('stage').addEventListener('click', e => {
+  if (!document.getElementById('stage').classList.contains('inspecting')) return;
+  const el = e.target.closest('[data-inspect]'); if (!el) return;
+  const pv = el.closest('.pv');
+  const rows = el.dataset.tk.split(',').map(k => {
+    k = k.trim();
+    const v = getComputedStyle(pv).getPropertyValue('--ult-'+(k.includes('-')&&!k.startsWith('color')&&(k.startsWith('text')||k.startsWith('space')||k.startsWith('font')||k.startsWith('radius')||k.startsWith('shadow')||k.startsWith('motion'))?k:k.startsWith('color')?k:'color-'+k)).trim() || '—';
+    return `<div class="tk"><code>--ult-${k}</code><b>${v}</b></div>`;
+  }).join('');
+  document.getElementById('inspector-body').innerHTML = rows + `<div class="tk"><code>mode</code><b>${pv.dataset.mode}</b></div>`;
+});
+document.getElementById('export-btn').onclick = () => document.getElementById('exportdlg').classList.add('open');
+document.getElementById('export-close').onclick = () => document.getElementById('exportdlg').classList.remove('open');
+document.getElementById('exportdlg').addEventListener('click', e => { if (e.target.id === 'exportdlg') e.target.classList.remove('open'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { document.getElementById('exportdlg').classList.remove('open'); } });
+
+buildEditor();
+apply();
+</script>
+</body>
+</html>
