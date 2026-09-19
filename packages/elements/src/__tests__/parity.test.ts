@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'vitest';
 
 import elementButton from '../ult-button.element.ts?raw';
+import elementCard from '../ult-card.element.ts?raw';
 import reactButton from '../../../ui/src/button.tsx?raw';
+import reactCard from '../../../ui/src/card.tsx?raw';
 
 type ElementParity = {
   tag: string;
@@ -24,6 +26,14 @@ const ELEMENTS: ElementParity[] = [
     },
     parts: ['root'],
     stateMap: { 'data-disabled': 'data-disabled' },
+  },
+  {
+    tag: 'ult-card',
+    element: elementCard,
+    react: reactCard,
+    axes: {},
+    parts: ['root', 'header', 'title', 'description', 'body', 'footer'],
+    stateMap: {},
   },
 ];
 
@@ -106,13 +116,20 @@ describe.each(ELEMENTS)('$tag', (decl) => {
   });
 
   test('fails when a stylex table drifts', () => {
-    const drifted = { ...decl, element: decl.element.replace("'--ult-color-accent-hover'", "'--ult-color-surface-hover'") };
+    const token = tokenReads(decl.element)[0] as string;
+    const drifted = { ...decl, element: decl.element.replace(token, '--ult-color-surface') };
     expect(() => assertParity(drifted)).toThrow(/stylex tables differ|token reads differ/);
   });
 
-  test('fails when an axis drifts', () => {
-    const missing = { ...decl, element: decl.element.replace("getAttribute('size')", "getAttribute('bogus')") };
-    expect(() => assertParity(missing)).toThrow(/axis size is not read as an attribute/);
+  test.skipIf(Object.keys(decl.axes).length === 0)('fails when an axis drifts', () => {
+    const axis = Object.keys(decl.axes)[0] as string;
+    const missing = {
+      ...decl,
+      element: decl.element.replace(`getAttribute('${axis}')`, `getAttribute('bogus')`),
+    };
+    expect(() => assertParity(missing)).toThrow(
+      new RegExp(`axis ${axis} is not read as an attribute`),
+    );
   });
 
   test('fails when a styled part drifts', () => {
@@ -123,8 +140,9 @@ describe.each(ELEMENTS)('$tag', (decl) => {
     expect(() => assertParity(drifted)).toThrow(/part= targets differ/);
   });
 
-  test('fails when a state selector drifts', () => {
-    const drifted = { ...decl, element: decl.element.replaceAll('data-disabled', 'data-inert') };
+  test.skipIf(Object.keys(decl.stateMap).length === 0)('fails when a state selector drifts', () => {
+    const elementState = Object.values(decl.stateMap)[0] as string;
+    const drifted = { ...decl, element: decl.element.replaceAll(elementState, 'data-inert') };
     expect(() => assertParity(drifted)).toThrow();
   });
 });
