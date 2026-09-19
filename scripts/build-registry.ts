@@ -22,6 +22,7 @@ const SPEC = join(root, 'docs/spec/ultima.md');
 const TOKENS_DIST = join(root, 'packages/tokens/dist');
 const TOKEN_EXPORTS = ['tokens.css', 'tokens.json'];
 const ELEMENTS_DIST = join(root, 'packages/elements/dist');
+const ELEMENTS_SRC = join(root, 'packages/elements/src');
 const ELEMENTS_PUBLIC = join(PUBLIC_DIR, 'elements');
 
 const HOMEPAGE = 'https://ultima.systems';
@@ -286,7 +287,7 @@ function shadcnBuild() {
   });
 }
 
-function publishExports(components: Staged[]) {
+function publishExports({ components, elements }: ReturnType<typeof stageSources>) {
   for (const name of TOKEN_EXPORTS) {
     copyFileSync(join(TOKENS_DIST, name), join(PUBLIC_DIR, name));
   }
@@ -296,6 +297,15 @@ function publishExports(components: Staged[]) {
     components: components.map(({ name, source }): GuideComponent => {
       const { title, description } = describe(name);
       return { name, title, description, source };
+    }),
+    elements: elements.map((name): GuideComponent => {
+      const { title, description } = describe(name);
+      return {
+        name,
+        title,
+        description,
+        source: readFileSync(join(ELEMENTS_SRC, `${name}.element.ts`), 'utf8'),
+      };
     }),
   });
   writeFileSync(join(PUBLIC_DIR, 'llms.txt'), guide);
@@ -312,7 +322,7 @@ const staged = stageSources();
 const registry = describeRegistry(staged);
 writeFileSync(join(REGISTRY_DIR, 'registry.json'), `${JSON.stringify(registry, null, 2)}\n`);
 shadcnBuild();
-publishExports(staged.components);
+publishExports(staged);
 publishElements();
 
 console.log(`registry: built ${registry.items.length} items into apps/docs/public/r`);
