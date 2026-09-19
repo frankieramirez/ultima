@@ -95,6 +95,33 @@ function axesOf({ name, source }: GuideComponent): { prop: string; values: strin
   });
 }
 
+const ELEMENT_AXIS = /\bgetAttribute\('([a-z-]+)'\)\s*,\s*([A-Z][\w]*)\s*,/g;
+
+function elementAxesOf({ name, source }: GuideComponent): { prop: string; values: string[] }[] {
+  const picked = new Map<string, string[]>();
+  for (const match of source.matchAll(ELEMENT_AXIS)) {
+    const attribute = match[1] as string;
+    const table = match[2] as string;
+    const declaration = new RegExp(`\\bconst\\s+${table}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*as\\s+const`).exec(
+      source,
+    );
+    if (!declaration) {
+      throw new Error(`${name}.element.ts: attribute "${attribute}" picks from "${table}", no string array`);
+    }
+    const values = [...(declaration[1] as string).matchAll(/'([^']+)'/g)].map(
+      (value) => value[1] as string,
+    );
+    if (values.length === 0) {
+      throw new Error(`${name}.element.ts table "${table}" resolved to no values`);
+    }
+    picked.set(attribute, values);
+  }
+  return AXES.flatMap(({ prop }) => {
+    const values = picked.get(prop);
+    return values ? [{ prop, values }] : [];
+  });
+}
+
 function exportedName({ name, source }: GuideComponent): string {
   const list = /\bexport\s*\{([\s\S]*?)\}/.exec(source);
   if (!list) throw new Error(`${name}.tsx has no export list`);
@@ -133,6 +160,34 @@ function describeComponent(component: GuideComponent): string {
   ].join('\n');
 }
 
+const ELEMENTS_LEAD =
+  "Every element below is the same component as its React counterpart, compiled to a custom element for a host that cannot run React. A single-part component is one `ult-<item>` tag and a compound component is an `ult-<item>-<part>` family, one tag per part. Attributes stand in for props: each axis is an attribute carrying the React prop's values verbatim. Elements render into light DOM over `/tokens.css`, and the style slot is `part=` on the parts an element renders plus your own CSS. Serve one file per element from `/elements/`, or `/elements/ultima.js` for the set; `/elements.html` is the live example of every element in both modes.";
+
+function describeElement(element: GuideComponent): string {
+  const axes = elementAxesOf(element);
+  return [
+    `### ${element.title}`,
+    '',
+    element.description,
+    '',
+    `Tag: \`<${element.name}>\``,
+    '',
+    '```bash',
+    `npx shadcn add @ultima/${element.name}`,
+    '```',
+    '',
+    '```html',
+    `<script type="module" src="/elements/${element.name}.js"></script>`,
+    '```',
+    '',
+    axes.length === 0
+      ? 'No axis attributes.'
+      : axes
+          .map(({ prop, values }) => `- \`${prop}\`: ${values.map((value) => `\`${value}\``).join(' | ')}`)
+          .join('\n'),
+  ].join('\n');
+}
+
 function describeTokens(tokens: TokensJson['tokens']): string {
   const groups = new Map<string, string[]>();
   for (const [name, { group }] of Object.entries(tokens)) {
@@ -152,10 +207,12 @@ export function agentGuide({
   specPath,
   tokensJsonPath,
   components,
+  elements,
 }: {
   specPath: string;
   tokensJsonPath: string;
   components: GuideComponent[];
+  elements: GuideComponent[];
 }): string {
   const spec = readFileSync(specPath, 'utf8');
   const { tokens } = JSON.parse(readFileSync(tokensJsonPath, 'utf8')) as TokensJson;
@@ -163,7 +220,9 @@ export function agentGuide({
   const guide = `${[
     '# Ultima',
     '',
-    'Ultima is a design system for React, built on Base UI and StyleX and distributed as a shadcn-compatible registry: you install the source into your own repository and own it from then on. This file is generated from Ultima\'s specification and its registry manifest on every build, and it is the whole of Ultima\'s guidance for an agent working in a consumer\'s repository, because Ultima installs no documentation of its own.',
+    elements.length === 0
+      ? 'Ultima is a design system for React, built on Base UI and StyleX and distributed as a shadcn-compatible registry: you install the source into your own repository and own it from then on. This file is generated from Ultima\'s specification and its registry manifest on every build, and it is the whole of Ultima\'s guidance for an agent working in a consumer\'s repository, because Ultima installs no documentation of its own.'
+      : 'Ultima is a design system with two render targets: React components built on Base UI and StyleX, and custom elements for a host that cannot run React. It is distributed as a shadcn-compatible registry: you install the source into your own repository and own it from then on. This file is generated from Ultima\'s specification and its registry manifest on every build, and it is the whole of Ultima\'s guidance for an agent working in a consumer\'s repository, because Ultima installs no documentation of its own.',
     '',
     '## Install',
     '',
@@ -180,6 +239,9 @@ export function agentGuide({
     '## Components',
     '',
     components.map(describeComponent).join('\n\n'),
+    ...(elements.length === 0
+      ? []
+      : ['', '## Elements', '', ELEMENTS_LEAD, '', elements.map(describeElement).join('\n\n')]),
     '',
     '## Tokens',
     '',
