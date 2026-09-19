@@ -232,6 +232,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'An image that falls back to whatever you put behind it, at whatever size you set.',
     docs: "import { Avatar } from '@/components/ui/avatar';\n\n<Avatar.Root>\n  <Avatar.Fallback>FR</Avatar.Fallback>\n  <Avatar.Image src=\"/avatar.png\" alt=\"Frankie\" />\n</Avatar.Root>\n\nFallback goes before Image in DOM order; the not-yet-loaded image is hidden with visibility, never display, so keepMounted and lazy loading work. alt is yours: empty beside a visible name, a name when the avatar stands alone. The box and the radius are the style slot: there is no size or shape prop.",
   },
+  'scroll-area': {
+    title: 'Scroll Area',
+    description: 'A native scroll container with scrollbars you can see and a viewport a keyboard can reach.',
+    docs: "import { ScrollArea } from '@/components/ui/scroll-area';\n\n<ScrollArea.Root style={styles.bounds}>\n  <ScrollArea.Viewport>\n    <ScrollArea.Content>Anything.</ScrollArea.Content>\n  </ScrollArea.Viewport>\n  <ScrollArea.Scrollbar>\n    <ScrollArea.Thumb />\n  </ScrollArea.Scrollbar>\n</ScrollArea.Root>\n\nThe bound is yours: give Root a block size through the style slot, or nothing scrolls. A horizontal bar is a second Scrollbar with orientation=\"horizontal\", and Corner fills the intersection when both overflow. The bar is visible whenever its axis overflows; there is no type prop and no hide delay.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:

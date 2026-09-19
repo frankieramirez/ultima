@@ -52,6 +52,7 @@ test('the component catalogue exposes the v0, v0.1, and v0.2 sets in specificati
     'menubar',
     'accordion',
     'avatar',
+    'scroll-area',
   ]);
 });
 
@@ -104,6 +105,7 @@ test('every catalogue entry carries a release, and the menu derives from that fi
     'menubar',
     'accordion',
     'avatar',
+    'scroll-area',
   ]);
   expect(RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item))).toEqual(
     components.map(({ item }) => item),

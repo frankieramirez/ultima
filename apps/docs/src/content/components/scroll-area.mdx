@@ -1,0 +1,67 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/scroll-area/basic';
+import basicSource from '../../demos/scroll-area/basic?raw';
+import BothAxes from '../../demos/scroll-area/both-axes';
+import bothAxesSource from '../../demos/scroll-area/both-axes?raw';
+import Fade from '../../demos/scroll-area/fade';
+import fadeSource from '../../demos/scroll-area/fade?raw';
+
+# Scroll Area
+
+A native scroll container with scrollbars you can see and a viewport a keyboard can reach, on Base UI's Scroll Area. Six parts: `Viewport`, `Scrollbar`, and `Thumb` are styled; `Root`, `Content`, and `Corner` pass through.
+
+## Install
+
+```bash
+npx shadcn add @ultima/scroll-area
+```
+
+## Bound the Root
+
+An unbounded `Root` never scrolls: with no block size of its own the root grows to fit its content, nothing overflows, and the scrollbar never mounts. The bound is yours, on `Root` through the `style` slot — `Viewport` fills it with `block-size: 100%`.
+
+<Demo component={Basic} source={basicSource} />
+
+## Both axes
+
+Overflow on the inline axis is a second `Scrollbar` with `orientation="horizontal"`, and `Corner` fills the intersection while both bars show. `orientation` is Base UI's pass-through prop, not an Ultima axis.
+
+<Demo component={BothAxes} source={bothAxesSource} />
+
+## A gradient fade
+
+The default bar stays visible while its axis overflows, so this recipe is a `style` override on `Viewport`, not the shipped look. Base UI writes four `--scroll-area-overflow-*` distances on the viewport, and a `mask-image` gradient reads them — a fade that grows from zero to 40px as the content scrolls away from an edge.
+
+<Demo component={Fade} source={fadeSource} />
+
+Two hazards ride with those variables. `Viewport` calls `CSS.registerProperty` once per page for the four names with `inherits: false`, and that registration is page-global and permanent in Chromium and Firefox: after the first scroll area mounts, any element anywhere reading them gets `0px` instead of a `var()` fallback, for the rest of the page's life. A descendant that wants the live value writes `--scroll-area-overflow-*: inherit` on itself *and on every element between it and the viewport* — the mask here reads them on `Viewport` itself, so nothing needs to inherit. And the `var(…, 40px)` fallback on the end edge is the first-paint stand-in: before the first measurement the variable is unset, so the recipe fades 40px at the bottom on SSR and nothing at the top, where the scroll position starts anyway.
+
+`overflowEdgeThreshold` does not move this recipe — it gates the four `data-overflow-*` attributes, and the variables are written unthresholded on every measurement.
+
+## The bar does not hide
+
+There is one visibility mode and no `type` prop: the bar is mounted whenever its axis overflows and gone otherwise, and `data-hovering` or `data-scrolling` deepens the thumb's colour rather than gating its opacity. `data-hovering` never fires for a touch pointer, and a bar at `opacity: 0; pointer-events: none` cannot be grabbed, so every fade mode hides the component's only pointer affordance from the people who need it most. There is no `scrollHideDelay` either: `data-scrolling` clears on a fixed 500ms timer inside the primitive.
+
+## Content Security Policy
+
+`ScrollArea.Root` injects the inline `<style>` that hides native scrollbars — the same occurrence Select's page names, with the same escape: a nonce through Base UI's `CSPProvider`, or `disableStyleElements` and supply the `.base-ui-disable-scrollbar` rule yourself.
+
+## Props
+
+Everything is Base UI's; see [Base UI's Scroll Area](https://base-ui.com/react/components/scroll-area) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `overflowEdgeThreshold` | `number \| object` | `0` | Pixels before a `data-overflow-*` attribute flips, per edge or all at once. Gates the attributes only, not the fade variables. |
+| `Scrollbar` | `orientation` | `'vertical' \| 'horizontal'` | `'vertical'` | A horizontal bar is a second `Scrollbar`. |
+| `Scrollbar` | `keepMounted` | `boolean` | `false` | Mounts the bar while its axis fits. The thumb clamps to a 16px minimum there rather than filling the track, so this is not Radix's `always`. |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| Every part | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+`Viewport` carries `block-size: 100%`, `box-sizing: border-box`, and the focus ring; `Scrollbar` the track layout; `Thumb` the painted bar. `Root`, `Content`, and `Corner` ship no Ultima styles, and each keeps the `style` slot.
+
+## Accessibility
+
+- **Name.** None needed — `Root`, `Viewport`, and `Content` are `role="presentation"`, and `Scrollbar` and `Corner` are `aria-hidden`. A consumer who wants a named region passes `render` with `role="region"` and a label.
+- **Focus.** `Viewport` is a tab stop while either axis overflows (`tabindex="0"`) and drops out of the order when the content fits (`-1`). It is also click-focusable, which is why the ring is `:focus-visible` rather than `:focus` — a `:focus` ring would paint every time a reader clicked the text.
+- **Keyboard.** Native scrolling once the viewport has focus: arrows, Page Up / Page Down, Home and End. Base UI adds no key handler, and `Scrollbar` and `Thumb` are pointer-only.

@@ -323,6 +323,15 @@ export {
   type AvatarFallbackProps,
 } from './avatar';
 export {
+  ScrollArea,
+  type ScrollAreaRootProps,
+  type ScrollAreaViewportProps,
+  type ScrollAreaContentProps,
+  type ScrollAreaScrollbarProps,
+  type ScrollAreaThumbProps,
+  type ScrollAreaCornerProps,
+} from './scroll-area';
+export {
   HoverCard,
   type HoverCardArrowProps,
   type HoverCardBackdropProps,
