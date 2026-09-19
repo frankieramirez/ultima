@@ -289,6 +289,12 @@ export const items: Record<string, RegistryItemDescription> = {
     docs: '<script type="module" src="./ult-code.js"></script>\n\n<ult-code>npx shadcn add @ultima/button</ult-code>\n<ult-code variant="block">pnpm install\npnpm dev</ult-code>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nAxes are attributes carrying the React prop values verbatim: variant.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
     registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
   },
+  'ult-meter': {
+    title: 'Meter element',
+    description: 'Ultima Meter as custom elements, vendored for a host that cannot run React.',
+    docs: '<script type="module" src="./ult-meter.js"></script>\n\n<ult-meter value="72" tone="warning">\n  <ult-meter-label>Disk used</ult-meter-label>\n  <ult-meter-track>\n    <ult-meter-indicator></ult-meter-indicator>\n  </ult-meter-track>\n  <ult-meter-value></ult-meter-value>\n</ult-meter>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nAxes are attributes carrying the React prop values verbatim: tone sits on ult-meter and a part-level tone on ult-meter-indicator or ult-meter-value wins; value, min, and max carry the reading.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
+    registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
+  },
   'ult-stat': {
     title: 'Stat element',
     description: 'Ultima Stat as a family of custom elements, vendored for a host that cannot run React.',
@@ -305,6 +311,12 @@ export const items: Record<string, RegistryItemDescription> = {
     title: 'Tabs element',
     description: 'Ultima Tabs as a family of custom elements, vendored for a host that cannot run React.',
     docs: '<script type="module" src="./ult-tabs.js"></script>\n\n<ult-tabs value="tokens">\n  <ult-tabs-list aria-label="Docs sections">\n    <ult-tabs-tab value="tokens">Tokens</ult-tabs-tab>\n    <ult-tabs-tab value="themes">Themes</ult-tabs-tab>\n    <ult-tabs-indicator></ult-tabs-indicator>\n  </ult-tabs-list>\n  <ult-tabs-panel value="tokens">Anything.</ult-tabs-panel>\n  <ult-tabs-panel value="themes">More.</ult-tabs-panel>\n</ult-tabs>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nThe parts are the family tags: ult-tabs, ult-tabs-list, ult-tabs-tab, ult-tabs-panel, and ult-tabs-indicator. Axes are attributes carrying the React prop values verbatim: variant on ult-tabs (underline or segmented), value and disabled on ult-tabs-tab, value on ult-tabs-panel, and orientation and value on ult-tabs. Selection defaults to manual activation; set activate-on-focus on ult-tabs-list to select on arrow.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
+    registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
+  },
+  'ult-tooltip': {
+    title: 'Tooltip element',
+    description: 'Ultima Tooltip as a family of custom elements, vendored for a host that cannot run React.',
+    docs: '<script type="module" src="./ult-tooltip.js"></script>\n\n<ult-tooltip>\n  <ult-tooltip-trigger><button type="button" aria-label="Copied to clipboard">Copy</button></ult-tooltip-trigger>\n  <ult-tooltip-positioner>\n    <ult-tooltip-popup>Copied to clipboard<ult-tooltip-arrow></ult-tooltip-arrow></ult-tooltip-popup>\n  </ult-tooltip-positioner>\n</ult-tooltip>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nOne element per part: ult-tooltip, ult-tooltip-trigger, ult-tooltip-positioner, ult-tooltip-popup, ult-tooltip-arrow. The trigger wraps your own focusable element and the aria-label on it must match the tooltip text, because the popup is role="tooltip" and never the name. The open attribute pins the tooltip open; Tooltip declares no axes.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
     registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
   },
 };

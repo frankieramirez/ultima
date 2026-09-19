@@ -7,10 +7,24 @@ const ELEMENTS = [
   'ult-button',
   'ult-card',
   'ult-code',
+  'ult-meter',
   'ult-stat',
   'ult-table',
   'ult-tabs',
+  'ult-tooltip',
 ] as const;
+
+const PROOF_PART: Record<(typeof ELEMENTS)[number], string> = {
+  'ult-badge': 'root',
+  'ult-button': 'root',
+  'ult-card': 'root',
+  'ult-code': 'root',
+  'ult-meter': 'root',
+  'ult-stat': 'root',
+  'ult-table': 'root',
+  'ult-tabs': 'root',
+  'ult-tooltip': 'popup',
+};
 
 const frames: HTMLIFrameElement[] = [];
 
@@ -54,7 +68,11 @@ test('the fixture page renders every element in both color modes', async () => {
       const hosts = doc.querySelectorAll(`[data-theme="${theme}"] ${tag}`);
       expect(hosts.length, `no ${tag} demos in the ${theme} section`).toBeGreaterThan(0);
       for (const host of hosts) {
-        expect(host.querySelector('[part="root"]'), `${tag} rendered no root part`).not.toBeNull();
+        const part = PROOF_PART[tag];
+        expect(
+          host.querySelector(`[part="${part}"]`),
+          `${tag} rendered no ${part} part`,
+        ).not.toBeNull();
       }
     }
   }

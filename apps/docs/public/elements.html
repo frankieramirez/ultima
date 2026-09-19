@@ -43,6 +43,16 @@
         gap: var(--ult-space-4);
         align-items: center;
       }
+      .trigger {
+        font-family: var(--ult-font-sans);
+        font-size: var(--ult-text-2);
+        color: var(--ult-color-text);
+        background: var(--ult-color-surface-raised);
+        border: 1px solid var(--ult-color-border);
+        border-radius: var(--ult-radius-md);
+        padding-block: var(--ult-space-2);
+        padding-inline: var(--ult-space-3);
+      }
     </style>
   </head>
   <body>
@@ -119,6 +129,20 @@ pnpm dev</ult-code>
           <ult-tabs-panel value="list">Results as a list.</ult-tabs-panel>
           <ult-tabs-panel value="grid">Results as a grid.</ult-tabs-panel>
         </ult-tabs>
+        <div class="row">
+          <ult-tooltip>
+            <ult-tooltip-trigger><button type="button" class="trigger" aria-label="Copied to clipboard">Copy</button></ult-tooltip-trigger>
+            <ult-tooltip-positioner>
+              <ult-tooltip-popup>Copied to clipboard<ult-tooltip-arrow></ult-tooltip-arrow></ult-tooltip-popup>
+            </ult-tooltip-positioner>
+          </ult-tooltip>
+          <ult-tooltip open>
+            <ult-tooltip-trigger><button type="button" class="trigger" aria-label="Saved as a draft">Save</button></ult-tooltip-trigger>
+            <ult-tooltip-positioner>
+              <ult-tooltip-popup>Saved as a draft<ult-tooltip-arrow></ult-tooltip-arrow></ult-tooltip-popup>
+            </ult-tooltip-positioner>
+          </ult-tooltip>
+        </div>
         <ult-table-scroll aria-labelledby="dark-latency" style="max-width: 22rem">
           <ult-table style="min-width: 34rem">
             <ult-table-caption id="dark-latency">Latency by region</ult-table-caption>
@@ -140,6 +164,33 @@ pnpm dev</ult-code>
             </ult-table-body>
           </ult-table>
         </ult-table-scroll>
+        <div class="row">
+          <ult-meter value="40" tone="neutral" style="width: 12rem">
+            <ult-meter-label>Neutral</ult-meter-label>
+            <ult-meter-track><ult-meter-indicator></ult-meter-indicator></ult-meter-track>
+            <ult-meter-value></ult-meter-value>
+          </ult-meter>
+          <ult-meter value="55" tone="highlight" style="width: 12rem">
+            <ult-meter-label>Highlight</ult-meter-label>
+            <ult-meter-track><ult-meter-indicator></ult-meter-indicator></ult-meter-track>
+            <ult-meter-value></ult-meter-value>
+          </ult-meter>
+          <ult-meter value="70" tone="success" style="width: 12rem">
+            <ult-meter-label>Success</ult-meter-label>
+            <ult-meter-track><ult-meter-indicator></ult-meter-indicator></ult-meter-track>
+            <ult-meter-value></ult-meter-value>
+          </ult-meter>
+          <ult-meter value="85" tone="warning" style="width: 12rem">
+            <ult-meter-label>Warning</ult-meter-label>
+            <ult-meter-track><ult-meter-indicator></ult-meter-indicator></ult-meter-track>
+            <ult-meter-value></ult-meter-value>
+          </ult-meter>
+          <ult-meter value="95" tone="danger" style="width: 12rem">
+            <ult-meter-label>Danger</ult-meter-label>
+            <ult-meter-track><ult-meter-indicator></ult-meter-indicator></ult-meter-track>
+            <ult-meter-value></ult-meter-value>
+          </ult-meter>
+        </div>
       </section>
       <section data-theme="light" aria-labelledby="light-heading">
         <h2 id="light-heading">Light</h2>
@@ -212,6 +263,20 @@ pnpm dev</ult-code>
           <ult-tabs-panel value="list">Results as a list.</ult-tabs-panel>
           <ult-tabs-panel value="grid">Results as a grid.</ult-tabs-panel>
         </ult-tabs>
+        <div class="row">
+          <ult-tooltip>
+            <ult-tooltip-trigger><button type="button" class="trigger" aria-label="Copied to clipboard">Copy</button></ult-tooltip-trigger>
+            <ult-tooltip-positioner>
+              <ult-tooltip-popup>Copied to clipboard<ult-tooltip-arrow></ult-tooltip-arrow></ult-tooltip-popup>
+            </ult-tooltip-positioner>
+          </ult-tooltip>
+          <ult-tooltip open>
+            <ult-tooltip-trigger><button type="button" class="trigger" aria-label="Saved as a draft">Save</button></ult-tooltip-trigger>
+            <ult-tooltip-positioner>
+              <ult-tooltip-popup>Saved as a draft<ult-tooltip-arrow></ult-tooltip-arrow></ult-tooltip-popup>
+            </ult-tooltip-positioner>
+          </ult-tooltip>
+        </div>
         <ult-table-scroll aria-labelledby="light-deploys" style="max-width: 22rem">
           <ult-table style="min-width: 34rem">
             <ult-table-caption id="light-deploys">Deploys by environment</ult-table-caption>
@@ -233,6 +298,33 @@ pnpm dev</ult-code>
             </ult-table-body>
           </ult-table>
         </ult-table-scroll>
+        <div class="row">
+          <ult-meter value="40" tone="neutral" style="width: 12rem">
+            <ult-meter-label>Neutral</ult-meter-label>
+            <ult-meter-track><ult-meter-indicator></ult-meter-indicator></ult-meter-track>
+            <ult-meter-value></ult-meter-value>
+          </ult-meter>
+          <ult-meter value="55" tone="highlight" style="width: 12rem">
+            <ult-meter-label>Highlight</ult-meter-label>
+            <ult-meter-track><ult-meter-indicator></ult-meter-indicator></ult-meter-track>
+            <ult-meter-value></ult-meter-value>
+          </ult-meter>
+          <ult-meter value="70" tone="success" style="width: 12rem">
+            <ult-meter-label>Success</ult-meter-label>
+            <ult-meter-track><ult-meter-indicator></ult-meter-indicator></ult-meter-track>
+            <ult-meter-value></ult-meter-value>
+          </ult-meter>
+          <ult-meter value="85" tone="warning" style="width: 12rem">
+            <ult-meter-label>Warning</ult-meter-label>
+            <ult-meter-track><ult-meter-indicator></ult-meter-indicator></ult-meter-track>
+            <ult-meter-value></ult-meter-value>
+          </ult-meter>
+          <ult-meter value="95" tone="danger" style="width: 12rem">
+            <ult-meter-label>Danger</ult-meter-label>
+            <ult-meter-track><ult-meter-indicator></ult-meter-indicator></ult-meter-track>
+            <ult-meter-value></ult-meter-value>
+          </ult-meter>
+        </div>
       </section>
     </main>
   </body>
