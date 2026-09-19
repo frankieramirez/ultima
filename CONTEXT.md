@@ -52,7 +52,11 @@ One installable unit in the registry: a component, a style, or a theme, with its
 
 ## Recipe
 
-A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Those checks are the live demo in the axe sweep and the documented states on the page, not a `packages/ui` install of the engine. Sheet is a recipe over Dialog; Alert Dialog is not — Base UI ships it as its own Root, so it is a catalogue item. Data Table is a recipe over Table and an engine; the React Hook Form example is a recipe over Field and an engine. Where a recipe hands the user a control, that control still comes from a component.
+A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Those checks are the live demo in the axe sweep and the documented states on the page, not a `packages/ui` install of the engine. Sheet is a recipe over Dialog; Alert Dialog is not — Base UI ships it as its own Root, so it is a catalogue item. Sharing a component is not enough either: Toggle is a catalogue item though `ToggleGroup.Item` renders the same primitive, because that primitive branches on the group's context and the two arrangements have different live props, and a recipe that varies which props are live has nowhere to say so. Data Table is a recipe over Table and an engine; the React Hook Form example is a recipe over Field and an engine. Where a recipe hands the user a control, that control still comes from a component. Passing the identity test is not enough on its own: an avatar group is `Avatar.Root`, `Avatar.Image`, and `Avatar.Fallback` and is not a recipe, because no checklist line holds it. A composition with no entry to satisfy is a **Documented composition** instead.
+
+## Documented composition
+
+An arrangement of components a docs page prints so a consumer can copy it, where no checklist entry is being satisfied. It has no registry item, no mapping to record, and no checks of its own, which is the whole difference between it and a **Recipe**: a recipe answers for an entry, a documented composition answers for a question the entry's own page leaves open. An avatar group is the first: negative inline spacing, a ring through the `style` slot, and an overflow count that is a plain `Avatar.Root`.
 
 ## Engine
 
@@ -76,7 +80,11 @@ The site at `apps/docs`. Three things at once: Ultima's reference, the host that
 
 ## Page layout
 
-The docs-local side of the line between an Ultima component and the site's own chrome. Page layout arranges content and sets type and flow spacing. It never builds a control from plain elements and never paints a surface, meaning a background, a border, a shadow, or a radius. Anything that does one of those comes from a component, or becomes one. A control here is anything the user reaches with a keyboard, so a tabbable scroll region counts even though it presses nothing.
+The docs-local side of the line between an Ultima component and the site's own chrome. Page layout arranges content and sets type and flow spacing. It never builds a control from plain elements and never paints a surface, meaning a background, a border, a shadow, or a radius. Anything that does one of those comes from a component, or becomes one. A control here is anything the user reaches with a keyboard, so a tabbable scroll region counts even though it presses nothing. A third prong arrived with Scroll Area: page layout may rely on a native scrollbar and may not hide one without painting a replacement, since the first two prongs are about building something badly and this one is about removing something the platform already gave you.
+
+## Set
+
+A section of the specification holding one contract effort's output: its components' parts and axes in one table, their styled splits, and the prose a builder would otherwise guess. A set is named for what it holds. A release name is honest only where the section holds that release whole, which is why The v0 set and The v0.1 set carry one and no fraction of v0.2 may. Where the members share a property, the name is that property: The navigation set's landmark, The overlay set's recipe. Where they share nothing, the name lists them, which is The Toggle, Accordion, Avatar, and Scroll Area set and the reason it is the one section not named for an idea. Report set and Feedback set are groupings inside a release rather than sections.
 
 ## Report set
 
@@ -88,7 +96,7 @@ The seven v0.1 components that report a state rather than collect a value: Alert
 
 ## Navigation set
 
-Breadcrumb, Pagination, and Navigation Menu, the three v0.2 components that render a navigation landmark. Named for what they hold rather than for the release, because v0.2 is fourteen checklist lines and these are three of them. One rule follows from the landmark and reaches all three: Ultima's default name is emitted only when the caller named nothing, and distinguishing a second instance on a page is the consumer's.
+Breadcrumb, Pagination, and Navigation Menu, the three v0.2 components that render a navigation landmark. Named for what they hold rather than for the release, because v0.2 is thirteen checklist lines and these are three of them. One rule follows from the landmark and reaches all three: Ultima's default name is emitted only when the caller named nothing, and distinguishing a second instance on a page is the consumer's.
 
 ## Page window
 
@@ -229,6 +237,22 @@ A panel previewing where a link goes, opened by hovering or focusing the link. B
 ## Menubar
 
 A persistent bar of menu titles, in page flow rather than floating. Base UI ships it as one container component with no parts, so Ultima ships one function and invents no part name; the menus inside it are the consumer's own Dropdown Menus, named as a companion install rather than declared as a dependency. Its one part is styled twice over: it paints, and its box is read back by the backdrop an open menu renders, so the bar is sized to its contents. It is not an overlay. Its accessible name is required by the types, the third such attribute in the system, because the pattern demands a name and no automated check would ever catch a missing one.
+
+## Accordion
+
+Collapsible run once per item under a shared value array: the same Base UI hooks, so the panel's animation contract transfers whole over a differently named custom property. Where it parts company is the trigger, which Ultima styles because an accordion trigger is a full-measure row of the accordion rather than a slot for a control the consumer already has, and the APG permits nothing beside the button inside its heading. The heading is an `<h3>` whose level is the consumer's through `render`, the caret is their glyph inside the button, and the panel takes no padding, because a box animating to zero height cannot clip its own. Since the APG dropped arrow keys from the pattern its keyboard is a native button and Tab, not roving tabindex.
+
+## Avatar
+
+An image with something behind it for when the image is not there. Three parts, all styled, and the only catalogue component with no axes and no kin: its box and its radius are each one unconditional declaration, so both are the style slot's the way Skeleton's size already is, and the initials track the box through a container query rather than a text step. The fallback is a layout slot Ultima ships nothing into, so there is no `name` prop and no derived initials. Its accessible name is `alt` on the image, documented rather than type-enforced because axe's `image-alt` catches a missing one and passes an empty one, and Ultima defaults it to neither so a decorative avatar and an unnamed standalone one stay distinguishable. `keepMounted` is the mode `next/image` and lazy loading need, and it works untouched because Ultima ships the stacking CSS for both modes and hides the unloaded image with `visibility`, never `display`, which would stop a lazy image ever loading.
+
+## Scroll Area
+
+A native scroll container with scrollbars Ultima paints and a viewport a keyboard can reach. Six parts, three styled, no axes. It is the component where Base UI writes the most inline style, and since an inline style beats a StyleX class, most of the contract is what not to write: not the viewport's `overflow`, not the thumb's length, not the scrollbar's placement. What Base UI leaves out is the scrollbar's thickness, without which the bar is zero pixels wide, and the viewport's `block-size: 100%`, without which nothing overflows and the whole component silently stops scrolling. Its scrollbar is always visible when its axis overflows and only changes colour on hover or while scrolling, because the fade every other system ships cannot be grabbed and never appears for a touch pointer at all. The bounded box is the consumer's, on the style slot, as Skeleton's size and Avatar's are.
+
+## Toggle
+
+A button that stays pressed, shipped as its own item though `ToggleGroup.Item` renders the same Base UI component. One function, no parts, and two axes Toggle Group has none of: `variant` for whether it carries a border at rest, and `size` at Button's three control heights, because a standalone toggle stands beside a button and a grouped one stands inside a ground that sets its scale. Its pressed state is the accent role where the group's is neutral, since a lone control has no sibling to be read against. The two are not interchangeable at the type level and each file restates the other's paint rather than importing it: `value` is dropped here because it identifies a toggle to a group, and `pressed` is inert inside one.
 
 ## Restatement
 
