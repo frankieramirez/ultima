@@ -155,7 +155,7 @@ test('the emitted bundles carry no runtime stylex or external imports', () => {
     expect(bundle).not.toMatch(/^import |^export |stylex\.(create|attrs|props)/m);
     expect(bundle).toContain('data-ultima-elements');
     for (const tag of Object.keys(PARTS)) {
-      expect(bundle).toContain(`customElements.define('${tag}'`);
+      expect(bundle).toMatch(new RegExp(`customElements\\.define\\(["']${tag}["']`));
     }
   }
 });
