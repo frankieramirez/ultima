@@ -6,12 +6,14 @@ import elementCard from '../ult-card.element.ts?raw';
 import elementCode from '../ult-code.element.ts?raw';
 import elementMeter from '../ult-meter.element.ts?raw';
 import elementStat from '../ult-stat.element.ts?raw';
+import elementTable from '../ult-table.element.ts?raw';
 import reactBadge from '../../../ui/src/badge.tsx?raw';
 import reactButton from '../../../ui/src/button.tsx?raw';
 import reactCard from '../../../ui/src/card.tsx?raw';
 import reactCode from '../../../ui/src/code.tsx?raw';
 import reactMeter from '../../../ui/src/meter.tsx?raw';
 import reactStat from '../../../ui/src/stat.tsx?raw';
+import reactTable from '../../../ui/src/table.tsx?raw';
 
 type ElementParity = {
   tag: string;
@@ -80,6 +82,14 @@ const ELEMENTS: ElementParity[] = [
     parts: ['root', 'label', 'value'],
     stateMap: {},
   },
+  {
+    tag: 'ult-table',
+    element: elementTable,
+    react: reactTable,
+    axes: {},
+    parts: ['caption', 'cell', 'head-cell', 'root', 'row', 'scroll'],
+    stateMap: { 'data-sort': 'data-sort', 'aria-sort': 'aria-sort' },
+  },
 ];
 
 function stylexTables(source: string): string[] {
@@ -107,6 +117,10 @@ function stylesPartKeys(source: string): string[] {
   const table = stylexTables(source)[0];
   if (!table) return [];
   return [...table.matchAll(/^ {2}(['"]?)([\w-]+)\1:/gm)].map((match) => match[2] as string);
+}
+
+function kebab(name: string): string {
+  return name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
 
 function tokenReads(source: string): string[] {
@@ -145,7 +159,7 @@ function assertParity(decl: ElementParity): void {
   expect([...new Set(partAttributes(decl.element))].sort(), `${decl.tag}: part= targets differ`).toEqual(
     [...decl.parts].sort(),
   );
-  expect(stylesPartKeys(decl.react).sort(), `${decl.tag}: styled parts differ`).toEqual(
+  expect(stylesPartKeys(decl.react).map(kebab).sort(), `${decl.tag}: styled parts differ`).toEqual(
     [...decl.parts].sort(),
   );
 
