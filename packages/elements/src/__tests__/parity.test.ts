@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'vitest';
 
 import elementButton from '../ult-button.element.ts?raw';
+import elementTable from '../ult-table.element.ts?raw';
 import reactButton from '../../../ui/src/button.tsx?raw';
+import reactTable from '../../../ui/src/table.tsx?raw';
 
 type ElementParity = {
   tag: string;
@@ -10,6 +12,7 @@ type ElementParity = {
   axes: Record<string, readonly string[]>;
   parts: readonly string[];
   stateMap: Record<string, string>;
+  drift: { token: readonly [string, string] };
 };
 
 const ELEMENTS: ElementParity[] = [
@@ -24,6 +27,16 @@ const ELEMENTS: ElementParity[] = [
     },
     parts: ['root'],
     stateMap: { 'data-disabled': 'data-disabled' },
+    drift: { token: ['--ult-color-accent-hover', '--ult-color-surface-hover'] },
+  },
+  {
+    tag: 'ult-table',
+    element: elementTable,
+    react: reactTable,
+    axes: {},
+    parts: ['caption', 'cell', 'head-cell', 'root', 'row', 'scroll'],
+    stateMap: { 'data-sort': 'data-sort', 'aria-sort': 'aria-sort' },
+    drift: { token: ['--ult-color-surface-hover', '--ult-color-accent'] },
   },
 ];
 
@@ -52,6 +65,10 @@ function stylesPartKeys(source: string): string[] {
   const table = stylexTables(source)[0];
   if (!table) return [];
   return [...table.matchAll(/^ {2}(['"]?)([\w-]+)\1:/gm)].map((match) => match[2] as string);
+}
+
+function kebab(name: string): string {
+  return name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
 
 function tokenReads(source: string): string[] {
@@ -90,7 +107,7 @@ function assertParity(decl: ElementParity): void {
   expect([...new Set(partAttributes(decl.element))].sort(), `${decl.tag}: part= targets differ`).toEqual(
     [...decl.parts].sort(),
   );
-  expect(stylesPartKeys(decl.react).sort(), `${decl.tag}: styled parts differ`).toEqual(
+  expect(stylesPartKeys(decl.react).map(kebab).sort(), `${decl.tag}: styled parts differ`).toEqual(
     [...decl.parts].sort(),
   );
 
@@ -106,13 +123,18 @@ describe.each(ELEMENTS)('$tag', (decl) => {
   });
 
   test('fails when a stylex table drifts', () => {
-    const drifted = { ...decl, element: decl.element.replace("'--ult-color-accent-hover'", "'--ult-color-surface-hover'") };
+    const [from, to] = decl.drift.token;
+    const drifted = { ...decl, element: decl.element.replace(from, to) };
     expect(() => assertParity(drifted)).toThrow(/stylex tables differ|token reads differ/);
   });
 
-  test('fails when an axis drifts', () => {
-    const missing = { ...decl, element: decl.element.replace("getAttribute('size')", "getAttribute('bogus')") };
-    expect(() => assertParity(missing)).toThrow(/axis size is not read as an attribute/);
+  test.skipIf(Object.keys(decl.axes).length === 0)('fails when an axis drifts', () => {
+    const axis = Object.keys(decl.axes)[0] as string;
+    const missing = {
+      ...decl,
+      element: decl.element.replace(`getAttribute('${axis}')`, `getAttribute('bogus')`),
+    };
+    expect(() => assertParity(missing)).toThrow(`axis ${axis} is not read as an attribute`);
   });
 
   test('fails when a styled part drifts', () => {
@@ -124,7 +146,8 @@ describe.each(ELEMENTS)('$tag', (decl) => {
   });
 
   test('fails when a state selector drifts', () => {
-    const drifted = { ...decl, element: decl.element.replaceAll('data-disabled', 'data-inert') };
+    const state = Object.values(decl.stateMap)[0] as string;
+    const drifted = { ...decl, element: decl.element.replaceAll(state, 'data-inert') };
     expect(() => assertParity(drifted)).toThrow();
   });
 });

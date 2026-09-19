@@ -2,8 +2,11 @@ import axe from 'axe-core';
 import { afterEach, expect, test } from 'vitest';
 
 const FIXTURE_URL = '/elements.html';
-const BUNDLE_URL = '/elements/ult-button.js';
-const ITEM_URL = '/r/ult-button.json';
+
+const ELEMENTS = [
+  { tag: 'ult-button', inner: 'button' },
+  { tag: 'ult-table', inner: 'table' },
+] as const;
 
 const frames: HTMLIFrameElement[] = [];
 
@@ -26,9 +29,9 @@ async function loadFixture(): Promise<HTMLIFrameElement> {
   const win = iframe.contentWindow;
   if (!win) throw new Error('the fixture iframe has no window');
   await Promise.race([
-    win.customElements.whenDefined('ult-button'),
+    Promise.all(ELEMENTS.map(({ tag }) => win.customElements.whenDefined(tag))),
     new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`${FIXTURE_URL} did not define ult-button`)), 5000),
+      setTimeout(() => reject(new Error(`${FIXTURE_URL} did not define the elements`)), 5000),
     ),
   ]);
   return iframe;
@@ -38,32 +41,41 @@ afterEach(() => {
   for (const frame of frames.splice(0)) frame.remove();
 });
 
-test('the fixture page renders ult-button in both color modes', async () => {
+test('the fixture page renders every element in both color modes', async () => {
   const iframe = await loadFixture();
   const doc = iframe.contentDocument;
   if (!doc) throw new Error('the fixture iframe has no document');
   for (const theme of ['dark', 'light']) {
-    const hosts = doc.querySelectorAll(`[data-theme="${theme}"] ult-button`);
-    expect(hosts.length, `no ult-button demos in the ${theme} section`).toBeGreaterThan(0);
-    for (const host of hosts) {
-      expect(host.querySelector('button'), 'ult-button rendered no inner button').not.toBeNull();
+    for (const { tag, inner } of ELEMENTS) {
+      const hosts = doc.querySelectorAll(`[data-theme="${theme}"] ${tag}`);
+      expect(hosts.length, `no ${tag} demos in the ${theme} section`).toBeGreaterThan(0);
+      for (const host of hosts) {
+        expect(host.querySelector(inner), `${tag} rendered no inner ${inner}`).not.toBeNull();
+      }
     }
   }
 });
 
-test('the registry item embeds the bytes the served bundle carries', async () => {
-  const [itemResponse, bundleResponse] = await Promise.all([fetch(ITEM_URL), fetch(BUNDLE_URL)]);
-  expect(itemResponse.headers.get('content-type'), `${ITEM_URL} was not served`).toMatch(/json/);
-  expect(
-    bundleResponse.headers.get('content-type'),
-    `${BUNDLE_URL} was not served`,
-  ).toMatch(/javascript/);
-  const item = (await itemResponse.json()) as {
-    type: string;
-    files: { content: string }[];
-  };
-  expect(item.type).toBe('registry:item');
-  expect(item.files[0]?.content).toBe(await bundleResponse.text());
+test('each registry item embeds the bytes the served bundle carries', async () => {
+  for (const { tag } of ELEMENTS) {
+    const itemUrl = `/r/${tag}.json`;
+    const bundleUrl = `/elements/${tag}.js`;
+    const [itemResponse, bundleResponse] = await Promise.all([
+      fetch(itemUrl),
+      fetch(bundleUrl),
+    ]);
+    expect(itemResponse.headers.get('content-type'), `${itemUrl} was not served`).toMatch(/json/);
+    expect(
+      bundleResponse.headers.get('content-type'),
+      `${bundleUrl} was not served`,
+    ).toMatch(/javascript/);
+    const item = (await itemResponse.json()) as {
+      type: string;
+      files: { content: string }[];
+    };
+    expect(item.type).toBe('registry:item');
+    expect(item.files[0]?.content).toBe(await bundleResponse.text());
+  }
 });
 
 test('the fixture page has no axe violations', async () => {

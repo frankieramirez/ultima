@@ -271,4 +271,10 @@ export const items: Record<string, RegistryItemDescription> = {
     docs: '<script type="module" src="./ult-button.js"></script>\n\n<ult-button variant="solid" size="md" tone="accent">Save</ult-button>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nAxes are attributes carrying the React prop values verbatim: variant, size, tone, and disabled.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
     registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
   },
+  'ult-table': {
+    title: 'Table element',
+    description: 'Ultima Table as a family of custom elements, vendored for a host that cannot run React.',
+    docs: '<script type="module" src="./ult-table.js"></script>\n\n<ult-table-scroll aria-labelledby="latency-caption">\n  <ult-table>\n    <ult-table-caption id="latency-caption">Latency by region</ult-table-caption>\n    <ult-table-head>\n      <ult-table-row><ult-table-head-cell>Region</ult-table-head-cell></ult-table-row>\n    </ult-table-head>\n    <ult-table-body>\n      <ult-table-row><ult-table-cell>us-east-1</ult-table-cell></ult-table-row>\n    </ult-table-body>\n  </ult-table>\n</ult-table-scroll>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nOne element per part: ult-table, ult-table-scroll, ult-table-head, ult-table-body, ult-table-row, ult-table-head-cell, ult-table-sort-button, ult-table-cell, ult-table-caption. sort is an attribute on ult-table-head-cell carrying the React prop values verbatim.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
+    registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
+  },
 };
