@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ultima elements</title>
+    <link rel="stylesheet" href="/tokens.css">
+    <script type="module" src="/elements/ultima.js"></script>
+    <style>
+      body {
+        margin: 0;
+        font-family: var(--ult-font-sans);
+        background: var(--ult-color-surface);
+        color: var(--ult-color-text);
+      }
+      main {
+        display: grid;
+        gap: var(--ult-space-6);
+        max-width: 60rem;
+        margin-inline: auto;
+        padding: var(--ult-space-8);
+      }
+      section {
+        display: grid;
+        gap: var(--ult-space-4);
+        padding: var(--ult-space-6);
+        background: var(--ult-color-surface);
+        color: var(--ult-color-text);
+        border: 1px solid var(--ult-color-border);
+        border-radius: var(--ult-radius-lg);
+      }
+      h1 {
+        margin: 0;
+        font-size: var(--ult-text-7);
+      }
+      h2 {
+        margin: 0;
+        font-size: var(--ult-text-5);
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--ult-space-4);
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Ultima elements</h1>
+      <section data-theme="dark" aria-labelledby="dark-heading">
+        <h2 id="dark-heading">Dark</h2>
+        <div class="row">
+          <ult-button variant="solid" tone="accent">Save</ult-button>
+          <ult-button variant="solid" tone="danger">Delete</ult-button>
+          <ult-button variant="outline" tone="accent">Cancel</ult-button>
+          <ult-button variant="outline" tone="danger">Remove</ult-button>
+          <ult-button variant="ghost" tone="accent">Dismiss</ult-button>
+          <ult-button variant="ghost" tone="danger">Discard</ult-button>
+        </div>
+        <div class="row">
+          <ult-button size="sm">Small</ult-button>
+          <ult-button size="md">Medium</ult-button>
+          <ult-button size="lg">Large</ult-button>
+          <ult-button disabled>Disabled</ult-button>
+        </div>
+      </section>
+      <section data-theme="light" aria-labelledby="light-heading">
+        <h2 id="light-heading">Light</h2>
+        <div class="row">
+          <ult-button variant="solid" tone="accent">Save</ult-button>
+          <ult-button variant="solid" tone="danger">Delete</ult-button>
+          <ult-button variant="outline" tone="accent">Cancel</ult-button>
+          <ult-button variant="outline" tone="danger">Remove</ult-button>
+          <ult-button variant="ghost" tone="accent">Dismiss</ult-button>
+          <ult-button variant="ghost" tone="danger">Discard</ult-button>
+        </div>
+        <div class="row">
+          <ult-button size="sm">Small</ult-button>
+          <ult-button size="md">Medium</ult-button>
+          <ult-button size="lg">Large</ult-button>
+          <ult-button disabled>Disabled</ult-button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

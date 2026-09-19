@@ -50,6 +50,7 @@ import { Button } from '@/components/ui/button';
 - **Tokens as CSS** at [`/tokens.css`](https://ultima.systems/tokens.css), for consumers that cannot run StyleX.
 - **An agent guide** at [`/llms.txt`](https://ultima.systems/llms.txt): principles, conventions, component list, and token names in one plain Markdown file. Ultima installs no documentation into your repository, so this is how a consumer's agent learns the system.
 - **The registry** at [`/r/registry.json`](https://ultima.systems/r/registry.json), one item per component.
+- **Elements** at [`/elements/ultima.js`](https://ultima.systems/elements/ultima.js): the report set as custom elements for hosts that cannot run React. Each element also ships as a registry item, starting with `ult-button`.
 
 ## How it is built
 

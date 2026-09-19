@@ -4,7 +4,7 @@
  * `registry/static/` and `registry/items.config.ts` is output of this script.
  */
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -21,6 +21,8 @@ const OUTPUT_DIR = join(PUBLIC_DIR, 'r');
 const SPEC = join(root, 'docs/spec/ultima.md');
 const TOKENS_DIST = join(root, 'packages/tokens/dist');
 const TOKEN_EXPORTS = ['tokens.css', 'tokens.json'];
+const ELEMENTS_DIST = join(root, 'packages/elements/dist');
+const ELEMENTS_PUBLIC = join(PUBLIC_DIR, 'elements');
 
 const HOMEPAGE = 'https://ultima.systems';
 const SHADCN = 'shadcn@4.21.0';
@@ -162,6 +164,19 @@ function item(name: string, type: string, files: RegistryFile[], staged: Staged[
   };
 }
 
+function vendoredElementItem(name: string): RegistryItem {
+  const { title, description, docs, registryDependencies } = describe(name);
+  return {
+    name,
+    type: 'registry:item',
+    title,
+    description,
+    ...(registryDependencies && registryDependencies.length > 0 && { registryDependencies }),
+    files: [{ path: `ultima/elements/${name}.js`, type: 'registry:file', target: `~/${name}.js` }],
+    docs,
+  };
+}
+
 function filesUnder(dir: string, prefix = ''): string[] {
   const found: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
@@ -199,19 +214,40 @@ function requireTokenExports() {
   }
 }
 
+function requireElementExports() {
+  if (!existsSync(join(ELEMENTS_DIST, 'ultima.js'))) {
+    throw new Error(
+      'packages/elements/dist/ultima.js is missing; run pnpm --filter @ultima/elements build first',
+    );
+  }
+}
+
+function elementNames(): string[] {
+  return readdirSync(ELEMENTS_DIST)
+    .filter((name) => name.startsWith('ult-') && name.endsWith('.js') && name !== 'ultima.js')
+    .sort((a, b) => a.localeCompare(b))
+    .map((name) => name.replace(/\.js$/, ''));
+}
+
 function stageSources() {
   rmSync(STAGE_DIR, { recursive: true, force: true });
   mkdirSync(join(STAGE_DIR, 'ui'), { recursive: true });
   mkdirSync(join(STAGE_DIR, 'lib'), { recursive: true });
+  mkdirSync(join(STAGE_DIR, 'elements'), { recursive: true });
   copyFileSync(join(TOKENS_DIST, 'tokens.css'), join(STAGE_DIR, 'tokens.css'));
+  const elements = elementNames();
+  for (const name of elements) {
+    copyFileSync(join(ELEMENTS_DIST, `${name}.js`), join(STAGE_DIR, 'elements', `${name}.js`));
+  }
   return {
     components: stage(join(root, 'packages/ui/src'), '.tsx', 'ui', 'registry:ui'),
     tokens: stage(join(root, 'packages/tokens/src'), '.ts', 'lib', 'registry:lib'),
     lib: stage(join(root, 'packages/ui/src/lib'), '.ts', 'lib', 'registry:lib'),
+    elements,
   };
 }
 
-function describeRegistry({ components, tokens, lib }: ReturnType<typeof stageSources>) {
+function describeRegistry({ components, tokens, lib, elements }: ReturnType<typeof stageSources>) {
   const registry = {
     $schema: 'https://ui.shadcn.com/schema/registry.json',
     name: 'ultima',
@@ -228,6 +264,7 @@ function describeRegistry({ components, tokens, lib }: ReturnType<typeof stageSo
         [{ path: 'ultima/tokens.css', type: 'registry:file', target: '~/ultima-tokens.css' }],
         [],
       ),
+      ...elements.map(vendoredElementItem),
     ],
   };
   for (const name of Object.keys(items)) {
@@ -264,11 +301,18 @@ function publishExports(components: Staged[]) {
   writeFileSync(join(PUBLIC_DIR, 'llms.txt'), guide);
 }
 
+function publishElements() {
+  rmSync(ELEMENTS_PUBLIC, { recursive: true, force: true });
+  cpSync(ELEMENTS_DIST, ELEMENTS_PUBLIC, { recursive: true });
+}
+
 requireTokenExports();
+requireElementExports();
 const staged = stageSources();
 const registry = describeRegistry(staged);
 writeFileSync(join(REGISTRY_DIR, 'registry.json'), `${JSON.stringify(registry, null, 2)}\n`);
 shadcnBuild();
 publishExports(staged.components);
+publishElements();
 
 console.log(`registry: built ${registry.items.length} items into apps/docs/public/r`);

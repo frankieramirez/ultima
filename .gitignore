@@ -14,3 +14,4 @@ apps/docs/public/r/*.json
 apps/docs/public/tokens.css
 apps/docs/public/tokens.json
 apps/docs/public/llms.txt
+apps/docs/public/elements/
