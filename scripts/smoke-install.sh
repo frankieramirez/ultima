@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Exits zero only when every target installed from the registry and built.
+# Exits zero only when every target installed from the registry and passed its
+# checks.
 # A non-zero exit names the target that failed.
 #
 #   scripts/smoke-install.sh                 # against a local registry build
@@ -401,6 +402,41 @@ APP
   (cd "$app" && npm run build)
 }
 
+# An element is a universal item for a host that can run the CLI but not React:
+# a vanilla scaffold, no setup item, no components.json. tokens-css arrives only
+# through the item's manifest-declared URL registryDependency.
+element_target() {
+  TARGET="element"
+  local app="$WORK/element-app"
+
+  step "element: scaffolding"
+  (cd "$WORK" && npm create vite@latest element-app -- --template vanilla-ts)
+
+  step "element: npx shadcn add $HOST/r/ult-button.json"
+  (cd "$app" && npx -y shadcn@latest add "$HOST/r/ult-button.json" --yes)
+
+  step "element: the vendored file and tokens-css arrive"
+  local path
+  for path in ult-button.js ultima-tokens.css; do
+    if [ ! -f "$app/$path" ]; then
+      echo "smoke-install: $path did not arrive; the element item's files or URL dependency are wrong" >&2
+      exit 1
+    fi
+  done
+  if [ -f "$app/components.json" ]; then
+    echo "smoke-install: components.json arrived; the element item is not universal" >&2
+    exit 1
+  fi
+
+  step "element: a reinstall overwrites the vendored file"
+  echo "/* a local edit a reinstall must erase */" >>"$app/ult-button.js"
+  (cd "$app" && npx -y shadcn@latest add "$HOST/r/ult-button.json" --yes --overwrite)
+  if [ ! -f "$app/ult-button.js" ] || grep -qF "a local edit a reinstall must erase" "$app/ult-button.js"; then
+    echo "smoke-install: the reinstall did not overwrite ult-button.js" >&2
+    exit 1
+  fi
+}
+
 if [ -z "$HOST" ]; then
   serve_local_build
 fi
@@ -414,7 +450,8 @@ echo "smoke-install: the catalogue is $(echo "$CATALOGUE" | wc -w | tr -d ' ') c
 vite_target
 next_target
 sidebar_target
+element_target
 TARGET=""
 
 echo
-echo "smoke-install: every target installed and built against $HOST"
+echo "smoke-install: every target passed against $HOST"
