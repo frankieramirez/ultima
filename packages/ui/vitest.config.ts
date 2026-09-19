@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: [stylex.vite(stylexOptions({ dev: true })), react()],
   optimizeDeps: {
     include: [
+      '@base-ui/react/accordion',
       '@base-ui/react/button',
       '@base-ui/react/separator',
       '@base-ui/react/checkbox',

@@ -257,6 +257,12 @@ export const components = [
     description: 'A persistent bar of menu titles, holding your own Dropdown Menus and sized to its triggers.',
     release: 'v0.2',
   },
+  {
+    name: 'Accordion',
+    item: 'accordion',
+    description: 'Disclosure sections under one shared value, on Base UI, with the heading level left to you.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {

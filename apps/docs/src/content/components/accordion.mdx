@@ -1,0 +1,82 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/accordion/basic';
+import basicSource from '../../demos/accordion/basic?raw';
+import Caret from '../../demos/accordion/caret';
+import caretSource from '../../demos/accordion/caret?raw';
+import Controlled from '../../demos/accordion/controlled';
+import controlledSource from '../../demos/accordion/controlled?raw';
+
+# Accordion
+
+Disclosure sections under one shared value, on Base UI's Accordion: `Root` groups the items, and each `Item` is a `Header`, a `Trigger`, and the `Panel` it shows and hides. Ultima styles every part except `Root`.
+
+## Install
+
+```bash
+npx shadcn add @ultima/accordion
+```
+
+## The trigger is the control
+
+`Accordion.Trigger` is styled: a full-measure, start-aligned row that draws its own focus ring, and the APG allows nothing beside the button inside the heading. Do not pass a Button through `render` on it — the button it renders is already the whole row. If you need the open state inside the row, `render` as a function hands it to you; spread the props onto a plain element and the Ultima paint comes with them.
+
+<Demo component={Basic} source={basicSource} />
+
+## A caret
+
+Accordion ships no glyph. Bring your own inside the trigger — `justify-content: space-between` puts it at the far end unaided — and turn it when the panel opens. The trigger's `render` function receives the state, which is the shortest way to reach it; `data-panel-open` on the trigger is the styling layer's equivalent.
+
+<Demo component={Caret} source={caretSource} />
+
+## The heading level is yours
+
+`Accordion.Header` renders an `<h3>` by default. Change the level through `render` — `render={<h2 />}` produces an `<h2>` carrying every state attribute — and never through a prop; there is no `level` prop to reach for.
+
+## Panel content padding
+
+`Panel` carries no padding, on purpose: an element whose height animates to zero cannot clip its own padding, so a padded panel stays padding-tall when closed. The padding goes on a wrapper inside the panel, which is what the demos here do.
+
+For the in-Card case the same rule applies as a `style` override rather than a new shape: `Card.Body` takes `paddingInline: 0` and the panel's content wrapper takes the padding back — never `Accordion.Item` taking a negative inline margin to escape the card.
+
+## Controlled
+
+Pass `value` and `onValueChange` to drive which panels are open. The value is an array whether or not `multiple` is set; without `multiple`, pressing the open item empties it, so a consumer who needs one panel always open cancels the change in `onValueChange`.
+
+<Demo component={Controlled} source={controlledSource} />
+
+## Explicit values
+
+An `Item` with no `value` gets a generated id, so an initially-open accordion — `defaultValue` or a controlled `value` — needs explicit values on its items to name what is open.
+
+## Which disclosure, where
+
+A nested Sidebar group stays `Collapsible.Trigger render={<Sidebar.Button />}`. An accordion cannot be swapped into it: the trigger paints its own full-measure row and refuses a handed-in Button, so accordion rows and their hairlines do not belong inside sidebar chrome. The two components do the same job and this page says which one, the way the catalogue already separates Sheet from Drawer and Tooltip from Hover Card.
+
+## Props
+
+Ultima adds no axis to Accordion. Everything else is Base UI's; see [Base UI's Accordion](https://base-ui.com/react/components/accordion) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `value`, `defaultValue`, `onValueChange` | `string[]` | `[]` | The open items, as an array whether or not `multiple` is set. |
+| `Root` | `multiple` | `boolean` | `false` | Allow more than one open panel. |
+| `Root` | `disabled` | `boolean` | `false` | Disables every item. |
+| `Item` | `value` | `string` | generated | Names the item for `value`/`defaultValue`. |
+| `Item` | `disabled` | `boolean` | `false` | Disables this item's trigger. |
+| `Item` | `onOpenChange` | `(open) => void` | — | Per-item open callback. |
+| `Panel` | `hiddenUntilFound` | `boolean` | `false` | Keeps the panel mounted as `hidden="until-found"`. |
+| `Panel` | `keepMounted` | `boolean` | `false` | Keeps the panel mounted while closed. Ignored under `hiddenUntilFound`. |
+| `Panel` | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Item`, `Header`, `Trigger`, `Panel` | `style` | `StyleXStyles` | — | The style slot on every styled part. |
+| `Item`, `Header`, `Trigger`, `Panel` | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+`AccordionRootProps` drops `orientation` and `loopFocus` — both are deprecated no-ops on the primitive. The panel animates its height between zero and `--accordion-panel-height` over `--ult-motion-base`.
+
+## Accessibility
+
+- **Name.** The trigger's own text; `aria-labelledby` on the panel points back at it.
+- **Landmarks.** Every panel renders `role="region"` — that is Base UI's unconditional default, not Ultima's choice. The APG advises dropping the role past roughly six panels, and the primitive offers no prop to refuse it, so the caution is documented rather than honoured here.
+- **Focus ring.** On `Trigger`, the styled control.
+- **Keyboard.** A native button: Space and Enter toggle. No roving tabindex and no arrow keys — that is the APG's current pattern, and `orientation`/`loopFocus` are gone from the types because the primitive deprecated both.
+- **Disabled.** A disabled trigger stays in the tab order: `tabindex="0"` and `aria-disabled="true"`, never the native `disabled` attribute.
+- **Find-in-page.** `hiddenUntilFound` is what makes closed content findable. Without it a closed panel leaves the DOM.
