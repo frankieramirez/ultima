@@ -43,7 +43,6 @@ const styles = stylex.create({
     insetBlockEnd: space["--ult-space-9"],
     insetInlineEnd: space["--ult-space-9"],
     overflow: "auto",
-    scrollbarWidth: "none",
     inlineSize: "11.5rem",
     justifySelf: "end",
     display: { default: "none", [DESKTOP]: "block" },

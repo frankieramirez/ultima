@@ -30,7 +30,6 @@ const styles = stylex.create({
     flexGrow: 1,
     minInlineSize: 0,
     overflow: 'auto',
-    scrollbarWidth: 'none',
     position: 'relative',
   },
 });

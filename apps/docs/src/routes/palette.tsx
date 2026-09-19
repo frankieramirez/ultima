@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { palette } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Table } from '@ultima/ui';
+import { ScrollArea, Table } from '@ultima/ui';
 
 import { Note, Page, Section, TextLink } from '../page';
 import { Swatch } from '../swatch';
@@ -50,7 +50,6 @@ const styles = stylex.create({
   },
   ramps: {
     marginBlockStart: space['--ult-space-5'],
-    overflowX: 'auto',
   },
   ramp: {
     display: 'grid',
@@ -111,23 +110,30 @@ export function PalettePage() {
         {palette.map((scale) => (
           <div key={scale.name} {...stylex.props(styles.scale)}>
             <h3 {...stylex.props(styles.scaleName)}>{scale.name}</h3>
-            <div {...stylex.props(styles.ramps)}>
-              {MODES.map((mode) => (
-                <div key={mode}>
-                  <p {...stylex.props(styles.rampLabel)}>{mode}</p>
-                  <div {...stylex.props(styles.ramp)}>
-                    {scale[mode].map((value, index) => (
-                      <Swatch
-                        key={value + index}
-                        value={value}
-                        caption={value}
-                        note={<StepNote scale={scale.name} mode={mode} step={index + 1} />}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ScrollArea.Root style={styles.ramps}>
+              <ScrollArea.Viewport>
+                <ScrollArea.Content>
+                  {MODES.map((mode) => (
+                    <div key={mode}>
+                      <p {...stylex.props(styles.rampLabel)}>{mode}</p>
+                      <div {...stylex.props(styles.ramp)}>
+                        {scale[mode].map((value, index) => (
+                          <Swatch
+                            key={value + index}
+                            value={value}
+                            caption={value}
+                            note={<StepNote scale={scale.name} mode={mode} step={index + 1} />}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </ScrollArea.Content>
+              </ScrollArea.Viewport>
+              <ScrollArea.Scrollbar orientation="horizontal">
+                <ScrollArea.Thumb />
+              </ScrollArea.Scrollbar>
+            </ScrollArea.Root>
           </div>
         ))}
       </Section>

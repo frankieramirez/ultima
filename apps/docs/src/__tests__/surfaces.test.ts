@@ -1,20 +1,23 @@
 import { expect, test } from 'vitest';
 
 /**
- * The enforceable half of the rule that a docs file may not paint a surface, specified under
- * Docs site / The line between a component and page layout.
+ * The enforceable half of two rules under Docs site / The line between a component and page
+ * layout: a docs file may not paint a surface, and may not hide a native scrollbar without
+ * painting a replacement. `scrollbarWidth` belongs to the same gate because it is the same kind
+ * of thing, a property a docs file writes that only a component should.
  */
 
-const PAINTS = [
+const FORBIDDEN = [
   /^background(?:Color)?$/,
   /^boxShadow$/,
   /^border$/,
   /^border(?:[A-Z][A-Za-z]*)?Color$/,
   /^border(?:[A-Z][A-Za-z]*)?Width$/,
   /^border(?:[A-Z][A-Za-z]*)?Radius$/,
+  /^scrollbarWidth$/,
 ];
 
-const paints = (property: string) => PAINTS.some((pattern) => pattern.test(property));
+const forbidden = (property: string) => FORBIDDEN.some((pattern) => pattern.test(property));
 
 const KEY = /(?:^|[{,])\s*['"]?([A-Za-z][A-Za-z0-9]*)['"]?\s*:/g;
 
@@ -103,12 +106,12 @@ function createCalls(redacted: string): string[] {
   return calls;
 }
 
-/** Every painting property a `stylex.create` call in this source declares, in source order. */
-export function findPaintedDeclarations(source: string): string[] {
+/** Every forbidden property a `stylex.create` call in this source declares, in source order. */
+export function findForbiddenDeclarations(source: string): string[] {
   const found: string[] = [];
   for (const call of createCalls(redact(source))) {
     for (const [, property = ''] of call.matchAll(KEY)) {
-      if (paints(property)) found.push(property);
+      if (forbidden(property)) found.push(property);
     }
   }
   return found;
@@ -137,7 +140,7 @@ test('the gate reads the docs source outside demos', () => {
 test('no docs file outside demos paints a surface', () => {
   const painted = files
     .filter(([path]) => !STATED_EXCEPTIONS.includes(path))
-    .map(([path, source]) => [path, findPaintedDeclarations(source)] as const)
+    .map(([path, source]) => [path, findForbiddenDeclarations(source)] as const)
     .filter(([, declarations]) => declarations.length > 0)
     .map(([path, declarations]) => `${path}: ${declarations.join(', ')}`);
 
@@ -159,7 +162,7 @@ test('the gate catches each of the four painting properties', () => {
     });
   `;
 
-  expect(findPaintedDeclarations(source)).toEqual([
+  expect(findForbiddenDeclarations(source)).toEqual([
     'backgroundColor',
     'borderRadius',
     'borderTopWidth',
@@ -168,16 +171,22 @@ test('the gate catches each of the four painting properties', () => {
   ]);
 });
 
+test('the gate catches a hidden native scrollbar', () => {
+  const source = `stylex.create({ column: { scrollbarWidth: 'none' } });`;
+
+  expect(findForbiddenDeclarations(source)).toEqual(['scrollbarWidth']);
+});
+
 test('the gate catches a quoted key and a shorthand', () => {
   const source = `stylex.create({ card: { 'backgroundColor': 'red', border: '1px solid red' } });`;
 
-  expect(findPaintedDeclarations(source)).toEqual(['backgroundColor', 'border']);
+  expect(findForbiddenDeclarations(source)).toEqual(['backgroundColor', 'border']);
 });
 
 test('the gate reads the live declarations of a real docs file', () => {
   const swatch = files.find(([path]) => path === 'src/swatch.tsx');
   expect(swatch).toBeDefined();
-  expect(findPaintedDeclarations(swatch?.[1] ?? '')).toContain('backgroundColor');
+  expect(findForbiddenDeclarations(swatch?.[1] ?? '')).toContain('backgroundColor');
 });
 
 test('the gate ignores a painting property that is not a live declaration', () => {
@@ -191,5 +200,5 @@ test('the gate ignores a painting property that is not a live declaration', () =
     '});',
   ].join('\n');
 
-  expect(findPaintedDeclarations(source)).toEqual([]);
+  expect(findForbiddenDeclarations(source)).toEqual([]);
 });
