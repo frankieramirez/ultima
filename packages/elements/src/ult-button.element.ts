@@ -1,13 +1,5 @@
-// PROTOTYPE for https://github.com/frankieramirez/ultima/issues/153 — throwaway.
-// One Button re-authored as two custom elements to make the light-vs-shadow
-// difference visible: `ult-button` renders a light-DOM <button>, `ult-button-shadow`
-// renders one inside a shadow root that adopts the compiled StyleX sheet.
-// `import SHEET_CSS from './sheet'` is a build-time specifier: build.ts replaces it
-// with the inlined sheet for the dist script, and emits sheet.ts beside this file
-// for bundler consumers.
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
-import SHEET_CSS from './sheet';
 
 const styles = stylex.create({
   root: {
@@ -146,10 +138,8 @@ function applyState(host: HTMLElement, button: HTMLButtonElement | null) {
   else button.removeAttribute('data-disabled');
 }
 
-const OBSERVED = ['variant', 'tone', 'size', 'disabled'];
-
 class UltButton extends HTMLElement {
-  static observedAttributes = OBSERVED;
+  static observedAttributes = ['variant', 'tone', 'size', 'disabled'];
   private button: HTMLButtonElement | null = null;
 
   connectedCallback() {
@@ -168,37 +158,4 @@ class UltButton extends HTMLElement {
   }
 }
 
-let sharedSheet: CSSStyleSheet | null = null;
-function adoptedSheet(): CSSStyleSheet {
-  if (!sharedSheet) {
-    sharedSheet = new CSSStyleSheet();
-    sharedSheet.replaceSync(SHEET_CSS);
-  }
-  return sharedSheet;
-}
-
-class UltButtonShadow extends HTMLElement {
-  static observedAttributes = OBSERVED;
-  private button: HTMLButtonElement | null = null;
-
-  connectedCallback() {
-    if (this.button) return;
-    const root = this.attachShadow({ mode: 'open' });
-    root.adoptedStyleSheets = [adoptedSheet()];
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.setAttribute('part', 'root');
-    button.appendChild(document.createElement('slot'));
-    root.appendChild(button);
-    this.button = button;
-    applyState(this, button);
-  }
-
-  attributeChangedCallback() {
-    applyState(this, this.button);
-  }
-}
-
 if (!customElements.get('ult-button')) customElements.define('ult-button', UltButton);
-if (!customElements.get('ult-button-shadow'))
-  customElements.define('ult-button-shadow', UltButtonShadow);
