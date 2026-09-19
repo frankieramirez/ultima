@@ -342,6 +342,7 @@ export {
   type HoverCardTriggerProps,
   type HoverCardViewportProps,
 } from './hover-card';
+export { Toggle, type ToggleProps, type ToggleVariant, type ToggleSize } from './toggle';
 export {
   Drawer,
   type DrawerRootProps,

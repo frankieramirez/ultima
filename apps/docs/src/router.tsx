@@ -44,6 +44,7 @@ import TableContent from './content/components/table.mdx';
 import TabsContent from './content/components/tabs.mdx';
 import TextareaContent from './content/components/textarea.mdx';
 import ToastContent from './content/components/toast.mdx';
+import ToggleContent from './content/components/toggle.mdx';
 import ToggleGroupContent from './content/components/toggle-group.mdx';
 import TooltipContent from './content/components/tooltip.mdx';
 import { components } from './components';
@@ -152,6 +153,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   tabs: TabsContent,
   textarea: TextareaContent,
   toast: ToastContent,
+  toggle: ToggleContent,
   'toggle-group': ToggleGroupContent,
   tooltip: TooltipContent,
 };
