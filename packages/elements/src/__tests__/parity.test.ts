@@ -2,10 +2,12 @@ import { describe, expect, test } from 'vitest';
 
 import elementBadge from '../ult-badge.element.ts?raw';
 import elementButton from '../ult-button.element.ts?raw';
+import elementCard from '../ult-card.element.ts?raw';
 import elementCode from '../ult-code.element.ts?raw';
 import elementStat from '../ult-stat.element.ts?raw';
 import reactBadge from '../../../ui/src/badge.tsx?raw';
 import reactButton from '../../../ui/src/button.tsx?raw';
+import reactCard from '../../../ui/src/card.tsx?raw';
 import reactCode from '../../../ui/src/code.tsx?raw';
 import reactStat from '../../../ui/src/stat.tsx?raw';
 
@@ -41,6 +43,14 @@ const ELEMENTS: ElementParity[] = [
     },
     parts: ['root'],
     stateMap: { 'data-disabled': 'data-disabled' },
+  },
+  {
+    tag: 'ult-card',
+    element: elementCard,
+    react: reactCard,
+    axes: {},
+    parts: ['root', 'header', 'title', 'description', 'body', 'footer'],
+    stateMap: {},
   },
   {
     tag: 'ult-code',
@@ -139,16 +149,20 @@ describe.each(ELEMENTS)('$tag', (decl) => {
   });
 
   test('fails when a stylex table drifts', () => {
-    const token = decl.element.match(/'--ult-[\w-]+'/)?.[0];
-    if (!token) throw new Error(`${decl.tag}: no token read to drift`);
-    const drifted = { ...decl, element: decl.element.replace(token, "'--ult-bogus'") };
+    const token = tokenReads(decl.element)[0] as string;
+    const drifted = { ...decl, element: decl.element.replace(token, '--ult-color-surface') };
     expect(() => assertParity(drifted)).toThrow(/stylex tables differ|token reads differ/);
   });
 
   test.skipIf(Object.keys(decl.axes).length === 0)('fails when an axis drifts', () => {
     const axis = Object.keys(decl.axes)[0] as string;
-    const missing = { ...decl, element: decl.element.replace(`getAttribute('${axis}')`, `getAttribute('bogus')`) };
-    expect(() => assertParity(missing)).toThrow(/is not read as an attribute/);
+    const missing = {
+      ...decl,
+      element: decl.element.replace(`getAttribute('${axis}')`, `getAttribute('bogus')`),
+    };
+    expect(() => assertParity(missing)).toThrow(
+      new RegExp(`axis ${axis} is not read as an attribute`),
+    );
   });
 
   test('fails when a styled part drifts', () => {
