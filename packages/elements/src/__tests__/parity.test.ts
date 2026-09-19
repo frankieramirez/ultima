@@ -7,6 +7,7 @@ import elementCode from '../ult-code.element.ts?raw';
 import elementMeter from '../ult-meter.element.ts?raw';
 import elementStat from '../ult-stat.element.ts?raw';
 import elementTable from '../ult-table.element.ts?raw';
+import elementTooltip from '../ult-tooltip.element.ts?raw';
 import reactBadge from '../../../ui/src/badge.tsx?raw';
 import reactButton from '../../../ui/src/button.tsx?raw';
 import reactCard from '../../../ui/src/card.tsx?raw';
@@ -14,6 +15,7 @@ import reactCode from '../../../ui/src/code.tsx?raw';
 import reactMeter from '../../../ui/src/meter.tsx?raw';
 import reactStat from '../../../ui/src/stat.tsx?raw';
 import reactTable from '../../../ui/src/table.tsx?raw';
+import reactTooltip from '../../../ui/src/tooltip.tsx?raw';
 
 type ElementParity = {
   tag: string;
@@ -89,6 +91,17 @@ const ELEMENTS: ElementParity[] = [
     axes: {},
     parts: ['caption', 'cell', 'head-cell', 'root', 'row', 'scroll'],
     stateMap: { 'data-sort': 'data-sort', 'aria-sort': 'aria-sort' },
+  },
+  {
+    tag: 'ult-tooltip',
+    element: elementTooltip,
+    react: reactTooltip,
+    axes: {},
+    parts: ['arrow', 'popup', 'positioner'],
+    stateMap: {
+      'data-starting-style': 'data-starting-style',
+      'data-ending-style': 'data-ending-style',
+    },
   },
 ];
 

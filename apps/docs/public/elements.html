@@ -43,6 +43,16 @@
         gap: var(--ult-space-4);
         align-items: center;
       }
+      .trigger {
+        font-family: var(--ult-font-sans);
+        font-size: var(--ult-text-2);
+        color: var(--ult-color-text);
+        background: var(--ult-color-surface-raised);
+        border: 1px solid var(--ult-color-border);
+        border-radius: var(--ult-radius-md);
+        padding-block: var(--ult-space-2);
+        padding-inline: var(--ult-space-3);
+      }
     </style>
   </head>
   <body>
@@ -99,6 +109,20 @@
         <p>Run <ult-code>npx shadcn add @ultima/button</ult-code> to install.</p>
         <ult-code variant="block">pnpm install
 pnpm dev</ult-code>
+        <div class="row">
+          <ult-tooltip>
+            <ult-tooltip-trigger><button type="button" class="trigger" aria-label="Copied to clipboard">Copy</button></ult-tooltip-trigger>
+            <ult-tooltip-positioner>
+              <ult-tooltip-popup>Copied to clipboard<ult-tooltip-arrow></ult-tooltip-arrow></ult-tooltip-popup>
+            </ult-tooltip-positioner>
+          </ult-tooltip>
+          <ult-tooltip open>
+            <ult-tooltip-trigger><button type="button" class="trigger" aria-label="Saved as a draft">Save</button></ult-tooltip-trigger>
+            <ult-tooltip-positioner>
+              <ult-tooltip-popup>Saved as a draft<ult-tooltip-arrow></ult-tooltip-arrow></ult-tooltip-popup>
+            </ult-tooltip-positioner>
+          </ult-tooltip>
+        </div>
         <ult-table-scroll aria-labelledby="dark-latency" style="max-width: 22rem">
           <ult-table style="min-width: 34rem">
             <ult-table-caption id="dark-latency">Latency by region</ult-table-caption>
@@ -199,6 +223,20 @@ pnpm dev</ult-code>
         <p>Run <ult-code>npx shadcn add @ultima/button</ult-code> to install.</p>
         <ult-code variant="block">pnpm install
 pnpm dev</ult-code>
+        <div class="row">
+          <ult-tooltip>
+            <ult-tooltip-trigger><button type="button" class="trigger" aria-label="Copied to clipboard">Copy</button></ult-tooltip-trigger>
+            <ult-tooltip-positioner>
+              <ult-tooltip-popup>Copied to clipboard<ult-tooltip-arrow></ult-tooltip-arrow></ult-tooltip-popup>
+            </ult-tooltip-positioner>
+          </ult-tooltip>
+          <ult-tooltip open>
+            <ult-tooltip-trigger><button type="button" class="trigger" aria-label="Saved as a draft">Save</button></ult-tooltip-trigger>
+            <ult-tooltip-positioner>
+              <ult-tooltip-popup>Saved as a draft<ult-tooltip-arrow></ult-tooltip-arrow></ult-tooltip-popup>
+            </ult-tooltip-positioner>
+          </ult-tooltip>
+        </div>
         <ult-table-scroll aria-labelledby="light-deploys" style="max-width: 22rem">
           <ult-table style="min-width: 34rem">
             <ult-table-caption id="light-deploys">Deploys by environment</ult-table-caption>

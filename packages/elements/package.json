@@ -12,6 +12,7 @@
   "dependencies": {
     "@stylexjs/stylex": "^0.19.0",
     "@ultima/tokens": "workspace:*",
+    "@zag-js/tooltip": "1.44.0",
     "@zag-js/vanilla": "1.44.0"
   },
   "devDependencies": {
@@ -21,6 +22,7 @@
     "@types/babel__core": "^7.20.5",
     "@types/node": "^26.5.0",
     "@vitest/browser-playwright": "^5.0.0",
+    "axe-core": "^4.13.0",
     "esbuild": "0.28.2",
     "playwright": "^1.63.0",
     "typescript": "^5.9.3",
