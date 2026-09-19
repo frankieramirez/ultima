@@ -99,6 +99,27 @@
         <p>Run <ult-code>npx shadcn add @ultima/button</ult-code> to install.</p>
         <ult-code variant="block">pnpm install
 pnpm dev</ult-code>
+        <ult-table-scroll aria-labelledby="dark-latency" style="max-width: 22rem">
+          <ult-table style="min-width: 34rem">
+            <ult-table-caption id="dark-latency">Latency by region</ult-table-caption>
+            <ult-table-head>
+              <ult-table-row>
+                <ult-table-head-cell>Region</ult-table-head-cell>
+                <ult-table-head-cell sort="descending">p95</ult-table-head-cell>
+              </ult-table-row>
+            </ult-table-head>
+            <ult-table-body>
+              <ult-table-row>
+                <ult-table-cell>us-east-1</ult-table-cell>
+                <ult-table-cell>184ms</ult-table-cell>
+              </ult-table-row>
+              <ult-table-row>
+                <ult-table-cell>eu-west-1</ult-table-cell>
+                <ult-table-cell>240ms</ult-table-cell>
+              </ult-table-row>
+            </ult-table-body>
+          </ult-table>
+        </ult-table-scroll>
       </section>
       <section data-theme="light" aria-labelledby="light-heading">
         <h2 id="light-heading">Light</h2>
@@ -151,6 +172,27 @@ pnpm dev</ult-code>
         <p>Run <ult-code>npx shadcn add @ultima/button</ult-code> to install.</p>
         <ult-code variant="block">pnpm install
 pnpm dev</ult-code>
+        <ult-table-scroll aria-labelledby="light-deploys" style="max-width: 22rem">
+          <ult-table style="min-width: 34rem">
+            <ult-table-caption id="light-deploys">Deploys by environment</ult-table-caption>
+            <ult-table-head>
+              <ult-table-row>
+                <ult-table-head-cell>Environment</ult-table-head-cell>
+                <ult-table-head-cell sort="ascending">Status</ult-table-head-cell>
+              </ult-table-row>
+            </ult-table-head>
+            <ult-table-body>
+              <ult-table-row>
+                <ult-table-cell>Production</ult-table-cell>
+                <ult-table-cell>Ready</ult-table-cell>
+              </ult-table-row>
+              <ult-table-row>
+                <ult-table-cell>Staging</ult-table-cell>
+                <ult-table-cell>Deploying</ult-table-cell>
+              </ult-table-row>
+            </ult-table-body>
+          </ult-table>
+        </ult-table-scroll>
       </section>
     </main>
   </body>

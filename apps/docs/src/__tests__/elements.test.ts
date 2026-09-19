@@ -2,7 +2,14 @@ import axe from 'axe-core';
 import { afterEach, expect, test } from 'vitest';
 
 const FIXTURE_URL = '/elements.html';
-const ELEMENTS = ['ult-badge', 'ult-button', 'ult-card', 'ult-code', 'ult-stat'] as const;
+const ELEMENTS = [
+  'ult-badge',
+  'ult-button',
+  'ult-card',
+  'ult-code',
+  'ult-stat',
+  'ult-table',
+] as const;
 
 const frames: HTMLIFrameElement[] = [];
 

@@ -174,6 +174,6 @@ test('the emitted bundles carry no runtime stylex or external imports', () => {
   for (const bundle of [perElementBundle, ultimaBundle]) {
     expect(bundle).not.toMatch(/^import |^export |stylex\.(create|attrs|props)/m);
     expect(bundle).toContain('data-ultima-elements');
-    expect(bundle).toContain("customElements.define('ult-code'");
+    expect(bundle).toMatch(/customElements\.define\(["']ult-code["']/);
   }
 });
