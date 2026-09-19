@@ -55,7 +55,6 @@ import { InstallPage } from './routes/install';
 import { NotFound } from './routes/not-found';
 import { PalettePage } from './routes/palette';
 import { Placeholder } from './routes/placeholder';
-import { PrototypeElements } from './routes/prototype-elements';
 import { RationalePage } from './routes/rationale';
 import { Root } from './routes/root';
 import { TokensPage } from './routes/tokens';
@@ -165,13 +164,6 @@ const rationaleRoute = createRoute({
   component: RationalePage,
 });
 
-// PROTOTYPE for https://github.com/frankieramirez/ultima/issues/153 — throwaway.
-const prototypeElementsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/prototype-elements',
-  component: PrototypeElements,
-});
-
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   installRoute,
@@ -180,7 +172,6 @@ export const routeTree = rootRoute.addChildren([
   componentsRoute,
   componentNameRoute,
   rationaleRoute,
-  prototypeElementsRoute,
 ]);
 
 export const router = createRouter({ routeTree });
