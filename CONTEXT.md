@@ -10,6 +10,10 @@ The design system this repo holds. A fantasy-themed set of tokens and React comp
 
 A named design value (color, space, radius, type, motion) defined once in Ultima. Tokens are the only source of raw values inside components.
 
+## Theme studio
+
+The planned editor for customizing Ultima's design variables and seeing their effect on live components. It groups controls by design concern and exposes individual semantic-token overrides for finer editing. Its first release targets themes for existing Ultima applications, with export and installation, rather than project creation. The [theme studio map](https://github.com/frankieramirez/ultima/issues/204) owns the planning decisions.
+
 ## Palette scale
 
 A named ramp of twelve color steps, with a dark and a light value per step. Scales carry the fantasy names: mithril (neutral), arcane (indigo), mana (cyan), verdant (green), ember (amber), ruin (red). Scales are compile-time constants: they never appear in CSS, and nothing outside the token layer refers to one except the docs site displaying it.
