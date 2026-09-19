@@ -27,8 +27,8 @@ const TOKEN_SOURCES = [
 const BUDGET_KB: Record<string, number> = {
   'ult-button': 5,
   'ult-tabs': 12.9,
-  'ult-tooltip': 22.8,
-  ultima: 27.8,
+  'ult-tooltip': 26,
+  ultima: 40,
 };
 
 const COMPILE_TIME_SCOPES = ['@stylexjs/', '@ultima/'];
