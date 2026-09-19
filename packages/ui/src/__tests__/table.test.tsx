@@ -28,7 +28,8 @@ import {
  *    a style keyed off data-sort resolves per value. Table paints nothing off it; the glyph is the
  *    consumer's, so the style under test is the one the docs demo writes.
  * 6. Typecheck passes: className is rejected, TableSort is exactly the three aria-sort tokens.
- * 7. Behavior this component wires itself: Table.Scroll taking focus and scrolling its own overflow.
+ * 7. Behavior this component wires itself: Table.Scroll measuring its own overflow, a tab stop
+ *    only while it overflows, and scrolling that overflow once focused.
  * 8. CSS the primitive reads: none. No Table part depends on CSS a primitive supplies.
  */
 
@@ -99,6 +100,28 @@ function ScrollingTable() {
             <Table.Cell>Ready</Table.Cell>
             <Table.Cell>Ready</Table.Cell>
             <Table.Cell>Ready</Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table.Root>
+    </Table.Scroll>
+  );
+}
+
+function FittingTable() {
+  return (
+    <Table.Scroll aria-labelledby="fitting" data-testid="fitting">
+      <Table.Root>
+        <Table.Caption id="fitting">Latency by region</Table.Caption>
+        <Table.Head>
+          <Table.Row>
+            <Table.HeadCell>Region</Table.HeadCell>
+            <Table.HeadCell>p95</Table.HeadCell>
+          </Table.Row>
+        </Table.Head>
+        <Table.Body>
+          <Table.Row>
+            <Table.Cell>us-east-1</Table.Cell>
+            <Table.Cell>184ms</Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table.Root>
@@ -188,6 +211,7 @@ test('the scroll region is a div that overflows, takes focus, and shows the ring
   const region = screen.getByTestId('scroll').element() as HTMLElement;
   expect(region.tagName).toBe('DIV');
   expect(region.scrollWidth).toBeGreaterThan(region.clientWidth);
+  await expect.element(screen.getByTestId('scroll')).toHaveAttribute('tabindex', '0');
   await userEvent.tab();
   expect(document.activeElement).toBe(region);
   const ring = getComputedStyle(region);
@@ -202,9 +226,25 @@ test('the caption names the scroll region through aria-labelledby', async () => 
     .toBeVisible();
 });
 
+test('the scroll region is a tab stop only while its content overflows', async () => {
+  const screen = await render(
+    <>
+      <ScrollingTable />
+      <FittingTable />
+    </>,
+  );
+  const scroll = screen.getByTestId('scroll').element() as HTMLElement;
+  const fitting = screen.getByTestId('fitting').element() as HTMLElement;
+  expect(scroll.scrollWidth).toBeGreaterThan(scroll.clientWidth);
+  expect(fitting.scrollWidth).toBe(fitting.clientWidth);
+  await expect.element(screen.getByTestId('scroll')).toHaveAttribute('tabindex', '0');
+  await expect.element(screen.getByTestId('fitting')).toHaveAttribute('tabindex', '-1');
+});
+
 test('a focused scroll region scrolls with the arrow keys', async () => {
   const screen = await render(<ScrollingTable />);
   const region = screen.getByTestId('scroll').element() as HTMLElement;
+  await expect.element(screen.getByTestId('scroll')).toHaveAttribute('tabindex', '0');
   await userEvent.tab();
   expect(document.activeElement).toBe(region);
   await userEvent.keyboard('{ArrowRight}');

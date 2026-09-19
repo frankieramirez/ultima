@@ -34,7 +34,9 @@ Use a caption to name the table and head cells to label each column.
 
 ## Horizontal scrolling
 
-Wrap a table wider than its column in `Table.Scroll`. It is a focusable region, so a keyboard user reaches the overflow and scrolls it with the arrow keys, and it takes its name from the caption through `aria-labelledby`. A table that fits needs no region and should omit it. The minimum width goes through the `style` slot on `Table.Root`.
+Wrap a table wider than its column in `Table.Scroll`. The region joins the tab order while the table overflows and drops out of it when the table fits, so a keyboard user reaches the overflow and scrolls it with the arrow keys without meeting a dead stop on a table that needs none.
+
+A `Table.Caption` is required whenever `Table.Scroll` is used, because the caption is what names the region through `aria-labelledby`. An uncaptioned table that scrolls belongs in a Scroll Area instead: its viewport is presentational, so it delivers the same tab stop without adding an unnamed landmark. The minimum width goes through the `style` slot on `Table.Root`.
 
 <Demo component={HorizontalScroll} source={horizontalScrollSource} />
 
@@ -93,6 +95,6 @@ Only what Ultima adds. The parts otherwise accept the corresponding [native tabl
 ## Accessibility
 
 - **Elements.** Native `table`, `thead`, `tbody`, `tr`, `th`, `td`, and `caption` parts, plus `Table.Scroll` as a `div` with `role="region"`.
-- **Name.** `Table.Caption` is optional and names the table when present. It names `Table.Scroll` too, through `aria-labelledby`.
+- **Name.** `Table.Caption` is optional on a bare table and required under `Table.Scroll`, which it names through `aria-labelledby`.
 - **Headers.** `Table.HeadCell` defaults to `scope="col"`; override it for a row header. Its `sort` emits `aria-sort` on the same `th`, which is where a screen reader looks for it.
-- **Focus and keyboard.** The table itself is static. `Table.Scroll` is the only part that enters the tab order, and it takes the focus ring; without it nothing inside a table is focusable. `Table.SortButton` is a wrapper trigger, so the element you render into it must carry its own focus ring: an Ultima `Button` does.
+- **Focus and keyboard.** The table itself is static. `Table.Scroll` is the only part that enters the tab order, and only while its content overflows; it takes the focus ring. Without it nothing inside a table is focusable. `Table.SortButton` is a wrapper trigger, so the element you render into it must carry its own focus ring: an Ultima `Button` does.

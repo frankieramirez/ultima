@@ -4,6 +4,7 @@ import { useRender } from '@base-ui/react/use-render';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps, PlainProps } from '@ultima/ui/lib/component';
+import { useEffect, useState } from 'react';
 
 const styles = stylex.create({
   root: {
@@ -64,9 +65,35 @@ type TableSortButtonProps = PartProps<useRender.ComponentProps<'button'>>;
 type TableCellProps = PlainProps<'td'>;
 type TableCaptionProps = PlainProps<'caption'>;
 
+function useOverflows(element: HTMLDivElement | null): boolean {
+  const [overflows, setOverflows] = useState(false);
+  useEffect(() => {
+    if (!element) return;
+    const observer = new ResizeObserver(() => setOverflows(element.scrollWidth > element.clientWidth));
+    observer.observe(element);
+    if (element.firstElementChild) observer.observe(element.firstElementChild);
+    return () => observer.disconnect();
+  }, [element]);
+  return overflows;
+}
+
 /** Name it with `aria-labelledby` pointing at the `Table.Caption` id. */
-function Scroll({ style, ...props }: TableScrollProps) {
-  return <div role="region" tabIndex={0} {...props} {...stylex.props(styles.scroll, style)} />;
+function Scroll({ ref, style, ...props }: TableScrollProps) {
+  const [element, setElement] = useState<HTMLDivElement | null>(null);
+  const overflows = useOverflows(element);
+  return (
+    <div
+      role="region"
+      tabIndex={overflows ? 0 : -1}
+      ref={(node) => {
+        setElement(node);
+        if (typeof ref === 'function') ref(node);
+        else if (ref) ref.current = node;
+      }}
+      {...props}
+      {...stylex.props(styles.scroll, style)}
+    />
+  );
 }
 
 function Root({ ref, render, style, ...props }: TableRootProps) {
