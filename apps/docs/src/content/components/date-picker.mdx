@@ -1,0 +1,73 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/date-picker/basic';
+import basicSource from '../../demos/date-picker/basic?raw';
+import Range from '../../demos/date-picker/range';
+import rangeSource from '../../demos/date-picker/range?raw';
+import Presets from '../../demos/date-picker/presets';
+import presetsSource from '../../demos/date-picker/presets?raw';
+import Selects from '../../demos/date-picker/selects';
+import selectsSource from '../../demos/date-picker/selects?raw';
+
+# Date Picker
+
+A date input with a popup day, month, and year grid on Zag's date-picker machine: `Root` runs the machine, `Control` is the field box around `Input`, `Trigger` opens the popup, and `Content` holds the same grid Calendar draws. Zag owns parsing, selection, focus, and keyboard; Ultima paints the field, the popup surface, and the cells. For the grid alone with no input, use Calendar.
+
+## Install
+
+```bash
+npx shadcn add @ultima/date-picker
+```
+
+## The field is the control
+
+`DatePicker.Label` names `Input`; render one, or give `Input` an `aria-label` or `aria-labelledby` of your own. A `Field.Label` does not reach the machine's input. `Control` is the visual box: it carries `size` (`sm`, `md`, `lg`, default `md`) and draws the focus ring on `:focus-within`, since focus lands on `Input`. `ClearTrigger` empties the value and `Trigger` opens the popup; both ship a private glyph you replace through `children`. `Portal`, `Positioner`, and `Content` give the popup the same shape as every other Ultima overlay, and the grid inside is the same anatomy as Calendar's.
+
+<Demo component={Basic} source={basicSource} />
+
+## Choosing a range
+
+`selectionMode="range"` pairs two `Input`s: the start at `index={0}` and the end at `index={1}`. The first click marks `data-range-start`, the second `data-range-end`, and every day between them carries `data-in-range`.
+
+<Demo component={Range} source={rangeSource} />
+
+## Preset ranges
+
+`PresetTrigger` commits a named range in one click. Its `value` is a `@internationalized/date` `DateValue[]` or one of the machine's `DateRangePreset` names: `last3Days`, `last7Days`, `last14Days`, `last30Days`, `last90Days`, `thisWeek`, `lastWeek`, `thisMonth`, `lastMonth`, `thisQuarter`, `lastQuarter`, `thisYear`, `lastYear`.
+
+<Demo component={Presets} source={presetsSource} />
+
+## Month and year views
+
+`Table` takes `view="month"` or `view="year"` and `ViewTrigger` cycles the machine through all three views on click. `MonthSelect` and `YearSelect` are the native selects the machine already wires; they keep their platform look.
+
+<Demo component={Selects} source={selectsSource} />
+
+## Props
+
+Everything on `Root` is a Zag date-picker machine prop; `inline` is the one omission, because an inline grid is what Calendar is. The popup and form props (`open`, `defaultOpen`, `onOpenChange`, `positioning`, `closeOnSelect`, `name`, `required`, `placeholder`) pass through. See [Zag's date-picker](https://zagjs.com/components/react/date-picker) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Control` | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | The control height, font step, and inline padding. |
+| `Input` | `index` | `number` | `0` | Which input of a range pair. |
+| `PresetTrigger` | `value` | `DateValue[] \| DateRangePreset` | — | The range the click commits. |
+| `Root` | `selectionMode` | `'single' \| 'multiple' \| 'range'` | `'single'` | What a click commits. |
+| `Root` | `value`, `defaultValue`, `onValueChange` | `DateValue[]` | `[]` | `@internationalized/date` values. |
+| `Root` | `open`, `defaultOpen`, `onOpenChange` | `boolean` | `false` | Popup state, controllable. |
+| `Root` | `positioning`, `closeOnSelect`, `openOnClick` | — | — | Popup behavior. |
+| `Root` | `name`, `required`, `placeholder` | — | — | Form props reaching `Input`. |
+| `Root` | `numOfMonths`, `min`, `max`, `isDateUnavailable` | — | `1` | Grid shape and bounds. |
+| `Root` | `disabled`, `readOnly` | `boolean` | `false` | Machine-wide state. |
+| `ViewControl`, `PrevTrigger`, `NextTrigger`, `ViewTrigger`, `View`, `Table`, `TableHead`, `TableBody`, `TableRow`, `TableHeader`, `TableCell`, `TableCellTrigger` | `view` | `'day' \| 'month' \| 'year'` | `'day'` | Which view the part's getter answers for. |
+| `Table` | `columns` | `number` | `7` or `4` | Grid columns; month and year views default to four. |
+| `TableBody` | `monthsOffset` | `number` | `0` | Which month of `numOfMonths` the body enumerates. |
+| `TableCell`, `TableCellTrigger` | `value` | `DateValue \| number` | — | The day, month, or year the cell stands for. |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className` and no `render`. |
+
+## Accessibility
+
+- **Name.** `Label` names `Input` through the machine's `htmlFor`; `Trigger` is named by the machine's translated `aria-label`, so its glyph is decorative.
+- **Landmarks.** `Content` is `role="application"` with `aria-roledescription="datepicker"`, a translated `aria-label`, and `tabIndex={-1}`; `Table` is `role="grid"` with the same grid semantics as Calendar.
+- **Focus ring.** On `Control` through `:focus-within`, and on `Trigger`, `ClearTrigger`, `PresetTrigger`, `PrevTrigger`, `NextTrigger`, `ViewTrigger`, `TableCellTrigger`, `MonthSelect`, and `YearSelect`. `Content` sets `outline: none`.
+- **Keyboard.** Typing parses through `parse`, Escape closes, and the grid keys are Calendar's: arrows move the focused day, Page Up and Page Down change the month, Home and End the week, Enter and Space select.
+- **Hidden.** The machine writes the `hidden` attribute on closed `Content` and on an empty `ClearTrigger`; neither part may set a `display` declaration against it.

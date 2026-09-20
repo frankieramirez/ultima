@@ -45,7 +45,7 @@ test('release and text filters combine, empty results recover, and clear restore
   await expect.element(screen.getByRole('option', { name: 'v0.2', exact: true })).toHaveAttribute('data-highlighted');
   await userEvent.keyboard('{Enter}');
   await expect.element(release).toHaveTextContent('v0.2');
-  await expect.element(main.getByRole('status')).toHaveTextContent('14 components');
+  await expect.element(main.getByRole('status')).toHaveTextContent('17 components');
   expect(main.getByRole('heading', { name: 'The v0 set' }).query()).toBeNull();
   const input = main.getByRole('textbox', { name: 'Filter components' });
   await userEvent.fill(input, 'button');
@@ -58,7 +58,7 @@ test('release and text filters combine, empty results recover, and clear restore
   await expect.element(input).toHaveValue('');
   await expect.element(input).toHaveFocus();
   await expect.element(release).toHaveTextContent('All releases');
-  await expect.element(main.getByRole('status')).toHaveTextContent('46 components');
+  await expect.element(main.getByRole('status')).toHaveTextContent('49 components');
   await expect.element(clear).toBeDisabled();
   await userEvent.click(main.getByRole('link', { name: /^Button / }));
   await expect.element(main.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();

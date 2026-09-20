@@ -305,6 +305,12 @@ export const components = [
     description: 'An inline day, month, and year grid for picking dates, on Zag.',
     release: 'v0.2',
   },
+  {
+    name: 'Date Picker',
+    item: 'date-picker',
+    description: 'A date input with a popup day, month, and year grid, on Zag.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
