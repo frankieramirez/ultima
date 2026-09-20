@@ -306,15 +306,15 @@ export const components = [
     release: 'v0.2',
   },
   {
-    name: 'Input Group',
-    item: 'input-group',
-    description: 'A field box holding an input with leading and trailing addons, in three sizes.',
-    release: 'v0.2',
-  },
-  {
     name: 'Button Group',
     item: 'button-group',
     description: 'A row of buttons joined as one control, with per-item variant and tone overrides.',
+    release: 'v0.2',
+  },
+  {
+    name: 'Input Group',
+    item: 'input-group',
+    description: 'A field box holding an input with leading and trailing addons, in three sizes.',
     release: 'v0.2',
   },
 ] satisfies ComponentEntry[];
