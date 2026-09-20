@@ -259,7 +259,7 @@ test('the ends stay put on the first and last page and the range is announced', 
   expect(previous).toHaveAttribute('aria-disabled', 'true');
   // Playwright refuses to click an aria-disabled element; a DOM click is what the
   // component's own swallow has to absorb.
-  previous.click();
+  previous.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
   expect(firstCell()).toBe('us-east-1');
 
   await userEvent.click(below.getByRole('button', { name: '5' }));
