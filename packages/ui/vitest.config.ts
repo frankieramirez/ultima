@@ -43,6 +43,9 @@ export default defineConfig({
       '@base-ui/react/toggle-group',
       '@base-ui/react/tooltip',
       '@base-ui/react/use-render',
+      '@zag-js/date-picker',
+      '@zag-js/react',
+      '@internationalized/date',
     ],
   },
   test: {

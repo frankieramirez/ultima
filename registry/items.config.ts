@@ -249,6 +249,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.',
     docs: "import { ColorField } from '@/components/ui/color-field';\n\n<ColorField.Root defaultValue=\"#3366ff\">\n  <ColorField.Swatch aria-label=\"Pick accent\" />\n  <ColorField.Input aria-label=\"Hex\" />\n  <ColorField.Portal>\n    <ColorField.Positioner sideOffset={8}>\n      <ColorField.Popup>\n        <ColorField.Picker />\n      </ColorField.Popup>\n    </ColorField.Positioner>\n  </ColorField.Portal>\n</ColorField.Root>\n\nThe value is an opaque sRGB #rrggbb string. size is sm, md, or lg on Root. Name the swatch with aria-label; the popup defaults to aria-label=\"Color picker\". Input fills Field's control slot, so invalid hex carries the validation state. There is no alpha and no wide-gamut format.",
   },
+  calendar: {
+    title: 'Calendar',
+    description: 'An inline day, month, and year grid for picking dates, on Zag.',
+    docs: "import { Calendar } from '@/components/ui/calendar';\n\n<Calendar.Root>\n  <Calendar.Label>Release date</Calendar.Label>\n  <Calendar.Content>\n    <Calendar.View view=\"day\">\n      <Calendar.ViewControl view=\"day\">\n        <Calendar.PrevTrigger />\n        <Calendar.ViewTrigger>\n          <Calendar.RangeText />\n        </Calendar.ViewTrigger>\n        <Calendar.NextTrigger />\n      </Calendar.ViewControl>\n      <Calendar.Table view=\"day\" />\n    </Calendar.View>\n  </Calendar.Content>\n</Calendar.Root>\n\nThe machine runs inline. selectionMode is single, multiple, or range, and value is a @internationalized/date DateValue[]. Label names the grid; Content and Table keep Zag's hidden and role=grid wiring. MonthSelect and YearSelect stay native. For the input-and-popup composition, use Date Picker.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:
