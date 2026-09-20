@@ -38,6 +38,7 @@ import PaginationContent from './content/components/pagination.mdx';
 import PopoverContent from './content/components/popover.mdx';
 import ProgressContent from './content/components/progress.mdx';
 import RadioGroupContent from './content/components/radio-group.mdx';
+import ResizableContent from './content/components/resizable.mdx';
 import ScrollAreaContent from './content/components/scroll-area.mdx';
 import SelectContent from './content/components/select.mdx';
 import SeparatorContent from './content/components/separator.mdx';
@@ -155,6 +156,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   popover: PopoverContent,
   progress: ProgressContent,
   'radio-group': RadioGroupContent,
+  resizable: ResizableContent,
   'scroll-area': ScrollAreaContent,
   select: SelectContent,
   separator: SeparatorContent,

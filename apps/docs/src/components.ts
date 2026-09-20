@@ -323,6 +323,12 @@ export const components = [
     description: 'A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.',
     release: 'v0.2',
   },
+  {
+    name: 'Resizable',
+    item: 'resizable',
+    description: 'Panels with boundaries you drag or arrow, on Zag.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {

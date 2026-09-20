@@ -460,3 +460,13 @@ export {
   type NativeSelectSelectProps,
   type NativeSelectSize,
 } from './native-select';
+export {
+  Resizable,
+  useResizable,
+  type ResizableApi,
+  type ResizableOrientation,
+  type ResizableRootProps,
+  type ResizablePanelProps,
+  type ResizableHandleProps,
+  type ResizableHandleIndicatorProps,
+} from './resizable';

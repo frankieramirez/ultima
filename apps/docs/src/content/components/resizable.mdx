@@ -1,0 +1,70 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/resizable/basic';
+import basicSource from '../../demos/resizable/basic?raw';
+import Vertical from '../../demos/resizable/vertical';
+import verticalSource from '../../demos/resizable/vertical?raw';
+import Collapsible from '../../demos/resizable/collapsible';
+import collapsibleSource from '../../demos/resizable/collapsible?raw';
+
+# Resizable
+
+Panels with boundaries you drag or arrow, on Zag's splitter machine. Four parts: `Root` runs the machine, `Panel` holds each region, `Handle` is the `role="separator"` boundary, and `HandleIndicator` is the decorative grip. `useResizable()` hands back the machine api inside a `Root`.
+
+## Install
+
+```bash
+npx shadcn add @ultima/resizable
+```
+
+## Panels and boundaries
+
+`panels` is the machine's required manifest: one entry per `Panel`, in order, and the entries carry the sizing metadata — `minSize`, `maxSize`, `collapsible`, and `collapsedSize`. `defaultSize` sizes them at mount. A `Handle` sits between two panels and its `id` names the pair, `before:after` — `nav:editor` resizes `nav` and `editor`.
+
+<Demo component={Basic} source={basicSource} />
+
+Every `Handle` needs a name, and the type enforces it: `Resizable.Handle` requires one of `aria-label` or `aria-labelledby` — the system's fourth type-enforced attribute. A separator between two panels has no visible label and no child part that can supply one, so the name can only be an attribute, and an unnamed boundary reads as a bare "separator" with a number.
+
+## Vertical
+
+`orientation` is a pass-through prop, not an axis — it flips the layout axis, the bar's hairline, the grip's rotation, and which arrows resize.
+
+<Demo component={Vertical} source={verticalSource} />
+
+## Collapsible
+
+`collapsible` on a panels entry lets the boundary collapse the panel to `collapsedSize`. With the handle focused, Enter toggles between the collapsed size and the last uncollapsed one; `useResizable()` exposes `collapsePanel` and `expandPanel` for your own controls.
+
+<Demo component={Collapsible} source={collapsibleSource} />
+
+## The machine api
+
+`useResizable()` returns the connected Zag api inside a `Root` — `getSizes()`, `setSizes()`, `resizePanel()`, `collapsePanel()`, `expandPanel()`, `isPanelCollapsed()`, and the rest of the splitter surface. Calling it outside a `Root` throws.
+
+## Content Security Policy
+
+While a drag is in progress the machine injects a `* { cursor: … !important }` `<style>` so the cursor holds over panels and frames. Under a `style-src` without `'unsafe-inline'` that injection needs the `nonce` machine prop — it arrives through `Resizable.Root`, not Base UI's `CSPProvider`.
+
+## Props
+
+Everything is the machine's; see [Zag's splitter](https://zagjs.com/components/react/splitter) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `panels` | `PanelData[]` | required | One entry per `Panel`; carries `minSize`, `maxSize`, `collapsible`, `collapsedSize`. |
+| `Root` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Pass-through, keyed to the style table. |
+| `Root` | `defaultSize` | `number[]` | — | Initial sizes, one per panel, in percent. |
+| `Root` | `size` | `number[]` | — | Controlled sizes; pair with `onResize`. |
+| `Root` | `keyboardResizeBy` | `number` | `1` | Arrow step in the sizes' units — percentage points of the root. Shift steps 10. |
+| `Root` | `dir` | `'ltr' \| 'rtl'` | `'ltr'` | Reverses which arrow grows which panel. |
+| `Root` | `nonce` | `string` | — | Nonce for the drag cursor `<style>`. |
+| `Handle` | `id` | `string` | required | The `before:after` panel pair it resizes. |
+| `Handle` | `aria-label` \| `aria-labelledby` | `string` | required | One is required by the type. |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+
+`Root` is `display: flex` keyed to `orientation`, `Handle` is the hairline with a `::before` stretching the hit area, and `HandleIndicator` is the grip, always `aria-hidden`. `Panel` ships no paint — the machine writes its `flex-grow`, `overflow: hidden`, and drag-time `pointer-events` inline.
+
+## Accessibility
+
+- **Name.** Required on `Handle` — `aria-label` or `aria-labelledby`, enforced by the type. `aria-controls` names the two adjacent panels.
+- **Focus.** The handle is a tab stop and takes the `:focus-visible` ring.
+- **Keyboard.** Arrows move the boundary by `keyboardResizeBy` in the sizes' units — percentage points of the root — 1 by default and 10 with Shift, along the active orientation. Home and End go to the panel limits, Enter toggles a collapsible panel, and F6 and Shift+F6 cycle the handles.

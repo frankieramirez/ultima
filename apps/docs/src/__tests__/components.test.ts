@@ -61,6 +61,7 @@ test('the component catalogue exposes the v0, v0.1, and v0.2 sets in specificati
     'date-picker',
     'input-group',
     'native-select',
+    'resizable',
   ]);
 });
 
@@ -122,6 +123,7 @@ test('every catalogue entry carries a release, and the menu derives from that fi
     'date-picker',
     'input-group',
     'native-select',
+    'resizable',
   ]);
   expect(RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item))).toEqual(
     components.map(({ item }) => item),
