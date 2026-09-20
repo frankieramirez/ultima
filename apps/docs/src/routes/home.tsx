@@ -1,139 +1,202 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Separator } from '@ultima/ui';
 
-import Playground from '../demos/home/playground';
-import { actionStyles } from '../demos/home/action';
+import { contrastStyles } from '../demos/home/contrast';
+import Specimen from '../demos/home/specimen';
+import Workbench from '../demos/home/workbench';
 
-
-
-const FEATURES = [
-  {
-    title: 'StyleX at the core',
-    description: 'A component vocabulary that speaks StyleX, from your first token to your final interface.',
-  },
-  {
-    title: 'Make it unmistakably yours',
-    description: 'Shape the color, rhythm, and feel of your product through a shared token foundation.',
-  },
-  {
-    title: 'Own every detail',
-    description: 'Bring the components into your codebase. Compose, adapt, and build beyond the defaults.',
-  },
-];
-
-const DESKTOP = '@media (min-width: 48rem)';
+const WIDE = '@media (min-width: 48rem)';
+const DESKTOP = '@media (min-width: 64rem)';
 
 const styles = stylex.create({
   page: {
     display: 'flex',
     flexDirection: 'column',
-    gap: space['--ult-space-10'],
-    paddingBlockStart: space['--ult-space-7'],
-    paddingBlockEnd: space['--ult-space-10'],
-    maxInlineSize: '64rem',
-    inlineSize: { default: 'calc(100% - 2rem)', [DESKTOP]: 'calc(100% - 7rem)' },
+    inlineSize: '100%',
     marginInline: 'auto',
+    maxInlineSize: '90rem',
   },
-  hero: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-8'] },
-  eyebrow: {
-    color: color['--ult-color-accent-text'],
+  hero: {
+    alignItems: { default: 'start', [DESKTOP]: 'end' },
+    display: 'flex',
+    flexDirection: { default: 'column', [DESKTOP]: 'row' },
+    gap: { default: space['--ult-space-10'], [DESKTOP]: space['--ult-space-12'] },
+    paddingBlockStart: { default: space['--ult-space-9'], [DESKTOP]: space['--ult-space-12'] },
+    paddingBlockEnd: space['--ult-space-11'],
+    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
+  },
+  editorial: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+    gap: space['--ult-space-8'],
+    minInlineSize: 0,
+  },
+  index: {
+    color: color['--ult-color-text-muted'],
     fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-2'],
-    letterSpacing: '0.1em',
-    lineHeight: font['--ult-font-leading-none'],
+    fontSize: text['--ult-text-1'],
+    letterSpacing: font['--ult-font-tracking-wide'],
     margin: 0,
   },
   pitch: {
+    alignItems: 'flex-start',
     color: color['--ult-color-text'],
-    fontSize: { default: 'clamp(2.25rem, 6vw, 4.5rem)', [DESKTOP]: 'clamp(2.75rem, 4.5vw, 4.5rem)' },
+    display: 'flex',
+    flexDirection: 'column',
+    fontSize: 'clamp(2.5rem, 6vw, 4.75rem)',
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: '-0.04em',
-    lineHeight: 1.04,
+    lineHeight: font['--ult-font-leading-none'],
     margin: 0,
   },
-  prose: {
+  intro: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexShrink: 0,
+    gap: space['--ult-space-8'],
+    inlineSize: { default: '100%', [DESKTOP]: '24.5rem' },
+    paddingBlockEnd: { default: 0, [DESKTOP]: space['--ult-space-5'] },
+  },
+  proposition: {
     color: color['--ult-color-text-muted'],
-    fontSize: { default: text['--ult-text-6'], [DESKTOP]: text['--ult-text-7'] },
-    lineHeight: 1.5,
+    fontSize: text['--ult-text-6'],
+    lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
   },
-  actions: {
+  heroAction: {
+    inlineSize: '100%',
+    justifyContent: 'space-between',
+    paddingInline: space['--ult-space-7'],
+  },
+  guide: {
+    alignItems: 'center',
+    color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
+    display: 'inline-flex',
+    fontSize: text['--ult-text-4'],
+    gap: space['--ult-space-1'],
+    textDecoration: 'none',
+    ':focus-visible': {
+      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      outlineOffset: border.focusOffset,
+    },
+  },
+  specimen: {
+    display: 'flex',
+    flexDirection: 'column',
+    paddingBlockEnd: space['--ult-space-11'],
+    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
+  },
+  metadata: {
     alignItems: 'center',
     display: 'flex',
     flexWrap: 'wrap',
-    gap: space['--ult-space-5'],
-    paddingBlockStart: space['--ult-space-4'],
+    gap: space['--ult-space-6'],
+    justifyContent: 'space-between',
+    paddingBlock: space['--ult-space-6'],
   },
-  mono: { fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'] },
-  muted: { color: color['--ult-color-text-subtle'] },
-  features: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-8'], paddingBlock: space['--ult-space-4'] },
-  marker: { color: color['--ult-color-accent-text'], fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'], fontWeight: font['--ult-font-weight-regular'], margin: 0 },
-  columns: {
-    display: 'grid',
-    gap: space['--ult-space-10'],
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', '@media (min-width: 64rem)': 'repeat(3, minmax(0, 1fr))' },
+  scale: {
+    color: color['--ult-color-text-subtle'],
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-1'],
+    letterSpacing: font['--ult-font-tracking-wide'],
+    margin: 0,
   },
-  feature: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-5'] },
-  number: { paddingBlockStart: space['--ult-space-2'] },
-  heading: { color: color['--ult-color-text'], fontSize: text['--ult-text-7'], fontWeight: font['--ult-font-weight-medium'], margin: 0 },
-  description: { color: color['--ult-color-text-muted'], fontSize: text['--ult-text-4'], lineHeight: font['--ult-font-leading-relaxed'], margin: 0 },
-  invitation: { display: 'flex', flexDirection: 'column', gap: '1.75rem' },
-  closing: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-8'], justifyContent: 'space-between' },
-  closingCopy: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-4'] },
-  closingTitle: { fontSize: text['--ult-text-9'], fontWeight: font['--ult-font-weight-medium'], margin: 0 },
-  closingNote: { color: color['--ult-color-text-muted'], fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'], margin: 0 },
+  workbench: {
+    alignItems: 'center',
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: space['--ult-space-8'],
+    paddingBlockStart: space['--ult-space-5'],
+    paddingBlockEnd: space['--ult-space-11'],
+    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
+  },
+  installIntro: {
+    display: 'flex',
+    flexBasis: '20rem',
+    flexDirection: 'column',
+    flexGrow: 1,
+    gap: space['--ult-space-6'],
+    minInlineSize: 0,
+  },
+  installHeadline: {
+    color: color['--ult-color-text'],
+    fontSize: 'clamp(2rem, 4vw, 2.75rem)',
+    fontWeight: font['--ult-font-weight-medium'],
+    letterSpacing: font['--ult-font-tracking-tight'],
+    lineHeight: font['--ult-font-leading-tight'],
+    margin: 0,
+  },
+  installDescription: {
+    color: color['--ult-color-text-muted'],
+    fontSize: text['--ult-text-5'],
+    lineHeight: font['--ult-font-leading-relaxed'],
+    margin: 0,
+  },
+  commands: {
+    flexBasis: '26rem',
+    flexGrow: 1,
+    maxInlineSize: '40rem',
+    minInlineSize: 0,
+  },
 });
 
 export function Home() {
   return (
     <main {...stylex.props(styles.page)}>
       <section {...stylex.props(styles.hero)}>
-        <p {...stylex.props(styles.eyebrow)}>ULTIMA / UI FOR STYLEX</p>
-        <h1 {...stylex.props(styles.pitch)}>Exceptional interfaces.<br />Down to the variable.</h1>
-        <p {...stylex.props(styles.prose)}>
-          Beautiful components. Expressive tokens. Code you own.<br />
-          Built on Base UI and StyleX. Installed through the shadcn CLI.
-        </p>
-        <div {...stylex.props(styles.actions)}>
-          <Button style={actionStyles.root} render={<Link to="/install" />} nativeButton={false}>Start building</Button>
-          <Button variant="outline" render={<Link to="/components" />} nativeButton={false}>
-            Explore components <ArrowUpRightIcon aria-hidden />
+        <div {...stylex.props(styles.editorial)}>
+          <p {...stylex.props(styles.index)}>01 / A SYSTEM FOR BUILDING</p>
+          <h1 {...stylex.props(styles.pitch)}>
+            <span>
+              Good interfaces
+              <br />
+              start with
+            </span>
+            <span {...stylex.props(contrastStyles.mark)}>good parts.</span>
+          </h1>
+        </div>
+        <div {...stylex.props(styles.intro)}>
+          <p {...stylex.props(styles.proposition)}>
+            React components with a common language. Precise tokens, Base UI behavior, and StyleX styling. Ready to
+            become your code.
+          </p>
+          <Button size="lg" style={[contrastStyles.root, styles.heroAction]} render={<Link to="/components" />} nativeButton={false}>
+            Explore the components <ArrowUpRightIcon aria-hidden />
           </Button>
-          <span {...stylex.props(styles.mono, styles.muted)}>Built with StyleX</span>
+          <Link to="/install" {...stylex.props(styles.guide)}>
+            Installation guide <ArrowUpRightIcon aria-hidden />
+          </Link>
         </div>
       </section>
 
-      <Playground />
-
-      <section aria-labelledby="built-different" {...stylex.props(styles.features)}>
-        <h2 id="built-different" {...stylex.props(styles.marker)}>--built-different</h2>
-        <div {...stylex.props(styles.columns)}>
-          {FEATURES.map(({ title, description }, index) => (
-            <div key={title} {...stylex.props(styles.feature)}>
-              <Separator />
-              <span {...stylex.props(styles.mono, styles.muted, styles.number)}>0{index + 1}</span>
-              <h3 {...stylex.props(styles.heading)}>{title}</h3>
-              <p {...stylex.props(styles.description)}>{description}</p>
-            </div>
-          ))}
+      <section aria-labelledby="specimen-index" {...stylex.props(styles.specimen)}>
+        <Separator />
+        <div {...stylex.props(styles.metadata)}>
+          <p id="specimen-index" {...stylex.props(styles.index)}>02 / ANATOMY OF AN INTERFACE</p>
+          <p {...stylex.props(styles.scale)}>TOKENS → COMPONENTS → YOUR PRODUCT</p>
         </div>
+        <Specimen />
       </section>
 
-      <section {...stylex.props(styles.invitation)}>
-        <Separator />
-        <div {...stylex.props(styles.closing)}>
-          <div {...stylex.props(styles.closingCopy)}>
-            <h2 {...stylex.props(styles.closingTitle)}>Your next interface starts here.</h2>
-            <p {...stylex.props(styles.closingNote)}>A new foundation. Entirely your own.</p>
-          </div>
-          <Button style={actionStyles.root} render={<Link to="/components" />} nativeButton={false}>
-            Browse the components <ArrowUpRightIcon aria-hidden />
-          </Button>
+      <section aria-labelledby="install-headline" {...stylex.props(styles.workbench)}>
+        <div {...stylex.props(styles.installIntro)}>
+          <p {...stylex.props(styles.index)}>03 / MAKE IT YOURS</p>
+          <h2 id="install-headline" {...stylex.props(styles.installHeadline)}>
+            From our system
+            <br />
+            to your source.
+          </h2>
+          <p {...stylex.props(styles.installDescription)}>
+            Set up StyleX, add a component, and take it from there. No hidden styling layer. No locked-in theme.
+          </p>
         </div>
-        <Separator />
+        <div {...stylex.props(styles.commands)}>
+          <Workbench />
+        </div>
       </section>
     </main>
   );

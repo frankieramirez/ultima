@@ -147,7 +147,7 @@ test('the flat catalogue follows the page links in keyboard order', async () => 
 test('the logo returns to home without hiding desktop navigation', async () => {
   const screen = await mount('/install');
   await userEvent.click(screen.getByRole('link', { name: 'Ultima home' }).element());
-  await expect.element(screen.getByRole('heading', { level: 1, name: 'Exceptional interfaces. Down to the variable.' })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { level: 1, name: /Good interfaces/ })).toBeVisible();
   expect(menu().element()).toHaveAttribute('data-open');
 });
 
