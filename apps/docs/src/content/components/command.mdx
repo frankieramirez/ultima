@@ -1,0 +1,52 @@
+import { Demo } from '../../demo';
+import Anchored from '../../demos/command/anchored';
+import anchoredSource from '../../demos/command/anchored?raw';
+import Inline from '../../demos/command/inline';
+import inlineSource from '../../demos/command/inline?raw';
+
+# Command
+
+A free-text action palette: an input that filters a list of actions, built on Base UI's Autocomplete. It is a sibling of Combobox rather than a variant of it, because items are actions and suggestions, never a selection.
+
+## Install
+
+```bash
+npx shadcn add @ultima/command
+```
+
+## The anchored arrangement
+
+`Command.InputGroup` is the visual box. It carries `size`, the sunken surface, the border, the radius, and the focus ring through `:focus-within`, and `Command.Input` sits borderless inside it beside `Command.Clear` and `Command.Trigger`. Pass `items` to the root and the typed query filters the list in the anchored `Command.Popup`, which tracks the input's width.
+
+<Demo component={Anchored} source={anchoredSource} />
+
+## The inline arrangement
+
+Pass `open inline` on the root and the list renders in place, the command-palette pattern, with no popup at all. `Command.Group`, `Command.GroupLabel`, and `Command.Collection` put the items under headings.
+
+<Demo component={Inline} source={inlineSource} />
+
+`Command.Empty` and `Command.Status` stay mounted so a screen reader hears the text change. Put the empty message in `Command.Empty`; do not swap in the `Empty` component, which is a different thing.
+
+## Filtering
+
+The `filter` prop is the scorer socket. With nothing passed, Base UI's default Collator filter runs. A fuzzy scorer is your own dependency — `match-sorter` documented, `fuzzysort` the alternative — wired through the same prop. `mode`, `autoHighlight`, `keepHighlight`, `highlightItemOnHover`, `openOnInputClick`, `submitOnItemClick`, `itemToStringValue`, `items`, `filteredItems`, and `value` / `defaultValue` / `onValueChange` pass through to Base UI.
+
+## Props
+
+Only what Ultima adds. Every inherited part and prop is documented by [Base UI's Autocomplete](https://base-ui.com/react/components/autocomplete).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Set on `Command.InputGroup`; controls its height, inline padding, and text step. |
+| `style` | `StyleXStyles` | — | Available on every part and merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+`Command.useFilter` and `Command.useFilteredItems` sit on the same namespace. Ultima ships no filter algorithm of its own.
+
+## Accessibility
+
+- **Name.** From a `<label htmlFor>`, `aria-label`, or `aria-labelledby` on the input, or a `Field.Label` with the default `nativeLabel`. The primitive ships no `Label` part.
+- **Focus ring.** On `Command.InputGroup` through `:focus-within`, and on `Command.Trigger` where the Trigger is the control. Items show `data-highlighted` instead of a ring.
+- **Keyboard.** Base UI handles the arrows, which move the highlight, Enter, which activates the highlighted item, and Escape, which closes the popup in the anchored arrangement. In the inline arrangement there is no popup, so Escape belongs to the host surface.
+- **Announcements.** `Command.Empty` and `Command.Status` are `role="status"` regions that stay in the DOM. Hiding or unmounting them silences the announcement.

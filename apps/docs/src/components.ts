@@ -294,6 +294,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Command',
+    item: 'command',
+    description: 'A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.',
+    release: 'v0.2',
+  },
+  {
     name: 'Input Group',
     item: 'input-group',
     description: 'A field box holding an input with leading and trailing addons, in three sizes.',
