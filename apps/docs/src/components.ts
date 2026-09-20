@@ -299,6 +299,12 @@ export const components = [
     description: 'A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.',
     release: 'v0.2',
   },
+  {
+    name: 'Calendar',
+    item: 'calendar',
+    description: 'An inline day, month, and year grid for picking dates, on Zag.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
