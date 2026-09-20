@@ -144,7 +144,7 @@ A semantic token for hover or active, named with a `-hover` or `-active` suffix.
 
 ## Part
 
-One named piece of a compound component, such as `Card.Root` or `Dialog.Popup`. Part names match Base UI's wherever a primitive supplies them. Ultima invents a name only when Base UI ships two components rather than one namespace: `ToggleGroup.Item`, `Checkbox.Group`, and `RadioGroup.Item`. A single-part component has no parts, just the component. A part is either styled by Ultima or passed through: a part that paints, or sets its own type or spacing, is styled, and so is a part whose primitive depends on CSS the primitive does not supply; a part that only portals, positions, or groups passes through unchanged.
+One named piece of a compound component, such as `Card.Root` or `Dialog.Popup`. Part names match Base UI's wherever a primitive supplies them. Ultima invents a name when Base UI ships two components rather than one namespace (`ToggleGroup.Item`, `Checkbox.Group`, `RadioGroup.Item`) and when no primitive supplies one at all (`ButtonGroup.Item`, `InputGroup.Addon`). A single-part component has no parts, just the component. A part is either styled by Ultima or passed through: a part that paints, or sets its own type or spacing, is styled, and so is a part whose primitive depends on CSS the primitive does not supply; a part that only portals, positions, or groups passes through unchanged.
 
 ## Cross-part state
 
@@ -172,7 +172,7 @@ A part that exists to be handed the consumer's own element through `render`, suc
 
 ## Axis
 
-A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow. Combobox's `size` sits on `InputGroup`, the visual box. Slider has no `size`. Alert has `tone` and neither of the other two. Toast has the same six tones, forwarded as Base UI `type` / `data-type` rather than as a prop on Root. Progress has Meter's five tones on `Root`. Skeleton, Spinner, and Empty have none.
+A prop that selects one of a component's alternative appearances. Ultima has exactly three, and no component invents a fourth: `variant` for shape and emphasis, `size` for the three control heights, `tone` for the color role. Textarea uses those same three steps as a starting height rather than a fixed one, so it can grow. Combobox's `size` sits on `InputGroup`, the visual box. Slider has no `size`. Alert has `tone` and neither of the other two. Toast has the same six tones, forwarded as Base UI `type` / `data-type` rather than as a prop on Root. Progress has Meter's five tones on `Root`. Skeleton, Spinner, and Empty have none. The v0.2 input-group set: Button Group carries all three on `Root` reaching `Item` through context, `size` alone not overridable per item; Input Group and Input OTP carry `size` on `Root`; Native Select carries `size` on `Select`, the control part.
 
 ## Tone
 
