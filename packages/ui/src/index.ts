@@ -357,6 +357,28 @@ export {
   type ColorFieldPickerProps,
 } from './color-field';
 export {
+  Command,
+  type CommandSize,
+  type CommandInputGroupProps,
+  type CommandInputProps,
+  type CommandTriggerProps,
+  type CommandIconProps,
+  type CommandClearProps,
+  type CommandPortalProps,
+  type CommandBackdropProps,
+  type CommandPositionerProps,
+  type CommandPopupProps,
+  type CommandArrowProps,
+  type CommandListProps,
+  type CommandRowProps,
+  type CommandItemProps,
+  type CommandGroupProps,
+  type CommandGroupLabelProps,
+  type CommandSeparatorProps,
+  type CommandStatusProps,
+  type CommandEmptyProps,
+} from './command';
+export {
   Drawer,
   type DrawerRootProps,
   type DrawerProviderProps,
