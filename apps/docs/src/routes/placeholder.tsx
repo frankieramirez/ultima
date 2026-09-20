@@ -6,7 +6,7 @@ import { DocumentLayout } from '../document-layout';
 const styles = stylex.create({
   title: {
     color: color['--ult-color-text'],
-    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': '3.25rem' },
+    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': text['--ult-text-12'] },
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],

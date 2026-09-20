@@ -48,7 +48,7 @@ export const STOCK_SANS =
 export const STOCK_MONO = "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
 const SPACE_PX = [2, 4, 6, 8, 12, 16, 20, 24, 32, 40, 48, 64];
-const TEXT_PX = [11, 12, 13, 14, 16, 18, 20, 24, 30, 36, 48];
+const TEXT_PX = [11, 12, 13, 14, 16, 18, 20, 24, 30, 36, 48, 52];
 
 const LEADING: Record<MeasurePreset, Record<string, number>> = {
   default: { none: 1, tight: 1.2, snug: 1.35, normal: 1.55, relaxed: 1.75 },
@@ -57,9 +57,9 @@ const LEADING: Record<MeasurePreset, Record<string, number>> = {
 };
 
 const TRACKING: Record<MeasurePreset, Record<string, string>> = {
-  default: { tight: '-0.02em', normal: '0', wide: '0.08em', wider: '0.14em' },
-  compact: { tight: '-0.03em', normal: '-0.01em', wide: '0.06em', wider: '0.12em' },
-  loose: { tight: '-0.01em', normal: '0.01em', wide: '0.1em', wider: '0.18em' },
+  default: { tightest: '-0.04em', tighter: '-0.03em', tight: '-0.02em', normal: '0', wide: '0.08em', wider: '0.14em' },
+  compact: { tightest: '-0.05em', tighter: '-0.04em', tight: '-0.03em', normal: '-0.01em', wide: '0.06em', wider: '0.12em' },
+  loose: { tightest: '-0.03em', tighter: '-0.02em', tight: '-0.01em', normal: '0.01em', wide: '0.1em', wider: '0.18em' },
 };
 
 const RADIUS: Record<ShapePreset, Record<'xs' | 'sm' | 'md' | 'lg', number>> = {
