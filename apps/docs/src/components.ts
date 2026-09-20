@@ -306,6 +306,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Input Group',
+    item: 'input-group',
+    description: 'A field box holding an input with leading and trailing addons, in three sizes.',
+    release: 'v0.2',
+  },
+  {
     name: 'Input OTP',
     item: 'input-otp',
     description: 'A one-time-code field of uniform square slots, on Base UI.',

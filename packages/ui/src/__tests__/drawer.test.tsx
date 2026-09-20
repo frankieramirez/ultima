@@ -170,11 +170,13 @@ test('Tab loops inside the popup, Escape closes it, and focus returns to the tri
   await userEvent.tab();
   expect(document.activeElement).toBe(close);
   await userEvent.tab();
-  expect(document.activeElement).toBe(inside);
+  // Tabbing past the last tabbable lands on the focus guard for a frame before the
+  // manager redirects to the first; poll for the settled element like select does.
+  await expect.poll(() => document.activeElement).toBe(inside);
 
   await userEvent.keyboard('{Escape}');
   await expect.poll(() => page.getByRole('dialog').query()).toBeNull();
-  expect(document.activeElement).toBe(trigger);
+  await expect.poll(() => document.activeElement).toBe(trigger);
 });
 
 const EDGE: Record<Direction, (popup: DOMRect, viewport: DOMRect) => void> = {
