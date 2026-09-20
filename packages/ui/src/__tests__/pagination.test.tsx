@@ -281,6 +281,7 @@ test('the current page is both attributes, and the style follows either of them'
   expect(resting).not.toHaveAttribute('data-active');
   expect(router).not.toHaveAttribute('data-active');
 
+  await userEvent.hover(resting);
   expect(getComputedStyle(current).fontWeight).not.toBe(getComputedStyle(resting).fontWeight);
   expect(getComputedStyle(current).color).not.toBe(getComputedStyle(resting).color);
   expect(getComputedStyle(current).backgroundColor).not.toBe(getComputedStyle(resting).backgroundColor);

@@ -69,8 +69,8 @@ const styles = stylex.create({
     },
     color: {
       default: color['--ult-color-text-muted'],
+      ':hover': color['--ult-color-text-muted'],
       ':is([data-active], [aria-current="page"])': color['--ult-color-text'],
-      ':hover': color['--ult-color-text'],
     },
     fontWeight: {
       default: font['--ult-font-weight-regular'],
