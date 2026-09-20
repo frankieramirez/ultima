@@ -4,6 +4,8 @@ import {
   seedFromSrgb,
   type DensityFactor,
   type MeasurePreset,
+  type PairingResult,
+  type ResolvedDraft,
   type ScaleName,
   type ShapePreset,
   type ThemeDraft,
@@ -26,6 +28,8 @@ import {
 } from './theme-studio-draft';
 import { ThemeStudioGroup } from './theme-studio-group';
 import type { DraftEdit } from './theme-studio-store';
+import { TokenRows, type ModeOffenders } from './theme-studio-token-row';
+import { ThemeStudioValidation } from './theme-studio-validation';
 
 const RAIL = '@media (min-width: 52.5rem)';
 
@@ -379,6 +383,8 @@ export function ThemeStudioEditor({
   group,
   onGroupChange,
   onShuffleGroup,
+  resolved,
+  results,
   update,
   commit,
 }: {
@@ -386,9 +392,27 @@ export function ThemeStudioEditor({
   group: GroupLabel;
   onGroupChange: (group: GroupLabel) => void;
   onShuffleGroup: (group: GroupId) => void;
+  resolved: ResolvedDraft;
+  results: PairingResult[];
   update: (edit: DraftEdit) => void;
   commit: (edit: DraftEdit) => void;
 }) {
+  const offenders = useMemo<ModeOffenders>(() => {
+    const dark = new Set<string>();
+    const light = new Set<string>();
+    for (const result of results) {
+      if (!result.dark.pass) {
+        dark.add(result.foreground);
+        dark.add(result.background);
+      }
+      if (!result.light.pass) {
+        light.add(result.foreground);
+        light.add(result.background);
+      }
+    }
+    return { dark, light };
+  }, [results]);
+
   return (
     <>
       <ToggleGroup.Root
@@ -421,6 +445,15 @@ export function ThemeStudioEditor({
               }
               onReset={() => commit((current) => resetGroup(current, item.id))}
               onShuffle={() => onShuffleGroup(item.id)}
+              panel={
+                <TokenRows
+                  draft={draft}
+                  group={item.id}
+                  offenders={offenders}
+                  resolved={resolved}
+                  setDraft={(action) => commit(typeof action === 'function' ? action : () => action)}
+                />
+              }
             >
               {item.id === 'color' ? <ColorControls draft={draft} update={update} commit={commit} /> : null}
               {item.id === 'typography' ? (
@@ -478,6 +511,7 @@ export function ThemeStudioEditor({
             </ThemeStudioGroup>
           </section>
         ))}
+        <ThemeStudioValidation results={results} />
       </div>
     </>
   );

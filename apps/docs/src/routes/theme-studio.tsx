@@ -4,6 +4,7 @@ import * as stylex from '@stylexjs/stylex';
 import {
   colorScheme,
   darkTheme,
+  gate,
   resolveDraft,
   SHUFFLE_ATTEMPT_LIMIT,
   stockDraft,
@@ -160,6 +161,7 @@ export function ThemeStudio() {
     openFile,
   } = store;
   const resolved = useMemo(() => resolveDraft(draft), [draft]);
+  const pairings = useMemo(() => gate(resolved), [resolved]);
   const locked = Object.values(draft.locks).filter(Boolean).length;
   const overrides = Object.keys(draft.overrides.dark).length + Object.keys(draft.overrides.light).length;
 
@@ -214,6 +216,8 @@ export function ThemeStudio() {
               group={group}
               onGroupChange={setGroup}
               onShuffleGroup={store.shuffle}
+              resolved={resolved}
+              results={pairings}
               update={store.update}
             />
           </div>
