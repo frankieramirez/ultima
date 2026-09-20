@@ -1,0 +1,52 @@
+import { Demo } from '../../demo';
+import Addons from '../../demos/input-group/addons';
+import addonsSource from '../../demos/input-group/addons?raw';
+import Sizes from '../../demos/input-group/sizes';
+import sizesSource from '../../demos/input-group/sizes?raw';
+import Validation from '../../demos/input-group/validation';
+import validationSource from '../../demos/input-group/validation?raw';
+
+# Input Group
+
+A field box holding an input and its addons. `Root` is the box — a plain `div` wearing the paint `Combobox.InputGroup` carries, restated so `input` does not land in every install: the sunken surface, the strong border, and the ring while focus is inside it. `Input` is a Base UI `Input` rendered borderless inside the box, and `Addon` is the layout slot for leading and trailing content.
+
+## Install
+
+```bash
+npx shadcn add @ultima/input-group
+```
+
+## Addons
+
+`Addon` holds leading and trailing content — an icon, a run of text, or a catalogue `Button variant="ghost" size="sm"`. `align` is a positional prop, `start` by default and `end` for the trailing edge; it decides placement, so DOM order is only a tiebreaker.
+
+<Demo component={Addons} source={addonsSource} />
+
+## Sizes
+
+`size` sits on `Root` — `sm`, `md`, and `lg` at the three control heights, `md` the default.
+
+<Demo component={Sizes} source={sizesSource} />
+
+## Validation and disabled state
+
+The box reads state off the inner control with `:has()`: `aria-invalid` or `data-invalid` on `Input` draws the danger border, and a disabled `Input` dims the whole box. Inside a `Field.Root`, Base UI owns `aria-invalid`, `data-invalid`, and the description merge — the inner input needs no new prop, the same as a bare Input.
+
+<Demo component={Validation} source={validationSource} />
+
+## Props
+
+Only what Ultima adds. `Input` inherits Base UI's surface; see [Base UI's Input](https://base-ui.com/react/components/input) for the rest.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | On `Root`. Control height, padding, and text step. |
+| `align` | `'start' \| 'end'` | `'start'` | On `Addon`. Which end of the box the slot sits at; positional, not an axis. |
+| `style` | `StyleXStyles` | — | The style slot on every part, merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | On `Root` and `Addon`, through Base UI `useRender`. |
+
+## Accessibility
+
+- **Name.** The inner input's own: a consumer `<label htmlFor>`, `aria-label`, `aria-labelledby`, or a `Field.Label`. `Root` takes no role — the box is visual grouping, and a Field or Fieldset owns the semantics.
+- **Focus ring.** On `Root`, drawn while focus is inside the box (`:focus-within`).
+- **Keyboard.** Native input behavior, unchanged.
