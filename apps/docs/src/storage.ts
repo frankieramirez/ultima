@@ -17,3 +17,11 @@ export function writeStored(key: string, value: string) {
     return;
   }
 }
+
+export function removeStored(key: string) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    return;
+  }
+}
