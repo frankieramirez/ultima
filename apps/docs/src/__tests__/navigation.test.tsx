@@ -258,7 +258,7 @@ function describe(violation: axe.Result) {
 }
 
 
-test('wide articles are centered on the viewport and the menu keeps its native scroller', async () => {
+test('wide articles are centered on the viewport and the menu scrolls with its bar hidden', async () => {
   await page.viewport(2304, 720);
   onTestFinished(() => page.viewport(1280, 720));
   await mount('/install');
@@ -266,7 +266,7 @@ test('wide articles are centered on the viewport and the menu keeps its native s
   const article = document.querySelector('article')!.getBoundingClientRect();
   expect(Math.abs(article.left + article.width / 2 - window.innerWidth / 2)).toBeLessThan(1);
   const navigation = menu().element();
-  expect(getComputedStyle(navigation).scrollbarWidth).toBe('auto');
+  expect(getComputedStyle(navigation).scrollbarWidth).toBe('none');
   navigation.scrollTop = 100;
   expect(navigation.scrollTop).toBeGreaterThan(0);
 });
