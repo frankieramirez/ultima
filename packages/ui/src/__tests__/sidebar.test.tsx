@@ -276,7 +276,9 @@ test('the trigger toggles the desktop collapse and reports it through aria-expan
   expect(panel).toHaveAttribute('data-closed');
   expect(panel).not.toHaveAttribute('data-open');
   await expect.poll(() => parseFloat(getComputedStyle(panel).inlineSize)).toBe(0);
-  expect(getComputedStyle(panel).visibility).toBe('hidden');
+  // Visibility stays 'visible' until the transition's last frame, so it can still read
+  // 'visible' in the instant after inlineSize serializes to 0px. Poll it like the width.
+  await expect.poll(() => getComputedStyle(panel).visibility).toBe('hidden');
   expect(getComputedStyle(panel).transitionDuration).not.toBe('0s');
 
   await userEvent.click(trigger);
