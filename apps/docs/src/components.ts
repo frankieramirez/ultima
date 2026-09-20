@@ -300,6 +300,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Calendar',
+    item: 'calendar',
+    description: 'An inline day, month, and year grid for picking dates, on Zag.',
+    release: 'v0.2',
+  },
+  {
     name: 'Input Group',
     item: 'input-group',
     description: 'A field box holding an input with leading and trailing addons, in three sizes.',

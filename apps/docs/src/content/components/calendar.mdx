@@ -1,0 +1,70 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/calendar/basic';
+import basicSource from '../../demos/calendar/basic?raw';
+import Range from '../../demos/calendar/range';
+import rangeSource from '../../demos/calendar/range?raw';
+import Selects from '../../demos/calendar/selects';
+import selectsSource from '../../demos/calendar/selects?raw';
+import Months from '../../demos/calendar/months';
+import monthsSource from '../../demos/calendar/months?raw';
+
+# Calendar
+
+An inline day, month, and year grid on Zag's date-picker machine: `Root` runs the machine with `inline` pinned, `Content` wraps the views, and `Table` draws the grid for whichever `view` it is given. Zag owns selection, focus, and keyboard; Ultima paints the panel, the navigation, and the cells. For the input-and-popup composition, use Date Picker.
+
+## Install
+
+```bash
+npx shadcn add @ultima/calendar
+```
+
+## The grid is the control
+
+`Calendar.Label` names the grid; render one, or give `Table` an `aria-label` of your own. `ViewControl` holds the navigation: `PrevTrigger` and `NextTrigger` step the visible month, `ViewTrigger` cycles the view between day, month, and year, and `RangeText` inside it shows the visible range. `Table` renders its own `TableHead` and `TableBody` when you give it no children, including the weekday headers and one `TableCellTrigger` button per day.
+
+<Demo component={Basic} source={basicSource} />
+
+## Choosing a range
+
+`selectionMode="range"` turns the grid into a range picker: the first click marks `data-range-start`, the second `data-range-end`, and every day between them carries `data-in-range`. The cell paint reads all three attributes, plus `data-selected` for single days, `data-today`, `data-outside-range`, and `data-unavailable`.
+
+<Demo component={Range} source={rangeSource} />
+
+## Month and year views
+
+`Table` takes `view="month"` or `view="year"` and enumerates the same way: twelve month cells or a decade of year cells. `ViewTrigger` cycles the machine through all three views on click. If the visible month or year should be chosen directly, `MonthSelect` and `YearSelect` are the native selects the machine already wires; they keep their platform look.
+
+<Demo component={Selects} source={selectsSource} />
+
+## More than one month
+
+`numOfMonths` on `Root` widens the visible range. Each month is its own `Table`; `TableBody` takes `monthsOffset` so the second table enumerates the following month's weeks.
+
+<Demo component={Months} source={monthsSource} />
+
+## Props
+
+Everything on `Root` is a Zag date-picker machine prop; `inline` is pinned, and the popup and form props (`open`, `defaultOpen`, `onOpenChange`, `positioning`, `closeOnSelect`, `name`, `required`, `placeholder`) are gone from the type. See [Zag's date-picker](https://zagjs.com/components/react/date-picker) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `selectionMode` | `'single' \| 'multiple' \| 'range'` | `'single'` | What a click commits. |
+| `Root` | `value`, `defaultValue`, `onValueChange` | `DateValue[]` | `[]` | `@internationalized/date` values. |
+| `Root` | `numOfMonths` | `number` | `1` | How many months the visible range spans. |
+| `Root` | `min`, `max` | `DateValue` | — | Bounds the selectable range. |
+| `Root` | `isDateUnavailable` | `(date, locale) => boolean` | — | Blocks a date from selection. |
+| `Root` | `disabled`, `readOnly` | `boolean` | `false` | Machine-wide state. |
+| `Root` | `locale`, `timeZone`, `startOfWeek`, `fixedWeeks`, `showWeekNumbers` | — | — | Grid shape and locale. |
+| `ViewControl`, `PrevTrigger`, `NextTrigger`, `ViewTrigger`, `View`, `Table`, `TableHead`, `TableBody`, `TableRow`, `TableHeader`, `TableCell`, `TableCellTrigger` | `view` | `'day' \| 'month' \| 'year'` | `'day'` | Which view the part's getter answers for. |
+| `Table` | `columns` | `number` | `7` or `4` | Grid columns; month and year views default to four. |
+| `TableBody` | `monthsOffset` | `number` | `0` | Which month of `numOfMonths` the body enumerates. |
+| `TableCell`, `TableCellTrigger` | `value` | `DateValue \| number` | — | The day, month, or year the cell stands for. |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className` and no `render`. |
+
+## Accessibility
+
+- **Name.** `Label` names the grid: `Table` points `aria-labelledby` at it unless you give the table its own `aria-label` or `aria-labelledby`.
+- **Landmarks.** `Table` is `role="grid"` with `<th scope="col">` column headers, `role="gridcell"` cells, and `role="rowheader"` week-number cells.
+- **Focus ring.** On `PrevTrigger`, `NextTrigger`, `ViewTrigger`, `TableCellTrigger`, `MonthSelect`, and `YearSelect`, the styled controls.
+- **Keyboard.** Zag's grid map: arrows move the focused day, Page Up and Page Down change the month, Home and End the week, Enter and Space select.
+- **Disabled.** A disabled day keeps `aria-disabled` and `data-disabled`; it is skipped, not focusable.
