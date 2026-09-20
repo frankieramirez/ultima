@@ -15,11 +15,11 @@ import { Alert, Button, Separator } from '@ultima/ui';
 import { useMemo, useState } from 'react';
 
 import { BrandLogo } from '../brand-logo';
+import { StudioActions, useStudioDraft } from '../theme-studio-actions';
 import { GROUPS } from '../theme-studio-draft';
 import { ThemeStudioEditor } from '../theme-studio-editor';
 import { ThemeStudioPreview } from '../theme-studio-preview';
 import { ThemeStudioShuffleBar } from '../theme-studio-shuffle';
-import { useStudioDraft } from '../theme-studio-store';
 
 const RAIL = '@media (min-width: 52.5rem)';
 
@@ -148,7 +148,17 @@ export function ThemeStudio() {
   const [mode, setMode] = useState<Mode>('dark');
   const [group, setGroup] = useState<Group>('Color');
   const store = useStudioDraft();
-  const { draft } = store;
+  const {
+    draft,
+    notice,
+    dismissNotice,
+    pending,
+    confirmPending,
+    cancelPending,
+    refusal,
+    dismissRefusal,
+    openFile,
+  } = store;
   const resolved = useMemo(() => resolveDraft(draft), [draft]);
   const locked = Object.values(draft.locks).filter(Boolean).length;
   const overrides = Object.keys(draft.overrides.dark).length + Object.keys(draft.overrides.light).length;
@@ -163,20 +173,29 @@ export function ThemeStudio() {
         <span {...stylex.props(styles.meta)}>Untitled theme</span>
         <span {...stylex.props(styles.save)}>Saved locally</span>
         <div {...stylex.props(styles.actions)}>
-          <Button variant="outline" size="sm">
-            Open
-          </Button>
-          <Button variant="outline" size="sm">
-            Share
-          </Button>
-          <Button size="sm">
-            Export theme
-          </Button>
+          <StudioActions
+            draft={draft}
+            onCancelPending={cancelPending}
+            onConfirmPending={confirmPending}
+            onDismissRefusal={dismissRefusal}
+            onOpenFile={openFile}
+            pending={pending}
+            refusal={refusal}
+          />
         </div>
       </header>
       <Separator />
       <div {...stylex.props(styles.body)}>
         <aside aria-label="Theme editor" {...stylex.props(styles.editor)}>
+          {notice !== null ? (
+            <Alert.Root tone="warning">
+              <Alert.Title>Autosave notice</Alert.Title>
+              <Alert.Description>{notice}</Alert.Description>
+              <Button onClick={dismissNotice} size="sm" variant="ghost">
+                Dismiss
+              </Button>
+            </Alert.Root>
+          ) : null}
           <ThemeStudioShuffleBar
             canRedo={store.canRedo}
             canUndo={store.canUndo}

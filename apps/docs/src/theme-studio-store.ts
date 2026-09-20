@@ -30,6 +30,11 @@ export function useStudioDraft() {
 
   const update = (edit: DraftEdit) => setState((state) => ({ ...state, draft: edit(state.draft) }));
 
+  const replace = (next: ThemeDraft) => {
+    setExhaustion(null);
+    setState({ draft: next, history: createHistory(next) });
+  };
+
   const commit = (edit: DraftEdit) => {
     setExhaustion(null);
     setState((state) => {
@@ -75,6 +80,7 @@ export function useStudioDraft() {
   return {
     draft,
     update,
+    replace,
     commit,
     undo,
     redo,

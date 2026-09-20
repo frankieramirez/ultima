@@ -2,7 +2,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 import * as stylex from '@stylexjs/stylex';
 import { colorScheme, darkTheme, lightTheme, resolveDraft, stockDraft } from '@ultima/tokens';
 import axe from 'axe-core';
-import { expect, onTestFinished, test } from 'vitest';
+import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
@@ -14,6 +14,10 @@ function mount(path: string) {
   const history = createMemoryHistory({ initialEntries: [path] });
   return render(<RouterProvider router={createRouter({ routeTree, history })} />);
 }
+
+beforeEach(() => {
+  localStorage.clear();
+});
 
 const stock = {
   dark: stylex.props(darkTheme, colorScheme.dark),
