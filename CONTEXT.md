@@ -56,7 +56,7 @@ One installable unit in the registry: a component, a style, or a theme, with its
 
 ## Recipe
 
-A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Those checks are the live demo in the axe sweep and the documented states on the page, not a `packages/ui` install of the engine. Sheet is a recipe over Dialog; Alert Dialog is not — Base UI ships it as its own Root, so it is a catalogue item. Sharing a component is not enough either: Toggle is a catalogue item though `ToggleGroup.Item` renders the same primitive, because that primitive branches on the group's context and the two arrangements have different live props, and a recipe that varies which props are live has nowhere to say so. Data Table is a recipe over Table and an engine; the React Hook Form example is a recipe over Field and an engine. Where a recipe hands the user a control, that control still comes from a component. Passing the identity test is not enough on its own: an avatar group is `Avatar.Root`, `Avatar.Image`, and `Avatar.Fallback` and is not a recipe, because no checklist line holds it. A composition with no entry to satisfy is a **Documented composition** instead.
+A release checklist entry satisfied by a documented composition rather than by a registry item. A recipe has no installable unit of its own, so its copyable example is the whole contract: it names the components it composes and carries the same checks a component would. Those checks are the live demo in the axe sweep and the documented states on the page, not a `packages/ui` install of the engine. Sheet is a recipe over Dialog; Alert Dialog is not — Base UI ships it as its own Root, so it is a catalogue item. Sharing a component is not enough either: Toggle is a catalogue item though `ToggleGroup.Item` renders the same primitive, because that primitive branches on the group's context and the two arrangements have different live props, and a recipe that varies which props are live has nowhere to say so. Data Table is a recipe over Table and an engine; the React Hook Form example is a recipe over Field and an engine; Carousel is a recipe over `aspect-ratio` and `button` and an engine. Where a recipe hands the user a control, that control still comes from a component. Passing the identity test is not enough on its own: an avatar group is `Avatar.Root`, `Avatar.Image`, and `Avatar.Fallback` and is not a recipe, because no checklist line holds it. A composition with no entry to satisfy is a **Documented composition** instead.
 
 ## Documented composition
 
@@ -273,6 +273,14 @@ A button that stays pressed, shipped as its own item though `ToggleGroup.Item` r
 ## Command
 
 A free-text filterable list of actions, the catalogue item on Base UI's `Autocomplete`. Its items are actions and suggestions rather than a selection, so there is no `ItemIndicator` and no `data-selected`, and the input value is free text, which is the whole difference between it and Combobox. Its anchored popup is the thirteenth overlay; `Root open inline` renders the list inline, the arrangement the command-dialog recipe composes inside a Dialog. The `filter` prop is the scorer socket: the default is the primitive's Collator filter, and an optional scorer the consumer installs replaces it.
+
+## Aspect Ratio
+
+A fixed-ratio box for media, one part and one function like Badge. Its `ratio` prop is a number the component writes as the file's one inline `aspect-ratio` declaration, a runtime value a StyleX table cannot hold and the same mechanism Meter's indicator width already uses. The box and the radius are the `style` slot; `overflow: hidden` clips the media to whatever shape the caller adds. It is the slide box the Carousel recipe composes.
+
+## Resizable
+
+A two-pane split with a draggable boundary, on the Zag splitter machine through `@zag-js/react`. Zag is a prop-getter primitive under the ADR 0002 amendment, not an engine, so the entry ships as an item rather than a recipe. Four parts — `Root`, `Panel`, `Handle`, `HandleIndicator` — plus a `useResizable()` hook for the machine's api. `Handle` is the `separator`-role control whose hit area Ultima widens past the hairline it paints, because the machine leaves it zero-area the way Drawer's `SwipeArea` arrived. Its `aria-label` is the system's fourth type-enforced attribute: a resize boundary has no text and no sibling that could name it. `orientation` is a pass-through prop keyed to a style table, not an axis.
 
 ## Restatement
 
