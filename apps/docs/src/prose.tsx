@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Code as UltimaCode, ScrollArea, Table } from '@ultima/ui';
+import { Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import { isValidElement, type ComponentProps, type ComponentType, type ReactNode } from 'react';
 
@@ -13,7 +13,7 @@ const styles = stylex.create({
   },
   h1: {
     color: color['--ult-color-text'],
-    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': '3.5rem' },
+    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': '3.25rem' },
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
@@ -27,6 +27,9 @@ const styles = stylex.create({
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
     marginBottom: space['--ult-space-4'],
+    marginTop: space['--ult-space-7'],
+  },
+  rule: {
     marginTop: space['--ult-space-9'],
   },
   h3: {
@@ -79,7 +82,12 @@ function H1(props: ComponentProps<'h1'>) {
   return <h1 {...props} {...stylex.props(styles.h1)} />;
 }
 function H2(props: ComponentProps<'h2'>) {
-  return <h2 {...props} {...stylex.props(styles.h2)} />;
+  return (
+    <>
+      <Separator style={styles.rule} />
+      <h2 {...props} {...stylex.props(styles.h2)} />
+    </>
+  );
 }
 function H3(props: ComponentProps<'h3'>) {
   return <h3 {...props} {...stylex.props(styles.h3)} />;

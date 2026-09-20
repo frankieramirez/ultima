@@ -35,6 +35,7 @@ const styles = stylex.create({
   colorRow: {
     columnGap: space['--ult-space-9'],
     gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)', '@media (min-width: 80rem)': 'minmax(18rem, 30rem) minmax(0, 1fr)' },
+    paddingBlockEnd: space['--ult-space-6'],
   },
   divider: { gridColumn: '1 / -1' },
   identity: {
@@ -47,6 +48,7 @@ const styles = stylex.create({
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-3'],
+    lineHeight: font['--ult-font-leading-snug'],
     overflowWrap: 'anywhere',
   },
   description: {
