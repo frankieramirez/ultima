@@ -8,6 +8,7 @@ import { render } from 'vitest-browser-react';
 
 import { MENU_LABEL } from '../site-menu';
 import { routeTree } from '../router';
+import { THEME_STORAGE_KEY } from '../theme';
 import '../styles.css';
 
 function mount(path: string) {
@@ -23,6 +24,17 @@ const stock = {
   dark: stylex.props(darkTheme, colorScheme.dark),
   light: stylex.props(lightTheme, colorScheme.light),
 };
+
+const themeClasses = (mode: keyof typeof stock) =>
+  stock[mode].className?.split(/\s+/).filter(Boolean) ?? [];
+
+function prefer(mode: keyof typeof stock) {
+  const root = document.documentElement;
+  root.classList.remove(...themeClasses('dark'), ...themeClasses('light'));
+  root.classList.add(...themeClasses(mode));
+  localStorage.setItem(THEME_STORAGE_KEY, mode);
+  onTestFinished(() => localStorage.removeItem(THEME_STORAGE_KEY));
+}
 
 function readToken(el: Element, token: string) {
   return getComputedStyle(el).getPropertyValue(token).trim();
@@ -45,17 +57,53 @@ function stockValue(mode: keyof typeof stock, token: '--ult-color-accent' | '--u
   return value;
 }
 
-test('the studio route renders its workbench header in place of docs navigation', async () => {
+test('the studio route joins the site shell with the rail collapsed and no footer', async () => {
   const screen = await mount('/theme-studio');
 
+  const site = screen.getByRole('navigation', { name: 'Site', exact: true });
+  await expect.element(site.getByRole('link', { name: 'Studio' })).toBeVisible();
+  expect(document.querySelectorAll('[aria-label="Ultima home"]').length).toBe(1);
+
+  const menu = screen.container.querySelector(`nav[aria-label="${MENU_LABEL}"]`);
+  expect(menu).not.toBeNull();
+  expect(menu).toHaveAttribute('data-closed');
+
   await expect.element(screen.getByRole('heading', { name: 'Theme Studio' })).toBeVisible();
-  await expect.element(screen.getByText('Untitled theme')).toBeVisible();
+  expect(screen.getByRole('heading', { name: 'Theme Studio' }).element()).toBe(
+    screen.container.querySelector('h1'),
+  );
+  expect(screen.container.textContent).not.toContain('Untitled theme');
   await expect.element(screen.getByText('Saved locally')).toBeVisible();
   await expect.element(screen.getByRole('button', { name: 'Open' })).toBeVisible();
   await expect.element(screen.getByRole('button', { name: 'Share' })).toBeVisible();
   await expect.element(screen.getByRole('button', { name: /Export/ })).toBeVisible();
-  expect(screen.container.querySelector('nav[aria-label="Site"]')).toBeNull();
-  expect(screen.container.querySelector(`nav[aria-label="${MENU_LABEL}"]`)).toBeNull();
+
+  expect(screen.container.querySelector('footer')).toBeNull();
+  expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
+});
+
+for (const mode of ['dark', 'light'] as const) {
+  test(`the shared header follows the ${mode} preference while the workbench stays pinned dark`, async () => {
+    prefer(mode);
+    const screen = await mount('/theme-studio');
+
+    const header = screen.container.querySelector('header')!;
+    expect(readSurface(header)).toBe(stockValue(mode, '--ult-color-surface'));
+
+    const subBar = screen.getByRole('heading', { name: 'Theme Studio' }).element().parentElement!;
+    expect(readSurface(subBar)).toBe(stockValue('dark', '--ult-color-surface'));
+  });
+}
+
+test('below the breakpoint the hamburger opens the site menu over the studio', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+
+  const screen = await mount('/theme-studio');
+  expect(document.querySelector(`nav[aria-label="${MENU_LABEL}"]`)).toBeNull();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle navigation' }).element());
+  await expect.element(screen.getByRole('dialog', { name: MENU_LABEL })).toBeVisible();
 });
 
 test('the rail sits beside the preview, with the status bar under the editor', async () => {
