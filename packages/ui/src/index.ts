@@ -343,6 +343,7 @@ export {
   type HoverCardViewportProps,
 } from './hover-card';
 export { Toggle, type ToggleProps, type ToggleVariant, type ToggleSize } from './toggle';
+export { AspectRatio, type AspectRatioProps } from './aspect-ratio';
 export {
   ColorField,
   useColorField,
@@ -355,6 +356,28 @@ export {
   type ColorFieldPopupProps,
   type ColorFieldPickerProps,
 } from './color-field';
+export {
+  Command,
+  type CommandSize,
+  type CommandInputGroupProps,
+  type CommandInputProps,
+  type CommandTriggerProps,
+  type CommandIconProps,
+  type CommandClearProps,
+  type CommandPortalProps,
+  type CommandBackdropProps,
+  type CommandPositionerProps,
+  type CommandPopupProps,
+  type CommandArrowProps,
+  type CommandListProps,
+  type CommandRowProps,
+  type CommandItemProps,
+  type CommandGroupProps,
+  type CommandGroupLabelProps,
+  type CommandSeparatorProps,
+  type CommandStatusProps,
+  type CommandEmptyProps,
+} from './command';
 export {
   Drawer,
   type DrawerRootProps,
@@ -373,6 +396,27 @@ export {
   type DrawerSwipeAreaProps,
   type DrawerVirtualKeyboardProviderProps,
 } from './drawer';
+export {
+  Calendar,
+  type CalendarRootProps,
+  type CalendarLabelProps,
+  type CalendarContentProps,
+  type CalendarViewControlProps,
+  type CalendarPrevTriggerProps,
+  type CalendarNextTriggerProps,
+  type CalendarViewTriggerProps,
+  type CalendarRangeTextProps,
+  type CalendarViewProps,
+  type CalendarTableProps,
+  type CalendarTableHeadProps,
+  type CalendarTableBodyProps,
+  type CalendarTableRowProps,
+  type CalendarTableHeaderProps,
+  type CalendarTableCellProps,
+  type CalendarTableCellTriggerProps,
+  type CalendarMonthSelectProps,
+  type CalendarYearSelectProps,
+} from './calendar';
 export {
   Resizable,
   useResizable,

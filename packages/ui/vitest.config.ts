@@ -10,6 +10,7 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       '@base-ui/react/accordion',
+      '@base-ui/react/autocomplete',
       '@base-ui/react/avatar',
       '@base-ui/react/button',
       '@base-ui/react/separator',
@@ -43,8 +44,10 @@ export default defineConfig({
       '@base-ui/react/toggle-group',
       '@base-ui/react/tooltip',
       '@base-ui/react/use-render',
+      '@zag-js/date-picker',
       '@zag-js/react',
       '@zag-js/splitter',
+      '@internationalized/date',
     ],
   },
   test: {

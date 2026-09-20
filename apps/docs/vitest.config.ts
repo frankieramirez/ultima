@@ -25,6 +25,7 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       '@base-ui/react/accordion',
+      '@base-ui/react/autocomplete',
       '@base-ui/react/avatar',
       '@base-ui/react/button',
       '@base-ui/react/checkbox',
