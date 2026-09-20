@@ -1,0 +1,305 @@
+<!doctype html>
+<!--
+  PROTOTYPE — throwaway sketch for https://github.com/frankieramirez/ultima/issues/271
+  "What is the nav menu's selected state under the neutral site aesthetic?"
+
+  Candidates for Sidebar.Link's [data-active] / [aria-current="page"] treatment,
+  rendered with production token values from packages/tokens/src/tokens.stylex.ts.
+  Switch the variant, the color mode, and the desktop/mobile context below.
+  Nothing here ships; the ticket records the decision.
+-->
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PROTOTYPE · Sidebar selected state · ultima#271</title>
+<style>
+  /* token values inlined from packages/tokens/src/tokens.stylex.ts */
+  :root[data-mode="dark"] {
+    --surface: #101011;        /* mithril dark1 */
+    --surface-raised: #141516; /* dark2 */
+    --surface-sunken: #1d1e20; /* dark3 */
+    --surface-hover: #27272a;  /* dark4 */
+    --text: #e7e8e9;           /* dark12 */
+    --text-muted: #b6b7ba;     /* dark11 */
+    --text-subtle: #919295;    /* dark10 */
+    --border: #3c3d40;         /* dark6 */
+    --border-strong: #626366;  /* dark8 */
+    --accent: #8394ff;         /* arcane dark9 */
+    --accent-subtle: #161a3d;  /* arcane dark3 */
+    --accent-text: #c3ceff;    /* arcane dark12 */
+    color-scheme: dark;
+  }
+  :root[data-mode="light"] {
+    --surface: #fdfdff;
+    --surface-raised: #f7f9ff;
+    --surface-sunken: #eff1fa;
+    --surface-hover: #e7e9f3;
+    --text: #181a24;
+    --text-muted: #4f525e;
+    --text-subtle: #60636f;
+    --border: #d0d3e2;
+    --border-strong: #888b99;
+    --accent: #565fde;
+    --accent-subtle: #eef1ff;
+    --accent-text: #343997;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .controls fieldset { border: 0; margin: 0; padding: 0; display: flex; gap: 12px; align-items: center; }
+  .controls legend { color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; padding: 0; margin-right: 4px; }
+  .controls label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .controls .proto { color: var(--accent); }
+
+  .stage { display: flex; gap: 48px; padding: 32px 24px; align-items: flex-start; flex-wrap: wrap; }
+
+  /* --- sidebar replica: mirrors packages/ui/src/sidebar.tsx styles.row / styles.link --- */
+  .panel {
+    inline-size: 256px;
+    flex-shrink: 0;
+    border-inline-end: 1px solid var(--border);
+    padding-block: 8px;
+    padding-inline: 8px;
+    background: var(--surface);
+  }
+  .group { display: flex; flex-direction: column; gap: 4px; padding-block: 8px; }
+  .group-label {
+    color: var(--text-subtle);
+    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.08em; line-height: 1;
+    margin: 0; padding-block: 4px; padding-inline: 8px;
+    text-transform: uppercase;
+  }
+  .list { list-style: none; margin: 0; padding: 0 0 0 8px; }
+  .item {
+    display: flex; align-items: center; gap: 8px;
+    inline-size: 100%;
+    font-size: 14px; font-weight: 400;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding-block: 4px; padding-inline: 8px;
+    border-radius: 4px;
+    border-inline-start: 2px solid transparent;
+    transition: background-color 120ms, border-color 120ms, color 120ms;
+    cursor: pointer;
+  }
+
+  /* shared hover, the existing treatment */
+  .item:hover { color: var(--text); }
+
+  /* ---- variant treatments on .item.active ---- */
+
+  /* A · status quo: accent-subtle fill + accent bar */
+  [data-variant="a"] .item:hover { background: var(--surface-hover); }
+  [data-variant="a"] .item.active {
+    background: var(--accent-subtle);
+    border-inline-start-color: var(--accent);
+    color: var(--text); font-weight: 500;
+  }
+
+  /* B · neutral fill: surface-hover fill, text + medium; hover is color-only */
+  [data-variant="b"] .item.active {
+    background: var(--surface-hover);
+    color: var(--text); font-weight: 500;
+  }
+
+  /* C · type only: text color + medium weight, no fill */
+  [data-variant="c"] .item:hover { background: var(--surface-hover); }
+  [data-variant="c"] .item.active {
+    color: var(--text); font-weight: 500;
+  }
+
+  /* D · neutral indicator: text-colored bar, no fill */
+  [data-variant="d"] .item:hover { background: var(--surface-hover); }
+  [data-variant="d"] .item.active {
+    border-inline-start-color: var(--text);
+    color: var(--text); font-weight: 500;
+  }
+
+  /* E · sunken fill + neutral bar: keeps the existing test contract, re-hued */
+  [data-variant="e"] .item:hover { background: var(--surface-hover); }
+  [data-variant="e"] .item.active {
+    background: var(--surface-sunken);
+    border-inline-start-color: var(--text);
+    color: var(--text); font-weight: 500;
+  }
+
+  /* F · accent tick: accent bar only, no fill — keeps the focus-ring hue */
+  [data-variant="f"] .item:hover { background: var(--surface-hover); }
+  [data-variant="f"] .item.active {
+    border-inline-start-color: var(--accent);
+    color: var(--text); font-weight: 500;
+  }
+
+  /* G · Pagination recipe: surface-sunken fill + text + medium, no bar */
+  [data-variant="g"] .item:hover { background: var(--surface-hover); }
+  [data-variant="g"] .item.active {
+    background: var(--surface-sunken);
+    color: var(--text); font-weight: 500;
+  }
+
+  /* mobile context: the same list inside the Dialog-drawer presentation */
+  .phone {
+    inline-size: 300px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface-sunken);
+    flex-shrink: 0;
+  }
+  .phone .scrim { background: rgba(0,0,0,.45); padding: 48px 32px 48px 0; block-size: 520px; }
+  :root[data-mode="light"] .phone .scrim { background: rgba(24,26,36,.25); }
+  .phone .drawer {
+    background: var(--surface-raised);
+    block-size: 100%;
+    inline-size: 256px;
+    border-inline-end: 1px solid var(--border);
+    box-shadow: 0 4px 8px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.45);
+    padding-block: 8px; padding-inline: 8px;
+  }
+  .close-row { display: flex; justify-content: flex-end; padding-block: 4px; }
+  .close-btn {
+    border: 0; background: transparent; color: var(--text-muted);
+    font-size: 16px; padding-inline: 8px; cursor: pointer; line-height: 1;
+  }
+
+  .notes {
+    max-inline-size: 420px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .notes h2 { font-size: 14px; color: var(--text); margin: 0 0 8px; }
+  .notes p { margin: 0 0 12px; }
+  .notes code { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: var(--text); }
+</style>
+</head>
+<body data-variant="a">
+
+<div class="controls">
+  <span class="proto">PROTOTYPE · ultima#271</span>
+  <fieldset>
+    <legend>Variant</legend>
+    <label><input type="radio" name="v" value="a" checked /> A · status quo</label>
+    <label><input type="radio" name="v" value="b" /> B · neutral fill</label>
+    <label><input type="radio" name="v" value="c" /> C · type only</label>
+    <label><input type="radio" name="v" value="d" /> D · neutral bar</label>
+    <label><input type="radio" name="v" value="e" /> E · fill + bar</label>
+    <label><input type="radio" name="v" value="f" /> F · accent tick</label>
+    <label><input type="radio" name="v" value="g" /> G · Pagination's</label>
+  </fieldset>
+  <fieldset>
+    <legend>Mode</legend>
+    <label><input type="radio" name="m" value="dark" checked /> dark</label>
+    <label><input type="radio" name="m" value="light" /> light</label>
+  </fieldset>
+</div>
+
+<div class="stage">
+  <nav class="panel" aria-label="Desktop sidebar">
+    <div class="group">
+      <h3 class="group-label">Foundations</h3>
+      <ul class="list">
+        <li><a class="item" href="#">Home</a></li>
+        <li><a class="item" href="#">Install</a></li>
+        <li><a class="item" href="#">Tokens</a></li>
+        <li><a class="item" href="#">Palette</a></li>
+        <li><a class="item" href="#">Rationale</a></li>
+        <li><a class="item" href="#">Studio</a></li>
+      </ul>
+    </div>
+    <div class="group">
+      <h3 class="group-label">Components</h3>
+      <ul class="list">
+        <li><a class="item" href="#">Accordion</a></li>
+        <li><a class="item active" href="#" aria-current="page">Badge</a></li>
+        <li><a class="item" href="#">Button</a></li>
+        <li><a class="item" href="#">Card</a></li>
+        <li><a class="item" href="#">Dialog</a></li>
+        <li><a class="item" href="#">Sidebar</a></li>
+        <li><a class="item" href="#">Table</a></li>
+        <li><a class="item" href="#">Tabs</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="phone" aria-label="Mobile menu context">
+    <div class="scrim">
+      <div class="drawer">
+        <div class="close-row"><button class="close-btn" aria-label="Close navigation">✕</button></div>
+        <div class="group">
+          <h3 class="group-label">Foundations</h3>
+          <ul class="list">
+            <li><a class="item" href="#">Home</a></li>
+            <li><a class="item" href="#">Install</a></li>
+            <li><a class="item" href="#">Tokens</a></li>
+          </ul>
+        </div>
+        <div class="group">
+          <h3 class="group-label">Components</h3>
+          <ul class="list">
+            <li><a class="item" href="#">Accordion</a></li>
+            <li><a class="item active" href="#" aria-current="page">Badge</a></li>
+            <li><a class="item" href="#">Button</a></li>
+            <li><a class="item" href="#">Card</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2 id="vname">A · Status quo</h2>
+    <p id="vdesc">Accent-subtle fill + accent bar. The pre-redesign treatment: the only arcane surface on an otherwise neutral chrome.</p>
+    <p id="vhover"><strong>Hover:</strong> surface-hover fill + text color on unselected items.</p>
+    <p>Same <code>Sidebar.Link</code> renders in the mobile drawer, so whatever wins here carries there unless the ticket decides otherwise.</p>
+  </div>
+</div>
+
+<script>
+  const DESC = {
+    a: ['A · Status quo', 'Accent-subtle fill + accent bar. The pre-redesign treatment: the only arcane surface on an otherwise neutral chrome.', 'surface-hover fill + text color.'],
+    b: ['B · Neutral fill', 'surface-hover fill + text + medium weight. Reads as "pressed", identical to today\u2019s hover, so hover drops to a text-color shift only to keep the two states apart.', 'text color only — the fill now means selected.'],
+    c: ['C · Type only', 'Text color + medium weight, no fill at all. The quietest option; relies on type contrast alone against muted siblings.', 'surface-hover fill + text color.'],
+    d: ['D · Neutral bar', 'A text-colored inline-start bar, no fill. An indicator in the neutral scale; the bar is the whole signal.', 'surface-hover fill + text color.'],
+    e: ['E · Sunken fill + bar', 'surface-sunken fill plus the text-colored bar. The only candidate that keeps all three signals the shipped test asserts (bar, weight, fill) while going fully neutral.', 'surface-hover fill + text color (selected adds the bar).'],
+    f: ['F · Accent tick', 'Accent-colored bar, no fill. Keeps one arcane echo — the same hue as the focus ring and Tabs\u2019 underline indicator — while the fill goes away.', 'surface-hover fill + text color.'],
+    g: ['G · Pagination\u2019s recipe', 'Copies Pagination.Page\u2019s current-item treatment verbatim: surface-sunken fill + text + medium, no bar. The sibling-consistent fill answer.', 'surface-hover fill + text color.'],
+  };
+  const body = document.body;
+  const name = document.getElementById('vname');
+  const desc = document.getElementById('vdesc');
+  const hover = document.getElementById('vhover');
+  document.querySelectorAll('input[name="v"]').forEach((r) =>
+    r.addEventListener('change', () => {
+      body.dataset.variant = r.value;
+      const [n, d, h] = DESC[r.value];
+      name.textContent = n;
+      desc.textContent = d;
+      hover.innerHTML = '<strong>Hover:</strong> ' + h;
+    }));
+  document.querySelectorAll('input[name="m"]').forEach((r) =>
+    r.addEventListener('change', () => {
+      document.documentElement.dataset.mode = r.value;
+    }));
+  document.querySelectorAll('.item').forEach((a) =>
+    a.addEventListener('click', (e) => e.preventDefault()));
+</script>
+</body>
+</html>
