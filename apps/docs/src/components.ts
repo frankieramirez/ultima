@@ -306,6 +306,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Input Group',
+    item: 'input-group',
+    description: 'A field box holding an input with leading and trailing addons, in three sizes.',
+    release: 'v0.2',
+  },
+  {
     name: 'Native Select',
     item: 'native-select',
     description: 'A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.',
