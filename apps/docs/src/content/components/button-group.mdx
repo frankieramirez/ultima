@@ -1,0 +1,65 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/button-group/basic';
+import basicSource from '../../demos/button-group/basic?raw';
+import Split from '../../demos/button-group/split';
+import splitSource from '../../demos/button-group/split?raw';
+import Vertical from '../../demos/button-group/vertical';
+import verticalSource from '../../demos/button-group/vertical?raw';
+
+# Button Group
+
+A run of buttons that reads as one control. `Root` is a `div` with `role="group"`; `Item` is a real button wearing Button's paint, and each item after the first squares the corners on its touching side and drops its leading border, so the seam is the previous item's end border. There is no negative margin and no z-index anywhere in the join.
+
+## Install
+
+```bash
+npx shadcn add @ultima/button-group
+```
+
+## Basic
+
+Put the related actions in a `Root` and name the group. Every item is its own tab stop and activates on Space or Enter, the way a row of plain buttons does.
+
+<Demo component={Basic} source={basicSource} />
+
+## Vertical
+
+`orientation="vertical"` stacks the items and the join moves with them: the squared corners and the dropped border follow the block axis instead.
+
+<Demo component={Vertical} source={verticalSource} />
+
+## A split button
+
+`variant`, `tone`, and `size` sit on `Root` and reach every `Item`. An `Item` can take its own `variant` and `tone`, which win — a primary action beside a quieter or a destructive one is the case. `size` is the root's alone, because a mismatched height is the one difference that breaks the join.
+
+<Demo component={Split} source={splitSource} />
+
+## What you keep
+
+- **Button's whole column, not a subset.** `variant` (`solid`, `outline`, `ghost`), `size` (`sm`, `md`, `lg`), and `tone` (`accent`, `danger`) default to `solid` / `md` / `accent`, exactly as Button does.
+- **Everything on `Item` is Base UI's Button.** `disabled`, `onClick`, `render`, and `ref` pass through; `render={<a />}` with `nativeButton={false}` turns an item into a link, as on Button.
+- **The join needs nothing from you.** It is `:not(:first-child)` on each item, so it holds however many items you render, and the focus ring survives it untouched because the ring is an `outline`.
+- **Not Toggle Group.** Nothing here presses and stays pressed — there is no `aria-pressed`, no value, and no roving tabindex. A set of controls that stay pressed is Toggle Group's job.
+
+## Props
+
+Only what Ultima adds or narrows. `Item` otherwise accepts the [Base UI Button](https://base-ui.com/react/components/button) surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `variant` | `'solid' \| 'outline' \| 'ghost'` | `'solid'` | Reaches every `Item`; an item's own `variant` wins. |
+| `Root` | `tone` | `'accent' \| 'danger'` | `'accent'` | Reaches every `Item`; an item's own `tone` wins. |
+| `Root` | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | The group's one height. `Item` takes no `size`. |
+| `Root` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | A positional prop, not an axis: sets the direction and the join together. |
+| `Item` | `variant` | `'solid' \| 'outline' \| 'ghost'` | the root's | Per-item override; the prop wins. |
+| `Item` | `tone` | `'accent' \| 'danger'` | the root's | Per-item override; the prop wins. |
+| `Item` | `disabled` | `boolean` | `false` | Base UI's; dims the item and swallows activation. |
+| `Root`, `Item` | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root`, `Item` | `render` | `ReactElement \| function` | — | `useRender` on `Root`, Base UI's render prop on `Item`. |
+
+## Accessibility
+
+- **Name.** `aria-label` or `aria-labelledby` on `Root`, which renders `role="group"` — documented rather than enforced, as on Toggle Group. Each `Item` is named by its text, or by `aria-label` when its content is a glyph.
+- **Focus ring.** On `Item`, including a joined one.
+- **Keyboard.** Native. Every item is its own tab stop; Tab moves between them and Space or Enter activates. There is no roving tabindex, which is the row's whole difference from Toggle Group.
+- **State.** Each item carries `data-disabled` for styling; nothing carries `aria-pressed`.

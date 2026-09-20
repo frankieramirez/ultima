@@ -10,6 +10,7 @@ import AvatarContent from './content/components/avatar.mdx';
 import BadgeContent from './content/components/badge.mdx';
 import BreadcrumbContent from './content/components/breadcrumb.mdx';
 import ButtonContent from './content/components/button.mdx';
+import ButtonGroupContent from './content/components/button-group.mdx';
 import CardContent from './content/components/card.mdx';
 import CheckboxContent from './content/components/checkbox.mdx';
 import CodeContent from './content/components/code.mdx';
@@ -121,6 +122,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   badge: BadgeContent,
   breadcrumb: BreadcrumbContent,
   button: ButtonContent,
+  'button-group': ButtonGroupContent,
   card: CardContent,
   checkbox: CheckboxContent,
   code: CodeContent,

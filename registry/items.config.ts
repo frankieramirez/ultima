@@ -249,6 +249,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.',
     docs: "import { ColorField } from '@/components/ui/color-field';\n\n<ColorField.Root defaultValue=\"#3366ff\">\n  <ColorField.Swatch aria-label=\"Pick accent\" />\n  <ColorField.Input aria-label=\"Hex\" />\n  <ColorField.Portal>\n    <ColorField.Positioner sideOffset={8}>\n      <ColorField.Popup>\n        <ColorField.Picker />\n      </ColorField.Popup>\n    </ColorField.Positioner>\n  </ColorField.Portal>\n</ColorField.Root>\n\nThe value is an opaque sRGB #rrggbb string. size is sm, md, or lg on Root. Name the swatch with aria-label; the popup defaults to aria-label=\"Color picker\". Input fills Field's control slot, so invalid hex carries the validation state. There is no alpha and no wide-gamut format.",
   },
+  'button-group': {
+    title: 'Button Group',
+    description: 'A row of buttons joined as one control, in three variants and two tones, on Base UI.',
+    docs: "import { ButtonGroup } from '@/components/ui/button-group';\n\n<ButtonGroup.Root aria-label=\"Text actions\">\n  <ButtonGroup.Item>Cut</ButtonGroup.Item>\n  <ButtonGroup.Item>Copy</ButtonGroup.Item>\n  <ButtonGroup.Item>Paste</ButtonGroup.Item>\n</ButtonGroup.Root>\n\nvariant, size, and tone sit on Root and reach every Item; an Item takes its own variant and tone, which win, and no size.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:

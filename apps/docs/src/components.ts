@@ -287,6 +287,12 @@ export const components = [
     description: 'An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.',
     release: 'v0.2',
   },
+  {
+    name: 'Button Group',
+    item: 'button-group',
+    description: 'A row of buttons joined as one control, with per-item variant and tone overrides.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {

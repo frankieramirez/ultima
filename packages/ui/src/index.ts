@@ -373,3 +373,12 @@ export {
   type DrawerSwipeAreaProps,
   type DrawerVirtualKeyboardProviderProps,
 } from './drawer';
+export {
+  ButtonGroup,
+  type ButtonGroupRootProps,
+  type ButtonGroupItemProps,
+  type ButtonGroupVariant,
+  type ButtonGroupSize,
+  type ButtonGroupTone,
+  type ButtonGroupOrientation,
+} from './button-group';
