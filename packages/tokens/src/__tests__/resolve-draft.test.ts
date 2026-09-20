@@ -61,5 +61,5 @@ test('non-color groups follow the theme-studio derivation contracts', () => {
   expect(tables.dark['--ult-text-6']).toBe('1.09375rem');
   expect(tables.dark['--ult-font-leading-normal']).toBe('1.45');
   expect(tables.dark['--ult-font-tracking-wide']).toBe('0.1em');
-  expect(tables.dark['--ult-color-surface-overlay']).toBe('#abcdef99');
+  expect(tables.dark['--ult-color-surface-overlay']).toBe('#abcdefb3');
 });

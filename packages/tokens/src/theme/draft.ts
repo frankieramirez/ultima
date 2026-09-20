@@ -89,7 +89,7 @@ const HUE_ROLES: Record<string, ScaleName> = {
 
 const CONTRAST_ROLES = [...Object.keys(HUE_ROLES), 'action'] as const;
 
-const OVERLAY_ALPHA: Record<ColorMode, string> = { dark: '99', light: 'cc' };
+const OVERLAY_ALPHA: Record<ColorMode, string> = { dark: 'b3', light: 'cc' };
 
 function step(scales: ReturnType<typeof generateScales>, scale: ScaleName, mode: ColorMode, n: number): string {
   return scales[scale][mode][n - 1] ?? '#000000';
@@ -205,6 +205,8 @@ function nonColorTable(draft: ThemeDraft, mode: ColorMode): TokenTable {
   for (const size of ['sm', 'md', 'lg'] as const) {
     table[`--ult-shadow-${size}`] = shadowValue(mode, draft.elevation, size);
   }
+
+  table['--ult-filter-backdrop'] = 'blur(4px)';
 
   table['--ult-motion-fast'] = snapMs(120 * draft.motion);
   table['--ult-motion-base'] = snapMs(200 * draft.motion);

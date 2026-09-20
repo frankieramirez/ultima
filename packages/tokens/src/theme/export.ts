@@ -4,7 +4,7 @@ import { gate } from './gate.ts';
 
 export const STUDIO_VERSION = 1;
 
-const GROUPS = ['color', 'space', 'text', 'font', 'radius', 'shadow', 'motion'] as const;
+const GROUPS = ['color', 'space', 'text', 'font', 'radius', 'shadow', 'filter', 'motion'] as const;
 const MODES = ['dark', 'light'] as const;
 const REDUCED_MOTION = {
   '--ult-motion-fast': '1ms',

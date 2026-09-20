@@ -23,6 +23,10 @@ const HUE: Record<string, string> = {
   contrast: 'text on the solid fills',
 };
 
+const FILTER: Record<string, string> = {
+  backdrop: 'scrim blur behind modal overlays',
+};
+
 const RADIUS: Record<string, string> = {
   xs: 'swatches, bars, indicator dots',
   sm: 'inline code, small insets',
@@ -38,6 +42,9 @@ function hueSuffix(role: string): string {
 export function describeToken(token: string): string | undefined {
   const radius = /^--ult-radius-(.+)$/.exec(token)?.[1];
   if (radius) return RADIUS[radius];
+
+  const filter = /^--ult-filter-(.+)$/.exec(token)?.[1];
+  if (filter) return FILTER[filter];
 
   const color = /^--ult-color-(.+)$/.exec(token)?.[1];
   if (!color) return undefined;

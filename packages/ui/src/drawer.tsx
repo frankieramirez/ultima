@@ -2,7 +2,7 @@
 
 import { Drawer as BaseDrawer } from '@base-ui/react/drawer';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, easing, font, motion, radius, shadow, space, text, z } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, filter, font, motion, radius, shadow, space, text, z } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
@@ -44,6 +44,7 @@ const styles = stylex.create({
    * way it does on the popup.
    */
   backdrop: {
+    backdropFilter: filter['--ult-filter-backdrop'],
     backgroundColor: color['--ult-color-surface-overlay'],
     inset: 0,
     opacity: {

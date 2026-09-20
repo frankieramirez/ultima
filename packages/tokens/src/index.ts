@@ -4,6 +4,7 @@ export {
   color,
   easing,
   ember,
+  filter,
   font,
   mana,
   mithril,

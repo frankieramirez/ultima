@@ -16,7 +16,7 @@ export default function Confirm() {
     <AlertDialog.Root>
       <AlertDialog.Trigger render={<Button />}>Delete report</AlertDialog.Trigger>
       <AlertDialog.Portal>
-        <AlertDialog.Backdrop />
+        <AlertDialog.Backdrop forceRender />
         <AlertDialog.Viewport>
           <AlertDialog.Popup>
             <AlertDialog.Title>Delete report</AlertDialog.Title>

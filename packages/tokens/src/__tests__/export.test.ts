@@ -9,7 +9,7 @@ import { draftFingerprint, serializeDraft } from '../theme/codec.ts';
 import { resolveDraft, stockDraft } from '../theme/draft.ts';
 import { toCss, toRegistryItem, toStylex } from '../theme/export.ts';
 
-const GROUPS = ['color', 'space', 'text', 'font', 'radius', 'shadow', 'motion'] as const;
+const GROUPS = ['color', 'space', 'text', 'font', 'radius', 'shadow', 'filter', 'motion'] as const;
 
 function headerMentions(source: string, draft = stockDraft()) {
   const head = source.slice(0, source.indexOf('\n', source.indexOf('*/')));

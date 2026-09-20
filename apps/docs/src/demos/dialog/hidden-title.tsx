@@ -20,7 +20,7 @@ export default function HiddenTitleDialog() {
     <Dialog.Root>
       <Dialog.Trigger render={<Button variant="outline" />}>Show keyboard help</Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Backdrop />
+        <Dialog.Backdrop forceRender />
         <Dialog.Viewport>
           <Dialog.Popup>
             <Dialog.Title style={styles.hidden}>Keyboard shortcuts</Dialog.Title>

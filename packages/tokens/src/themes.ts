@@ -18,7 +18,7 @@ export const darkTheme = stylex.createTheme(color, {
   '--ult-color-surface-raised': '#141516',
   '--ult-color-surface-sunken': '#1d1e20',
   '--ult-color-surface-hover': '#27272a',
-  '--ult-color-surface-overlay': '#14151699',
+  '--ult-color-surface-overlay': '#141516b3',
   '--ult-color-text': '#e7e8e9',
   '--ult-color-text-muted': '#b6b7ba',
   '--ult-color-text-subtle': '#919295',

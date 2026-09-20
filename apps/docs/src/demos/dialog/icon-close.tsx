@@ -20,7 +20,7 @@ export default function IconCloseDialog() {
     <Dialog.Root>
       <Dialog.Trigger render={<Button variant="outline" />}>Edit profile</Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Backdrop />
+        <Dialog.Backdrop forceRender />
         <Dialog.Viewport>
           <Dialog.Popup>
             <header {...stylex.props(styles.header)}>
