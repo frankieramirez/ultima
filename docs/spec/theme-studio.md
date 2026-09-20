@@ -1,6 +1,6 @@
 # Theme studio
 
-Status: settled. [Map: Ultima theme studio](https://github.com/frankieramirez/ultima/issues/204) resolved every decision; [Build: Ship the Ultima theme studio](https://github.com/frankieramirez/ultima/issues/220) owns implementation. Contracts were amended on [#234](https://github.com/frankieramirez/ultima/issues/234) where the `ultima.pen` Final design diverged from them. This document is the specification: agreed scope, contracts, and the first-release acceptance criteria.
+Status: implemented. [Map: Ultima theme studio](https://github.com/frankieramirez/ultima/issues/204) resolved every decision; [Build: Ship the Ultima theme studio](https://github.com/frankieramirez/ultima/issues/220) owns implementation. Contracts were amended on [#234](https://github.com/frankieramirez/ultima/issues/234) where the `ultima.pen` Final design diverged from them. This document is the specification: agreed scope, contracts, and the first-release acceptance criteria, each verified by the checked-in suite.
 
 ## Destination
 
