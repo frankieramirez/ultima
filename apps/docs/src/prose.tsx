@@ -162,8 +162,10 @@ const components = {
 
 export function Prose({
   Content,
+  breadcrumb,
 }: {
   Content: ComponentType<{ components?: MDXComponents }>;
+  breadcrumb: string;
 }) {
-  return <DocumentLayout><div {...stylex.props(styles.root)}><Content components={components} /></div></DocumentLayout>;
+  return <DocumentLayout breadcrumb={breadcrumb}><div {...stylex.props(styles.root)}><Content components={components} /></div></DocumentLayout>;
 }

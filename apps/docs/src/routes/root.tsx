@@ -2,10 +2,11 @@ import { IconContext, type IconProps } from '@phosphor-icons/react';
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font } from '@ultima/tokens/tokens.stylex';
-import { Sidebar } from '@ultima/ui';
+import { Separator, Sidebar } from '@ultima/ui';
 import { useEffect, useRef } from 'react';
 
 import { Header } from '../header';
+import { SiteFooter } from '../site-footer';
 import { SiteMenu } from '../site-menu';
 import { ThemeRoot } from '../theme';
 
@@ -74,12 +75,15 @@ function Shell() {
   return (
     <Sidebar.Root open={true} style={styles.shell}>
       <Header />
+      <Separator />
       <div {...stylex.props(styles.body)}>
         <SiteMenu />
         <div ref={content} {...stylex.props(styles.content, styles.balancedRails)}>
           <Outlet />
         </div>
       </div>
+      <Separator />
+      <SiteFooter />
     </Sidebar.Root>
   );
 }

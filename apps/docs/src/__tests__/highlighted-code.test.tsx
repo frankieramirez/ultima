@@ -112,7 +112,7 @@ test('an MDX fence takes its language from the nested code class', async () => {
     );
   }
 
-  const screen = await render(<Prose Content={Content} />);
+  const screen = await render(<Prose Content={Content} breadcrumb="COMPONENTS / BUTTON" />);
   const article = screen.getByRole('article').element();
   expect(article.querySelector('pre')?.textContent).toBe(SOURCE);
   expect(colorOf('const', article)).not.toBe(colorOf('"Button"', article));

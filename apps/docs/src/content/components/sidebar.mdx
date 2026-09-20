@@ -56,7 +56,7 @@ There is no `SubList` part. A nested group is `Collapsible.Root` around an `Item
 
 ## A scrolling panel
 
-`Panel` is the scroll container. It sets no block size, so it is content-sized inside a page that gives it one; set a height through the `style` slot when you want the navigation to scroll on its own.
+`Panel` is the scroll container. It sets no block size, so it is content-sized inside a page that gives it one; set a height through the `style` slot when you want the navigation to scroll on its own. The bar follows `--sidebar-scrollbar-width`, which defaults to `auto`: set it to `none` or `thin` on the panel to restyle it.
 
 <Demo component={Scroll} source={scrollSource} />
 

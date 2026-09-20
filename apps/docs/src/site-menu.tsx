@@ -9,10 +9,10 @@ import { navigation, type NavLink } from './navigation';
 export const MENU_LABEL = 'Ultima';
 
 const styles = stylex.create({
-  panel: { blockSize: '100%', flexShrink: 0 },
+  panel: { blockSize: '100%', flexShrink: 0, '--sidebar-scrollbar-width': 'none' },
   dismiss: { display: 'flex', justifyContent: 'flex-end' },
   close: { paddingInline: space['--ult-space-4'] },
-  groupLabel: { fontFamily: font['--ult-font-mono'], textTransform: 'lowercase' },
+  groupLabel: { fontFamily: font['--ult-font-mono'] },
   list: { paddingInlineStart: space['--ult-space-4'] },
 });
 

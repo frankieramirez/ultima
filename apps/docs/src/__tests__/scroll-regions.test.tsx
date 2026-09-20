@@ -64,7 +64,7 @@ function TwoWideTables({ components }: { components?: MDXComponents }) {
 for (const mode of modes) {
   test(`two wide uncaptioned tables in prose pass axe in ${mode.name}`, async () => {
     themeDocument(mode);
-    const screen = await render(<Prose Content={TwoWideTables} />);
+    const screen = await render(<Prose Content={TwoWideTables} breadcrumb="DOCUMENTATION / TEST" />);
 
     const viewports = scrollAreaViewports(screen.container);
     expect(viewports.length).toBe(2);

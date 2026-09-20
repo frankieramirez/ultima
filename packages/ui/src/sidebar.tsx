@@ -63,6 +63,7 @@ const styles = stylex.create({
       default: "auto",
       [DESKTOP]: { default: "auto", ":is([data-closed])": "hidden" },
     },
+    scrollbarWidth: "var(--sidebar-scrollbar-width, auto)",
     paddingBlock: space["--ult-space-4"],
     paddingInline: {
       default: space["--ult-space-4"],

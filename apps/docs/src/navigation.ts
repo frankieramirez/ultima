@@ -14,27 +14,27 @@ export type NavGroup = {
 };
 
 export const pages = [
-  { label: '--home', to: '/' },
-  { label: '--install', to: '/install' },
-  { label: '--tokens', to: '/tokens' },
-  { label: '--palette', to: '/palette' },
-  { label: '--rationale', to: '/rationale' },
-  { label: '--components', to: '/components' },
+  { label: 'Home', to: '/' },
+  { label: 'Install', to: '/install' },
+  { label: 'Tokens', to: '/tokens' },
+  { label: 'Palette', to: '/palette' },
+  { label: 'Rationale', to: '/rationale' },
+  { label: 'Components', to: '/components' },
 ] satisfies NavLink[];
 
 /** Flat catalogue in release order: every set's rows in turn, derived from `release`. */
 export const componentPages: NavLink[] = RELEASES.flatMap((release) =>
-  componentsInRelease(release).map(({ item }) => ({
-    label: `--${item}`,
+  componentsInRelease(release).map(({ name, item }) => ({
+    label: name,
     to: '/components/$name',
     params: { name: item },
   })),
 );
 
 export const navigation = [
-  { label: '::root', links: pages.filter(({ to }) => to !== '/components') },
+  { label: 'Foundations', links: pages.filter(({ to }) => to !== '/components') },
   {
-    label: '@components',
+    label: 'Components',
     links: componentPages,
   },
 ] satisfies NavGroup[];
