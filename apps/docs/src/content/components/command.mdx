@@ -1,6 +1,8 @@
 import { Demo } from '../../demo';
 import Anchored from '../../demos/command/anchored';
 import anchoredSource from '../../demos/command/anchored?raw';
+import CommandDialog from '../../demos/command/command-dialog';
+import commandDialogSource from '../../demos/command/command-dialog?raw';
 import Inline from '../../demos/command/inline';
 import inlineSource from '../../demos/command/inline?raw';
 
@@ -31,6 +33,26 @@ Pass `open inline` on the root and the list renders in place, the command-palett
 ## Filtering
 
 The `filter` prop is the scorer socket. With nothing passed, Base UI's default Collator filter runs. A fuzzy scorer is your own dependency — `match-sorter` documented, `fuzzysort` the alternative — wired through the same prop. `mode`, `autoHighlight`, `keepHighlight`, `highlightItemOnHover`, `openOnInputClick`, `submitOnItemClick`, `itemToStringValue`, `items`, `filteredItems`, and `value` / `defaultValue` / `onValueChange` pass through to Base UI.
+
+## Command dialog
+
+A command dialog is the inline arrangement lifted into a modal surface: the ⌘K palette. It is a recipe rather than a component, the way [Sheet](/components/dialog#sheet) is on Dialog's page, so there is no `@ultima/command-dialog` item to install. Every part already belongs to `dialog`, `command`, `scroll-area`, or `button`.
+
+Component dependencies: `dialog`, `command`, `scroll-area`, `button`.
+
+```bash
+npx shadcn add @ultima/dialog @ultima/command @ultima/scroll-area @ultima/button
+```
+
+`Dialog` owns the surface whole. `Dialog.Trigger render={<Button />}` opens it, and `Dialog.Viewport` top-anchors through its `style` slot — `placeItems: 'start center'` plus top padding — where a plain dialog centres. `Dialog.Title` renders clip-hidden because a Title is always rendered, and `Dialog.Close` renders as a Button that stays hidden until focused, keeping a close in the Tab loop without painting one on the palette.
+
+Inside the popup, `Command.Root open inline items autoHighlight="always" keepHighlight` holds `InputGroup` and `Input`, and `ScrollArea` bounds `Empty` and `List`: `ScrollArea.Viewport` is the keyboard-reachable scroll region and joins Tab order only when it overflows. The demo runs the default Collator filter, so the recipe takes no engine install. A fuzzy scorer is the consumer's own dependency — `match-sorter` documented, `fuzzysort` the alternative — wired through `Command.Root`'s `filter` prop.
+
+<Demo component={CommandDialog} source={commandDialogSource} />
+
+The keyboard contract: focus opens on `Command.Input`, the first focusable element. The arrows move the highlight, and `autoHighlight="always"` with `keepHighlight` guarantee Enter always has a target. Enter runs the highlighted item's action, whose handler closes the dialog. Escape closes it too, since `inline` mode has no autocomplete popup to consume the key. Tab loops through `Input`, the hidden `Close`, and `ScrollArea.Viewport` when it overflows — items are reached by arrows, never Tab — and focus returns to the trigger on close. The demo wires ⌘K on macOS and Ctrl+K elsewhere to open, and the footer states the contract in `<kbd>` markup.
+
+At rest the dialog is only its trigger, which carries the platform shortcut hint. Open, the input holds focus and one item is always highlighted. A query that matches nothing leaves `Command.Empty` visible inside the scroll region, announcing itself through its `role="status"`.
 
 ## Props
 

@@ -345,6 +345,14 @@ export {
 export { Toggle, type ToggleProps, type ToggleVariant, type ToggleSize } from './toggle';
 export { AspectRatio, type AspectRatioProps } from './aspect-ratio';
 export {
+  InputGroup,
+  type InputGroupSize,
+  type InputGroupAlign,
+  type InputGroupRootProps,
+  type InputGroupInputProps,
+  type InputGroupAddonProps,
+} from './input-group';
+export {
   ColorField,
   useColorField,
   type ColorFieldSize,
@@ -417,3 +425,9 @@ export {
   type CalendarMonthSelectProps,
   type CalendarYearSelectProps,
 } from './calendar';
+export {
+  NativeSelect,
+  type NativeSelectRootProps,
+  type NativeSelectSelectProps,
+  type NativeSelectSize,
+} from './native-select';
