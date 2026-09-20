@@ -254,6 +254,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A row of buttons joined as one control, in three variants and two tones, on Base UI.',
     docs: "import { ButtonGroup } from '@/components/ui/button-group';\n\n<ButtonGroup.Root aria-label=\"Text actions\">\n  <ButtonGroup.Item>Cut</ButtonGroup.Item>\n  <ButtonGroup.Item>Copy</ButtonGroup.Item>\n  <ButtonGroup.Item>Paste</ButtonGroup.Item>\n</ButtonGroup.Root>\n\nvariant, size, and tone sit on Root and reach every Item; an Item takes its own variant and tone, which win, and no size.",
   },
+  'aspect-ratio': {
+    title: 'Aspect Ratio',
+    description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
+    docs: "import { AspectRatio } from '@/components/ui/aspect-ratio';\n\n<AspectRatio ratio={16 / 9}>\n  <img src=\"/cover.png\" alt=\"Ridgeline at dusk\" />\n</AspectRatio>\n\nratio is a number written inline as aspect-ratio, the file's one runtime declaration. The box and the radius go through the style slot, and render swaps the div for your own element, like a figure.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:

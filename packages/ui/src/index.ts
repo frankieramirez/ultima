@@ -343,6 +343,7 @@ export {
   type HoverCardViewportProps,
 } from './hover-card';
 export { Toggle, type ToggleProps, type ToggleVariant, type ToggleSize } from './toggle';
+export { AspectRatio, type AspectRatioProps } from './aspect-ratio';
 export {
   ColorField,
   useColorField,
