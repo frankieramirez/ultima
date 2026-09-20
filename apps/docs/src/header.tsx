@@ -60,6 +60,7 @@ const LINKS = [
   { label: 'Components', to: '/components' },
   { label: 'Tokens', to: '/tokens' },
   { label: 'Documentation', to: '/install' },
+  { label: 'Studio', to: '/theme-studio' },
 ] as const;
 
 export function Header() {
