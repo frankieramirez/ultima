@@ -2,18 +2,23 @@ import { ArrowUpRightIcon, ListIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Sidebar } from '@ultima/ui';
+import { Button, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
 
 const WIDE = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
+  chrome: {
+    backgroundColor: color['--ult-color-surface'],
+    insetBlockStart: 0,
+    position: 'sticky',
+    zIndex: 1,
+  },
   bar: {
     alignItems: 'center',
     boxSizing: 'border-box',
     display: 'flex',
-    flexShrink: 0,
     gap: space['--ult-space-10'],
     inlineSize: '100%',
     paddingBlock: space['--ult-space-8'],
@@ -65,26 +70,29 @@ const LINKS = [
 
 export function Header() {
   return (
-    <header {...stylex.props(styles.bar)}>
-      <div {...stylex.props(styles.cluster)}>
-        <Link to="/" aria-label="Ultima home" {...stylex.props(styles.brand)}>
-          <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
-        </Link>
-        <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}>
-          <ListIcon aria-hidden />
-        </Sidebar.Trigger>
-      </div>
-      <nav aria-label="Site" {...stylex.props(styles.links)}>
-        {LINKS.map((link) => (
-          <Link key={link.to} to={link.to} {...stylex.props(styles.link)}>
-            {link.label}
+    <header {...stylex.props(styles.chrome)}>
+      <div {...stylex.props(styles.bar)}>
+        <div {...stylex.props(styles.cluster)}>
+          <Link to="/" aria-label="Ultima home" {...stylex.props(styles.brand)}>
+            <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
           </Link>
-        ))}
-      </nav>
-      <span {...stylex.props(styles.status)}>v0 / IN DEVELOPMENT</span>
-      <a href="https://github.com/frankieramirez/ultima" {...stylex.props(styles.github)}>
-        GitHub <ArrowUpRightIcon aria-hidden />
-      </a>
+          <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}>
+            <ListIcon aria-hidden />
+          </Sidebar.Trigger>
+        </div>
+        <nav aria-label="Site" {...stylex.props(styles.links)}>
+          {LINKS.map((link) => (
+            <Link key={link.to} to={link.to} {...stylex.props(styles.link)}>
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <span {...stylex.props(styles.status)}>v0 / IN DEVELOPMENT</span>
+        <a href="https://github.com/frankieramirez/ultima" {...stylex.props(styles.github)}>
+          GitHub <ArrowUpRightIcon aria-hidden />
+        </a>
+      </div>
+      <Separator />
     </header>
   );
 }
