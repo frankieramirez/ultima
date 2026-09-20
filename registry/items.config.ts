@@ -260,7 +260,7 @@ export const items: Record<string, RegistryItemDescription> = {
 
 ratio is a number written inline as aspect-ratio, the file's one runtime declaration. The box and the radius go through the style slot, and render swaps the div for your own element, like a figure.",
   },
-    command: {
+  command: {
     title: 'Command',
     description: 'A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.',
     docs: "import { Command } from '@/components/ui/command';
