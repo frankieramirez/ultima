@@ -264,10 +264,25 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'An inline day, month, and year grid for picking dates, on Zag.',
     docs: "import { Calendar } from '@/components/ui/calendar';\n\n<Calendar.Root>\n  <Calendar.Label>Release date</Calendar.Label>\n  <Calendar.Content>\n    <Calendar.View view=\"day\">\n      <Calendar.ViewControl view=\"day\">\n        <Calendar.PrevTrigger />\n        <Calendar.ViewTrigger>\n          <Calendar.RangeText />\n        </Calendar.ViewTrigger>\n        <Calendar.NextTrigger />\n      </Calendar.ViewControl>\n      <Calendar.Table view=\"day\" />\n    </Calendar.View>\n  </Calendar.Content>\n</Calendar.Root>\n\nThe machine runs inline. selectionMode is single, multiple, or range, and value is a @internationalized/date DateValue[]. Label names the grid; Content and Table keep Zag's hidden and role=grid wiring. MonthSelect and YearSelect stay native. For the input-and-popup composition, use Date Picker.",
   },
+  'input-group': {
+    title: 'Input Group',
+    description: 'A field box holding an input with leading and trailing addons, in three sizes.',
+    docs: "import { InputGroup } from '@/components/ui/input-group';\n\n<InputGroup.Root>\n  <InputGroup.Addon>@</InputGroup.Addon>\n  <InputGroup.Input placeholder=\"handle\" />\n  <InputGroup.Addon align=\"end\">.dev</InputGroup.Addon>\n</InputGroup.Root>\n\nRoot is a visual box with no role; a Field or Fieldset owns the semantics. The name is the inner input's own: a label, aria-label, or Field.Label. align on Addon positions it, not the DOM order.",
+  },
   resizable: {
     title: 'Resizable',
     description: 'Panels with boundaries you drag or arrow, on Zag.',
-    docs: "import { Resizable } from '@/components/ui/resizable';\n\n<Resizable.Root panels={[{ id: 'nav' }, { id: 'main' }]}>\n  <Resizable.Panel id=\"nav\">Navigation</Resizable.Panel>\n  <Resizable.Handle id=\"nav:main\" aria-label=\"Resize navigation\">\n    <Resizable.HandleIndicator />\n  </Resizable.Handle>\n  <Resizable.Panel id=\"main\">Content</Resizable.Panel>\n</Resizable.Root>\n\nEvery Handle needs a name: the type requires one of aria-label or aria-labelledby, the system's fourth enforced attribute. Sizing metadata (minSize, maxSize, collapsible, collapsedSize) lives on each panels entry, defaultSize sizes them at mount, and keyboardResizeBy sets the arrow step. The machine owns the panels' layout inline styles, including overflow: hidden. A strict CSP needs the nonce prop for the drag cursor <style>.",
+    docs: "import { Resizable } from '@/components/ui/resizable';
+
+<Resizable.Root panels={[{ id: 'nav' }, { id: 'main' }]}>
+  <Resizable.Panel id=\"nav\">Navigation</Resizable.Panel>
+  <Resizable.Handle id=\"nav:main\" aria-label=\"Resize navigation\">
+    <Resizable.HandleIndicator />
+  </Resizable.Handle>
+  <Resizable.Panel id=\"main\">Content</Resizable.Panel>
+</Resizable.Root>
+
+Every Handle needs a name: the type requires one of aria-label or aria-labelledby, the system's fourth enforced attribute. Sizing metadata (minSize, maxSize, collapsible, collapsedSize) lives on each panels entry, defaultSize sizes them at mount, and keyboardResizeBy sets the arrow step. The machine owns the panels' layout inline styles, including overflow: hidden. A strict CSP needs the nonce prop for the drag cursor <style>.",
   },
   'setup-vite': {
     title: 'Ultima setup for Vite',
