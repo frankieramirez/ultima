@@ -139,7 +139,7 @@ test('a direct load leaves focus alone', async () => {
 test('the flat catalogue follows the page links in keyboard order', async () => {
   await mount('/install');
   await expect.element(menuLink('Install')).toBeVisible();
-  (menuLink('Rationale').element() as HTMLElement).focus();
+  (menuLink('Studio').element() as HTMLElement).focus();
   await userEvent.keyboard('{Tab}');
   expect(document.activeElement).toBe(menuLink('Button').element());
 });
