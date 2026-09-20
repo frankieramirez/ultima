@@ -164,7 +164,9 @@ test('the panel scrolls the whole catalogue inside the viewport', async () => {
   const panel = menu().element();
 
   await expect.element(menuLink('Toggle Group')).toBeVisible();
-  expect(panel.scrollHeight).toBeGreaterThan(panel.clientHeight);
+  const viewport = panel.querySelector<HTMLElement>('[role="presentation"][tabindex]');
+  expect(viewport).not.toBeNull();
+  expect(viewport!.scrollHeight).toBeGreaterThan(viewport!.clientHeight);
   expect(panel.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
 });
 
@@ -306,7 +308,7 @@ function describe(violation: axe.Result) {
 }
 
 
-test('the index rides a sticky grid column right of the article and the menu bar stays hidden', async () => {
+test('the index rides a sticky grid column right of the article and the menu paints a styled bar', async () => {
   await page.viewport(2304, 720);
   onTestFinished(() => page.viewport(1280, 720));
   await mount('/install');
@@ -318,7 +320,9 @@ test('the index rides a sticky grid column right of the article and the menu bar
   expect(article.right).toBeLessThanOrEqual(index.getBoundingClientRect().left);
 
   const navigation = menu().element();
-  expect(getComputedStyle(navigation).scrollbarWidth).toBe('none');
-  navigation.scrollTop = 100;
-  expect(navigation.scrollTop).toBeGreaterThan(0);
+  expect(getComputedStyle(navigation).scrollbarWidth).not.toBe('none');
+  await expect.poll(() => navigation.querySelector('[data-orientation="vertical"]')).not.toBeNull();
+  const viewport = navigation.querySelector<HTMLElement>('[role="presentation"][tabindex]')!;
+  viewport.scrollTop = 100;
+  expect(viewport.scrollTop).toBeGreaterThan(0);
 });
