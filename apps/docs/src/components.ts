@@ -311,6 +311,12 @@ export const components = [
     description: 'A date input with a popup day, month, and year grid, on Zag.',
     release: 'v0.2',
   },
+  {
+    name: 'Input Group',
+    item: 'input-group',
+    description: 'A field box holding an input with leading and trailing addons, in three sizes.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
