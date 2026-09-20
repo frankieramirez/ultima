@@ -627,3 +627,27 @@ test('the studio passes axe in its default dark preview', async () => {
   const results = await axe.run(document.body);
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.html).join(', ')}`)).toEqual([]);
 });
+
+test('at 390px the document fits the viewport in every preview mode', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+
+  const screen = await mount('/theme-studio');
+  await expect.element(screen.getByRole('heading', { name: 'Theme Studio' })).toBeVisible();
+  const modes = screen.getByRole('group', { name: 'Preview color mode' });
+
+  for (const mode of ['Dark', 'Light', 'Compare'] as const) {
+    await userEvent.click(modes.getByRole('button', { name: mode }).element());
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(390);
+  }
+
+  const scenes = screen.getByRole('tablist', { name: 'Preview scenes' }).element();
+  expect(scenes.getBoundingClientRect().right).toBeLessThanOrEqual(390);
+  expect(modes.element().getBoundingClientRect().right).toBeLessThanOrEqual(390);
+  const groups = screen.getByRole('group', { name: 'Theme groups' }).element();
+  expect(groups.getBoundingClientRect().right).toBeLessThanOrEqual(390);
+
+  const status = screen.getByRole('button', { name: 'Reset theme' }).element().parentElement!;
+  const items = [...status.children].map((item) => item.getBoundingClientRect());
+  expect(new Set(items.map((rect) => Math.round(rect.left))).size).toBe(1);
+});

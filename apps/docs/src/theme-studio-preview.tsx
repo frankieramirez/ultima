@@ -77,6 +77,9 @@ const styles = stylex.create({
     flexGrow: 1,
     minInlineSize: 0,
   },
+  sceneList: {
+    overflowX: 'auto',
+  },
   panes: {
     display: 'flex',
     flexDirection: { default: 'column', [RAIL]: 'row' },
@@ -230,7 +233,7 @@ export function ThemeStudioPreview({
           style={styles.scenes}
           value={scene}
         >
-          <Tabs.List aria-label="Preview scenes">
+          <Tabs.List aria-label="Preview scenes" style={styles.sceneList}>
             {SCENES.map((item) => (
               <Tabs.Tab key={item.id} value={item.id}>
                 {item.label}
