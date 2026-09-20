@@ -11,12 +11,14 @@ import AvatarContent from './content/components/avatar.mdx';
 import BadgeContent from './content/components/badge.mdx';
 import BreadcrumbContent from './content/components/breadcrumb.mdx';
 import ButtonContent from './content/components/button.mdx';
+import CalendarContent from './content/components/calendar.mdx';
 import CardContent from './content/components/card.mdx';
 import CheckboxContent from './content/components/checkbox.mdx';
 import CodeContent from './content/components/code.mdx';
 import CollapsibleContent from './content/components/collapsible.mdx';
 import ColorFieldContent from './content/components/color-field.mdx';
 import ComboboxContent from './content/components/combobox.mdx';
+import CommandContent from './content/components/command.mdx';
 import ContextMenuContent from './content/components/context-menu.mdx';
 import DialogContent from './content/components/dialog.mdx';
 import DrawerContent from './content/components/drawer.mdx';
@@ -124,12 +126,14 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   badge: BadgeContent,
   breadcrumb: BreadcrumbContent,
   button: ButtonContent,
+  calendar: CalendarContent,
   card: CardContent,
   checkbox: CheckboxContent,
   code: CodeContent,
   collapsible: CollapsibleContent,
   'color-field': ColorFieldContent,
   combobox: ComboboxContent,
+  command: CommandContent,
   'context-menu': ContextMenuContent,
   dialog: DialogContent,
   drawer: DrawerContent,

@@ -294,6 +294,18 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Command',
+    item: 'command',
+    description: 'A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.',
+    release: 'v0.2',
+  },
+  {
+    name: 'Calendar',
+    item: 'calendar',
+    description: 'An inline day, month, and year grid for picking dates, on Zag.',
+    release: 'v0.2',
+  },
+  {
     name: 'Input OTP',
     item: 'input-otp',
     description: 'A one-time-code field of uniform square slots, on Base UI.',
