@@ -3,7 +3,7 @@ import { space, text } from '@ultima/tokens/tokens.stylex';
 import { ScrollArea } from '@ultima/ui';
 
 const styles = stylex.create({
-  bounds: { blockSize: '9rem', inlineSize: '22rem' },
+  bounds: { blockSize: '9rem', inlineSize: 'min(22rem, 100%)' },
   list: {
     display: 'flex',
     flexDirection: 'column',

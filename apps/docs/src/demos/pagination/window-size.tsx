@@ -13,6 +13,7 @@ const styles = stylex.create({
     display: 'grid',
     gap: space['--ult-space-4'],
   },
+  list: { flexWrap: 'wrap' },
 });
 
 export default function WindowSize() {
@@ -20,7 +21,7 @@ export default function WindowSize() {
     <div {...stylex.props(styles.stack)}>
       {windows.map(({ label, options }) => (
         <Pagination.Root key={label} aria-label={`${label} window`}>
-          <Pagination.List>
+          <Pagination.List style={styles.list}>
             {Pagination.getPages({ page: 10, count: 20, ...options }).map((entry, index) =>
               entry.type === 'ellipsis' ? (
                 <Pagination.Item key={`gap-${index}`}>

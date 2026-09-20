@@ -54,9 +54,8 @@ const styles = stylex.create({
   ramp: {
     display: 'grid',
     gap: space['--ult-space-3'],
-    gridTemplateColumns: 'repeat(12, minmax(4.5rem, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(3.25rem, 1fr))',
     marginBlockStart: space['--ult-space-4'],
-    minWidth: '60rem',
   },
   rampLabel: {
     color: color['--ult-color-text-subtle'],

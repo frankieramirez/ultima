@@ -1,9 +1,14 @@
+import * as stylex from '@stylexjs/stylex';
 import { Pagination } from '@ultima/ui';
+
+const styles = stylex.create({
+  list: { flexWrap: 'wrap' },
+});
 
 export default function LinkedPages({ page = 1, count = 24 }: { page?: number; count?: number }) {
   return (
     <Pagination.Root aria-label="Search results pages">
-      <Pagination.List>
+      <Pagination.List style={styles.list}>
         <Pagination.Item>
           <Pagination.Previous href={`?page=${Math.max(page - 1, 1)}`} disabled={page === 1}>
             Previous
