@@ -6,7 +6,7 @@ import { DocumentLayout } from '../document-layout';
 
 test('renders a labelled article index from headings and keeps heading anchors addressable', async () => {
   const screen = await render(
-    <DocumentLayout breadcrumb="::root / --install">
+    <DocumentLayout breadcrumb="DOCUMENTATION / INSTALL">
       <h1>Install</h1>
       <h2>Commands</h2>
       <p>Install the package.</p>
@@ -29,7 +29,7 @@ test('renders a labelled article index from headings and keeps heading anchors a
 test('hides the article index on a narrow viewport', async () => {
   await page.viewport(390, 844);
   const screen = await render(
-    <DocumentLayout breadcrumb="@components / --button">
+    <DocumentLayout breadcrumb="COMPONENTS / BUTTON">
       <h1>Button</h1>
       <h2>Variants</h2>
     </DocumentLayout>,

@@ -85,9 +85,6 @@ const styles = stylex.create({
   closingCopy: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-4'] },
   closingTitle: { fontSize: text['--ult-text-9'], fontWeight: font['--ult-font-weight-medium'], margin: 0 },
   closingNote: { color: color['--ult-color-text-muted'], fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'], margin: 0 },
-  footer: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-6'], justifyContent: 'space-between' },
-  footerLinks: { display: 'flex', gap: space['--ult-space-6'] },
-  footerLink: { fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'], paddingInline: 0 },
 });
 
 export function Home() {
@@ -138,18 +135,6 @@ export function Home() {
         </div>
         <Separator />
       </section>
-
-      <footer {...stylex.props(styles.footer)}>
-        <span {...stylex.props(styles.mono, styles.muted)}>ULTIMA&nbsp; / &nbsp;The final spell for your interfaces.</span>
-        <div {...stylex.props(styles.footerLinks)}>
-          <Button variant="ghost" nativeButton={false} render={<a href="https://github.com/frankieramirez/ultima" />} style={styles.footerLink}>
-            GitHub <ArrowUpRightIcon aria-hidden />
-          </Button>
-          <Button variant="ghost" nativeButton={false} render={<Link to="/install" />} style={styles.footerLink}>
-            Documentation <ArrowUpRightIcon aria-hidden />
-          </Button>
-        </div>
-      </footer>
     </main>
   );
 }

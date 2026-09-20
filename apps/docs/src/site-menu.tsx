@@ -12,7 +12,7 @@ const styles = stylex.create({
   panel: { blockSize: '100%', flexShrink: 0 },
   dismiss: { display: 'flex', justifyContent: 'flex-end' },
   close: { paddingInline: space['--ult-space-4'] },
-  groupLabel: { fontFamily: font['--ult-font-mono'], textTransform: 'lowercase' },
+  groupLabel: { fontFamily: font['--ult-font-mono'] },
   list: { paddingInlineStart: space['--ult-space-4'] },
 });
 

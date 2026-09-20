@@ -1,42 +1,68 @@
-import { ListIcon } from '@phosphor-icons/react';
+import { ArrowUpRightIcon, ListIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, space } from '@ultima/tokens/tokens.stylex';
-import { Button, Sidebar, ToggleGroup } from '@ultima/ui';
+import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { Button, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
-import { useTheme, type ThemePreference } from './theme';
+
+const WIDE = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
   bar: {
-    boxSizing: 'border-box',
-    inlineSize: '100%',
     alignItems: 'center',
+    boxSizing: 'border-box',
     display: 'flex',
     flexShrink: 0,
-    gap: space['--ult-space-6'],
-    justifyContent: 'space-between',
-    minHeight: '4.25rem',
-    paddingInline: space['--ult-space-6'],
+    gap: space['--ult-space-10'],
+    inlineSize: '100%',
+    paddingBlock: space['--ult-space-8'],
+    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
   },
   brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
   brand: {
-    display: 'inline-flex', alignItems: 'center', minHeight: space['--ult-space-10'],
+    display: 'inline-flex', alignItems: 'center',
     ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
   },
   cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
-  trigger: { display: { default: 'inline-flex', '@media (min-width: 48rem)': 'none' }, paddingInline: space['--ult-space-4'] },
+  trigger: { display: { default: 'inline-flex', [WIDE]: 'none' }, paddingInline: space['--ult-space-4'] },
+  links: {
+    alignItems: 'center',
+    display: { default: 'none', [WIDE]: 'flex' },
+    flexGrow: 1,
+    gap: space['--ult-space-8'],
+  },
+  link: {
+    color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
+    fontSize: text['--ult-text-4'],
+    textDecoration: 'none',
+    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
+  },
+  status: {
+    color: color['--ult-color-text-subtle'],
+    display: { default: 'none', [WIDE]: 'block' },
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-1'],
+  },
+  github: {
+    alignItems: 'center',
+    color: { default: color['--ult-color-text'], ':hover': color['--ult-color-text-muted'] },
+    display: 'inline-flex',
+    fontSize: text['--ult-text-4'],
+    gap: space['--ult-space-1'],
+    marginInlineStart: 'auto',
+    textDecoration: 'none',
+    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
+  },
 });
 
-const OPTIONS: { value: ThemePreference; label: string }[] = [
-  { value: 'dark', label: 'Dark' },
-  { value: 'light', label: 'Light' },
-  { value: 'system', label: 'System' },
-];
+const LINKS = [
+  { label: 'Components', to: '/components' },
+  { label: 'Tokens', to: '/tokens' },
+  { label: 'Documentation', to: '/install' },
+] as const;
 
 export function Header() {
-  const { preference, setPreference } = useTheme();
-
   return (
     <header {...stylex.props(styles.bar)}>
       <div {...stylex.props(styles.cluster)}>
@@ -47,24 +73,17 @@ export function Header() {
           <ListIcon aria-hidden />
         </Sidebar.Trigger>
       </div>
-      <ToggleGroup.Root
-        aria-label="Color mode"
-        onValueChange={(next, eventDetails) => {
-          const [preferred] = next;
-          if (!preferred) {
-            eventDetails.cancel();
-            return;
-          }
-          setPreference(preferred);
-        }}
-        value={[preference]}
-      >
-        {OPTIONS.map((option) => (
-          <ToggleGroup.Item key={option.value} value={option.value}>
-            {option.label}
-          </ToggleGroup.Item>
+      <nav aria-label="Site" {...stylex.props(styles.links)}>
+        {LINKS.map((link) => (
+          <Link key={link.to} to={link.to} {...stylex.props(styles.link)}>
+            {link.label}
+          </Link>
         ))}
-      </ToggleGroup.Root>
+      </nav>
+      <span {...stylex.props(styles.status)}>v0 / IN DEVELOPMENT</span>
+      <a href="https://github.com/frankieramirez/ultima" {...stylex.props(styles.github)}>
+        GitHub <ArrowUpRightIcon aria-hidden />
+      </a>
     </header>
   );
 }

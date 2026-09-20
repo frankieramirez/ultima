@@ -17,9 +17,10 @@ const styles = stylex.create({
     },
   },
   breadcrumb: {
-    color: color["--ult-color-accent-text"],
+    color: color["--ult-color-text-subtle"],
     fontFamily: font["--ult-font-mono"],
-    fontSize: text["--ult-text-2"],
+    fontSize: text["--ult-text-1"],
+    letterSpacing: font["--ult-font-tracking-wide"],
     lineHeight: font["--ult-font-leading-none"],
     marginBlockEnd: space["--ult-space-8"],
   },
@@ -112,7 +113,7 @@ export function DocumentLayout({
   index = true,
 }: {
   children: ReactNode;
-  breadcrumb?: string;
+  breadcrumb: string;
   index?: boolean;
 }) {
   const article = useRef<HTMLElement>(null);
@@ -143,9 +144,7 @@ export function DocumentLayout({
           data-document-article
           {...stylex.props(styles.article, !index && styles.wideArticle)}
         >
-          <div {...stylex.props(styles.breadcrumb)}>
-            {breadcrumb ?? defaultBreadcrumb()}
-          </div>
+          <div {...stylex.props(styles.breadcrumb)}>{breadcrumb}</div>
           {children}
         </article>
         {index && (
@@ -172,13 +171,3 @@ export function DocumentLayout({
   );
 }
 
-function defaultBreadcrumb() {
-  const path = typeof window === "undefined" ? "" : window.location.pathname;
-  if (path.startsWith("/components/"))
-    return `@components { --active: "${path.slice("/components/".length)}"; }`;
-  if (path === "/install") return '::root {  --active: "install"; }';
-  if (path === "/tokens") return '::root {  --active: "tokens"; }';
-  if (path === "/palette") return '::root {  --active: "palette"; }';
-  if (path === "/rationale") return '::root {  --active: "rationale"; }';
-  return "::root";
-}

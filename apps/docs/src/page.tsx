@@ -55,17 +55,16 @@ const styles = stylex.create({
 export function Page({
   title,
   lede,
+  breadcrumb = `DOCUMENTATION / ${title.toUpperCase()}`,
   children,
 }: {
   title: string;
   lede: ReactNode;
+  breadcrumb?: string;
   children: ReactNode;
 }) {
   return (
-    <DocumentLayout
-      breadcrumb={`::root { --active: "${title.toLowerCase()}"; }`}
-      index={title !== "Tokens" && title !== "Palette"}
-    >
+    <DocumentLayout breadcrumb={breadcrumb} index={title !== "Tokens" && title !== "Palette"}>
       <div {...stylex.props(styles.page)}>
         <h1 {...stylex.props(styles.title)}>{title}</h1>
         <p {...stylex.props(styles.lede)}>{lede}</p>

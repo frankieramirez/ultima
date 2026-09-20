@@ -39,7 +39,7 @@ function prefer(mode: keyof typeof modes) {
 }
 
 const menu = () => page.getByRole('navigation', { name: MENU_LABEL, exact: true });
-const menuLink = (name: string) => menu().getByRole('link', { name: `--${name.toLowerCase().replaceAll(' ', '-')}`, exact: true });
+const menuLink = (name: string) => menu().getByRole('link', { name, exact: true });
 
 beforeEach(() => {
   localStorage.removeItem(NAVIGATION_STORAGE_KEY);
@@ -55,21 +55,49 @@ test('every destination in the menu is a route the router serves', () => {
 
 test('the menu derives its component entries from the catalogue release field', () => {
   expect(componentPages.map(({ params }) => params?.name)).toEqual(components.map(({ item }) => item));
-  expect(componentPages.map(({ label }) => label)).toEqual(components.map(({ item }) => `--${item}`));
+  expect(componentPages.map(({ label }) => label)).toEqual(components.map(({ name }) => name));
   expect(componentPages.map(({ params }) => params?.name)).toEqual(
     RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item)),
   );
 });
 
-test('the header offers a home link and hides the menu trigger on desktop', async () => {
+test('the header offers the workshop nav and hides the menu trigger on desktop', async () => {
   const screen = await mount('/');
 
-  const navigations = document.querySelectorAll('nav');
-  expect(navigations.length).toBe(1);
-  expect(navigations[0]).toHaveAttribute('aria-label', MENU_LABEL);
+  const site = screen.getByRole('navigation', { name: 'Site', exact: true });
+  await expect.element(site.getByRole('link', { name: 'Components' })).toBeVisible();
+  await expect.element(site.getByRole('link', { name: 'Tokens' })).toBeVisible();
+  await expect.element(site.getByRole('link', { name: 'Documentation' })).toBeVisible();
   await expect.element(screen.getByRole('link', { name: 'Ultima home' })).toBeVisible();
   expect(getComputedStyle(screen.container.querySelector('header button[aria-label="Toggle navigation"]')!).display).toBe('none');
+});
+
+test('the footer carries the mode control and the header does not', async () => {
+  const screen = await mount('/');
+
+  const footer = screen.container.querySelector('footer')!;
+  expect(footer.textContent).toContain('ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES');
   await expect.element(screen.getByRole('group', { name: 'Color mode' })).toBeVisible();
+  expect(footer.contains(screen.getByRole('group', { name: 'Color mode' }).element())).toBe(true);
+  expect(screen.container.querySelector('header [role="group"]')).toBeNull();
+});
+
+test('the footer mode control switches the theme', async () => {
+  onTestFinished(() => localStorage.removeItem(THEME_STORAGE_KEY));
+  const screen = await mount('/');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Light', exact: true }).element());
+
+  expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
+  expect([...document.documentElement.classList].some((name) => themeClasses('light').includes(name))).toBe(true);
+});
+
+test('breadcrumbs name the section and page in plain text', async () => {
+  const screen = await mount('/install');
+  await expect.element(screen.getByText('DOCUMENTATION / INSTALL')).toBeVisible();
+
+  await mount('/components/alert-dialog');
+  await expect.element(page.getByText('COMPONENTS / ALERT DIALOG')).toBeVisible();
 });
 
 test('a direct load of a component page marks that link current in the flat catalogue', async () => {
@@ -120,13 +148,14 @@ test('the logo returns to home without hiding desktop navigation', async () => {
   const screen = await mount('/install');
   await userEvent.click(screen.getByRole('link', { name: 'Ultima home' }).element());
   await expect.element(screen.getByRole('heading', { level: 1, name: 'Exceptional interfaces. Down to the variable.' })).toBeVisible();
-  expect(document.querySelector('nav')).toHaveAttribute('data-open');
+  expect(menu().element()).toHaveAttribute('data-open');
 });
 
 test('a legacy collapsed preference cannot hide desktop navigation', async () => {
   localStorage.setItem(NAVIGATION_STORAGE_KEY, 'closed');
   await mount('/');
-  expect(document.querySelector('nav')).toHaveAttribute('data-open');
+  await expect.element(menuLink('Home')).toBeVisible();
+  expect(menu().element()).toHaveAttribute('data-open');
 });
 
 test('the panel scrolls the whole catalogue inside the viewport', async () => {
@@ -170,7 +199,7 @@ test('below the breakpoint the header trigger opens the menu, and a destination 
   onTestFinished(() => page.viewport(1280, 720));
 
   const screen = await mount('/install');
-  expect(document.querySelector('nav')).toBeNull();
+  expect(document.querySelector(`nav[aria-label="${MENU_LABEL}"]`)).toBeNull();
 
   await userEvent.click(screen.getByRole('button', { name: 'Toggle navigation' }).element());
   const popup = screen.getByRole('dialog', { name: MENU_LABEL }).element();
@@ -236,7 +265,7 @@ test('wide articles are centered on the viewport and the menu keeps its native s
   await expect.element(page.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
   const article = document.querySelector('article')!.getBoundingClientRect();
   expect(Math.abs(article.left + article.width / 2 - window.innerWidth / 2)).toBeLessThan(1);
-  const navigation = document.querySelector('nav')!;
+  const navigation = menu().element();
   expect(getComputedStyle(navigation).scrollbarWidth).toBe('auto');
   navigation.scrollTop = 100;
   expect(navigation.scrollTop).toBeGreaterThan(0);
