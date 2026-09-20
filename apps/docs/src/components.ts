@@ -287,6 +287,12 @@ export const components = [
     description: 'An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.',
     release: 'v0.2',
   },
+  {
+    name: 'Aspect Ratio',
+    item: 'aspect-ratio',
+    description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
