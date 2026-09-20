@@ -288,6 +288,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Command',
+    item: 'command',
+    description: 'A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.',
+    release: 'v0.2',
+  },
+  {
     name: 'Button Group',
     item: 'button-group',
     description: 'A row of buttons joined as one control, with per-item variant and tone overrides.',

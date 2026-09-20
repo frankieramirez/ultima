@@ -18,6 +18,7 @@ import CodeContent from './content/components/code.mdx';
 import CollapsibleContent from './content/components/collapsible.mdx';
 import ColorFieldContent from './content/components/color-field.mdx';
 import ComboboxContent from './content/components/combobox.mdx';
+import CommandContent from './content/components/command.mdx';
 import ContextMenuContent from './content/components/context-menu.mdx';
 import DialogContent from './content/components/dialog.mdx';
 import DrawerContent from './content/components/drawer.mdx';
@@ -131,6 +132,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   collapsible: CollapsibleContent,
   'color-field': ColorFieldContent,
   combobox: ComboboxContent,
+  command: CommandContent,
   'context-menu': ContextMenuContent,
   dialog: DialogContent,
   drawer: DrawerContent,
