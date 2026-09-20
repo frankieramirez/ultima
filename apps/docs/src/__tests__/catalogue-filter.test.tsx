@@ -30,10 +30,7 @@ test('text filtering matches names and descriptions without changing site naviga
   await expect.element(main.getByRole('status')).toHaveTextContent(
     `${buttonMatches.length} component${buttonMatches.length === 1 ? '' : 's'}`,
   );
-<<<<<<< HEAD
   await expect.element(main.getByRole('link', { name: /^Button A / })).toBeVisible();
-=======
->>>>>>> origin/main
   expect(main.getByRole('link', { name: /^Badge / }).query()).toBeNull();
   await expect.element(screen.getByRole('navigation', { name: 'Ultima' }).getByRole('link', { name: 'Badge', exact: true })).toBeVisible();
   await userEvent.fill(input, 'bounded measurement');
