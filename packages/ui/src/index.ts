@@ -454,3 +454,9 @@ export {
   type DatePickerYearSelectProps,
   type DatePickerSize,
 } from './date-picker';
+export {
+  NativeSelect,
+  type NativeSelectRootProps,
+  type NativeSelectSelectProps,
+  type NativeSelectSize,
+} from './native-select';
