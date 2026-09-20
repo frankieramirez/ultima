@@ -264,6 +264,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A row of buttons joined as one control, in three variants and two tones, on Base UI.',
     docs: "import { ButtonGroup } from '@/components/ui/button-group';\n\n<ButtonGroup.Root aria-label=\"Text actions\">\n  <ButtonGroup.Item>Cut</ButtonGroup.Item>\n  <ButtonGroup.Item>Copy</ButtonGroup.Item>\n  <ButtonGroup.Item>Paste</ButtonGroup.Item>\n</ButtonGroup.Root>\n\nvariant, size, and tone sit on Root and reach every Item; an Item takes its own variant and tone, which win, and no size.",
   },
+  'input-group': {
+    title: 'Input Group',
+    description: 'A field box holding an input with leading and trailing addons, in three sizes.',
+    docs: "import { InputGroup } from '@/components/ui/input-group';\n\n<InputGroup.Root>\n  <InputGroup.Addon>@</InputGroup.Addon>\n  <InputGroup.Input placeholder=\"handle\" />\n  <InputGroup.Addon align=\"end\">.dev</InputGroup.Addon>\n</InputGroup.Root>\n\nRoot is a visual box with no role; a Field or Fieldset owns the semantics. The name is the inner input's own: a label, aria-label, or Field.Label. align on Addon positions it, not the DOM order.",
+  },
   'aspect-ratio': {
     title: 'Aspect Ratio',
     description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',

@@ -306,6 +306,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+  {
+    name: 'Input Group',
+    item: 'input-group',
+    description: 'A field box holding an input with leading and trailing addons, in three sizes.',
+    release: 'v0.2',
+  },
     name: 'Aspect Ratio',
     item: 'aspect-ratio',
     description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',

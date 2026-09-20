@@ -58,6 +58,7 @@ test('the component catalogue exposes the v0, v0.1, and v0.2 sets in specificati
     'command',
     'calendar',
     'button-group',
+    'input-group',
     'aspect-ratio',
   ]);
 });
@@ -117,6 +118,7 @@ test('every catalogue entry carries a release, and the menu derives from that fi
     'command',
     'calendar',
     'button-group',
+    'input-group',
     'aspect-ratio',
   ]);
   expect(RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item))).toEqual(
