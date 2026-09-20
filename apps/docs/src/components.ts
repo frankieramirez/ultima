@@ -281,6 +281,12 @@ export const components = [
     description: 'A two-state button in two variants and three sizes, on Base UI.',
     release: 'v0.2',
   },
+  {
+    name: 'Color Field',
+    item: 'color-field',
+    description: 'An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
