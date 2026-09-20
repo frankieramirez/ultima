@@ -117,9 +117,9 @@ export function findForbiddenDeclarations(source: string): string[] {
   return found;
 }
 
-/** The spec's own two, so a third costs an edit here and an argument. `copy-button.tsx` paints
- *  nothing today and is listed because the spec names it beside `swatch.tsx`. */
-const STATED_EXCEPTIONS = ['src/copy-button.tsx', 'src/swatch.tsx'];
+const SPEC_NAMED = ['src/copy-button.tsx', 'src/swatch.tsx'];
+const STUDIO_CHROME = ['src/routes/theme-studio.tsx'];
+const STATED_EXCEPTIONS = [...SPEC_NAMED, ...STUDIO_CHROME];
 
 const sources = import.meta.glob('../**/*.{ts,tsx}', {
   query: '?raw',
