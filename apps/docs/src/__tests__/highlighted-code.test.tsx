@@ -85,7 +85,7 @@ test('a bash fence colors the command', async () => {
   expect(colorOf('npx', root)).toBe(getComputedStyle(screen.getByTestId('accent').element()).color);
 });
 
-test('Demo prints the full source on the forced-light specimen paper', async () => {
+test('Demo highlights the printed source on the forced-light specimen paper', async () => {
   function Example() {
     return <span>live</span>;
   }
@@ -96,9 +96,10 @@ test('Demo prints the full source on the forced-light specimen paper', async () 
   const figure = screen.getByRole('figure').element();
   expect(figure.querySelector('pre')?.textContent).toBe(source);
   expect(getComputedStyle(figure).backgroundColor).toBe('rgb(237, 237, 232)');
+  expect(colorOf('function', figure)).not.toBe(colorOf('Example', figure));
 });
 
-test('an MDX fence prints its source in a bordered block', async () => {
+test('an MDX fence highlights its source in a bordered block', async () => {
   function Content({ components }: { components?: MDXComponents }) {
     const Pre = components!.pre as ComponentType<ComponentProps<'pre'>>;
     const MdCode = components!.code as ComponentType<ComponentProps<'code'>>;
@@ -115,6 +116,7 @@ test('an MDX fence prints its source in a bordered block', async () => {
   const screen = await render(<Prose Content={Content} breadcrumb="COMPONENTS / BUTTON" />);
   const article = screen.getByRole('article').element();
   expect(article.querySelector('pre')?.textContent).toBe(SOURCE);
+  expect(colorOf('const', article)).not.toBe(colorOf('"Button"', article));
 });
 
 test('copying a demo still copies the original source string', async () => {

@@ -5,7 +5,7 @@ import type { MDXComponents } from 'mdx/types';
 import { isValidElement, type ComponentProps, type ComponentType, type ReactNode } from 'react';
 
 import { DocumentLayout } from './document-layout';
-import { nodeText } from './highlighted-code';
+import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
 
 const styles = stylex.create({
   root: {
@@ -113,11 +113,15 @@ function Code({ children }: ComponentProps<'code'>) {
 }
 /** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
 function Pre({ children }: ComponentProps<'pre'>) {
-  const nested = isValidElement<{ children?: ReactNode }>(children) ? children : undefined;
+  const nested = isValidElement<{ children?: ReactNode; className?: string }>(children)
+    ? children
+    : undefined;
   return (
-    <UltimaCode variant="block" style={styles.code}>
-      {nodeText(nested ? nested.props.children : children)}
-    </UltimaCode>
+    <HighlightedCode
+      code={nodeText(nested ? nested.props.children : children)}
+      lang={fenceLanguage(nested?.props.className)}
+      style={styles.code}
+    />
   );
 }
 function Blockquote(props: ComponentProps<'blockquote'>) {
