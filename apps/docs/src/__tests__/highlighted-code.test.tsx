@@ -85,20 +85,20 @@ test('a bash fence colors the command', async () => {
   expect(colorOf('npx', root)).toBe(getComputedStyle(screen.getByTestId('accent').element()).color);
 });
 
-test('Demo highlights the printed source as tsx', async () => {
+test('Demo prints the full source on the forced-light specimen paper', async () => {
   function Example() {
     return <span>live</span>;
   }
 
-  const screen = await render(
-    <Demo component={Example} source={'export default function Example() {\n  return null;\n}'} />,
-  );
+  const source = 'export default function Example() {\n  return null;\n}';
+  const screen = await render(<Demo component={Example} source={source} />);
   await expect.element(screen.getByText('live')).toBeVisible();
   const figure = screen.getByRole('figure').element();
-  expect(colorOf('function', figure)).not.toBe(colorOf('Example', figure));
+  expect(figure.querySelector('pre')?.textContent).toBe(source);
+  expect(getComputedStyle(figure).backgroundColor).toBe('rgb(237, 237, 232)');
 });
 
-test('an MDX fence takes its language from the nested code class', async () => {
+test('an MDX fence prints its source in a bordered block', async () => {
   function Content({ components }: { components?: MDXComponents }) {
     const Pre = components!.pre as ComponentType<ComponentProps<'pre'>>;
     const MdCode = components!.code as ComponentType<ComponentProps<'code'>>;
@@ -115,7 +115,6 @@ test('an MDX fence takes its language from the nested code class', async () => {
   const screen = await render(<Prose Content={Content} breadcrumb="COMPONENTS / BUTTON" />);
   const article = screen.getByRole('article').element();
   expect(article.querySelector('pre')?.textContent).toBe(SOURCE);
-  expect(colorOf('const', article)).not.toBe(colorOf('"Button"', article));
 });
 
 test('copying a demo still copies the original source string', async () => {

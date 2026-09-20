@@ -118,8 +118,10 @@ export function findForbiddenDeclarations(source: string): string[] {
 }
 
 /** The spec's own two, so a third costs an edit here and an argument. `copy-button.tsx` paints
- *  nothing today and is listed because the spec names it beside `swatch.tsx`. */
-const STATED_EXCEPTIONS = ['src/copy-button.tsx', 'src/swatch.tsx'];
+ *  nothing today and is listed because the spec names it beside `swatch.tsx`. `demo.tsx`'s
+ *  specimen figure paints a fixed paper surface — a presented artifact that stays constant in
+ *  both modes, like the literal values `swatch.tsx` exists to show. */
+const STATED_EXCEPTIONS = ['src/copy-button.tsx', 'src/demo.tsx', 'src/swatch.tsx'];
 
 const sources = import.meta.glob('../**/*.{ts,tsx}', {
   query: '?raw',

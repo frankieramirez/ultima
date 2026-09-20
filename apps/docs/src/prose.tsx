@@ -1,11 +1,11 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Code as UltimaCode, ScrollArea, Table } from '@ultima/ui';
+import { Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import { isValidElement, type ComponentProps, type ComponentType, type ReactNode } from 'react';
 
 import { DocumentLayout } from './document-layout';
-import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
+import { nodeText } from './highlighted-code';
 
 const styles = stylex.create({
   root: {
@@ -13,9 +13,9 @@ const styles = stylex.create({
   },
   h1: {
     color: color['--ult-color-text'],
-    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': '3.5rem' },
+    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': '3.25rem' },
     fontWeight: font['--ult-font-weight-medium'],
-    letterSpacing: font['--ult-font-tracking-tight'],
+    letterSpacing: '-0.03em',
     lineHeight: font['--ult-font-leading-tight'],
     marginBlock: 0,
     marginBottom: space['--ult-space-6'],
@@ -27,7 +27,11 @@ const styles = stylex.create({
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
     marginBottom: space['--ult-space-4'],
-    marginTop: space['--ult-space-9'],
+    marginTop: 0,
+    paddingBlockStart: space['--ult-space-7'],
+  },
+  h2Rule: {
+    marginBlockStart: space['--ult-space-9'],
   },
   h3: {
     color: color['--ult-color-text'],
@@ -60,6 +64,7 @@ const styles = stylex.create({
   },
   code: {
     marginBlock: space['--ult-space-6'],
+    padding: space['--ult-space-7'],
   },
   blockquote: {
     color: color['--ult-color-text-muted'],
@@ -79,7 +84,12 @@ function H1(props: ComponentProps<'h1'>) {
   return <h1 {...props} {...stylex.props(styles.h1)} />;
 }
 function H2(props: ComponentProps<'h2'>) {
-  return <h2 {...props} {...stylex.props(styles.h2)} />;
+  return (
+    <>
+      <Separator style={styles.h2Rule} />
+      <h2 {...props} {...stylex.props(styles.h2)} />
+    </>
+  );
 }
 function H3(props: ComponentProps<'h3'>) {
   return <h3 {...props} {...stylex.props(styles.h3)} />;
@@ -104,15 +114,11 @@ function Code({ children }: ComponentProps<'code'>) {
 }
 /** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
 function Pre({ children }: ComponentProps<'pre'>) {
-  const nested = isValidElement<{ children?: ReactNode; className?: string }>(children)
-    ? children
-    : undefined;
+  const nested = isValidElement<{ children?: ReactNode }>(children) ? children : undefined;
   return (
-    <HighlightedCode
-      code={nodeText(nested ? nested.props.children : children)}
-      lang={fenceLanguage(nested?.props.className)}
-      style={styles.code}
-    />
+    <UltimaCode variant="block" style={styles.code}>
+      {nodeText(nested ? nested.props.children : children)}
+    </UltimaCode>
   );
 }
 function Blockquote(props: ComponentProps<'blockquote'>) {
