@@ -100,7 +100,7 @@ A region that scrolls inside the shell rather than with the document. Each one c
 
 ## Set
 
-A section of the specification holding one contract effort's output: its components' parts and axes in one table, their styled splits, and the prose a builder would otherwise guess. A set is named for what it holds. A release name is honest only where the section holds that release whole, which is why The v0 set and The v0.1 set carry one and no fraction of v0.2 may. Where the members share a property, the name is that property: The navigation set's landmark, The overlay set's recipe. Where they share nothing, the name lists them, which is The Toggle, Accordion, Avatar, and Scroll Area set and the reason it is the one section not named for an idea. Report set and Feedback set are groupings inside a release rather than sections.
+A section of the specification holding one contract effort's output: its components' parts and axes in one table, their styled splits, and the prose a builder would otherwise guess. A set is named for what it holds. A release name is honest only where the section holds that release whole, which is why The v0 set and The v0.1 set carry one and no fraction of v0.2 may. Where the members share a property, the name is that property: The navigation set's landmark, The overlay set's recipe, The date set's machine. Where they share nothing, the name lists them: The Toggle, Accordion, Avatar, and Scroll Area set first, then The Command set (a list of one), The Button Group, Input Group, Input OTP, and Native Select set, and The Aspect Ratio and Resizable set. Report set and Feedback set are groupings inside a release rather than sections.
 
 ## Report set
 
@@ -113,6 +113,10 @@ The seven v0.1 components that report a state rather than collect a value: Alert
 ## Navigation set
 
 Breadcrumb, Pagination, and Navigation Menu, the three v0.2 components that render a navigation landmark. Named for what they hold rather than for the release, because v0.2 is thirteen checklist lines and these are three of them. One rule follows from the landmark and reaches all three: Ultima's default name is emitted only when the caller named nothing, and distinguishing a second instance on a page is the consumer's.
+
+## Date set
+
+Calendar and Date Picker, the two v0.2 items that run the same Zag `date-picker` machine through `@zag-js/react`. Property-named where the other new sections are member-listed: the pair share one machine, one grid paint restated between the two files, and one accessibility model. `calendar.tsx` pins `inline` and keeps the grid half of the anatomy; `date-picker.tsx` keeps the whole anatomy plus `Portal` and omits `inline`.
 
 ## Page window
 
