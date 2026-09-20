@@ -181,6 +181,7 @@ const styles = stylex.create({
     margin: 0,
   },
   readout: {
+    alignSelf: 'flex-start',
     color: color['--ult-color-text-muted'],
     display: 'flex',
     flexDirection: 'column',
@@ -193,7 +194,6 @@ const styles = stylex.create({
     display: 'flex',
     flexWrap: 'wrap',
     gap: space['--ult-space-4'],
-    justifyContent: 'space-between',
   },
   tokenValue: {
     color: color['--ult-color-text'],
