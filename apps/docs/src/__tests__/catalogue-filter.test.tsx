@@ -4,6 +4,7 @@ import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
+import { components } from '../components';
 import { routeTree } from '../router';
 import { THEME_STORAGE_KEY } from '../theme';
 import '../styles.css';
@@ -45,7 +46,7 @@ test('release and text filters combine, empty results recover, and clear restore
   await expect.element(screen.getByRole('option', { name: 'v0.2', exact: true })).toHaveAttribute('data-highlighted');
   await userEvent.keyboard('{Enter}');
   await expect.element(release).toHaveTextContent('v0.2');
-  await expect.element(main.getByRole('status')).toHaveTextContent('14 components');
+  await expect.element(main.getByRole('status')).toHaveTextContent(`${components.filter((component) => component.release === 'v0.2').length} components`);
   expect(main.getByRole('heading', { name: 'The v0 set' }).query()).toBeNull();
   const input = main.getByRole('textbox', { name: 'Filter components' });
   await userEvent.fill(input, 'button');
@@ -58,7 +59,7 @@ test('release and text filters combine, empty results recover, and clear restore
   await expect.element(input).toHaveValue('');
   await expect.element(input).toHaveFocus();
   await expect.element(release).toHaveTextContent('All releases');
-  await expect.element(main.getByRole('status')).toHaveTextContent('46 components');
+  await expect.element(main.getByRole('status')).toHaveTextContent(`${components.length} components`);
   await expect.element(clear).toBeDisabled();
   await userEvent.click(main.getByRole('link', { name: /^Button / }));
   await expect.element(main.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
