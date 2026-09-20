@@ -294,6 +294,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Calendar',
+    item: 'calendar',
+    description: 'An inline day, month, and year grid for picking dates, on Zag.',
+    release: 'v0.2',
+  },
+  {
     name: 'Button Group',
     item: 'button-group',
     description: 'A row of buttons joined as one control, with per-item variant and tone overrides.',

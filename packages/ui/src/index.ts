@@ -397,6 +397,27 @@ export {
   type DrawerVirtualKeyboardProviderProps,
 } from './drawer';
 export {
+  Calendar,
+  type CalendarRootProps,
+  type CalendarLabelProps,
+  type CalendarContentProps,
+  type CalendarViewControlProps,
+  type CalendarPrevTriggerProps,
+  type CalendarNextTriggerProps,
+  type CalendarViewTriggerProps,
+  type CalendarRangeTextProps,
+  type CalendarViewProps,
+  type CalendarTableProps,
+  type CalendarTableHeadProps,
+  type CalendarTableBodyProps,
+  type CalendarTableRowProps,
+  type CalendarTableHeaderProps,
+  type CalendarTableCellProps,
+  type CalendarTableCellTriggerProps,
+  type CalendarMonthSelectProps,
+  type CalendarYearSelectProps,
+} from './calendar';
+export {
   ButtonGroup,
   type ButtonGroupRootProps,
   type ButtonGroupItemProps,
