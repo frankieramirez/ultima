@@ -31,6 +31,7 @@ import InputContent from './content/components/input.mdx';
 import InputGroupContent from './content/components/input-group.mdx';
 import MenubarContent from './content/components/menubar.mdx';
 import MeterContent from './content/components/meter.mdx';
+import NativeSelectContent from './content/components/native-select.mdx';
 import NavigationMenuContent from './content/components/navigation-menu.mdx';
 import PaginationContent from './content/components/pagination.mdx';
 import PopoverContent from './content/components/popover.mdx';
@@ -146,6 +147,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   'input-group': InputGroupContent,
   menubar: MenubarContent,
   meter: MeterContent,
+  'native-select': NativeSelectContent,
   'navigation-menu': NavigationMenuContent,
   pagination: PaginationContent,
   popover: PopoverContent,
