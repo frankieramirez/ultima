@@ -196,7 +196,7 @@ A checkbox that is neither checked nor unchecked: some but not all of a related 
 
 ## Combobox
 
-A filterable input whose value is restricted to the item set. It is a sibling of Select, not a variant of it. Autocomplete is the free-text primitive Base UI ships beside it and is not in v0.1. `Combobox.Label` names the trigger, not the input.
+A filterable input whose value is restricted to the item set. It is a sibling of Select, not a variant of it. Autocomplete is the free-text primitive Base UI ships beside it and is not in v0.1; it backs `command` in v0.2. `Combobox.Label` names the trigger, not the input.
 
 ## Alert
 
@@ -232,7 +232,7 @@ A documented pattern, not a catalogue component and not a shared announcer. Pre-
 
 ## Overlay
 
-A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it. Alert Dialog is the seventh: it joins the recipe and does not vary it. Navigation Menu is the eighth: it joins the recipe and varies the transition, the second component to do so after Sidebar's mobile menu, dropping the shared `scale(0.98)` because a transform cannot fight an animated width and height. v0.2's overlay set takes the recipe to twelve: Popover ninth, Drawer tenth, Context Menu eleventh, Hover Card twelfth. Popover, Context Menu, and Hover Card join unvaried; Drawer is the third stated variation, dropping the scale because a swipe owns `transform`. Toast is not an overlay, and neither is Menubar: it portals nothing and floats nothing, and the overlays a menubar holds are the Dropdown Menu popups inside it. Sheet takes no number, because it introduces no component.
+A component that portals a floating surface over the page: Dialog, Dropdown Menu, Select, Tooltip. All four share one surface, one enter and exit transition, and one z-index constant. Sidebar's mobile menu is the fifth: it composes Dialog and varies only the transition. Combobox is the sixth: it joins the recipe on its popup and does not vary it. Alert Dialog is the seventh: it joins the recipe and does not vary it. Navigation Menu is the eighth: it joins the recipe and varies the transition, the second component to do so after Sidebar's mobile menu, dropping the shared `scale(0.98)` because a transform cannot fight an animated width and height. v0.2's overlay set takes the recipe to twelve: Popover ninth, Drawer tenth, Context Menu eleventh, Hover Card twelfth. Popover, Context Menu, and Hover Card join unvaried; Drawer is the third stated variation, dropping the scale because a swipe owns `transform`. Command's anchored `Popup` is the thirteenth, unvaried; its `inline` arrangement renders no popup and makes no second claim. Toast is not an overlay, and neither is Menubar: it portals nothing and floats nothing, and the overlays a menubar holds are the Dropdown Menu popups inside it. Sheet takes no number, because it introduces no component.
 
 ## Context Menu
 
@@ -265,6 +265,10 @@ A native scroll container with scrollbars Ultima paints and a viewport a keyboar
 ## Toggle
 
 A button that stays pressed, shipped as its own item though `ToggleGroup.Item` renders the same Base UI component. One function, no parts, and two axes Toggle Group has none of: `variant` for whether it carries a border at rest, and `size` at Button's three control heights, because a standalone toggle stands beside a button and a grouped one stands inside a ground that sets its scale. Its pressed state is the accent role where the group's is neutral, since a lone control has no sibling to be read against. The two are not interchangeable at the type level and each file restates the other's paint rather than importing it: `value` is dropped here because it identifies a toggle to a group, and `pressed` is inert inside one.
+
+## Command
+
+A free-text filterable list of actions, the catalogue item on Base UI's `Autocomplete`. Its items are actions and suggestions rather than a selection, so there is no `ItemIndicator` and no `data-selected`, and the input value is free text, which is the whole difference between it and Combobox. Its anchored popup is the thirteenth overlay; `Root open inline` renders the list inline, the arrangement the command-dialog recipe composes inside a Dialog. The `filter` prop is the scorer socket: the default is the primitive's Collator filter, and an optional scorer the consumer installs replaces it.
 
 ## Restatement
 
