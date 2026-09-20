@@ -417,3 +417,9 @@ export {
   type CalendarMonthSelectProps,
   type CalendarYearSelectProps,
 } from './calendar';
+export {
+  NativeSelect,
+  type NativeSelectRootProps,
+  type NativeSelectSelectProps,
+  type NativeSelectSize,
+} from './native-select';

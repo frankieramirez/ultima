@@ -30,6 +30,7 @@ import HoverCardContent from './content/components/hover-card.mdx';
 import InputContent from './content/components/input.mdx';
 import MenubarContent from './content/components/menubar.mdx';
 import MeterContent from './content/components/meter.mdx';
+import NativeSelectContent from './content/components/native-select.mdx';
 import NavigationMenuContent from './content/components/navigation-menu.mdx';
 import PaginationContent from './content/components/pagination.mdx';
 import PopoverContent from './content/components/popover.mdx';
@@ -144,6 +145,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   input: InputContent,
   menubar: MenubarContent,
   meter: MeterContent,
+  'native-select': NativeSelectContent,
   'navigation-menu': NavigationMenuContent,
   pagination: PaginationContent,
   popover: PopoverContent,

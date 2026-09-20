@@ -305,6 +305,12 @@ export const components = [
     description: 'An inline day, month, and year grid for picking dates, on Zag.',
     release: 'v0.2',
   },
+  {
+    name: 'Native Select',
+    item: 'native-select',
+    description: 'A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
