@@ -44,5 +44,22 @@ export type {
   TokenTable,
   TypeScale,
 } from './theme/draft';
+export {
+  decodeFragment,
+  draftFingerprint,
+  encodeFragment,
+  FRAGMENT_SAFE_LENGTH,
+  parseDraft,
+  serializeDraft,
+} from './theme/codec';
+export type { DraftParseReason, DraftParseResult, FragmentEncodeResult } from './theme/codec';
+export { toCss, toRegistryItem, toStylex, STUDIO_VERSION } from './theme/export';
+export {
+  AUTOSAVE_BACKUP_KEY,
+  AUTOSAVE_KEY,
+  restoreAutosave,
+  saveAutosave,
+} from './theme/autosave';
+export type { AutosaveResult, StorageLike } from './theme/autosave';
 export { gate, PAIRINGS } from './theme/gate';
 export type { Pairing, PairingModeResult, PairingResult } from './theme/gate';

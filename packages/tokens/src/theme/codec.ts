@@ -1,0 +1,243 @@
+import {
+  THEME_DRAFT_VERSION,
+  type DensityFactor,
+  type GuidedGroup,
+  type MeasurePreset,
+  type ShapePreset,
+  type ThemeDraft,
+  type TokenTable,
+  type TypeScale,
+} from './draft.ts';
+import { SCALE_NAMES, type ScaleSeed, type ScaleSeeds } from './recipe.ts';
+
+export type DraftParseReason = 'malformed' | 'unknown-version';
+
+export type DraftParseResult =
+  | { ok: true; draft: ThemeDraft }
+  | { ok: false; reason: DraftParseReason; message: string };
+
+const GUIDED_GROUPS: GuidedGroup[] = ['color', 'typography', 'density', 'shape', 'elevation', 'motion'];
+const MEASURES: MeasurePreset[] = ['compact', 'default', 'loose'];
+const SHAPES: ShapePreset[] = ['sharp', 'default', 'round'];
+const DENSITIES: DensityFactor[] = [0.75, 1, 1.25];
+const TYPE_SCALES: TypeScale[] = ['stock', 1.125, 1.2, 1.25, 1.333];
+const SHUFFLE_KEYS = [...GUIDED_GROUPS, 'global'] as const;
+
+function fail(reason: DraftParseReason, message: string): DraftParseResult {
+  return { ok: false, reason, message };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function isOneOf<T>(value: unknown, allowed: readonly T[]): value is T {
+  return (allowed as readonly unknown[]).includes(value);
+}
+
+function parseTokenTable(value: unknown): Partial<TokenTable> | null {
+  if (!isRecord(value)) return null;
+  const table: Partial<TokenTable> = {};
+  for (const [name, token] of Object.entries(value)) {
+    if (typeof token !== 'string') return null;
+    table[name] = token;
+  }
+  return table;
+}
+
+function parseSeed(value: unknown): ScaleSeed | null {
+  if (!isRecord(value) || !isFiniteNumber(value.hue) || !isFiniteNumber(value.saturation)) return null;
+  return { hue: value.hue, saturation: value.saturation };
+}
+
+function parseColor(value: unknown): ScaleSeeds | null {
+  if (!isRecord(value)) return null;
+  const keys = Object.keys(value);
+  if (keys.length !== SCALE_NAMES.length || SCALE_NAMES.some((name) => !keys.includes(name))) return null;
+  const color = {} as ScaleSeeds;
+  for (const name of SCALE_NAMES) {
+    const seed = parseSeed(value[name]);
+    if (!seed) return null;
+    color[name] = seed;
+  }
+  return color;
+}
+
+function parseTypography(value: unknown): ThemeDraft['typography'] | null {
+  if (!isRecord(value)) return null;
+  if (typeof value.sans !== 'string' || typeof value.mono !== 'string') return null;
+  if (!isFiniteNumber(value.baseSizePx) || !isOneOf(value.scale, TYPE_SCALES)) return null;
+  if (!isOneOf(value.leading, MEASURES) || !isOneOf(value.tracking, MEASURES)) return null;
+  return {
+    sans: value.sans,
+    mono: value.mono,
+    baseSizePx: value.baseSizePx,
+    scale: value.scale,
+    leading: value.leading,
+    tracking: value.tracking,
+  };
+}
+
+function parseOverrides(value: unknown): ThemeDraft['overrides'] | null {
+  if (!isRecord(value)) return null;
+  const dark = parseTokenTable(value.dark);
+  const light = parseTokenTable(value.light);
+  if (!dark || !light) return null;
+  return { dark, light };
+}
+
+function parseLocks(value: unknown): ThemeDraft['locks'] | null {
+  if (!isRecord(value)) return null;
+  const keys = Object.keys(value);
+  if (keys.length !== GUIDED_GROUPS.length || GUIDED_GROUPS.some((name) => !keys.includes(name))) return null;
+  const locks = {} as ThemeDraft['locks'];
+  for (const group of GUIDED_GROUPS) {
+    if (typeof value[group] !== 'boolean') return null;
+    locks[group] = value[group];
+  }
+  return locks;
+}
+
+function parseShuffleSeeds(value: unknown): ThemeDraft['shuffleSeeds'] | null {
+  if (!isRecord(value)) return null;
+  const seeds: ThemeDraft['shuffleSeeds'] = {};
+  for (const [key, seed] of Object.entries(value)) {
+    if (!isOneOf(key, SHUFFLE_KEYS) || !isFiniteNumber(seed)) return null;
+    seeds[key] = seed;
+  }
+  return seeds;
+}
+
+export const FRAGMENT_SAFE_LENGTH = 2048;
+
+const FRAGMENT_PREFIX = '#theme=';
+
+export type FragmentEncodeResult = {
+  fragment: string;
+  tooLong: boolean;
+};
+
+async function pipeThrough(
+  bytes: Uint8Array,
+  stream: CompressionStream | DecompressionStream,
+): Promise<Uint8Array> {
+  const pending = new Response(stream.readable).arrayBuffer();
+  const writer = stream.writable.getWriter();
+  await writer.write(new Uint8Array(bytes));
+  await writer.close();
+  return new Uint8Array(await pending);
+}
+
+function toBase64Url(bytes: Uint8Array): string {
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
+}
+
+function fromBase64Url(value: string): Uint8Array | null {
+  const padded = value.replaceAll('-', '+').replaceAll('_', '/');
+  const pad = padded.length % 4 === 0 ? '' : '='.repeat(4 - (padded.length % 4));
+  try {
+    const binary = atob(`${padded}${pad}`);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
+export function serializeDraft(draft: ThemeDraft): string {
+  return `${JSON.stringify(draft, null, 2)}\n`;
+}
+
+export function draftFingerprint(draft: ThemeDraft): string {
+  const source = serializeDraft(draft);
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < source.length; i++) {
+    hash ^= source.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0').slice(0, 6);
+}
+
+export async function encodeFragment(draft: ThemeDraft): Promise<FragmentEncodeResult> {
+  const compressed = await pipeThrough(
+    new TextEncoder().encode(serializeDraft(draft)),
+    new CompressionStream('deflate'),
+  );
+  const fragment = `${FRAGMENT_PREFIX}${toBase64Url(compressed)}`;
+  return { fragment, tooLong: fragment.length > FRAGMENT_SAFE_LENGTH };
+}
+
+export async function decodeFragment(hash: string): Promise<DraftParseResult> {
+  if (!hash.startsWith(FRAGMENT_PREFIX)) {
+    return fail('malformed', 'Theme fragment is missing the #theme= prefix.');
+  }
+  const bytes = fromBase64Url(hash.slice(FRAGMENT_PREFIX.length));
+  if (!bytes) return fail('malformed', 'Theme fragment is not valid base64url.');
+  try {
+    const json = new TextDecoder().decode(
+      await pipeThrough(bytes, new DecompressionStream('deflate')),
+    );
+    return parseDraft(json);
+  } catch {
+    return fail('malformed', 'Theme fragment could not be inflated.');
+  }
+}
+
+export function parseDraft(input: string): DraftParseResult {
+  if (typeof input !== 'string' || input.trim() === '') {
+    return fail('malformed', 'Draft is empty or not JSON.');
+  }
+
+  let raw: unknown;
+  try {
+    raw = JSON.parse(input);
+  } catch {
+    return fail('malformed', 'Draft is not valid JSON.');
+  }
+
+  if (!isRecord(raw)) return fail('malformed', 'Draft must be an object.');
+  if (!isFiniteNumber(raw.version)) return fail('malformed', 'Draft is missing a version.');
+  if (raw.version !== THEME_DRAFT_VERSION) {
+    return fail('unknown-version', `Draft version ${raw.version} is not supported.`);
+  }
+  if (!isFiniteNumber(raw.recipeVersion)) return fail('malformed', 'Draft is missing a recipe version.');
+
+  const color = parseColor(raw.color);
+  const typography = parseTypography(raw.typography);
+  const overrides = parseOverrides(raw.overrides);
+  const locks = parseLocks(raw.locks);
+  const shuffleSeeds = parseShuffleSeeds(raw.shuffleSeeds);
+  if (!color || !typography || !overrides || !locks || !shuffleSeeds) {
+    return fail('malformed', 'Draft is missing required fields.');
+  }
+  if (!isOneOf(raw.density, DENSITIES) || !isOneOf(raw.shape, SHAPES)) {
+    return fail('malformed', 'Draft density or shape is not a known preset.');
+  }
+  if (!isFiniteNumber(raw.elevation) || !isFiniteNumber(raw.motion)) {
+    return fail('malformed', 'Draft elevation or motion is not a number.');
+  }
+
+  return {
+    ok: true,
+    draft: {
+      version: THEME_DRAFT_VERSION,
+      recipeVersion: raw.recipeVersion,
+      color,
+      typography,
+      density: raw.density,
+      shape: raw.shape,
+      elevation: raw.elevation,
+      motion: raw.motion,
+      overrides,
+      locks,
+      shuffleSeeds,
+    },
+  };
+}

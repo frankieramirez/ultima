@@ -1,0 +1,126 @@
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { expect, test } from 'vitest';
+
+import { draftFingerprint, serializeDraft } from '../theme/codec.ts';
+import { resolveDraft, stockDraft } from '../theme/draft.ts';
+import { toCss, toRegistryItem, toStylex } from '../theme/export.ts';
+
+const GROUPS = ['color', 'space', 'text', 'font', 'radius', 'shadow', 'motion'] as const;
+
+function headerMentions(source: string, draft = stockDraft()) {
+  const head = source.slice(0, source.indexOf('\n', source.indexOf('*/')));
+  expect(head).toMatch(/studio v1/i);
+  expect(head).toMatch(/draft v1/i);
+  expect(head).toContain(draftFingerprint(draft));
+}
+
+test('toCss emits the contracted blocks and fixed reduced-motion values', () => {
+  const draft = stockDraft();
+  draft.motion = 0.6;
+  const css = toCss(draft);
+  const tables = resolveDraft(draft);
+
+  headerMentions(css, draft);
+  expect(css).not.toMatch(/@layer/);
+  expect(css).toMatch(/:root \{\n  color-scheme: dark;/);
+  expect(css).toMatch(
+    /@media \(prefers-color-scheme: light\) \{\n  :root \{\n    color-scheme: light;/,
+  );
+  expect(css).toMatch(/\[data-theme="dark"\] \{\n  color-scheme: dark;/);
+  expect(css).toMatch(/\[data-theme="light"\] \{\n  color-scheme: light;/);
+  expect(css).toContain(`--ult-motion-fast: ${tables.dark['--ult-motion-fast']};`);
+  expect(css).toContain(`--ult-space-1: ${tables.dark['--ult-space-1']};`);
+  for (const group of GROUPS) {
+    expect(css).toContain(`--ult-${group}-`);
+  }
+  expect(css).toMatch(
+    /@media \(prefers-reduced-motion: reduce\) \{\n  :root,\n  \[data-theme="dark"\],\n  \[data-theme="light"\] \{\n    --ult-motion-fast: 1ms;\n    --ult-motion-base: 1ms;\n    --ult-motion-slow: 1ms;\n    --ult-motion-loop: 0s;/,
+  );
+  const darkBlock = css.slice(css.indexOf('[data-theme="dark"]'), css.indexOf('[data-theme="light"]'));
+  const lightBlock = css.slice(css.indexOf('[data-theme="light"]'), css.indexOf('@media (prefers-reduced-motion'));
+  for (const mode of ['dark', 'light'] as const) {
+    const block = mode === 'dark' ? darkBlock : lightBlock;
+    for (const [name, value] of Object.entries(tables[mode])) {
+      expect(block).toContain(`${name}: ${value};`);
+    }
+  }
+});
+
+test('toCss names failing pairings on an invalid draft', () => {
+  const draft = stockDraft();
+  draft.overrides.dark['--ult-color-text'] = '#777777';
+  draft.overrides.dark['--ult-color-surface'] = '#070707';
+  expect(toCss(draft)).toMatch(/failed token-contrast pairings/i);
+});
+
+test('toStylex emits full per-group per-mode themes', () => {
+  const draft = stockDraft();
+  draft.overrides.dark['--ult-color-accent'] = '#ff00aa';
+  const source = toStylex(draft);
+  headerMentions(source, draft);
+  expect([...source.matchAll(/createTheme\((\w+),/g)].map((match) => match[1])).toEqual([
+    ...GROUPS,
+    ...GROUPS,
+  ]);
+  expect(source).toContain('export const ultimaTheme');
+  expect(source).toContain('ultimaTheme');
+  expect(source).toContain("colorScheme: 'dark'");
+  expect(source).toContain("colorScheme: 'light'");
+  expect(source).toContain("'--ult-color-accent': '#ff00aa'");
+  expect(source).toContain("'--ult-color-surface'");
+  expect(source).toContain("'--ult-space-12'");
+  expect(source).toContain("'--ult-motion-fast': {");
+  expect(source).toContain("'@media (prefers-reduced-motion: reduce)': '1ms'");
+  expect(source).toContain("'@media (prefers-reduced-motion: reduce)': '0s'");
+  const tables = resolveDraft(draft);
+  const colorThemes = [...source.matchAll(/createTheme\(color, \{([\s\S]*?)\n\}\);/g)];
+  expect(colorThemes).toHaveLength(2);
+  for (const block of colorThemes) {
+    for (const name of Object.keys(tables.dark).filter((token) => token.startsWith('--ult-color-'))) {
+      expect(block[1]).toContain(name);
+    }
+  }
+});
+
+test('toRegistryItem is a universal item carrying the stylesheet and draft', () => {
+  const draft = stockDraft();
+  const json = toRegistryItem(draft);
+  const item = JSON.parse(json) as {
+    type: string;
+    files: { path: string; type: string; target: string; content: string }[];
+  };
+  expect(item.type).toBe('registry:item');
+  expect(item.files).toHaveLength(2);
+  for (const file of item.files) {
+    expect(file.type).toBe('registry:file');
+    expect(file.target).toBeTruthy();
+  }
+  expect(item.files.map((file) => file.target)).toEqual([
+    '~/ultima-theme.css',
+    '~/ultima-theme.json',
+  ]);
+  expect(item.files[0]?.content).toBe(toCss(draft));
+  expect(item.files[1]?.content).toBe(serializeDraft(draft));
+});
+
+test('npx shadcn add installs the registry item without components.json', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ultima-theme-'));
+  const draft = stockDraft();
+  try {
+    writeFileSync(join(dir, 'ultima-theme.registry.json'), toRegistryItem(draft));
+    execFileSync('npx', ['--yes', 'shadcn@latest', 'add', './ultima-theme.registry.json', '--overwrite'], {
+      cwd: dir,
+      encoding: 'utf8',
+      timeout: 60_000,
+    });
+    expect(existsSync(join(dir, 'components.json'))).toBe(false);
+    expect(readFileSync(join(dir, 'ultima-theme.css'), 'utf8')).toBe(toCss(draft));
+    expect(readFileSync(join(dir, 'ultima-theme.json'), 'utf8')).toBe(serializeDraft(draft));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}, 60_000);
