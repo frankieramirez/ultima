@@ -374,3 +374,10 @@ export {
   type DrawerSwipeAreaProps,
   type DrawerVirtualKeyboardProviderProps,
 } from './drawer';
+export {
+  InputOTP,
+  type InputOTPSize,
+  type InputOTPRootProps,
+  type InputOTPInputProps,
+  type InputOTPSeparatorProps,
+} from './input-otp';

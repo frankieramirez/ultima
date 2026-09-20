@@ -254,6 +254,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
     docs: "import { AspectRatio } from '@/components/ui/aspect-ratio';\n\n<AspectRatio ratio={16 / 9}>\n  <img src=\"/cover.png\" alt=\"Ridgeline at dusk\" />\n</AspectRatio>\n\nratio is a number written inline as aspect-ratio, the file's one runtime declaration. The box and the radius go through the style slot, and render swaps the div for your own element, like a figure.",
   },
+  'input-otp': {
+    title: 'Input OTP',
+    description: 'A one-time-code field of uniform square slots, on Base UI.',
+    docs: "import { InputOTP } from '@/components/ui/input-otp';\n\n<label htmlFor=\"code\">Verification code</label>\n<InputOTP.Root id=\"code\" length={6}>\n  {Array.from({ length: 6 }, (_, index) => (\n    <InputOTP.Input key={index} aria-label={index === 0 ? undefined : `Character ${index + 1} of 6`} />\n  ))}\n</InputOTP.Root>\n\nlength is required; the consumer renders one Input per slot. size sits on Root and reaches the slots through context. Slots two through N take their own aria-label because the first slot is named by the field's label.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:

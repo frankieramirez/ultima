@@ -293,6 +293,12 @@ export const components = [
     description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
     release: 'v0.2',
   },
+  {
+    name: 'Input OTP',
+    item: 'input-otp',
+    description: 'A one-time-code field of uniform square slots, on Base UI.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
