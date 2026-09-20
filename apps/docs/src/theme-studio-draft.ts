@@ -1,110 +1,115 @@
-import * as stylex from '@stylexjs/stylex';
-import { color } from '@ultima/tokens/tokens.stylex';
+import type { CSSProperties } from 'react';
+import {
+  STOCK_MONO,
+  STOCK_SANS,
+  stockDraft,
+  type GuidedGroup,
+  type ThemeDraft,
+  type TokenTable,
+} from '@ultima/tokens';
 
-export const draftDark = stylex.createTheme(color, {
-  '--ult-color-surface': '#101011',
-  '--ult-color-surface-raised': '#141516',
-  '--ult-color-surface-sunken': '#1d1e20',
-  '--ult-color-surface-hover': '#27272a',
-  '--ult-color-surface-overlay': '#14151699',
-  '--ult-color-text': '#e7e8e9',
-  '--ult-color-text-muted': '#b6b7ba',
-  '--ult-color-text-subtle': '#919295',
-  '--ult-color-text-inverse': '#101011',
-  '--ult-color-border': '#3c3d40',
-  '--ult-color-border-strong': '#626366',
-  '--ult-color-border-focus': '#56cb98',
-  '--ult-color-action': '#44d4e1',
-  '--ult-color-action-hover': '#59e4f2',
-  '--ult-color-action-active': '#79f0fc',
-  '--ult-color-action-contrast': '#101011',
-  '--ult-color-accent': '#56cb98',
-  '--ult-color-accent-hover': '#67dba7',
-  '--ult-color-accent-active': '#81e6b6',
-  '--ult-color-accent-subtle': '#002516',
-  '--ult-color-accent-border': '#005c3d',
-  '--ult-color-accent-text': '#9becc4',
-  '--ult-color-accent-contrast': '#101011',
-  '--ult-color-highlight': '#44d4e1',
-  '--ult-color-highlight-hover': '#59e4f2',
-  '--ult-color-highlight-active': '#79f0fc',
-  '--ult-color-highlight-subtle': '#002327',
-  '--ult-color-highlight-border': '#00585f',
-  '--ult-color-highlight-text': '#8ff5ff',
-  '--ult-color-highlight-contrast': '#101011',
-  '--ult-color-success': '#56cb98',
-  '--ult-color-success-hover': '#67dba7',
-  '--ult-color-success-active': '#81e6b6',
-  '--ult-color-success-subtle': '#002516',
-  '--ult-color-success-border': '#005c3d',
-  '--ult-color-success-text': '#9becc4',
-  '--ult-color-success-contrast': '#101011',
-  '--ult-color-warning': '#eab352',
-  '--ult-color-warning-hover': '#f8c060',
-  '--ult-color-warning-active': '#ffcf80',
-  '--ult-color-warning-subtle': '#2a1b00',
-  '--ult-color-warning-border': '#664600',
-  '--ult-color-warning-text': '#ffd898',
-  '--ult-color-warning-contrast': '#101011',
-  '--ult-color-danger': '#df6769',
-  '--ult-color-danger-hover': '#f07778',
-  '--ult-color-danger-active': '#fb8c8c',
-  '--ult-color-danger-subtle': '#351011',
-  '--ult-color-danger-border': '#822b2f',
-  '--ult-color-danger-text': '#ffaaa8',
-  '--ult-color-danger-contrast': '#101011',
-});
+export const GROUPS = [
+  { id: 'color', label: 'Color' },
+  { id: 'typography', label: 'Typography' },
+  { id: 'density', label: 'Density' },
+  { id: 'shape', label: 'Shape' },
+  { id: 'elevation', label: 'Elevation' },
+  { id: 'motion', label: 'Motion' },
+] as const satisfies readonly { id: GuidedGroup; label: string }[];
 
-export const draftLight = stylex.createTheme(color, {
-  '--ult-color-surface': '#fdfdff',
-  '--ult-color-surface-raised': '#f7f9ff',
-  '--ult-color-surface-sunken': '#eff1fa',
-  '--ult-color-surface-hover': '#e7e9f3',
-  '--ult-color-surface-overlay': '#f7f9ffcc',
-  '--ult-color-text': '#181a24',
-  '--ult-color-text-muted': '#4f525e',
-  '--ult-color-text-subtle': '#60636f',
-  '--ult-color-text-inverse': '#fdfdff',
-  '--ult-color-border': '#d0d3e2',
-  '--ult-color-border-strong': '#888b99',
-  '--ult-color-border-focus': '#008359',
-  '--ult-color-action': '#00818b',
-  '--ult-color-action-hover': '#00717a',
-  '--ult-color-action-active': '#00646c',
-  '--ult-color-action-contrast': '#fdfdff',
-  '--ult-color-accent': '#008359',
-  '--ult-color-accent-hover': '#00734d',
-  '--ult-color-accent-active': '#006644',
-  '--ult-color-accent-subtle': '#defaeb',
-  '--ult-color-accent-border': '#8dd7b2',
-  '--ult-color-accent-text': '#005c3d',
-  '--ult-color-accent-contrast': '#fdfdff',
-  '--ult-color-highlight': '#00818b',
-  '--ult-color-highlight-hover': '#00717a',
-  '--ult-color-highlight-active': '#00646c',
-  '--ult-color-highlight-subtle': '#dcf8fb',
-  '--ult-color-highlight-border': '#85d3db',
-  '--ult-color-highlight-text': '#00585f',
-  '--ult-color-highlight-contrast': '#fdfdff',
-  '--ult-color-success': '#008359',
-  '--ult-color-success-hover': '#00734d',
-  '--ult-color-success-active': '#006644',
-  '--ult-color-success-subtle': '#defaeb',
-  '--ult-color-success-border': '#8dd7b2',
-  '--ult-color-success-text': '#005c3d',
-  '--ult-color-success-contrast': '#fdfdff',
-  '--ult-color-warning': '#e7ac3e',
-  '--ult-color-warning-hover': '#d39923',
-  '--ult-color-warning-active': '#bf8600',
-  '--ult-color-warning-subtle': '#fff0d8',
-  '--ult-color-warning-border': '#e4be7f',
-  '--ult-color-warning-text': '#714e00',
-  '--ult-color-warning-contrast': '#181a24',
-  '--ult-color-danger': '#cb454c',
-  '--ult-color-danger-hover': '#ba343e',
-  '--ult-color-danger-active': '#a82131',
-  '--ult-color-danger-subtle': '#ffedec',
-  '--ult-color-danger-border': '#ffaaa8',
-  '--ult-color-danger-text': '#88222b',
-  '--ult-color-danger-contrast': '#fdfdff',
-});
+export type GroupId = (typeof GROUPS)[number]['id'];
+
+export const SCALE_ROLES = {
+  mithril: 'Neutral',
+  arcane: 'Accent',
+  mana: 'Action',
+  verdant: 'Success',
+  ember: 'Warning',
+  ruin: 'Danger',
+} as const;
+
+export const SANS_PRESETS = [
+  { label: 'IBM Plex Sans', value: STOCK_SANS },
+  {
+    label: 'System',
+    value: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif",
+  },
+  { label: 'Serif', value: "Georgia, 'Times New Roman', Times, serif" },
+  { label: 'Humanist', value: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif" },
+] as const;
+
+export const MONO_PRESETS = [
+  { label: 'IBM Plex Mono', value: STOCK_MONO },
+  { label: 'System', value: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace' },
+] as const;
+
+const GROUP_PREFIX: Record<GuidedGroup, readonly string[]> = {
+  color: ['--ult-color-'],
+  typography: ['--ult-text-', '--ult-font-'],
+  density: ['--ult-space-'],
+  shape: ['--ult-radius-'],
+  elevation: ['--ult-shadow-'],
+  motion: ['--ult-motion-'],
+};
+
+export function previewVars(table: TokenTable): CSSProperties {
+  return table as CSSProperties;
+}
+
+export function presetValue(stack: string, presets: readonly { label: string; value: string }[]): string {
+  return presets.some((preset) => preset.value === stack) ? stack : 'custom';
+}
+
+export function resetGroup(draft: ThemeDraft, group: GuidedGroup): ThemeDraft {
+  const stock = stockDraft();
+  const next: ThemeDraft = {
+    ...draft,
+    color: { ...draft.color },
+    typography: { ...draft.typography },
+    overrides: { dark: { ...draft.overrides.dark }, light: { ...draft.overrides.light } },
+    locks: { ...draft.locks },
+  };
+
+  switch (group) {
+    case 'color':
+      next.color = stock.color;
+      break;
+    case 'typography':
+      next.typography = stock.typography;
+      break;
+    case 'density':
+      next.density = stock.density;
+      break;
+    case 'shape':
+      next.shape = stock.shape;
+      break;
+    case 'elevation':
+      next.elevation = stock.elevation;
+      break;
+    case 'motion':
+      next.motion = stock.motion;
+      break;
+  }
+
+  for (const prefix of GROUP_PREFIX[group]) {
+    for (const mode of ['dark', 'light'] as const) {
+      for (const token of Object.keys(next.overrides[mode])) {
+        if (token.startsWith(prefix)) delete next.overrides[mode][token];
+      }
+    }
+  }
+  return next;
+}
+
+export function keepOne(next: string[], cancel: () => void): string | undefined {
+  const [selected] = next;
+  if (!selected) {
+    cancel();
+    return undefined;
+  }
+  return selected;
+}
+
+export function sliderNumber(value: number | readonly number[]): number {
+  return typeof value === 'number' ? value : (value[0] ?? 0);
+}
