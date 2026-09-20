@@ -64,11 +64,11 @@ A draft may sit invalid: a committed edit that fails the gate applies and is mar
 
 ### Theme studio layout and live preview
 
-Decided on [#208](https://github.com/frankieramirez/ultima/issues/208); amended on [#234](https://github.com/frankieramirez/ultima/issues/234). The `ultima.pen` Final design (frames `umu8k`/`ioTca`) is the visual contract; the throwaway prototype at `apps/docs/public/theme-studio-prototype.html` is superseded and kept only as a technical reference.
+Decided on [#208](https://github.com/frankieramirez/ultima/issues/208); amended on [#234](https://github.com/frankieramirez/ultima/issues/234) and [#269](https://github.com/frankieramirez/ultima/issues/269). The `ultima.pen` Final design (frames `umu8k`/`ioTca`) is the visual contract; the throwaway prototype at `apps/docs/public/theme-studio-prototype.html` is superseded and kept only as a technical reference.
 
 The editor is a compact left rail beside a large preview. The Rail variant won over Inspector, a right-hand column, and Sheet, a bottom drawer. Below roughly 840 px every layout converges to a bottom sheet with the preview on top and the editor as a drawer under it; inside the sheet a horizontal group selector replaces the stacked group list.
 
-The studio renders its own workbench header in place of docs navigation: the product title, the draft name, the autosave state, and Open, Share, and Export actions.
+The studio shares the site header: docs navigation, status, and the GitHub link render on this route as on every other, and the sidebar root mounts with its rail collapsed so the same mobile menu opens below the breakpoint. A workbench sub-bar under it carries the product title, the autosave state, and Open, Share, and Export actions, with no repeated brand mark. The draft name slot is dropped until drafts can be named. The pinned dark theme begins at the sub-bar, so the shared header follows the user's color-mode preference.
 
 The mode control offers dark, light, and compare. Compare renders two panes side by side, stacked when narrow, each forced to one mode and sharing one theme state so every control edits both at once.
 
