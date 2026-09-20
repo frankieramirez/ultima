@@ -30,7 +30,7 @@ test('text filtering matches names and descriptions without changing site naviga
   await expect.element(main.getByRole('status')).toHaveTextContent(
     `${buttonMatches.length} component${buttonMatches.length === 1 ? '' : 's'}`,
   );
-  await expect.element(main.getByRole('link', { name: /^Button / })).toBeVisible();
+  await expect.element(main.getByRole('link', { name: /^Button A / })).toBeVisible();
   expect(main.getByRole('link', { name: /^Badge / }).query()).toBeNull();
   await expect.element(screen.getByRole('navigation', { name: 'Ultima' }).getByRole('link', { name: 'Badge', exact: true })).toBeVisible();
   await userEvent.fill(input, 'bounded measurement');
@@ -55,7 +55,7 @@ test('release and text filters combine, empty results recover, and clear restore
   expect(main.getByRole('heading', { name: 'The v0 set' }).query()).toBeNull();
   const input = main.getByRole('textbox', { name: 'Filter components' });
   await userEvent.fill(input, 'button');
-  await expect.element(main.getByRole('status')).toHaveTextContent('1 component');
+  await expect.element(main.getByRole('status')).toHaveTextContent('2 components');
   await expect.element(main.getByRole('link', { name: /^Toggle / })).toBeVisible();
   await userEvent.fill(input, 'no-such-component');
   await expect.element(main.getByRole('status')).toHaveTextContent('0 components');
@@ -66,7 +66,7 @@ test('release and text filters combine, empty results recover, and clear restore
   await expect.element(release).toHaveTextContent('All releases');
   await expect.element(main.getByRole('status')).toHaveTextContent(`${components.length} components`);
   await expect.element(clear).toBeDisabled();
-  await userEvent.click(main.getByRole('link', { name: /^Button / }));
+  await userEvent.click(main.getByRole('link', { name: /^Button A / }));
   await expect.element(main.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
 });
 
