@@ -3,6 +3,8 @@ import Basic from '../../demos/aspect-ratio/basic';
 import basicSource from '../../demos/aspect-ratio/basic?raw';
 import Figure from '../../demos/aspect-ratio/figure';
 import figureSource from '../../demos/aspect-ratio/figure?raw';
+import Carousel from '../../demos/aspect-ratio/carousel';
+import carouselSource from '../../demos/aspect-ratio/carousel?raw';
 
 # Aspect Ratio
 
@@ -29,6 +31,24 @@ There is no `size`, `width`, or `radius` prop — the box and the radius are the
 `render` swaps the box's element — a `<figure>` for media that is a figure, carrying its own name — and `ref` reaches the same element.
 
 <Demo component={Figure} source={figureSource} />
+
+## Carousel
+
+A carousel is a strip of slides stepped through with Previous and Next controls. It is a recipe rather than a component: there is no `@ultima/carousel` item and no file to install, because the slide box is `AspectRatio`, the controls are `Button`s, and the scrolling is an engine's job. The engine is [Embla](https://www.embla-carousel.com/) — `embla-carousel-react` renders no DOM and no styles of its own, and `useEmblaCarousel` owns the scroll position, the snap points, and the `scrollPrev`/`scrollNext`/`canScrollPrev`/`canScrollNext` surface — and it is your dependency.
+
+```bash
+npm install embla-carousel-react
+```
+
+No file in `@ultima/ui` imports the engine, so no registry item declares it and nothing arrives with `@ultima/aspect-ratio`.
+
+Component dependencies: `aspect-ratio` and `button`.
+
+The Embla ref goes on an overflow viewport whose children are `AspectRatio` slides sized to fill it. Previous and Next call `scrollPrev()` and `scrollNext()`, and their `disabled` props follow `canScrollPrev` and `canScrollNext`, re-read on the engine's `select` event. The documented states are live in the demo: rest, the disabled Previous on the first slide and disabled Next on the last, and the scroll animation between them.
+
+The accessibility shape is documented rather than shipped. The carousel is a `role="region"` (or `group`) carrying `aria-roledescription="carousel"` and an accessible name. Each slide is a `role="group"` with `aria-roledescription="slide"` and `aria-label="n of N"`, and both controls are named. The keyboard is the buttons' native tab stops — slides are not roving-tabindex targets — and there is no autoplay.
+
+<Demo component={Carousel} source={carouselSource} />
 
 ## Props
 

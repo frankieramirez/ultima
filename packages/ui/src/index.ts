@@ -432,3 +432,10 @@ export {
   type InputOTPInputProps,
   type InputOTPSeparatorProps,
 } from './input-otp';
+
+export {
+  NativeSelect,
+  type NativeSelectRootProps,
+  type NativeSelectSelectProps,
+  type NativeSelectSize,
+} from './native-select';

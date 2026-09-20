@@ -317,6 +317,12 @@ export const components = [
     description: 'A one-time-code field of uniform square slots, on Base UI.',
     release: 'v0.2',
   },
+  {
+    name: 'Native Select',
+    item: 'native-select',
+    description: 'A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
