@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme } from '@ultima/tokens';
+import { colorScheme, type ResolvedDraft, type TokenTable } from '@ultima/tokens';
 import { border, color, font, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 import {
   Alert,
@@ -19,9 +19,9 @@ import {
   Toggle,
   ToggleGroup,
 } from '@ultima/ui';
-import { useRef, useState, type MouseEvent, type ReactNode, type RefObject } from 'react';
+import { useRef, useState, type CSSProperties, type MouseEvent, type ReactNode, type RefObject } from 'react';
 
-import { draftDark, draftLight } from './theme-studio-draft';
+import { previewVars } from './theme-studio-draft';
 
 const RAIL = '@media (min-width: 52.5rem)';
 
@@ -209,9 +209,11 @@ const styles = stylex.create({
 export function ThemeStudioPreview({
   mode,
   onModeChange,
+  tables,
 }: {
   mode: PreviewMode;
   onModeChange: (mode: PreviewMode) => void;
+  tables: ResolvedDraft;
 }) {
   const [scene, setScene] = useState<Scene>('workspace');
   const [inspect, setInspect] = useState(false);
@@ -275,6 +277,7 @@ export function ThemeStudioPreview({
             mode={pane}
             onReadout={setReadout}
             scene={scene}
+            table={tables[pane]}
           />
         ))}
       </div>
@@ -295,15 +298,17 @@ function PreviewPane({
   mode,
   onReadout,
   scene,
+  table,
 }: {
   inspect: boolean;
   mode: PaneMode;
   onReadout: (tokens: TokenReadout | null) => void;
   scene: Scene;
+  table: TokenTable;
 }) {
   const portal = useRef<HTMLDivElement>(null);
-  const theme = mode === 'dark' ? draftDark : draftLight;
   const scheme = mode === 'dark' ? colorScheme.dark : colorScheme.light;
+  const pane = stylex.props(scheme, styles.pane);
 
   function readTokens(event: MouseEvent<HTMLDivElement>) {
     if (!inspect) return;
@@ -321,13 +326,14 @@ function PreviewPane({
   return (
     <div
       aria-label={mode === 'dark' ? 'Dark preview' : 'Light preview'}
+      className={pane.className}
       onMouseLeave={() => {
         if (inspect) onReadout(null);
       }}
       onMouseOver={readTokens}
       ref={portal}
       role="region"
-      {...stylex.props(theme, scheme, styles.pane)}
+      style={{ ...pane.style, ...previewVars(table) } as CSSProperties}
     >
       <div data-preview-scene={scene} {...stylex.props(styles.scene)}>
         <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />

@@ -1,20 +1,21 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { darkTheme, colorScheme } from '@ultima/tokens';
+import { colorScheme, darkTheme, resolveDraft, stockDraft } from '@ultima/tokens';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Separator, ToggleGroup } from '@ultima/ui';
-import { useState } from 'react';
+import { Button, Separator } from '@ultima/ui';
+import { useMemo, useState } from 'react';
 
 import { BrandLogo } from '../brand-logo';
+import { GROUPS } from '../theme-studio-draft';
+import { ThemeStudioEditor } from '../theme-studio-editor';
 import { ThemeStudioPreview } from '../theme-studio-preview';
 
 const RAIL = '@media (min-width: 52.5rem)';
 
-const GROUPS = ['Color', 'Typography', 'Density', 'Shape', 'Elevation', 'Motion'] as const;
 const MODES = ['dark', 'light', 'compare'] as const;
 
-type Group = (typeof GROUPS)[number];
+type Group = (typeof GROUPS)[number]['label'];
 type Mode = (typeof MODES)[number];
 
 const styles = stylex.create({
@@ -84,8 +85,11 @@ const styles = stylex.create({
     padding: space['--ult-space-8'],
   },
   groups: {
-    flexDirection: { default: 'row', [RAIL]: 'column' },
-    flexShrink: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+    minBlockSize: 0,
+    minInlineSize: 0,
     overflow: 'auto',
   },
   status: {
@@ -106,6 +110,10 @@ const styles = stylex.create({
 export function ThemeStudio() {
   const [mode, setMode] = useState<Mode>('dark');
   const [group, setGroup] = useState<Group>('Color');
+  const [draft, setDraft] = useState(stockDraft);
+  const resolved = useMemo(() => resolveDraft(draft), [draft]);
+  const locked = Object.values(draft.locks).filter(Boolean).length;
+  const overrides = Object.keys(draft.overrides.dark).length + Object.keys(draft.overrides.light).length;
 
   return (
     <div {...stylex.props(darkTheme, colorScheme.dark, styles.shell)}>
@@ -131,25 +139,9 @@ export function ThemeStudio() {
       <Separator />
       <div {...stylex.props(styles.body)}>
         <aside aria-label="Theme editor" {...stylex.props(styles.editor)}>
-          <ToggleGroup.Root
-            aria-label="Theme groups"
-            onValueChange={(next, eventDetails) => {
-              const [selected] = next;
-              if (!selected) {
-                eventDetails.cancel();
-                return;
-              }
-              setGroup(selected);
-            }}
-            style={styles.groups}
-            value={[group]}
-          >
-            {GROUPS.map((name) => (
-              <ToggleGroup.Item key={name} value={name}>
-                {name}
-              </ToggleGroup.Item>
-            ))}
-          </ToggleGroup.Root>
+          <div {...stylex.props(styles.groups)}>
+            <ThemeStudioEditor draft={draft} group={group} onGroupChange={setGroup} setDraft={setDraft} />
+          </div>
           <div {...stylex.props(styles.status)}>
             <Button
               nativeButton={false}
@@ -160,13 +152,15 @@ export function ThemeStudio() {
               Token contrast · View report <ArrowUpRightIcon aria-hidden />
             </Button>
             <span {...stylex.props(styles.statusCopy)}>Editing both modes</span>
-            <span {...stylex.props(styles.statusCopy)}>0 overrides · 0 locked groups</span>
-            <Button size="sm" variant="ghost">
+            <span {...stylex.props(styles.statusCopy)}>
+              {overrides} overrides · {locked} locked group{locked === 1 ? '' : 's'}
+            </span>
+            <Button onClick={() => setDraft(stockDraft())} size="sm" variant="ghost">
               Reset theme
             </Button>
           </div>
         </aside>
-        <ThemeStudioPreview mode={mode} onModeChange={setMode} />
+        <ThemeStudioPreview mode={mode} onModeChange={setMode} tables={resolved} />
       </div>
     </div>
   );

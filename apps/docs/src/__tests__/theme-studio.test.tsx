@@ -1,6 +1,6 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
+import { colorScheme, darkTheme, lightTheme, resolveDraft, stockDraft } from '@ultima/tokens';
 import axe from 'axe-core';
 import { expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -20,12 +20,16 @@ const stock = {
   light: stylex.props(lightTheme, colorScheme.light),
 };
 
+function readToken(el: Element, token: string) {
+  return getComputedStyle(el).getPropertyValue(token).trim();
+}
+
 function readAccent(el: Element) {
-  return getComputedStyle(el).getPropertyValue('--ult-color-accent').trim();
+  return readToken(el, '--ult-color-accent');
 }
 
 function readSurface(el: Element) {
-  return getComputedStyle(el).getPropertyValue('--ult-color-surface').trim();
+  return readToken(el, '--ult-color-surface');
 }
 
 function stockValue(mode: keyof typeof stock, token: '--ult-color-accent' | '--ult-color-surface') {
@@ -59,18 +63,21 @@ test('the rail sits beside the preview, with the status bar under the editor', a
   await expect.element(preview).toBeVisible();
   expect(editor.getBoundingClientRect().right).toBeLessThanOrEqual(preview.getBoundingClientRect().left + 1);
 
-  await expect.element(screen.getByRole('group', { name: 'Theme groups' })).toBeVisible();
+  const selector = document.querySelector('[aria-label="Theme groups"]');
+  expect(selector).not.toBeNull();
+  expect(getComputedStyle(selector as Element).display).toBe('none');
   for (const group of ['Color', 'Typography', 'Density', 'Shape', 'Elevation', 'Motion']) {
-    await expect.element(screen.getByRole('button', { name: group, exact: true })).toBeVisible();
+    await expect.element(screen.getByRole('heading', { name: group, level: 2 })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: `Shuffle ${group}` })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: `Lock ${group}` })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: `Reset ${group}` })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: `${group} token overrides` })).toBeVisible();
   }
-  expect(getComputedStyle(screen.getByRole('group', { name: 'Theme groups' }).element()).flexDirection).toBe(
-    'column',
-  );
 
   await expect.element(screen.getByRole('button', { name: /Token contrast/ })).toBeVisible();
   await expect.element(screen.getByText('Editing both modes')).toBeVisible();
   await expect.element(screen.getByText(/overrides/)).toBeVisible();
-  await expect.element(screen.getByText(/locked groups/)).toBeVisible();
+  await expect.element(screen.getByText(/locked group/)).toBeVisible();
   await expect.element(screen.getByRole('button', { name: 'Reset theme' })).toBeVisible();
   expect(editor.contains(screen.getByRole('button', { name: 'Reset theme' }).element())).toBe(true);
 });
@@ -92,10 +99,9 @@ test('dark, light, and compare force pane modes and share one draft', async () =
   await expect.element(dark).toBeVisible();
   await expect.element(light).toBeVisible();
 
-  const draftDark = readAccent(dark);
-  const draftLight = readAccent(light);
-  expect(draftDark).not.toBe(stockValue('dark', '--ult-color-accent'));
-  expect(draftLight).not.toBe(stockValue('light', '--ult-color-accent'));
+  const tables = resolveDraft(stockDraft());
+  expect(readAccent(dark)).toBe(tables.dark['--ult-color-accent']);
+  expect(readAccent(light)).toBe(tables.light['--ult-color-accent']);
   expect(dark.querySelectorAll('[data-preview-specimen]').length).toBeGreaterThan(0);
   expect(light.querySelectorAll('[data-preview-specimen]').length).toBeGreaterThan(0);
 });
@@ -118,9 +124,8 @@ test('preview components follow the draft', async () => {
   await expect.element(screen.getByRole('heading', { name: 'Forma' })).toBeVisible();
   expect(pane.querySelector('input')).not.toBeNull();
 
-  const accent = readAccent(pane);
-  expect(accent).toBe('#56cb98');
-  expect(accent).not.toBe(stockValue('dark', '--ult-color-accent'));
+  const tables = resolveDraft(stockDraft());
+  expect(readAccent(pane)).toBe(tables.dark['--ult-color-accent']);
 });
 
 test('seven scene tabs show one scene at a time in each pane', async () => {
@@ -144,8 +149,9 @@ test('seven scene tabs show one scene at a time in each pane', async () => {
   const light = screen.getByRole('region', { name: 'Light preview' }).element();
   expect(dark.querySelectorAll('[data-preview-scene="typography"]').length).toBe(1);
   expect(light.querySelectorAll('[data-preview-scene="typography"]').length).toBe(1);
-  expect(readAccent(dark)).toBe('#56cb98');
-  expect(readAccent(light)).toBe('#008359');
+  const tables = resolveDraft(stockDraft());
+  expect(readAccent(dark)).toBe(tables.dark['--ult-color-accent']);
+  expect(readAccent(light)).toBe(tables.light['--ult-color-accent']);
 });
 
 test('the workspace scene is an application mock and the specimen strip sits below it', async () => {
@@ -251,7 +257,7 @@ test('editor chrome stays stock dark when the preview is light', async () => {
   const pane = screen.getByRole('region', { name: 'Light preview' }).element();
   expect(readSurface(editor)).toBe(stockValue('dark', '--ult-color-surface'));
   expect(readSurface(pane)).not.toBe(stockValue('dark', '--ult-color-surface'));
-  expect(readAccent(pane)).toBe('#008359');
+  expect(readAccent(pane)).toBe(resolveDraft(stockDraft()).light['--ult-color-accent']);
 });
 
 test('below 840px the editor becomes a bottom sheet with a horizontal group selector', async () => {
@@ -263,14 +269,79 @@ test('below 840px the editor becomes a bottom sheet with a horizontal group sele
   const preview = screen.getByRole('region', { name: 'Live preview' }).element();
   await expect.element(editor).toBeVisible();
   expect(preview.getBoundingClientRect().bottom).toBeLessThanOrEqual(editor.getBoundingClientRect().top + 1);
-  expect(getComputedStyle(screen.getByRole('group', { name: 'Theme groups' }).element()).flexDirection).toBe(
-    'row',
-  );
+  const groups = screen.getByRole('group', { name: 'Theme groups' }).element();
+  expect(getComputedStyle(groups).flexDirection).toBe('row');
+  await expect.element(screen.getByRole('heading', { name: 'Color', level: 2 })).toBeVisible();
+  expect(screen.container.querySelector('h2')?.textContent).toBe('Color');
 
   await userEvent.click(screen.getByRole('button', { name: 'Compare' }).element());
   const dark = screen.getByRole('region', { name: 'Dark preview' }).element();
   const light = screen.getByRole('region', { name: 'Light preview' }).element();
   expect(dark.getBoundingClientRect().bottom).toBeLessThanOrEqual(light.getBoundingClientRect().top + 1);
+});
+
+test('guided controls write contracted draft parameters and the preview follows', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const stock = resolveDraft(stockDraft());
+
+  expect(readToken(pane, '--ult-space-1')).toBe(stock.dark['--ult-space-1']);
+  await userEvent.click(screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Compact' }));
+  expect(readToken(pane, '--ult-space-1')).toBe('0.09375rem');
+
+  const hue = screen.getByRole('slider', { name: 'Accent hue' });
+  hue.element().focus();
+  await userEvent.keyboard('{ArrowRight}');
+  expect(readAccent(pane)).not.toBe(stock.dark['--ult-color-accent']);
+
+  await userEvent.click(screen.getByRole('group', { name: 'Shape preset' }).getByRole('button', { name: 'Sharp' }));
+  expect(readToken(pane, '--ult-radius-xs')).toBe('0px');
+
+  await userEvent.click(screen.getByRole('group', { name: 'Elevation strength' }).getByRole('button', { name: 'Flat' }));
+  expect(readToken(pane, '--ult-shadow-sm')).toBe('none');
+
+  await userEvent.click(screen.getByRole('group', { name: 'Motion speed' }).getByRole('button', { name: 'Brisk' }));
+  expect(readToken(pane, '--ult-motion-fast')).toBe('70ms');
+
+  await userEvent.click(screen.getByRole('group', { name: 'Type scale' }).getByRole('button', { name: '1.25' }));
+  const size = screen.getByRole('slider', { name: 'Base size' });
+  size.element().focus();
+  await userEvent.keyboard('{Home}');
+  expect(readToken(pane, '--ult-text-5')).toBe('0.875rem');
+});
+
+test('group lock and reset live on the draft', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+
+  await userEvent.click(screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Roomy' }));
+  expect(readToken(pane, '--ult-space-1')).not.toBe('0.125rem');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Lock Density' }));
+  expect(screen.getByRole('button', { name: 'Lock Density' }).element()).toHaveAttribute('aria-pressed', 'true');
+  await expect.element(screen.getByText(/1 locked group/)).toBeVisible();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Reset Density' }));
+  expect(readToken(pane, '--ult-space-1')).toBe('0.125rem');
+  expect(screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Cosy' }).element()).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+});
+
+test('every editor control is a catalogue component, including Color Field seeds', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+
+  expect(editor.querySelector('select')).toBeNull();
+  expect(editor.querySelector('input[type="color"]')).toBeNull();
+  for (const role of ['Neutral', 'Accent', 'Action', 'Success', 'Warning', 'Danger']) {
+    await expect.element(screen.getByRole('button', { name: `${role} seed` })).toBeVisible();
+    await expect.element(screen.getByRole('slider', { name: `${role} hue` })).toBeVisible();
+    await expect.element(screen.getByRole('slider', { name: `${role} saturation` })).toBeVisible();
+  }
+  await expect.element(screen.getByRole('combobox', { name: 'Sans family' })).toBeVisible();
+  await expect.element(screen.getByRole('combobox', { name: 'Mono family' })).toBeVisible();
 });
 
 test('the studio passes axe in its default dark preview', async () => {

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { expect, test } from 'vitest';
 
-import { generateScales, SCALE_NAMES, STOCK_SEEDS, type ScaleSeeds } from '../theme/recipe.ts';
+import { generateScales, SCALE_NAMES, STOCK_SEEDS, seedFromSrgb, type ScaleSeeds } from '../theme/recipe.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const PALETTE_PY = join(root, 'packages/tokens/scripts/palette.py');
@@ -55,4 +55,15 @@ test('generateScales matches palette.py hex for identical seeds with pins disabl
   for (const seeds of corpus) {
     expect(generateScales(seeds)).toEqual(pythonScales(seeds));
   }
+});
+
+test('seedFromSrgb maps a picked color onto hue and a 0–1.5 saturation factor', () => {
+  const red = seedFromSrgb('#ff0000', 'arcane');
+  expect(red.hue).toBeGreaterThanOrEqual(20);
+  expect(red.hue).toBeLessThanOrEqual(40);
+  expect(red.saturation).toBe(1.5);
+
+  const gray = seedFromSrgb('#808080', 'arcane');
+  expect(gray.saturation).toBeCloseTo(0, 2);
+  expect(seedFromSrgb('#808080', 'arcane', { hue: 275, saturation: 1 }).hue).toBe(275);
 });

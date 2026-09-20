@@ -25,6 +25,7 @@ export {
   RECIPE_VERSION,
   SCALE_NAMES,
   STOCK_SEEDS,
+  seedFromSrgb,
 } from './theme/recipe';
 export type { GeneratedScales, ScaleSeed, ScaleSeeds } from './theme/recipe';
 export {
