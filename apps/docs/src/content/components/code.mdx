@@ -5,6 +5,10 @@ import Block from '../../demos/code/block';
 import blockSource from '../../demos/code/block?raw';
 import InCard from '../../demos/code/in-card';
 import inCardSource from '../../demos/code/in-card?raw';
+import Kbd from '../../demos/code/kbd';
+import kbdSource from '../../demos/code/kbd?raw';
+import Typography from '../../demos/code/typography';
+import typographySource from '../../demos/code/typography?raw';
 
 # Code
 
@@ -33,6 +37,30 @@ Long lines wrap instead of creating a horizontal scroll region.
 The block variant composes directly inside another Ultima surface.
 
 <Demo component={InCard} source={inCardSource} />
+
+## Kbd
+
+A `<kbd>` is Code rendered as the user-input element, `<Code render={<kbd />}>`. `code.tsx` already takes `render` through `useRender`, so the recipe needs no component change and there is no `@ultima/kbd` item to install.
+
+Component dependency: `code`.
+
+The documented states are a single key and a combination — one `<kbd>` per key, joined by `+` text, rather than one element around the whole chord.
+
+<Demo component={Kbd} source={kbdSource} />
+
+## Typography
+
+Typography is the prose mapping, a recipe rather than a component: there is no `@ultima/typography` item and no file to install. It is the shape the docs' own `Prose` proves — headings through `h3`, paragraphs, lists, links, and blockquotes are token styles, which is page layout's own work, and the rest delegates to the catalogue.
+
+Component dependencies: `code`, `separator`, `table`, `scroll-area`.
+
+```bash
+npx shadcn add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area
+```
+
+`code` and `pre` delegate to `Code`, inline and `block`; syntax highlighting is your own pipeline. `hr` delegates to `Separator`, because a hairline is paint that page layout cannot write. `table`, `th`, and `td` delegate to `Table` inside a `ScrollArea`, because a GFM table has no caption to name a `Table.Scroll` region from. The documented state is the element set itself, rendered end to end in the demo.
+
+<Demo component={Typography} source={typographySource} />
 
 ## Props
 
