@@ -434,3 +434,9 @@ export {
   type ButtonGroupTone,
   type ButtonGroupOrientation,
 } from './button-group';
+export {
+  NativeSelect,
+  type NativeSelectRootProps,
+  type NativeSelectSelectProps,
+  type NativeSelectSize,
+} from './native-select';

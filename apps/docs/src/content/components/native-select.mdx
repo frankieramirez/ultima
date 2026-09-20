@@ -1,0 +1,61 @@
+import { Demo } from '../../demo';
+import Sizes from '../../demos/native-select/sizes';
+import sizesSource from '../../demos/native-select/sizes?raw';
+import Groups from '../../demos/native-select/groups';
+import groupsSource from '../../demos/native-select/groups?raw';
+import States from '../../demos/native-select/states';
+import statesSource from '../../demos/native-select/states?raw';
+import FieldDemo from '../../demos/native-select/field';
+import fieldSource from '../../demos/native-select/field?raw';
+
+# Native Select
+
+A styled native `<select>` element: the OS-native popup, the mobile picker, and native `optgroup` and `multiple`, wearing Input's paint and a private chevron.
+
+## Install
+
+```bash
+npx shadcn add @ultima/native-select
+```
+
+## Sizes
+
+`sm`, `md`, and `lg` use Ultima's three control heights. `md` is the default. `size` is the axis and lives on `Select`; the native `<select size>` row count is dropped, and a multi-row listbox is not a documented shape.
+
+<Demo component={Sizes} source={sizesSource} />
+
+## Groups
+
+Options and optgroups are children, not parts — the platform renders them in its own popup.
+
+<Demo component={Groups} source={groupsSource} />
+
+## States
+
+Standalone, `aria-invalid` on `Select` paints the danger border; connect the error text with `aria-describedby`. `disabled` dims the control.
+
+<Demo component={States} source={statesSource} />
+
+## Field integration
+
+`Select` is Base UI's `Field.Control` rendered as a `<select>`, the same registration Input has. Inside a `Field.Root` the label, description, and invalid state reach the control with no wrapper and no new prop.
+
+<Demo component={FieldDemo} source={fieldSource} />
+
+Reach for Native Select when the platform element is the point — the OS popup, the mobile picker, native `optgroup` and `multiple`. Select stays the default when the option list wants Ultima's overlay styling.
+
+## Props
+
+Only what Ultima adds. Everything else is the `<select>` surface, passed through `Field.Control`; see [Base UI's Field](https://base-ui.com/react/components/field) for the registration.
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Set on `Select`; controls its height, padding, and text step. |
+| `style` | `StyleXStyles` | — | Available on both parts and merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | On `Root` through `useRender`, on `Select` through `Field.Control`. |
+
+## Accessibility
+
+- **Name.** A consumer `<label htmlFor>`, `aria-label`, `aria-labelledby`, or a `Field.Label` through the registration.
+- **Focus ring.** On `Select`, drawn on `:focus-visible` only. The chevron is `aria-hidden` and `pointer-events: none`.
+- **Keyboard.** Native select behavior, unchanged: Space and the arrows open the platform listbox.

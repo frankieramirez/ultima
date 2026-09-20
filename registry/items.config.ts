@@ -274,6 +274,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A row of buttons joined as one control, in three variants and two tones, on Base UI.',
     docs: "import { ButtonGroup } from '@/components/ui/button-group';\n\n<ButtonGroup.Root aria-label=\"Text actions\">\n  <ButtonGroup.Item>Cut</ButtonGroup.Item>\n  <ButtonGroup.Item>Copy</ButtonGroup.Item>\n  <ButtonGroup.Item>Paste</ButtonGroup.Item>\n</ButtonGroup.Root>\n\nvariant, size, and tone sit on Root and reach every Item; an Item takes its own variant and tone, which win, and no size.",
   },
+  'native-select': {
+    title: 'Native Select',
+    description: 'A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.',
+    docs: "import { NativeSelect } from '@/components/ui/native-select';\n\n<label htmlFor=\"fruit\">Fruit</label>\n<NativeSelect.Root>\n  <NativeSelect.Select id=\"fruit\">\n    <option value=\"apple\">Apple</option>\n    <option value=\"pear\">Pear</option>\n  </NativeSelect.Select>\n</NativeSelect.Root>\n\nOptions and optgroups are children, not parts. Select is Field.Control rendered as a <select>, so inside a Field.Root the label, description, and invalid state reach it on their own. Reach for it when the OS-native popup is the point; Select stays the default when the option list wants Ultima's overlay styling.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:
