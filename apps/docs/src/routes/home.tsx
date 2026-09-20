@@ -1,7 +1,7 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Separator } from '@ultima/ui';
 
 import { contrastStyles } from '../demos/home/contrast';
@@ -47,9 +47,9 @@ const styles = stylex.create({
     color: color['--ult-color-text'],
     display: 'flex',
     flexDirection: 'column',
-    fontSize: 'clamp(2.5rem, 6vw, 4.75rem)',
+    fontSize: display.hero,
     fontWeight: font['--ult-font-weight-medium'],
-    letterSpacing: '-0.04em',
+    letterSpacing: font['--ult-font-tracking-tightest'],
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
   },
@@ -124,7 +124,7 @@ const styles = stylex.create({
   },
   installHeadline: {
     color: color['--ult-color-text'],
-    fontSize: 'clamp(2rem, 4vw, 2.75rem)',
+    fontSize: display.headline,
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],

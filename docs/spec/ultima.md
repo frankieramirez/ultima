@@ -60,7 +60,7 @@ In component code the key is used as written: `color['--ult-color-surface']`. Th
 
 Themeable (emitted as custom properties): `color`, `space`, `text`, `font`, `radius`, `shadow`, `filter`, and `motion` durations.
 
-Compile-time only (`defineConsts`, never in the CSS export): `motion` easings, `border` widths, and `z-index`.
+Compile-time only (`defineConsts`, never in the CSS export): `motion` easings, `border` widths, `z-index`, and the `display` group — the docs chrome's display sizes that the numeric `text` scale cannot hold, such as a fluid `clamp()` pitch or the 26px section title.
 
 There is no breakpoint group, and there cannot be one. [Sidebar's responsive state model](https://linear.app/frankie-ramirez/issue/ULT-54) kept the one breakpoint Ultima has as a module constant in `sidebar.tsx`: a `defineVars` value cannot appear in a media condition at the CSS level, and a `defineConsts` value used as an at-rule key compiles to a placeholder at priority 6000, one full cascade layer above every pseudo-class rule, and forfeits StyleX's media-query ordering transform. A plain constant compiles exactly like a literal and shares its string with the runtime read just as well. This is a consequence of tokens being custom properties rather than a preference, so it is recorded as an amendment to ADR 0004 rather than as its own decision: a token is a thing a consumer can re-skin, and a media condition is not a place a custom property can go.
 
@@ -79,12 +79,12 @@ The space scale is also the sizing scale. The three control heights are steps 9,
 
 ### Type
 
-Eleven `text` steps, in `rem`. Step 5 is the body size. The bottom two steps exist for the uppercase micro-labels the report leans on.
+Twelve `text` steps, in `rem`. Step 5 is the body size. The bottom two steps exist for the uppercase micro-labels the report leans on.
 
-| Step | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| px | 11 | 12 | 13 | 14 | 16 | 18 | 20 | 24 | 30 | 36 | 48 |
-| rem | 0.6875 | 0.75 | 0.8125 | 0.875 | 1 | 1.125 | 1.25 | 1.5 | 1.875 | 2.25 | 3 |
+| Step | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| px | 11 | 12 | 13 | 14 | 16 | 18 | 20 | 24 | 30 | 36 | 48 | 52 |
+| rem | 0.6875 | 0.75 | 0.8125 | 0.875 | 1 | 1.125 | 1.25 | 1.5 | 1.875 | 2.25 | 3 | 3.25 |
 
 A `text` step carries a size and nothing else. Leading is a separate token, chosen per use.
 
@@ -100,6 +100,8 @@ The rest of the `font` group:
 | `--ult-font-leading-snug` | 1.35 |
 | `--ult-font-leading-normal` | 1.55 |
 | `--ult-font-leading-relaxed` | 1.75 |
+| `--ult-font-tracking-tightest` | -0.04em |
+| `--ult-font-tracking-tighter` | -0.03em |
 | `--ult-font-tracking-tight` | -0.02em |
 | `--ult-font-tracking-normal` | 0 |
 | `--ult-font-tracking-wide` | 0.08em |

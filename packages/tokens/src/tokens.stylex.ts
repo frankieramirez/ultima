@@ -259,6 +259,7 @@ export const text = stylex.defineVars({
   '--ult-text-9': '1.875rem',
   '--ult-text-10': '2.25rem',
   '--ult-text-11': '3rem',
+  '--ult-text-12': '3.25rem',
 });
 
 export const font = stylex.defineVars({
@@ -273,6 +274,8 @@ export const font = stylex.defineVars({
   '--ult-font-leading-snug': 1.35,
   '--ult-font-leading-normal': 1.55,
   '--ult-font-leading-relaxed': 1.75,
+  '--ult-font-tracking-tightest': '-0.04em',
+  '--ult-font-tracking-tighter': '-0.03em',
   '--ult-font-tracking-tight': '-0.02em',
   '--ult-font-tracking-normal': 0,
   '--ult-font-tracking-wide': '0.08em',
@@ -328,4 +331,10 @@ export const border = stylex.defineConsts({
 export const z = stylex.defineConsts({
   popup: 50,
   toast: 60,
+});
+
+export const display = stylex.defineConsts({
+  section: '1.625rem',
+  headline: 'clamp(2rem, 4vw, 2.75rem)',
+  hero: 'clamp(2.5rem, 6vw, 4.75rem)',
 });

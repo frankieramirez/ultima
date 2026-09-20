@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import { isValidElement, type ComponentProps, type ComponentType, type ReactNode } from 'react';
@@ -13,24 +13,24 @@ const styles = stylex.create({
   },
   h1: {
     color: color['--ult-color-text'],
-    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': '3.25rem' },
+    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': text['--ult-text-12'] },
     fontWeight: font['--ult-font-weight-medium'],
-    letterSpacing: '-0.03em',
+    letterSpacing: font['--ult-font-tracking-tighter'],
     lineHeight: font['--ult-font-leading-tight'],
     marginBlock: 0,
     marginBottom: space['--ult-space-6'],
   },
   h2: {
     color: color['--ult-color-text'],
-    fontSize: '1.625rem',
+    fontSize: display.section,
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
-    marginBottom: space['--ult-space-4'],
+    marginBottom: 0,
     marginTop: space['--ult-space-7'],
   },
   rule: {
-    marginTop: space['--ult-space-9'],
+    marginTop: space['--ult-space-11'],
   },
   h3: {
     color: color['--ult-color-text'],
