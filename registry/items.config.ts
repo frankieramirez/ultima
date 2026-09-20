@@ -249,6 +249,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.',
     docs: "import { ColorField } from '@/components/ui/color-field';\n\n<ColorField.Root defaultValue=\"#3366ff\">\n  <ColorField.Swatch aria-label=\"Pick accent\" />\n  <ColorField.Input aria-label=\"Hex\" />\n  <ColorField.Portal>\n    <ColorField.Positioner sideOffset={8}>\n      <ColorField.Popup>\n        <ColorField.Picker />\n      </ColorField.Popup>\n    </ColorField.Positioner>\n  </ColorField.Portal>\n</ColorField.Root>\n\nThe value is an opaque sRGB #rrggbb string. size is sm, md, or lg on Root. Name the swatch with aria-label; the popup defaults to aria-label=\"Color picker\". Input fills Field's control slot, so invalid hex carries the validation state. There is no alpha and no wide-gamut format.",
   },
+  'aspect-ratio': {
+    title: 'Aspect Ratio',
+    description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
+    docs: "import { AspectRatio } from '@/components/ui/aspect-ratio';\n\n<AspectRatio ratio={16 / 9}>\n  <img src=\"/cover.png\" alt=\"Ridgeline at dusk\" />\n</AspectRatio>\n\nratio is a number written inline as aspect-ratio, the file's one runtime declaration. The box and the radius go through the style slot, and render swaps the div for your own element, like a figure.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:

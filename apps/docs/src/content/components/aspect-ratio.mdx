@@ -1,0 +1,44 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/aspect-ratio/basic';
+import basicSource from '../../demos/aspect-ratio/basic?raw';
+import Figure from '../../demos/aspect-ratio/figure';
+import figureSource from '../../demos/aspect-ratio/figure?raw';
+
+# Aspect Ratio
+
+A fixed-ratio box for media. One part, one function: `AspectRatio` renders a `div` through Base UI `useRender`, styled `block` with `overflow: hidden`. The `ratio` prop is written inline as `aspect-ratio` — the file's one runtime declaration, because a runtime number cannot live in a StyleX table. The clip is what lets a radius you add reach the media inside.
+
+## Install
+
+```bash
+npx shadcn add @ultima/aspect-ratio
+```
+
+## Basic
+
+Give `ratio` a width-over-height number and put the media inside — `16 / 9` for video, `1` for a square, `4 / 3` for a classic frame. The media is yours; an `img` at `object-fit: cover` fills the box.
+
+<Demo component={Basic} source={basicSource} />
+
+## The box and the radius
+
+There is no `size`, `width`, or `radius` prop — the box and the radius are the `style` slot. The inline `aspect-ratio` the `ratio` prop writes wins over any `aspect-ratio` the slot could declare, so a caller who wants a different constraint passes `min-` or `max-` through `style` rather than overriding the ratio.
+
+## A different element
+
+`render` swaps the box's element — a `<figure>` for media that is a figure, carrying its own name — and `ref` reaches the same element.
+
+<Demo component={Figure} source={figureSource} />
+
+## Props
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `ratio` | `number` | — | Required. Width over height, written inline as `aspect-ratio`. |
+| `style` | `StyleXStyles` | — | The style slot, merged last. The box and the radius live here; it cannot override `ratio`. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Changes the root from its default `div`. |
+
+## Accessibility
+
+- **Name.** The frame has no role and no name of its own. The media inside carries its own — `alt` on an image — or is decorative.
+- **Focus and keyboard.** None. The frame is static, takes no focus, and renders no focus ring.

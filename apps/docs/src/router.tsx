@@ -6,6 +6,7 @@ import type { ComponentType } from 'react';
 import AccordionContent from './content/components/accordion.mdx';
 import AlertContent from './content/components/alert.mdx';
 import AlertDialogContent from './content/components/alert-dialog.mdx';
+import AspectRatioContent from './content/components/aspect-ratio.mdx';
 import AvatarContent from './content/components/avatar.mdx';
 import BadgeContent from './content/components/badge.mdx';
 import BreadcrumbContent from './content/components/breadcrumb.mdx';
@@ -117,6 +118,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   accordion: AccordionContent,
   alert: AlertContent,
   'alert-dialog': AlertDialogContent,
+  'aspect-ratio': AspectRatioContent,
   avatar: AvatarContent,
   badge: BadgeContent,
   breadcrumb: BreadcrumbContent,
