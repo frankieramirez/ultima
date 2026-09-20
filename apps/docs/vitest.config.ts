@@ -72,6 +72,8 @@ export default defineConfig({
       '@tanstack/highlight/languages/tsx',
       '@tanstack/react-router',
       '@tanstack/react-table',
+      '@zag-js/react',
+      '@zag-js/splitter',
       'apca-w3',
       'axe-core',
       'react-dom/client',

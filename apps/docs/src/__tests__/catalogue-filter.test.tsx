@@ -92,5 +92,54 @@ for (const theme of ['dark', 'light']) {
     expect(opened.violations.map(({ id, nodes }) => ({ id, targets: nodes.map(({ target }) => target) }))).toEqual([]);
     await userEvent.keyboard('{Escape}');
     await expect.element(main.getByRole('combobox', { name: 'Release' })).toHaveFocus();
+    const sort = main.getByRole('combobox', { name: 'Sort order' });
+    await userEvent.click(sort);
+    await expect.element(screen.getByRole('option', { name: 'Name A–Z', exact: true })).toBeVisible();
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(390);
+    await Promise.all(document.getAnimations().map((animation) => animation.finished));
+    expect((await axe.run(screen.getByRole('listbox').element())).violations).toEqual([]);
+    await userEvent.keyboard('{Escape}');
+    await expect.element(sort).toHaveFocus();
   });
 }
+
+test('sort labels render immediately, keyboard sorting stays within groups, and clear retains order', async () => {
+  const screen = await mount();
+  const main = screen.getByRole('main');
+  const sort = main.getByRole('combobox', { name: 'Sort order' });
+  await expect.element(sort).toHaveTextContent('Catalogue order');
+  const groups = () => Array.from(main.element().querySelectorAll('ul')).map((list) =>
+    Array.from(list.querySelectorAll('a[href^="/components/"]')).map((link) => link.getAttribute('href'))).filter((group) => group.length > 0);
+  const original = groups();
+  sort.element().focus();
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.element(screen.getByRole('listbox')).toBeVisible();
+  await userEvent.keyboard('{End}');
+  await expect.element(screen.getByRole('option', { name: 'Name Z–A', exact: true })).toHaveAttribute('data-highlighted');
+  await userEvent.keyboard('{Enter}');
+  await expect.element(sort).toHaveTextContent('Name Z–A');
+  expect(groups()).toEqual(original.map((group) => [...group].sort().reverse()));
+  await expect.element(main.getByRole('button', { name: 'Clear filters' })).toBeDisabled();
+  const input = main.getByRole('textbox', { name: 'Filter components' });
+  await userEvent.fill(input, 'no-such-component');
+  await userEvent.click(main.getByRole('button', { name: 'Clear filters' }));
+  await expect.element(input).toHaveFocus();
+  await expect.element(sort).toHaveTextContent('Name Z–A');
+  expect(groups()).toEqual(original.map((group) => [...group].sort().reverse()));
+  sort.element().focus();
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.element(screen.getByRole('listbox')).toBeVisible();
+  await userEvent.keyboard('{Home}{ArrowDown}');
+  await expect.element(screen.getByRole('option', { name: 'Name A–Z', exact: true })).toHaveAttribute('data-highlighted');
+  await userEvent.keyboard('{Enter}');
+  await expect.element(sort).toHaveTextContent('Name A–Z');
+  expect(groups()).toEqual(original.map((group) => [...group].sort()));
+  sort.element().focus();
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.element(screen.getByRole('listbox')).toBeVisible();
+  await userEvent.keyboard('{Home}');
+  await expect.element(screen.getByRole('option', { name: 'Catalogue order', exact: true })).toHaveAttribute('data-highlighted');
+  await userEvent.keyboard('{Enter}');
+  await expect.element(sort).toHaveTextContent('Catalogue order');
+  expect(groups()).toEqual(original);
+});

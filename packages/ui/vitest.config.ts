@@ -46,6 +46,7 @@ export default defineConfig({
       '@base-ui/react/use-render',
       '@zag-js/date-picker',
       '@zag-js/react',
+      '@zag-js/splitter',
       '@internationalized/date',
     ],
   },
