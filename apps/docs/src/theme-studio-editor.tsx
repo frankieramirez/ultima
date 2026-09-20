@@ -4,6 +4,8 @@ import {
   seedFromSrgb,
   type DensityFactor,
   type MeasurePreset,
+  type PairingResult,
+  type ResolvedDraft,
   type ScaleName,
   type ShapePreset,
   type ThemeDraft,
@@ -24,6 +26,8 @@ import {
   sliderNumber,
 } from './theme-studio-draft';
 import { ThemeStudioGroup } from './theme-studio-group';
+import { TokenRows, type ModeOffenders } from './theme-studio-token-row';
+import { ThemeStudioValidation } from './theme-studio-validation';
 
 const RAIL = '@media (min-width: 52.5rem)';
 
@@ -366,13 +370,33 @@ export function ThemeStudioEditor({
   draft,
   group,
   onGroupChange,
+  resolved,
+  results,
   setDraft,
 }: {
   draft: ThemeDraft;
   group: GroupLabel;
   onGroupChange: (group: GroupLabel) => void;
+  resolved: ResolvedDraft;
+  results: PairingResult[];
   setDraft: Dispatch<SetStateAction<ThemeDraft>>;
 }) {
+  const offenders = useMemo<ModeOffenders>(() => {
+    const dark = new Set<string>();
+    const light = new Set<string>();
+    for (const result of results) {
+      if (!result.dark.pass) {
+        dark.add(result.foreground);
+        dark.add(result.background);
+      }
+      if (!result.light.pass) {
+        light.add(result.foreground);
+        light.add(result.background);
+      }
+    }
+    return { dark, light };
+  }, [results]);
+
   return (
     <>
       <ToggleGroup.Root
@@ -405,6 +429,15 @@ export function ThemeStudioEditor({
               }
               onReset={() => setDraft((current) => resetGroup(current, item.id))}
               onShuffle={() => {}}
+              panel={
+                <TokenRows
+                  draft={draft}
+                  group={item.id}
+                  offenders={offenders}
+                  resolved={resolved}
+                  setDraft={setDraft}
+                />
+              }
             >
               {item.id === 'color' ? <ColorControls draft={draft} setDraft={setDraft} /> : null}
               {item.id === 'typography' ? <TypographyControls draft={draft} setDraft={setDraft} /> : null}
@@ -460,6 +493,7 @@ export function ThemeStudioEditor({
             </ThemeStudioGroup>
           </section>
         ))}
+        <ThemeStudioValidation results={results} />
       </div>
     </>
   );

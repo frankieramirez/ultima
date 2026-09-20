@@ -34,6 +34,7 @@ export function ThemeStudioGroup({
   onReset,
   onShuffle,
   children,
+  panel,
 }: {
   label: string;
   locked: boolean;
@@ -41,6 +42,7 @@ export function ThemeStudioGroup({
   onReset: () => void;
   onShuffle: () => void;
   children: ReactNode;
+  panel?: ReactNode;
 }) {
   const titleId = `${label.toLowerCase()}-group`;
 
@@ -76,7 +78,7 @@ export function ThemeStudioGroup({
           </Collapsible.Trigger>
         </header>
         {children}
-        <Collapsible.Panel />
+        <Collapsible.Panel>{panel}</Collapsible.Panel>
       </div>
     </Collapsible.Root>
   );

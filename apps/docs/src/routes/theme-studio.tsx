@@ -1,7 +1,7 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, resolveDraft, stockDraft } from '@ultima/tokens';
+import { colorScheme, darkTheme, gate, resolveDraft, stockDraft } from '@ultima/tokens';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Separator } from '@ultima/ui';
 import { useMemo, useState } from 'react';
@@ -112,6 +112,7 @@ export function ThemeStudio() {
   const [group, setGroup] = useState<Group>('Color');
   const [draft, setDraft] = useState(stockDraft);
   const resolved = useMemo(() => resolveDraft(draft), [draft]);
+  const pairings = useMemo(() => gate(resolved), [resolved]);
   const locked = Object.values(draft.locks).filter(Boolean).length;
   const overrides = Object.keys(draft.overrides.dark).length + Object.keys(draft.overrides.light).length;
 
@@ -140,7 +141,14 @@ export function ThemeStudio() {
       <div {...stylex.props(styles.body)}>
         <aside aria-label="Theme editor" {...stylex.props(styles.editor)}>
           <div {...stylex.props(styles.groups)}>
-            <ThemeStudioEditor draft={draft} group={group} onGroupChange={setGroup} setDraft={setDraft} />
+            <ThemeStudioEditor
+              draft={draft}
+              group={group}
+              onGroupChange={setGroup}
+              resolved={resolved}
+              results={pairings}
+              setDraft={setDraft}
+            />
           </div>
           <div {...stylex.props(styles.status)}>
             <Button

@@ -3,6 +3,7 @@ import {
   STOCK_MONO,
   STOCK_SANS,
   stockDraft,
+  type ColorMode,
   type GuidedGroup,
   type ThemeDraft,
   type TokenTable,
@@ -98,6 +99,48 @@ export function resetGroup(draft: ThemeDraft, group: GuidedGroup): ThemeDraft {
       }
     }
   }
+  return next;
+}
+
+const FIXED_TOKENS = new Set(['--ult-color-surface-overlay', '--ult-radius-full']);
+
+export function groupTokens(table: TokenTable, group: GuidedGroup): string[] {
+  return Object.keys(table).filter(
+    (name) => !FIXED_TOKENS.has(name) && GROUP_PREFIX[group].some((prefix) => name.startsWith(prefix)),
+  );
+}
+
+function withOverrides(draft: ThemeDraft): ThemeDraft {
+  return {
+    ...draft,
+    overrides: { dark: { ...draft.overrides.dark }, light: { ...draft.overrides.light } },
+  };
+}
+
+export function setTokenOverride(
+  draft: ThemeDraft,
+  token: string,
+  modes: 'both' | ColorMode,
+  value: string,
+): ThemeDraft {
+  const next = withOverrides(draft);
+  if (modes !== 'light') next.overrides.dark[token] = value;
+  if (modes !== 'dark') next.overrides.light[token] = value;
+  return next;
+}
+
+export function resetTokenOverride(draft: ThemeDraft, token: string): ThemeDraft {
+  const next = withOverrides(draft);
+  delete next.overrides.dark[token];
+  delete next.overrides.light[token];
+  return next;
+}
+
+export function linkTokenOverride(draft: ThemeDraft, token: string): ThemeDraft {
+  const next = withOverrides(draft);
+  const dark = draft.overrides.dark[token];
+  if (dark === undefined) delete next.overrides.light[token];
+  else next.overrides.light[token] = dark;
   return next;
 }
 

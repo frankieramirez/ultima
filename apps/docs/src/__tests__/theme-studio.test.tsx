@@ -344,9 +344,170 @@ test('every editor control is a catalogue component, including Color Field seeds
   await expect.element(screen.getByRole('combobox', { name: 'Mono family' })).toBeVisible();
 });
 
+test('token override rows are linked by default and a committed edit writes both modes', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const stock = resolveDraft(stockDraft());
+
+  expect(document.querySelector('[aria-label="--ult-color-accent"]')).toBeNull();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
+  const input = screen.getByRole('textbox', { name: '--ult-color-accent' });
+  await expect.element(input).toBeVisible();
+  expect(document.querySelector('[aria-label="--ult-color-accent dark"]')).toBeNull();
+
+  await userEvent.clear(input.element());
+  await userEvent.type(input.element(), '#ff0000');
+  expect(readAccent(pane)).toBe('#ff0000');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Light' }).element());
+  const lightPane = screen.getByRole('region', { name: 'Light preview' }).element();
+  expect(readAccent(lightPane)).toBe('#ff0000');
+  expect(readAccent(lightPane)).not.toBe(stock.light['--ult-color-accent']);
+});
+
+test('unlinking splits modes per row, relinking writes dark to both, and reset clears both', async () => {
+  const screen = await mount('/theme-studio');
+  const stock = resolveDraft(stockDraft());
+
+  await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
+  const linked = screen.getByRole('textbox', { name: '--ult-color-accent' });
+  await expect.element(linked).toBeVisible();
+  await userEvent.clear(linked.element());
+  await userEvent.type(linked.element(), '#ff0000');
+  await expect.element(screen.getByText('Overridden · Linked')).toBeVisible();
+
+  const link = screen.getByRole('button', { name: 'Link --ult-color-accent modes' });
+  await userEvent.click(link.element());
+  const dark = screen.getByRole('textbox', { name: '--ult-color-accent dark' });
+  const light = screen.getByRole('textbox', { name: '--ult-color-accent light' });
+  await expect.element(dark).toBeVisible();
+  await expect.element(light).toBeVisible();
+  expect(link.element()).toHaveAttribute('aria-pressed', 'false');
+  await expect.element(screen.getByText('Overridden · Unlinked')).toBeVisible();
+
+  await userEvent.clear(light.element());
+  await userEvent.type(light.element(), '#00ff00');
+  let pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  expect(readAccent(pane)).toBe('#ff0000');
+  await userEvent.click(screen.getByRole('button', { name: 'Light' }).element());
+  pane = screen.getByRole('region', { name: 'Light preview' }).element();
+  expect(readAccent(pane)).toBe('#00ff00');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Link --ult-color-accent modes' }).element());
+  expect(readAccent(pane)).toBe('#ff0000');
+  await expect.element(screen.getByRole('textbox', { name: '--ult-color-accent' })).toBeVisible();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Reset --ult-color-accent' }).element());
+  expect(readAccent(pane)).toBe(stock.light['--ult-color-accent']);
+  await userEvent.click(screen.getByRole('button', { name: 'Dark' }).element());
+  expect(readAccent(screen.getByRole('region', { name: 'Dark preview' }).element())).toBe(
+    stock.dark['--ult-color-accent'],
+  );
+});
+
+test('the token contrast panel reports every pairing per mode at full precision', async () => {
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('button', { name: 'Pairing results' }));
+
+  const panel = screen.getByRole('region', { name: 'Token contrast' }).element();
+  expect(panel.querySelectorAll('li').length).toBe(49);
+  await expect.element(screen.getByText('All pairings pass')).toBeVisible();
+
+  const pair = [...panel.querySelectorAll('li')].find((li) => li.textContent?.startsWith('text on surface ·'));
+  expect(pair).toBeDefined();
+  expect(pair!.textContent).toMatch(/min 4\.5:1/);
+  expect(pair!.textContent).toMatch(/Dark \d+(\.\d+)?:1 pass/);
+  expect(pair!.textContent).toMatch(/Light \d+(\.\d+)?:1 pass/);
+
+  await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
+  const surface = screen.getByRole('textbox', { name: '--ult-color-surface' });
+  await expect.element(surface).toBeVisible();
+  await userEvent.clear(surface.element());
+  await userEvent.type(surface.element(), '#ffffff');
+  const text = screen.getByRole('textbox', { name: '--ult-color-text' });
+  await userEvent.clear(text.element());
+  await userEvent.type(text.element(), '#000000');
+
+  const updated = [...panel.querySelectorAll('li')].find((li) => li.textContent?.startsWith('text on surface ·'));
+  expect(updated!.textContent).toContain('Dark 21:1 pass');
+  expect(updated!.textContent).toContain('Light 21:1 pass');
+});
+
+test('a failing override applies marked, not blocked, and the row is flagged', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  await userEvent.click(screen.getByRole('button', { name: 'Pairing results' }));
+  const panel = screen.getByRole('region', { name: 'Token contrast' }).element();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
+  const text = screen.getByRole('textbox', { name: '--ult-color-text' });
+  await expect.element(text).toBeVisible();
+  await userEvent.clear(text.element());
+  await userEvent.type(text.element(), '#101011');
+
+  expect(readToken(pane, '--ult-color-text')).toBe('#101011');
+  await expect.element(screen.getByText(/pairings? failing/)).toBeVisible();
+
+  const pair = [...panel.querySelectorAll('li')].find((li) => li.textContent?.startsWith('text on surface ·'));
+  expect(pair!.textContent).toMatch(/Dark [\d.]+:1 fail/);
+  expect(Number(pair!.textContent!.match(/Dark ([\d.]+):1/)?.[1])).toBeLessThan(4.5);
+  expect(pair!.textContent).toMatch(/Light [\d.]+:1 pass/);
+  expect(text.element()).toHaveAttribute('aria-invalid', 'true');
+});
+
+test('overrides pin resolved values through regeneration and group reset clears them', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const stock = resolveDraft(stockDraft());
+
+  await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
+  const accent = screen.getByRole('textbox', { name: '--ult-color-accent' });
+  await expect.element(accent).toBeVisible();
+  await userEvent.clear(accent.element());
+  await userEvent.type(accent.element(), '#ff0000');
+  expect(readAccent(pane)).toBe('#ff0000');
+
+  const before = readToken(pane, '--ult-color-accent-hover');
+  const hue = screen.getByRole('slider', { name: 'Accent hue' });
+  hue.element().focus();
+  await userEvent.keyboard('{End}');
+  expect(readToken(pane, '--ult-color-accent-hover')).not.toBe(before);
+  expect(readAccent(pane)).toBe('#ff0000');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Reset Color' }).element());
+  expect(readAccent(pane)).toBe(stock.dark['--ult-color-accent']);
+});
+
+test('non-color rows commit on Enter, not mid-keystroke, and shape rows clamp to 96px', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const stock = resolveDraft(stockDraft());
+
+  await userEvent.click(screen.getByRole('button', { name: 'Density token overrides' }));
+  const space = screen.getByRole('textbox', { name: '--ult-space-1' });
+  await expect.element(space).toBeVisible();
+  await userEvent.clear(space.element());
+  await userEvent.type(space.element(), '1rem');
+  expect(readToken(pane, '--ult-space-1')).toBe(stock.dark['--ult-space-1']);
+  await userEvent.keyboard('{Enter}');
+  expect(readToken(pane, '--ult-space-1')).toBe('1rem');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Shape token overrides' }));
+  const radius = screen.getByRole('textbox', { name: '--ult-radius-md' });
+  await expect.element(radius).toBeVisible();
+  await userEvent.clear(radius.element());
+  await userEvent.type(radius.element(), '200');
+  await userEvent.keyboard('{Enter}');
+  expect(readToken(pane, '--ult-radius-md')).toBe('96px');
+});
+
 test('the studio passes axe in its default dark preview', async () => {
   const screen = await mount('/theme-studio');
   await expect.element(screen.getByRole('heading', { name: 'Theme Studio' })).toBeVisible();
+  await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Pairing results' }));
+  await expect.element(screen.getByRole('textbox', { name: '--ult-color-accent' })).toBeVisible();
   const results = await axe.run(document.body);
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.html).join(', ')}`)).toEqual([]);
 });
