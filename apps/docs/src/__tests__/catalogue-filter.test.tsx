@@ -24,7 +24,12 @@ test('text filtering matches names and descriptions without changing site naviga
   const main = screen.getByRole('main');
   const input = main.getByRole('textbox', { name: 'Filter components' });
   await userEvent.fill(input, '  bUtToN  ');
-  await expect.element(main.getByRole('status')).toHaveTextContent('3 components');
+  const buttonMatches = components.filter((component) =>
+    `${component.name} ${component.description}`.toLowerCase().includes('button'),
+  );
+  await expect.element(main.getByRole('status')).toHaveTextContent(
+    `${buttonMatches.length} component${buttonMatches.length === 1 ? '' : 's'}`,
+  );
   await expect.element(main.getByRole('link', { name: /^Button / })).toBeVisible();
   expect(main.getByRole('link', { name: /^Badge / }).query()).toBeNull();
   await expect.element(screen.getByRole('navigation', { name: 'Ultima' }).getByRole('link', { name: 'Badge', exact: true })).toBeVisible();
