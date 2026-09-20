@@ -66,6 +66,10 @@ An arrangement of components a docs page prints so a consumer can copy it, where
 
 A headless dependency that supplies a model rather than an interaction: TanStack Table's row model, React Hook Form's form state, and whatever Calendar and Chart turn out to need. An engine renders no DOM and no styles, and supplies no roles, ARIA, keyboard handling, or focus management, which is the whole difference between it and a primitive. It belongs to the consumer, never to a registry item, so a composition that needs one is a recipe. An engine a composition only may use is the same: Field is complete without a form library, and the library is a recipe over it.
 
+## Primitive layer
+
+The library a component's interactive parts are built on: Base UI for the React catalogue (ADR 0002), Zag.js for elements (ADR 0008), and, under the ADR 0002 amendment, Zag through `@zag-js/react` for the React entries Base UI cannot cover. A primitive supplies roles, ARIA state, keyboard handling, and focus management and ships no styles, which is the whole difference between it and an **Engine**: a prop-getter library is a primitive rather than an engine, so an entry built on one is a catalogue item, not a recipe.
+
 ## Setup item
 
 The universal registry item that prepares a project for Ultima: one per target (Vite, Next.js App Router). It installs `components.json`, the StyleX compiler config, and the namespace entry, and it never overwrites a file the consumer's scaffold already owns.
