@@ -13,7 +13,7 @@ import { ThemeRoot } from '../theme';
 
 const styles = stylex.create({
   shell: {
-    blockSize: '100dvh',
+    minBlockSize: '100dvh',
     color: color['--ult-color-text'],
     display: 'flex',
     flexDirection: 'column',
@@ -23,14 +23,10 @@ const styles = stylex.create({
     display: 'flex',
     inlineSize: '100%',
     flexGrow: 1,
-    // Without this the row refuses to shrink below its content and the panel scrolls the page.
-    minBlockSize: 0,
   },
-  balancedRails: { marginInlineEnd: { default: 0, '@media (min-width: 80rem)': '16rem' } },
   content: {
     flexGrow: 1,
     minInlineSize: 0,
-    overflow: 'auto',
     position: 'relative',
   },
 });
@@ -69,7 +65,9 @@ function Shell() {
     const heading = content.current?.querySelector('h1');
     if (!heading) return;
     heading.tabIndex = -1;
-    heading.focus();
+    // Scroll position is the router's: restoration owns where the document lands, focus only
+    // tells the reader which page arrived.
+    heading.focus({ preventScroll: true });
   }, [pathname]);
 
   if (pathname === '/theme-studio') return <Outlet />;
@@ -77,10 +75,9 @@ function Shell() {
   return (
     <Sidebar.Root open={true} style={styles.shell}>
       <Header />
-      <Separator />
       <div {...stylex.props(styles.body)}>
         <SiteMenu />
-        <div ref={content} {...stylex.props(styles.content, styles.balancedRails)}>
+        <div ref={content} {...stylex.props(styles.content)}>
           <Outlet />
         </div>
       </div>

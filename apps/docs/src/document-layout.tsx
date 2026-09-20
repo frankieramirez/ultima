@@ -27,7 +27,10 @@ const styles = stylex.create({
   grid: {
     display: "grid",
     gap: space["--ult-space-9"],
-    gridTemplateColumns: "minmax(0, 1fr)",
+    gridTemplateColumns: {
+      default: "minmax(0, 1fr)",
+      [DESKTOP]: "minmax(0, 1fr) 11.5rem",
+    },
   },
   article: {
     minInlineSize: 0,
@@ -37,23 +40,24 @@ const styles = stylex.create({
     width: "100%",
   },
   wideArticle: { gridColumn: "1", maxInlineSize: "76rem" },
-  fullWidth: { gridTemplateColumns: "minmax(0, 1fr)" },
-  index: {
-    position: "fixed",
-    insetBlockStart: "5.5rem",
-    insetBlockEnd: space["--ult-space-9"],
-    insetInlineEnd: space["--ult-space-9"],
-    overflow: "auto",
-    inlineSize: "11.5rem",
-    justifySelf: "end",
+  fullWidth: {
+    gridTemplateColumns: {
+      default: "minmax(0, 1fr)",
+      [DESKTOP]: "minmax(0, 1fr)",
+    },
+  },
+  indexRail: {
+    alignSelf: "start",
     display: { default: "none", [DESKTOP]: "block" },
+    insetBlockStart: `calc(var(--docs-chrome-block) + ${space["--ult-space-6"]})`,
+    maxBlockSize: `calc(100dvh - var(--docs-chrome-block) - var(--docs-footer-block) - ${space["--ult-space-6"]})`,
     minInlineSize: 0,
+    overflow: "auto",
+    position: "sticky",
   },
   indexInner: {
     display: "flex",
     gap: space["--ult-space-7"],
-    position: "sticky",
-    insetBlockStart: space["--ult-space-6"],
   },
   divider: { alignSelf: "stretch", blockSize: "auto" },
   indexContents: {
@@ -148,7 +152,7 @@ export function DocumentLayout({
           {children}
         </article>
         {index && (
-          <aside aria-label="On this page" {...stylex.props(styles.index)}>
+          <aside aria-label="On this page" {...stylex.props(styles.indexRail)}>
             <div {...stylex.props(styles.indexInner)}>
               <Separator orientation="vertical" style={styles.divider} />
               <div {...stylex.props(styles.indexContents)}>

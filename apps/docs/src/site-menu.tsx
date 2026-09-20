@@ -8,8 +8,21 @@ import { navigation, type NavLink } from './navigation';
 
 export const MENU_LABEL = 'Ultima';
 
+const DESKTOP = '@media (min-width: 48rem)';
+
 const styles = stylex.create({
-  panel: { blockSize: '100%', flexShrink: 0, '--sidebar-scrollbar-width': 'none' },
+  panel: {
+    alignSelf: 'flex-start',
+    blockSize: { default: '100%', [DESKTOP]: 'auto' },
+    flexShrink: 0,
+    insetBlockStart: { default: 'auto', [DESKTOP]: 'var(--docs-chrome-block)' },
+    maxBlockSize: {
+      default: 'none',
+      [DESKTOP]: 'calc(100dvh - var(--docs-chrome-block) - var(--docs-footer-block))',
+    },
+    position: { default: 'static', [DESKTOP]: 'sticky' },
+    '--sidebar-scrollbar-width': 'none',
+  },
   dismiss: { display: 'flex', justifyContent: 'flex-end' },
   close: { paddingInline: space['--ult-space-4'] },
   groupLabel: { fontFamily: font['--ult-font-mono'] },

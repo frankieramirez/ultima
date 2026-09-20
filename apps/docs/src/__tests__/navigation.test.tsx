@@ -168,11 +168,58 @@ test('the panel scrolls the whole catalogue inside the viewport', async () => {
   expect(panel.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
 });
 
-test('long component examples scroll inside the shell without a second page scrollbar', async () => {
-  await mount('/components/button');
+test('a long page scrolls the document while the chrome and the menu rail stay put', async () => {
+  const screen = await mount('/components/button');
   await expect.element(page.getByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
 
+  expect(document.documentElement.scrollHeight).toBeGreaterThan(window.innerHeight);
+  window.scrollTo(0, 400);
+  await expect.poll(() => window.scrollY).toBeGreaterThan(0);
+
+  const header = screen.container.querySelector('header')!;
+  expect(getComputedStyle(header).position).toBe('sticky');
+  expect(header.getBoundingClientRect().top).toBe(0);
+
+  const panel = menu().element();
+  expect(getComputedStyle(panel).position).toBe('sticky');
+  expect(panel.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
+
+  const index = document.querySelector('aside[aria-label="On this page"]')!;
+  expect(getComputedStyle(index).position).toBe('sticky');
+  expect(index.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
+
+  expect(
+    screen.container.querySelector('footer')!.getBoundingClientRect().bottom,
+  ).toBeGreaterThan(window.innerHeight);
+  window.scrollTo(0, 0);
+});
+
+test('a short page rests the footer on the viewport bottom', async () => {
+  const screen = await mount('/lost-in-the-suite');
+  await expect.element(screen.getByRole('heading', { name: 'Lost in the aether' })).toBeVisible();
+
   expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
+  const footer = screen.container.querySelector('footer')!.getBoundingClientRect();
+  expect(Math.abs(footer.bottom - window.innerHeight)).toBeLessThan(2);
+});
+
+test('a fresh navigation lands at the top and back restores the scroll position', async () => {
+  const history = createMemoryHistory({ initialEntries: ['/components/button'] });
+  const screen = await render(
+    <RouterProvider router={createRouter({ routeTree, history, scrollRestoration: true })} />,
+  );
+  await expect.element(page.getByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
+
+  window.scrollTo(0, 300);
+  await expect.poll(() => window.scrollY).toBe(300);
+
+  await userEvent.click(menuLink('Alert').element());
+  await expect.element(screen.getByRole('heading', { name: 'Alert', level: 1 })).toBeVisible();
+  await expect.poll(() => window.scrollY).toBe(0);
+
+  history.back();
+  await expect.element(page.getByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
+  await expect.poll(() => window.scrollY).toBe(300);
 });
 
 for (const theme of ['dark', 'light'] as const) {
@@ -259,13 +306,17 @@ function describe(violation: axe.Result) {
 }
 
 
-test('wide articles are centered on the viewport and the menu scrolls with its bar hidden', async () => {
+test('the index rides a sticky grid column right of the article and the menu bar stays hidden', async () => {
   await page.viewport(2304, 720);
   onTestFinished(() => page.viewport(1280, 720));
   await mount('/install');
   await expect.element(page.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
+
+  const index = document.querySelector('aside[aria-label="On this page"]')!;
+  expect(getComputedStyle(index).position).toBe('sticky');
   const article = document.querySelector('article')!.getBoundingClientRect();
-  expect(Math.abs(article.left + article.width / 2 - window.innerWidth / 2)).toBeLessThan(1);
+  expect(article.right).toBeLessThanOrEqual(index.getBoundingClientRect().left);
+
   const navigation = menu().element();
   expect(getComputedStyle(navigation).scrollbarWidth).toBe('none');
   navigation.scrollTop = 100;
