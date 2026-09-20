@@ -387,6 +387,11 @@ for (const mode of themes) {
     );
     await screen.getByRole('button', { name: 'Share' }).click();
     await expect.element(page.getByTestId('popup')).toBeVisible();
+    /**
+     * Resting, not just visible: mid-fade axe multiplies the text alpha by the popup's
+     * opacity and reports a real contrast failure against the half-painted surface.
+     */
+    await expect.poll(() => getComputedStyle(page.getByTestId('popup').element()).opacity).toBe('1');
     expect(
       await violations({
         include: [page.getByTestId('popup').element()],
