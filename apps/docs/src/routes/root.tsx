@@ -72,6 +72,8 @@ function Shell() {
     heading.focus();
   }, [pathname]);
 
+  if (pathname === '/theme-studio') return <Outlet />;
+
   return (
     <Sidebar.Root open={true} style={styles.shell}>
       <Header />
