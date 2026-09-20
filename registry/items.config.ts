@@ -252,40 +252,12 @@ export const items: Record<string, RegistryItemDescription> = {
   'aspect-ratio': {
     title: 'Aspect Ratio',
     description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
-    docs: "import { AspectRatio } from '@/components/ui/aspect-ratio';
-
-<AspectRatio ratio={16 / 9}>
-  <img src=\"/cover.png\" alt=\"Ridgeline at dusk\" />
-</AspectRatio>
-
-ratio is a number written inline as aspect-ratio, the file's one runtime declaration. The box and the radius go through the style slot, and render swaps the div for your own element, like a figure.",
+    docs: "import { AspectRatio } from '@/components/ui/aspect-ratio';\n\n<AspectRatio ratio={16 / 9}>\n  <img src=\"/cover.png\" alt=\"Ridgeline at dusk\" />\n</AspectRatio>\n\nratio is a number written inline as aspect-ratio, the file's one runtime declaration. The box and the radius go through the style slot, and render swaps the div for your own element, like a figure.",
   },
   command: {
     title: 'Command',
     description: 'A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.',
-    docs: "import { Command } from '@/components/ui/command';
-
-<Command.Root items={['New file', 'Open report', 'Export PDF']}>
-  <Command.InputGroup>
-    <Command.Input placeholder=\"Search actions\" aria-label=\"Search actions\" />
-    <Command.Clear aria-label=\"Clear\" />
-    <Command.Trigger aria-label=\"Open actions\">
-      <Command.Icon />
-    </Command.Trigger>
-  </Command.InputGroup>
-  <Command.Portal>
-    <Command.Positioner>
-      <Command.Popup>
-        <Command.Empty>No action matches.</Command.Empty>
-        <Command.List>
-          {(action) => <Command.Item key={action} value={action}>{action}</Command.Item>}
-        </Command.List>
-      </Command.Popup>
-    </Command.Positioner>
-  </Command.Portal>
-</Command.Root>
-
-For the palette, render the list in place: <Command.Root open inline items={...}> and drop Portal, Positioner, and Popup. The filter prop takes your own scorer; without it the default Collator filter runs.",
+    docs: "import { Command } from '@/components/ui/command';\n\n<Command.Root items={['New file', 'Open report', 'Export PDF']}>\n  <Command.InputGroup>\n    <Command.Input placeholder=\"Search actions\" aria-label=\"Search actions\" />\n    <Command.Clear aria-label=\"Clear\" />\n    <Command.Trigger aria-label=\"Open actions\">\n      <Command.Icon />\n    </Command.Trigger>\n  </Command.InputGroup>\n  <Command.Portal>\n    <Command.Positioner>\n      <Command.Popup>\n        <Command.Empty>No action matches.</Command.Empty>\n        <Command.List>\n          {(action) => <Command.Item key={action} value={action}>{action}</Command.Item>}\n        </Command.List>\n      </Command.Popup>\n    </Command.Positioner>\n  </Command.Portal>\n</Command.Root>\n\nFor the palette, render the list in place: <Command.Root open inline items={...}> and drop Portal, Positioner, and Popup. The filter prop takes your own scorer; without it the default Collator filter runs.",
   },
   'setup-vite': {
     title: 'Ultima setup for Vite',
