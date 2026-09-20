@@ -1,17 +1,13 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 
+import { DocumentLayout } from '../document-layout';
+
 const styles = stylex.create({
-  page: {
-    marginInline: 'auto',
-    maxWidth: '44rem',
-    paddingBlock: space['--ult-space-9'],
-    paddingInline: space['--ult-space-6'],
-  },
   title: {
     color: color['--ult-color-text'],
-    fontSize: text['--ult-text-9'],
-    fontWeight: font['--ult-font-weight-semibold'],
+    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': '3.25rem' },
+    fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
     margin: 0,
@@ -26,9 +22,9 @@ const styles = stylex.create({
 
 export function Placeholder({ title, ticket }: { title: string; ticket: string }) {
   return (
-    <main {...stylex.props(styles.page)}>
+    <DocumentLayout breadcrumb={`COMPONENTS / ${title.toUpperCase()}`} index={false}>
       <h1 {...stylex.props(styles.title)}>{title}</h1>
       <p {...stylex.props(styles.lede)}>This page is filled by {ticket}.</p>
-    </main>
+    </DocumentLayout>
   );
 }
