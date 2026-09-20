@@ -41,3 +41,9 @@ Recorded on [What Ultima documents as its form integration](https://linear.app/f
 What generalises is the scope. The decision above is written for a composition whose behavior *needs* an engine, and no v0.1 entry needs one. Field is complete on Base UI and the platform's constraint validation, and a form library is a capability a consumer may add on top of it. The policy covers both cases: an optional engine is still the consumer's dependency, still ships as a recipe, and still has to be headless.
 
 One consequence is new. An optional engine never reaches the component's source **or** its props. The wiring is the primitive's own external-state props, which the component passes through like any other, and the recipe does the connecting, so Field exposes `invalid`, `dirty`, and `touched` from the day it ships and gains nothing when the recipe lands. A component that grew a prop for an engine would put that engine in its public API without putting it in its derived `dependencies`, which is worse than either half.
+
+## Amendment (2026-09-20)
+
+Recorded on [Item or recipe on each of the six remaining v0.2 lines](https://github.com/frankieramirez/ultima/issues/277). The headless gate reads literally: an engine renders no DOM and no styles. A candidate that renders DOM fails candidacy rather than earning a waiver, so cmdk, react-day-picker, input-otp, and react-resizable-panels — DOM-renderers that ship no styles — are out, and a DOM-emitting helper like `d3-axis` fails the same way.
+
+The gate's other edge is new. A library that renders nothing and ships no styles while supplying the roles, ARIA state, keyboard handling, and focus management ADR 0002 names is not an engine at all but a primitive. An entry built on one is a catalogue item under the ADR 0002 amendment rather than a recipe under this ground, and Calendar, Date Picker, and Resizable are the first entries to take that path.
