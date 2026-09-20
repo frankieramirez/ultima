@@ -11,11 +11,10 @@ import {
   type GuidedGroup,
   type ShuffleExhaustion,
 } from '@ultima/tokens';
-import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Alert, Button, Separator } from '@ultima/ui';
 import { useMemo, useState } from 'react';
 
-import { BrandLogo } from '../brand-logo';
 import { StudioActions, useStudioDraft } from '../theme-studio-actions';
 import { GROUPS } from '../theme-studio-draft';
 import { ThemeStudioEditor } from '../theme-studio-editor';
@@ -32,14 +31,14 @@ type Mode = (typeof MODES)[number];
 const styles = stylex.create({
   shell: {
     backgroundColor: color['--ult-color-surface'],
-    blockSize: '100dvh',
     color: color['--ult-color-text'],
     display: 'flex',
     flexDirection: 'column',
+    flexGrow: 1,
     fontFamily: font['--ult-font-sans'],
     minBlockSize: 0,
   },
-  header: {
+  subBar: {
     alignItems: 'center',
     boxSizing: 'border-box',
     display: 'flex',
@@ -50,23 +49,11 @@ const styles = stylex.create({
     paddingBlock: space['--ult-space-6'],
     paddingInline: space['--ult-space-8'],
   },
-  brand: {
-    display: 'inline-flex',
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
-    },
-  },
-  brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
   title: {
     fontSize: text['--ult-text-5'],
     fontWeight: font['--ult-font-weight-medium'],
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-  },
-  meta: {
-    color: color['--ult-color-text-muted'],
-    fontSize: text['--ult-text-2'],
   },
   save: {
     color: color['--ult-color-text-subtle'],
@@ -88,7 +75,7 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
-    flexShrink: 0,
+    flexShrink: { default: 1, [RAIL]: 0 },
     gap: space['--ult-space-6'],
     inlineSize: { default: '100%', [RAIL]: '18.75rem' },
     minBlockSize: 0,
@@ -166,13 +153,9 @@ export function ThemeStudio() {
   const overrides = Object.keys(draft.overrides.dark).length + Object.keys(draft.overrides.light).length;
 
   return (
-    <div {...stylex.props(darkTheme, colorScheme.dark, styles.shell)}>
-      <header {...stylex.props(styles.header)}>
-        <Link to="/" aria-label="Ultima home" {...stylex.props(styles.brand)}>
-          <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
-        </Link>
+    <main {...stylex.props(darkTheme, colorScheme.dark, styles.shell)}>
+      <div {...stylex.props(styles.subBar)}>
         <h1 {...stylex.props(styles.title)}>Theme Studio</h1>
-        <span {...stylex.props(styles.meta)}>Untitled theme</span>
         <span {...stylex.props(styles.save)}>Saved locally</span>
         <div {...stylex.props(styles.actions)}>
           <StudioActions
@@ -185,7 +168,7 @@ export function ThemeStudio() {
             refusal={refusal}
           />
         </div>
-      </header>
+      </div>
       <Separator />
       <div {...stylex.props(styles.body)}>
         <aside aria-label="Theme editor" {...stylex.props(styles.editor)}>
@@ -241,6 +224,6 @@ export function ThemeStudio() {
         </aside>
         <ThemeStudioPreview mode={mode} onModeChange={setMode} tables={resolved} />
       </div>
-    </div>
+    </main>
   );
 }

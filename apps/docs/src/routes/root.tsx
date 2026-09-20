@@ -19,15 +19,26 @@ const styles = stylex.create({
     flexDirection: 'column',
     fontFamily: font['--ult-font-sans'],
   },
+  studioViewport: {
+    blockSize: '100dvh',
+  },
   body: {
     display: 'flex',
     inlineSize: '100%',
     flexGrow: 1,
   },
+  bounded: {
+    minBlockSize: 0,
+  },
   content: {
     flexGrow: 1,
     minInlineSize: 0,
     position: 'relative',
+  },
+  workbench: {
+    display: 'flex',
+    flexDirection: 'column',
+    minBlockSize: 0,
   },
 });
 
@@ -70,19 +81,19 @@ function Shell() {
     heading.focus({ preventScroll: true });
   }, [pathname]);
 
-  if (pathname === '/theme-studio') return <Outlet />;
+  const studio = pathname === '/theme-studio';
 
   return (
-    <Sidebar.Root open={true} style={styles.shell}>
+    <Sidebar.Root open={!studio} style={[styles.shell, studio && styles.studioViewport]}>
       <Header />
-      <div {...stylex.props(styles.body)}>
+      <div {...stylex.props(styles.body, studio && styles.bounded)}>
         <SiteMenu />
-        <div ref={content} {...stylex.props(styles.content)}>
+        <div ref={content} {...stylex.props(styles.content, studio && styles.workbench)}>
           <Outlet />
         </div>
       </div>
       <Separator />
-      <SiteFooter />
+      {studio ? null : <SiteFooter />}
     </Sidebar.Root>
   );
 }
