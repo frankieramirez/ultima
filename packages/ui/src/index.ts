@@ -344,6 +344,18 @@ export {
 } from './hover-card';
 export { Toggle, type ToggleProps, type ToggleVariant, type ToggleSize } from './toggle';
 export {
+  ColorField,
+  useColorField,
+  type ColorFieldSize,
+  type ColorFieldRootProps,
+  type ColorFieldSwatchProps,
+  type ColorFieldInputProps,
+  type ColorFieldPortalProps,
+  type ColorFieldPositionerProps,
+  type ColorFieldPopupProps,
+  type ColorFieldPickerProps,
+} from './color-field';
+export {
   Drawer,
   type DrawerRootProps,
   type DrawerProviderProps,
