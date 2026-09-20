@@ -91,8 +91,9 @@ const styles = stylex.create({
     overflow: 'auto',
   },
   status: {
-    alignItems: 'center',
+    alignItems: { default: 'flex-start', [RAIL]: 'center' },
     display: 'flex',
+    flexDirection: { default: 'column', [RAIL]: 'row' },
     flexShrink: 0,
     flexWrap: 'wrap',
     gap: space['--ult-space-6'],
