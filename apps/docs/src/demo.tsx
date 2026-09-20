@@ -1,10 +1,11 @@
 import * as stylex from '@stylexjs/stylex';
 import { colorScheme, lightTheme } from '@ultima/tokens';
 import { space } from '@ultima/tokens/tokens.stylex';
-import { Card, Code } from '@ultima/ui';
+import { Card } from '@ultima/ui';
 import type { ComponentType } from 'react';
 
 import { CopyButton } from './copy-button';
+import { HighlightedCode } from './highlighted-code';
 
 const PAPER = '#EDEDE8';
 const PAPER_BORDER = '#C5C5BF';
@@ -50,9 +51,7 @@ export function Demo({
           <Component />
         </Card.Body>
         <Card.Body>
-          <Code variant="block" style={styles.source}>
-            {source}
-          </Code>
+          <HighlightedCode code={source} lang="tsx" style={styles.source} />
         </Card.Body>
         <Card.Footer style={styles.bar}>
           <CopyButton text={source} ariaLabel="Copy example source" />
