@@ -3,6 +3,8 @@ import { expect, test } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
+import DataTableFiltering from '../demos/table/data-table-filtering';
+import DataTablePagination from '../demos/table/data-table-pagination';
 import DataTableRowSelection from '../demos/table/data-table-row-selection';
 import DataTableSorting from '../demos/table/data-table-sorting';
 
@@ -26,6 +28,24 @@ const mountSelection = () =>
       <DataTableRowSelection />
     </StrictMode>,
   );
+
+const mountFiltering = () =>
+  render(
+    <StrictMode>
+      <DataTableFiltering />
+    </StrictMode>,
+  );
+
+const mountPagination = () =>
+  render(
+    <StrictMode>
+      <DataTablePagination />
+    </StrictMode>,
+  );
+
+function bodyRows(screen: Awaited<ReturnType<typeof mount>>) {
+  return [...screen.container.querySelectorAll('tbody tr')];
+}
 
 function sortOf(screen: Awaited<ReturnType<typeof mount>>, name: RegExp) {
   return screen.getByRole('columnheader', { name }).element().getAttribute('aria-sort');
@@ -156,4 +176,114 @@ test('the row-count region carries the selection count and is pre-mounted empty'
 
   await userEvent.click(selectAll(screen));
   await expect.poll(() => status.textContent).toBe('4 rows shown, 0 selected.');
+});
+
+test('the faceted menu narrows the table to the checked areas without closing', async () => {
+  const screen = await mountFiltering();
+
+  expect(bodyRows(screen)).toHaveLength(8);
+
+  await userEvent.click(screen.getByRole('button', { name: 'Filter by area' }));
+  const menu = screen.getByRole('menu');
+  await expect.element(menu).toBeVisible();
+
+  const americas = menu.getByRole('menuitemcheckbox', { name: 'Americas (4)' });
+  expect(americas.element()).toHaveAttribute('aria-checked', 'false');
+
+  await userEvent.click(americas);
+  await expect.poll(() => bodyRows(screen).length).toBe(4);
+  expect(americas.element()).toHaveAttribute('aria-checked', 'true');
+
+  await userEvent.click(menu.getByRole('menuitemcheckbox', { name: 'Europe (2)' }));
+  await expect.poll(() => bodyRows(screen).length).toBe(6);
+
+  await userEvent.click(americas);
+  await expect.poll(() => bodyRows(screen).length).toBe(2);
+  expect(americas.element()).toHaveAttribute('aria-checked', 'false');
+});
+
+test('the search box filters across columns and the count is announced', async () => {
+  const screen = await mountFiltering();
+
+  const status = screen.getByRole('status').element();
+  expect(status).toHaveAttribute('aria-atomic', 'true');
+  expect(status.textContent).toBe('');
+  expect(getComputedStyle(status).display).not.toBe('none');
+
+  const search = screen.getByRole('searchbox', { name: 'Search regions' });
+
+  await userEvent.fill(search, 'europe');
+  await expect.poll(() => bodyRows(screen).length).toBe(2);
+  await expect.poll(() => status.textContent).toBe('Showing 2 of 8 rows.');
+
+  await userEvent.fill(search, 'us-west');
+  await expect.poll(() => bodyRows(screen).length).toBe(1);
+  await expect.poll(() => status.textContent).toBe('Showing 1 of 8 rows.');
+
+  await userEvent.fill(search, '');
+  await expect.poll(() => bodyRows(screen).length).toBe(8);
+  await expect.poll(() => status.textContent).toBe('Showing 8 of 8 rows.');
+});
+
+test('the two pagination landmarks carry distinct names and drive one table', async () => {
+  const screen = await mountPagination();
+
+  const above = screen.getByRole('navigation', { name: 'Pagination above the table' });
+  const below = screen.getByRole('navigation', { name: 'Pagination below the table' });
+
+  const firstCell = () => screen.container.querySelector('tbody td')?.textContent;
+  expect(bodyRows(screen)).toHaveLength(5);
+  expect(firstCell()).toBe('us-east-1');
+  expect(above.getByRole('button', { name: '1' }).element()).toHaveAttribute('aria-current', 'page');
+
+  await userEvent.click(below.getByRole('button', { name: 'Next' }));
+  await expect.poll(firstCell).toBe('eu-west-1');
+  await expect.poll(() => bodyRows(screen).length).toBe(5);
+
+  expect(above.getByRole('button', { name: '2' }).element()).toHaveAttribute('aria-current', 'page');
+  expect(below.getByRole('button', { name: '2' }).element()).toHaveAttribute('aria-current', 'page');
+});
+
+test('the ends stay put on the first and last page and the range is announced', async () => {
+  const screen = await mountPagination();
+
+  const below = screen.getByRole('navigation', { name: 'Pagination below the table' });
+  const status = screen.getByRole('status').element();
+  const firstCell = () => screen.container.querySelector('tbody td')?.textContent;
+
+  expect(status).toHaveAttribute('aria-atomic', 'true');
+  expect(status.textContent).toBe('');
+  expect(getComputedStyle(status).display).not.toBe('none');
+
+  const previous = below.getByRole('button', { name: 'Previous' }).element();
+  expect(previous).toHaveAttribute('aria-disabled', 'true');
+  // Playwright refuses to click an aria-disabled element; a DOM click is what the
+  // component's own swallow has to absorb.
+  previous.click();
+  expect(firstCell()).toBe('us-east-1');
+
+  await userEvent.click(below.getByRole('button', { name: '5' }));
+  await expect.poll(firstCell).toBe('il-central-1');
+  await expect.poll(() => bodyRows(screen).length).toBe(4);
+  await expect.poll(() => status.textContent).toBe('Showing 21 through 24 of 24 rows.');
+
+  await expect.poll(() => below.getByRole('button', { name: 'Next' }).element().getAttribute('aria-disabled')).toBe('true');
+});
+
+test('the page-size select re-slices the table around the top row', async () => {
+  const screen = await mountPagination();
+
+  const below = screen.getByRole('navigation', { name: 'Pagination below the table' });
+  const status = screen.getByRole('status').element();
+
+  await userEvent.click(below.getByRole('button', { name: 'Next' }));
+  await expect.poll(() => bodyRows(screen).length).toBe(5);
+
+  await userEvent.click(screen.getByRole('combobox', { name: 'Rows per page' }));
+  await userEvent.click(screen.getByRole('option', { name: '10 rows' }));
+
+  await expect.poll(() => bodyRows(screen).length).toBe(10);
+  await expect.poll(() => status.textContent).toBe('Showing 1 through 10 of 24 rows.');
+  await expect.poll(() => below.getByRole('button', { name: '3' }).element().getAttribute('aria-current')).toBeNull();
+  expect(below.getByRole('button', { name: '1' }).element()).toHaveAttribute('aria-current', 'page');
 });
