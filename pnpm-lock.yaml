@@ -209,6 +209,9 @@ importers:
       '@zag-js/react':
         specifier: 1.44.0
         version: 1.44.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@zag-js/splitter':
+        specifier: 1.44.0
+        version: 1.44.0
     devDependencies:
       '@stylexjs/unplugin':
         specifier: ^0.19.0
@@ -1108,6 +1111,9 @@ packages:
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
+
+  '@zag-js/splitter@1.44.0':
+    resolution: {integrity: sha512-YIsy6rhLbcyINXtsrFWhCAwbjgbRaj9JTUqVAgz/tah64jAHxcSjQpQSlctqme02wyhR4eMJx338rvr0lUuyGw==}
 
   '@zag-js/store@1.44.0':
     resolution: {integrity: sha512-syjbybsc1e2zro50Eu+SaloeJbiXTY78wa+m8iUzswdmVzpts+7KSk3Oogso7jxZ7L91vNAQDhSqZR73Il3KOA==}
@@ -2799,6 +2805,14 @@ snapshots:
       '@zag-js/utils': 1.44.0
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
+
+  '@zag-js/splitter@1.44.0':
+    dependencies:
+      '@zag-js/anatomy': 1.44.0
+      '@zag-js/core': 1.44.0
+      '@zag-js/dom-query': 1.44.0
+      '@zag-js/types': 1.44.0
+      '@zag-js/utils': 1.44.0
 
   '@zag-js/store@1.44.0':
     dependencies:
