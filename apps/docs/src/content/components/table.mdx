@@ -13,6 +13,8 @@ import DataTableFiltering from '../../demos/table/data-table-filtering';
 import dataTableFilteringSource from '../../demos/table/data-table-filtering?raw';
 import DataTablePagination from '../../demos/table/data-table-pagination';
 import dataTablePaginationSource from '../../demos/table/data-table-pagination?raw';
+import Chart from '../../demos/table/chart';
+import chartSource from '../../demos/table/chart?raw';
 
 # Table
 
@@ -97,6 +99,24 @@ Pagination registers `rowPaginationFeature` and `createPaginatedRowModel()` with
 The `role="status"` region here announces the visible range, because Pagination mounts no live region of its own: it sees pages and never items, so the item range is the recipe's to say. When you combine these examples on one table, register every feature on that table and the pipeline orders them core, then filtering, then sorting, then pagination; `autoResetPageIndex` keeps a filter change from stranding the reader on an empty page.
 
 <Demo component={DataTablePagination} source={dataTablePaginationSource} />
+
+## Chart
+
+A chart is a recipe, not a component: there is no `@ultima/chart` item and no file to install. The engine is the pure-function [d3](https://d3js.org/) modules, and they are your dependency — `d3-scale`, `d3-array`, and `d3-format` cover the example below, while a line or arc mark pulls in `d3-shape` and `d3-time-format`.
+
+```bash
+npm install d3-scale d3-array d3-format
+```
+
+No file in `@ultima/ui` imports the engine, so no registry item declares it and nothing arrives with `@ultima/table`. `d3-axis` is not on the list: it renders DOM, which fails the recipe engine gate, so axes and ticks are markup you write yourself, read off `ticks()` and `tickFormat()` on the scale objects. The scales compute positions and bands, `max` and `extent` bound the domain, and `tickFormat` prints the labels.
+
+Component dependency: `table`.
+
+**The SVG is decoration and the Table is the data.** The chart renders `aria-hidden="true"` and the same rows sit in a real `Table` beside it, which is why `table` is the recipe's only component dependency and why the recipe lives on this page. Naming the SVG with `role="img"` instead is declined: with the data table present, a name announces the same information twice, and a chart shipped without its table is an inaccessible example.
+
+The canonical example is a single-series bar chart: `scaleBand` for the categories, `scaleLinear` for the values, marks in `--ult-color-accent`. Line, arc, and multi-series marks follow the same rules.
+
+<Demo component={Chart} source={chartSource} />
 
 ## Props
 
