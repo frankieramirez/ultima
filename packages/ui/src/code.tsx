@@ -24,12 +24,12 @@ const variants = stylex.create({
   },
   block: {
     borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-md'],
+    borderRadius: 0,
     borderStyle: 'solid',
     borderWidth: border.hairline,
     lineHeight: font['--ult-font-leading-normal'],
     overflowWrap: 'anywhere',
-    padding: space['--ult-space-5'],
+    padding: space['--ult-space-7'],
     whiteSpace: 'pre-wrap',
   },
 });

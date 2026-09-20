@@ -36,7 +36,7 @@ const styles = stylex.create({
     marginInline: "auto",
     width: "100%",
   },
-  wideArticle: { gridColumn: "1", maxInlineSize: "64rem" },
+  wideArticle: { gridColumn: "1", maxInlineSize: "76rem" },
   fullWidth: { gridTemplateColumns: "minmax(0, 1fr)" },
   index: {
     position: "fixed",
@@ -71,9 +71,9 @@ const styles = stylex.create({
   indexList: {
     display: "flex",
     flexDirection: "column",
-    gap: space["--ult-space-3"],
+    gap: space["--ult-space-6"],
     listStyle: "none",
-    marginBlock: space["--ult-space-4"],
+    marginBlock: space["--ult-space-6"],
     marginInline: 0,
     padding: 0,
   },
