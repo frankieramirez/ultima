@@ -287,6 +287,12 @@ export const components = [
     description: 'An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.',
     release: 'v0.2',
   },
+  {
+    name: 'Command',
+    item: 'command',
+    description: 'A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
