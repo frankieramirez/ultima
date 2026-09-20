@@ -57,6 +57,7 @@ import { PalettePage } from './routes/palette';
 import { Placeholder } from './routes/placeholder';
 import { RationalePage } from './routes/rationale';
 import { Root } from './routes/root';
+import { ThemeStudio } from './routes/theme-studio';
 import { TokensPage } from './routes/tokens';
 
 const rootRoute = createRootRoute({
@@ -164,6 +165,12 @@ const rationaleRoute = createRoute({
   component: RationalePage,
 });
 
+const themeStudioRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/theme-studio',
+  component: ThemeStudio,
+});
+
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   installRoute,
@@ -172,6 +179,7 @@ export const routeTree = rootRoute.addChildren([
   componentsRoute,
   componentNameRoute,
   rationaleRoute,
+  themeStudioRoute,
 ]);
 
 export const router = createRouter({ routeTree });

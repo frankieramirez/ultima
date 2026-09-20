@@ -33,6 +33,7 @@ export default defineConfig({
       '@base-ui/react/form',
       '@base-ui/react/menu',
       '@base-ui/react/meter',
+      '@base-ui/react/popover',
       '@base-ui/react/preview-card',
       '@base-ui/react/progress',
       '@base-ui/react/radio',

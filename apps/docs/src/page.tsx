@@ -2,6 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 
 import * as stylex from "@stylexjs/stylex";
 import { color, font, space, text } from "@ultima/tokens/tokens.stylex";
+import { Separator } from "@ultima/ui";
 import { DocumentLayout } from "./document-layout";
 
 const styles = stylex.create({
@@ -13,7 +14,7 @@ const styles = stylex.create({
     color: color["--ult-color-text"],
     fontSize: {
       default: text["--ult-text-10"],
-      "@media (min-width: 48rem)": "3.5rem",
+      "@media (min-width: 48rem)": "3.25rem",
     },
     fontWeight: font["--ult-font-weight-medium"],
     letterSpacing: font["--ult-font-tracking-tight"],
@@ -37,6 +38,7 @@ const styles = stylex.create({
     letterSpacing: font["--ult-font-tracking-tight"],
     lineHeight: font["--ult-font-leading-tight"],
     marginBlock: 0,
+    paddingBlockStart: space["--ult-space-7"],
   },
   note: {
     color: color["--ult-color-text-muted"],
@@ -83,6 +85,7 @@ export function Section({
 }) {
   return (
     <section {...stylex.props(styles.section)}>
+      <Separator />
       <h2 {...stylex.props(styles.sectionTitle)}>{title}</h2>
       {children}
     </section>

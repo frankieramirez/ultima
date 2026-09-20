@@ -27,11 +27,10 @@ const styles = stylex.create({
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
     marginBottom: space['--ult-space-4'],
-    marginTop: 0,
-    paddingBlockStart: space['--ult-space-7'],
+    marginTop: space['--ult-space-7'],
   },
-  h2Rule: {
-    marginBlockStart: space['--ult-space-9'],
+  rule: {
+    marginTop: space['--ult-space-9'],
   },
   h3: {
     color: color['--ult-color-text'],
@@ -86,7 +85,7 @@ function H1(props: ComponentProps<'h1'>) {
 function H2(props: ComponentProps<'h2'>) {
   return (
     <>
-      <Separator style={styles.h2Rule} />
+      <Separator style={styles.rule} />
       <h2 {...props} {...stylex.props(styles.h2)} />
     </>
   );
