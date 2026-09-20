@@ -119,7 +119,8 @@ export function findForbiddenDeclarations(source: string): string[] {
 
 const SPEC_NAMED = ['src/copy-button.tsx', 'src/swatch.tsx'];
 const STUDIO_CHROME = ['src/routes/theme-studio.tsx', 'src/theme-studio-preview.tsx'];
-const STATED_EXCEPTIONS = [...SPEC_NAMED, ...STUDIO_CHROME];
+const SPECIMEN_PAPER = ['src/demo.tsx'];
+const STATED_EXCEPTIONS = [...SPEC_NAMED, ...STUDIO_CHROME, ...SPECIMEN_PAPER];
 
 const sources = import.meta.glob('../**/*.{ts,tsx}', {
   query: '?raw',
