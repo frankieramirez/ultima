@@ -287,6 +287,12 @@ export const components = [
     description: 'An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.',
     release: 'v0.2',
   },
+  {
+    name: 'Resizable',
+    item: 'resizable',
+    description: 'Panels with boundaries you drag or arrow, on Zag.',
+    release: 'v0.2',
+  },
 ] satisfies ComponentEntry[];
 
 export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
