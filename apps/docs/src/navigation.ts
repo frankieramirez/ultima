@@ -19,6 +19,7 @@ export const pages = [
   { label: 'Tokens', to: '/tokens' },
   { label: 'Palette', to: '/palette' },
   { label: 'Rationale', to: '/rationale' },
+  { label: 'Studio', to: '/theme-studio' },
   { label: 'Components', to: '/components' },
 ] satisfies NavLink[];
 
