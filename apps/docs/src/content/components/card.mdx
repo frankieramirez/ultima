@@ -1,6 +1,8 @@
 import { Demo } from '../../demo';
 import Overview from '../../demos/card/overview';
 import overviewSource from '../../demos/card/overview?raw';
+import Item from '../../demos/card/item';
+import itemSource from '../../demos/card/item?raw';
 
 # Card
 
@@ -17,6 +19,20 @@ npx shadcn add @ultima/card
 All six parts compose without hidden layout. `Card.Title` renders an `h3` by default; use `render` when the page hierarchy needs another heading level.
 
 <Demo component={Overview} source={overviewSource} />
+
+## Item
+
+An item is a row inside a `Card.Root`: media, a text stack of title and muted description, and trailing actions. It is a recipe rather than a component — there is no `@ultima/item` item and no file to install, because every part it needs already belongs to `card`, `avatar`, or `button`, and the row's flex arrangement and the hairlines between rows are style work written at the call site.
+
+Component dependencies: `card`, `avatar`, `button`.
+
+```bash
+npx shadcn add @ultima/card @ultima/avatar @ultima/button
+```
+
+Rows are static. A row that itself acts is a catalogue control composition, not an item — which is why `button` is a dependency and no row state is. The documented states are the arrangement variations: the canonical row with media and two actions, a row without media, and a row with a single action.
+
+<Demo component={Item} source={itemSource} />
 
 ## Props
 

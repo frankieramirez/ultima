@@ -9,6 +9,8 @@ import DataTableSorting from '../../demos/table/data-table-sorting';
 import dataTableSortingSource from '../../demos/table/data-table-sorting?raw';
 import DataTableRowSelection from '../../demos/table/data-table-row-selection';
 import dataTableRowSelectionSource from '../../demos/table/data-table-row-selection?raw';
+import Chart from '../../demos/table/chart';
+import chartSource from '../../demos/table/chart?raw';
 
 # Table
 
@@ -77,6 +79,24 @@ The select-all is a standalone `Checkbox.Root` with a controlled `indeterminate`
 Three obligations are the consumer's, not the recipe's. Each row checkbox takes its name from that row's own data, because four checkboxes all reading "Select row" identify no row. The select-all takes its own distinct name. And the change is announced: the same `role="status"` region the sorting example introduced, carrying the selection count rather than the row order. One region for the table; a second would say the same thing twice.
 
 <Demo component={DataTableRowSelection} source={dataTableRowSelectionSource} />
+
+## Chart
+
+A chart is a recipe, not a component: there is no `@ultima/chart` item and no file to install. The engine is the pure-function [d3](https://d3js.org/) modules, and they are your dependency — `d3-scale`, `d3-array`, and `d3-format` cover the example below, while a line or arc mark pulls in `d3-shape` and `d3-time-format`.
+
+```bash
+npm install d3-scale d3-array d3-format
+```
+
+No file in `@ultima/ui` imports the engine, so no registry item declares it and nothing arrives with `@ultima/table`. `d3-axis` is not on the list: it renders DOM, which fails the recipe engine gate, so axes and ticks are markup you write yourself, read off `ticks()` and `tickFormat()` on the scale objects. The scales compute positions and bands, `max` and `extent` bound the domain, and `tickFormat` prints the labels.
+
+Component dependency: `table`.
+
+**The SVG is decoration and the Table is the data.** The chart renders `aria-hidden="true"` and the same rows sit in a real `Table` beside it, which is why `table` is the recipe's only component dependency and why the recipe lives on this page. Naming the SVG with `role="img"` instead is declined: with the data table present, a name announces the same information twice, and a chart shipped without its table is an inaccessible example.
+
+The canonical example is a single-series bar chart: `scaleBand` for the categories, `scaleLinear` for the values, marks in `--ult-color-accent`. Line, arc, and multi-series marks follow the same rules.
+
+<Demo component={Chart} source={chartSource} />
 
 ## Props
 
