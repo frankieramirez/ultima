@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, lightTheme } from '@ultima/tokens';
 import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import { Badge, Button, Card, Input, Tabs } from '@ultima/ui';
 
@@ -85,46 +84,44 @@ const styles = stylex.create({
 
 export default function Specimen() {
   return (
-    <div {...stylex.props(lightTheme, colorScheme.light)}>
-      <Card.Root role="region" aria-label="Component specimen" style={styles.panel}>
-        <div {...stylex.props(styles.mock)}>
-          <div {...stylex.props(styles.head)}>
-            <p {...stylex.props(styles.title)}>Project settings</p>
-            <Badge style={styles.draft}>Draft</Badge>
-          </div>
-          <Tabs.Root defaultValue="general">
-            <Tabs.List aria-label="Settings sections">
-              <Tabs.Tab value="general">General</Tabs.Tab>
-              <Tabs.Tab value="members">Members</Tabs.Tab>
-              <Tabs.Tab value="notifications">Notifications</Tabs.Tab>
-              <Tabs.Indicator />
-            </Tabs.List>
-          </Tabs.Root>
-          <label {...stylex.props(styles.field)}>
-            <span {...stylex.props(styles.label)}>Project name</span>
-            <Input defaultValue="Untitled, but not for long" />
-          </label>
-          <label {...stylex.props(styles.field)}>
-            <span {...stylex.props(styles.label)}>Framework</span>
-            <Input defaultValue="React + StyleX" />
-          </label>
-          <div {...stylex.props(styles.actions)}>
-            <Button style={contrastStyles.root}>Create project</Button>
-            <Button variant="outline">Cancel</Button>
-          </div>
+    <Card.Root role="region" aria-label="Component specimen" style={styles.panel}>
+      <div {...stylex.props(styles.mock)}>
+        <div {...stylex.props(styles.head)}>
+          <p {...stylex.props(styles.title)}>Project settings</p>
+          <Badge style={styles.draft}>Draft</Badge>
         </div>
-        <div {...stylex.props(styles.notes)}>
-          {NOTES.map(({ index, title, body }) => (
-            <div key={index} {...stylex.props(styles.note)}>
-              <span aria-hidden {...stylex.props(styles.noteIndex)}>{index}</span>
-              <div {...stylex.props(styles.noteCopy)}>
-                <p {...stylex.props(styles.noteTitle)}>{title}</p>
-                <p {...stylex.props(styles.noteBody)}>{body}</p>
-              </div>
+        <Tabs.Root defaultValue="general">
+          <Tabs.List aria-label="Settings sections">
+            <Tabs.Tab value="general">General</Tabs.Tab>
+            <Tabs.Tab value="members">Members</Tabs.Tab>
+            <Tabs.Tab value="notifications">Notifications</Tabs.Tab>
+            <Tabs.Indicator />
+          </Tabs.List>
+        </Tabs.Root>
+        <label {...stylex.props(styles.field)}>
+          <span {...stylex.props(styles.label)}>Project name</span>
+          <Input defaultValue="Untitled, but not for long" />
+        </label>
+        <label {...stylex.props(styles.field)}>
+          <span {...stylex.props(styles.label)}>Framework</span>
+          <Input defaultValue="React + StyleX" />
+        </label>
+        <div {...stylex.props(styles.actions)}>
+          <Button style={contrastStyles.root}>Create project</Button>
+          <Button variant="outline">Cancel</Button>
+        </div>
+      </div>
+      <div {...stylex.props(styles.notes)}>
+        {NOTES.map(({ index, title, body }) => (
+          <div key={index} {...stylex.props(styles.note)}>
+            <span aria-hidden {...stylex.props(styles.noteIndex)}>{index}</span>
+            <div {...stylex.props(styles.noteCopy)}>
+              <p {...stylex.props(styles.noteTitle)}>{title}</p>
+              <p {...stylex.props(styles.noteBody)}>{body}</p>
             </div>
-          ))}
-        </div>
-      </Card.Root>
-    </div>
+          </div>
+        ))}
+      </div>
+    </Card.Root>
   );
 }

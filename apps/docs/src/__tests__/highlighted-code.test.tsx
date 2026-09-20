@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
+import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
 import { color } from '@ultima/tokens/tokens.stylex';
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentProps, ComponentType } from 'react';
@@ -85,18 +86,27 @@ test('a bash fence colors the command', async () => {
   expect(colorOf('npx', root)).toBe(getComputedStyle(screen.getByTestId('accent').element()).color);
 });
 
-test('Demo highlights the printed source on the forced-light specimen paper', async () => {
+test('Demo follows the ambient color mode and highlights the printed source', async () => {
   function Example() {
     return <span>live</span>;
   }
 
   const source = 'export default function Example() {\n  return null;\n}';
-  const screen = await render(<Demo component={Example} source={source} />);
-  await expect.element(screen.getByText('live')).toBeVisible();
-  const figure = screen.getByRole('figure').element();
-  expect(figure.querySelector('pre')?.textContent).toBe(source);
-  expect(getComputedStyle(figure).backgroundColor).toBe('rgb(237, 237, 232)');
-  expect(colorOf('function', figure)).not.toBe(colorOf('Example', figure));
+  const modes = [
+    { props: stylex.props(darkTheme, colorScheme.dark), paper: 'rgb(20, 21, 22)' },
+    { props: stylex.props(lightTheme, colorScheme.light), paper: 'rgb(247, 249, 255)' },
+  ];
+  for (const mode of modes) {
+    const { container } = await render(
+      <div {...mode.props}>
+        <Demo component={Example} source={source} />
+      </div>,
+    );
+    const figure = container.querySelector('figure')!;
+    expect(figure.querySelector('pre')?.textContent).toBe(source);
+    expect(getComputedStyle(figure).backgroundColor).toBe(mode.paper);
+    expect(colorOf('function', figure)).not.toBe(colorOf('Example', figure));
+  }
 });
 
 test('an MDX fence highlights its source in a bordered block', async () => {
