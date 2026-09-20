@@ -28,6 +28,7 @@ import FieldContent from './content/components/field.mdx';
 import FieldsetContent from './content/components/fieldset.mdx';
 import HoverCardContent from './content/components/hover-card.mdx';
 import InputContent from './content/components/input.mdx';
+import InputGroupContent from './content/components/input-group.mdx';
 import MenubarContent from './content/components/menubar.mdx';
 import MeterContent from './content/components/meter.mdx';
 import NavigationMenuContent from './content/components/navigation-menu.mdx';
@@ -142,6 +143,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   fieldset: FieldsetContent,
   'hover-card': HoverCardContent,
   input: InputContent,
+  'input-group': InputGroupContent,
   menubar: MenubarContent,
   meter: MeterContent,
   'navigation-menu': NavigationMenuContent,
