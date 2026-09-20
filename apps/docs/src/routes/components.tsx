@@ -7,6 +7,12 @@ import { useId, useRef, useState } from 'react';
 import { RELEASE_LABELS, RELEASES, components } from '../components';
 import { Page, Section } from '../page';
 
+const sortOrders = [
+  { value: 'catalogue', label: 'Catalogue order' },
+  { value: 'name-asc', label: 'Name A–Z' },
+  { value: 'name-desc', label: 'Name Z–A' },
+];
+
 const styles = stylex.create({
   filters: {
     display: 'flex',
@@ -25,7 +31,7 @@ const styles = stylex.create({
   list: {
     display: 'grid',
     gap: space['--ult-space-4'],
-    gridTemplateColumns: 'repeat(auto-fit, minmax(18rem, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(18rem, 100%), 1fr))',
     listStyle: 'none',
     margin: 0,
     padding: 0,
@@ -54,6 +60,7 @@ const styles = stylex.create({
 export function ComponentsPage() {
   const [query, setQuery] = useState('');
   const [release, setRelease] = useState('all');
+  const [sortOrder, setSortOrder] = useState('catalogue');
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const releases = [{ label: 'All releases', value: 'all' }, ...RELEASES.map((value) => ({ label: value, value }))];
@@ -105,6 +112,35 @@ export function ComponentsPage() {
             </Select.Positioner>
           </Select.Portal>
         </Select.Root>
+        <Select.Root
+          items={sortOrders}
+          onValueChange={(value) => {
+            if (value !== null) setSortOrder(value);
+          }}
+          value={sortOrder}
+        >
+          <div {...stylex.props(styles.field)}>
+            <Select.Label>Sort order</Select.Label>
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Icon />
+            </Select.Trigger>
+          </div>
+          <Select.Portal>
+            <Select.Positioner>
+              <Select.Popup>
+                <Select.List>
+                  {sortOrders.map((item) => (
+                    <Select.Item key={item.value} value={item.value}>
+                      <Select.ItemIndicator />
+                      <Select.ItemText>{item.label}</Select.ItemText>
+                    </Select.Item>
+                  ))}
+                </Select.List>
+              </Select.Popup>
+            </Select.Positioner>
+          </Select.Portal>
+        </Select.Root>
         <Button
           disabled={query === '' && release === 'all'}
           onClick={() => {
@@ -123,6 +159,11 @@ export function ComponentsPage() {
       {matches.length === 0 ? <p {...stylex.props(styles.empty)}>No components match these filters.</p> : null}
       {RELEASES.map((release) => {
         const entries = matches.filter((component) => component.release === release);
+        if (sortOrder !== 'catalogue') {
+          entries.sort((a, b) => sortOrder === 'name-asc'
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name));
+        }
         if (entries.length === 0) return null;
         return (
           <Section key={release} title={RELEASE_LABELS[release]}>

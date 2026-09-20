@@ -264,15 +264,30 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'An inline day, month, and year grid for picking dates, on Zag.',
     docs: "import { Calendar } from '@/components/ui/calendar';\n\n<Calendar.Root>\n  <Calendar.Label>Release date</Calendar.Label>\n  <Calendar.Content>\n    <Calendar.View view=\"day\">\n      <Calendar.ViewControl view=\"day\">\n        <Calendar.PrevTrigger />\n        <Calendar.ViewTrigger>\n          <Calendar.RangeText />\n        </Calendar.ViewTrigger>\n        <Calendar.NextTrigger />\n      </Calendar.ViewControl>\n      <Calendar.Table view=\"day\" />\n    </Calendar.View>\n  </Calendar.Content>\n</Calendar.Root>\n\nThe machine runs inline. selectionMode is single, multiple, or range, and value is a @internationalized/date DateValue[]. Label names the grid; Content and Table keep Zag's hidden and role=grid wiring. MonthSelect and YearSelect stay native. For the input-and-popup composition, use Date Picker.",
   },
+  'date-picker': {
+    title: 'Date Picker',
+    description: 'A date input with a popup day, month, and year grid, on Zag.',
+    docs: "import { DatePicker } from '@/components/ui/date-picker';\n\n<DatePicker.Root>\n  <DatePicker.Label>Release date</DatePicker.Label>\n  <DatePicker.Control>\n    <DatePicker.Input />\n    <DatePicker.ClearTrigger />\n    <DatePicker.Trigger />\n  </DatePicker.Control>\n  <DatePicker.Portal>\n    <DatePicker.Positioner>\n      <DatePicker.Content>\n        <DatePicker.View view=\"day\">\n          <DatePicker.ViewControl view=\"day\">\n            <DatePicker.PrevTrigger />\n            <DatePicker.ViewTrigger>\n              <DatePicker.RangeText />\n            </DatePicker.ViewTrigger>\n            <DatePicker.NextTrigger />\n          </DatePicker.ViewControl>\n          <DatePicker.Table view=\"day\" />\n        </DatePicker.View>\n      </DatePicker.Content>\n    </DatePicker.Positioner>\n  </DatePicker.Portal>\n</DatePicker.Root>\n\nsize is sm, md, or lg on Control, default md. Label names the input; a Field.Label does not reach it, so use DatePicker.Label or aria-labelledby. selectionMode=\"range\" pairs two Inputs at index 0 and 1, and PresetTrigger commits a named range. For the grid alone, use Calendar.",
+  },
   'input-group': {
     title: 'Input Group',
     description: 'A field box holding an input with leading and trailing addons, in three sizes.',
     docs: "import { InputGroup } from '@/components/ui/input-group';\n\n<InputGroup.Root>\n  <InputGroup.Addon>@</InputGroup.Addon>\n  <InputGroup.Input placeholder=\"handle\" />\n  <InputGroup.Addon align=\"end\">.dev</InputGroup.Addon>\n</InputGroup.Root>\n\nRoot is a visual box with no role; a Field or Fieldset owns the semantics. The name is the inner input's own: a label, aria-label, or Field.Label. align on Addon positions it, not the DOM order.",
   },
+  'input-otp': {
+    title: 'Input OTP',
+    description: 'A one-time-code field of uniform square slots, on Base UI.',
+    docs: "import { InputOTP } from '@/components/ui/input-otp';\n\n<label htmlFor=\"code\">Verification code</label>\n<InputOTP.Root id=\"code\" length={6}>\n  {Array.from({ length: 6 }, (_, index) => (\n    <InputOTP.Input key={index} aria-label={index === 0 ? undefined : `Character ${index + 1} of 6`} />\n  ))}\n</InputOTP.Root>\n\nlength is required; the consumer renders one Input per slot. size sits on Root and reaches the slots through context. Slots two through N take their own aria-label because the first slot is named by the field's label.",
+  },
   'native-select': {
     title: 'Native Select',
     description: 'A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.',
     docs: "import { NativeSelect } from '@/components/ui/native-select';\n\n<label htmlFor=\"fruit\">Fruit</label>\n<NativeSelect.Root>\n  <NativeSelect.Select id=\"fruit\">\n    <option value=\"apple\">Apple</option>\n    <option value=\"pear\">Pear</option>\n  </NativeSelect.Select>\n</NativeSelect.Root>\n\nOptions and optgroups are children, not parts. Select is Field.Control rendered as a <select>, so inside a Field.Root the label, description, and invalid state reach it on their own. Reach for it when the OS-native popup is the point; Select stays the default when the option list wants Ultima's overlay styling.",
+  },
+  resizable: {
+    title: 'Resizable',
+    description: 'Panels with boundaries you drag or arrow, on Zag.',
+    docs: "import { Resizable } from '@/components/ui/resizable';\n\n<Resizable.Root panels={[{ id: 'nav' }, { id: 'main' }]}>\n  <Resizable.Panel id=\"nav\">Navigation</Resizable.Panel>\n  <Resizable.Handle id=\"nav:main\" aria-label=\"Resize navigation\">\n    <Resizable.HandleIndicator />\n  </Resizable.Handle>\n  <Resizable.Panel id=\"main\">Content</Resizable.Panel>\n</Resizable.Root>\n\nEvery Handle needs a name: the type requires one of aria-label or aria-labelledby, the system's fourth enforced attribute. Sizing metadata (minSize, maxSize, collapsible, collapsedSize) lives on each panels entry, defaultSize sizes them at mount, and keyboardResizeBy sets the arrow step. The machine owns the panels' layout inline styles, including overflow: hidden. A strict CSP needs the nonce prop for the drag cursor <style>.",
   },
   'setup-vite': {
     title: 'Ultima setup for Vite',
