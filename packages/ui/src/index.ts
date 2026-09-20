@@ -426,6 +426,13 @@ export {
   type CalendarYearSelectProps,
 } from './calendar';
 export {
+  InputOTP,
+  type InputOTPSize,
+  type InputOTPRootProps,
+  type InputOTPInputProps,
+  type InputOTPSeparatorProps,
+} from './input-otp';
+export {
   DatePicker,
   type DatePickerRootProps,
   type DatePickerLabelProps,

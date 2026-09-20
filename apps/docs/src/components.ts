@@ -324,6 +324,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Input OTP',
+    item: 'input-otp',
+    description: 'A one-time-code field of uniform square slots, on Base UI.',
+    release: 'v0.2',
+  },
+  {
     name: 'Native Select',
     item: 'native-select',
     description: 'A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.',

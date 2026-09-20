@@ -31,6 +31,7 @@ import FieldsetContent from './content/components/fieldset.mdx';
 import HoverCardContent from './content/components/hover-card.mdx';
 import InputContent from './content/components/input.mdx';
 import InputGroupContent from './content/components/input-group.mdx';
+import InputOTPContent from './content/components/input-otp.mdx';
 import MenubarContent from './content/components/menubar.mdx';
 import MeterContent from './content/components/meter.mdx';
 import NativeSelectContent from './content/components/native-select.mdx';
@@ -150,6 +151,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   'hover-card': HoverCardContent,
   input: InputContent,
   'input-group': InputGroupContent,
+  'input-otp': InputOTPContent,
   menubar: MenubarContent,
   meter: MeterContent,
   'native-select': NativeSelectContent,
