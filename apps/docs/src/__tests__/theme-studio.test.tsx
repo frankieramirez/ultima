@@ -100,22 +100,147 @@ test('dark, light, and compare force pane modes and share one draft', async () =
   expect(light.querySelectorAll('[data-preview-specimen]').length).toBeGreaterThan(0);
 });
 
-test('preview components follow the draft and an overlay mounts inside the pane', async () => {
+const SCENES = ['Workspace', 'Typography', 'Controls', 'Surfaces', 'Overlays', 'States', 'Motion'] as const;
+
+function paintedColor(value: string) {
+  const probe = document.createElement('div');
+  probe.style.backgroundColor = value;
+  document.body.append(probe);
+  const painted = getComputedStyle(probe).backgroundColor;
+  probe.remove();
+  return painted;
+}
+
+test('preview components follow the draft', async () => {
   const screen = await mount('/theme-studio');
   const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
 
-  expect(pane.textContent).toMatch(/Solid/);
+  await expect.element(screen.getByRole('heading', { name: 'Forma' })).toBeVisible();
   expect(pane.querySelector('input')).not.toBeNull();
-  expect(pane.textContent).toMatch(/Badge/);
 
   const accent = readAccent(pane);
   expect(accent).toBe('#56cb98');
   expect(accent).not.toBe(stockValue('dark', '--ult-color-accent'));
+});
 
-  await userEvent.click(screen.getByRole('button', { name: 'Notes' }).element());
-  const popup = screen.getByRole('dialog', { name: /pane/i });
-  await expect.element(popup).toBeVisible();
-  expect(pane.contains(popup.element())).toBe(true);
+test('seven scene tabs show one scene at a time in each pane', async () => {
+  const screen = await mount('/theme-studio');
+  const tabs = screen.getByRole('tablist', { name: 'Preview scenes' });
+
+  for (const scene of SCENES) {
+    await expect.element(tabs.getByRole('tab', { name: scene })).toBeVisible();
+  }
+
+  await expect.element(screen.getByRole('heading', { name: 'Forma' })).toBeVisible();
+  expect(document.querySelector('[data-preview-scene="typography"]')).toBeNull();
+
+  await userEvent.click(tabs.getByRole('tab', { name: 'Typography' }).element());
+  await expect.element(screen.getByText('Mireval at dusk')).toBeVisible();
+  expect(document.querySelector('[data-preview-scene="workspace"]')).toBeNull();
+  expect(screen.getByRole('tab', { name: 'Typography' }).element()).toHaveAttribute('aria-selected', 'true');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Compare' }).element());
+  const dark = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const light = screen.getByRole('region', { name: 'Light preview' }).element();
+  expect(dark.querySelectorAll('[data-preview-scene="typography"]').length).toBe(1);
+  expect(light.querySelectorAll('[data-preview-scene="typography"]').length).toBe(1);
+  expect(readAccent(dark)).toBe('#56cb98');
+  expect(readAccent(light)).toBe('#008359');
+});
+
+test('the workspace scene is an application mock and the specimen strip sits below it', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const scene = pane.querySelector('[data-preview-scene="workspace"]');
+  const strip = pane.querySelector('[data-preview-specimen]');
+
+  expect(scene).not.toBeNull();
+  expect(strip).not.toBeNull();
+  await expect.element(screen.getByRole('heading', { name: 'Forma' })).toBeVisible();
+  await expect.element(screen.getByRole('tab', { name: 'Members' })).toBeVisible();
+  await expect.element(screen.getByRole('textbox', { name: 'Project name' })).toBeVisible();
+  expect(pane.querySelector('table')).not.toBeNull();
+  expect(strip?.textContent).toMatch(/01 \/ TYPE/);
+  expect(strip?.textContent).toMatch(/02 \/ INTERACTION/);
+  expect(strip?.textContent).toMatch(/03 \/ INSPECT/);
+  expect(scene!.getBoundingClientRect().bottom).toBeLessThanOrEqual(strip!.getBoundingClientRect().top + 1);
+});
+
+test('the states scene shows forced rest, hover, and active beside live controls', async () => {
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('tab', { name: 'States' }).element());
+
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const hover = screen.getByRole('button', { name: 'Forced hover' }).element();
+  const live = screen.getByRole('button', { name: 'Live solid' });
+
+  await expect.element(screen.getByRole('button', { name: 'Forced rest' })).toBeVisible();
+  await expect.element(hover).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Forced active' })).toBeVisible();
+  await expect.element(live).toBeVisible();
+
+  const token = getComputedStyle(pane).getPropertyValue('--ult-color-accent-hover').trim();
+  expect(getComputedStyle(hover).backgroundColor).toBe(paintedColor(token));
+
+  await userEvent.click(live.element());
+  await expect.element(live).toBeVisible();
+});
+
+function namedButton(pane: Element, name: string) {
+  const match = [...pane.querySelectorAll('button')].find((button) => button.textContent?.trim() === name);
+  if (!match) throw new Error(`no button named ${name}`);
+  return match;
+}
+
+test('the overlay scene portals into each compare pane', async () => {
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('tab', { name: 'Overlays' }).element());
+  await userEvent.click(screen.getByRole('button', { name: 'Compare' }).element());
+
+  const dark = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const light = screen.getByRole('region', { name: 'Light preview' }).element();
+
+  await userEvent.click(namedButton(dark, 'Open overlay'));
+  const darkPopup = dark.querySelector<HTMLElement>('[role="dialog"]');
+  expect(darkPopup).not.toBeNull();
+  await expect.element(darkPopup!).toBeVisible();
+  expect(dark.contains(darkPopup)).toBe(true);
+  expect(darkPopup!.textContent).toMatch(/pane/i);
+
+  await userEvent.click(namedButton(light, 'Open overlay'));
+  const lightPopup = light.querySelector<HTMLElement>('[role="dialog"]');
+  expect(lightPopup).not.toBeNull();
+  await expect.element(lightPopup!).toBeVisible();
+  expect(light.contains(lightPopup)).toBe(true);
+});
+
+test('inspect tokens lists declared variables and resolved values per pane mode', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const target = pane.querySelector<HTMLElement>('[data-tokens*="--ult-color-surface-raised"]');
+  const readout = screen.getByRole('status', { name: 'Token readout' });
+
+  expect(target).not.toBeNull();
+  await userEvent.hover(target!);
+  expect(readout.element().textContent).not.toMatch(/--ult-color-surface-raised/);
+
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
+  expect(screen.getByRole('button', { name: 'Inspect tokens' }).element()).toHaveAttribute('aria-pressed', 'true');
+
+  await userEvent.hover(target!);
+  await expect.element(readout.getByText('--ult-color-surface-raised')).toBeVisible();
+  const darkRaised = getComputedStyle(target!).getPropertyValue('--ult-color-surface-raised').trim();
+  expect(readout.element().textContent).toContain(darkRaised);
+
+  await userEvent.click(screen.getByRole('button', { name: 'Light' }).element());
+  const lightPane = screen.getByRole('region', { name: 'Light preview' }).element();
+  const lightTarget = lightPane.querySelector<HTMLElement>('[data-tokens*="--ult-color-surface-raised"]');
+  expect(lightTarget).not.toBeNull();
+  await userEvent.hover(lightTarget!);
+  const lightRaised = getComputedStyle(lightTarget!).getPropertyValue('--ult-color-surface-raised').trim();
+  expect(lightRaised).not.toBe(darkRaised);
+  await expect.element(screen.getByRole('status', { name: 'Token readout' }).getByText('--ult-color-surface-raised')).toBeVisible();
+  expect(screen.getByRole('status', { name: 'Token readout' }).element().textContent).toContain(lightRaised);
 });
 
 test('editor chrome stays stock dark when the preview is light', async () => {

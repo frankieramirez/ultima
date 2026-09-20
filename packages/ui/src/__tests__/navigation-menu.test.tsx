@@ -243,11 +243,13 @@ test('a vertical menu opens on ArrowRight and closes on an outside press', async
 test('documented state drives the style on the trigger, the link, and the content', async () => {
   const screen = await render(<Menu />);
   const trigger = screen.getByTestId('products').element();
+  // Trigger :hover and [data-popup-open] both paint --ult-color-surface-hover.
+  await userEvent.unhover(trigger);
   const resting = getComputedStyle(trigger).backgroundColor;
   await screen.getByTestId('products').click();
   await expect.element(page.getByTestId('popup')).toBeVisible();
   expect(trigger.getAttribute('data-popup-open')).toBe('');
-  expect(getComputedStyle(trigger).backgroundColor).not.toBe(resting);
+  await expect.poll(() => getComputedStyle(trigger).backgroundColor).not.toBe(resting);
 
   const plain = page.getByRole('link', { name: 'Components' }).element();
   const current = page.getByTestId('tokens').element();
@@ -350,9 +352,16 @@ for (const mode of themes) {
     );
     await screen.getByTestId('products').click();
     await expect.element(page.getByTestId('popup')).toBeVisible();
+    // Keep the pointer on the trigger so the menu does not close, and wait until
+    // the popup has finished entering: axe samples contrast through a transparent
+    // starting-style background as the page canvas.
+    await screen.getByTestId('products').hover();
+    const popup = page.getByTestId('popup').element();
+    await expect.poll(() => getComputedStyle(popup).opacity).toBe('1');
+    await expect.poll(() => getComputedStyle(popup).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
     expect(
       await violations({
-        include: [page.getByTestId('popup').element()],
+        include: [popup],
         exclude: [['[data-base-ui-focus-guard]']],
       }),
     ).toEqual([]);

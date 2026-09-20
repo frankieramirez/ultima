@@ -1,0 +1,66 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/color-field/basic';
+import basicSource from '../../demos/color-field/basic?raw';
+import Sizes from '../../demos/color-field/sizes';
+import sizesSource from '../../demos/color-field/sizes?raw';
+import Validation from '../../demos/color-field/validation';
+import validationSource from '../../demos/color-field/validation?raw';
+
+# Color Field
+
+An opaque sRGB color value as a swatch, a hex input, and a picker popover. One file, one registry item, `size` as the only axis. There is no alpha and no wide-gamut format.
+
+## Install
+
+```bash
+npx shadcn add @ultima/color-field
+```
+
+The item declares its Popover dependency. Install pulls that in.
+
+## A color field
+
+`Root` holds the value and `size`. `Swatch` paints the current color and opens the picker. `Input` is the hex text field. `Portal`, `Positioner`, and `Popup` are Popover's styled split. `Picker` is the custom sRGB surface inside the popup: a saturation and brightness area, a hue slider, and HEX, RGB, and HSL channels.
+
+<Demo component={Basic} source={basicSource} />
+
+## Sizes
+
+`sm`, `md`, and `lg` are Input's three control heights, set on `Root` so the swatch and the hex field stay in step. `md` is the default.
+
+<Demo component={Sizes} source={sizesSource} />
+
+## Validation
+
+`Input` fills Field's control slot. A valid `#rrggbb` commits the value; invalid text keeps the last committed color and carries Field's validation state. The danger border matches `':is([aria-invalid="true"], [data-invalid])'`.
+
+<Demo component={Validation} source={validationSource} />
+
+Prefer Field when you need a label, description, and error wired together. `Input` already carries `pattern="#[0-9A-Fa-f]{6}"`; `Field.Error match="patternMismatch"` is the message for a native mismatch.
+
+## What you keep
+
+- **The value is opaque sRGB.** `#rrggbb` only, controlled or uncontrolled as `value`, `defaultValue`, and `onValueChange`. Alpha, HWB, OKLCH, and wide-gamut source values stay out of this component.
+- **`size` lives on `Root`.** Parts read it from context. There is no `size` on `Swatch` or `Input`.
+- **Name the swatch.** It is a button whose face is a color, so it needs `aria-label` or `aria-labelledby`. The popup defaults to `aria-label="Color picker"` when you pass neither `aria-label` nor `aria-labelledby`.
+- **`useColorField` reads the value.** It throws outside `Root`. `size` degrades to `md` if a part renders without a root.
+- **Two global rules come with portalling.** `isolation: isolate` on your app root and `body { position: relative }` for iOS 26 Safari, the same two every portalling Ultima component asks for.
+
+## Props
+
+Only what Ultima adds. Portal, Positioner, and Popup otherwise accept their [Base UI Popover props](https://base-ui.com/react/components/popover). Input otherwise accepts [Base UI Input](https://base-ui.com/react/components/input).
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | On `Root`. Control height for the swatch and the hex field. |
+| `value`, `defaultValue`, `onValueChange` | `#rrggbb` string, callback | `#000000` | Controlled or uncontrolled. On `Root`. |
+| `disabled` | `boolean` | `false` | On `Root`, reaching Swatch, Input, and Picker. |
+| `style` | `StyleXStyles` | — | On every part; merged last. There is no `className`. |
+| `render` | `ReactElement \| function` | — | Base UI's render prop, on the Popover parts and on Input. |
+
+## Accessibility
+
+- **Elements.** `Swatch` is a button with `aria-haspopup="dialog"`. `Input` is a native text field and Field's control. `Popup` is `role="dialog"`. The saturation-brightness area is a two-axis slider; Hue is a range input; HEX, RGB, and HSL are labelled fields.
+- **Name.** `aria-label` on `Swatch`. `Field.Label`, `aria-label`, or `aria-labelledby` on `Input`. `Popup` defaults to "Color picker".
+- **Focus ring.** On `Swatch`, `Input`, the saturation-brightness area, the hue slider, and the channel fields. `Popup` renders none: Base UI focuses it only as a fallback container.
+- **Keyboard.** Tab reaches the swatch and the hex field. `Escape` closes the picker and returns focus to the swatch. Arrows on the saturation-brightness area move saturation and brightness; the hue slider and channel fields are native.

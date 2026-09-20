@@ -244,6 +244,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A two-state button in two variants and three sizes, on Base UI.',
     docs: 'import { Toggle } from \'@/components/ui/toggle\';\n\n<Toggle>Bold</Toggle>\n\nThe name is the text content; an icon-only toggle passes aria-label and squares the box with a style override on paddingInline. There is no value prop: value identifies a toggle to a ToggleGroup, and a toggle inside one is ToggleGroup.Item, which keeps both.',
   },
+  'color-field': {
+    title: 'Color Field',
+    description: 'An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.',
+    docs: "import { ColorField } from '@/components/ui/color-field';\n\n<ColorField.Root defaultValue=\"#3366ff\">\n  <ColorField.Swatch aria-label=\"Pick accent\" />\n  <ColorField.Input aria-label=\"Hex\" />\n  <ColorField.Portal>\n    <ColorField.Positioner sideOffset={8}>\n      <ColorField.Popup>\n        <ColorField.Picker />\n      </ColorField.Popup>\n    </ColorField.Positioner>\n  </ColorField.Portal>\n</ColorField.Root>\n\nThe value is an opaque sRGB #rrggbb string. size is sm, md, or lg on Root. Name the swatch with aria-label; the popup defaults to aria-label=\"Color picker\". Input fills Field's control slot, so invalid hex carries the validation state. There is no alpha and no wide-gamut format.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:
