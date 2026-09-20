@@ -87,8 +87,8 @@ for (const mode of modes) {
       .element(screen.getByRole('heading', { name: 'Palette', level: 1 }))
       .toBeVisible();
 
-    // Base UI drops the viewport's tabIndex to -1 when neither axis overflows, and at this
-    // viewport the 60rem ramp fits the column, so none of the six is a dead tab stop.
+    // Base UI drops the viewport's tabIndex to -1 when neither axis overflows, and the ramp
+    // grid wraps to its column rather than scrolling, so none of the six is a dead tab stop.
     const viewports = scrollAreaViewports(screen.container);
     expect(viewports.length).toBe(6);
     await expect

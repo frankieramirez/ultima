@@ -1,14 +1,19 @@
 import { useState } from 'react';
+import * as stylex from '@stylexjs/stylex';
 import { Pagination } from '@ultima/ui';
 
 const COUNT = 10;
+
+const styles = stylex.create({
+  list: { flexWrap: 'wrap' },
+});
 
 export default function PageWindow() {
   const [page, setPage] = useState(4);
 
   return (
     <Pagination.Root>
-      <Pagination.List>
+      <Pagination.List style={styles.list}>
         <Pagination.Item>
           <Pagination.Previous
             render={<button type="button" />}

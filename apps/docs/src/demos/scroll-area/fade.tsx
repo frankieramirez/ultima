@@ -11,7 +11,7 @@ const mask = `linear-gradient(
 )`;
 
 const styles = stylex.create({
-  bounds: { blockSize: '9rem', inlineSize: '22rem' },
+  bounds: { blockSize: '9rem', inlineSize: 'min(22rem, 100%)' },
   fade: {
     WebkitMaskImage: mask,
     maskImage: mask,
