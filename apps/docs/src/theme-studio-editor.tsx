@@ -13,7 +13,7 @@ import {
 } from '@ultima/tokens';
 import { space, text } from '@ultima/tokens/tokens.stylex';
 import { ColorField, Field, Input, Select, Slider, ToggleGroup } from '@ultima/ui';
-import { useMemo, type Dispatch, type SetStateAction } from 'react';
+import { useMemo } from 'react';
 
 import {
   GROUPS,
@@ -24,8 +24,10 @@ import {
   presetValue,
   resetGroup,
   sliderNumber,
+  type GroupId,
 } from './theme-studio-draft';
 import { ThemeStudioGroup } from './theme-studio-group';
+import type { DraftEdit } from './theme-studio-store';
 import { TokenRows, type ModeOffenders } from './theme-studio-token-row';
 import { ThemeStudioValidation } from './theme-studio-validation';
 
@@ -183,7 +185,15 @@ function PresetGroup({
   );
 }
 
-function ColorControls({ draft, setDraft }: { draft: ThemeDraft; setDraft: Dispatch<SetStateAction<ThemeDraft>> }) {
+function ColorControls({
+  draft,
+  update,
+  commit,
+}: {
+  draft: ThemeDraft;
+  update: (edit: DraftEdit) => void;
+  commit: (edit: DraftEdit) => void;
+}) {
   const scales = useMemo(() => generateScales(draft.color), [draft.color]);
 
   return (
@@ -196,7 +206,7 @@ function ColorControls({ draft, setDraft }: { draft: ThemeDraft; setDraft: Dispa
           <div key={scale} {...stylex.props(styles.row)}>
             <ColorField.Root
               onValueChange={(hex) => {
-                setDraft((current) => ({
+                commit((current) => ({
                   ...current,
                   color: { ...current.color, [scale]: seedFromSrgb(hex, scale, current.color[scale]) },
                 }));
@@ -218,13 +228,13 @@ function ColorControls({ draft, setDraft }: { draft: ThemeDraft; setDraft: Dispa
               max={359}
               min={0}
               onValueChange={(value) => {
-                setDraft((current) => ({
+                update((current) => ({
                   ...current,
                   color: { ...current.color, [scale]: { ...current.color[scale], hue: sliderNumber(value) } },
                 }));
               }}
               onValueCommitted={(value) => {
-                setDraft((current) => ({
+                commit((current) => ({
                   ...current,
                   color: { ...current.color, [scale]: { ...current.color[scale], hue: sliderNumber(value) } },
                 }));
@@ -244,7 +254,7 @@ function ColorControls({ draft, setDraft }: { draft: ThemeDraft; setDraft: Dispa
               max={150}
               min={0}
               onValueChange={(value) => {
-                setDraft((current) => ({
+                update((current) => ({
                   ...current,
                   color: {
                     ...current.color,
@@ -253,7 +263,7 @@ function ColorControls({ draft, setDraft }: { draft: ThemeDraft; setDraft: Dispa
                 }));
               }}
               onValueCommitted={(value) => {
-                setDraft((current) => ({
+                commit((current) => ({
                   ...current,
                   color: {
                     ...current.color,
@@ -281,10 +291,12 @@ function ColorControls({ draft, setDraft }: { draft: ThemeDraft; setDraft: Dispa
 
 function TypographyControls({
   draft,
-  setDraft,
+  update,
+  commit,
 }: {
   draft: ThemeDraft;
-  setDraft: Dispatch<SetStateAction<ThemeDraft>>;
+  update: (edit: DraftEdit) => void;
+  commit: (edit: DraftEdit) => void;
 }) {
   const type = draft.typography;
   return (
@@ -292,14 +304,14 @@ function TypographyControls({
       <FamilySelect
         label="Sans family"
         name="sans-family"
-        onStack={(sans) => setDraft((current) => ({ ...current, typography: { ...current.typography, sans } }))}
+        onStack={(sans) => commit((current) => ({ ...current, typography: { ...current.typography, sans } }))}
         presets={SANS_PRESETS}
         stack={type.sans}
       />
       <FamilySelect
         label="Mono family"
         name="mono-family"
-        onStack={(mono) => setDraft((current) => ({ ...current, typography: { ...current.typography, mono } }))}
+        onStack={(mono) => commit((current) => ({ ...current, typography: { ...current.typography, mono } }))}
         presets={MONO_PRESETS}
         stack={type.mono}
       />
@@ -307,13 +319,13 @@ function TypographyControls({
         max={18}
         min={14}
         onValueChange={(value) => {
-          setDraft((current) => ({
+          update((current) => ({
             ...current,
             typography: { ...current.typography, baseSizePx: sliderNumber(value) },
           }));
         }}
         onValueCommitted={(value) => {
-          setDraft((current) => ({
+          commit((current) => ({
             ...current,
             typography: { ...current.typography, baseSizePx: sliderNumber(value) },
           }));
@@ -333,7 +345,7 @@ function TypographyControls({
       <PresetGroup
         label="Type scale"
         onChange={(value) =>
-          setDraft((current) => ({ ...current, typography: { ...current.typography, scale: parseScale(value) } }))
+          commit((current) => ({ ...current, typography: { ...current.typography, scale: parseScale(value) } }))
         }
         options={SCALE_OPTIONS}
         value={String(type.scale)}
@@ -341,7 +353,7 @@ function TypographyControls({
       <PresetGroup
         label="Leading"
         onChange={(value) =>
-          setDraft((current) => ({
+          commit((current) => ({
             ...current,
             typography: { ...current.typography, leading: value as MeasurePreset },
           }))
@@ -352,7 +364,7 @@ function TypographyControls({
       <PresetGroup
         label="Tracking"
         onChange={(value) =>
-          setDraft((current) => ({
+          commit((current) => ({
             ...current,
             typography: { ...current.typography, tracking: value as MeasurePreset },
           }))
@@ -370,16 +382,20 @@ export function ThemeStudioEditor({
   draft,
   group,
   onGroupChange,
+  onShuffleGroup,
   resolved,
   results,
-  setDraft,
+  update,
+  commit,
 }: {
   draft: ThemeDraft;
   group: GroupLabel;
   onGroupChange: (group: GroupLabel) => void;
+  onShuffleGroup: (group: GroupId) => void;
   resolved: ResolvedDraft;
   results: PairingResult[];
-  setDraft: Dispatch<SetStateAction<ThemeDraft>>;
+  update: (edit: DraftEdit) => void;
+  commit: (edit: DraftEdit) => void;
 }) {
   const offenders = useMemo<ModeOffenders>(() => {
     const dark = new Set<string>();
@@ -425,26 +441,28 @@ export function ThemeStudioEditor({
               label={item.label}
               locked={draft.locks[item.id]}
               onLock={(locked) =>
-                setDraft((current) => ({ ...current, locks: { ...current.locks, [item.id]: locked } }))
+                commit((current) => ({ ...current, locks: { ...current.locks, [item.id]: locked } }))
               }
-              onReset={() => setDraft((current) => resetGroup(current, item.id))}
-              onShuffle={() => {}}
+              onReset={() => commit((current) => resetGroup(current, item.id))}
+              onShuffle={() => onShuffleGroup(item.id)}
               panel={
                 <TokenRows
                   draft={draft}
                   group={item.id}
                   offenders={offenders}
                   resolved={resolved}
-                  setDraft={setDraft}
+                  setDraft={(action) => commit(typeof action === 'function' ? action : () => action)}
                 />
               }
             >
-              {item.id === 'color' ? <ColorControls draft={draft} setDraft={setDraft} /> : null}
-              {item.id === 'typography' ? <TypographyControls draft={draft} setDraft={setDraft} /> : null}
+              {item.id === 'color' ? <ColorControls draft={draft} update={update} commit={commit} /> : null}
+              {item.id === 'typography' ? (
+                <TypographyControls draft={draft} update={update} commit={commit} />
+              ) : null}
               {item.id === 'density' ? (
                 <PresetGroup
                   label="Density preset"
-                  onChange={(value) => setDraft((current) => ({ ...current, density: Number(value) as DensityFactor }))}
+                  onChange={(value) => commit((current) => ({ ...current, density: Number(value) as DensityFactor }))}
                   options={[
                     { label: 'Compact', value: '0.75' },
                     { label: 'Cosy', value: '1' },
@@ -456,7 +474,7 @@ export function ThemeStudioEditor({
               {item.id === 'shape' ? (
                 <PresetGroup
                   label="Shape preset"
-                  onChange={(value) => setDraft((current) => ({ ...current, shape: value as ShapePreset }))}
+                  onChange={(value) => commit((current) => ({ ...current, shape: value as ShapePreset }))}
                   options={[
                     { label: 'Sharp', value: 'sharp' },
                     { label: 'Default', value: 'default' },
@@ -468,7 +486,7 @@ export function ThemeStudioEditor({
               {item.id === 'elevation' ? (
                 <PresetGroup
                   label="Elevation strength"
-                  onChange={(value) => setDraft((current) => ({ ...current, elevation: Number(value) }))}
+                  onChange={(value) => commit((current) => ({ ...current, elevation: Number(value) }))}
                   options={[
                     { label: 'Flat', value: '0' },
                     { label: 'Subtle', value: '0.5' },
@@ -481,7 +499,7 @@ export function ThemeStudioEditor({
               {item.id === 'motion' ? (
                 <PresetGroup
                   label="Motion speed"
-                  onChange={(value) => setDraft((current) => ({ ...current, motion: Number(value) }))}
+                  onChange={(value) => commit((current) => ({ ...current, motion: Number(value) }))}
                   options={[
                     { label: 'Brisk', value: '0.6' },
                     { label: 'Default', value: '1' },

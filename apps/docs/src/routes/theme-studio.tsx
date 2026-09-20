@@ -1,15 +1,26 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, gate, resolveDraft, stockDraft } from '@ultima/tokens';
+import {
+  colorScheme,
+  darkTheme,
+  gate,
+  resolveDraft,
+  SHUFFLE_ATTEMPT_LIMIT,
+  stockDraft,
+  type GuidedGroup,
+  type ShuffleExhaustion,
+} from '@ultima/tokens';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Separator } from '@ultima/ui';
+import { Alert, Button, Separator } from '@ultima/ui';
 import { useMemo, useState } from 'react';
 
 import { BrandLogo } from '../brand-logo';
 import { GROUPS } from '../theme-studio-draft';
 import { ThemeStudioEditor } from '../theme-studio-editor';
 import { ThemeStudioPreview } from '../theme-studio-preview';
+import { ThemeStudioShuffleBar } from '../theme-studio-shuffle';
+import { useStudioDraft } from '../theme-studio-store';
 
 const RAIL = '@media (min-width: 52.5rem)';
 
@@ -105,12 +116,40 @@ const styles = stylex.create({
     color: color['--ult-color-text-subtle'],
     fontSize: text['--ult-text-1'],
   },
+  notice: {
+    flexShrink: 0,
+  },
 });
+
+function groupLabel(id: GuidedGroup): string {
+  return GROUPS.find((item) => item.id === id)?.label ?? id;
+}
+
+function ExhaustionNotice({ report }: { report: ShuffleExhaustion }) {
+  const failures = report.failures
+    .map(
+      (row) =>
+        `${row.foreground.replace('--ult-color-', '')} on ${row.background.replace('--ult-color-', '')}`,
+    )
+    .join(', ');
+  const locks = report.locks.length
+    ? ` Locked groups: ${report.locks.map(groupLabel).join(', ')}.`
+    : ' No locked groups constrained the search.';
+  return (
+    <Alert.Root tone="danger" style={styles.notice}>
+      <Alert.Title>No passing palette in {SHUFFLE_ATTEMPT_LIMIT} attempts</Alert.Title>
+      <Alert.Description>
+        Nothing changed. Failing pairings: {failures}.{locks}
+      </Alert.Description>
+    </Alert.Root>
+  );
+}
 
 export function ThemeStudio() {
   const [mode, setMode] = useState<Mode>('dark');
   const [group, setGroup] = useState<Group>('Color');
-  const [draft, setDraft] = useState(stockDraft);
+  const store = useStudioDraft();
+  const { draft } = store;
   const resolved = useMemo(() => resolveDraft(draft), [draft]);
   const pairings = useMemo(() => gate(resolved), [resolved]);
   const locked = Object.values(draft.locks).filter(Boolean).length;
@@ -140,14 +179,27 @@ export function ThemeStudio() {
       <Separator />
       <div {...stylex.props(styles.body)}>
         <aside aria-label="Theme editor" {...stylex.props(styles.editor)}>
+          <ThemeStudioShuffleBar
+            canRedo={store.canRedo}
+            canUndo={store.canUndo}
+            fingerprint={store.fingerprint}
+            onRedo={store.redo}
+            onShuffle={() => store.shuffle('global')}
+            onUndo={store.undo}
+            onVariationChange={store.setVariation}
+            variation={store.variation}
+          />
+          {store.exhaustion ? <ExhaustionNotice report={store.exhaustion} /> : null}
           <div {...stylex.props(styles.groups)}>
             <ThemeStudioEditor
+              commit={store.commit}
               draft={draft}
               group={group}
               onGroupChange={setGroup}
+              onShuffleGroup={store.shuffle}
               resolved={resolved}
               results={pairings}
-              setDraft={setDraft}
+              update={store.update}
             />
           </div>
           <div {...stylex.props(styles.status)}>
@@ -163,7 +215,7 @@ export function ThemeStudio() {
             <span {...stylex.props(styles.statusCopy)}>
               {overrides} overrides · {locked} locked group{locked === 1 ? '' : 's'}
             </span>
-            <Button onClick={() => setDraft(stockDraft())} size="sm" variant="ghost">
+            <Button onClick={() => store.commit(() => stockDraft())} size="sm" variant="ghost">
               Reset theme
             </Button>
           </div>
