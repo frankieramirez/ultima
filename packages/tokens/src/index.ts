@@ -64,3 +64,20 @@ export {
 export type { AutosaveResult, StorageLike } from './theme/autosave';
 export { gate, PAIRINGS } from './theme/gate';
 export type { Pairing, PairingModeResult, PairingResult } from './theme/gate';
+export { createRng, shuffleDraft, SHUFFLE_ATTEMPT_LIMIT } from './theme/shuffle';
+export type {
+  ShuffleExhaustion,
+  ShuffleResult,
+  ShuffleTarget,
+  ShuffleVariation,
+} from './theme/shuffle';
+export {
+  canRedo,
+  canUndo,
+  commit,
+  createHistory,
+  HISTORY_LIMIT,
+  redo,
+  undo,
+} from './theme/history';
+export type { DraftHistory } from './theme/history';

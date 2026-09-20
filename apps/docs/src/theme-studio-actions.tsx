@@ -11,7 +11,6 @@ import {
   restoreAutosave,
   saveAutosave,
   serializeDraft,
-  stockDraft,
   toCss,
   toRegistryItem,
   toStylex,
@@ -21,9 +20,10 @@ import {
 } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Input, Separator } from '@ultima/ui';
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { readStored, removeStored, writeStored } from './storage';
+import { useStudioDraft as useStoreDraft } from './theme-studio-store';
 
 const STORAGE: StorageLike = {
   getItem: readStored,
@@ -164,9 +164,7 @@ function storedDraft(): ThemeDraft | null {
   return parsed.ok ? parsed.draft : null;
 }
 
-export function useStudioDraft(): {
-  draft: ThemeDraft;
-  setDraft: Dispatch<SetStateAction<ThemeDraft>>;
+export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
   notice: string | null;
   dismissNotice: () => void;
   pending: PendingLoad | null;
@@ -176,27 +174,30 @@ export function useStudioDraft(): {
   dismissRefusal: () => void;
   openFile: (file: File) => Promise<void>;
 } {
-  const [draft, setDraft] = useState(stockDraft);
+  const store = useStoreDraft();
+  const { draft } = store;
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingLoad | null>(null);
   const [refusal, setRefusal] = useState<string | null>(null);
   const mounted = useRef(false);
 
+  const load = (next: ThemeDraft) => store.commit(() => next);
+
   function offer(incoming: ThemeDraft, saved: ThemeDraft | null) {
     if (saved && draftFingerprint(saved) !== draftFingerprint(incoming)) {
       setPending({ draft: incoming, fallback: saved });
     } else {
-      setDraft(incoming);
+      load(incoming);
     }
   }
 
   function confirmPending() {
-    if (pending) setDraft(pending.draft);
+    if (pending) load(pending.draft);
     setPending(null);
   }
 
   function cancelPending() {
-    if (pending?.fallback) setDraft(pending.fallback);
+    if (pending?.fallback) store.replace(pending.fallback);
     setPending(null);
   }
 
@@ -209,7 +210,7 @@ export function useStudioDraft(): {
     const restored = saved.status === 'restored' ? saved.draft : null;
     const hash = window.location.hash;
     if (!hash.startsWith(FRAGMENT_PREFIX)) {
-      if (restored) setDraft(restored);
+      if (restored) store.replace(restored);
       return;
     }
     void decodeFragment(hash).then((result) => {
@@ -218,7 +219,7 @@ export function useStudioDraft(): {
         offer(result.draft, restored);
       } else {
         setRefusal(result.message);
-        if (restored) setDraft(restored);
+        if (restored) store.replace(restored);
       }
     });
     return () => {
@@ -244,8 +245,7 @@ export function useStudioDraft(): {
   }
 
   return {
-    draft,
-    setDraft,
+    ...store,
     notice,
     dismissNotice: () => setNotice(null),
     pending,

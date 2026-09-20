@@ -1,7 +1,15 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, draftFingerprint, resolveDraft, stockDraft } from '@ultima/tokens';
+import {
+  colorScheme,
+  darkTheme,
+  resolveDraft,
+  SHUFFLE_ATTEMPT_LIMIT,
+  stockDraft,
+  type GuidedGroup,
+  type ShuffleExhaustion,
+} from '@ultima/tokens';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Alert, Button, Separator } from '@ultima/ui';
 import { useMemo, useState } from 'react';
@@ -11,6 +19,7 @@ import { StudioActions, useStudioDraft } from '../theme-studio-actions';
 import { GROUPS } from '../theme-studio-draft';
 import { ThemeStudioEditor } from '../theme-studio-editor';
 import { ThemeStudioPreview } from '../theme-studio-preview';
+import { ThemeStudioShuffleBar } from '../theme-studio-shuffle';
 
 const RAIL = '@media (min-width: 52.5rem)';
 
@@ -106,19 +115,41 @@ const styles = stylex.create({
     color: color['--ult-color-text-subtle'],
     fontSize: text['--ult-text-1'],
   },
-  fingerprint: {
-    color: color['--ult-color-text-subtle'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
+  notice: {
+    flexShrink: 0,
   },
 });
+
+function groupLabel(id: GuidedGroup): string {
+  return GROUPS.find((item) => item.id === id)?.label ?? id;
+}
+
+function ExhaustionNotice({ report }: { report: ShuffleExhaustion }) {
+  const failures = report.failures
+    .map(
+      (row) =>
+        `${row.foreground.replace('--ult-color-', '')} on ${row.background.replace('--ult-color-', '')}`,
+    )
+    .join(', ');
+  const locks = report.locks.length
+    ? ` Locked groups: ${report.locks.map(groupLabel).join(', ')}.`
+    : ' No locked groups constrained the search.';
+  return (
+    <Alert.Root tone="danger" style={styles.notice}>
+      <Alert.Title>No passing palette in {SHUFFLE_ATTEMPT_LIMIT} attempts</Alert.Title>
+      <Alert.Description>
+        Nothing changed. Failing pairings: {failures}.{locks}
+      </Alert.Description>
+    </Alert.Root>
+  );
+}
 
 export function ThemeStudio() {
   const [mode, setMode] = useState<Mode>('dark');
   const [group, setGroup] = useState<Group>('Color');
+  const store = useStudioDraft();
   const {
     draft,
-    setDraft,
     notice,
     dismissNotice,
     pending,
@@ -127,7 +158,7 @@ export function ThemeStudio() {
     refusal,
     dismissRefusal,
     openFile,
-  } = useStudioDraft();
+  } = store;
   const resolved = useMemo(() => resolveDraft(draft), [draft]);
   const locked = Object.values(draft.locks).filter(Boolean).length;
   const overrides = Object.keys(draft.overrides.dark).length + Object.keys(draft.overrides.light).length;
@@ -140,7 +171,6 @@ export function ThemeStudio() {
         </Link>
         <h1 {...stylex.props(styles.title)}>Theme Studio</h1>
         <span {...stylex.props(styles.meta)}>Untitled theme</span>
-        <span {...stylex.props(styles.fingerprint)}>Fingerprint {draftFingerprint(draft)}</span>
         <span {...stylex.props(styles.save)}>Saved locally</span>
         <div {...stylex.props(styles.actions)}>
           <StudioActions
@@ -166,8 +196,26 @@ export function ThemeStudio() {
               </Button>
             </Alert.Root>
           ) : null}
+          <ThemeStudioShuffleBar
+            canRedo={store.canRedo}
+            canUndo={store.canUndo}
+            fingerprint={store.fingerprint}
+            onRedo={store.redo}
+            onShuffle={() => store.shuffle('global')}
+            onUndo={store.undo}
+            onVariationChange={store.setVariation}
+            variation={store.variation}
+          />
+          {store.exhaustion ? <ExhaustionNotice report={store.exhaustion} /> : null}
           <div {...stylex.props(styles.groups)}>
-            <ThemeStudioEditor draft={draft} group={group} onGroupChange={setGroup} setDraft={setDraft} />
+            <ThemeStudioEditor
+              commit={store.commit}
+              draft={draft}
+              group={group}
+              onGroupChange={setGroup}
+              onShuffleGroup={store.shuffle}
+              update={store.update}
+            />
           </div>
           <div {...stylex.props(styles.status)}>
             <Button
@@ -182,7 +230,7 @@ export function ThemeStudio() {
             <span {...stylex.props(styles.statusCopy)}>
               {overrides} overrides · {locked} locked group{locked === 1 ? '' : 's'}
             </span>
-            <Button onClick={() => setDraft(stockDraft())} size="sm" variant="ghost">
+            <Button onClick={() => store.commit(() => stockDraft())} size="sm" variant="ghost">
               Reset theme
             </Button>
           </div>

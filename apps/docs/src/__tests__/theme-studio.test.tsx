@@ -2,7 +2,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 import * as stylex from '@stylexjs/stylex';
 import { colorScheme, darkTheme, lightTheme, resolveDraft, stockDraft } from '@ultima/tokens';
 import axe from 'axe-core';
-import { expect, onTestFinished, test } from 'vitest';
+import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
@@ -14,6 +14,10 @@ function mount(path: string) {
   const history = createMemoryHistory({ initialEntries: [path] });
   return render(<RouterProvider router={createRouter({ routeTree, history })} />);
 }
+
+beforeEach(() => {
+  localStorage.clear();
+});
 
 const stock = {
   dark: stylex.props(darkTheme, colorScheme.dark),
@@ -327,6 +331,70 @@ test('group lock and reset live on the draft', async () => {
     'aria-pressed',
     'true',
   );
+});
+
+test('the shuffle bar carries shuffle, variation, undo, redo, and the state fingerprint', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+
+  await expect.element(screen.getByRole('button', { name: 'Shuffle' })).toBeVisible();
+  const variation = screen.getByRole('group', { name: 'Shuffle variation' });
+  await expect.element(variation.getByRole('button', { name: 'Broad' })).toBeVisible();
+  await expect.element(variation.getByRole('button', { name: 'Subtle' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Undo' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Redo' })).toBeVisible();
+  await expect.element(screen.getByText(/^seed [0-9a-f]{6}$/)).toBeVisible();
+
+  expect(editor.contains(screen.getByRole('button', { name: 'Shuffle' }).element())).toBe(true);
+  expect(editor.getBoundingClientRect().top).toBeLessThanOrEqual(
+    screen.getByRole('button', { name: 'Shuffle' }).element().getBoundingClientRect().top,
+  );
+});
+
+test('shuffle, locks, undo, redo, and reset theme walk one linear history', async () => {
+  const screen = await mount('/theme-studio');
+  const fingerprint = () =>
+    screen.getByText(/^seed [0-9a-f]{6}$/).element().textContent?.replace('seed ', '') ?? '';
+  const undoButton = () => screen.getByRole('button', { name: 'Undo' }).element();
+  const redoButton = () => screen.getByRole('button', { name: 'Redo' }).element();
+
+  const initial = fingerprint();
+  expect(undoButton()).toHaveAttribute('data-disabled');
+  expect(redoButton()).toHaveAttribute('data-disabled');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Lock Color' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Lock Density' }));
+  const afterLocks = fingerprint();
+  expect(afterLocks).not.toBe(initial);
+
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const spaceBefore = readToken(pane, '--ult-space-1');
+  await userEvent.click(screen.getByRole('button', { name: 'Shuffle' }));
+  const shuffled = fingerprint();
+  expect(shuffled).not.toBe(afterLocks);
+  expect(readToken(pane, '--ult-space-1')).toBe(spaceBefore);
+
+  await userEvent.click(undoButton());
+  expect(fingerprint()).toBe(afterLocks);
+  await userEvent.click(redoButton());
+  expect(fingerprint()).toBe(shuffled);
+
+  await userEvent.click(screen.getByRole('button', { name: 'Reset theme' }));
+  const reset = fingerprint();
+  expect(reset).not.toBe(shuffled);
+  expect(screen.getByRole('button', { name: 'Lock Density' }).element()).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+
+  await userEvent.click(undoButton());
+  expect(fingerprint()).toBe(shuffled);
+  expect(screen.getByRole('button', { name: 'Lock Density' }).element()).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await userEvent.click(redoButton());
+  expect(fingerprint()).toBe(reset);
 });
 
 test('every editor control is a catalogue component, including Color Field seeds', async () => {
