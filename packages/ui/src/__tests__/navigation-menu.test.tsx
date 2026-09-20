@@ -243,11 +243,13 @@ test('a vertical menu opens on ArrowRight and closes on an outside press', async
 test('documented state drives the style on the trigger, the link, and the content', async () => {
   const screen = await render(<Menu />);
   const trigger = screen.getByTestId('products').element();
+  // Trigger :hover and [data-popup-open] both paint --ult-color-surface-hover.
+  await userEvent.unhover(trigger);
   const resting = getComputedStyle(trigger).backgroundColor;
   await screen.getByTestId('products').click();
   await expect.element(page.getByTestId('popup')).toBeVisible();
   expect(trigger.getAttribute('data-popup-open')).toBe('');
-  expect(getComputedStyle(trigger).backgroundColor).not.toBe(resting);
+  await expect.poll(() => getComputedStyle(trigger).backgroundColor).not.toBe(resting);
 
   const plain = page.getByRole('link', { name: 'Components' }).element();
   const current = page.getByTestId('tokens').element();
