@@ -288,6 +288,12 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Aspect Ratio',
+    item: 'aspect-ratio',
+    description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
+    release: 'v0.2',
+  },
+  {
     name: 'Command',
     item: 'command',
     description: 'A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.',
@@ -300,21 +306,15 @@ export const components = [
     release: 'v0.2',
   },
   {
-    name: 'Button Group',
-    item: 'button-group',
-    description: 'A row of buttons joined as one control, with per-item variant and tone overrides.',
-    release: 'v0.2',
-  },
-  {
-  {
     name: 'Input Group',
     item: 'input-group',
     description: 'A field box holding an input with leading and trailing addons, in three sizes.',
     release: 'v0.2',
   },
-    name: 'Aspect Ratio',
-    item: 'aspect-ratio',
-    description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
+{
+    name: 'Button Group',
+    item: 'button-group',
+    description: 'A row of buttons joined as one control, with per-item variant and tone overrides.',
     release: 'v0.2',
   },
 ] satisfies ComponentEntry[];

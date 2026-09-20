@@ -249,6 +249,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.',
     docs: "import { ColorField } from '@/components/ui/color-field';\n\n<ColorField.Root defaultValue=\"#3366ff\">\n  <ColorField.Swatch aria-label=\"Pick accent\" />\n  <ColorField.Input aria-label=\"Hex\" />\n  <ColorField.Portal>\n    <ColorField.Positioner sideOffset={8}>\n      <ColorField.Popup>\n        <ColorField.Picker />\n      </ColorField.Popup>\n    </ColorField.Positioner>\n  </ColorField.Portal>\n</ColorField.Root>\n\nThe value is an opaque sRGB #rrggbb string. size is sm, md, or lg on Root. Name the swatch with aria-label; the popup defaults to aria-label=\"Color picker\". Input fills Field's control slot, so invalid hex carries the validation state. There is no alpha and no wide-gamut format.",
   },
+  'aspect-ratio': {
+    title: 'Aspect Ratio',
+    description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
+    docs: "import { AspectRatio } from '@/components/ui/aspect-ratio';\n\n<AspectRatio ratio={16 / 9}>\n  <img src=\"/cover.png\" alt=\"Ridgeline at dusk\" />\n</AspectRatio>\n\nratio is a number written inline as aspect-ratio, the file's one runtime declaration. The box and the radius go through the style slot, and render swaps the div for your own element, like a figure.",
+  },
   command: {
     title: 'Command',
     description: 'A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.',
@@ -259,20 +264,15 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'An inline day, month, and year grid for picking dates, on Zag.',
     docs: "import { Calendar } from '@/components/ui/calendar';\n\n<Calendar.Root>\n  <Calendar.Label>Release date</Calendar.Label>\n  <Calendar.Content>\n    <Calendar.View view=\"day\">\n      <Calendar.ViewControl view=\"day\">\n        <Calendar.PrevTrigger />\n        <Calendar.ViewTrigger>\n          <Calendar.RangeText />\n        </Calendar.ViewTrigger>\n        <Calendar.NextTrigger />\n      </Calendar.ViewControl>\n      <Calendar.Table view=\"day\" />\n    </Calendar.View>\n  </Calendar.Content>\n</Calendar.Root>\n\nThe machine runs inline. selectionMode is single, multiple, or range, and value is a @internationalized/date DateValue[]. Label names the grid; Content and Table keep Zag's hidden and role=grid wiring. MonthSelect and YearSelect stay native. For the input-and-popup composition, use Date Picker.",
   },
-  'button-group': {
-    title: 'Button Group',
-    description: 'A row of buttons joined as one control, in three variants and two tones, on Base UI.',
-    docs: "import { ButtonGroup } from '@/components/ui/button-group';\n\n<ButtonGroup.Root aria-label=\"Text actions\">\n  <ButtonGroup.Item>Cut</ButtonGroup.Item>\n  <ButtonGroup.Item>Copy</ButtonGroup.Item>\n  <ButtonGroup.Item>Paste</ButtonGroup.Item>\n</ButtonGroup.Root>\n\nvariant, size, and tone sit on Root and reach every Item; an Item takes its own variant and tone, which win, and no size.",
-  },
   'input-group': {
     title: 'Input Group',
     description: 'A field box holding an input with leading and trailing addons, in three sizes.',
     docs: "import { InputGroup } from '@/components/ui/input-group';\n\n<InputGroup.Root>\n  <InputGroup.Addon>@</InputGroup.Addon>\n  <InputGroup.Input placeholder=\"handle\" />\n  <InputGroup.Addon align=\"end\">.dev</InputGroup.Addon>\n</InputGroup.Root>\n\nRoot is a visual box with no role; a Field or Fieldset owns the semantics. The name is the inner input's own: a label, aria-label, or Field.Label. align on Addon positions it, not the DOM order.",
   },
-  'aspect-ratio': {
-    title: 'Aspect Ratio',
-    description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
-    docs: "import { AspectRatio } from '@/components/ui/aspect-ratio';\n\n<AspectRatio ratio={16 / 9}>\n  <img src=\"/cover.png\" alt=\"Ridgeline at dusk\" />\n</AspectRatio>\n\nratio is a number written inline as aspect-ratio, the file's one runtime declaration. The box and the radius go through the style slot, and render swaps the div for your own element, like a figure.",
+  'button-group': {
+    title: 'Button Group',
+    description: 'A row of buttons joined as one control, in three variants and two tones, on Base UI.',
+    docs: "import { ButtonGroup } from '@/components/ui/button-group';\n\n<ButtonGroup.Root aria-label=\"Text actions\">\n  <ButtonGroup.Item>Cut</ButtonGroup.Item>\n  <ButtonGroup.Item>Copy</ButtonGroup.Item>\n  <ButtonGroup.Item>Paste</ButtonGroup.Item>\n</ButtonGroup.Root>\n\nvariant, size, and tone sit on Root and reach every Item; an Item takes its own variant and tone, which win, and no size.",
   },
   'setup-vite': {
     title: 'Ultima setup for Vite',
