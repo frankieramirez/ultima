@@ -141,7 +141,7 @@ const styles = stylex.create({
   link: {
     backgroundColor: {
       default: "transparent",
-      ':is([data-active], [aria-current="page"])': color["--ult-color-accent-subtle"],
+      ':is([data-active], [aria-current="page"])': color["--ult-color-surface-sunken"],
       ":hover": color["--ult-color-surface-hover"],
     },
     borderInlineStartColor: {
