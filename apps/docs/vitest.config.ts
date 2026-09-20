@@ -44,6 +44,7 @@ export default defineConfig({
       '@base-ui/react/menubar',
       '@base-ui/react/meter',
       '@base-ui/react/navigation-menu',
+      '@base-ui/react/otp-field',
       '@base-ui/react/popover',
       '@base-ui/react/preview-card',
       '@base-ui/react/progress',

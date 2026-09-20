@@ -60,6 +60,7 @@ test('the component catalogue exposes the v0, v0.1, and v0.2 sets in specificati
     'calendar',
     'date-picker',
     'input-group',
+    'input-otp',
     'native-select',
     'resizable',
   ]);
@@ -122,6 +123,7 @@ test('every catalogue entry carries a release, and the menu derives from that fi
     'calendar',
     'date-picker',
     'input-group',
+    'input-otp',
     'native-select',
     'resizable',
   ]);

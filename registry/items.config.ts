@@ -274,6 +274,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A field box holding an input with leading and trailing addons, in three sizes.',
     docs: "import { InputGroup } from '@/components/ui/input-group';\n\n<InputGroup.Root>\n  <InputGroup.Addon>@</InputGroup.Addon>\n  <InputGroup.Input placeholder=\"handle\" />\n  <InputGroup.Addon align=\"end\">.dev</InputGroup.Addon>\n</InputGroup.Root>\n\nRoot is a visual box with no role; a Field or Fieldset owns the semantics. The name is the inner input's own: a label, aria-label, or Field.Label. align on Addon positions it, not the DOM order.",
   },
+  'input-otp': {
+    title: 'Input OTP',
+    description: 'A one-time-code field of uniform square slots, on Base UI.',
+    docs: "import { InputOTP } from '@/components/ui/input-otp';\n\n<label htmlFor=\"code\">Verification code</label>\n<InputOTP.Root id=\"code\" length={6}>\n  {Array.from({ length: 6 }, (_, index) => (\n    <InputOTP.Input key={index} aria-label={index === 0 ? undefined : `Character ${index + 1} of 6`} />\n  ))}\n</InputOTP.Root>\n\nlength is required; the consumer renders one Input per slot. size sits on Root and reaches the slots through context. Slots two through N take their own aria-label because the first slot is named by the field's label.",
+  },
   'native-select': {
     title: 'Native Select',
     description: 'A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.',

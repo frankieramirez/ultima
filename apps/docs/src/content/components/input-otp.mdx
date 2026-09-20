@@ -1,0 +1,74 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/input-otp/basic';
+import basicSource from '../../demos/input-otp/basic?raw';
+import Sizes from '../../demos/input-otp/sizes';
+import sizesSource from '../../demos/input-otp/sizes?raw';
+import Groups from '../../demos/input-otp/groups';
+import groupsSource from '../../demos/input-otp/groups?raw';
+import Complete from '../../demos/input-otp/complete';
+import completeSource from '../../demos/input-otp/complete?raw';
+
+# Input OTP
+
+A one-time-code field built on Base UI's OTPField: a `Root` group holding one `Input` per character slot, all uniform squares, with an optional `Separator` for visually grouped codes.
+
+## Install
+
+```bash
+npx shadcn add @ultima/input-otp
+```
+
+## A labelled field
+
+`length` is required and you render one `Input` per slot, mapped over an index — slot order is render order. The field's name reaches the first slot: a `<label htmlFor>` pointing at the `id` you give `Root`, or a `Field.Label` inside a `Field.Root`. The primitive drops `aria-label` on the first slot, so every slot after it takes its own `aria-label="Character N of M"`:
+
+```tsx
+<InputOTP.Root id="signup-code" length={6}>
+  {Array.from({ length: 6 }, (_, index) => (
+    <InputOTP.Input
+      key={index}
+      aria-label={index === 0 ? undefined : `Character ${index + 1} of 6`}
+    />
+  ))}
+</InputOTP.Root>
+```
+
+<Demo component={Basic} source={basicSource} />
+
+## Sizes
+
+`size` sits on `Root` — `sm`, `md`, and `lg`, with `md` the default — and reaches every slot through context, so the slots are always uniform. There is no per-slot override: a mismatched square is the one difference that breaks the read as one field.
+
+<Demo component={Sizes} source={sizesSource} />
+
+## Grouped codes
+
+`Separator` is a hairline dash between slot groups, for codes that print in blocks of three or four. A visual subset can also be wrapped in your own element, Base UI's documented pattern — there is no `Group` part.
+
+<Demo component={Groups} source={groupsSource} />
+
+## Completion and masking
+
+`onValueComplete` fires when all `length` slots are filled. `mask` renders the slots as password inputs for codes that should not stay on screen. Everything else on `Root` is Base UI's at its defaults: `autoSubmit`, `validationType`, `normalizeValue`, `onValueChange`, `onValueInvalid`, `inputMode`, `autoComplete` (`'one-time-code'`), `name`, `form`, `disabled`, `readOnly`, `required`, and `id`, which seeds the slot ids.
+
+<Demo component={Complete} source={completeSource} />
+
+## Props
+
+Only what Ultima adds. Everything else is Base UI's; see [Base UI's OTP Field](https://base-ui.com/react/components/otp-field) for the inherited surface.
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `length` | `number` | — | Required. The number of slots; render one `Input` per slot. |
+| `Root` | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Uniform square slots at the three control heights. |
+| `Root` | `id` | `string` | — | Seeds the slot ids: `{id}`, `{id}-2`, and so on. A `<label htmlFor>` uses the first. |
+| `Input` | `aria-label` | `string` | — | Required on slots two through N; ignored on the first slot. |
+| `Root`, `Input`, `Separator` | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Root`, `Input`, `Separator` | `render` | `ReactElement \| function` | — | Base UI's render prop. |
+
+## Accessibility
+
+- **Name.** A `<label htmlFor>` on the first slot or a `Field.Label` names the field; the primitive merges it into `aria-labelledby` on the `role="group"` root and the slots. Slots two through N take `aria-label="Character N of M"` — the first slot ignores `aria-label` and warns in development. `Separator` renders `role="separator"`.
+- **Focus ring.** On the focused slot, drawn on `:focus-visible` only. `Root` and `Separator` render none.
+- **Keyboard.** Base UI's: one tab stop for the whole field through roving `tabIndex`, arrows and Home/End move between slots RTL-aware, Backspace and Delete clear and step back, and paste distributes across the slots.
+- **Forms.** A hidden input carries `name` and the value for submission, `autoSubmit` submits when the value completes, and inside a `Field.Root` the label, description, and invalid state reach the field through the primitive's own registration.
