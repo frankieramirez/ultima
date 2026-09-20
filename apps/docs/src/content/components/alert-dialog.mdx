@@ -18,7 +18,7 @@ The trigger and close slots must hold an Ultima Button or an element carrying it
 
 <Demo component={Confirm} source={confirmSource} />
 
-`modal` and `disablePointerDismissal` are not props: Base UI forces both `true`. Hide Title or Description through the `style` slot rather than omitting them. `Handle` and `createHandle` pass through as values. Ultima does not set `keepMounted`; pass it when the closed dialog should remain in the DOM.
+`modal` and `disablePointerDismissal` are not props: Base UI forces both `true`. Hide Title or Description through the `style` slot rather than omitting them. `Handle` and `createHandle` pass through as values. Ultima does not set `keepMounted`; pass it when the closed dialog should remain in the DOM. `AlertDialog.Backdrop` follows [Dialog's](/components/dialog) rule: an app shell counts as nesting, so it needs `forceRender` inside one, as the demo shows.
 
 ## Props
 

@@ -23,7 +23,7 @@ const styles = stylex.create({
     fontSize: text['--ult-text-2'],
     lineHeight: font['--ult-font-leading-snug'],
     margin: 0,
-    maxWidth: space['--ult-space-12'],
+    maxWidth: `calc(${space['--ult-space-12']} * 5)`,
     opacity: {
       default: 1,
       ':is([data-starting-style])': 0,

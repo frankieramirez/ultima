@@ -38,6 +38,8 @@ A `Dialog.Title` is always rendered. When the design has no visible heading, hid
 
 `modal` remains [Base UI's](https://base-ui.com/react/components/dialog) default. Ultima does not set `keepMounted`; pass it when the closed dialog should remain in the DOM.
 
+`Dialog.Backdrop` does not render when the root is nested, and an app shell is enough to make it nested. Base UI counts any surrounding dialog root, and [Sidebar](/components/sidebar) is one: `Sidebar.Root` wraps its children in a `Dialog.Root` for the mobile menu, so a dialog anywhere inside an Ultima app shell loses its scrim. Pass `forceRender`, which every demo on this page does. Leave it off for a dialog genuinely stacked on another dialog, where the one scrim underneath is the point. The scrim itself is `--ult-color-surface-overlay` over a `--ult-filter-backdrop` blur.
+
 ## Sheet
 
 A sheet is a Dialog anchored to an edge of the viewport instead of centred in it. It is a recipe rather than a component: there is no `@ultima/sheet` item and no file to install, because every part it needs is already Dialog's and the difference is `style` overrides written at the call site.

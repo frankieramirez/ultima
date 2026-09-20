@@ -89,7 +89,7 @@ export default function SheetRecipe() {
         <Dialog.Root key={edge}>
           <Dialog.Trigger render={<Button variant="outline" />}>{label}</Dialog.Trigger>
           <Dialog.Portal>
-            <Dialog.Backdrop />
+            <Dialog.Backdrop forceRender />
             <Dialog.Viewport style={[sheet.viewport, viewport]}>
               <Dialog.Popup style={[sheet.popup, popup]}>
                 <Dialog.Title>Filters</Dialog.Title>

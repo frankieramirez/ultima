@@ -2,7 +2,7 @@
 
 import { AlertDialog as BaseAlertDialog } from '@base-ui/react/alert-dialog';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, easing, font, motion, radius, shadow, space, text, z } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, filter, font, motion, radius, shadow, space, text, z } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
@@ -18,6 +18,7 @@ const styles = stylex.create({
     zIndex: z.popup,
   },
   backdrop: {
+    backdropFilter: filter['--ult-filter-backdrop'],
     backgroundColor: color['--ult-color-surface-overlay'],
     inset: 0,
     opacity: {
@@ -42,7 +43,7 @@ const styles = stylex.create({
     fontFamily: font['--ult-font-sans'],
     margin: 0,
     maxHeight: '100%',
-    maxWidth: space['--ult-space-12'],
+    maxWidth: `min(calc(7 * ${space['--ult-space-12']}), 100%)`,
     opacity: {
       default: 1,
       ':is([data-starting-style])': 0,

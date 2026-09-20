@@ -15,7 +15,7 @@ export default function BasicDialog() {
     <Dialog.Root>
       <Dialog.Trigger render={<Button />}>Open dialog</Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Backdrop />
+        <Dialog.Backdrop forceRender />
         <Dialog.Viewport>
           <Dialog.Popup>
             <Dialog.Title>Archive report</Dialog.Title>

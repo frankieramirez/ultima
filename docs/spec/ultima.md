@@ -49,6 +49,7 @@ Groups and their name shape:
 | `font` (family, weight, leading, tracking) | descriptive | `--ult-font-sans`, `--ult-font-weight-medium`, `--ult-font-leading-tight` |
 | `radius` | t-shirt | `--ult-radius-md`, `--ult-radius-full` |
 | `shadow` | t-shirt | `--ult-shadow-md` |
+| `filter` | descriptive | `--ult-filter-backdrop` |
 | `motion` (durations) | descriptive | `--ult-motion-fast` |
 
 Color roles are conventional: surface, text, border, accent, action, and the status colors. Fantasy names appear only in palette scales. Interaction states (`-hover`, `-active`) are separate semantic tokens resolved to palette steps, never derived with `color-mix()`, because dark and light modes step in different directions. `action` is the mana based role for prominent page actions such as landing page calls to action; its contrast token is checked against the default, hover, and active fills. It does not add a component API axis: components that already expose `tone` keep their existing role choices, while a consumer can map an action theme onto an accent surface.
@@ -57,7 +58,7 @@ In component code the key is used as written: `color['--ult-color-surface']`. Th
 
 ### Token groups in v0
 
-Themeable (emitted as custom properties): `color`, `space`, `text`, `font`, `radius`, `shadow`, and `motion` durations.
+Themeable (emitted as custom properties): `color`, `space`, `text`, `font`, `radius`, `shadow`, `filter`, and `motion` durations.
 
 Compile-time only (`defineConsts`, never in the CSS export): `motion` easings, `border` widths, and `z-index`.
 
@@ -142,6 +143,14 @@ Three steps. On a near-black ground a shadow does almost nothing, so elevation i
 | `--ult-shadow-lg` | `0 12px 24px rgba(0,0,0,.40), 0 24px 48px rgba(0,0,0,.50)` | `0 12px 24px rgba(0,0,0,.12), 0 24px 48px rgba(0,0,0,.18)` |
 
 An overlay sets a border and a shadow together, never a shadow alone.
+
+### Filter
+
+One token, the scrim's backdrop blur. `backdrop-filter` blurs what sits behind the element, so it belongs to the backdrop rather than the popup. Themeable for the same reason `shadow` is: a consumer re-skins an overlay's atmosphere, and a re-skin that keeps the wash but drops the blur is a legitimate theme.
+
+| Token | Value |
+| --- | --- |
+| `--ult-filter-backdrop` | `blur(4px)` |
 
 ### Motion
 
@@ -344,7 +353,7 @@ The full `color` group in v0. Every token resolves to one step in both modes exc
 | `--ult-color-surface-raised` | mithril2 | cards, panels, popovers |
 | `--ult-color-surface-sunken` | mithril3 | wells, inputs, code blocks |
 | `--ult-color-surface-hover` | mithril4 | rows and items on hover |
-| `--ult-color-surface-overlay` | mithril2 at alpha `99` dark, `cc` light | glass tiles and scrims; the one token with alpha |
+| `--ult-color-surface-overlay` | mithril2 at alpha `b3` dark, `cc` light | glass tiles and scrims; the one token with alpha |
 | `--ult-color-text` | mithril12 | body text |
 | `--ult-color-text-muted` | mithril11 | secondary text |
 | `--ult-color-text-subtle` | mithril10 | labels, captions, placeholders |
@@ -435,7 +444,7 @@ Lowest measured ratios today: `text-subtle` on `surface-hover` 4.78 dark and 4.9
 | `--ult-color-danger-border` | `#822b2f` |
 | `--ult-color-danger-text` | `#ffaaa8` |
 | `--ult-color-danger-contrast` | `#0b0d17` |
-| `--ult-color-surface-overlay` | `#11132499` |
+| `--ult-color-surface-overlay` | `#111324b3` |
 
 **light**
 
@@ -1250,7 +1259,7 @@ Dialog, Dropdown Menu, Select, and Tooltip share one popup recipe. Sidebar's mob
 
 - **Surface.** `--ult-color-surface-raised`, a hairline `--ult-color-border`, `--ult-radius-lg`, and `--ult-shadow-md`. An overlay always sets a border and a shadow together, never a shadow alone. `z.popup`.
 - **Transition.** `transform-origin: var(--transform-origin)`, which Base UI's positioner seeds before Floating UI measures; `Dialog.Popup` has no positioner and never seeds it, so the declaration is inert there and harmless. Transition `opacity` and `transform` over `--ult-motion-fast` with the `enter` easing; `[data-starting-style]` and `[data-ending-style]` both sit at `opacity: 0` and `transform: scale(0.98)`, with the `exit` easing on the closing side. Tooltip is the one narrower case: `--ult-radius-sm`, `--ult-shadow-sm`, and text step 2.
-- **Backdrop.** Dialog and Alert Dialog have a visible one: `--ult-color-surface-overlay`, fading opacity alone over `--ult-motion-base`. Menu's, Select's, Combobox's, Popover's, and Context Menu's backdrops are invisible click-catchers and stay unstyled; Context Menu's was settled on [#109](https://github.com/frankieramirez/ultima/issues/109) and belongs in this list. **Hover Card's is a third case**, settled on [#111](https://github.com/frankieramirez/ultima/issues/111): Base UI hard-codes `pointer-events: none`, `user-select: none`, and `role="presentation"` on it, so it cannot receive a click at all and dismissal comes from the document-level listeners instead. It is an inert styling hook rather than a catcher, it stays unstyled too, and `PreviewCard.Root` is modal in no sense, with no focus trap, no scroll lock, and no outside `aria-hidden`.
+- **Backdrop.** Dialog, Alert Dialog, and Drawer have a visible one: `--ult-color-surface-overlay` over a `--ult-filter-backdrop` blur, the scrim fading opacity alone over `--ult-motion-base`. Drawer's opacity reads `--drawer-swipe-progress` rather than resting at 1, so the same scrim follows the finger. Base UI renders no backdrop when the root is nested inside another dialog root, and an app shell counts: `Sidebar.Root` wraps its children in a `Dialog.Root` for the mobile menu, so every overlay inside an Ultima app shell loses its scrim unless the caller passes `forceRender`, which the docs demos do. Menu's, Select's, Combobox's, Popover's, and Context Menu's backdrops are invisible click-catchers and stay unstyled; Context Menu's was settled on [#109](https://github.com/frankieramirez/ultima/issues/109) and belongs in this list. **Hover Card's is a third case**, settled on [#111](https://github.com/frankieramirez/ultima/issues/111): Base UI hard-codes `pointer-events: none`, `user-select: none`, and `role="presentation"` on it, so it cannot receive a click at all and dismissal comes from the document-level listeners instead. It is an inert styling hook rather than a catcher, it stays unstyled too, and `PreviewCard.Root` is modal in no sense, with no focus trap, no scroll lock, and no outside `aria-hidden`.
 - **Reduced motion** needs no extra rule for enter and exit. Every transition duration is a token that already collapses to `1ms`, and Base UI's transition-aware unmount still fires at that duration. Looping animation is not this recipe; it is `--ult-motion-loop` and the `animation-name: none` exception, under Motion.
 - **`keepMounted` is never set by Ultima.** Base UI's default (unmount when closed) stands, because how much closed DOM a page carries is the consumer's decision and the transition does not need the popup mounted. A consumer who wants it passes it through.
 

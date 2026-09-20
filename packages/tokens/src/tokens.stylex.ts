@@ -177,7 +177,7 @@ export const color = stylex.defineVars({
   '--ult-color-surface-raised': { default: mithril.dark2, [LIGHT]: mithril.light2 },
   '--ult-color-surface-sunken': { default: mithril.dark3, [LIGHT]: mithril.light3 },
   '--ult-color-surface-hover': { default: mithril.dark4, [LIGHT]: mithril.light4 },
-  '--ult-color-surface-overlay': { default: `${mithril.dark2}99`, [LIGHT]: `${mithril.light2}cc` },
+  '--ult-color-surface-overlay': { default: `${mithril.dark2}b3`, [LIGHT]: `${mithril.light2}cc` },
   '--ult-color-text': { default: mithril.dark12, [LIGHT]: mithril.light12 },
   '--ult-color-text-muted': { default: mithril.dark11, [LIGHT]: mithril.light11 },
   '--ult-color-text-subtle': { default: mithril.dark10, [LIGHT]: mithril.light10 },
@@ -300,6 +300,10 @@ export const shadow = stylex.defineVars({
     default: '0 12px 24px rgba(0,0,0,.40), 0 24px 48px rgba(0,0,0,.50)',
     [LIGHT]: '0 12px 24px rgba(0,0,0,.12), 0 24px 48px rgba(0,0,0,.18)',
   },
+});
+
+export const filter = stylex.defineVars({
+  '--ult-filter-backdrop': 'blur(4px)',
 });
 
 export const motion = stylex.defineVars({
