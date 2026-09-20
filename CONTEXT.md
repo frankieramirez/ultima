@@ -90,6 +90,10 @@ The docs-local side of the line between an Ultima component and the site's own c
 
 The theme studio's own application surface: the editor rail, group headers, shuffle bar, validation and inspector panels, and the preview scaffold. It is not page layout, so it may paint surfaces, but every keyboard-reachable control in it is a catalogue component. Its fixed appearance is Ultima's stock dark theme pinned on the editor subtree; the draft theme applies only inside the preview panes, whose boundary is also the per-pane portal container.
 
+## Bounded scroll region
+
+A region that scrolls inside the shell rather than with the document. Each one carries a named bar treatment, settled on [#285](https://github.com/frankieramirez/ultima/issues/285): the site menu panel and the Studio editor rail's groups region get a styled Scroll Area, because both are narrow rails that overflow every session; the "On this page" index and the Studio's preview panes keep native bars, because their overflow is a guard or per-scene rather than constant.
+
 ## Set
 
 A section of the specification holding one contract effort's output: its components' parts and axes in one table, their styled splits, and the prose a builder would otherwise guess. A set is named for what it holds. A release name is honest only where the section holds that release whole, which is why The v0 set and The v0.1 set carry one and no fraction of v0.2 may. Where the members share a property, the name is that property: The navigation set's landmark, The overlay set's recipe. Where they share nothing, the name lists them, which is The Toggle, Accordion, Avatar, and Scroll Area set and the reason it is the one section not named for an idea. Report set and Feedback set are groupings inside a release rather than sections.
