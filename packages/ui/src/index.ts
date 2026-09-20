@@ -432,6 +432,7 @@ export {
   type InputOTPInputProps,
   type InputOTPSeparatorProps,
 } from './input-otp';
+export {
   DatePicker,
   type DatePickerRootProps,
   type DatePickerLabelProps,
