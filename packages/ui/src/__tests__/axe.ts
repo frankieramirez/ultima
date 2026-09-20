@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
+import { color } from '@ultima/tokens/tokens.stylex';
 import axe from 'axe-core';
 import { onTestFinished } from 'vitest';
 
@@ -8,9 +9,18 @@ export const themes = [
   { name: 'light', theme: lightTheme, scheme: colorScheme.light },
 ];
 
-/** The root, not a wrapper: a portalled popup is outside the wrapper and would be scanned unthemed. */
+const canvas = stylex.create({
+  root: { backgroundColor: color['--ult-color-surface'] },
+});
+
+/**
+ * The root, not a wrapper: a portalled popup is outside the wrapper and would be scanned unthemed.
+ * Theme classes override the tokens; the canvas paints the surface so axe does not fall through
+ * a transparent ancestor to the UA's white page.
+ */
 export function themeDocument(mode: (typeof themes)[number]) {
-  const classes = stylex.props(mode.theme, mode.scheme).className?.split(/\s+/).filter(Boolean) ?? [];
+  const classes =
+    stylex.props(mode.theme, mode.scheme, canvas.root).className?.split(/\s+/).filter(Boolean) ?? [];
   document.documentElement.classList.add(...classes);
   onTestFinished(() => document.documentElement.classList.remove(...classes));
 }

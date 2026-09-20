@@ -394,15 +394,17 @@ describe('below the breakpoint', () => {
 
   test('opening moves focus into the menu and Escape returns it to the trigger', async () => {
     const screen = await render(<Sample />);
-    const trigger = screen.getByRole('button', { name: 'Toggle navigation' }).element();
+    const trigger = screen.getByRole('button', { name: 'Toggle navigation' });
 
-    await userEvent.click(trigger);
+    await userEvent.click(trigger.element());
     const dialog = screen.getByRole('dialog', { name: 'Docs' }).element();
     await expect.poll(() => dialog.contains(document.activeElement)).toBe(true);
 
     await userEvent.keyboard('{Escape}');
-    await expect.poll(() => screen.container.querySelector('[role="dialog"]')).toBeNull();
-    expect(document.activeElement).toBe(trigger);
+    // The popup portals to document.body, outside `screen.container`, and it stays
+    // mounted through the exit transition. Wait on the document, then for focus.
+    await expect.poll(() => screen.getByRole('dialog').query()).toBeNull();
+    await expect.poll(() => document.activeElement).toBe(trigger.element());
   });
 
   test('the close control dismisses the menu', async () => {

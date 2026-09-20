@@ -10,6 +10,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
+import { parkPointer } from './setup';
 
 function OpenTooltip({ text = 'Copied to clipboard' }: { text?: string }) {
   return (
@@ -62,7 +63,7 @@ test('the popup has no outline', async () => {
 test('focusing the trigger opens the tooltip and Escape closes it', async () => {
   const text = 'Keyboard tooltip';
   const screen = await render(
-    <Tooltip.Provider delay={0}>
+    <Tooltip.Provider delay={0} closeDelay={0}>
       <Tooltip.Root>
         <Tooltip.Trigger aria-label={text} render={<button type="button" />}>
           Copy
@@ -76,6 +77,9 @@ test('focusing the trigger opens the tooltip and Escape closes it', async () => 
     </Tooltip.Provider>,
   );
   const tooltip = screen.getByRole('tooltip', { name: text });
+  // delay={0} opens on hover. A leftover pointer from the previous file would already
+  // be sitting on this trigger; park it so the keyboard path starts from closed.
+  await parkPointer();
   expect(tooltip.query()).toBeNull();
   await userEvent.tab();
   await expect.element(tooltip).toBeVisible();
