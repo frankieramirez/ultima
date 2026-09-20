@@ -311,7 +311,13 @@ export const components = [
     description: 'A field box holding an input with leading and trailing addons, in three sizes.',
     release: 'v0.2',
   },
-{
+  {
+    name: 'Native Select',
+    item: 'native-select',
+    description: 'A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.',
+    release: 'v0.2',
+  },
+  {
     name: 'Resizable',
     item: 'resizable',
     description: 'Panels with boundaries you drag or arrow, on Zag.',

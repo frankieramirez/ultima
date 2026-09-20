@@ -426,6 +426,12 @@ export {
   type CalendarYearSelectProps,
 } from './calendar';
 export {
+  NativeSelect,
+  type NativeSelectRootProps,
+  type NativeSelectSelectProps,
+  type NativeSelectSize,
+} from './native-select';
+export {
   Resizable,
   useResizable,
   type ResizableApi,
