@@ -1,3 +1,7 @@
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import mdx from '@mdx-js/rollup';
 import stylex from '@stylexjs/unplugin';
 import react from '@vitejs/plugin-react';
@@ -6,6 +10,9 @@ import remarkGfm from 'remark-gfm';
 import { defineConfig } from 'vitest/config';
 
 import { stylexOptions } from '../../stylex.options.ts';
+
+const tokensDir = join(dirname(fileURLToPath(import.meta.url)), '../../packages/tokens');
+const tokensRequire = createRequire(join(tokensDir, 'package.json'));
 
 export default defineConfig({
   plugins: [
@@ -82,6 +89,33 @@ export default defineConfig({
       provider: playwright(),
       instances: [{ browser: 'chromium' }],
       viewport: { width: 1280, height: 720 },
+      commands: {
+        // The exported .stylex.ts compiles where @ultima/tokens' babel stack lives, the same
+        // transform scripts/build-tokens.ts runs. The browser test applies the result in a
+        // real DOM as its fixture application.
+        compileStylexModule: async (_context, source: string) => {
+          const { transformAsync } = tokensRequire('@babel/core');
+          const pluginModule = tokensRequire('@stylexjs/babel-plugin') as {
+            default?: { withOptions: (options: unknown) => unknown };
+            withOptions?: (options: unknown) => unknown;
+          };
+          const withOptions = pluginModule.default?.withOptions ?? pluginModule.withOptions;
+          if (!withOptions) throw new Error('@stylexjs/babel-plugin has no withOptions');
+          const tokensStylex = join(tokensDir, 'src/tokens.stylex.ts');
+          const result = (await transformAsync(
+            source.replace("'@/lib/tokens.stylex'", `'${tokensStylex}'`),
+            {
+              filename: join(tokensDir, 'ultima-theme.stylex.ts'),
+              cwd: tokensDir,
+              babelrc: false,
+              configFile: false,
+              presets: [tokensRequire.resolve('@babel/preset-typescript')],
+              plugins: [withOptions(stylexOptions({ dev: false }))],
+            },
+          )) as { code?: string | null; metadata?: { stylex?: unknown } } | null;
+          return { code: result?.code ?? '', rules: result?.metadata?.stylex ?? [] };
+        },
+      },
     },
   },
 });
