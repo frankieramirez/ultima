@@ -288,6 +288,18 @@ export const components = [
     release: 'v0.2',
   },
   {
+    name: 'Aspect Ratio',
+    item: 'aspect-ratio',
+    description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
+    release: 'v0.2',
+  },
+  {
+    name: 'Command',
+    item: 'command',
+    description: 'A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.',
+    release: 'v0.2',
+  },
+  {
     name: 'Calendar',
     item: 'calendar',
     description: 'An inline day, month, and year grid for picking dates, on Zag.',

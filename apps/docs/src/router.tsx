@@ -6,6 +6,7 @@ import type { ComponentType } from 'react';
 import AccordionContent from './content/components/accordion.mdx';
 import AlertContent from './content/components/alert.mdx';
 import AlertDialogContent from './content/components/alert-dialog.mdx';
+import AspectRatioContent from './content/components/aspect-ratio.mdx';
 import AvatarContent from './content/components/avatar.mdx';
 import BadgeContent from './content/components/badge.mdx';
 import BreadcrumbContent from './content/components/breadcrumb.mdx';
@@ -17,6 +18,7 @@ import CodeContent from './content/components/code.mdx';
 import CollapsibleContent from './content/components/collapsible.mdx';
 import ColorFieldContent from './content/components/color-field.mdx';
 import ComboboxContent from './content/components/combobox.mdx';
+import CommandContent from './content/components/command.mdx';
 import ContextMenuContent from './content/components/context-menu.mdx';
 import DialogContent from './content/components/dialog.mdx';
 import DrawerContent from './content/components/drawer.mdx';
@@ -118,6 +120,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   accordion: AccordionContent,
   alert: AlertContent,
   'alert-dialog': AlertDialogContent,
+  'aspect-ratio': AspectRatioContent,
   avatar: AvatarContent,
   badge: BadgeContent,
   breadcrumb: BreadcrumbContent,
@@ -129,6 +132,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   collapsible: CollapsibleContent,
   'color-field': ColorFieldContent,
   combobox: ComboboxContent,
+  command: CommandContent,
   'context-menu': ContextMenuContent,
   dialog: DialogContent,
   drawer: DrawerContent,
