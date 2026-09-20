@@ -20,6 +20,7 @@ import ColorFieldContent from './content/components/color-field.mdx';
 import ComboboxContent from './content/components/combobox.mdx';
 import CommandContent from './content/components/command.mdx';
 import ContextMenuContent from './content/components/context-menu.mdx';
+import DatePickerContent from './content/components/date-picker.mdx';
 import DialogContent from './content/components/dialog.mdx';
 import DrawerContent from './content/components/drawer.mdx';
 import DropdownMenuContent from './content/components/dropdown-menu.mdx';
@@ -136,6 +137,7 @@ const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>
   combobox: ComboboxContent,
   command: CommandContent,
   'context-menu': ContextMenuContent,
+  'date-picker': DatePickerContent,
   dialog: DialogContent,
   drawer: DrawerContent,
   'dropdown-menu': DropdownMenuContent,
