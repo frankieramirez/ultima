@@ -134,6 +134,21 @@ test('the rail sits beside the preview, with the status bar under the editor', a
   expect(editor.contains(screen.getByRole('button', { name: 'Reset theme' }).element())).toBe(true);
 });
 
+test('the editor rail scrolls its groups through a styled scroll area and never overflows horizontally', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+
+  const viewport = () => editor.querySelector<HTMLElement>('[role="presentation"][tabindex]')!;
+  expect(viewport()).not.toBeNull();
+  await expect.poll(() => viewport().scrollHeight).toBeGreaterThan(viewport().clientHeight);
+  await expect.poll(() => editor.querySelector('[data-orientation="vertical"]')).not.toBeNull();
+  expect(viewport().scrollWidth).toBeLessThanOrEqual(viewport().clientWidth + 1);
+
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  expect(viewport().scrollWidth).toBeLessThanOrEqual(viewport().clientWidth + 1);
+});
+
 test('dark, light, and compare force pane modes and share one draft', async () => {
   const screen = await mount('/theme-studio');
   const modes = screen.getByRole('group', { name: 'Preview color mode' });

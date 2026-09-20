@@ -12,7 +12,7 @@ import {
   type TypeScale,
 } from '@ultima/tokens';
 import { space, text } from '@ultima/tokens/tokens.stylex';
-import { ColorField, Field, Input, Select, Slider, ToggleGroup } from '@ultima/ui';
+import { ColorField, Field, Input, ScrollArea, Select, Slider, ToggleGroup } from '@ultima/ui';
 import { useMemo } from 'react';
 
 import {
@@ -41,12 +41,18 @@ const styles = stylex.create({
     overflow: 'auto',
   },
   groups: {
+    flexGrow: 1,
+    minBlockSize: 0,
+    minInlineSize: 0,
+  },
+  groupsContent: {
     display: 'flex',
     flexDirection: 'column',
-    flexGrow: 1,
     gap: space['--ult-space-8'],
-    minBlockSize: 0,
-    overflow: 'auto',
+  },
+  preset: {
+    display: 'flex',
+    flexWrap: 'wrap',
   },
   group: {
     display: { default: 'none', [RAIL]: 'flex' },
@@ -173,6 +179,7 @@ function PresetGroup({
           const selected = keepOne(next, () => eventDetails.cancel());
           if (selected) onChange(selected);
         }}
+        style={styles.preset}
         value={[value]}
       >
         {options.map((option) => (
@@ -430,89 +437,98 @@ export function ThemeStudioEditor({
           </ToggleGroup.Item>
         ))}
       </ToggleGroup.Root>
-      <div {...stylex.props(styles.groups)}>
-        {GROUPS.map((item) => (
-          <section
-            aria-labelledby={`${item.label.toLowerCase()}-group`}
-            key={item.id}
-            {...stylex.props(styles.group, group === item.label && styles.groupActive)}
-          >
-            <ThemeStudioGroup
-              label={item.label}
-              locked={draft.locks[item.id]}
-              onLock={(locked) =>
-                commit((current) => ({ ...current, locks: { ...current.locks, [item.id]: locked } }))
-              }
-              onReset={() => commit((current) => resetGroup(current, item.id))}
-              onShuffle={() => onShuffleGroup(item.id)}
-              panel={
-                <TokenRows
-                  draft={draft}
-                  group={item.id}
-                  offenders={offenders}
-                  resolved={resolved}
-                  setDraft={(action) => commit(typeof action === 'function' ? action : () => action)}
-                />
-              }
-            >
-              {item.id === 'color' ? <ColorControls draft={draft} update={update} commit={commit} /> : null}
-              {item.id === 'typography' ? (
-                <TypographyControls draft={draft} update={update} commit={commit} />
-              ) : null}
-              {item.id === 'density' ? (
-                <PresetGroup
-                  label="Density preset"
-                  onChange={(value) => commit((current) => ({ ...current, density: Number(value) as DensityFactor }))}
-                  options={[
-                    { label: 'Compact', value: '0.75' },
-                    { label: 'Cosy', value: '1' },
-                    { label: 'Roomy', value: '1.25' },
-                  ]}
-                  value={String(draft.density)}
-                />
-              ) : null}
-              {item.id === 'shape' ? (
-                <PresetGroup
-                  label="Shape preset"
-                  onChange={(value) => commit((current) => ({ ...current, shape: value as ShapePreset }))}
-                  options={[
-                    { label: 'Sharp', value: 'sharp' },
-                    { label: 'Default', value: 'default' },
-                    { label: 'Round', value: 'round' },
-                  ]}
-                  value={draft.shape}
-                />
-              ) : null}
-              {item.id === 'elevation' ? (
-                <PresetGroup
-                  label="Elevation strength"
-                  onChange={(value) => commit((current) => ({ ...current, elevation: Number(value) }))}
-                  options={[
-                    { label: 'Flat', value: '0' },
-                    { label: 'Subtle', value: '0.5' },
-                    { label: 'Default', value: '1' },
-                    { label: 'Pronounced', value: '1.5' },
-                  ]}
-                  value={String(draft.elevation)}
-                />
-              ) : null}
-              {item.id === 'motion' ? (
-                <PresetGroup
-                  label="Motion speed"
-                  onChange={(value) => commit((current) => ({ ...current, motion: Number(value) }))}
-                  options={[
-                    { label: 'Brisk', value: '0.6' },
-                    { label: 'Default', value: '1' },
-                    { label: 'Gentle', value: '1.5' },
-                  ]}
-                  value={String(draft.motion)}
-                />
-              ) : null}
-            </ThemeStudioGroup>
-          </section>
-        ))}
-        <ThemeStudioValidation results={results} />
-      </div>
+      <ScrollArea.Root style={styles.groups}>
+        <ScrollArea.Viewport>
+          <ScrollArea.Content style={styles.groupsContent}>
+            {GROUPS.map((item) => (
+              <section
+                aria-labelledby={`${item.label.toLowerCase()}-group`}
+                key={item.id}
+                {...stylex.props(styles.group, group === item.label && styles.groupActive)}
+              >
+                <ThemeStudioGroup
+                  label={item.label}
+                  locked={draft.locks[item.id]}
+                  onLock={(locked) =>
+                    commit((current) => ({ ...current, locks: { ...current.locks, [item.id]: locked } }))
+                  }
+                  onReset={() => commit((current) => resetGroup(current, item.id))}
+                  onShuffle={() => onShuffleGroup(item.id)}
+                  panel={
+                    <TokenRows
+                      draft={draft}
+                      group={item.id}
+                      offenders={offenders}
+                      resolved={resolved}
+                      setDraft={(action) => commit(typeof action === 'function' ? action : () => action)}
+                    />
+                  }
+                >
+                  {item.id === 'color' ? <ColorControls draft={draft} update={update} commit={commit} /> : null}
+                  {item.id === 'typography' ? (
+                    <TypographyControls draft={draft} update={update} commit={commit} />
+                  ) : null}
+                  {item.id === 'density' ? (
+                    <PresetGroup
+                      label="Density preset"
+                      onChange={(value) =>
+                        commit((current) => ({ ...current, density: Number(value) as DensityFactor }))
+                      }
+                      options={[
+                        { label: 'Compact', value: '0.75' },
+                        { label: 'Cosy', value: '1' },
+                        { label: 'Roomy', value: '1.25' },
+                      ]}
+                      value={String(draft.density)}
+                    />
+                  ) : null}
+                  {item.id === 'shape' ? (
+                    <PresetGroup
+                      label="Shape preset"
+                      onChange={(value) => commit((current) => ({ ...current, shape: value as ShapePreset }))}
+                      options={[
+                        { label: 'Sharp', value: 'sharp' },
+                        { label: 'Default', value: 'default' },
+                        { label: 'Round', value: 'round' },
+                      ]}
+                      value={draft.shape}
+                    />
+                  ) : null}
+                  {item.id === 'elevation' ? (
+                    <PresetGroup
+                      label="Elevation strength"
+                      onChange={(value) => commit((current) => ({ ...current, elevation: Number(value) }))}
+                      options={[
+                        { label: 'Flat', value: '0' },
+                        { label: 'Subtle', value: '0.5' },
+                        { label: 'Default', value: '1' },
+                        { label: 'Pronounced', value: '1.5' },
+                      ]}
+                      value={String(draft.elevation)}
+                    />
+                  ) : null}
+                  {item.id === 'motion' ? (
+                    <PresetGroup
+                      label="Motion speed"
+                      onChange={(value) => commit((current) => ({ ...current, motion: Number(value) }))}
+                      options={[
+                        { label: 'Brisk', value: '0.6' },
+                        { label: 'Default', value: '1' },
+                        { label: 'Gentle', value: '1.5' },
+                      ]}
+                      value={String(draft.motion)}
+                    />
+                  ) : null}
+                </ThemeStudioGroup>
+              </section>
+            ))}
+            <ThemeStudioValidation results={results} />
+          </ScrollArea.Content>
+        </ScrollArea.Viewport>
+        <ScrollArea.Scrollbar>
+          <ScrollArea.Thumb />
+        </ScrollArea.Scrollbar>
+      </ScrollArea.Root>
     </>
   );
 }
