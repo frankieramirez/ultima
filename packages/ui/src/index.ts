@@ -462,6 +462,15 @@ export {
   type DatePickerSize,
 } from './date-picker';
 export {
+  ButtonGroup,
+  type ButtonGroupRootProps,
+  type ButtonGroupItemProps,
+  type ButtonGroupVariant,
+  type ButtonGroupSize,
+  type ButtonGroupTone,
+  type ButtonGroupOrientation,
+} from './button-group';
+export {
   NativeSelect,
   type NativeSelectRootProps,
   type NativeSelectSelectProps,
