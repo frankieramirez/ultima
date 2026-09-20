@@ -254,6 +254,11 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'A fixed-ratio box for media, with the box and the radius left to the style slot.',
     docs: "import { AspectRatio } from '@/components/ui/aspect-ratio';\n\n<AspectRatio ratio={16 / 9}>\n  <img src=\"/cover.png\" alt=\"Ridgeline at dusk\" />\n</AspectRatio>\n\nratio is a number written inline as aspect-ratio, the file's one runtime declaration. The box and the radius go through the style slot, and render swaps the div for your own element, like a figure.",
   },
+  'input-group': {
+    title: 'Input Group',
+    description: 'A field box holding an input with leading and trailing addons, in three sizes.',
+    docs: "import { InputGroup } from '@/components/ui/input-group';\n\n<InputGroup.Root>\n  <InputGroup.Addon>@</InputGroup.Addon>\n  <InputGroup.Input placeholder=\"handle\" />\n  <InputGroup.Addon align=\"end\">.dev</InputGroup.Addon>\n</InputGroup.Root>\n\nRoot is a visual box with no role; a Field or Fieldset owns the semantics. The name is the inner input's own: a label, aria-label, or Field.Label. align on Addon positions it, not the DOM order.",
+  },
   'setup-vite': {
     title: 'Ultima setup for Vite',
     description:
