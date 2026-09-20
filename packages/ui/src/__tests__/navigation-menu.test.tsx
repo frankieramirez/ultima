@@ -350,9 +350,16 @@ for (const mode of themes) {
     );
     await screen.getByTestId('products').click();
     await expect.element(page.getByTestId('popup')).toBeVisible();
+    // Keep the pointer on the trigger so the menu does not close, and wait until
+    // the popup has finished entering: axe samples contrast through a transparent
+    // starting-style background as the page canvas.
+    await screen.getByTestId('products').hover();
+    const popup = page.getByTestId('popup').element();
+    await expect.poll(() => getComputedStyle(popup).opacity).toBe('1');
+    await expect.poll(() => getComputedStyle(popup).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
     expect(
       await violations({
-        include: [page.getByTestId('popup').element()],
+        include: [popup],
         exclude: [['[data-base-ui-focus-guard]']],
       }),
     ).toEqual([]);

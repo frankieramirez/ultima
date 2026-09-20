@@ -62,6 +62,7 @@ export default defineConfig({
       '@tanstack/react-table',
       'apca-w3',
       'axe-core',
+      'react-dom/client',
       'react-hook-form',
       'vitest-browser-react',
     ],
