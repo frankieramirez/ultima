@@ -33,7 +33,6 @@ test('text filtering matches names and descriptions without changing site naviga
 <<<<<<< HEAD
   await expect.element(main.getByRole('link', { name: /^Button A / })).toBeVisible();
 =======
-  await expect.element(main.getByRole('link', { name: /^Button / })).toBeVisible();
 >>>>>>> origin/main
   expect(main.getByRole('link', { name: /^Badge / }).query()).toBeNull();
   await expect.element(screen.getByRole('navigation', { name: 'Ultima' }).getByRole('link', { name: 'Badge', exact: true })).toBeVisible();
