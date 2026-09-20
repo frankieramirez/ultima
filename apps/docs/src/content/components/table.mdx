@@ -9,6 +9,10 @@ import DataTableSorting from '../../demos/table/data-table-sorting';
 import dataTableSortingSource from '../../demos/table/data-table-sorting?raw';
 import DataTableRowSelection from '../../demos/table/data-table-row-selection';
 import dataTableRowSelectionSource from '../../demos/table/data-table-row-selection?raw';
+import DataTableFiltering from '../../demos/table/data-table-filtering';
+import dataTableFilteringSource from '../../demos/table/data-table-filtering?raw';
+import DataTablePagination from '../../demos/table/data-table-pagination';
+import dataTablePaginationSource from '../../demos/table/data-table-pagination?raw';
 import Chart from '../../demos/table/chart';
 import chartSource from '../../demos/table/chart?raw';
 
@@ -62,7 +66,7 @@ npm install @tanstack/react-table
 
 That package is ESM-only and declares `engines.node >= 20`, so a toolchain that `require()`s it cannot load it. The [long form is on the install page](/install#steps-you-still-do-by-hand). No file in `@ultima/ui` imports the engine, so no registry item declares it and nothing arrives with `@ultima/table`.
 
-Component dependencies: `table`, `button`, `checkbox`.
+Component dependencies: `table`, `button`, `checkbox`, `dropdown-menu`, `input`, `select`, `pagination`.
 
 Register features per example. v9 computes the table's type from `tableFeatures()`, so the APIs of a feature you did not register do not exist — sorting registers `rowSortingFeature`, its row model, and the sorting functions its columns use, and nothing else. Read the engine's sort state onto the cell with `sort` and put the control inside it with `SortButton`; the arrow direction a number column opens with is the engine's default, not Ultima's.
 
@@ -79,6 +83,22 @@ The select-all is a standalone `Checkbox.Root` with a controlled `indeterminate`
 Three obligations are the consumer's, not the recipe's. Each row checkbox takes its name from that row's own data, because four checkboxes all reading "Select row" identify no row. The select-all takes its own distinct name. And the change is announced: the same `role="status"` region the sorting example introduced, carrying the selection count rather than the row order. One region for the table; a second would say the same thing twice.
 
 <Demo component={DataTableRowSelection} source={dataTableRowSelectionSource} />
+
+### Filtering
+
+Filtering registers `columnFilteringFeature`, `columnFacetingFeature`, the filtered and faceting row models, and the `filterFns` map its columns name. The demo shows two surfaces sharing that one registration. The faceted menu is a `DropdownMenu` of `CheckboxItem`s fed by `column.getFacetedUniqueValues()`, so each option carries its count, and its trigger is a `Button` through `render`. Checking a value sets the column's filter to the checked list under `arrHas`, which keeps a row whose value is one of the checked; `closeOnClick={false}` keeps the menu open while you check more than one. The global search is an `Input` named with `aria-label` driving `table.setGlobalFilter`, which is `globalFilteringFeature`: it cannot run without column filtering, which is why it shares this demo rather than earning one of its own.
+
+The announcement obligation is the same `role="status"` region again, this time carrying the visible count against the total.
+
+<Demo component={DataTableFiltering} source={dataTableFilteringSource} />
+
+### Pagination
+
+Pagination registers `rowPaginationFeature` and `createPaginatedRowModel()` with controlled `{ pageIndex, pageSize }` state: the demo holds it in `useState` and hands the slice back through `state` and `onPaginationChange`. Page navigation is the catalogue `Pagination`, mounted above and below the table. Two of one landmark on a page need distinct names, so each takes an `aria-label`. The page-size control is a `Select` writing `table.setPageSize`, which keeps the top row in view rather than stranding you on a page that no longer exists.
+
+The `role="status"` region here announces the visible range, because Pagination mounts no live region of its own: it sees pages and never items, so the item range is the recipe's to say. When you combine these examples on one table, register every feature on that table and the pipeline orders them core, then filtering, then sorting, then pagination; `autoResetPageIndex` keeps a filter change from stranding the reader on an empty page.
+
+<Demo component={DataTablePagination} source={dataTablePaginationSource} />
 
 ## Chart
 
