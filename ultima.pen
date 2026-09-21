@@ -89450,6 +89450,893 @@
           }
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "HxvH0",
+      "x": 9450,
+      "y": 6657,
+      "name": "PROTOTYPE · Demo figure variants (#369)",
+      "theme": {
+        "mode": "dark"
+      },
+      "width": 1200,
+      "fill": "$ult-color-surface",
+      "layout": "vertical",
+      "gap": 48,
+      "padding": 56,
+      "children": [
+        {
+          "type": "text",
+          "id": "naS3g",
+          "name": "Proto label",
+          "fill": "$ult-color-text-subtle",
+          "content": "PROTOTYPE · DEMO FIGURE · #369 · THROWAWAY",
+          "fontFamily": "IBM Plex Mono",
+          "fontSize": 11,
+          "fontWeight": "normal",
+          "letterSpacing": 1.2
+        },
+        {
+          "type": "frame",
+          "id": "rZPJl",
+          "name": "Variant head A · One frame, teaser",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 6,
+          "children": [
+            {
+              "type": "text",
+              "id": "o9LgQ",
+              "name": "Variant title",
+              "fill": "$ult-color-text",
+              "content": "A · One frame, teaser",
+              "fontFamily": "IBM Plex Sans",
+              "fontSize": 18,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "ruGPr",
+              "name": "Variant note",
+              "fill": "$ult-color-text-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Preview and code share one frame with a hairline between them. Code shows six lines, fades, and a centered pill reveals the rest (never collapses under eight lines). Copy is an icon button overlaid top-right of the code, always visible.",
+              "fontFamily": "IBM Plex Sans",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "o5Focy",
+          "name": "Figure A",
+          "width": "fill_container",
+          "fill": "$ult-color-surface-raised",
+          "stroke": "$ult-color-border",
+          "strokeWidth": 1,
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "s8nZu",
+              "name": "Preview",
+              "width": "fill_container",
+              "height": 128,
+              "gap": 12,
+              "padding": 32,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "IYUM9",
+                  "name": "Solid",
+                  "context": "Button - button",
+                  "width": 60.28,
+                  "height": 40,
+                  "fill": "$ult-color-accent",
+                  "cornerRadius": "$ult-radius-md",
+                  "layout": "vertical",
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mkBUL",
+                      "name": "Solid",
+                      "fill": "$ult-color-surface",
+                      "content": "Solid",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "NWYjG",
+                  "name": "Outline",
+                  "context": "Button - button",
+                  "width": 74.81,
+                  "height": 40,
+                  "cornerRadius": "$ult-radius-md",
+                  "stroke": "$ult-color-border",
+                  "strokeWidth": 2,
+                  "strokeAlignment": "inner",
+                  "layout": "vertical",
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "SG7CX",
+                      "name": "Outline",
+                      "fill": "$ult-color-text",
+                      "content": "Outline",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Kixui",
+                  "name": "Ghost",
+                  "context": "Button - button",
+                  "width": 65.84,
+                  "height": 40,
+                  "cornerRadius": "$ult-radius-md",
+                  "layout": "vertical",
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "r9a9i",
+                      "name": "Ghost",
+                      "fill": "$ult-color-text-muted",
+                      "content": "Ghost",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "UDrIu",
+              "name": "Rule",
+              "fill": "$ult-color-border",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "gfEcu",
+              "name": "Code",
+              "clip": true,
+              "width": "fill_container",
+              "height": 176,
+              "fill": "$ult-color-surface-sunken",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "EISlq",
+                  "name": "Code inner",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "padding": [
+                    20,
+                    24
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "F3yGKW",
+                      "name": "Source",
+                      "fill": "$ult-color-text",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "import * as stylex from '@stylexjs/stylex';\nimport { space } from '@ultima/tokens/tokens.stylex';\nimport { Button } from '@ultima/ui';\n\nconst styles = stylex.create({\n  row: {",
+                      "lineHeight": 1.65,
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "R2DyaV",
+                  "layoutPosition": "absolute",
+                  "x": 1052,
+                  "y": 8,
+                  "name": "Copy button",
+                  "width": 28,
+                  "height": 28,
+                  "fill": "$ult-color-surface-raised",
+                  "cornerRadius": "$ult-radius-sm",
+                  "stroke": "$ult-color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "yBmwM",
+                      "name": "Copy icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "copy",
+                      "library": "phosphor",
+                      "fill": "$ult-color-text-muted"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "jpg6x",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 104,
+                  "name": "Fade",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 180,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#1d1e2000",
+                        "position": 0
+                      },
+                      {
+                        "color": "#1d1e20",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "width": 1088,
+                  "height": 72
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "m4Hmo",
+              "layoutPosition": "absolute",
+              "x": 492,
+              "y": 290,
+              "name": "Reveal pill",
+              "fill": "$ult-color-surface-raised",
+              "cornerRadius": "$ult-radius-full",
+              "stroke": "$ult-color-border",
+              "strokeWidth": 1,
+              "gap": 6,
+              "padding": [
+                6,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Cw08V",
+                  "name": "Pill label",
+                  "fill": "$ult-color-text",
+                  "content": "Show code",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "icon",
+                  "id": "iSoHT",
+                  "name": "Pill chevron",
+                  "width": 12,
+                  "height": 12,
+                  "icon": "caret-down",
+                  "library": "phosphor",
+                  "fill": "$ult-color-text-muted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "auD1J",
+          "name": "Variant head B · One frame, open and capped",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 6,
+          "children": [
+            {
+              "type": "text",
+              "id": "o5H9uw",
+              "name": "Variant title",
+              "fill": "$ult-color-text",
+              "content": "B · One frame, open and capped",
+              "fontFamily": "IBM Plex Sans",
+              "fontSize": 18,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "z6y6c",
+              "name": "Variant note",
+              "fill": "$ult-color-text-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Same frame. Code is open to an 18rem cap with a fade and an Expand pill only when it overflows. Copy fades in on hover (shown at rest opacity).",
+              "fontFamily": "IBM Plex Sans",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "V3nn8",
+          "name": "Figure B",
+          "width": "fill_container",
+          "fill": "$ult-color-surface-raised",
+          "stroke": "$ult-color-border",
+          "strokeWidth": 1,
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "CRmkp",
+              "name": "Preview",
+              "width": "fill_container",
+              "height": 128,
+              "gap": 12,
+              "padding": 32,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "erwpF",
+                  "name": "Solid",
+                  "context": "Button - button",
+                  "width": 60.28,
+                  "height": 40,
+                  "fill": "$ult-color-accent",
+                  "cornerRadius": "$ult-radius-md",
+                  "layout": "vertical",
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ifLwr",
+                      "name": "Solid",
+                      "fill": "$ult-color-surface",
+                      "content": "Solid",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "wYCag",
+                  "name": "Outline",
+                  "context": "Button - button",
+                  "width": 74.81,
+                  "height": 40,
+                  "cornerRadius": "$ult-radius-md",
+                  "stroke": "$ult-color-border",
+                  "strokeWidth": 2,
+                  "strokeAlignment": "inner",
+                  "layout": "vertical",
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "nV86d",
+                      "name": "Outline",
+                      "fill": "$ult-color-text",
+                      "content": "Outline",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "WH935",
+                  "name": "Ghost",
+                  "context": "Button - button",
+                  "width": 65.84,
+                  "height": 40,
+                  "cornerRadius": "$ult-radius-md",
+                  "layout": "vertical",
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "YL48P",
+                      "name": "Ghost",
+                      "fill": "$ult-color-text-muted",
+                      "content": "Ghost",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "vOyk5",
+              "name": "Rule",
+              "fill": "$ult-color-border",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "pInHh",
+              "name": "Code",
+              "clip": true,
+              "width": "fill_container",
+              "height": 288,
+              "fill": "$ult-color-surface-sunken",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QRaej",
+                  "name": "Code inner",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "padding": [
+                    20,
+                    24
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CwLEH",
+                      "name": "Source",
+                      "fill": "$ult-color-text",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "import * as stylex from '@stylexjs/stylex';\nimport { space } from '@ultima/tokens/tokens.stylex';\nimport { Button } from '@ultima/ui';\n\nconst styles = stylex.create({\n  row: {\n    alignItems: 'center',\n    display: 'flex',\n    flexWrap: 'wrap',\n    gap: space['--ult-space-5'],\n  },\n});\n",
+                      "lineHeight": 1.65,
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "kcQ9T",
+                  "layoutPosition": "absolute",
+                  "x": 1052,
+                  "y": 8,
+                  "name": "Copy button",
+                  "opacity": 0.5,
+                  "width": 28,
+                  "height": 28,
+                  "fill": "$ult-color-surface-raised",
+                  "cornerRadius": "$ult-radius-sm",
+                  "stroke": "$ult-color-border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "ek22j",
+                      "name": "Copy icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "copy",
+                      "library": "phosphor",
+                      "fill": "$ult-color-text-muted"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "cRX0j",
+                  "layoutPosition": "absolute",
+                  "x": 0,
+                  "y": 216,
+                  "name": "Fade",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 180,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#1d1e2000",
+                        "position": 0
+                      },
+                      {
+                        "color": "#1d1e20",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "width": 1088,
+                  "height": 72
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "SjQWJ",
+              "layoutPosition": "absolute",
+              "x": 498,
+              "y": 402,
+              "name": "Reveal pill",
+              "fill": "$ult-color-surface-raised",
+              "cornerRadius": "$ult-radius-full",
+              "stroke": "$ult-color-border",
+              "strokeWidth": 1,
+              "gap": 6,
+              "padding": [
+                6,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "eLkbL",
+                  "name": "Pill label",
+                  "fill": "$ult-color-text",
+                  "content": "Expand",
+                  "fontFamily": "IBM Plex Sans",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "icon",
+                  "id": "a8C3c",
+                  "name": "Pill chevron",
+                  "width": 12,
+                  "height": 12,
+                  "icon": "caret-down",
+                  "library": "phosphor",
+                  "fill": "$ult-color-text-muted"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "cQ6XQ",
+          "name": "Variant head C · Two frames, toolbar",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 6,
+          "children": [
+            {
+              "type": "text",
+              "id": "KRsRd",
+              "name": "Variant title",
+              "fill": "$ult-color-text",
+              "content": "C · Two frames, toolbar",
+              "fontFamily": "IBM Plex Sans",
+              "fontSize": 18,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "cKr6g",
+              "name": "Variant note",
+              "fill": "$ult-color-text-muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Preview keeps its own card. The source is a separate block with a toolbar (file name, copy icon) and is fully collapsed behind a full-width Show code bar.",
+              "fontFamily": "IBM Plex Sans",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "kBC9y",
+          "name": "Figure C",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "children": [
+            {
+              "type": "frame",
+              "id": "yTJTt",
+              "name": "Preview card",
+              "width": "fill_container",
+              "fill": "$ult-color-surface-raised",
+              "cornerRadius": "$ult-radius-md",
+              "stroke": "$ult-color-border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Z20y9A",
+                  "name": "Preview",
+                  "width": "fill_container",
+                  "height": 128,
+                  "gap": 12,
+                  "padding": 32,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "mBrWk",
+                      "name": "Solid",
+                      "context": "Button - button",
+                      "width": 60.28,
+                      "height": 40,
+                      "fill": "$ult-color-accent",
+                      "cornerRadius": "$ult-radius-md",
+                      "layout": "vertical",
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ttAwl",
+                          "name": "Solid",
+                          "fill": "$ult-color-surface",
+                          "content": "Solid",
+                          "lineHeight": 1,
+                          "textAlign": "center",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tCHzk",
+                      "name": "Outline",
+                      "context": "Button - button",
+                      "width": 74.81,
+                      "height": 40,
+                      "cornerRadius": "$ult-radius-md",
+                      "stroke": "$ult-color-border",
+                      "strokeWidth": 2,
+                      "strokeAlignment": "inner",
+                      "layout": "vertical",
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "r3dwNU",
+                          "name": "Outline",
+                          "fill": "$ult-color-text",
+                          "content": "Outline",
+                          "lineHeight": 1,
+                          "textAlign": "center",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "c00Qjh",
+                      "name": "Ghost",
+                      "context": "Button - button",
+                      "width": 65.84,
+                      "height": 40,
+                      "cornerRadius": "$ult-radius-md",
+                      "layout": "vertical",
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AZmZu",
+                          "name": "Ghost",
+                          "fill": "$ult-color-text-muted",
+                          "content": "Ghost",
+                          "lineHeight": 1,
+                          "textAlign": "center",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "OcI16",
+              "name": "Source block",
+              "clip": true,
+              "width": "fill_container",
+              "fill": "$ult-color-surface-sunken",
+              "cornerRadius": "$ult-radius-md",
+              "stroke": "$ult-color-border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "J5KqNc",
+                  "name": "Toolbar",
+                  "width": "fill_container",
+                  "padding": [
+                    8,
+                    12
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TDg9Q",
+                      "name": "File name",
+                      "fill": "$ult-color-text-subtle",
+                      "content": "variants.tsx",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 11,
+                      "fontWeight": "normal",
+                      "letterSpacing": 1.2
+                    },
+                    {
+                      "type": "frame",
+                      "id": "nxF0x",
+                      "name": "Copy button",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": "$ult-radius-sm",
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "G7iCvX",
+                          "name": "Copy icon",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "copy",
+                          "library": "phosphor",
+                          "fill": "$ult-color-text-muted"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "ppVuD",
+                  "name": "Rule",
+                  "fill": "$ult-color-border",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "CBc7r",
+                  "name": "Show code bar",
+                  "width": "fill_container",
+                  "fill": "$ult-color-surface-raised",
+                  "gap": 6,
+                  "padding": [
+                    10,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "KGLU9",
+                      "name": "Bar label",
+                      "fill": "$ult-color-text",
+                      "content": "Show code",
+                      "fontFamily": "IBM Plex Sans",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "ouurC",
+                      "name": "Bar chevron",
+                      "width": 12,
+                      "height": 12,
+                      "icon": "caret-down",
+                      "library": "phosphor",
+                      "fill": "$ult-color-text-muted"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
