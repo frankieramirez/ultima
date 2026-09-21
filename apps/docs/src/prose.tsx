@@ -65,6 +65,9 @@ const styles = stylex.create({
     marginBlock: space['--ult-space-6'],
     padding: space['--ult-space-7'],
   },
+  inlineCode: {
+    overflowWrap: 'anywhere',
+  },
   blockquote: {
     color: color['--ult-color-text-muted'],
     marginBlock: space['--ult-space-6'],
@@ -109,7 +112,7 @@ function A(props: ComponentProps<'a'>) {
   return <a {...props} {...stylex.props(styles.a)} />;
 }
 function Code({ children }: ComponentProps<'code'>) {
-  return <UltimaCode>{children}</UltimaCode>;
+  return <UltimaCode style={styles.inlineCode}>{children}</UltimaCode>;
 }
 /** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
 function Pre({ children }: ComponentProps<'pre'>) {

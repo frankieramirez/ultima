@@ -71,6 +71,8 @@ const styles = stylex.create({
     gap: space['--ult-space-4'],
     justifyContent: 'space-between',
   },
+  nav: { maxInlineSize: '100%' },
+  list: { flexWrap: 'wrap' },
   above: { marginBlockEnd: space['--ult-space-4'] },
   below: { marginBlockStart: space['--ult-space-4'] },
   // Pre-mounted and clip-hidden. A region inserted with its text already in it is silent, and
@@ -163,8 +165,8 @@ export default function DataTablePagination() {
 // each `nav` takes its own name, the rule any page with two of a landmark already follows.
 function TablePagination({ table, page, count, label }: { table: ReactTable<typeof features, Region>; page: number; count: number; label: string }) {
   return (
-    <Pagination.Root aria-label={label}>
-      <Pagination.List>
+    <Pagination.Root aria-label={label} style={styles.nav}>
+      <Pagination.List style={styles.list}>
         <Pagination.Item>
           <Pagination.Previous disabled={!table.getCanPreviousPage()} onClick={() => table.previousPage()} render={<button type="button" />}>
             Previous

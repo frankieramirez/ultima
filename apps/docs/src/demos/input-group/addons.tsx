@@ -7,6 +7,7 @@ const styles = stylex.create({
   stack: {
     display: 'grid',
     gap: space['--ult-space-5'],
+    gridTemplateColumns: 'minmax(0, 1fr)',
   },
 });
 
