@@ -102,6 +102,10 @@ The docs-local side of the line between an Ultima component and the site's own c
 
 The theme studio's own application surface: the workbench sub-bar, editor rail, group headers, shuffle bar, validation and inspector panels, and the preview scaffold. It is not page layout, so it may paint surfaces, but every keyboard-reachable control in it is a catalogue component. Its fixed appearance is Ultima's stock dark theme pinned on the editor subtree, beginning at the sub-bar; the shared site header above it is site chrome and follows the user's color-mode preference. The draft theme applies only inside the preview panes, whose boundary is also the per-pane portal container.
 
+## Preview canvas
+
+A Theme Studio preview pane, read as a matted specimen surface rather than a document. Settled on [#374](https://github.com/frankieramirez/ultima/issues/374): the scene box owns the pane's full height and the scene centres within it, so the spare height reads as matting on both sides instead of a void under the content; the type, interaction and inspect specimen strip lifts out of the scrolling region and docks at the pane's foot under a `Separator`, where it stays put while a tall scene scrolls. One canvas per pane, so Compare aligns both scenes on a baseline and both hairlines across the panes. The canvas is Studio chrome, but its hairline and matting are drawn from the draft theme because they sit inside the pane's theme boundary.
+
 ## Bounded scroll region
 
 A region that scrolls inside the shell rather than with the document. Each one carries a named bar treatment, settled on [#285](https://github.com/frankieramirez/ultima/issues/285): the site menu panel and the Studio editor rail's groups region get a styled Scroll Area, because both are narrow rails that overflow every session; the "On this page" index and the Studio's preview panes keep native bars, because their overflow is a guard or per-scene rather than constant.
