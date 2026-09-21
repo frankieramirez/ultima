@@ -88,7 +88,7 @@ The site at `apps/docs`. Three things at once: Ultima's reference, the host that
 
 ## Landing page
 
-The site's front door at `/`: the pitch, the live specimen strip, and the install commands. Settled on [#371](https://github.com/frankieramirez/ultima/issues/371): the docs sidebar is per-route chrome, open on the documentation routes and closed on the landing page and the Studio. The header's links and the hero's calls to action carry the landing's navigation, and below the breakpoint the menu trigger still opens the mobile menu.
+The site's front door at `/`: the pitch, the live specimen strip, and the install commands. Settled on [#371](https://github.com/frankieramirez/ultima/issues/371): the docs sidebar is per-route chrome, open on the documentation routes and closed on the landing page and the Studio. The header's links and the hero's calls to action carry the landing's navigation, and below the breakpoint the menu trigger still opens the mobile menu. The install workbench panel carries the same Vite / Next.js underline Tabs as `/install`'s Commands section, settled on [#379](https://github.com/frankieramirez/ultima/issues/379); its copy button writes the active tab's pair of commands.
 
 ## Demo figure
 
