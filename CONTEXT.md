@@ -106,6 +106,14 @@ The theme studio's own application surface: the workbench sub-bar, editor rail, 
 
 A region that scrolls inside the shell rather than with the document. Each one carries a named bar treatment, settled on [#285](https://github.com/frankieramirez/ultima/issues/285): the site menu panel and the Studio editor rail's groups region get a styled Scroll Area, because both are narrow rails that overflow every session; the "On this page" index and the Studio's preview panes keep native bars, because their overflow is a guard or per-scene rather than constant.
 
+## On this page
+
+The sticky index of a page's sections beside the article, desktop widths only. It marks the section at the reading line current with `aria-current="location"`, shown as the full text color at medium weight, the same unpainted pair Breadcrumb and Sidebar give their current item, since page layout may not paint a marker. An IntersectionObserver tracks the h2s; the last one past the line stays current when none sits in the band, so a long section and the page bottom still show a position. Settled on [#373](https://github.com/frankieramirez/ultima/issues/373), which also made the article breadcrumb a `Breadcrumb`, the first site-chrome use of a catalogue navigation component.
+
+## Labelled run
+
+The docs-prose convention for content that differs per setup target: a paragraph opens with the bold target name — `**Vite.**`, `**Next.js App Router.**`, `**Both.**` — and states what holds for it. Settled on [#377](https://github.com/frankieramirez/ultima/issues/377): where the reader picks one path, such as the install page's Commands section, a catalogue Tabs carries the choice; prose that interleaves per-target runs with shared paragraphs stays labelled so both targets remain visible.
+
 ## Set
 
 A section of the specification holding one contract effort's output: its components' parts and axes in one table, their styled splits, and the prose a builder would otherwise guess. A set is named for what it holds. A release name is honest only where the section holds that release whole, which is why The v0 set and The v0.1 set carry one and no fraction of v0.2 may. Where the members share a property, the name is that property: The navigation set's landmark, The overlay set's recipe, The date set's machine. Where they share nothing, the name lists them: The Toggle, Accordion, Avatar, and Scroll Area set first, then The Command set (a list of one), The Button Group, Input Group, Input OTP, and Native Select set, and The Aspect Ratio and Resizable set. Report set and Feedback set are groupings inside a release rather than sections.
