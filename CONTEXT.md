@@ -86,6 +86,10 @@ Any project that installs Ultima. Mana's report is the first consumer of the tok
 
 The site at `apps/docs`. Three things at once: Ultima's reference, the host that serves the registry and the tokens CSS export, and a portfolio piece. It uses the components by importing them from the workspace, so it is not a consumer.
 
+## Landing page
+
+The site's front door at `/`: the pitch, the live specimen strip, and the install commands. Settled on [#371](https://github.com/frankieramirez/ultima/issues/371): the docs sidebar is per-route chrome, open on the documentation routes and closed on the landing page and the Studio. The header's links and the hero's calls to action carry the landing's navigation, and below the breakpoint the menu trigger still opens the mobile menu. The install workbench panel carries the same Vite / Next.js underline Tabs as `/install`'s Commands section, settled on [#379](https://github.com/frankieramirez/ultima/issues/379); its copy button writes the active tab's pair of commands.
+
 ## Demo figure
 
 The block a component page renders for each example: one Card with the live preview, a hairline, and the example's source. Settled on [#369](https://github.com/frankieramirez/ultima/issues/369): the preview is centered with an 8rem floor, the source rests as a six-line teaser that expands in place (a source of eight lines or fewer never collapses), and copy is an icon button inside the code area's top-right corner. The same copy control serves every code block on the site. It composes catalogue components only, so it sits on the page-layout side of the line.
@@ -101,6 +105,14 @@ The theme studio's own application surface: the workbench sub-bar, editor rail, 
 ## Bounded scroll region
 
 A region that scrolls inside the shell rather than with the document. Each one carries a named bar treatment, settled on [#285](https://github.com/frankieramirez/ultima/issues/285): the site menu panel and the Studio editor rail's groups region get a styled Scroll Area, because both are narrow rails that overflow every session; the "On this page" index and the Studio's preview panes keep native bars, because their overflow is a guard or per-scene rather than constant.
+
+## On this page
+
+The sticky index of a page's sections beside the article, desktop widths only. It marks the section at the reading line current with `aria-current="location"`, shown as the full text color at medium weight, the same unpainted pair Breadcrumb and Sidebar give their current item, since page layout may not paint a marker. An IntersectionObserver tracks the h2s; the last one past the line stays current when none sits in the band, so a long section and the page bottom still show a position. Settled on [#373](https://github.com/frankieramirez/ultima/issues/373), which also made the article breadcrumb a `Breadcrumb`, the first site-chrome use of a catalogue navigation component.
+
+## Labelled run
+
+The docs-prose convention for content that differs per setup target: a paragraph opens with the bold target name — `**Vite.**`, `**Next.js App Router.**`, `**Both.**` — and states what holds for it. Settled on [#377](https://github.com/frankieramirez/ultima/issues/377): where the reader picks one path, such as the install page's Commands section, a catalogue Tabs carries the choice; prose that interleaves per-target runs with shared paragraphs stays labelled so both targets remain visible.
 
 ## Set
 
