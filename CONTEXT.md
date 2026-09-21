@@ -86,6 +86,10 @@ Any project that installs Ultima. Mana's report is the first consumer of the tok
 
 The site at `apps/docs`. Three things at once: Ultima's reference, the host that serves the registry and the tokens CSS export, and a portfolio piece. It uses the components by importing them from the workspace, so it is not a consumer.
 
+## Demo figure
+
+The block a component page renders for each example: one Card with the live preview, a hairline, and the example's source. Settled on [#369](https://github.com/frankieramirez/ultima/issues/369): the preview is centered with an 8rem floor, the source rests as a six-line teaser that expands in place (a source of eight lines or fewer never collapses), and copy is an icon button inside the code area's top-right corner. The same copy control serves every code block on the site. It composes catalogue components only, so it sits on the page-layout side of the line.
+
 ## Page layout
 
 The docs-local side of the line between an Ultima component and the site's own chrome. Page layout arranges content and sets type and flow spacing. It never builds a control from plain elements and never paints a surface, meaning a background, a border, a shadow, or a radius. Anything that does one of those comes from a component, or becomes one. A control here is anything the user reaches with a keyboard, so a tabbable scroll region counts even though it presses nothing. A third prong arrived with Scroll Area: page layout may rely on a native scrollbar and may not hide one without painting a replacement, since the first two prongs are about building something badly and this one is about removing something the platform already gave you. The site's shell scrolls the document rather than an inner region: the header, menu panel, and on-this-page index are sticky, and the footer flows after content, resting at the viewport bottom only on a short page. Theme Studio keeps its own fixed-height app shell.
