@@ -86,6 +86,10 @@ Any project that installs Ultima. Mana's report is the first consumer of the tok
 
 The site at `apps/docs`. Three things at once: Ultima's reference, the host that serves the registry and the tokens CSS export, and a portfolio piece. It uses the components by importing them from the workspace, so it is not a consumer.
 
+## Landing page
+
+The site's front door at `/`: the pitch, the live specimen strip, and the install commands. Settled on [#371](https://github.com/frankieramirez/ultima/issues/371): the docs sidebar is per-route chrome, open on the documentation routes and closed on the landing page and the Studio. The header's links and the hero's calls to action carry the landing's navigation, and below the breakpoint the menu trigger still opens the mobile menu.
+
 ## Demo figure
 
 The block a component page renders for each example: one Card with the live preview, a hairline, and the example's source. Settled on [#369](https://github.com/frankieramirez/ultima/issues/369): the preview is centered with an 8rem floor, the source rests as a six-line teaser that expands in place (a source of eight lines or fewer never collapses), and copy is an icon button inside the code area's top-right corner. The same copy control serves every code block on the site. It composes catalogue components only, so it sits on the page-layout side of the line.
