@@ -3,6 +3,10 @@ import { space } from '@ultima/tokens/tokens.stylex';
 import { Calendar } from '@ultima/ui';
 
 const styles = stylex.create({
+  bounded: {
+    maxInlineSize: '100%',
+    overflowX: 'auto',
+  },
   months: {
     display: 'flex',
     gap: space['--ult-space-6'],
@@ -11,7 +15,7 @@ const styles = stylex.create({
 
 export default function MonthsCalendar() {
   return (
-    <Calendar.Root numOfMonths={2}>
+    <Calendar.Root numOfMonths={2} style={styles.bounded}>
       <Calendar.Label>Booking dates</Calendar.Label>
       <Calendar.Content>
         <Calendar.View view="day" style={styles.months}>

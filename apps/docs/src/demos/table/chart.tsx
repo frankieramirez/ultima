@@ -43,7 +43,9 @@ const styles = stylex.create({
     gap: space['--ult-space-6'],
   },
   plot: {
+    blockSize: 'auto',
     flexShrink: 0,
+    maxInlineSize: '100%',
   },
   mark: {
     fill: color['--ult-color-accent'],
@@ -73,6 +75,7 @@ export default function ChartRecipe() {
       <svg
         aria-hidden="true"
         height={HEIGHT}
+        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         width={WIDTH}
         {...stylex.props(styles.plot)}
       >
