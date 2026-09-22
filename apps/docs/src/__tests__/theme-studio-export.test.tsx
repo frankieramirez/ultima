@@ -11,7 +11,7 @@ import {
   stockDraft,
   type ThemeDraft,
 } from '@ultima/tokens';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, onTestFinished, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
@@ -168,6 +168,29 @@ test('share produces a fragment link that reopens the draft', async () => {
   const decoded = await decodeFragment(url.slice(url.indexOf('#theme=')));
   expect(decoded.ok).toBe(true);
   if (decoded.ok) expect(decoded.draft.density).toBe(0.75);
+});
+
+test('the share dialog announces busy while the link encodes', async () => {
+  vi.spyOn(globalThis, 'CompressionStream').mockImplementation(function pendingEncode() {
+    return new TransformStream({ transform() {} });
+  });
+  onTestFinished(() => {
+    vi.restoreAllMocks();
+  });
+  const screen = await mount();
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }));
+  const dialog = screen.getByRole('dialog');
+
+  const note = dialog.getByText('Encoding the draft…');
+  await expect.element(note).toBeVisible();
+  const busy = note.element().closest('[aria-busy="true"]');
+  expect(busy).not.toBeNull();
+  expect(busy!.querySelector('[aria-hidden="true"]')).not.toBeNull();
+
+  vi.restoreAllMocks();
+  await userEvent.click(dialog.getByRole('button', { name: 'Close' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }));
+  await expect.element(screen.getByRole('textbox', { name: 'Share URL' })).toBeVisible();
 });
 
 test('an oversize draft offers the draft file instead of a link', async () => {
