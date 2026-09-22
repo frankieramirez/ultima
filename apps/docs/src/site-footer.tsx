@@ -1,12 +1,13 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
+import { font, space, text } from '@ultima/tokens/tokens.stylex';
 import { ToggleGroup } from '@ultima/ui';
 
+import { layoutStyles } from './layout';
+import { Kicker } from './page';
+import { TextLink } from './text-link';
 import { useTheme, type ThemePreference } from './theme';
-
-const WIDE = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
   bar: {
@@ -17,30 +18,19 @@ const styles = stylex.create({
     gap: space['--ult-space-8'],
     justifyContent: 'space-between',
     paddingBlock: space['--ult-space-8'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
   },
-  wide: { paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] } },
-  identity: {
-    color: color['--ult-color-text-subtle'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
-  },
-  cluster: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-8'] },
-  links: { alignItems: 'center', display: 'flex', gap: space['--ult-space-6'] },
-  link: {
+  cluster: {
     alignItems: 'center',
-    color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
-    display: 'inline-flex',
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: space['--ult-space-8'],
+  },
+  links: {
+    alignItems: 'center',
+    display: 'flex',
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-1'],
-    gap: space['--ult-space-1'],
-    textDecoration: 'none',
-    transitionDuration: motion['--ult-motion-fast'],
-    transitionProperty: 'color',
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
-    },
+    gap: space['--ult-space-6'],
   },
 });
 
@@ -54,19 +44,19 @@ export function SiteFooter({ wide = false }: { wide?: boolean }) {
   const { preference, setPreference } = useTheme();
 
   return (
-    <footer {...stylex.props(styles.bar, wide && styles.wide)}>
-      <span {...stylex.props(styles.identity)}>ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES</span>
+    <footer {...stylex.props(wide ? layoutStyles.gutterWide : layoutStyles.gutter, styles.bar)}>
+      <Kicker>ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES</Kicker>
       <div {...stylex.props(styles.cluster)}>
         <div {...stylex.props(styles.links)}>
-          <Link to="/install" {...stylex.props(styles.link)}>
+          <TextLink variant="muted" render={<Link to="/install" />}>
             Documentation <ArrowUpRightIcon aria-hidden />
-          </Link>
-          <a href="https://github.com/frankieramirez/ultima" {...stylex.props(styles.link)}>
+          </TextLink>
+          <TextLink variant="muted" href="https://github.com/frankieramirez/ultima">
             GitHub <ArrowUpRightIcon aria-hidden />
-          </a>
-          <a href="https://github.com/frankieramirez/ultima/blob/main/LICENSE" {...stylex.props(styles.link)}>
+          </TextLink>
+          <TextLink variant="muted" href="https://github.com/frankieramirez/ultima/blob/main/LICENSE">
             MIT license
-          </a>
+          </TextLink>
         </div>
         <ToggleGroup.Root
           aria-label="Color mode"

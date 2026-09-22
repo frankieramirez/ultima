@@ -9,6 +9,7 @@ import SpaceBar from '../demos/tokens/space';
 import TypeSample from '../demos/tokens/text';
 import { TokensPage } from '../routes/tokens';
 import { tokenGroups, tokensByName } from '../token-data';
+import { renderWithRouter } from './render-with-router';
 
 function fromToken(property: string, token: string): string {
   const probe = document.createElement('div');
@@ -70,7 +71,7 @@ test('the tokens page fits a narrow viewport', async () => {
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
 
-  const { container } = await render(<TokensPage />);
+  const { container } = await renderWithRouter(<TokensPage />);
   const main = container.querySelector('main') as HTMLElement;
 
   expect(main.scrollWidth).toBeLessThanOrEqual(main.clientWidth);

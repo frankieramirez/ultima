@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import {
@@ -12,38 +12,16 @@ import {
   type ReactNode,
 } from 'react';
 
-import { DocumentLayout } from './document-layout';
 import { CopyButton } from './copy-button';
+import { DocumentLayout, type Crumb } from './document-layout';
 import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
+import { TextLink } from './text-link';
+import { headings } from './typography';
 
 const styles = stylex.create({
   root: { minInlineSize: 0 },
   h1: {
-    color: color['--ult-color-text'],
-    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': text['--ult-text-12'] },
-    fontWeight: font['--ult-font-weight-medium'],
-    letterSpacing: font['--ult-font-tracking-tighter'],
-    lineHeight: font['--ult-font-leading-tight'],
-    marginBlock: 0,
     marginBottom: space['--ult-space-6'],
-  },
-  h2: {
-    color: color['--ult-color-text'],
-    fontSize: display.section,
-    fontWeight: font['--ult-font-weight-medium'],
-    letterSpacing: font['--ult-font-tracking-tight'],
-    lineHeight: font['--ult-font-leading-tight'],
-    marginBottom: space['--ult-space-6'],
-    marginTop: space['--ult-space-4'],
-  },
-  rule: { marginTop: space['--ult-space-11'] },
-  h3: {
-    color: color['--ult-color-text'],
-    fontSize: text['--ult-text-6'],
-    fontWeight: font['--ult-font-weight-semibold'],
-    lineHeight: font['--ult-font-leading-snug'],
-    marginBottom: space['--ult-space-4'],
-    marginTop: space['--ult-space-8'],
   },
   p: {
     color: color['--ult-color-text'],
@@ -59,11 +37,6 @@ const styles = stylex.create({
     paddingInlineStart: space['--ult-space-7'],
   },
   li: { marginBlock: space['--ult-space-3'] },
-  a: {
-    color: color['--ult-color-highlight-text'],
-    textDecoration: 'underline',
-    textUnderlineOffset: space['--ult-space-2'],
-  },
   fence: { marginBlock: space['--ult-space-6'], position: 'relative' },
   code: {
     paddingBlock: space['--ult-space-7'],
@@ -83,18 +56,18 @@ const styles = stylex.create({
 });
 
 function H1(props: ComponentProps<'h1'>) {
-  return <h1 {...props} {...stylex.props(styles.h1)} />;
+  return <h1 {...props} {...stylex.props(headings.h1, styles.h1)} />;
 }
 function H2(props: ComponentProps<'h2'>) {
   return (
     <>
-      <Separator style={styles.rule} />
-      <h2 {...props} {...stylex.props(styles.h2)} />
+      <Separator style={headings.rule} />
+      <h2 {...props} {...stylex.props(headings.h2)} />
     </>
   );
 }
 function H3(props: ComponentProps<'h3'>) {
-  return <h3 {...props} {...stylex.props(styles.h3)} />;
+  return <h3 {...props} {...stylex.props(headings.h3)} />;
 }
 function P(props: ComponentProps<'p'>) {
   return <p {...props} {...stylex.props(styles.p)} />;
@@ -110,11 +83,11 @@ function Li(props: ComponentProps<'li'>) {
 }
 const SERVED_FILE = /\.\w+$/;
 
-function A({ href, ...props }: ComponentProps<'a'>) {
+function A({ href, ...props }: Omit<ComponentProps<'a'>, 'style'>) {
   if (href?.startsWith('/') && !SERVED_FILE.test(href)) {
-    return <Link to={href} {...props} {...stylex.props(styles.a)} />;
+    return <TextLink render={<Link to={href} />} {...props} />;
   }
-  return <a href={href} {...props} {...stylex.props(styles.a)} />;
+  return <TextLink href={href} {...props} />;
 }
 const ScrollableTableContext = createContext(false);
 
@@ -200,7 +173,7 @@ export function Prose({
   breadcrumb,
 }: {
   Content: ComponentType<{ components?: MDXComponents }>;
-  breadcrumb: string;
+  breadcrumb: Crumb[];
 }) {
   return (
     <DocumentLayout breadcrumb={breadcrumb}>

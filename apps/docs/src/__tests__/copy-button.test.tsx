@@ -4,10 +4,10 @@ import { render } from 'vitest-browser-react';
 
 import { CopyButton } from '../copy-button';
 
-function stubClipboard() {
+function stubClipboard(writeText: () => Promise<void> = () => Promise.resolve()) {
   Object.defineProperty(navigator, 'clipboard', {
     configurable: true,
-    value: { writeText: () => Promise.resolve() },
+    value: { writeText },
   });
 }
 
@@ -35,4 +35,15 @@ test('a second copy inside the confirmation window mutates the status region', a
   await expect.poll(() => mutations.length).toBeGreaterThan(afterFirst);
 
   observer.disconnect();
+});
+
+test('a rejected copy announces Copy failed through the status region', async () => {
+  stubClipboard(() => Promise.reject(new Error('denied')));
+
+  const screen = await render(<CopyButton text="hello" />);
+  const status = screen.getByRole('status').element();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Copy' }));
+  await expect.element(screen.getByRole('button', { name: 'Copy failed' })).toBeVisible();
+  await expect.poll(() => status.textContent).toBe('Copy failed');
 });

@@ -23,11 +23,19 @@ import {
   ToggleGroup,
 } from '@ultima/ui';
 import { StackIcon, UsersIcon } from '@phosphor-icons/react';
-import { useRef, useState, type CSSProperties, type MouseEvent, type ReactNode, type RefObject } from 'react';
+import {
+  useRef,
+  useState,
+  type CSSProperties,
+  type FocusEvent,
+  type MouseEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 
+import { breakpoints } from './breakpoints.stylex';
+import { Kicker } from './page';
 import { previewVars } from './theme-studio-draft';
-
-const RAIL = '@media (min-width: 52.5rem)';
 
 const SCENES = [
   { id: 'workspace', label: 'Workspace' },
@@ -60,9 +68,9 @@ const styles = stylex.create({
     gap: space['--ult-space-6'],
     minBlockSize: 0,
     minInlineSize: 0,
-    order: { default: 0, [RAIL]: 1 },
+    order: { default: 0, [breakpoints.RAIL]: 1 },
     paddingBlock: space['--ult-space-8'],
-    paddingInline: { default: space['--ult-space-6'], [RAIL]: space['--ult-space-9'] },
+    paddingInline: { default: space['--ult-space-6'], [breakpoints.RAIL]: space['--ult-space-9'] },
   },
   toolbar: {
     alignItems: 'center',
@@ -86,7 +94,7 @@ const styles = stylex.create({
   sceneList: { overflowX: 'auto' },
   panes: {
     display: 'flex',
-    flexDirection: { default: 'column', [RAIL]: 'row' },
+    flexDirection: { default: 'column', [breakpoints.RAIL]: 'row' },
     flexGrow: 1,
     gap: space['--ult-space-6'],
     minBlockSize: 0,
@@ -118,14 +126,14 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-8'],
-    padding: { default: space['--ult-space-6'], [RAIL]: space['--ult-space-9'] },
+    padding: { default: space['--ult-space-6'], [breakpoints.RAIL]: space['--ult-space-9'] },
   },
   stack: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-6'] },
   app: {
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-8'],
-    padding: { default: space['--ult-space-6'], [RAIL]: space['--ult-space-9'] },
+    padding: { default: space['--ult-space-6'], [breakpoints.RAIL]: space['--ult-space-9'] },
   },
   appBar: {
     alignItems: 'center',
@@ -165,7 +173,7 @@ const styles = stylex.create({
   stats: {
     display: 'grid',
     gap: space['--ult-space-8'],
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [RAIL]: 'repeat(3, minmax(0, 1fr))' },
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.RAIL]: 'repeat(3, minmax(0, 1fr))' },
   },
   stat: {
     borderBlockColor: color['--ult-color-border'],
@@ -183,7 +191,7 @@ const styles = stylex.create({
   columns: {
     alignItems: 'flex-start',
     display: 'flex',
-    flexDirection: { default: 'column', [RAIL]: 'row' },
+    flexDirection: { default: 'column', [breakpoints.RAIL]: 'row' },
     gap: space['--ult-space-9'],
   },
   projects: {
@@ -218,7 +226,7 @@ const styles = stylex.create({
     backgroundColor: color['--ult-color-accent-subtle'],
     borderColor: color['--ult-color-accent-border'],
     flexShrink: 0,
-    inlineSize: { default: '100%', [RAIL]: '17rem' },
+    inlineSize: { default: '100%', [breakpoints.RAIL]: '17rem' },
   },
   inviteIcon: { color: color['--ult-color-accent-text'], fontSize: text['--ult-text-9'] },
   fill: { inlineSize: '100%' },
@@ -241,7 +249,23 @@ const styles = stylex.create({
   spinner: { fontSize: text['--ult-text-9'] },
   raised: { boxShadow: shadow['--ult-shadow-md'] },
   inspectable: {
-    borderRadius: radius['--ult-radius-md'],
+    position: 'relative',
+  },
+  inspectTarget: {
+    backgroundColor: {
+      default: 'transparent',
+      ':active': 'transparent',
+      ':hover': 'transparent',
+    },
+    height: 'auto',
+    inset: 0,
+    position: 'absolute',
+    ':focus-visible': {
+      outlineColor: color['--ult-color-border-focus'],
+      outlineOffset: border.focusOffset,
+      outlineStyle: 'dashed',
+      outlineWidth: border.focus,
+    },
     ':hover': {
       outlineColor: color['--ult-color-border-focus'],
       outlineOffset: border.focusOffset,
@@ -259,19 +283,19 @@ const styles = stylex.create({
     borderWidth: border.hairline,
     color: color['--ult-color-text'],
     display: 'grid',
-    flexShrink: { default: 1, [RAIL]: 0 },
+    flexShrink: { default: 1, [breakpoints.RAIL]: 0 },
     fontFamily: font['--ult-font-sans'],
     minBlockSize: 0,
-    overflow: { default: 'auto', [RAIL]: 'hidden' },
+    overflow: { default: 'auto', [breakpoints.RAIL]: 'hidden' },
     gridTemplateColumns: {
       default: 'minmax(0, 1fr)',
-      [RAIL]: 'minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)',
+      [breakpoints.RAIL]: 'minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)',
     },
   },
   specimenGroup: {
     borderInlineStartColor: color['--ult-color-border'],
     borderInlineStartStyle: 'solid',
-    borderInlineStartWidth: { default: 0, [RAIL]: border.hairline },
+    borderInlineStartWidth: { default: 0, [breakpoints.RAIL]: border.hairline },
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-4'],
@@ -280,13 +304,6 @@ const styles = stylex.create({
     padding: space['--ult-space-7'],
   },
   specimenLead: { backgroundColor: color['--ult-color-surface'], borderInlineStartWidth: 0 },
-  specimenLabel: {
-    color: color['--ult-color-text-subtle'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
-    letterSpacing: font['--ult-font-tracking-wide'],
-    margin: 0,
-  },
   typeMark: {
     fontSize: text['--ult-text-8'],
     fontWeight: font['--ult-font-weight-medium'],
@@ -426,7 +443,7 @@ function PreviewPane({
   const scheme = mode === 'dark' ? colorScheme.dark : colorScheme.light;
   const pane = stylex.props(scheme, styles.pane);
 
-  function readTokens(event: MouseEvent<HTMLDivElement>) {
+  function readTokens(event: FocusEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) {
     if (!inspect) return;
     const target = (event.target as HTMLElement | null)?.closest('[data-tokens]');
     if (!(target instanceof HTMLElement) || !event.currentTarget.contains(target)) return;
@@ -440,10 +457,19 @@ function PreviewPane({
     );
   }
 
+  function clearTokens(event: FocusEvent<HTMLDivElement>) {
+    if (!inspect) return;
+    const next = event.relatedTarget;
+    if (next instanceof Node && event.currentTarget.contains(next)) return;
+    onReadout(null);
+  }
+
   return (
     <div
       aria-label={mode === 'dark' ? 'Dark preview' : 'Light preview'}
       className={pane.className}
+      onBlur={clearTokens}
+      onFocus={readTokens}
       onMouseLeave={() => {
         if (inspect) onReadout(null);
       }}
@@ -790,12 +816,12 @@ function SpecimenStrip({ inspect, mode }: { inspect: boolean; mode: PaneMode }) 
   return (
     <div data-preview-specimen {...stylex.props(styles.specimen)}>
       <div {...stylex.props(styles.specimenGroup, styles.specimenLead)}>
-        <p {...stylex.props(styles.specimenLabel)}>01 / TYPE</p>
+        <Kicker>01 / TYPE</Kicker>
         <p {...stylex.props(styles.typeMark)}>Aa / Built to be yours.</p>
         <p {...stylex.props(styles.specimenNote)}>Sans for reading, mono for the record.</p>
       </div>
       <div {...stylex.props(styles.specimenGroup)}>
-        <p {...stylex.props(styles.specimenLabel)}>02 / INTERACTION</p>
+        <Kicker>02 / INTERACTION</Kicker>
         <div {...stylex.props(styles.row)}>
           <Button size="sm">Rest</Button>
           <Button size="sm" style={styles.hover}>
@@ -808,7 +834,7 @@ function SpecimenStrip({ inspect, mode }: { inspect: boolean; mode: PaneMode }) 
         <p {...stylex.props(styles.specimenNote)}>Accent / {mode === 'dark' ? 'Dark' : 'Light'} mode</p>
       </div>
       <div {...stylex.props(styles.specimenGroup)}>
-        <p {...stylex.props(styles.specimenLabel)}>03 / INSPECT</p>
+        <Kicker>03 / INSPECT</Kicker>
         <Inspectable inspect={inspect} tokens={['--ult-color-accent']}>
           <Code>--ult-color-accent</Code>
         </Inspectable>
@@ -835,6 +861,9 @@ function Inspectable({
       {...stylex.props(inline ? styles.inspectInline : styles.inspectBlock, inspect && styles.inspectable)}
     >
       {children}
+      {inspect ? (
+        <Button aria-label={`Inspect ${tokens.join(', ')}`} style={styles.inspectTarget} variant="ghost" />
+      ) : null}
     </div>
   );
 }

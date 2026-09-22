@@ -3,6 +3,7 @@ import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code, Separator, Table } from '@ultima/ui';
 import { APCAcontrast, sRGBtoY } from 'apca-w3';
 
+import { breakpoints } from '../breakpoints.stylex';
 import { CopyButton } from '../copy-button';
 import { HighlightedCode } from '../highlighted-code';
 import MotionTrack from '../demos/tokens/motion';
@@ -17,8 +18,6 @@ import { describeToken } from '../token-roles';
 
 const MODES = ['dark', 'light'] as const;
 
-const DESKTOP = '@media (min-width: 64rem)';
-
 const styles = stylex.create({
   rows: {
     display: 'flex',
@@ -30,11 +29,11 @@ const styles = stylex.create({
     alignItems: 'start',
     display: 'grid',
     gap: space['--ult-space-6'],
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)' },
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)' },
   },
   colorRow: {
     columnGap: space['--ult-space-9'],
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)', '@media (min-width: 80rem)': 'minmax(18rem, 30rem) minmax(0, 1fr)' },
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)', [breakpoints.INDEX]: 'minmax(18rem, 30rem) minmax(0, 1fr)' },
     paddingBlockEnd: space['--ult-space-6'],
   },
   divider: { gridColumn: '1 / -1' },

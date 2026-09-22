@@ -11,7 +11,7 @@ import {
   stockDraft,
   type ThemeDraft,
 } from '@ultima/tokens';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, onTestFinished, test, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
@@ -154,6 +154,33 @@ test('an invalid draft lists failing pairings and gates downloads on acknowledgm
   expect(css).toContain('failed token-contrast pairings');
 });
 
+test('the share dialog announces encoding and copy in a pre-mounted status region', async () => {
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: () => Promise.resolve() },
+  });
+
+  const screen = await mount();
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }));
+  const dialog = screen.getByRole('dialog');
+
+  const status = dialog.getByRole('status', { name: 'Share status' });
+  expect(status.element()).toHaveAttribute('aria-atomic', 'true');
+  await expect.poll(() => status.element().textContent).toBe('Draft encoded');
+
+  const copyStatus = () =>
+    dialog
+      .getByRole('textbox', { name: 'Share URL' })
+      .element()
+      .parentElement!.querySelector('[role="status"]')!;
+
+  await userEvent.click(dialog.getByRole('button', { name: 'Copy link' }));
+  await expect.poll(() => copyStatus().textContent).toBe('Copied');
+
+  await userEvent.click(dialog.getByRole('button', { name: 'Copied' }));
+  await expect.poll(() => copyStatus().textContent).toBe('Copied\u2060');
+});
+
 test('share produces a fragment link that reopens the draft', async () => {
   const screen = await mount();
   await userEvent.click(
@@ -170,6 +197,29 @@ test('share produces a fragment link that reopens the draft', async () => {
   if (decoded.ok) expect(decoded.draft.density).toBe(0.75);
 });
 
+test('the share dialog announces busy while the link encodes', async () => {
+  vi.spyOn(globalThis, 'CompressionStream').mockImplementation(function pendingEncode() {
+    return new TransformStream({ transform() {} });
+  });
+  onTestFinished(() => {
+    vi.restoreAllMocks();
+  });
+  const screen = await mount();
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }));
+  const dialog = screen.getByRole('dialog');
+
+  const note = dialog.getByText('Encoding the draft…');
+  await expect.element(note).toBeVisible();
+  const busy = note.element().closest('[aria-busy="true"]');
+  expect(busy).not.toBeNull();
+  expect(busy!.querySelector('[aria-hidden="true"]')).not.toBeNull();
+
+  vi.restoreAllMocks();
+  await userEvent.click(dialog.getByRole('button', { name: 'Close' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Share' }));
+  await expect.element(screen.getByRole('textbox', { name: 'Share URL' })).toBeVisible();
+});
+
 test('an oversize draft offers the draft file instead of a link', async () => {
   const downloads = spyOnDownloads();
   const draft = stockDraft();
@@ -184,8 +234,11 @@ test('an oversize draft offers the draft file instead of a link', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Share' }));
 
   const dialog = screen.getByRole('dialog');
-  await expect.element(dialog.getByText(/too large for a share link/i)).toBeVisible();
+  await expect.element(dialog.getByText(/Share the draft file instead/i)).toBeVisible();
   await expect.element(dialog.getByRole('textbox', { name: 'Share URL' })).not.toBeInTheDocument();
+  await expect
+    .poll(() => dialog.getByRole('status', { name: 'Share status' }).element().textContent)
+    .toBe('Draft too large for a share link');
 
   await userEvent.click(dialog.getByRole('button', { name: /ultima-theme\.json/ }));
   const text = await downloads.take('ultima-theme.json');
@@ -235,12 +288,17 @@ test('a corrupt autosave is quarantined with a notice', async () => {
   localStorage.setItem(AUTOSAVE_KEY, '{not a draft');
   const screen = await mount();
 
-  await expect.element(screen.getByText(/quarantined/i)).toBeVisible();
+  const alert = screen.getByText('Autosave notice').element().parentElement!;
+  expect(alert.textContent).toMatch(/quarantined/i);
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  await expect.poll(() => editor.querySelector('[role="status"]')?.textContent).toMatch(
+    /quarantined/i,
+  );
   expect(localStorage.getItem(AUTOSAVE_BACKUP_KEY)).toBe('{not a draft');
   expect(localStorage.getItem(AUTOSAVE_KEY)).toBeNull();
 
   await userEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
-  await expect.element(screen.getByText(/quarantined/i)).not.toBeInTheDocument();
+  await expect.poll(() => editor.textContent).not.toMatch(/quarantined/i);
 });
 
 test('a malformed or unknown-version upload is refused with the reason named', async () => {

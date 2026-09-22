@@ -11,6 +11,7 @@ import {
 } from '@tanstack/react-table';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Checkbox, Table } from '@ultima/ui';
+import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
 import { useEffect, useRef, useState } from 'react';
 
 const features = tableFeatures({ rowSelectionFeature });
@@ -34,16 +35,6 @@ const columns = helper.columns([
 
 const styles = stylex.create({
   shrinkToContent: { width: 0 },
-  // Pre-mounted and clip-hidden. A region inserted with its text already in it is silent, and
-  // `display: none` would keep it out of the accessibility tree.
-  status: {
-    clipPath: 'inset(50%)',
-    height: '1px',
-    overflow: 'hidden',
-    position: 'absolute',
-    whiteSpace: 'nowrap',
-    width: '1px',
-  },
   note: { marginBlockEnd: space['--ult-space-4'], marginBlockStart: 0 },
 });
 
@@ -123,7 +114,7 @@ function SelectionAnnouncement({ selected, shown }: { selected: number; shown: n
   }, [count]);
 
   return (
-    <span role="status" aria-atomic="true" {...stylex.props(styles.status)}>
+    <span role="status" aria-atomic="true" {...stylex.props(visuallyHidden)}>
       {announcement}
     </span>
   );

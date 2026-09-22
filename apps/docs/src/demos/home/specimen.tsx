@@ -1,12 +1,11 @@
 import * as stylex from '@stylexjs/stylex';
 import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
 import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
-import { Badge, Button, Card, Input, Tabs } from '@ultima/ui';
+import { Badge, Button, Card, Field, Input, Tabs } from '@ultima/ui';
 
+import { breakpoints } from '../../breakpoints.stylex';
 import { useResolvedScheme } from '../../theme';
 import { contrastStyles } from './contrast';
-
-const DESKTOP = '@media (min-width: 64rem)';
 
 const NOTES = [
   { index: 'A', title: 'Shared decisions', body: 'Color, space, type, and motion live in semantic tokens.' },
@@ -28,7 +27,7 @@ const styles = stylex.create({
     borderColor: 'transparent',
     borderRadius: 0,
     display: 'flex',
-    flexDirection: { default: 'column', [DESKTOP]: 'row' },
+    flexDirection: { default: 'column', [breakpoints.DESKTOP]: 'row' },
   },
   mock: {
     display: 'flex',
@@ -36,7 +35,7 @@ const styles = stylex.create({
     flexGrow: 1,
     gap: space['--ult-space-8'],
     minInlineSize: 0,
-    padding: { default: space['--ult-space-6'], [DESKTOP]: space['--ult-space-9'] },
+    padding: { default: space['--ult-space-6'], [breakpoints.DESKTOP]: space['--ult-space-9'] },
   },
   head: { alignItems: 'center', display: 'flex', justifyContent: 'space-between' },
   title: { fontSize: text['--ult-text-8'], fontWeight: font['--ult-font-weight-medium'], margin: 0 },
@@ -47,22 +46,20 @@ const styles = stylex.create({
     fontWeight: font['--ult-font-weight-regular'],
     letterSpacing: font['--ult-font-tracking-normal'],
   },
-  field: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-3'] },
-  label: { color: color['--ult-color-text-muted'], fontSize: text['--ult-text-3'] },
   actions: { display: 'flex', gap: space['--ult-space-5'], paddingBlockStart: space['--ult-space-4'] },
   notes: {
     borderBlockStartColor: color['--ult-color-border'],
     borderBlockStartStyle: 'solid',
-    borderBlockStartWidth: { default: border.hairline, [DESKTOP]: 0 },
+    borderBlockStartWidth: { default: border.hairline, [breakpoints.DESKTOP]: 0 },
     borderInlineStartColor: color['--ult-color-border'],
     borderInlineStartStyle: 'solid',
-    borderInlineStartWidth: { default: 0, [DESKTOP]: border.hairline },
+    borderInlineStartWidth: { default: 0, [breakpoints.DESKTOP]: border.hairline },
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
     gap: space['--ult-space-8'],
-    inlineSize: { default: '100%', [DESKTOP]: '28rem' },
-    padding: { default: space['--ult-space-6'], [DESKTOP]: space['--ult-space-9'] },
+    inlineSize: { default: '100%', [breakpoints.DESKTOP]: '28rem' },
+    padding: { default: space['--ult-space-6'], [breakpoints.DESKTOP]: space['--ult-space-9'] },
   },
   note: { display: 'flex', gap: space['--ult-space-6'] },
   noteIndex: {
@@ -101,14 +98,14 @@ export default function Specimen() {
               <Tabs.Indicator />
             </Tabs.List>
           </Tabs.Root>
-          <label {...stylex.props(styles.field)}>
-            <span {...stylex.props(styles.label)}>Project name</span>
+          <Field.Root name="project-name">
+            <Field.Label>Project name</Field.Label>
             <Input defaultValue="Untitled, but not for long" />
-          </label>
-          <label {...stylex.props(styles.field)}>
-            <span {...stylex.props(styles.label)}>Framework</span>
+          </Field.Root>
+          <Field.Root name="framework">
+            <Field.Label>Framework</Field.Label>
             <Input defaultValue="React + StyleX" />
-          </label>
+          </Field.Root>
           <div {...stylex.props(styles.actions)}>
             <Button style={contrastStyles.root}>Create project</Button>
             <Button variant="outline">Cancel</Button>

@@ -8,20 +8,18 @@ import {
   resolveDraft,
   SHUFFLE_ATTEMPT_LIMIT,
   stockDraft,
-  type GuidedGroup,
   type ShuffleExhaustion,
 } from '@ultima/tokens';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Alert, Button, Separator } from '@ultima/ui';
 import { useMemo, useState } from 'react';
 
+import { breakpoints } from '../breakpoints.stylex';
 import { StudioActions, useStudioDraft } from '../theme-studio-actions';
-import { GROUPS } from '../theme-studio-draft';
+import { draftSummary, GROUPS, groupLabel } from '../theme-studio-draft';
 import { ThemeStudioEditor } from '../theme-studio-editor';
 import { ThemeStudioPreview } from '../theme-studio-preview';
 import { ThemeStudioShuffleBar } from '../theme-studio-shuffle';
-
-const RAIL = '@media (min-width: 52.5rem)';
 
 const MODES = ['dark', 'light', 'compare'] as const;
 
@@ -63,7 +61,7 @@ const styles = stylex.create({
   actions: { display: 'flex', gap: space['--ult-space-4'] },
   body: {
     display: 'flex',
-    flexDirection: { default: 'column', [RAIL]: 'row' },
+    flexDirection: { default: 'column', [breakpoints.RAIL]: 'row' },
     flexGrow: 1,
     minBlockSize: 0,
     minInlineSize: 0,
@@ -71,16 +69,16 @@ const styles = stylex.create({
   editor: {
     borderInlineEndColor: color['--ult-color-border'],
     borderInlineEndStyle: 'solid',
-    borderInlineEndWidth: { default: 0, [RAIL]: border.hairline },
+    borderInlineEndWidth: { default: 0, [breakpoints.RAIL]: border.hairline },
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
-    flexShrink: { default: 1, [RAIL]: 0 },
+    flexShrink: { default: 1, [breakpoints.RAIL]: 0 },
     gap: space['--ult-space-8'],
-    inlineSize: { default: '100%', [RAIL]: '21rem' },
-    minBlockSize: { default: '27rem', [RAIL]: 0 },
-    order: { default: 1, [RAIL]: 0 },
-    overflow: { default: 'auto', [RAIL]: 'visible' },
+    inlineSize: { default: '100%', [breakpoints.RAIL]: '21rem' },
+    minBlockSize: { default: '27rem', [breakpoints.RAIL]: 0 },
+    order: { default: 1, [breakpoints.RAIL]: 0 },
+    overflow: { default: 'auto', [breakpoints.RAIL]: 'visible' },
     paddingBlock: space['--ult-space-8'],
     paddingInline: space['--ult-space-9'],
   },
@@ -88,14 +86,14 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     flexGrow: 1,
-    minBlockSize: { default: '9rem', [RAIL]: 0 },
+    minBlockSize: { default: '9rem', [breakpoints.RAIL]: 0 },
     minInlineSize: 0,
     overflow: 'auto',
   },
   status: {
-    alignItems: { default: 'flex-start', [RAIL]: 'center' },
+    alignItems: { default: 'flex-start', [breakpoints.RAIL]: 'center' },
     display: 'flex',
-    flexDirection: { default: 'column', [RAIL]: 'row' },
+    flexDirection: { default: 'column', [breakpoints.RAIL]: 'row' },
     flexShrink: 0,
     flexWrap: 'wrap',
     gap: space['--ult-space-6'],
@@ -106,12 +104,16 @@ const styles = stylex.create({
     paddingBlockStart: space['--ult-space-6'],
   },
   statusCopy: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-1'] },
+  announce: {
+    clipPath: 'inset(50%)',
+    height: '1px',
+    overflow: 'hidden',
+    position: 'absolute',
+    whiteSpace: 'nowrap',
+    width: '1px',
+  },
   notice: { flexShrink: 0 },
 });
-
-function groupLabel(id: GuidedGroup): string {
-  return GROUPS.find((item) => item.id === id)?.label ?? id;
-}
 
 function ExhaustionNotice({ report }: { report: ShuffleExhaustion }) {
   const failures = report.failures
@@ -150,8 +152,6 @@ export function ThemeStudio() {
   } = store;
   const resolved = useMemo(() => resolveDraft(draft), [draft]);
   const pairings = useMemo(() => gate(resolved), [resolved]);
-  const locked = Object.values(draft.locks).filter(Boolean).length;
-  const overrides = Object.keys(draft.overrides.dark).length + Object.keys(draft.overrides.light).length;
 
   return (
     <main {...stylex.props(darkTheme, colorScheme.dark, styles.shell)}>
@@ -206,14 +206,14 @@ export function ThemeStudio() {
             />
           </div>
           <div {...stylex.props(styles.status)}>
+            <span role="status" aria-atomic="true" {...stylex.props(styles.announce)}>
+              {store.announcement}
+            </span>
             <Button nativeButton={false} render={<Link to="/tokens" />} size="sm" variant="ghost">
               Token contrast · View report <ArrowUpRightIcon aria-hidden />
             </Button>
             <span {...stylex.props(styles.statusCopy)}>Editing both modes</span>
-            <span {...stylex.props(styles.statusCopy)}>
-              {overrides} overrides · {locked} locked group
-              {locked === 1 ? '' : 's'}
-            </span>
+            <span {...stylex.props(styles.statusCopy)}>{draftSummary(draft)}</span>
             <Button onClick={() => store.commit(() => stockDraft())} size="sm" variant="ghost">
               Reset theme
             </Button>

@@ -1,27 +1,22 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
+import { Link, type LinkProps } from "@tanstack/react-router";
 import * as stylex from "@stylexjs/stylex";
-import { border, color, font, space, text } from "@ultima/tokens/tokens.stylex";
-import { Separator } from "@ultima/ui";
+import { color, font, space, text } from "@ultima/tokens/tokens.stylex";
+import { Breadcrumb, Separator } from "@ultima/ui";
 
-const DESKTOP = "@media (min-width: 80rem)";
-const WIDE = "@media (min-width: 48rem)";
+import { breakpoints } from "./breakpoints.stylex";
+import { layoutStyles } from "./layout";
+import { Kicker } from "./page";
+import { shell } from "./shell.stylex";
+import { TextLink } from "./text-link";
 
 const styles = stylex.create({
   main: {
     paddingBlockStart: space["--ult-space-7"],
     paddingBlockEnd: space["--ult-space-12"],
-    marginInline: {
-      default: space["--ult-space-6"],
-      [WIDE]: space["--ult-space-9"],
-    },
   },
   breadcrumb: {
-    color: color["--ult-color-text-subtle"],
-    fontFamily: font["--ult-font-mono"],
-    fontSize: text["--ult-text-1"],
-    letterSpacing: font["--ult-font-tracking-wide"],
-    lineHeight: font["--ult-font-leading-none"],
     marginBlockEnd: space["--ult-space-8"],
   },
   grid: {
@@ -29,7 +24,7 @@ const styles = stylex.create({
     gap: space["--ult-space-9"],
     gridTemplateColumns: {
       default: "minmax(0, 1fr)",
-      [DESKTOP]: "minmax(0, 1fr) 11.5rem",
+      [breakpoints.INDEX]: "minmax(0, 1fr) 11.5rem",
     },
   },
   article: {
@@ -43,14 +38,14 @@ const styles = stylex.create({
   fullWidth: {
     gridTemplateColumns: {
       default: "minmax(0, 1fr)",
-      [DESKTOP]: "minmax(0, 1fr)",
+      [breakpoints.INDEX]: "minmax(0, 1fr)",
     },
   },
   indexRail: {
     alignSelf: "start",
-    display: { default: "none", [DESKTOP]: "block" },
-    insetBlockStart: `calc(var(--docs-chrome-block) + ${space["--ult-space-6"]})`,
-    maxBlockSize: `calc(100dvh - var(--docs-chrome-block) - ${space["--ult-space-6"]})`,
+    display: { default: "none", [breakpoints.INDEX]: "block" },
+    insetBlockStart: `calc(${shell.chromeBlock} + ${space["--ult-space-6"]})`,
+    maxBlockSize: `calc(100dvh - ${shell.chromeBlock} - ${space["--ult-space-6"]})`,
     minInlineSize: 0,
     overflow: "auto",
     position: "sticky",
@@ -64,34 +59,16 @@ const styles = stylex.create({
     minInlineSize: 0,
     paddingBlockStart: space["--ult-space-4"],
   },
-  indexLabel: {
-    color: color["--ult-color-text-subtle"],
-    fontFamily: font["--ult-font-mono"],
-    fontSize: text["--ult-text-1"],
-    letterSpacing: font["--ult-font-tracking-wide"],
-    margin: 0,
-    textTransform: "uppercase",
-  },
+  indexLabel: { textTransform: "uppercase" },
   indexList: {
     display: "flex",
     flexDirection: "column",
+    fontSize: text["--ult-text-3"],
     gap: space["--ult-space-6"],
     listStyle: "none",
     marginBlock: space["--ult-space-6"],
     marginInline: 0,
     padding: 0,
-  },
-  indexLink: {
-    color: {
-      default: color["--ult-color-text-muted"],
-      ":hover": color["--ult-color-text"],
-    },
-    fontSize: text["--ult-text-3"],
-    textDecoration: "none",
-    ":focus-visible": {
-      outline: `${border.focus} solid ${color["--ult-color-border-focus"]}`,
-      outlineOffset: border.focusOffset,
-    },
   },
 });
 
@@ -111,13 +88,18 @@ function slugify(value: string, used: Set<string>) {
   return id;
 }
 
+export type Crumb = {
+  label: string;
+  to?: NonNullable<LinkProps["to"]>;
+};
+
 export function DocumentLayout({
   children,
   breadcrumb,
   index = true,
 }: {
   children: ReactNode;
-  breadcrumb: string;
+  breadcrumb: Crumb[];
   index?: boolean;
 }) {
   const article = useRef<HTMLElement>(null);
@@ -141,28 +123,48 @@ export function DocumentLayout({
   }, [children]);
 
   return (
-    <main {...stylex.props(styles.main)}>
+    <main {...stylex.props(layoutStyles.gutter, styles.main)}>
       <div {...stylex.props(styles.grid, !index && styles.fullWidth)}>
         <article
           ref={article}
           data-document-article
           {...stylex.props(styles.article, !index && styles.wideArticle)}
         >
-          <div {...stylex.props(styles.breadcrumb)}>{breadcrumb}</div>
+          <Breadcrumb.Root style={styles.breadcrumb}>
+            <Breadcrumb.List>
+              {breadcrumb.map((crumb, crumbIndex) => (
+                <Fragment key={crumb.label}>
+                  {crumbIndex > 0 && <Breadcrumb.Separator />}
+                  <Breadcrumb.Item>
+                    <Breadcrumb.Link
+                      active={crumbIndex === breadcrumb.length - 1}
+                      render={
+                        crumb.to ? (
+                          <Link to={crumb.to} activeOptions={{ exact: true }} />
+                        ) : undefined
+                      }
+                    >
+                      {crumb.label}
+                    </Breadcrumb.Link>
+                  </Breadcrumb.Item>
+                </Fragment>
+              ))}
+            </Breadcrumb.List>
+          </Breadcrumb.Root>
           {children}
         </article>
-        {index && (
+        {index && headings.length > 0 && (
           <aside aria-label="On this page" {...stylex.props(styles.indexRail)}>
             <div {...stylex.props(styles.indexInner)}>
               <Separator orientation="vertical" style={styles.divider} />
               <div {...stylex.props(styles.indexContents)}>
-                <p {...stylex.props(styles.indexLabel)}>On this page</p>
+                <Kicker style={styles.indexLabel}>On this page</Kicker>
                 <ul {...stylex.props(styles.indexList)}>
                   {headings.map(({ id, label }) => (
                     <li key={id}>
-                      <a href={`#${id}`} {...stylex.props(styles.indexLink)}>
+                      <TextLink href={`#${id}`} variant="muted">
                         {label}
-                      </a>
+                      </TextLink>
                     </li>
                   ))}
                 </ul>

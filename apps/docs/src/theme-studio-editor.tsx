@@ -25,6 +25,7 @@ import {
 } from '@ultima/ui';
 import { useMemo, useState } from 'react';
 
+import { breakpoints } from './breakpoints.stylex';
 import {
   GROUPS,
   MONO_PRESETS,
@@ -42,11 +43,9 @@ import type { DraftEdit } from './theme-studio-store';
 import { TokenRows, type ModeOffenders } from './theme-studio-token-row';
 import { ThemeStudioValidation } from './theme-studio-validation';
 
-const RAIL = '@media (min-width: 52.5rem)';
-
 const styles = stylex.create({
   selector: {
-    display: { default: 'flex', [RAIL]: 'none' },
+    display: { default: 'flex', [breakpoints.RAIL]: 'none' },
     flexDirection: 'row',
     flexShrink: 0,
     overflow: 'auto',
@@ -86,7 +85,7 @@ const styles = stylex.create({
   seedLabel: { color: color['--ult-color-text-muted'] },
   seedValue: { fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'] },
   preset: { display: 'flex', flexWrap: 'wrap' },
-  group: { display: { default: 'none', [RAIL]: 'flex' }, flexDirection: 'column', flexShrink: 0 },
+  group: { display: { default: 'none', [breakpoints.RAIL]: 'flex' }, flexDirection: 'column', flexShrink: 0 },
   groupActive: { display: 'flex' },
   divider: { marginBlockEnd: space['--ult-space-8'] },
   stack: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-6'] },

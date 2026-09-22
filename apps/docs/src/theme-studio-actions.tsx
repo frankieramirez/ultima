@@ -19,11 +19,13 @@ import {
   type ThemeDraft,
 } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Input, Separator } from '@ultima/ui';
+import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Field, Input, Separator, Spinner } from '@ultima/ui';
 import { useEffect, useRef, useState } from 'react';
 
+import { CopyButton } from './copy-button';
 import { readStored, removeStored, writeStored } from './storage';
 import { useStudioDraft as useStoreDraft } from './theme-studio-store';
+import { headings } from './typography';
 
 const STORAGE: StorageLike = {
   getItem: readStored,
@@ -95,15 +97,7 @@ const styles = stylex.create({
     margin: 0,
     paddingInlineStart: space['--ult-space-7'],
   },
-  acknowledge: {
-    alignItems: 'center',
-    display: 'flex',
-    fontSize: text['--ult-text-4'],
-    gap: space['--ult-space-3'],
-  },
   heading: {
-    fontSize: text['--ult-text-4'],
-    fontWeight: font['--ult-font-weight-semibold'],
     margin: 0,
   },
   note: {
@@ -127,9 +121,22 @@ const styles = stylex.create({
     display: 'flex',
     gap: space['--ult-space-3'],
   },
+  busy: {
+    alignItems: 'center',
+    display: 'flex',
+    gap: space['--ult-space-3'],
+  },
   shareUrl: {
     flexGrow: 1,
     minInlineSize: 0,
+  },
+  status: {
+    clipPath: 'inset(50%)',
+    height: '1px',
+    overflow: 'hidden',
+    position: 'absolute',
+    whiteSpace: 'nowrap',
+    width: '1px',
   },
   popup: {
     inlineSize: '100%',
@@ -205,7 +212,9 @@ export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
     let cancelled = false;
     const saved = restoreAutosave(STORAGE);
     if (saved.status === 'quarantined') {
-      setNotice('The autosaved draft was corrupt; it was quarantined to a backup key.');
+      const text = 'The autosaved draft was corrupt; it was quarantined to a backup key.';
+      setNotice(text);
+      store.announce(text);
     }
     const restored = saved.status === 'restored' ? saved.draft : null;
     const hash = window.location.hash;
@@ -247,7 +256,10 @@ export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
   return {
     ...store,
     notice,
-    dismissNotice: () => setNotice(null),
+    dismissNotice: () => {
+      setNotice(null);
+      store.announce('');
+    },
     pending,
     confirmPending,
     cancelPending,
@@ -421,18 +433,22 @@ function ExportDialog({
                       </li>
                     ))}
                   </ul>
-                  <label {...stylex.props(styles.acknowledge)}>
-                    <Checkbox.Root
-                      checked={acknowledged}
-                      onCheckedChange={(next) => setAcknowledged(next === true)}
-                    >
-                      <Checkbox.Indicator />
-                    </Checkbox.Root>
-                    Export anyway: the artifacts still record the failed pairings.
-                  </label>
+                  <Field.Root name="acknowledge">
+                    <Field.Item>
+                      <Checkbox.Root
+                        checked={acknowledged}
+                        onCheckedChange={(next) => setAcknowledged(next === true)}
+                      >
+                        <Checkbox.Indicator />
+                      </Checkbox.Root>
+                      <Field.Label>
+                        Export anyway: the artifacts still record the failed pairings.
+                      </Field.Label>
+                    </Field.Item>
+                  </Field.Root>
                 </>
               ) : null}
-              <h3 {...stylex.props(styles.heading)}>Install</h3>
+              <h3 {...stylex.props(headings.h3, styles.heading)}>Install</h3>
               <ol {...stylex.props(styles.steps)}>
                 <li>
                   Download <Code>ultima-theme.registry.json</Code>.
@@ -452,7 +468,7 @@ function ExportDialog({
                 Reinstalling regenerates and replaces the generated files. Keep{' '}
                 <Code>ultima-theme.json</Code>: the draft is the editable source.
               </p>
-              <h3 {...stylex.props(styles.heading)}>Downloads</h3>
+              <h3 {...stylex.props(headings.h3, styles.heading)}>Downloads</h3>
               <ul {...stylex.props(styles.downloads)}>
                 {downloads.map((item) => (
                   <li key={item.name} {...stylex.props(styles.download)}>
@@ -497,18 +513,20 @@ function ShareDialog({
   onClose: () => void;
 }) {
   const [result, setResult] = useState<FragmentEncodeResult | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState('');
   const url = result
     ? `${window.location.origin}${window.location.pathname}${result.fragment}`
     : null;
 
   useEffect(() => {
     setResult(null);
-    setCopied(false);
+    setStatus('');
     if (!open) return;
     let live = true;
     void encodeFragment(draft).then((next) => {
-      if (live) setResult(next);
+      if (!live) return;
+      setResult(next);
+      setStatus(next.tooLong ? 'Draft too large for a share link' : 'Draft encoded');
     });
     return () => {
       live = false;
@@ -534,7 +552,10 @@ function ShareDialog({
                 </Dialog.Description>
               </div>
               {result === null ? (
-                <p {...stylex.props(styles.note)}>Encoding the draft…</p>
+                <div aria-busy="true" {...stylex.props(styles.busy)}>
+                  <Spinner />
+                  <p {...stylex.props(styles.note)}>Encoding the draft…</p>
+                </div>
               ) : result.tooLong ? (
                 <>
                   <p {...stylex.props(styles.note)}>
@@ -554,22 +575,28 @@ function ShareDialog({
                     style={styles.shareUrl}
                     value={url ?? ''}
                   />
-                  <Button
-                    onClick={() => {
-                      if (url === null) return;
-                      void navigator.clipboard
-                        ?.writeText(url)
-                        .then(() => setCopied(true))
-                        .catch(() => {});
-                    }}
-                    size="sm"
-                    variant="outline"
-                  >
-                    {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}{' '}
-                    {copied ? 'Copied' : 'Copy link'}
-                  </Button>
+                  <CopyButton text={url ?? ''} variant="outline">
+                    {(status) => (
+                      <>
+                        {status === 'Copied' ? (
+                          <CheckIcon aria-hidden />
+                        ) : (
+                          <CopyIcon aria-hidden />
+                        )}{' '}
+                        {status || 'Copy link'}
+                      </>
+                    )}
+                  </CopyButton>
                 </div>
               )}
+              <span
+                aria-label="Share status"
+                role="status"
+                aria-atomic="true"
+                {...stylex.props(styles.status)}
+              >
+                {status}
+              </span>
               <div {...stylex.props(styles.footer)}>
                 <Dialog.Close render={<Button variant="ghost" />}>Close</Dialog.Close>
               </div>

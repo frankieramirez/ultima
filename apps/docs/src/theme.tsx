@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
+import { space } from '@ultima/tokens/tokens.stylex';
 import {
   createContext,
   useCallback,
@@ -12,6 +13,7 @@ import {
 } from 'react';
 
 import { readStored, writeStored } from './storage';
+import { shell } from './shell.stylex';
 
 export const THEME_STORAGE_KEY = 'ultima-theme';
 export type ThemePreference = 'dark' | 'light' | 'system';
@@ -30,10 +32,16 @@ function readPreference(): ThemePreference {
   return isThemePreference(stored) ? stored : 'system';
 }
 
+const styles = stylex.create({
+  scrollPad: {
+    scrollPaddingBlockStart: `calc(${shell.chromeBlock} + ${space['--ult-space-6']})`,
+  },
+});
+
 function themeProps(preference: ThemePreference) {
-  if (preference === 'dark') return stylex.props(darkTheme, colorScheme.dark);
-  if (preference === 'light') return stylex.props(lightTheme, colorScheme.light);
-  return stylex.props(colorScheme.system);
+  if (preference === 'dark') return stylex.props(darkTheme, colorScheme.dark, styles.scrollPad);
+  if (preference === 'light') return stylex.props(lightTheme, colorScheme.light, styles.scrollPad);
+  return stylex.props(colorScheme.system, styles.scrollPad);
 }
 
 export function useTheme() {
