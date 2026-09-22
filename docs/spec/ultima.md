@@ -1969,11 +1969,13 @@ The repository is MIT licensed. A registry-first system hands the consumer its s
 
 ## Testing
 
+The planned [verification CLI](agent-infrastructure.md#verification-cli) composes the existing checks, adds conservative local selection and records execution evidence. Full CI and the proof bar below remain authoritative. The CLI is a decision contract pending implementation.
+
 Decided on [Testing strategy for v0](https://linear.app/frankie-ramirez/issue/ULT-20). Two things are settled here: what a v0 build ticket must ship as proof, and what runs in CI. The Accessibility contract defers automated checking to this section, and the contrast gate's enforcement is fixed here rather than in the Palette section.
 
 ### Environment
 
-Rendering and interaction tests use Vitest browser mode with Playwright Chromium. Pure token tests use Node; the elements package has separate browser and Node projects. UI and docs have browser configurations. There is no jsdom project. Planned static contributor-tooling fixtures also run in Node.
+Rendering and interaction tests use Vitest browser mode with Playwright Chromium. Pure token tests use Node; the elements package has separate browser and Node projects. UI and docs have browser configurations. There is no jsdom project. Planned static contributor-tooling fixtures also run in Node. The planned [production browser runner](agent-infrastructure.md#production-browser-verification) adds real route journeys against built docs using the existing Playwright library; it retains the component proof bar below.
 
 Half of what v0 has to prove is only true in a real browser. `:focus-visible` renders an outline, Base UI's popups position against real layout through Floating UI, `[data-starting-style]` transitions fire, and the `Switch.Thumb` hairline exists for a rendering mode. In jsdom each of those degrades into an assertion about an attribute, which proves the test was written and not that the contract holds. A design system whose product is CSS should not prove itself in an environment with no cascade.
 
@@ -2049,7 +2051,7 @@ Steps 5 and 6 are in the list because generation breaking is a real failure mode
 
 v0 shipped without a linter. [Architectural checks](agent-infrastructure.md#architectural-checks), decided on [Architectural checks: coverage, exceptions, and repair diagnostics](https://github.com/frankieramirez/ultima/issues/436), now specifies a repository-owned TypeScript checker for Ultima's contracts, with scoped exceptions and repair diagnostics. Its implementation will add `pnpm check:architecture` as a blocking static gate before browser tests. The command is planned, not yet part of the workflow above.
 
-`packages/tokens` now has unit tests for the theme draft and its operations alongside the contrast gate and typecheck. Docs browser tests exercise application behavior and demos; the settled [production-browser contract](agent-infrastructure.md#production-browser-verification) adds execution against built routes with 26 minimum scenario cells. That runner is planned. The [verification CLI](agent-infrastructure.md#verification-cli) preserves existing checks and distinguishes partial coverage, failures and incomplete execution; [adoption](agent-infrastructure.md#adoption-and-maintenance) controls promotion to required CI.
+`packages/tokens` has unit tests for the theme draft and its operations alongside the contrast gate and typecheck. Docs Vitest tests exercise application behavior and demos through development transforms. [Production browser verification](agent-infrastructure.md#production-browser-verification) specifies a separate planned Chromium gate against built routes, with 26 minimum scenario cells, dark/light and desktop/narrow scenarios, isolated state and retained evidence. [Verification CLI](agent-infrastructure.md#verification-cli) specifies selection and aggregate results, distinguishing partial coverage, failures and incomplete execution; [adoption](agent-infrastructure.md#adoption-and-maintenance) controls promotion to required CI. These commands are planned; the workflow above describes the current implementation.
 
 ### Considered and declined
 
@@ -2067,6 +2069,8 @@ Decided on [Agent-first surface](https://linear.app/frankie-ramirez/issue/ULT-15
 
 ### Contributing to Ultima
 
+The planned [agent infrastructure](agent-infrastructure.md) defines architecture checks, catalogue wiring and `pnpm verify` discovery. When implemented, link its help and scope rules from the root command index. Current package commands remain the working interface until then.
+
 `AGENTS.md` at the repository root is the entry point, and it is an index, never a copy. It keeps the `## Agent skills` block mana's setup writes, and adds four sections:
 
 - **Principles** — a pointer to the Principles section of this document, read before touching anything.
@@ -2076,7 +2080,7 @@ Decided on [Agent-first surface](https://linear.app/frankie-ramirez/issue/ULT-15
 
 A rule that needs a paragraph goes in this specification instead. `AGENTS.md` holding a second copy of a convention is how the two drift.
 
-[Agent infrastructure](agent-infrastructure.md) owns the settled contributor-tooling contracts for architectural enforcement, metadata and scaffolding, verification, executable scenarios, measurement and adoption. It distinguishes planned checks from shipped commands; implementation updates this index and the authoring guidance when those commands become available.
+[Agent infrastructure](agent-infrastructure.md) owns the settled contributor-tooling contracts for architectural enforcement, metadata and scaffolding, generated catalogue wiring, verification selection and production browser scenarios, [executable feature discovery](agent-infrastructure.md#executable-feature-map), measurement and adoption. It distinguishes planned checks from shipped commands; implementation updates this index and the authoring guidance when those commands become available.
 
 ### The consumer's agent
 

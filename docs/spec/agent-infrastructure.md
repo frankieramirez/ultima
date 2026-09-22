@@ -215,7 +215,7 @@ Generate these small source projections and commit them with the inputs:
 
 For registered React components, a missing MDX module is a generation error. Keep the router's existing unknown-route handling; do not let a placeholder turn missing registered documentation into successful validation. The route structure stays code-based and loading remains eager in this migration. Lazy loading is a separate performance decision.
 
-The static model also exposes source/demo/test paths and recipe membership to future verification selection. It does not dictate scenario IDs or the verification CLI's command shape, which the Verification CLI and Executable feature map sections define.
+The static model also exposes source/demo/test paths and recipe membership to future verification selection. The Verification CLI and Executable feature map sections below own command discovery and scenario identity.
 
 Element builds consume the model's validated family inventory and retain per-family classic bundles, the aggregate `ultima.js`, build stamps and existing gzip budgets. There is no element npm barrel to generate. Continue verifying that the staged, served and embedded element artifacts agree.
 
@@ -290,7 +290,7 @@ pnpm verify --help
 pnpm verify list --json
 ```
 
-Exactly one mode is required. `component` accepts one or more validated catalogue IDs, including setup items and recipes; the descriptor kind determines coverage. `feature` accepts one or more registered feature IDs. The Executable feature map section defines their registration; `theme-studio` must be registered before use. Unknown explicit IDs and malformed options exit 2 with available choices. They cannot produce an empty successful run.
+Exactly one mode is required. `component` accepts one or more validated catalogue IDs, including setup items and recipes; the descriptor kind determines coverage. `feature` accepts one or more registered feature IDs. The Executable feature map section owns their definitions, including `theme-studio`; registration must precede use. Unknown explicit IDs and malformed options exit 2 with available choices. They cannot produce an empty successful run.
 
 `list` discovers catalogue IDs, feature IDs, check IDs and their scopes from the shared model and check registry. Each mode supports `--help`. `--plan` resolves inputs and prints the complete ordered plan without running checks or installing prerequisites. Its status is `planned`, including when it exits 0. `--json` writes one versioned JSON document to stdout; progress and child output go to stderr and log files. Human output summarizes the same data. Offer `--output <directory>` for retained evidence and `--timeout <seconds>` for a positive overall deadline. Help states the repository-owned default deadline and per-check deadlines; measurements may tune these later.
 
@@ -384,6 +384,7 @@ Prove the selector with fixture repositories and exercise execution adapters wit
 - Cancel a run with live server and child processes. Verify process cleanup, released ports and readable partial evidence. A stale output or foreign server cannot satisfy a new run's checks.
 - Human and JSON modes describe identical selection/outcomes. JSON stdout parses as one document; every retained artifact path exists and resolves inside its run. A plan runs zero check processes and never reports a pass.
 - Compare the release plan against CI and execute it end to end after all required adapters land. Preserve full proof-bar and both-mode coverage; measurement of speedup belongs to the measurement decision.
+
 
 ## Production browser verification
 
