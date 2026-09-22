@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { DocumentLayout } from './document-layout';
+import { DocumentLayout, type Crumb } from './document-layout';
 import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
 
 const styles = stylex.create({
@@ -197,7 +197,7 @@ export function Prose({
   breadcrumb,
 }: {
   Content: ComponentType<{ components?: MDXComponents }>;
-  breadcrumb: string;
+  breadcrumb: Crumb[];
 }) {
   return <DocumentLayout breadcrumb={breadcrumb}><div {...stylex.props(styles.root)}><Content components={components} /></div></DocumentLayout>;
 }

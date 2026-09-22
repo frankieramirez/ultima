@@ -8,6 +8,7 @@ import { render } from 'vitest-browser-react';
 
 import { Prose } from '../prose';
 import { PalettePage } from '../routes/palette';
+import { renderWithRouter } from './render-with-router';
 // axe resolves a text contrast against the nearest painted ancestor, and the application's ground
 // is on `body` rather than on a component, so without this the shell is measured over nothing.
 import '../styles.css';
@@ -64,7 +65,9 @@ function TwoWideTables({ components }: { components?: MDXComponents }) {
 for (const mode of modes) {
   test(`two wide uncaptioned tables in prose pass axe in ${mode.name}`, async () => {
     themeDocument(mode);
-    const screen = await render(<Prose Content={TwoWideTables} breadcrumb="DOCUMENTATION / TEST" />);
+    const screen = await render(
+      <Prose Content={TwoWideTables} breadcrumb={[{ label: 'Documentation' }, { label: 'Test' }]} />,
+    );
 
     const viewports = scrollAreaViewports(screen.container);
     expect(viewports.length).toBe(2);
@@ -82,7 +85,7 @@ for (const mode of modes) {
 
   test(`/palette passes axe in ${mode.name} with no ramp grid in tab order`, async () => {
     themeDocument(mode);
-    const screen = await render(<PalettePage />);
+    const screen = await renderWithRouter(<PalettePage />);
     await expect
       .element(screen.getByRole('heading', { name: 'Palette', level: 1 }))
       .toBeVisible();

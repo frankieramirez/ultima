@@ -71,7 +71,7 @@ export function ComponentsPage() {
   );
 
   return (
-    <Page title="Components" lede="The catalogue, sectioned by release, oldest set first." breadcrumb="COMPONENTS">
+    <Page title="Components" lede="The catalogue, sectioned by release, oldest set first." breadcrumb={[{ label: 'Components' }]}>
       <div {...stylex.props(styles.filters)}>
         <div {...stylex.props(styles.field)}>
           <label htmlFor={inputId}>Filter components</label>

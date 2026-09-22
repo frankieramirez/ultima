@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 import * as stylex from "@stylexjs/stylex";
 import { color, display, font, space, text } from "@ultima/tokens/tokens.stylex";
 import { Separator } from "@ultima/ui";
-import { DocumentLayout } from "./document-layout";
+import { DocumentLayout, type Crumb } from "./document-layout";
 
 const styles = stylex.create({
   page: {
@@ -58,12 +58,15 @@ const styles = stylex.create({
 export function Page({
   title,
   lede,
-  breadcrumb = `DOCUMENTATION / ${title.toUpperCase()}`,
+  breadcrumb = [
+    { label: "Documentation", to: "/install" },
+    { label: title },
+  ],
   children,
 }: {
   title: string;
   lede: ReactNode;
-  breadcrumb?: string;
+  breadcrumb?: Crumb[];
   children: ReactNode;
 }) {
   return (

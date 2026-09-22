@@ -29,7 +29,7 @@ const styles = stylex.create({
 
 export function NotFound() {
   return (
-    <DocumentLayout breadcrumb="NOT FOUND" index={false}>
+    <DocumentLayout breadcrumb={[{ label: 'Not Found' }]} index={false}>
       <h1 {...stylex.props(styles.title)}>Lost in the aether</h1>
       <p {...stylex.props(styles.lede)}>
         This page is not in the grimoire.{' '}

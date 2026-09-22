@@ -22,7 +22,10 @@ const styles = stylex.create({
 
 export function Placeholder({ title, ticket }: { title: string; ticket: string }) {
   return (
-    <DocumentLayout breadcrumb={`COMPONENTS / ${title.toUpperCase()}`} index={false}>
+    <DocumentLayout
+      breadcrumb={[{ label: 'Components', to: '/components' }, { label: title }]}
+      index={false}
+    >
       <h1 {...stylex.props(styles.title)}>{title}</h1>
       <p {...stylex.props(styles.lede)}>This page is filled by {ticket}.</p>
     </DocumentLayout>
