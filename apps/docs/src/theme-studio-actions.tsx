@@ -25,6 +25,9 @@ import { useEffect, useRef, useState } from 'react';
 import { readStored, removeStored, writeStored } from './storage';
 import { useStudioDraft as useStoreDraft } from './theme-studio-store';
 
+// Word Joiner: invisible and zero-width. Same string twice is not a live-region change; this is.
+const WORD_JOINER = '\u2060';
+
 const STORAGE: StorageLike = {
   getItem: readStored,
   setItem: (key, value) => writeStored(key, value),
@@ -131,6 +134,14 @@ const styles = stylex.create({
     flexGrow: 1,
     minInlineSize: 0,
   },
+  status: {
+    clipPath: 'inset(50%)',
+    height: '1px',
+    overflow: 'hidden',
+    position: 'absolute',
+    whiteSpace: 'nowrap',
+    width: '1px',
+  },
   popup: {
     inlineSize: '100%',
     maxInlineSize: '30rem',
@@ -205,7 +216,9 @@ export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
     let cancelled = false;
     const saved = restoreAutosave(STORAGE);
     if (saved.status === 'quarantined') {
-      setNotice('The autosaved draft was corrupt; it was quarantined to a backup key.');
+      const text = 'The autosaved draft was corrupt; it was quarantined to a backup key.';
+      setNotice(text);
+      store.announce(text);
     }
     const restored = saved.status === 'restored' ? saved.draft : null;
     const hash = window.location.hash;
@@ -247,7 +260,10 @@ export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
   return {
     ...store,
     notice,
-    dismissNotice: () => setNotice(null),
+    dismissNotice: () => {
+      setNotice(null);
+      store.announce('');
+    },
     pending,
     confirmPending,
     cancelPending,
@@ -498,6 +514,7 @@ function ShareDialog({
 }) {
   const [result, setResult] = useState<FragmentEncodeResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState('');
   const url = result
     ? `${window.location.origin}${window.location.pathname}${result.fragment}`
     : null;
@@ -505,10 +522,13 @@ function ShareDialog({
   useEffect(() => {
     setResult(null);
     setCopied(false);
+    setStatus('');
     if (!open) return;
     let live = true;
     void encodeFragment(draft).then((next) => {
-      if (live) setResult(next);
+      if (!live) return;
+      setResult(next);
+      setStatus(next.tooLong ? 'Draft too large for a share link' : 'Draft encoded');
     });
     return () => {
       live = false;
@@ -559,7 +579,12 @@ function ShareDialog({
                       if (url === null) return;
                       void navigator.clipboard
                         ?.writeText(url)
-                        .then(() => setCopied(true))
+                        .then(() => {
+                          setCopied(true);
+                          setStatus((current) =>
+                            current === 'Link copied' ? `Link copied${WORD_JOINER}` : 'Link copied',
+                          );
+                        })
                         .catch(() => {});
                     }}
                     size="sm"
@@ -570,6 +595,9 @@ function ShareDialog({
                   </Button>
                 </div>
               )}
+              <span role="status" aria-atomic="true" {...stylex.props(styles.status)}>
+                {status}
+              </span>
               <div {...stylex.props(styles.footer)}>
                 <Dialog.Close render={<Button variant="ghost" />}>Close</Dialog.Close>
               </div>

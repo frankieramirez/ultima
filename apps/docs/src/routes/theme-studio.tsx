@@ -8,7 +8,6 @@ import {
   resolveDraft,
   SHUFFLE_ATTEMPT_LIMIT,
   stockDraft,
-  type GuidedGroup,
   type ShuffleExhaustion,
 } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
@@ -16,7 +15,7 @@ import { Alert, Button, Separator } from '@ultima/ui';
 import { useMemo, useState } from 'react';
 
 import { StudioActions, useStudioDraft } from '../theme-studio-actions';
-import { GROUPS } from '../theme-studio-draft';
+import { draftSummary, GROUPS, groupLabel } from '../theme-studio-draft';
 import { ThemeStudioEditor } from '../theme-studio-editor';
 import { ThemeStudioPreview } from '../theme-studio-preview';
 import { ThemeStudioShuffleBar } from '../theme-studio-shuffle';
@@ -105,14 +104,18 @@ const styles = stylex.create({
     color: color['--ult-color-text-subtle'],
     fontSize: text['--ult-text-1'],
   },
+  announce: {
+    clipPath: 'inset(50%)',
+    height: '1px',
+    overflow: 'hidden',
+    position: 'absolute',
+    whiteSpace: 'nowrap',
+    width: '1px',
+  },
   notice: {
     flexShrink: 0,
   },
 });
-
-function groupLabel(id: GuidedGroup): string {
-  return GROUPS.find((item) => item.id === id)?.label ?? id;
-}
 
 function ExhaustionNotice({ report }: { report: ShuffleExhaustion }) {
   const failures = report.failures
@@ -151,8 +154,6 @@ export function ThemeStudio() {
   } = store;
   const resolved = useMemo(() => resolveDraft(draft), [draft]);
   const pairings = useMemo(() => gate(resolved), [resolved]);
-  const locked = Object.values(draft.locks).filter(Boolean).length;
-  const overrides = Object.keys(draft.overrides.dark).length + Object.keys(draft.overrides.light).length;
 
   return (
     <main {...stylex.props(darkTheme, colorScheme.dark, styles.shell)}>
@@ -207,6 +208,9 @@ export function ThemeStudio() {
             />
           </div>
           <div {...stylex.props(styles.status)}>
+            <span role="status" aria-atomic="true" {...stylex.props(styles.announce)}>
+              {store.announcement}
+            </span>
             <Button
               nativeButton={false}
               render={<Link to="/tokens" />}
@@ -216,9 +220,7 @@ export function ThemeStudio() {
               Token contrast · View report <ArrowUpRightIcon aria-hidden />
             </Button>
             <span {...stylex.props(styles.statusCopy)}>Editing both modes</span>
-            <span {...stylex.props(styles.statusCopy)}>
-              {overrides} overrides · {locked} locked group{locked === 1 ? '' : 's'}
-            </span>
+            <span {...stylex.props(styles.statusCopy)}>{draftSummary(draft)}</span>
             <Button onClick={() => store.commit(() => stockDraft())} size="sm" variant="ghost">
               Reset theme
             </Button>

@@ -501,6 +501,55 @@ test('shuffle, locks, undo, redo, and reset theme walk one linear history', asyn
   expect(fingerprint()).toBe(reset);
 });
 
+test('the editor rail keeps a pre-mounted status region that announces a shuffle result', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  const status = () => editor.querySelector('[role="status"]')!;
+
+  expect(status()).not.toBeNull();
+  expect(status()).toHaveAttribute('aria-atomic', 'true');
+  expect(status().textContent).toBe('');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Shuffle' }));
+  await expect.poll(() => status().textContent).toMatch(/^\d+ overrides · \d+ locked groups?$/);
+});
+
+test('a shuffle against locked targets announces why nothing changed', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  const status = () => editor.querySelector('[role="status"]')!;
+
+  for (const group of ['Color', 'Typography', 'Density', 'Shape', 'Elevation', 'Motion']) {
+    await userEvent.click(screen.getByRole('button', { name: `Lock ${group}` }));
+  }
+  await userEvent.click(screen.getByRole('button', { name: 'Shuffle' }));
+  await expect.poll(() => status().textContent).toBe('All groups are locked');
+
+  for (const group of ['Typography', 'Density', 'Shape', 'Elevation', 'Motion']) {
+    await userEvent.click(screen.getByRole('button', { name: `Lock ${group}` }));
+  }
+  await userEvent.click(screen.getByRole('button', { name: 'Shuffle Color' }));
+  await expect.poll(() => status().textContent).toBe('Color is locked');
+});
+
+test('shuffle exhaustion announces the attempt limit', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  const status = () => editor.querySelector('[role="status"]')!;
+
+  await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
+  for (const name of ['--ult-color-surface', '--ult-color-text']) {
+    const field = screen.getByRole('textbox', { name });
+    await expect.element(field).toBeVisible();
+    await userEvent.clear(field.element());
+    await userEvent.type(field.element(), '#ffffff');
+  }
+
+  await userEvent.click(screen.getByRole('button', { name: 'Shuffle' }));
+  await expect.poll(() => status().textContent).toBe('No passing palette in 50 attempts');
+  await expect.element(screen.getByText(/Failing pairings/)).toBeVisible();
+});
+
 test('every editor control is a catalogue component, including Color Field seeds', async () => {
   const screen = await mount('/theme-studio');
   const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
