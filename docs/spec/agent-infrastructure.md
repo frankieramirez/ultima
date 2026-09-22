@@ -1,0 +1,276 @@
+# Agent infrastructure
+
+This document holds the contributor-infrastructure decisions from [Map: Make Ultima efficient and verifiable for agents](https://github.com/frankieramirez/ultima/issues/435). It specifies work for a later build effort. The checks and commands described below are not implemented by this document.
+
+Public component APIs and copy-source installation contracts stay unchanged. The [Ultima principles](ultima.md#principles), per-component contracts and ADR amendments remain authoritative. This document owns how contributor tooling enforces them.
+
+## Architectural checks
+
+Decided on [Architectural checks: coverage, exceptions, and repair diagnostics](https://github.com/frankieramirez/ultima/issues/436).
+
+### Engine and command
+
+Implement a repository-owned checker using the existing TypeScript compiler API. Parse TypeScript and TSX through syntax trees, resolve import symbols and aliases, and use the type checker for public prop contracts. Do not add ESLint solely to host these rules or extend the existing source-text scanners into another parser.
+
+The entry point is `scripts/check-architecture.ts`, exposed as `pnpm check:architecture`. Rule implementations and fixtures live under `scripts/architecture/`. This is a static check: it requires the installed workspace dependencies, but no browser, running server, generated registry, or docs build. Use the repository's supported Node runtime and TypeScript execution convention.
+
+The default run examines all authored files in scope. Provide `--format text` and `--format json`; both represent the same diagnostics. Exit 0 means the run completed with no blocking findings, 1 means architectural violations, and 2 means invalid invocation or an incomplete run such as unreadable source, invalid configuration or parser failure. Advisory findings may accompany exit 0. Output must distinguish advisories from blocking findings and list unsupported analysis explicitly.
+
+Changed-file selection, aggregate verification results and production-browser orchestration belong to the later verification decisions. This checker supplies the full static check they can invoke.
+
+### Authority and source scopes
+
+Maintain an explicit inventory of production React components and helpers, element sources, token sources, docs application code, demos/content, and build tooling. Derive membership from existing file conventions and metadata until the component-metadata decision supplies its adapter. Do not create a competing component catalogue here. Fail on an unclassified new production source file rather than silently omitting it.
+
+Test fixtures, generated output and vendored dependencies are separate scopes. Deliberately invalid checker fixtures must never enter production discovery or ordinary package typechecking. Test-only raw values and parity tests reading another target's source do not violate production rules. Such scope exclusions are structural and documented; they are not exceptions for a production file.
+
+Check executable JSX in MDX using the existing MDX parser pipeline, retaining locations in the original document. Markdown fences and printed source are examples, not executed controls. Demos keep their distinct role: native form elements and layout may be necessary to demonstrate composition. They still obey applicable dependency and API rules. The docs-chrome control rule does not blanket-ban native elements in demos.
+
+The specification and ADR amendments decide whether a pattern is permitted. Existing code is evidence to inspect, not permission to allow every pattern it contains. Forge is procedural guidance and must not override a newer component contract, such as Avatar's supported `keepMounted` behavior or the bounded Zag React integrations.
+
+### Rule catalogue
+
+Rule IDs are stable strings. Their wording may improve without changing the ID. A change in meaning requires a documented scope change and updated fixtures.
+
+| ID | Scope | Blocking contract |
+| --- | --- | --- |
+| `ULT-TOKEN-001` | React and element component declarations | Design values use the allowed semantic token or compile-time constant source. Reject raw design values, invented token names, palette reads, and aliases that hide a token value. Apply the value policy below. |
+| `ULT-STYLE-001` | Production components and docs styling | StyleX remains the styling engine. Reject imports of alternative styling engines, injected authored stylesheets used to bypass the contract, and undeclared inline design styles. Respect existing docs global styles, theme application and runtime style contracts. |
+| `ULT-PRIMITIVE-001` | Production React and element components | Enforce the primitive source by target and component contract. React uses Base UI with the ADR 0002 Zag allowance; elements use their ADR 0008 layer and stay React-free. |
+| `ULT-API-001` | Public React wrappers and styled parts | Forbid public `className` and native React `CSSProperties` as styling escape hatches; require the declared StyleX style slot. Verify documented `render`/`ref` capabilities by part category and detect `any` or index-signature escapes that defeat these checks. |
+| `ULT-API-002` | Code consuming the caller's StyleX slot | Merge the caller's slot last in the StyleX composition. Detect a later spread or class assignment that discards the result. Preserve primitive prop-getter and documented runtime-style merges. |
+| `ULT-DOCS-001` | Docs application layout and chrome | Enforce the existing surface and scrollbar policy through syntax analysis, with declaration-scoped exceptions replacing whole-file exemptions. |
+| `ULT-DOCS-002` | Docs application layout and chrome, including executable page JSX | Reject direct native interactive controls that replace the kit's controls, and explicit interactive-role substitutes. Preserve semantic markup and supported composition through `render`. |
+| `ULT-IMPORT-001` | Production workspace imports and re-exports | Enforce dependency direction, staged module paths and declared component composition. Resolve aliases and relative paths before classifying the target. |
+| `ULT-REGISTRY-001` | Authored source and registry metadata | Detect missing or stale item metadata, missing staged dependencies, and source/item shape mismatches before the registry build. Reuse the builder's source inventory and dependency logic. |
+| `ULT-SOURCE-001` | Component source layout | Enforce one source file per component, the React client directive, module-scope StyleX tables, and test placement under the package's `src/__tests__/`. Reject incomplete scaffold markers. Respect element file conventions and documented helper modules. |
+| `ULT-EXCEPTION-001` | Checker configuration | Reject malformed, broad, stale, duplicate or unmatched exception entries and invalid authority links. |
+| `ULT-ANALYSIS-001` | Expressions relevant to a blocking rule | Report constructs the checker cannot resolve; do not interpret an unresolved spread, computed property or dependency as a successful check. |
+
+The first implementation covers every family in this table. Rule internals may land in separate build slices, each cleaning and validating its own scope before becoming blocking. Heuristic interaction findings use a distinct advisory ID, `ULT-DOCS-REVIEW-001`; they do not pretend to prove that arbitrary application code implements a widget.
+
+### Values and runtime styles
+
+`ULT-TOKEN-001` classifies declarations by property and expression provenance. It does not reject every number or string.
+
+- Colors, typography scales, design spacing, radii, shadows, motion timing and stacking levels use their declared semantic groups or compile-time constants. Validate the token key against the actual source group. A token-containing expression must still reject an added undeclared design literal, such as a pixel offset hidden inside `calc()`.
+- Structural CSS has an explicit property-specific grammar: keywords such as `none`, `auto`, `inherit` and `transparent`; zero resets; layout fractions and percentages; and unitless values such as opacity or flex factors in their appropriate properties. `fontSize: '100%'` is not automatically allowed because `width: '100%'` is structural. The initial rule implementation must document and fixture-test the grammar rather than use a global number/string allowlist.
+- SVG path and view-box geometry, glyph `1em` sizing and `currentColor`, and the specified overlay scale/opacity recipe are valid in those contexts. A number allowed inside SVG geometry does not authorize the same number as component padding.
+- Permit direct semantic token reads and supported token-based calculations. Distinguish imported group names from local aliases of a token value. Follow symbols so renaming the StyleX import cannot bypass analysis.
+- Primitive-owned variables and component runtime variables are permitted where the owning contract names their purpose. Validate their location and property instead of accepting every `var(...)` expression. Preserve Toast's geometry, primitive anchor/panel measurements, and other documented dynamic styles.
+- Media conditions are a different syntactic context from declarations. Preserve the named breakpoint constant pattern and the documented reduced-motion handling for loops. Preserve Drawer Backdrop's zero transition while swiping and Navigation Menu Positioner's instant-state cancellation from [State styling](ultima.md#state-styling). New exceptions require an owning decision rather than copying those allowances elsewhere.
+- A runtime inline value such as Aspect Ratio's `ratio` or an indicator's measured width is allowed only on the documented property and part. Preserve any style injected by StyleX or a primitive when merging it. Arbitrary inline colors and lengths remain violations.
+
+The initial grammar uses these categories:
+
+| Category | Allowed literal forms |
+| --- | --- |
+| Enumerated CSS behavior | Valid property keywords for display, positioning, alignment, overflow, appearance, borders, cursor, selection and similar non-scale behavior; CSS-wide keywords remain property-checked. |
+| Reset or absence | Zero lengths where CSS accepts them, including unit-bearing zero fallbacks in primitive measurements; `none` and `transparent` where they remove a property. This does not permit a zero transition duration outside its explicit contract. |
+| Structural layout | Percentages and viewport-relative bounds on box dimensions, insets and translations; grid line/count numbers and fractional tracks; unitless flex factors and layout ordering. Fixed design offsets in those expressions still require tokens. |
+| Unitless visual behavior | Opacity in its valid range, and the documented scale, rotation and animation-iteration behavior. Typography numbers such as font weight and line height remain token-governed. |
+| Local layering | Local `zIndex` 0/1 for a component's own positioned parts, separate from popup/toast layer values; Toast's specified intra-stack arithmetic. Cross-component or portal stacking still reads the declared `z` constants. |
+| Glyph geometry | SVG geometry and `1em` dimensions in a glyph or glyph-only slot, with inherited color. A component's general layout does not inherit this permission. |
+
+The checker must reject an unknown declaration category with an analysis diagnostic until its policy is classified. Nonzero absolute lengths, font-relative design spacing, literal colors, durations and font scales cannot become structural merely by moving them into a local constant. Local expressions combining token reads with runtime geometry can be analyzed recursively; a direct alias of a token value remains prohibited by the source convention. The build slice records the inventory and exact accepted expressions as fixtures before enabling the rule.
+
+StyleX `create` and `keyframes` declarations are both in scope. Analyze nested selectors and conditions, aliased calls, statically resolvable object spreads and computed keys. Unsupported computed code at a checked declaration produces `ULT-ANALYSIS-001` with the expression location and a supported alternative. This failure means the checker could not establish the contract, not that it proved the value is wrong. A rule-relevant parse failure makes the run incomplete.
+
+### Target and API distinctions
+
+Read the bounded React Zag allowance from ADR 0002 and the per-component contracts. Calendar, Date Picker and Resizable are existing cases; do not allow arbitrary future Zag usage simply because the package is installed. Element production code cannot import React or Base UI. Recipe engines permitted by ADR 0007 belong in recipe/demo scope and must not become hidden component dependencies. Installed registry components cannot import an icon package where the contract requires private glyphs.
+
+Public API checking operates on resolved types and the category of each exported part. Hooks, namespaces, plain slots, styled wrappers, and unchanged primitive pass-throughs are different categories. Unstyled primitive exports retain the primitive contract; the checker must not wrap or rewrite them just to make every exported value look alike. Zag prop-getter components retain their documented fixed-element and `render` differences. Internal `className` produced by StyleX or a primitive is permitted.
+
+Use compile-time positive and negative assignments to prove public prop restrictions. A test that runs a no-op type assertion in a browser does not establish a compiler failure. The checker tests must show that an invalid consumer program actually receives the expected TypeScript diagnostic and a valid one compiles.
+
+Syntax checks establish caller-slot placement for supported composition forms. Existing browser tests remain responsible for override behavior in the rendered cascade, focus management, keyboard handling, and CSS a primitive reads. Retain and reuse the element parity gate, including its declared Base UI-to-Zag state mapping and negative tests. This checker does not replace that mapping with identical attribute names.
+
+### Docs controls and surfaces
+
+Port the existing docs surface checks to the syntax engine. Cover backgrounds, border colors/widths/radii, shadows, and the existing scrollbar restriction, including static spreads and computed keys. Preserve the specification's distinction between page layout and painted component surfaces. Ordinary layout scrolling does not require Scroll Area in every case.
+
+For direct controls, block native `button`, `input`, `select`, `textarea`, `option` and `summary` elements used as application controls outside declared composition cases. Block native elements assigned explicit interactive roles such as `button`, `switch`, `checkbox` or `tab` when they stand in for the kit. Ordinary anchors, headings, labels, forms, tables of prose, and layout containers are not controls solely because their tags can carry events or receive focus. Existing painted-table and component-contract rules still apply independently.
+
+Resolve imported component identities when allowing `render` composition. A native element handed to a supported Ultima component must retain the component's behavior and styles; putting arbitrary JSX inside a prop named `render` is not proof. Ambiguous handler-driven widgets get an advisory with the owning rule and a review question. The diagnostic must explain which behavior static analysis cannot establish.
+
+Inventory the current file-wide exemptions in `surfaces.test.ts`. For each matched declaration, either remove the duplication, encode an existing specification-backed exception, or obtain a new decision. Do not automatically convert every line of an exempt file into approved code. Legitimate Swatch painting, Studio chrome and specimen presentation must remain functional while their precise scopes are recorded.
+
+### Import and registry boundaries
+
+Token production sources cannot depend on UI, elements, docs or repository build scripts. UI production sources may depend on tokens, declared helpers and approved runtime packages. Element production sources may depend on tokens, element helpers and their approved runtime packages. Neither target may import docs, test fixtures or build tooling. Docs and build/test tooling may depend on the lower layers for their stated jobs, including parity tests reading both render targets.
+
+Analyze static imports, export-from declarations and statically resolvable dynamic imports. A nonliteral dynamic import in staged component code must produce an analysis error because installation dependencies cannot be established. Resolve workspace aliases and relative paths to prevent an alternate spelling from bypassing a boundary. External dependency categories are explicitly declared and spec-linked; a new unclassified production dependency requires review of that policy rather than an automatic allowance.
+
+React component-to-component behavior composition remains valid through `@ultima/ui/<item>` and its derived registry dependency. Reject relative sibling imports and workspace barrels the registry cannot stage. Do not impose a zero-sibling-dependency rule. Keep private appearance restatement and the current helper-item model.
+
+Extract reusable pure inventory/dependency checks from the registry builder as needed. The static command must not invoke generation or maintain its own list of what the builder stages. It validates source-side completeness; registry builds and fresh consumer installs still prove generated output and installation. Setup items and vendored element items keep their distinct dependency rules. Broader catalogue ownership and generated-output freshness policy are decisions for the metadata ticket.
+
+### Exceptions
+
+Store exceptions as typed repository data under `scripts/architecture/exceptions.ts`. Each entry contains an ID, rule ID, exact repository-relative path, symbol or part, declaration/property or import target, selector/condition when relevant, allowed expression shape, reason, and owning specification section or ADR amendment. Use source structure rather than line numbers so moving a declaration does not invalidate an otherwise identical exception.
+
+An entry must match exactly the intended site and expected occurrence count. Zero matches, unexpected additional matches, duplicate entries and missing authority targets fail `ULT-EXCEPTION-001`. The reported location comes from the current syntax tree. A migration cannot add an exception just to hide an existing violation; the owning decision must authorize the pattern first.
+
+Do not allow directory globs, whole-file suppression, `disable-all` comments, or a permanent grandfathered baseline. Genuine reusable allowances belong in the property/target policy with fixtures, rather than thousands of repeated exceptions. Temporary advisory rollout of an unvalidated new rule is permitted during its implementation slice, but its final delivery requires a clean blocking run. The later adoption ticket determines the slice order.
+
+### Diagnostics
+
+Each diagnostic contains rule ID, severity, repository-relative file, one-based line/column and end position, symbol/part when available, the failed condition, a repair suggestion, and an owning-spec link. Include the exception ID when relevant. Sort by file, position and rule ID for deterministic output. JSON adds a schema version, run status, analyzed scopes and advisory/error counts.
+
+Example wording: `ULT-TOKEN-001: Dialog.Popup borderRadius uses an undeclared length. Read the semantic radius token; see docs/spec/ultima.md#tokens-in-component-code.` Suggest an exact token only when the component contract determines it. Do not silently choose a design value, rewrite behavior, or apply fixes during a check.
+
+No findings means only that the completed static checks found no violations in their declared scopes. Output must not call that full accessibility, performance, visual or interaction verification.
+
+### Proof and delivery requirements
+
+Use the TypeScript API and a lightweight Node test runner for the checker fixtures. These tests require no browser. The component proof-bar suites remain in their current package test directories.
+
+Every rule must have valid fixtures drawn from current contracts and prohibited mutations that fail for the expected rule and location. Required cases include:
+
+- Raw design values hidden behind aliases, spreads, computed keys and mixed token/literal calculations; valid SVG, structural CSS, motion and runtime-value cases.
+- Allowed React Zag components and React-free elements; rejected third-library, icon and target-crossing imports; valid recipe dependencies.
+- Rejected public `className`/native style assignments and valid styled, plain, pass-through and Zag part contracts; a caller slot moved before defaults.
+- Native controls and painted surfaces in docs chrome; legitimate anchors, `render` composition, demos and specifically authorized paint; advisory treatment of ambiguous widgets.
+- Missing/stale registry metadata and a relative sibling import; valid behavior composition and setup/element dependencies.
+- Removed, broadened, duplicated and unmatched exceptions; parser failures and unresolved rule-relevant expressions; an unclassified source or dependency.
+
+Each rule slice inventories the entire applicable source scope, fixes violations or resolves legitimate exceptions, and records a clean blocking run with its fixture results. Newly discovered product-contract questions remain visible decisions; they must not be disguised as checker exceptions. A fixture suite alone does not prove the existing repository passes.
+
+The source inspection for this decision sampled the existing contracts and checks; it was not a full violation count. It found literal local layering in Tabs/Select, token-derived local expressions in Toast, and Navigation Menu's documented instant-state zero duration alongside the Drawer case. The local-layering policy above preserves the first pattern. Direct token aliases must be expanded while preserving output; derived runtime expressions remain analyzable. Navigation Menu's instant-state duration has its own authority in State styling and an existing browser assertion, so its allowance stays distinct from Drawer's. Any genuinely unsettled product behavior uncovered by the implementation inventory requires a decision before that rule slice can ship.
+
+Before the implementation effort completes, run all architectural checks and the existing typecheck, browser suites, palette check, registry build, docs build and applicable consumer smoke installs. Retain the full validation bar while adding a fast static failure path. The verification and adoption tickets will specify orchestration and staged delivery.
+
+## Component metadata and scaffolding
+
+Decided on [Component metadata: ownership, generated wiring, and scaffolding](https://github.com/frankieramirez/ultima/issues/437). This section specifies a migration; the current handwritten files remain in use until it lands.
+
+### Ownership
+
+Give each item one authored descriptor at `registry/metadata/<kind>/<id>.ts`. Use data-only default exports checked with `satisfies` against discriminated types in `registry/metadata/schema.ts`. Permit type-only imports; reject runtime imports, calls, getters, computed execution and filesystem access in descriptors. The loader validates the shape at runtime as well as through TypeScript. Shared release definitions live in `registry/metadata/releases.ts` as data under the same restrictions.
+
+Use one file per item to avoid requiring every component addition to edit a shared manifest. `registry/items.config.ts` becomes a generated compatibility projection with its existing `items` export and item-description shape. Existing consumers can continue importing it; browser code receives plain generated data and never imports the metadata loader, filesystem APIs or the TypeScript compiler.
+
+Authority is split by fact:
+
+| Fact | Authoritative owner | Derived or checked uses |
+| --- | --- | --- |
+| Behavioral contract, parts, defaults, accessibility and permitted primitive | Specification and ADR amendments | Source review, checker policy, scaffold preconditions and proof-bar assertions |
+| Item identity, title, shared summary, release placement, specification reference and install guidance | Item descriptor | Registry prose, docs catalogue, navigation inputs and agent-guide descriptions |
+| Code, explicit public exports and actual imports | Authored implementation | Barrel exports, runtime dependencies, component registry edges and optimizer discovery |
+| Documentation explanation and component demos | Authored MDX and demo modules | Generated page imports; existing live/source demo pairing |
+| Element registrations and finite attribute values | Element source | Generated tag/enum data, checked documentation references and existing parity proof |
+| Element attribute explanations and examples | Element descriptor | Docs presentation; semantic behavior still needs authored tests |
+| Setup files and their install destinations | Authored `registry/static/` files and setup descriptor | Setup registry records and install smoke tests |
+
+The metadata chooses how settled facts are presented and connected. It cannot approve a new component contract merely by pointing at a document. Every descriptor names the owning local specification section, and the scaffold requires a settled contract supplied by the author. Missing or contradictory contracts fail with a named precondition; semantic completeness remains a review responsibility.
+
+A mismatch between source and specification is an error to resolve. A mismatch between a generated projection and its inputs is stale output. Do not choose whichever copy happens to be newer. Metadata must not duplicate prop unions, default values, or imported dependency lists that the source already owns.
+
+### Descriptor variants
+
+All records have a unique kebab-case `id`, `kind`, `title`, `description`, and a local `contract` path with heading anchor. Installable kinds also have authored `installDocs`. A React record may declare `docsDescription` when the visitor summary intentionally differs from the registry summary; absent that field, both use `description`. Unknown fields are errors, so misspellings do not silently disappear. Paths resolve from the repository root and must remain within their owning source areas.
+
+| Kind | Required distinctions |
+| --- | --- |
+| `react` | `id` matches the source basename and registry item. `primaryExport` names the actual root function/namespace; it is validated against source rather than guessed from spelling. `release` and integer `order` place the item in the docs catalogue. Source, MDX, test and demo-directory paths follow existing conventions and are derived. |
+| `element` | `id` is the root `ult-*` item and `reactItem` references its React counterpart. `order` owns its docs-family placement. Source and per-family bundle paths follow current conventions. Declare the vendored artifact's registry dependency IDs, attribute documentation and example markup. No React barrel or component-page entry is created. |
+| `setup` | Declares its authored static files with registry file types and install targets, plus npm/dev dependencies and any registry dependencies that cannot be inferred from compiled source. Vite and Next.js remain separate records. |
+| `source-bundle` | Describes the `tokens` or `lib` source group using the existing inventory and exclusions; dependencies come from the grouped sources. It is not a UI component and gets no component route. |
+| `artifact` | Describes generated non-element files such as `tokens-css`, including the producing build, output path, file type and install destination. It is not copied source or a component. |
+| `recipe` | Names the owning component page and section anchor, release/checklist authority and demo modules. Has no install guidance field, registry item, component barrel export or independent route. Component and engine dependencies are derived from its executable demos; the MDX explains the consumer's installation steps. |
+
+The loader scans these descriptor directories and rejects duplicate IDs across kinds, unexpected descriptor files, missing referenced items and cycles in derived registry dependencies. It reconciles descriptors with source discovery in both directions: every component source has a descriptor, and every descriptor has its required authored files. An unregistered source cannot disappear from the published catalogue silently. Source-bundle inventory names, artifact producers and file roles are validated enum values, not arbitrary commands that metadata can execute.
+
+Element attribute documentation uses an array of actual attribute names and a target tag reference, rather than a comma-separated name masquerading as one attribute. This preserves presentations such as “value, min, max” while validating each name. Finite-value documentation references a source enum/table symbol; free-form attributes keep authored explanatory text. Registered tags are extracted without executing the element module. If docs need a different tag order, metadata holds ordered references to those tags, checked for exact coverage and root-first placement. Do not infer runtime semantics from the presence of a `getAttribute` call.
+
+Recipe records cover specification/checklist recipes only. An ordinary documented composition remains MDX and demos without its own metadata record. Helpers and generated artifacts also remain outside the component count.
+
+### Ordering and compatibility
+
+The ordered release definitions own the release IDs and labels once. React descriptors carry a unique integer `order` within their release; gaps are allowed, duplicate positions are errors. Docs sort by release position and then this order. Do not resolve collisions alphabetically or renumber unrelated entries during scaffolding. If no position is supplied, report the available append position in the dry-run and require the author to accept it in the scaffold request.
+
+Preserve the current docs order and all route slugs during migration. The inspected baseline has 54 React entries in groups of 18, 14 and 22, and nine element families. These are migration observations, not permanent ceilings. Registry staging keeps its existing alphabetical ordering and the tokens/lib precedence in derived dependencies. Element build ordering remains alphabetical; docs-family order is separate.
+
+Preserve public export names exactly, including `InputOTP` and exported hooks. `primaryExport` identifies the main API for documentation without relying on the first exported value. Generate explicit named re-exports, preserving aliases and type-only modifiers, from the component's explicit export declarations. Do not use `export *`, infer `RootProps`, or export unexported declarations. Duplicate public names fail before writing the barrel. The existing wildcard component subpath export in `packages/ui/package.json` remains; new component metadata does not add a package-export entry.
+
+Before switching to generated exports, compare the current barrel's public symbols against the implementation exports. Any mismatch must be reviewed against the component contract, rather than allowing generation to add or remove public symbols accidentally. Record that reconciliation as migration evidence.
+
+### Generated wiring
+
+Implement a shared, pure catalogue model under `scripts/catalogue/`. It combines validated descriptor data with source discovery and the TypeScript syntax/type analysis already chosen for architecture checks. Registry building and architectural validation consume that model; neither grows a second membership list. Builders retain their own target-specific transforms and checks.
+
+Generated projections are never authoritative inputs to this model. When an import traverses the UI barrel or a generated docs module, resolve it against the in-memory export/page plan. Generation must work when all owned projections are absent, and a stale barrel cannot change which exports the generator discovers. Tooling stays repository-local and adds no runtime metadata dependency to installed consumer source.
+
+Generate these small source projections and commit them with the inputs:
+
+| Output | Contract |
+| --- | --- |
+| `registry/items.config.ts` | Existing registry description shape, with installable records only; authored setup and vendored-artifact dependency declarations retained. |
+| `apps/docs/src/generated/catalogue.ts` | React entries and release definitions. Existing `components.ts` becomes a small adapter for helpers such as `componentsInRelease`, without a second authored item list. |
+| `apps/docs/src/generated/component-pages.ts` | Explicit eager MDX imports and the component-page map. `router.tsx` retains route construction, breadcrumbs and navigation behavior, and imports this map. |
+| `apps/docs/src/generated/elements.ts` | Element catalogue presentation assembled from descriptors and source-derived tag/enum data. The existing `elements.ts` keeps a thin compatibility export. |
+| `packages/ui/src/index.ts` | Explicit public value/type exports from the authored component files. Helper subpaths and package export policy stay authored. |
+| `scripts/generated/browser-dependencies.ts` | Separate UI and docs browser-test optimizer include arrays, with each dependency's source provenance available from the generator diagnostics. |
+
+For registered React components, a missing MDX module is a generation error. Keep the router's existing unknown-route handling; do not let a placeholder turn missing registered documentation into successful validation. The route structure stays code-based and loading remains eager in this migration. Lazy loading is a separate performance decision.
+
+The static model also exposes source/demo/test paths and recipe membership to future verification selection. It does not dictate scenario IDs or the verification CLI's command shape, which belong to their open tickets.
+
+Element builds consume the model's validated family inventory and retain per-family classic bundles, the aggregate `ultima.js`, build stamps and existing gzip budgets. There is no element npm barrel to generate. Continue verifying that the staged, served and embedded element artifacts agree.
+
+### Dependencies and browser optimization
+
+Use one import-analysis implementation to derive runtime npm packages and registry edges. Resolve local/workspace imports and distinguish type-only imports, runtime imports, re-exports and statically resolvable dynamic imports. Preserve current consumer-provided package treatment and dependency ordering. Unknown dynamic dependencies in installable code fail the analysis rather than creating an incomplete item.
+
+Copied React source derives its own npm/registry dependencies. Setup records keep explicit dependency declarations because their authored configuration files have different roles. Element bundles retain declared artifact dependencies, including `tokens-css`; do not infer a bundled dependency list from a file whose imports have already been removed. Store those references as registry item IDs and let the existing registry adapter serialize them to the currently supported URL/specifier form.
+
+Derive browser optimizer candidates from the runtime import closure of each browser-test project's source, tests and setup files. Follow local and workspace source and executable MDX imports; skip printed `?raw` content, type-only imports, Node-only suites and non-JavaScript assets. Preserve package subpaths such as Base UI entry points. UI and docs keep separate root sets, so docs engines and testing utilities do not become UI registry dependencies.
+
+Use a small authored optimizer policy for runtime/tooling-specific additions and exclusions, each with a reason and source reference. Automatic discovery proposes candidates; the adapter classifies which bare runtime specifiers Vite should prebundle. Reject unresolved candidates with an actionable diagnostic instead of silently dropping them or prebundling Node modules. Preserve the currently required sets during migration and justify removals with a real browser run. Do not add an optimizer list to the production Vite configuration merely because test configuration has one.
+
+### Generation and freshness
+
+Add `pnpm catalogue:generate` for explicit regeneration and `pnpm catalogue:check` for a read-only freshness check. Both use the same in-memory output plan; `catalogue:check` compares expected output names and exact bytes and reports added, changed or stale generated paths. Stable ordering, fixed newlines and the absence of timestamps/absolute paths make generation deterministic across supported hosts.
+
+Generated source files carry an ownership header naming the command and input locations. The generator owns a fixed set of output paths, including the existing UI barrel and registry compatibility file. During migration, converting those currently authored files requires an explicit reviewed diff. Subsequent runs may replace only generator-owned outputs; a broad directory deletion is prohibited.
+
+Validate the entire input model and prepare all outputs before writing. Use a per-worktree generation lock and recheck the observed input/output hashes before replacements. Abort on stale inputs or concurrent edits; multi-file writes are not an atomic Git transaction. If a write fails partway, report every changed path and leave the next read-only check failing until repaired. Never report partial generation as success or overwrite an authored source, MDX or demo file.
+
+Keep large build artifacts ignored as they are today: staged registry sources, served registry JSON, token exports, agent guide, docs build and element bundles. A freshness check does not require committing them. Release validation rebuilds those outputs from the validated inputs and checks consumer installation. Any timestamp/build-stamp fields use the existing artifact contract when comparing builds.
+
+CI checks freshness before expensive browser/build steps and fails on stale committed projections. Normal validation must not regenerate those files silently and erase the evidence. Root dev/test/typecheck/build and registry commands, plus direct package entry points that consume the projections, must reject stale input before use through a shared nonrecursive preflight. The later verification ticket owns how repeated preflights are consolidated. No generation command may recursively invoke itself through those hooks.
+
+`ULT-REGISTRY-001` uses the shared model to report membership/reference failures; freshness diagnostics identify the stale path and `pnpm catalogue:generate` as the repair. The architecture checker remains static and does not trigger registry or element builds.
+
+### Scaffolding
+
+Add `pnpm scaffold <kind> <id> --from <request.json>`. Its default is a dry-run. `--write` applies the displayed plan after revalidating its preconditions. Support `react`, `element` and `recipe` initially. Support/setup records are infrequent packaging work and are authored against their schema; the scaffold must report that limitation rather than guessing install destinations.
+
+The request contains the descriptor fields and a transient authoring brief: settled contract reference, primary export where relevant, primitive/part shape, axes/defaults and the applicable proof-bar requirements. This brief drives template selection; it is not a new persistent owner of those facts. Reject absent contract answers before any write. In particular, do not invent a `RootProps` type, choose a primitive by similarity, assign a release position silently, or guess an element parity mapping.
+
+A React scaffold creates one metadata descriptor, one component file, its correctly located test file, its MDX page and an initial demo module. The MDX imports that same demo as live JSX and `?raw` source. An element scaffold creates its descriptor, element source and correctly located tests, and reports the required authored parity/fixture coverage. A recipe scaffold creates its descriptor and demo modules; if its page already exists, output an unapplied insertion snippet for the author rather than rewriting the page.
+
+Generated skeletons visibly mark incomplete work with an `@ultima-scaffold-incomplete` marker. `ULT-SOURCE-001` rejects that marker until the author completes the contract and removes it. Scaffolding is not proof-bar coverage, and it must not create passing tests that merely assert the scaffold exists. The dry-run names the remaining behavioral and accessibility work.
+
+Scaffolding regenerates the small wiring projections through the same catalogue model. It does not edit the router, package exports or optimizer config by string substitution. Before writing, check all intended authored paths, metadata IDs, public export names and release positions for collisions, as well as the generated-output plan. A request targeting an existing authored item fails without changing it. There is no overwrite or force mode.
+
+Use exclusive creation for new authored files. After an interrupted write, a rerun identifies the partial files and stops with recovery instructions. It must not delete or overwrite them to simulate idempotence. Concurrent edits invalidate the plan, and operations leave a manifest of paths they created or updated so recovery can inspect the exact scope.
+
+### Migration and proof
+
+1. Capture the existing catalogue/release order, registry prose and dependency edges, routes, public exports, element documentation and required optimizer sets at a named revision. The observed 54 React/9 element/5 support-item counts provide a cross-check, not a hardcoded future rule.
+2. Add the schemas, per-item descriptors and pure model with bidirectional source checks. Reconcile descriptions that differ today: preserve the installed CLI text and visitor wording by explicitly naming a docs-only override where their purposes differ. Share the summary by default; do not silently rewrite either audience's prose during migration.
+3. Generate projections in a temporary comparison location. Require semantic equivalence to the captured public outputs, preserving release order and explicit exports. Keep independent fixture expectations and mutation tests; generating a test's expected answer from the same catalogue cannot prove the catalogue is correct.
+4. Switch the existing adapters and builders to the model, remove superseded authored lists and replace the catalogue order test's repeated full lists with ordering/reference tests plus fixed generator fixtures. Keep behavioral assertions authored, including element parity and browser checks. Update Forge's wiring instructions and the repository layout/generated-file guidance in the same change.
+5. Deliver the dry-run/write scaffold, freshness preflights and interrupted-write tests. Validate actual Vite/Next.js registry installation, element distribution and browser optimizer startup, alongside the existing full checks.
+
+Required negative fixtures cover duplicate IDs/order positions, missing source/page/demo/test files, source without metadata, stale descriptors, broken contract anchors, invalid primary exports, duplicate public exports, unresolved dependency candidates, invalid element enum references, recipe records leaking into the registry, stale generated output, authored-file collisions and concurrent/stale scaffold plans. Valid fixtures cover a plain component, a compound with hooks, a Zag React component, an element family, a setup item and a recipe. Preserve separate source-bundle/artifact tests for token exports and helpers.
+
+Prove authoring improvement with the same synthetic component-addition exercise in disposable baseline and migrated checkouts. Keep the contract, dependency, demo and required proof identical; record commands, manual coordination edits, discovery time and failures. After migration, the author should edit the descriptor and authored behavior/docs/tests, with **zero manual edits to the barrel, router/page map, catalogue adapters or optimizer lists for an ordinary component addition**. New dependency-policy decisions and element behavioral parity work remain explicit exceptions to that target. Record wall-clock measurements without inventing a speedup percentage. The later measurement ticket owns the shared benchmark protocol.
+
+Delete the synthetic component after the exercise and prove regeneration leaves no stale membership. Repeat generation without input changes and require zero diff. Repeating a scaffold write against an existing item must fail without altering any authored bytes.
+
+## Remaining decisions
+
+This document settles architectural enforcement and component metadata/scaffolding. Verification selection and aggregate evidence, production-browser orchestration, executable feature scenarios, measurement baselines and final rollout remain on their own open map tickets. No performance improvement is claimed until implementation supplies comparable evidence.
