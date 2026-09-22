@@ -1969,6 +1969,8 @@ The repository is MIT licensed. A registry-first system hands the consumer its s
 
 ## Testing
 
+The planned [verification CLI](agent-infrastructure.md#verification-cli) composes the existing checks, adds conservative local selection and records execution evidence. Full CI and the proof bar below remain authoritative. The CLI is a decision contract pending implementation.
+
 Decided on [Testing strategy for v0](https://linear.app/frankie-ramirez/issue/ULT-20). Two things are settled here: what a v0 build ticket must ship as proof, and what runs in CI. The Accessibility contract defers automated checking to this section, and the contrast gate's enforcement is fixed here rather than in the Palette section.
 
 ### Environment
@@ -2064,6 +2066,8 @@ The direction matters more than the verdict: demo modules compose into stories l
 Decided on [Agent-first surface](https://linear.app/frankie-ramirez/issue/ULT-15). Two audiences that want opposite things: an agent working inside this repository needs to find the rules, and an agent in a consumer's repository needs the conventions without Ultima leaving files behind.
 
 ### Contributing to Ultima
+
+The planned [agent infrastructure](agent-infrastructure.md) defines architecture checks, catalogue wiring and `pnpm verify` discovery. When implemented, link its help and scope rules from the root command index. Current package commands remain the working interface until then.
 
 `AGENTS.md` at the repository root is the entry point, and it is an index, never a copy. It keeps the `## Agent skills` block mana's setup writes, and adds four sections:
 

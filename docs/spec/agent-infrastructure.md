@@ -271,6 +271,120 @@ Prove authoring improvement with the same synthetic component-addition exercise 
 
 Delete the synthetic component after the exercise and prove regeneration leaves no stale membership. Repeat generation without input changes and require zero diff. Repeating a scaffold write against an existing item must fail without altering any authored bytes.
 
+## Verification CLI
+
+Decided on [Verification CLI: selection, failure behavior, and evidence contract](https://github.com/frankieramirez/ultima/issues/438). This section specifies tooling to implement. Existing package commands and CI remain in use until the implementation passes the acceptance cases below.
+
+### Commands and discovery
+
+Expose `scripts/verify.ts` as `pnpm verify`. Use the repository's supported Node runtime and TypeScript execution convention. Keep selection and planning pure, with execution adapters for the existing checks.
+
+```sh
+pnpm verify component button
+pnpm verify component ult-button
+pnpm verify feature theme-studio
+pnpm verify changed --base origin/main
+pnpm verify release
+pnpm verify changed --base origin/main --plan --json
+pnpm verify --help
+pnpm verify list --json
+```
+
+Exactly one mode is required. `component` accepts one or more validated catalogue IDs, including setup items and recipes; the descriptor kind determines coverage. `feature` accepts one or more registered feature IDs. The feature-map decision owns their definitions; `theme-studio` above is an intended example whose registration must precede use. Unknown explicit IDs and malformed options exit 2 with available choices. They cannot produce an empty successful run.
+
+`list` discovers catalogue IDs, feature IDs, check IDs and their scopes from the shared model and check registry. Each mode supports `--help`. `--plan` resolves inputs and prints the complete ordered plan without running checks or installing prerequisites. Its status is `planned`, including when it exits 0. `--json` writes one versioned JSON document to stdout; progress and child output go to stderr and log files. Human output summarizes the same data. Offer `--output <directory>` for retained evidence and `--timeout <seconds>` for a positive overall deadline. Help states the repository-owned default deadline and per-check deadlines; measurements may tune these later.
+
+Do not expose arbitrary shell commands in item or feature metadata. Adapters own argument arrays and invoke subprocesses without shell interpolation. Paths and IDs cannot become executable arguments by concatenation. A local partial result always names its scope. Full CI remains authoritative for merging and release, even after a local release run passes.
+
+### Selection and dependency expansion
+
+Use the catalogue model selected in the metadata decision, source import analysis and the forthcoming feature/scenario registry. Build a reverse dependency graph as well as each selected item's forward prerequisites. Follow re-exports, workspace aliases and runtime/type dependencies where they affect the relevant check. Include React consumers, shipped element counterparts and parity tests, docs demos, recipes and feature scenarios reached by those edges. Global check inputs have explicit broad scope. Unsupported analysis expands coverage; it never silently discards an edge.
+
+| Input | Required expansion |
+| --- | --- |
+| React component | Own proof-bar suite, affected component dependants, element counterpart/parity where shipped, consuming demos and feature scenarios; global static/freshness checks and full typecheck. Include registry/production/install checks for affected distributed items. |
+| Element family | Family browser and lifecycle tests, parity gate and bundle assertions, consuming docs/scenarios, tokens dependency and served/embedded bundle checks. |
+| Recipe | Owning demos, composed components and consumer dependencies, both-mode axe and relevant scenarios. It has no registry item; install validation applies to its composed installable inputs. |
+| Setup item | Full consumer smoke across the existing supported targets, registry build and docs install guidance checks, plus static/freshness/type checks. |
+| Shared token source, palette recipe or token export | Full release plan, covering both render targets, contrast, all demos, production output and consumer installation. |
+| Shared helper | Transitive consumers in both targets and docs, registry helper installation and shared suites. If the closure cannot be established, full release plan. |
+| Lockfile, package manifests, TypeScript/StyleX/Vite/Vitest config, workflow, verification tooling or generator | Full release plan. An execution or dependency change can affect every item. |
+| Metadata or generated output | Include owner and reverse consumers using source-derived projections. Unowned/stale output remains a check failure; regeneration cannot conceal it. |
+| Unmapped path or unresolved dependency | Full release plan with the path and fallback reason recorded. |
+
+Start with full-repository architecture and catalogue freshness checks plus `pnpm typecheck` in every executable mode. Narrow browser suites and scenarios only when their discovery proves complete coverage of the affected set. A selector adapter must report discovered test/scenario IDs and the IDs it actually ran. An absent expected suite is incomplete verification. When a current suite has no supported selector, run that entire suite and record the expansion. Never rely on a filename substring or zero-test success as selection proof.
+
+A component/feature mode selects that named scope; it does not imply coverage of unrelated dirty files. Report dirty paths outside the selected scope and recommend `changed` or `release`. Full CI runs the complete release policy independently of local selectors. There is no user skip option that can turn a required check into a pass.
+
+### Changed files and source identity
+
+`changed` defaults to the local `origin/main` ref, and records the resolved base commit plus merge base with HEAD. Union changes from merge-base to HEAD with staged, unstaged and untracked non-ignored paths. Use NUL-delimited Git output. Analyze both base and current inventories: deleted paths retain their former owners/dependants, and a rename includes its old and new identities. A deleted test also selects checks proving its required coverage still exists. If the base inventory is unavailable or either side is ambiguous, broaden to release.
+
+A missing base ref, absent merge base or shallow history chooses release and reports the reason. Do not fetch or mutate Git refs automatically. Explicit unknown component/feature IDs remain usage errors, distinct from unknown changed-path mappings. A genuinely empty changed set still runs the common static/freshness/type checks and reports that no behavioral changes were selected.
+
+Verify a frozen snapshot of the current filesystem contents, including dirty tracked files and untracked non-ignored files. Record HEAD, base/merge-base where applicable, staged and unstaged status, renames/deletions, submodule state if present, and a deterministic SHA-256 manifest of source paths, file types/modes and bytes. Record the index identity separately from the tested worktree bytes. Capture paths with spaces and non-ASCII names losslessly. Exclude only declared generated, dependency, Git-internal and evidence directories; expose that exclusion list in the report. Required ignored inputs or uninitialized submodules make the run incomplete unless an adapter explicitly supplies and hashes them.
+
+Check source stability during snapshot creation; retry a bounded number of times and fail incomplete if a coherent snapshot cannot be captured. All checks consume that same snapshot. Hash the originating source again at completion. If it changed, retain results as evidence for the captured identity, report `sourceChanged: true`, and exit incomplete rather than asserting the current checkout passed. Generated build outputs within the execution directory are recorded as artifacts, separate from the input identity. Freshness checks run before any generator can repair those outputs.
+
+### Check composition
+
+Use an explicit check DAG with prerequisites, required scope, resource locks and deadlines. Continue independent checks after a failure, while marking dependent checks `blocked` with the failing prerequisite. Deduplicate a prerequisite only when input identity, command, configuration and outputs match. Retain nested command information when a package script itself runs a build.
+
+| Check | Existing command or planned adapter |
+| --- | --- |
+| Architecture and metadata | Planned `pnpm check:architecture` and `pnpm catalogue:check`, with their fixture suites included in release validation. |
+| Types | `pnpm typecheck`, including the root TypeScript project. |
+| Unit/browser/axe/parity | Release composes `pnpm test`. Scoped execution invokes existing Vitest projects with explicit validated file/scenario selection, preserving each package's preparation steps. Tokens use their existing suite; elements need token and element builds; docs need the registry build. |
+| Contrast and palette freshness | `python3 packages/tokens/scripts/palette.py --check`; reuse its prerequisites and behavior. |
+| Registry and bundles | `pnpm registry:build`, retaining token/element production builds, bundle limits and registry assertions. |
+| Production docs | `pnpm --filter @ultima/docs build`, retaining its registry prerequisite. `pnpm build` remains supported but is not an additional duplicate proof obligation. |
+| Consumer install | `scripts/smoke-install.sh --keep` against the run's own built registry. Preserve its Vite, Next.js and element checks; scoped runs use the full smoke until a validated selector exists. |
+| Production browser scenarios | Required adapter settled by the production-browser decision; consumes the same run's production build and reports scenario IDs. Development Vitest results cannot satisfy it. |
+
+The release plan includes every row, all registered scenarios and tooling fixtures. Required adapters must exist before the final CLI can report release success. During staged implementation, an absent adapter reports `unavailable` and an incomplete run. Existing CI remains operational while those pieces land. Check discovery tests must prove that every required CI validation obligation maps to a release check, including the separately defined consumer-smoke workflow. Network access needed for consumer installation is a prerequisite; a network failure yields incomplete evidence unless an executed test establishes a product failure.
+
+The current docs `test` and `build` scripts regenerate the registry, and the elements `test` script builds tokens and elements. Preserve those steps until the implementation extracts a reusable preparation adapter with equivalent tests. Keep full package suites when a granular adapter cannot establish equivalence. Avoid duplicating palette calculations, registry dependency logic or smoke assertions in the runner.
+
+### Isolation and cancellation
+
+Create a unique run directory under ignored `.scratch/verify/<run-id>/`, containing `source/`, `artifacts/`, `logs/` and `report.json`. A caller-supplied output directory must be new or empty. Place the frozen source in the private execution directory and direct generated registry, token, element and docs outputs there through that directory's normal relative paths. Never run generators against the caller's authored checkout or reuse another run's output. Prepare dependencies from the matching lockfile inside the execution directory; a shared package-manager content store is allowed, writable workspace dependency/build directories are not. Installation output and duration remain visible as preparation.
+
+Allocate loopback ports per run and pass them explicitly to owned servers. Use dynamic allocation with bounded bind retries and server identity/readiness checks; neither probe-then-assume nor attaching to an existing server establishes isolation. Record the actual URLs and ports. Reuse the smoke script's existing dynamic port allocation and `TMPDIR` support; place its consumers under the run directory and record its actual server URL. Its local path rebuilds assets, so it also runs inside the private execution directory. A deployed `--host` result cannot count as evidence for the local snapshot. Record resolved versions of network-fetched scaffold and CLI tools. Inability to establish ownership or isolation yields incomplete verification.
+
+Keep `fileParallelism: false` for the current browser suites. Run browser projects serially within a run while they share viewport, pointer or document state. Serialize commands that write the same generated directories, including nested package preparation. Separate runs may proceed only through their private source/build directories and allocated ports. Further browser parallelism requires an isolation test proving independent state and outputs.
+
+On timeout, SIGINT or SIGTERM, stop owned process groups, allow a bounded graceful shutdown and then terminate remaining owned descendants. Never kill by port or process name. Always attempt to flush the partial report and retain failure logs/screenshots/traces. Release listeners and temporary consumer processes; retain referenced artifacts and remove only run-owned disposable files. The next invocation diagnoses an abandoned run without treating its partial files as completed evidence. Abrupt termination that prevents report finalization leaves an explicitly unfinished manifest.
+
+### Evidence and exits
+
+Version the report schema. Record run ID, mode and original selectors, requested/effective scopes, source identity, tool versions, platform, prerequisite results, timestamps, monotonic durations and final status. The ordered check records contain stable check ID, argv/cwd, dependency IDs, selection/expansion reason, expected and executed test/scenario IDs, status, exit code/signal, duration and repository/run-relative evidence paths. Include skipped checks with scope reasons and blocked checks with prerequisites. Logs are artifacts; screenshots and traces prove only the scenario and state that produced them.
+
+Check states are `passed`, `failed`, `unavailable`, `timed_out`, `cancelled`, `blocked`, `skipped` and `not_run`. A passed check requires successful execution and validated completion/coverage evidence. Missing prerequisites, runner crashes, unreadable reports and unexecuted checks cannot pass. Unexpected test skips within required coverage make the check incomplete; explicitly inapplicable cases need declared reasons in the scope contract. A zero exit code alone cannot turn zero executed required tests into success.
+
+| Exit | Meaning |
+| --- | --- |
+| 0 | All required checks completed and passed for the stated snapshot/scope; or successful help/list/plan with its non-execution status explicit. |
+| 1 | At least one executed check proved a validation failure; report also preserves any incomplete checks. |
+| 2 | Invalid CLI input or explicit selector. |
+| 3 | Incomplete run: missing prerequisite/adapter, timeout, runner failure, capture failure or source changed during the run, with no established validation failure. |
+| 130 / 143 | Cancellation by SIGINT / SIGTERM; retain all results reached before cancellation. |
+
+Cancellation takes precedence for a cancelled run; otherwise an established validation failure takes precedence over incomplete execution. Every other required check must still show its own outcome. There is no aggregate pass when a required check is incomplete. Distinguish a tool's structured validation failure from launch/infrastructure failures instead of mapping every child nonzero exit to a product defect. A report is evidence of one execution, never a reusable pass cache in the initial implementation.
+
+### Acceptance examples
+
+Prove the selector with fixture repositories and exercise execution adapters with controlled subprocesses, then run representative real repository checks. Implementation must demonstrate:
+
+- `component button` selects the React suite, its shipped element/parity coverage and consuming demos, with every extra selection explained. A recipe selects its executable composition without inventing a registry item; a setup change selects consumer installation.
+- A shared token edit selects the complete release plan, including both color modes, both targets, palette and installation. An unknown non-ignored file chooses the same safe fallback and names that path.
+- A shared helper edit follows reverse dependencies; a deliberately unresolved edge falls back. Renames, deleted owners/tests, staged-only edits and untracked source remain in selection. A missing base chooses release without fetching.
+- An explicit misspelled ID exits 2. An empty diff performs the common checks and reports its limited scope. An expected but missing suite, zero-test run, skipped required test or absent production adapter exits incomplete.
+- A failing assertion exits 1; a missing browser, unavailable network prerequisite or timeout exits 3. A dependent build is blocked when its prerequisite fails. Successful independent checks keep their evidence.
+- Two dirty worktrees run concurrently with distinct source snapshots, generated paths and ports. Each report matches its own bytes; mutation during capture fails or retries, and mutation after capture produces `sourceChanged` with incomplete exit.
+- Cancel a run with live server and child processes. Verify process cleanup, released ports and readable partial evidence. A stale output or foreign server cannot satisfy a new run's checks.
+- Human and JSON modes describe identical selection/outcomes. JSON stdout parses as one document; every retained artifact path exists and resolves inside its run. A plan runs zero check processes and never reports a pass.
+- Compare the release plan against CI and execute it end to end after all required adapters land. Preserve full proof-bar and both-mode coverage; measurement of speedup belongs to the measurement decision.
+
 ## Remaining decisions
 
-This document settles architectural enforcement and component metadata/scaffolding. Verification selection and aggregate evidence, production-browser orchestration, executable feature scenarios, measurement baselines and final rollout remain on their own open map tickets. No performance improvement is claimed until implementation supplies comparable evidence.
+Production-browser scenarios and CI gates, executable feature ownership, measurement baselines, and rollout remain on their map tickets. This document records architecture, metadata and verification decisions; implementation and performance evidence follow in the linked build effort.
