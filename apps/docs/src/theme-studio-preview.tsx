@@ -29,10 +29,9 @@ import {
   type RefObject,
 } from 'react';
 
+import { breakpoints } from './breakpoints.stylex';
 import { Kicker } from './page';
 import { previewVars } from './theme-studio-draft';
-
-const RAIL = '@media (min-width: 52.5rem)';
 
 const SCENES = [
   { id: 'workspace', label: 'Workspace' },
@@ -65,7 +64,7 @@ const styles = stylex.create({
     gap: space['--ult-space-6'],
     minBlockSize: 0,
     minInlineSize: 0,
-    order: { default: 0, [RAIL]: 1 },
+    order: { default: 0, [breakpoints.RAIL]: 1 },
     padding: space['--ult-space-8'],
   },
   toolbar: {
@@ -91,7 +90,7 @@ const styles = stylex.create({
   },
   panes: {
     display: 'flex',
-    flexDirection: { default: 'column', [RAIL]: 'row' },
+    flexDirection: { default: 'column', [breakpoints.RAIL]: 'row' },
     flexGrow: 1,
     gap: space['--ult-space-6'],
     minBlockSize: 0,

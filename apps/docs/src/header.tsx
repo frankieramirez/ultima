@@ -5,11 +5,10 @@ import { color, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, NavigationMenu, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
+import { breakpoints } from './breakpoints.stylex';
 import { layoutStyles } from './layout';
 import { Kicker } from './page';
 import { TextLink } from './text-link';
-
-const WIDE = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
   chrome: {
@@ -28,13 +27,13 @@ const styles = stylex.create({
   },
   brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
   cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
-  trigger: { display: { default: 'inline-flex', [WIDE]: 'none' }, paddingInline: space['--ult-space-4'] },
+  trigger: { display: { default: 'inline-flex', [breakpoints.WIDE]: 'none' }, paddingInline: space['--ult-space-4'] },
   links: {
     alignItems: 'center',
-    display: { default: 'none', [WIDE]: 'flex' },
+    display: { default: 'none', [breakpoints.WIDE]: 'flex' },
     flexGrow: 1,
   },
-  status: { display: { default: 'none', [WIDE]: 'block' } },
+  status: { display: { default: 'none', [breakpoints.WIDE]: 'block' } },
   github: {
     fontSize: text['--ult-text-4'],
     marginInlineStart: 'auto',

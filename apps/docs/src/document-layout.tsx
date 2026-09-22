@@ -5,12 +5,11 @@ import * as stylex from "@stylexjs/stylex";
 import { color, font, space, text } from "@ultima/tokens/tokens.stylex";
 import { Breadcrumb, Separator } from "@ultima/ui";
 
+import { breakpoints } from "./breakpoints.stylex";
 import { layoutStyles } from "./layout";
 import { Kicker } from "./page";
 import { shell } from "./shell.stylex";
 import { TextLink } from "./text-link";
-
-const DESKTOP = "@media (min-width: 80rem)";
 
 const styles = stylex.create({
   main: {
@@ -25,7 +24,7 @@ const styles = stylex.create({
     gap: space["--ult-space-9"],
     gridTemplateColumns: {
       default: "minmax(0, 1fr)",
-      [DESKTOP]: "minmax(0, 1fr) 11.5rem",
+      [breakpoints.INDEX]: "minmax(0, 1fr) 11.5rem",
     },
   },
   article: {
@@ -39,12 +38,12 @@ const styles = stylex.create({
   fullWidth: {
     gridTemplateColumns: {
       default: "minmax(0, 1fr)",
-      [DESKTOP]: "minmax(0, 1fr)",
+      [breakpoints.INDEX]: "minmax(0, 1fr)",
     },
   },
   indexRail: {
     alignSelf: "start",
-    display: { default: "none", [DESKTOP]: "block" },
+    display: { default: "none", [breakpoints.INDEX]: "block" },
     insetBlockStart: `calc(${shell.chromeBlock} + ${space["--ult-space-6"]})`,
     maxBlockSize: `calc(100dvh - ${shell.chromeBlock} - ${space["--ult-space-6"]})`,
     minInlineSize: 0,

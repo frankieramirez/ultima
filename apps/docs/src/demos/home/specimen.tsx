@@ -2,9 +2,8 @@ import * as stylex from '@stylexjs/stylex';
 import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import { Badge, Button, Card, Field, Input, Tabs } from '@ultima/ui';
 
+import { breakpoints } from '../../breakpoints.stylex';
 import { contrastStyles } from './contrast';
-
-const DESKTOP = '@media (min-width: 64rem)';
 
 const NOTES = [
   {
@@ -30,7 +29,7 @@ const styles = stylex.create({
     borderColor: 'transparent',
     borderRadius: 0,
     display: 'flex',
-    flexDirection: { default: 'column', [DESKTOP]: 'row' },
+    flexDirection: { default: 'column', [breakpoints.DESKTOP]: 'row' },
   },
   mock: {
     display: 'flex',
@@ -38,7 +37,7 @@ const styles = stylex.create({
     flexGrow: 1,
     gap: space['--ult-space-8'],
     minInlineSize: 0,
-    padding: { default: space['--ult-space-6'], [DESKTOP]: space['--ult-space-9'] },
+    padding: { default: space['--ult-space-6'], [breakpoints.DESKTOP]: space['--ult-space-9'] },
   },
   head: { alignItems: 'center', display: 'flex', justifyContent: 'space-between' },
   title: { fontSize: text['--ult-text-8'], fontWeight: font['--ult-font-weight-medium'], margin: 0 },
@@ -53,16 +52,16 @@ const styles = stylex.create({
   notes: {
     borderBlockStartColor: color['--ult-color-border'],
     borderBlockStartStyle: 'solid',
-    borderBlockStartWidth: { default: border.hairline, [DESKTOP]: 0 },
+    borderBlockStartWidth: { default: border.hairline, [breakpoints.DESKTOP]: 0 },
     borderInlineStartColor: color['--ult-color-border'],
     borderInlineStartStyle: 'solid',
-    borderInlineStartWidth: { default: 0, [DESKTOP]: border.hairline },
+    borderInlineStartWidth: { default: 0, [breakpoints.DESKTOP]: border.hairline },
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
     gap: space['--ult-space-8'],
-    inlineSize: { default: '100%', [DESKTOP]: '28rem' },
-    padding: { default: space['--ult-space-6'], [DESKTOP]: space['--ult-space-9'] },
+    inlineSize: { default: '100%', [breakpoints.DESKTOP]: '28rem' },
+    padding: { default: space['--ult-space-6'], [breakpoints.DESKTOP]: space['--ult-space-9'] },
   },
   note: { display: 'flex', gap: space['--ult-space-6'] },
   noteIndex: {
