@@ -123,7 +123,9 @@ test('an MDX fence highlights its source in a bordered block', async () => {
     );
   }
 
-  const screen = await render(<Prose Content={Content} breadcrumb="COMPONENTS / BUTTON" />);
+  const screen = await render(
+    <Prose Content={Content} breadcrumb={[{ label: 'Components' }, { label: 'Button' }]} />,
+  );
   const article = screen.getByRole('article').element();
   expect(article.querySelector('pre')?.textContent).toBe(SOURCE);
   expect(colorOf('const', article)).not.toBe(colorOf('"Button"', article));

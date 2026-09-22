@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Command, Dialog, ScrollArea } from '@ultima/ui';
+import { visuallyHidden, visuallyHiddenFocusable } from '@ultima/ui/lib/visually-hidden';
 import { useEffect, useState } from 'react';
 
 const styles = stylex.create({
@@ -20,27 +21,9 @@ const styles = stylex.create({
     position: 'relative',
     width: '100%',
   },
-  hiddenTitle: {
-    borderWidth: 0,
-    clip: 'rect(0 0 0 0)',
-    height: '1px',
-    margin: '-1px',
-    overflow: 'hidden',
-    padding: 0,
-    position: 'absolute',
-    whiteSpace: 'nowrap',
-    width: '1px',
-  },
   close: {
-    clip: { default: 'rect(0 0 0 0)', ':focus': 'auto' },
-    height: { default: '1px', ':focus': 'auto' },
-    margin: { default: '-1px', ':focus': 0 },
-    overflow: { default: 'hidden', ':focus': 'visible' },
-    position: 'absolute',
     insetBlockStart: space['--ult-space-3'],
     insetInlineEnd: space['--ult-space-3'],
-    whiteSpace: { default: 'nowrap', ':focus': 'normal' },
-    width: { default: '1px', ':focus': 'auto' },
     zIndex: 1,
   },
   inputRow: {
@@ -126,14 +109,14 @@ export default function CommandDialog() {
           <Dialog.Backdrop forceRender />
           <Dialog.Viewport style={styles.viewport}>
             <Dialog.Popup style={styles.popup}>
-              <Dialog.Title style={styles.hiddenTitle}>Command menu</Dialog.Title>
+              <Dialog.Title style={visuallyHidden}>Command menu</Dialog.Title>
               <Command.Root open inline items={groups} autoHighlight="always" keepHighlight>
                 <div {...stylex.props(styles.inputRow)}>
                   <Command.InputGroup>
                     <Command.Input aria-label="Search actions" placeholder="Search actions" />
                   </Command.InputGroup>
                 </div>
-                <Dialog.Close render={<Button variant="ghost" size="sm" style={styles.close} />}>
+                <Dialog.Close render={<Button variant="ghost" size="sm" style={[visuallyHiddenFocusable, styles.close]} />}>
                   Close
                 </Dialog.Close>
                 <ScrollArea.Root>

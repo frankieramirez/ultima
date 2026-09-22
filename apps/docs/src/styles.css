@@ -53,14 +53,6 @@
     box-sizing: border-box;
   }
 
-  :root {
-    --docs-chrome-block: calc(2 * var(--ult-space-8) + var(--ult-space-10) + 1px);
-  }
-
-  html {
-    scroll-padding-block-start: calc(var(--docs-chrome-block) + var(--ult-space-6));
-  }
-
   body {
     margin: 0;
     font-family: var(--ult-font-sans);

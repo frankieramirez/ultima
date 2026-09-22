@@ -15,7 +15,8 @@ async function mount(path: string) {
 test('the not-found page renders inside the document chrome', async () => {
   const { screen } = await mount('/lost-in-the-suite');
 
-  await expect.element(screen.getByText('NOT FOUND')).toBeVisible();
+  const trail = screen.container.querySelector('nav[aria-label="Breadcrumb"]')!;
+  expect(trail.textContent).toBe('Not Found');
   const heading = screen.getByRole('heading', { name: 'Lost in the aether', level: 1 });
   await expect.element(heading).toBeVisible();
   expect(screen.container.querySelector('article')?.contains(heading.element())).toBe(true);

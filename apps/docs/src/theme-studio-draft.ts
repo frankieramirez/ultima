@@ -20,6 +20,17 @@ export const GROUPS = [
 
 export type GroupId = (typeof GROUPS)[number]['id'];
 
+export function groupLabel(id: GuidedGroup): string {
+  return GROUPS.find((item) => item.id === id)?.label ?? id;
+}
+
+export function draftSummary(draft: ThemeDraft): string {
+  const overrides =
+    Object.keys(draft.overrides.dark).length + Object.keys(draft.overrides.light).length;
+  const locked = Object.values(draft.locks).filter(Boolean).length;
+  return `${overrides} overrides · ${locked} locked group${locked === 1 ? '' : 's'}`;
+}
+
 export const SCALE_ROLES = {
   mithril: 'Neutral',
   arcane: 'Accent',

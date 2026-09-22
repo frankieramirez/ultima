@@ -19,9 +19,18 @@ import {
   Toggle,
   ToggleGroup,
 } from '@ultima/ui';
-import { useRef, useState, type CSSProperties, type MouseEvent, type ReactNode, type RefObject } from 'react';
+import {
+  useRef,
+  useState,
+  type CSSProperties,
+  type FocusEvent,
+  type MouseEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 
 import { breakpoints } from './breakpoints.stylex';
+import { Kicker } from './page';
 import { previewVars } from './theme-studio-draft';
 
 const SCENES = [
@@ -148,7 +157,23 @@ const styles = stylex.create({
     boxShadow: shadow['--ult-shadow-md'],
   },
   inspectable: {
-    borderRadius: radius['--ult-radius-md'],
+    position: 'relative',
+  },
+  inspectTarget: {
+    backgroundColor: {
+      default: 'transparent',
+      ':active': 'transparent',
+      ':hover': 'transparent',
+    },
+    height: 'auto',
+    inset: 0,
+    position: 'absolute',
+    ':focus-visible': {
+      outlineColor: color['--ult-color-border-focus'],
+      outlineOffset: border.focusOffset,
+      outlineStyle: 'dashed',
+      outlineWidth: border.focus,
+    },
     ':hover': {
       outlineColor: color['--ult-color-border-focus'],
       outlineOffset: border.focusOffset,
@@ -174,13 +199,6 @@ const styles = stylex.create({
     flexDirection: 'column',
     gap: space['--ult-space-4'],
     minInlineSize: 0,
-  },
-  specimenLabel: {
-    color: color['--ult-color-text-subtle'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
-    letterSpacing: font['--ult-font-tracking-wide'],
-    margin: 0,
   },
   typeMark: {
     fontSize: text['--ult-text-8'],
@@ -317,7 +335,7 @@ function PreviewPane({
   const scheme = mode === 'dark' ? colorScheme.dark : colorScheme.light;
   const pane = stylex.props(scheme, styles.pane);
 
-  function readTokens(event: MouseEvent<HTMLDivElement>) {
+  function readTokens(event: FocusEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) {
     if (!inspect) return;
     const target = (event.target as HTMLElement | null)?.closest('[data-tokens]');
     if (!(target instanceof HTMLElement) || !event.currentTarget.contains(target)) return;
@@ -330,10 +348,19 @@ function PreviewPane({
     );
   }
 
+  function clearTokens(event: FocusEvent<HTMLDivElement>) {
+    if (!inspect) return;
+    const next = event.relatedTarget;
+    if (next instanceof Node && event.currentTarget.contains(next)) return;
+    onReadout(null);
+  }
+
   return (
     <div
       aria-label={mode === 'dark' ? 'Dark preview' : 'Light preview'}
       className={pane.className}
+      onBlur={clearTokens}
+      onFocus={readTokens}
       onMouseLeave={() => {
         if (inspect) onReadout(null);
       }}
@@ -614,11 +641,11 @@ function SpecimenStrip({ inspect }: { inspect: boolean }) {
   return (
     <div data-preview-specimen {...stylex.props(styles.specimen)}>
       <div {...stylex.props(styles.specimenGroup)}>
-        <p {...stylex.props(styles.specimenLabel)}>01 / TYPE</p>
+        <Kicker>01 / TYPE</Kicker>
         <p {...stylex.props(styles.typeMark)}>Aa</p>
       </div>
       <div {...stylex.props(styles.specimenGroup)}>
-        <p {...stylex.props(styles.specimenLabel)}>02 / INTERACTION</p>
+        <Kicker>02 / INTERACTION</Kicker>
         <div {...stylex.props(styles.row)}>
           <Button size="sm">Rest</Button>
           <Button size="sm" style={styles.hover}>
@@ -630,7 +657,7 @@ function SpecimenStrip({ inspect }: { inspect: boolean }) {
         </div>
       </div>
       <div {...stylex.props(styles.specimenGroup)}>
-        <p {...stylex.props(styles.specimenLabel)}>03 / INSPECT</p>
+        <Kicker>03 / INSPECT</Kicker>
         <Inspectable inspect={inspect} tokens={['--ult-color-accent']}>
           <Code>--ult-color-accent</Code>
         </Inspectable>
@@ -656,6 +683,9 @@ function Inspectable({
       {...stylex.props(inline ? styles.inspectInline : styles.inspectBlock, inspect && styles.inspectable)}
     >
       {children}
+      {inspect ? (
+        <Button aria-label={`Inspect ${tokens.join(', ')}`} style={styles.inspectTarget} variant="ghost" />
+      ) : null}
     </div>
   );
 }

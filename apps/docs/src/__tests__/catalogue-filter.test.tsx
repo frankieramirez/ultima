@@ -59,8 +59,13 @@ test('release and text filters combine, empty results recover, and clear restore
   await expect.element(main.getByRole('link', { name: /^Toggle / })).toBeVisible();
   await userEvent.fill(input, 'no-such-component');
   await expect.element(main.getByRole('status')).toHaveTextContent('0 components');
-  await expect.element(main.getByText('No components match these filters.')).toBeVisible();
-  await userEvent.click(clear);
+  await expect.element(
+    main.getByRole('heading', { name: 'No components match these filters' }),
+  ).toBeVisible();
+  await expect.element(
+    main.getByText('Try a different search or release, or clear the filters to browse the catalogue.'),
+  ).toBeVisible();
+  await userEvent.click(main.getByRole('button', { name: 'Clear filters' }).nth(1));
   await expect.element(input).toHaveValue('');
   await expect.element(input).toHaveFocus();
   await expect.element(release).toHaveTextContent('All releases');
@@ -122,7 +127,7 @@ test('sort labels render immediately, keyboard sorting stays within groups, and 
   await expect.element(main.getByRole('button', { name: 'Clear filters' })).not.toBeDisabled();
   const input = main.getByRole('textbox', { name: 'Filter components' });
   await userEvent.fill(input, 'no-such-component');
-  await userEvent.click(main.getByRole('button', { name: 'Clear filters' }));
+  await userEvent.click(main.getByRole('button', { name: 'Clear filters' }).first());
   await expect.element(input).toHaveFocus();
   await expect.element(sort).toHaveTextContent('Catalogue order');
   expect(groups()).toEqual(original);

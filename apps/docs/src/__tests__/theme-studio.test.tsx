@@ -331,6 +331,70 @@ test('inspect tokens lists declared variables and resolved values per pane mode'
   expect(screen.getByRole('status', { name: 'Token readout' }).element().textContent).toContain(lightRaised);
 });
 
+test('inspect targets take keyboard focus and drive the readout on focus and blur', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const readout = screen.getByRole('status', { name: 'Token readout' });
+
+  expect(pane.querySelector('button[aria-label^="Inspect --ult-"]')).toBeNull();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
+  const target = pane.querySelector<HTMLElement>('[data-tokens*="--ult-color-surface-raised"]');
+  const inspect = screen.getByRole('button', { name: /Inspect --ult-color-surface-raised/ });
+  await expect.element(inspect).toBeVisible();
+
+  inspect.element().focus();
+  await expect.element(readout.getByText('--ult-color-surface-raised')).toBeVisible();
+  const darkRaised = getComputedStyle(target!).getPropertyValue('--ult-color-surface-raised').trim();
+  expect(readout.element().textContent).toContain(darkRaised);
+
+  inspect.element().blur();
+  await expect.poll(() => readout.element().textContent ?? '').not.toContain('--ult-color-surface-raised');
+});
+
+test('inspect targets keep pane order across the compare panes', async () => {
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
+  await userEvent.click(screen.getByRole('button', { name: 'Compare' }).element());
+  const dark = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const light = screen.getByRole('region', { name: 'Light preview' }).element();
+
+  const darkTargets = dark.querySelectorAll('button[aria-label^="Inspect "]');
+  const lightTargets = light.querySelectorAll('button[aria-label^="Inspect "]');
+  expect(darkTargets.length).toBeGreaterThan(0);
+  expect(lightTargets.length).toBeGreaterThan(0);
+  for (const target of darkTargets) {
+    for (const other of lightTargets) {
+      expect(target.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  }
+
+  const last = darkTargets[darkTargets.length - 1] as HTMLElement;
+  last.focus();
+  await userEvent.keyboard('{Tab}');
+  expect(light.contains(document.activeElement)).toBe(true);
+});
+
+test('the inspect target shows the dashed outline on keyboard focus', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
+
+  namedButton(pane, 'Active').focus();
+  await userEvent.keyboard('{Tab}');
+  const focused = document.activeElement as HTMLElement;
+  expect(focused.getAttribute('aria-label')).toMatch(/^Inspect --ult-/);
+  expect(getComputedStyle(focused).outlineStyle).toBe('dashed');
+});
+
+test('the studio passes axe with inspect targets shown', async () => {
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
+  await expect.element(screen.getByRole('button', { name: /Inspect --ult-color-surface-raised/ })).toBeVisible();
+  const results = await axe.run(document.body);
+  expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.html).join(', ')}`)).toEqual([]);
+});
+
 test('editor chrome stays stock dark when the preview is light', async () => {
   const screen = await mount('/theme-studio');
   await userEvent.click(screen.getByRole('button', { name: 'Light' }).element());
@@ -501,6 +565,55 @@ test('shuffle, locks, undo, redo, and reset theme walk one linear history', asyn
   expect(fingerprint()).toBe(reset);
 });
 
+test('the editor rail keeps a pre-mounted status region that announces a shuffle result', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  const status = () => editor.querySelector('[role="status"]')!;
+
+  expect(status()).not.toBeNull();
+  expect(status()).toHaveAttribute('aria-atomic', 'true');
+  expect(status().textContent).toBe('');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Shuffle' }));
+  await expect.poll(() => status().textContent).toMatch(/^\d+ overrides · \d+ locked groups?$/);
+});
+
+test('a shuffle against locked targets announces why nothing changed', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  const status = () => editor.querySelector('[role="status"]')!;
+
+  for (const group of ['Color', 'Typography', 'Density', 'Shape', 'Elevation', 'Motion']) {
+    await userEvent.click(screen.getByRole('button', { name: `Lock ${group}` }));
+  }
+  await userEvent.click(screen.getByRole('button', { name: 'Shuffle' }));
+  await expect.poll(() => status().textContent).toBe('All groups are locked');
+
+  for (const group of ['Typography', 'Density', 'Shape', 'Elevation', 'Motion']) {
+    await userEvent.click(screen.getByRole('button', { name: `Lock ${group}` }));
+  }
+  await userEvent.click(screen.getByRole('button', { name: 'Shuffle Color' }));
+  await expect.poll(() => status().textContent).toBe('Color is locked');
+});
+
+test('shuffle exhaustion announces the attempt limit', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  const status = () => editor.querySelector('[role="status"]')!;
+
+  await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
+  for (const name of ['--ult-color-surface', '--ult-color-text']) {
+    const field = screen.getByRole('textbox', { name });
+    await expect.element(field).toBeVisible();
+    await userEvent.clear(field.element());
+    await userEvent.type(field.element(), '#ffffff');
+  }
+
+  await userEvent.click(screen.getByRole('button', { name: 'Shuffle' }));
+  await expect.poll(() => status().textContent).toBe('No passing palette in 50 attempts');
+  await expect.element(screen.getByText(/Failing pairings/)).toBeVisible();
+});
+
 test('every editor control is a catalogue component, including Color Field seeds', async () => {
   const screen = await mount('/theme-studio');
   const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
@@ -551,8 +664,8 @@ test('unlinking splits modes per row, relinking writes dark to both, and reset c
 
   const link = screen.getByRole('button', { name: 'Link --ult-color-accent modes' });
   await userEvent.click(link.element());
-  const dark = screen.getByRole('textbox', { name: '--ult-color-accent dark' });
-  const light = screen.getByRole('textbox', { name: '--ult-color-accent light' });
+  const dark = screen.getByRole('textbox', { name: 'Dark' });
+  const light = screen.getByRole('textbox', { name: 'Light' });
   await expect.element(dark).toBeVisible();
   await expect.element(light).toBeVisible();
   expect(link.element()).toHaveAttribute('aria-pressed', 'false');

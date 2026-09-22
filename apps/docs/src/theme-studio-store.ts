@@ -5,6 +5,7 @@ import {
   createHistory,
   draftFingerprint,
   redo as redoHistory,
+  SHUFFLE_ATTEMPT_LIMIT,
   shuffleDraft,
   stockDraft,
   undo as undoHistory,
@@ -15,6 +16,11 @@ import {
   type ThemeDraft,
 } from '@ultima/tokens';
 import { useState } from 'react';
+
+import { draftSummary, groupLabel } from './theme-studio-draft';
+
+// Word Joiner: invisible and zero-width. Same string twice is not a live-region change; this is.
+const WORD_JOINER = '\u2060';
 
 export type DraftEdit = (draft: ThemeDraft) => ThemeDraft;
 
@@ -27,6 +33,10 @@ export function useStudioDraft() {
   );
   const [variation, setVariation] = useState<ShuffleVariation>('broad');
   const [exhaustion, setExhaustion] = useState<ShuffleExhaustion | null>(null);
+  const [announcement, setAnnouncement] = useState('');
+
+  const announce = (text: string) =>
+    setAnnouncement((current) => (text !== '' && current === text ? `${text}${WORD_JOINER}` : text));
 
   const update = (edit: DraftEdit) => setState((state) => ({ ...state, draft: edit(state.draft) }));
 
@@ -72,8 +82,12 @@ export function useStudioDraft() {
         history: commitHistory(state.history, result.draft),
       }));
       setExhaustion(null);
+      announce(draftSummary(result.draft));
     } else if (result.kind === 'exhausted') {
       setExhaustion(result.report);
+      announce(`No passing palette in ${SHUFFLE_ATTEMPT_LIMIT} attempts`);
+    } else {
+      announce(target === 'global' ? 'All groups are locked' : `${groupLabel(target)} is locked`);
     }
   };
 
@@ -90,6 +104,8 @@ export function useStudioDraft() {
     setVariation,
     shuffle,
     exhaustion,
+    announcement,
+    announce,
     fingerprint: draftFingerprint(draft),
   };
 }

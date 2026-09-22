@@ -6,6 +6,7 @@ import { Button, ScrollArea, Sidebar } from '@ultima/ui';
 
 import { breakpoints } from './breakpoints.stylex';
 import { navigation, type NavLink } from './navigation';
+import { shell } from './shell.stylex';
 
 export const MENU_LABEL = 'Ultima';
 
@@ -14,14 +15,14 @@ const styles = stylex.create({
     alignSelf: 'flex-start',
     blockSize: '100%',
     flexShrink: 0,
-    insetBlockStart: { default: 'auto', [breakpoints.WIDE]: 'var(--docs-chrome-block)' },
+    insetBlockStart: { default: 'auto', [breakpoints.WIDE]: shell.chromeBlock },
     position: { default: 'static', [breakpoints.WIDE]: 'sticky' },
   },
   fillRow: {
     alignSelf: { default: null, [breakpoints.WIDE]: 'stretch' },
     blockSize: { default: null, [breakpoints.WIDE]: 'auto' },
     contain: { default: null, [breakpoints.WIDE]: 'size' },
-    maxBlockSize: { default: null, [breakpoints.WIDE]: 'calc(100dvh - var(--docs-chrome-block))' },
+    maxBlockSize: { default: null, [breakpoints.WIDE]: `calc(100dvh - ${shell.chromeBlock})` },
   },
   scroll: { blockSize: '100%' },
   dismiss: { display: 'flex', justifyContent: 'flex-end' },
