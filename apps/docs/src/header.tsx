@@ -5,6 +5,7 @@ import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, NavigationMenu, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
+import { layoutStyles } from './layout';
 import { TextLink } from './text-link';
 
 const WIDE = '@media (min-width: 48rem)';
@@ -23,7 +24,6 @@ const styles = stylex.create({
     gap: space['--ult-space-10'],
     inlineSize: '100%',
     paddingBlock: space['--ult-space-8'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
   },
   brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
   cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
@@ -55,7 +55,7 @@ const LINKS = [
 export function Header() {
   return (
     <header {...stylex.props(styles.chrome)}>
-      <div {...stylex.props(styles.bar)}>
+      <div {...stylex.props(layoutStyles.gutter, styles.bar)}>
         <div {...stylex.props(styles.cluster)}>
           <TextLink variant="muted" render={<Link to="/" aria-label="Ultima home" />}>
             <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
