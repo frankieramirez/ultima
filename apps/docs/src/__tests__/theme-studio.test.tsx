@@ -331,6 +331,70 @@ test('inspect tokens lists declared variables and resolved values per pane mode'
   expect(screen.getByRole('status', { name: 'Token readout' }).element().textContent).toContain(lightRaised);
 });
 
+test('inspect targets take keyboard focus and drive the readout on focus and blur', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const readout = screen.getByRole('status', { name: 'Token readout' });
+
+  expect(pane.querySelector('button[aria-label^="Inspect --ult-"]')).toBeNull();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
+  const target = pane.querySelector<HTMLElement>('[data-tokens*="--ult-color-surface-raised"]');
+  const inspect = screen.getByRole('button', { name: /Inspect --ult-color-surface-raised/ });
+  await expect.element(inspect).toBeVisible();
+
+  inspect.element().focus();
+  await expect.element(readout.getByText('--ult-color-surface-raised')).toBeVisible();
+  const darkRaised = getComputedStyle(target!).getPropertyValue('--ult-color-surface-raised').trim();
+  expect(readout.element().textContent).toContain(darkRaised);
+
+  inspect.element().blur();
+  await expect.poll(() => readout.element().textContent ?? '').not.toContain('--ult-color-surface-raised');
+});
+
+test('inspect targets keep pane order across the compare panes', async () => {
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
+  await userEvent.click(screen.getByRole('button', { name: 'Compare' }).element());
+  const dark = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const light = screen.getByRole('region', { name: 'Light preview' }).element();
+
+  const darkTargets = dark.querySelectorAll('button[aria-label^="Inspect "]');
+  const lightTargets = light.querySelectorAll('button[aria-label^="Inspect "]');
+  expect(darkTargets.length).toBeGreaterThan(0);
+  expect(lightTargets.length).toBeGreaterThan(0);
+  for (const target of darkTargets) {
+    for (const other of lightTargets) {
+      expect(target.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  }
+
+  const last = darkTargets[darkTargets.length - 1] as HTMLElement;
+  last.focus();
+  await userEvent.keyboard('{Tab}');
+  expect(light.contains(document.activeElement)).toBe(true);
+});
+
+test('the inspect target shows the dashed outline on keyboard focus', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
+
+  namedButton(pane, 'Active').focus();
+  await userEvent.keyboard('{Tab}');
+  const focused = document.activeElement as HTMLElement;
+  expect(focused.getAttribute('aria-label')).toMatch(/^Inspect --ult-/);
+  expect(getComputedStyle(focused).outlineStyle).toBe('dashed');
+});
+
+test('the studio passes axe with inspect targets shown', async () => {
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
+  await expect.element(screen.getByRole('button', { name: /Inspect --ult-color-surface-raised/ })).toBeVisible();
+  const results = await axe.run(document.body);
+  expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.html).join(', ')}`)).toEqual([]);
+});
+
 test('editor chrome stays stock dark when the preview is light', async () => {
   const screen = await mount('/theme-studio');
   await userEvent.click(screen.getByRole('button', { name: 'Light' }).element());

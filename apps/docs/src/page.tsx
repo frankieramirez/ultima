@@ -26,11 +26,6 @@ const styles = stylex.create({
     marginBlock: space["--ult-space-4"],
     maxWidth: "44rem",
   },
-  link: {
-    color: color["--ult-color-highlight-text"],
-    textDecoration: "underline",
-    textUnderlineOffset: space["--ult-space-2"],
-  },
   kicker: {
     fontFamily: font["--ult-font-mono"],
     fontSize: text["--ult-text-1"],
@@ -102,6 +97,4 @@ export function Note({ children }: { children: ReactNode }) {
   return <p {...stylex.props(styles.note)}>{children}</p>;
 }
 
-export function TextLink(props: ComponentProps<"a">) {
-  return <a {...props} {...stylex.props(styles.link)} />;
-}
+export { TextLink } from "./text-link";

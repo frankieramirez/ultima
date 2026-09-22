@@ -1,15 +1,13 @@
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { color, font, space } from '@ultima/tokens/tokens.stylex';
+import { font } from '@ultima/tokens/tokens.stylex';
 
 import { Page } from '../page';
+import { TextLink } from '../text-link';
 
 const styles = stylex.create({
   home: {
-    color: color['--ult-color-highlight-text'],
     fontWeight: font['--ult-font-weight-medium'],
-    textDecoration: 'underline',
-    textUnderlineOffset: space['--ult-space-2'],
   },
 });
 
@@ -21,9 +19,9 @@ export function NotFound() {
       lede={
         <>
           This page is not in the grimoire.{' '}
-          <Link to="/" {...stylex.props(styles.home)}>
+          <TextLink style={styles.home} render={<Link to="/" />}>
             Return to Ultima
-          </Link>
+          </TextLink>
           .
         </>
       }
