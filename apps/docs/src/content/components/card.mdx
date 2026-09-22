@@ -1,4 +1,5 @@
 import { Demo } from '../../demo';
+import { WebComponent } from '../../web-component';
 import Overview from '../../demos/card/overview';
 import overviewSource from '../../demos/card/overview?raw';
 import Item from '../../demos/card/item';
@@ -48,3 +49,5 @@ Only what Ultima adds. The parts otherwise accept the props of their [native HTM
 
 - **Elements.** Static `div` parts, except `Card.Title`, which is an `h3` by default and can change through `render`.
 - **Focus and keyboard.** None. Card and its parts are static; interactive children keep their own behavior.
+
+<WebComponent item="card" />

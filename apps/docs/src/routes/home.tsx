@@ -21,12 +21,12 @@ const styles = stylex.create({
     maxInlineSize: '90rem',
   },
   hero: {
-    alignItems: { default: 'start', [breakpoints.DESKTOP]: 'end' },
+    alignItems: 'start',
     display: 'flex',
     flexDirection: { default: 'column', [breakpoints.DESKTOP]: 'row' },
     gap: { default: space['--ult-space-10'], [breakpoints.DESKTOP]: space['--ult-space-12'] },
     paddingBlockStart: { default: space['--ult-space-9'], [breakpoints.DESKTOP]: space['--ult-space-12'] },
-    paddingBlockEnd: space['--ult-space-11'],
+    paddingBlockEnd: { default: space['--ult-space-10'], [breakpoints.DESKTOP]: space['--ult-space-11'] },
   },
   editorial: {
     display: 'flex',
@@ -52,7 +52,7 @@ const styles = stylex.create({
     flexShrink: 0,
     gap: space['--ult-space-8'],
     inlineSize: { default: '100%', [breakpoints.DESKTOP]: '24.5rem' },
-    paddingBlockEnd: { default: 0, [breakpoints.DESKTOP]: space['--ult-space-5'] },
+    paddingBlockStart: { default: 0, [breakpoints.DESKTOP]: space['--ult-space-11'] },
   },
   proposition: {
     color: color['--ult-color-text-muted'],
@@ -60,11 +60,7 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
   },
-  heroAction: {
-    inlineSize: '100%',
-    justifyContent: 'space-between',
-    paddingInline: space['--ult-space-7'],
-  },
+  heroAction: { inlineSize: '100%', justifyContent: 'space-between', paddingInline: space['--ult-space-7'] },
   guide: {
     fontSize: text['--ult-text-4'],
   },
@@ -111,12 +107,7 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-relaxed'],
     margin: 0,
   },
-  commands: {
-    flexBasis: '26rem',
-    flexGrow: 1,
-    maxInlineSize: '40rem',
-    minInlineSize: 0,
-  },
+  commands: { flexBasis: '26rem', flexGrow: 1, maxInlineSize: '40rem', minInlineSize: 0 },
 });
 
 export function Home() {
@@ -136,10 +127,15 @@ export function Home() {
         </div>
         <div {...stylex.props(styles.intro)}>
           <p {...stylex.props(styles.proposition)}>
-            React components with a common language. Precise tokens, Base UI behavior, and StyleX styling. Ready to
-            become your code.
+            React components with a common language. Precise tokens, Base UI behavior, and StyleX styling.
+            Ready to become your code.
           </p>
-          <Button size="lg" style={[contrastStyles.root, styles.heroAction]} render={<Link to="/components" />} nativeButton={false}>
+          <Button
+            size="lg"
+            style={[contrastStyles.root, styles.heroAction]}
+            render={<Link to="/components" />}
+            nativeButton={false}
+          >
             Explore the components <ArrowUpRightIcon aria-hidden />
           </Button>
           <TextLink variant="muted" style={styles.guide} render={<Link to="/install" />}>
@@ -166,7 +162,8 @@ export function Home() {
             to your source.
           </h2>
           <p {...stylex.props(styles.installDescription)}>
-            Set up StyleX, add a component, and take it from there. No hidden styling layer. No locked-in theme.
+            Set up StyleX, add a component, and take it from there. No hidden styling layer. No locked-in
+            theme.
           </p>
         </div>
         <div {...stylex.props(styles.commands)}>

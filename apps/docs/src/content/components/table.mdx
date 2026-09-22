@@ -1,4 +1,5 @@
 import { Demo } from '../../demo';
+import { WebComponent } from '../../web-component';
 import Report from '../../demos/table/report';
 import reportSource from '../../demos/table/report?raw';
 import HorizontalScroll from '../../demos/table/horizontal-scroll';
@@ -138,3 +139,5 @@ Only what Ultima adds. The parts otherwise accept the corresponding [native tabl
 - **Name.** `Table.Caption` is optional on a bare table and required under `Table.Scroll`, which it names through `aria-labelledby`.
 - **Headers.** `Table.HeadCell` defaults to `scope="col"`; override it for a row header. Its `sort` emits `aria-sort` on the same `th`, which is where a screen reader looks for it.
 - **Focus and keyboard.** The table itself is static. `Table.Scroll` is the only part that enters the tab order, and only while its content overflows; it takes the focus ring. Without it nothing inside a table is focusable. `Table.SortButton` is a wrapper trigger, so the element you render into it must carry its own focus ring: an Ultima `Button` does.
+
+<WebComponent item="table" />

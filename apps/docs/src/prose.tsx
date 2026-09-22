@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
@@ -11,15 +12,14 @@ import {
   type ReactNode,
 } from 'react';
 
+import { CopyButton } from './copy-button';
 import { DocumentLayout, type Crumb } from './document-layout';
 import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
 import { TextLink } from './text-link';
 import { headings } from './typography';
 
 const styles = stylex.create({
-  root: {
-    minInlineSize: 0,
-  },
+  root: { minInlineSize: 0 },
   h1: {
     marginBottom: space['--ult-space-6'],
   },
@@ -36,32 +36,23 @@ const styles = stylex.create({
     marginBlock: space['--ult-space-5'],
     paddingInlineStart: space['--ult-space-7'],
   },
-  li: {
-    marginBlock: space['--ult-space-3'],
-  },
+  li: { marginBlock: space['--ult-space-3'] },
+  fence: { marginBlock: space['--ult-space-6'], position: 'relative' },
   code: {
-    marginBlock: space['--ult-space-6'],
-    padding: space['--ult-space-7'],
+    paddingBlock: space['--ult-space-7'],
+    paddingInlineEnd: space['--ult-space-12'],
+    paddingInlineStart: space['--ult-space-7'],
   },
-  inlineCode: {
-    overflowWrap: 'anywhere',
-  },
-  inlineCodeInScrollableTable: {
-    overflowWrap: 'normal',
-    whiteSpace: 'nowrap',
-  },
+  inlineCode: { overflowWrap: 'anywhere' },
+  inlineCodeInScrollableTable: { overflowWrap: 'normal', whiteSpace: 'nowrap' },
   blockquote: {
     color: color['--ult-color-text-muted'],
     marginBlock: space['--ult-space-6'],
     marginInline: 0,
     paddingInlineStart: space['--ult-space-6'],
   },
-  uncaptionedTable: {
-    marginBlock: space['--ult-space-6'],
-  },
-  cell: {
-    verticalAlign: 'top',
-  },
+  uncaptionedTable: { marginBlock: space['--ult-space-6'] },
+  cell: { verticalAlign: 'top' },
 });
 
 function H1(props: ComponentProps<'h1'>) {
@@ -90,6 +81,14 @@ function Ol(props: ComponentProps<'ol'>) {
 function Li(props: ComponentProps<'li'>) {
   return <li {...props} {...stylex.props(styles.li)} />;
 }
+const SERVED_FILE = /\.\w+$/;
+
+function A({ href, ...props }: Omit<ComponentProps<'a'>, 'style'>) {
+  if (href?.startsWith('/') && !SERVED_FILE.test(href)) {
+    return <TextLink render={<Link to={href} />} {...props} />;
+  }
+  return <TextLink href={href} {...props} />;
+}
 const ScrollableTableContext = createContext(false);
 
 function Code({ children }: ComponentProps<'code'>) {
@@ -101,15 +100,22 @@ function Code({ children }: ComponentProps<'code'>) {
   );
 }
 /** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
+export function Fence({ code, lang }: { code: string; lang?: string }) {
+  return (
+    <div {...stylex.props(styles.fence)}>
+      <HighlightedCode code={code} lang={lang} style={styles.code} />
+      <CopyButton text={code} floating />
+    </div>
+  );
+}
 function Pre({ children }: ComponentProps<'pre'>) {
   const nested = isValidElement<{ children?: ReactNode; className?: string }>(children)
     ? children
     : undefined;
   return (
-    <HighlightedCode
+    <Fence
       code={nodeText(nested ? nested.props.children : children)}
       lang={fenceLanguage(nested?.props.className)}
-      style={styles.code}
     />
   );
 }
@@ -151,7 +157,7 @@ const components = {
   ul: Ul,
   ol: Ol,
   li: Li,
-  a: TextLink,
+  a: A,
   code: Code,
   pre: Pre,
   blockquote: Blockquote,
@@ -160,6 +166,8 @@ const components = {
   td: Td,
 } satisfies MDXComponents;
 
+export { components as proseComponents };
+
 export function Prose({
   Content,
   breadcrumb,
@@ -167,5 +175,11 @@ export function Prose({
   Content: ComponentType<{ components?: MDXComponents }>;
   breadcrumb: Crumb[];
 }) {
-  return <DocumentLayout breadcrumb={breadcrumb}><div {...stylex.props(styles.root)}><Content components={components} /></div></DocumentLayout>;
+  return (
+    <DocumentLayout breadcrumb={breadcrumb}>
+      <div {...stylex.props(styles.root)}>
+        <Content components={components} />
+      </div>
+    </DocumentLayout>
+  );
 }

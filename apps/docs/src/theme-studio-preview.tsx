@@ -3,6 +3,7 @@ import { colorScheme, type ResolvedDraft, type TokenTable } from '@ultima/tokens
 import { border, color, font, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 import {
   Alert,
+  Avatar,
   Badge,
   Button,
   Card,
@@ -10,15 +11,18 @@ import {
   Dialog,
   Field,
   Input,
+  Meter,
   Popover,
   Progress,
   Spinner,
+  Stat,
   Switch,
   Table,
   Tabs,
   Toggle,
   ToggleGroup,
 } from '@ultima/ui';
+import { StackIcon, UsersIcon } from '@phosphor-icons/react';
 import {
   useRef,
   useState,
@@ -65,7 +69,8 @@ const styles = stylex.create({
     minBlockSize: 0,
     minInlineSize: 0,
     order: { default: 0, [breakpoints.RAIL]: 1 },
-    padding: space['--ult-space-8'],
+    paddingBlock: space['--ult-space-8'],
+    paddingInline: { default: space['--ult-space-6'], [breakpoints.RAIL]: space['--ult-space-9'] },
   },
   toolbar: {
     alignItems: 'center',
@@ -75,19 +80,18 @@ const styles = stylex.create({
     gap: space['--ult-space-6'],
     justifyContent: 'space-between',
   },
-  tools: {
-    alignItems: 'center',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: space['--ult-space-4'],
+  heading: { alignItems: 'baseline', display: 'flex', gap: space['--ult-space-5'], minInlineSize: 0 },
+  title: {
+    fontSize: text['--ult-text-7'],
+    fontWeight: font['--ult-font-weight-medium'],
+    letterSpacing: font['--ult-font-tracking-tight'],
+    lineHeight: font['--ult-font-leading-none'],
+    margin: 0,
   },
-  scenes: {
-    flexGrow: 1,
-    minInlineSize: 0,
-  },
-  sceneList: {
-    overflowX: 'auto',
-  },
+  caption: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-3'] },
+  tools: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
+  scenes: { flexShrink: 0, minInlineSize: 0 },
+  sceneList: { overflowX: 'auto' },
   panes: {
     display: 'flex',
     flexDirection: { default: 'column', [breakpoints.RAIL]: 'row' },
@@ -98,35 +102,135 @@ const styles = stylex.create({
   },
   pane: {
     display: 'flex',
+    flexBasis: 0,
     flexDirection: 'column',
     flexGrow: 1,
     gap: space['--ult-space-6'],
     minBlockSize: 0,
     minInlineSize: 0,
-    overflow: 'auto',
     position: 'relative',
+  },
+  sheet: {
+    backgroundColor: color['--ult-color-surface'],
+    borderColor: color['--ult-color-border'],
+    borderRadius: radius['--ult-radius-lg'],
+    borderStyle: 'solid',
+    borderWidth: border.hairline,
+    color: color['--ult-color-text'],
+    flexGrow: 1,
+    fontFamily: font['--ult-font-sans'],
+    minBlockSize: 0,
+    overflow: 'auto',
   },
   scene: {
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-8'],
+    padding: { default: space['--ult-space-6'], [breakpoints.RAIL]: space['--ult-space-9'] },
   },
-  stack: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space['--ult-space-6'],
-  },
-  mock: {
+  stack: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-6'] },
+  app: {
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-8'],
+    padding: { default: space['--ult-space-6'], [breakpoints.RAIL]: space['--ult-space-9'] },
   },
-  row: {
+  appBar: {
     alignItems: 'center',
     display: 'flex',
-    flexWrap: 'wrap',
-    gap: space['--ult-space-4'],
+    gap: space['--ult-space-6'],
+    justifyContent: 'space-between',
   },
+  appName: {
+    fontSize: text['--ult-text-8'],
+    fontWeight: font['--ult-font-weight-medium'],
+    letterSpacing: font['--ult-font-tracking-tight'],
+    lineHeight: font['--ult-font-leading-none'],
+    margin: 0,
+  },
+  quick: { alignItems: 'flex-end', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-6'] },
+  quickField: { flexBasis: '16rem', flexGrow: 1, minInlineSize: 0 },
+  crumb: {
+    color: color['--ult-color-text-subtle'],
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-1'],
+    letterSpacing: font['--ult-font-tracking-wide'],
+    margin: 0,
+  },
+  headline: {
+    fontSize: text['--ult-text-10'],
+    fontWeight: font['--ult-font-weight-medium'],
+    letterSpacing: font['--ult-font-tracking-tight'],
+    lineHeight: font['--ult-font-leading-tight'],
+    margin: 0,
+  },
+  lede: {
+    color: color['--ult-color-text-muted'],
+    fontSize: text['--ult-text-5'],
+    lineHeight: font['--ult-font-leading-normal'],
+    margin: 0,
+  },
+  stats: {
+    display: 'grid',
+    gap: space['--ult-space-8'],
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.RAIL]: 'repeat(3, minmax(0, 1fr))' },
+  },
+  stat: {
+    borderBlockColor: color['--ult-color-border'],
+    borderBlockStyle: 'solid',
+    borderBlockWidth: border.hairline,
+    gap: space['--ult-space-4'],
+    paddingBlock: space['--ult-space-6'],
+  },
+  statValue: {
+    fontSize: text['--ult-text-10'],
+    fontWeight: font['--ult-font-weight-medium'],
+    letterSpacing: font['--ult-font-tracking-tight'],
+  },
+  statNote: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-3'] },
+  columns: {
+    alignItems: 'flex-start',
+    display: 'flex',
+    flexDirection: { default: 'column', [breakpoints.RAIL]: 'row' },
+    gap: space['--ult-space-9'],
+  },
+  projects: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+    gap: space['--ult-space-6'],
+    minInlineSize: 0,
+  },
+  sectionTitle: {
+    fontSize: text['--ult-text-7'],
+    fontWeight: font['--ult-font-weight-medium'],
+    letterSpacing: font['--ult-font-tracking-tight'],
+    margin: 0,
+  },
+  projectCell: { alignItems: 'center', display: 'flex', gap: space['--ult-space-5'] },
+  projectIcon: {
+    alignItems: 'center',
+    backgroundColor: color['--ult-color-accent-subtle'],
+    borderRadius: radius['--ult-radius-sm'],
+    color: color['--ult-color-accent-text'],
+    display: 'inline-flex',
+    flexShrink: 0,
+    fontSize: text['--ult-text-6'],
+    justifyContent: 'center',
+    padding: space['--ult-space-4'],
+  },
+  projectCopy: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-1'] },
+  projectMeta: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-2'] },
+  statusCell: { textAlign: 'end' },
+  invite: {
+    backgroundColor: color['--ult-color-accent-subtle'],
+    borderColor: color['--ult-color-accent-border'],
+    flexShrink: 0,
+    inlineSize: { default: '100%', [breakpoints.RAIL]: '17rem' },
+  },
+  inviteIcon: { color: color['--ult-color-accent-text'], fontSize: text['--ult-text-9'] },
+  fill: { inlineSize: '100%' },
+  row: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
   display: {
     fontSize: text['--ult-text-9'],
     fontWeight: font['--ult-font-weight-semibold'],
@@ -134,28 +238,16 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-tight'],
     margin: 0,
   },
-  subtitle: {
-    fontSize: text['--ult-text-7'],
-    fontWeight: font['--ult-font-weight-medium'],
-    margin: 0,
-  },
+  subtitle: { fontSize: text['--ult-text-7'], fontWeight: font['--ult-font-weight-medium'], margin: 0 },
   body: {
     color: color['--ult-color-text-muted'],
     fontSize: text['--ult-text-5'],
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
   },
-  note: {
-    color: color['--ult-color-text-subtle'],
-    fontSize: text['--ult-text-3'],
-    margin: 0,
-  },
-  spinner: {
-    fontSize: text['--ult-text-9'],
-  },
-  raised: {
-    boxShadow: shadow['--ult-shadow-md'],
-  },
+  note: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-3'], margin: 0 },
+  spinner: { fontSize: text['--ult-text-9'] },
+  raised: { boxShadow: shadow['--ult-shadow-md'] },
   inspectable: {
     position: 'relative',
   },
@@ -181,28 +273,49 @@ const styles = stylex.create({
       outlineWidth: border.focus,
     },
   },
-  inspectBlock: {
-    display: 'block',
-  },
-  inspectInline: {
-    display: 'inline-flex',
-  },
+  inspectBlock: { display: 'block' },
+  inspectInline: { display: 'inline-flex' },
   specimen: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: space['--ult-space-8'],
-    marginBlockStart: 'auto',
-    paddingBlockStart: space['--ult-space-6'],
+    backgroundColor: color['--ult-color-surface-raised'],
+    borderColor: color['--ult-color-border'],
+    borderRadius: radius['--ult-radius-md'],
+    borderStyle: 'solid',
+    borderWidth: border.hairline,
+    color: color['--ult-color-text'],
+    display: 'grid',
+    flexShrink: { default: 1, [breakpoints.RAIL]: 0 },
+    fontFamily: font['--ult-font-sans'],
+    minBlockSize: 0,
+    overflow: { default: 'auto', [breakpoints.RAIL]: 'hidden' },
+    gridTemplateColumns: {
+      default: 'minmax(0, 1fr)',
+      [breakpoints.RAIL]: 'minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)',
+    },
   },
   specimenGroup: {
+    borderInlineStartColor: color['--ult-color-border'],
+    borderInlineStartStyle: 'solid',
+    borderInlineStartWidth: { default: 0, [breakpoints.RAIL]: border.hairline },
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-4'],
+    justifyContent: 'space-between',
     minInlineSize: 0,
+    padding: space['--ult-space-7'],
   },
+  specimenLead: { backgroundColor: color['--ult-color-surface'], borderInlineStartWidth: 0 },
   typeMark: {
     fontSize: text['--ult-text-8'],
     fontWeight: font['--ult-font-weight-medium'],
+    letterSpacing: font['--ult-font-tracking-tight'],
+    lineHeight: font['--ult-font-leading-tight'],
+    margin: 0,
+  },
+  specimenNote: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-2'], margin: 0 },
+  tokenName: {
+    color: color['--ult-color-text'],
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-3'],
     margin: 0,
   },
   readout: {
@@ -210,25 +323,16 @@ const styles = stylex.create({
     color: color['--ult-color-text-muted'],
     display: 'flex',
     flexDirection: 'column',
+    flexShrink: 0,
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-2'],
     gap: space['--ult-space-2'],
     minInlineSize: 0,
   },
-  tokenRow: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: space['--ult-space-4'],
-  },
-  tokenValue: {
-    color: color['--ult-color-text'],
-  },
-  hover: {
-    backgroundColor: color['--ult-color-accent-hover'],
-  },
-  active: {
-    backgroundColor: color['--ult-color-accent-active'],
-  },
+  tokenRow: { display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
+  tokenValue: { color: color['--ult-color-text'] },
+  hover: { backgroundColor: color['--ult-color-accent-hover'] },
+  active: { backgroundColor: color['--ult-color-accent-active'] },
 });
 
 export function ThemeStudioPreview({
@@ -248,22 +352,10 @@ export function ThemeStudioPreview({
   return (
     <section aria-label="Live preview" {...stylex.props(styles.preview)}>
       <div {...stylex.props(styles.toolbar)}>
-        <Tabs.Root
-          onValueChange={(next) => {
-            if (next) setScene(next as Scene);
-          }}
-          style={styles.scenes}
-          value={scene}
-        >
-          <Tabs.List aria-label="Preview scenes" style={styles.sceneList}>
-            {SCENES.map((item) => (
-              <Tabs.Tab key={item.id} value={item.id}>
-                {item.label}
-              </Tabs.Tab>
-            ))}
-            <Tabs.Indicator />
-          </Tabs.List>
-        </Tabs.Root>
+        <div {...stylex.props(styles.heading)}>
+          <p {...stylex.props(styles.title)}>Preview</p>
+          <span {...stylex.props(styles.caption)}>Live components</span>
+        </div>
         <div {...stylex.props(styles.tools)}>
           <Toggle
             aria-label="Inspect tokens"
@@ -294,6 +386,22 @@ export function ThemeStudioPreview({
           </ToggleGroup.Root>
         </div>
       </div>
+      <Tabs.Root
+        onValueChange={(next) => {
+          if (next) setScene(next as Scene);
+        }}
+        style={styles.scenes}
+        value={scene}
+      >
+        <Tabs.List aria-label="Preview scenes" style={styles.sceneList}>
+          {SCENES.map((item) => (
+            <Tabs.Tab key={item.id} value={item.id}>
+              {item.label}
+            </Tabs.Tab>
+          ))}
+          <Tabs.Indicator />
+        </Tabs.List>
+      </Tabs.Root>
       <div {...stylex.props(styles.panes)}>
         {panes.map((pane) => (
           <PreviewPane
@@ -339,12 +447,13 @@ function PreviewPane({
     if (!inspect) return;
     const target = (event.target as HTMLElement | null)?.closest('[data-tokens]');
     if (!(target instanceof HTMLElement) || !event.currentTarget.contains(target)) return;
-    const names = target.dataset.tokens?.split(',').map((name) => name.trim()).filter(Boolean) ?? [];
+    const names =
+      target.dataset.tokens
+        ?.split(',')
+        .map((name) => name.trim())
+        .filter(Boolean) ?? [];
     onReadout(
-      names.map((name) => ({
-        name,
-        value: getComputedStyle(target).getPropertyValue(name).trim() || '—',
-      })),
+      names.map((name) => ({ name, value: getComputedStyle(target).getPropertyValue(name).trim() || '—' })),
     );
   }
 
@@ -369,10 +478,12 @@ function PreviewPane({
       role="region"
       style={{ ...pane.style, ...previewVars(table) } as CSSProperties}
     >
-      <div data-preview-scene={scene} {...stylex.props(styles.scene)}>
-        <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />
+      <div data-preview-scene={scene} {...stylex.props(styles.sheet)}>
+        <div {...stylex.props(scene === 'workspace' ? styles.app : styles.scene)}>
+          <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />
+        </div>
       </div>
-      <SpecimenStrip inspect={inspect} />
+      <SpecimenStrip inspect={inspect} mode={mode} />
     </div>
   );
 }
@@ -406,63 +517,122 @@ function SceneBody({
   }
 }
 
+const PROJECTS = [
+  { name: 'Website refresh', meta: 'Design · Updated just now', status: 'In progress', tone: 'accent' },
+  { name: 'Component library', meta: 'Engineering · 2 hours ago', status: 'In review', tone: 'warning' },
+  { name: 'Brand guidelines', meta: 'Design · Yesterday', status: 'Published', tone: 'success' },
+] as const;
+
 function WorkspaceScene({ inspect, mode }: { inspect: boolean; mode: PaneMode }) {
   return (
-    <Inspectable inspect={inspect} tokens={CARD_TOKENS}>
-      <Card.Root style={styles.raised}>
-        <Card.Header>
-          <Card.Title render={<h2 />}>Forma</Card.Title>
-          <Card.Description>A live application mock under the draft theme.</Card.Description>
-        </Card.Header>
-        <Card.Body style={styles.mock}>
-          <Tabs.Root defaultValue="general">
-            <Tabs.List aria-label="Workspace sections">
-              <Tabs.Tab value="general">General</Tabs.Tab>
-              <Tabs.Tab value="members">Members</Tabs.Tab>
-              <Tabs.Indicator />
-            </Tabs.List>
-          </Tabs.Root>
-          <Field.Root name={`${mode}-project-name`}>
-            <Field.Label>Project name</Field.Label>
-            <Input defaultValue="Untitled theme" />
-          </Field.Root>
+    <>
+      <div {...stylex.props(styles.appBar)}>
+        <h2 {...stylex.props(styles.appName)}>Forma</h2>
+        <Avatar.Root>
+          <Avatar.Fallback>AM</Avatar.Fallback>
+        </Avatar.Root>
+      </div>
+      <Tabs.Root defaultValue="overview">
+        <Tabs.List aria-label="Workspace sections">
+          <Tabs.Tab value="overview">Overview</Tabs.Tab>
+          <Tabs.Tab value="members">Members</Tabs.Tab>
+          <Tabs.Tab value="projects">Projects</Tabs.Tab>
+          <Tabs.Indicator />
+        </Tabs.List>
+      </Tabs.Root>
+      <div {...stylex.props(styles.quick)}>
+        <Field.Root name={`${mode}-project-name`} style={styles.quickField}>
+          <Field.Label>Project name</Field.Label>
+          <Input defaultValue="Untitled theme" />
+        </Field.Root>
+        <Button>New project</Button>
+      </div>
+      <div {...stylex.props(styles.stack)}>
+        <p {...stylex.props(styles.crumb)}>WORKSPACE / OVERVIEW</p>
+        <p {...stylex.props(styles.headline)}>Make room for the next idea.</p>
+        <p {...stylex.props(styles.lede)}>Your projects, people, and progress in one place.</p>
+      </div>
+      <div {...stylex.props(styles.stats)}>
+        {[
+          ['Active projects', '12', '+2 this month'],
+          ['Tasks completed', '84', 'Across 4 teams'],
+          ['Time saved', '32h', 'This month'],
+        ].map(([label, value, note]) => (
+          <Stat.Root key={label} style={styles.stat}>
+            <Stat.Label>{label}</Stat.Label>
+            <Stat.Value style={styles.statValue}>{value}</Stat.Value>
+            <span {...stylex.props(styles.statNote)}>{note}</span>
+          </Stat.Root>
+        ))}
+      </div>
+      <div {...stylex.props(styles.columns)}>
+        <div {...stylex.props(styles.projects)}>
+          <p {...stylex.props(styles.sectionTitle)}>Recent projects</p>
           <Table.Root>
-            <Table.Caption>Recent drafts</Table.Caption>
+            <Table.Caption>Recent projects</Table.Caption>
             <Table.Head>
               <Table.Row>
-                <Table.HeadCell>Name</Table.HeadCell>
-                <Table.HeadCell>Status</Table.HeadCell>
+                <Table.HeadCell>Project</Table.HeadCell>
+                <Table.HeadCell style={styles.statusCell}>Status</Table.HeadCell>
               </Table.Row>
             </Table.Head>
             <Table.Body>
-              <Table.Row>
-                <Table.Cell>Stock verdant</Table.Cell>
-                <Table.Cell>
-                  <Badge tone="success">Passing</Badge>
-                </Table.Cell>
-              </Table.Row>
-              <Table.Row>
-                <Table.Cell>Ember study</Table.Cell>
-                <Table.Cell>
-                  <Badge tone="warning">Review</Badge>
-                </Table.Cell>
-              </Table.Row>
+              {PROJECTS.map((project) => (
+                <Table.Row key={project.name}>
+                  <Table.Cell>
+                    <span {...stylex.props(styles.projectCell)}>
+                      <span aria-hidden {...stylex.props(styles.projectIcon)}>
+                        <StackIcon />
+                      </span>
+                      <span {...stylex.props(styles.projectCopy)}>
+                        <span>{project.name}</span>
+                        <span {...stylex.props(styles.projectMeta)}>{project.meta}</span>
+                      </span>
+                    </span>
+                  </Table.Cell>
+                  <Table.Cell style={styles.statusCell}>
+                    <Badge tone={project.tone}>{project.status}</Badge>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
             </Table.Body>
           </Table.Root>
-        </Card.Body>
-        <Card.Footer>
-          <Button>Save draft</Button>
-          <Button variant="outline">Discard</Button>
-        </Card.Footer>
-      </Card.Root>
-    </Inspectable>
+        </div>
+        <Inspectable inspect={inspect} tokens={CARD_TOKENS}>
+          <Card.Root style={[styles.raised, styles.invite]}>
+            <Card.Header>
+              <span aria-hidden {...stylex.props(styles.inviteIcon)}>
+                <UsersIcon />
+              </span>
+              <Card.Title>Better together.</Card.Title>
+              <Card.Description>Invite your team and give every idea a place to grow.</Card.Description>
+            </Card.Header>
+            <Card.Body>
+              <Input aria-label="Invite by email" placeholder="name@company.com" />
+            </Card.Body>
+            <Card.Footer>
+              <Button style={styles.fill}>Send invitation</Button>
+            </Card.Footer>
+          </Card.Root>
+        </Inspectable>
+      </div>
+      <Meter.Root aria-label="Storage used" max={100} value={64}>
+        <Meter.Label>Storage used · 64 of 100 GB</Meter.Label>
+        <Meter.Track>
+          <Meter.Indicator />
+        </Meter.Track>
+      </Meter.Root>
+    </>
   );
 }
 
 function TypographyScene({ inspect }: { inspect: boolean }) {
   return (
     <div {...stylex.props(styles.stack)}>
-      <Inspectable inspect={inspect} tokens={['--ult-text-9', '--ult-font-sans', '--ult-font-tracking-tight']}>
+      <Inspectable
+        inspect={inspect}
+        tokens={['--ult-text-9', '--ult-font-sans', '--ult-font-tracking-tight']}
+      >
         <p {...stylex.props(styles.display)}>Mireval at dusk</p>
       </Inspectable>
       <Inspectable inspect={inspect} tokens={['--ult-text-7']}>
@@ -473,8 +643,8 @@ function TypographyScene({ inspect }: { inspect: boolean }) {
         tokens={['--ult-text-5', '--ult-font-leading-normal', '--ult-color-text-muted']}
       >
         <p {...stylex.props(styles.body)}>
-          Body copy rides on <Code>--ult-text-5</Code> with muted color. Density never moves these; only
-          the typography group does.
+          Body copy rides on <Code>--ult-text-5</Code> with muted color. Density never moves these; only the
+          typography group does.
         </p>
       </Inspectable>
     </div>
@@ -505,7 +675,10 @@ function ControlsScene({ inspect, mode }: { inspect: boolean; mode: PaneMode }) 
       </div>
       <Field.Root name={`${mode}-character`}>
         <Field.Label>Character name</Field.Label>
-        <Inspectable inspect={inspect} tokens={['--ult-color-surface-sunken', '--ult-color-border', '--ult-color-border-focus']}>
+        <Inspectable
+          inspect={inspect}
+          tokens={['--ult-color-surface-sunken', '--ult-color-border', '--ult-color-border-focus']}
+        >
           <Input placeholder="e.g. Sable of the Ninth House" />
         </Inspectable>
         <Field.Description>Shown on your license.</Field.Description>
@@ -625,7 +798,9 @@ function MotionScene({ inspect }: { inspect: boolean }) {
             <Spinner />
           </span>
         </Inspectable>
-        <p {...stylex.props(styles.note)}>loop uses --ult-motion-loop. Transitions use fast, base, and slow.</p>
+        <p {...stylex.props(styles.note)}>
+          loop uses --ult-motion-loop. Transitions use fast, base, and slow.
+        </p>
       </div>
       <Progress.Root value={null}>
         <Progress.Label>Restoring backup</Progress.Label>
@@ -637,12 +812,13 @@ function MotionScene({ inspect }: { inspect: boolean }) {
   );
 }
 
-function SpecimenStrip({ inspect }: { inspect: boolean }) {
+function SpecimenStrip({ inspect, mode }: { inspect: boolean; mode: PaneMode }) {
   return (
     <div data-preview-specimen {...stylex.props(styles.specimen)}>
-      <div {...stylex.props(styles.specimenGroup)}>
+      <div {...stylex.props(styles.specimenGroup, styles.specimenLead)}>
         <Kicker>01 / TYPE</Kicker>
-        <p {...stylex.props(styles.typeMark)}>Aa</p>
+        <p {...stylex.props(styles.typeMark)}>Aa / Built to be yours.</p>
+        <p {...stylex.props(styles.specimenNote)}>Sans for reading, mono for the record.</p>
       </div>
       <div {...stylex.props(styles.specimenGroup)}>
         <Kicker>02 / INTERACTION</Kicker>
@@ -655,12 +831,14 @@ function SpecimenStrip({ inspect }: { inspect: boolean }) {
             Active
           </Button>
         </div>
+        <p {...stylex.props(styles.specimenNote)}>Accent / {mode === 'dark' ? 'Dark' : 'Light'} mode</p>
       </div>
       <div {...stylex.props(styles.specimenGroup)}>
         <Kicker>03 / INSPECT</Kicker>
         <Inspectable inspect={inspect} tokens={['--ult-color-accent']}>
           <Code>--ult-color-accent</Code>
         </Inspectable>
+        <p {...stylex.props(styles.specimenNote)}>Hover a part with inspect on to read its tokens.</p>
       </div>
     </div>
   );

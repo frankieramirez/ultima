@@ -3,12 +3,7 @@ import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.
 import type { ReactNode } from 'react';
 
 const styles = stylex.create({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space['--ult-space-2'],
-    minWidth: 0,
-  },
+  root: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-2'], minWidth: 0 },
   chip: {
     borderColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-xs'],
@@ -29,19 +24,17 @@ const styles = stylex.create({
   },
 });
 
-const fill = stylex.create({
-  chip: (value: string) => ({ backgroundColor: value }),
+const fill = stylex.create({ chip: (value: string) => ({ backgroundColor: value }) });
+
+const square = stylex.create({
+  chip: { display: 'block', height: space['--ult-space-9'], width: space['--ult-space-9'] },
 });
 
-export function Swatch({
-  value,
-  caption,
-  note,
-}: {
-  value: string;
-  caption: string;
-  note?: ReactNode;
-}) {
+export function SwatchChip({ value }: { value: string }) {
+  return <span aria-hidden {...stylex.props(styles.chip, square.chip, fill.chip(value))} />;
+}
+
+export function Swatch({ value, caption, note }: { value: string; caption: string; note?: ReactNode }) {
   return (
     <div {...stylex.props(styles.root)}>
       <div aria-hidden {...stylex.props(styles.chip, fill.chip(value))} />

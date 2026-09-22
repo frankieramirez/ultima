@@ -18,6 +18,9 @@ const styles = stylex.create({
     },
   },
   scrollbar: {
+    opacity: { default: 0, ':is([data-hovering], [data-scrolling])': 1 },
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'opacity',
     blockSize: { default: null, ':is([data-orientation="horizontal"])': space['--ult-space-5'] },
     display: 'flex',
     flexDirection: { default: null, ':is([data-orientation="horizontal"])': 'column' },

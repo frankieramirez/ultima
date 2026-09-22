@@ -1,0 +1,52 @@
+import { Fence } from '../prose';
+import { ElementIndex } from '../element-index';
+
+# Elements
+
+Nine components also ship as custom elements, for a host that cannot run React: a static page, a server-rendered template, a report, a CMS block. Each is the same component compiled for the platform, so it reads the same tokens, takes the same axes, and passes the same contrast gate.
+
+## Install
+
+Two paths, one build. A host that runs the shadcn CLI vendors the element as a registry item beside the tokens stylesheet it depends on:
+
+```bash
+npx shadcn add @ultima/ult-button
+```
+
+```html
+<link rel="stylesheet" href="./ultima-tokens.css">
+<script type="module" src="./ult-button.js"></script>
+<ult-button variant="solid" tone="accent">Save</ult-button>
+```
+
+A host that runs no tooling loads the served file from this site. One file per element, or the whole set in one:
+
+```html
+<link rel="stylesheet" href="https://ultima.systems/tokens.css">
+<script type="module" src="https://ultima.systems/elements/ultima.js"></script>
+```
+
+The file is a vendored artifact rather than copy-source: a reinstall overwrites it and local edits are forfeit. The served URL always carries the latest build; pinning means vendoring the file.
+
+## How an element reads
+
+Tag names are `ult-` plus the registry item name. A compound component is a family of tags, one per part, named `ult-<item>-<part>`: `ult-tabs`, `ult-tabs-list`, `ult-tabs-tab`, `ult-tabs-panel`.
+
+Axes are attributes carrying the React prop values verbatim: `variant="solid"`, `size="sm"`, `tone="danger"`. Boolean props are present-or-absent attributes, `disabled` among them. Machine state is `data-*` on the part elements themselves, `data-selected` and `data-orientation` for instance, so your CSS can target it directly.
+
+## Styling
+
+Elements render into light DOM, never shadow. Your token overrides and `data-theme` reach the element unchanged, so a re-skin at the semantic layer restyles React and elements alike. The inner parts an element renders carry `part=` attributes with kebab-cased part names, so the styling target is a descendant of the tag; target it with a plain attribute selector, and use the `style` attribute on the host for a one-off.
+
+```css
+ult-button [part="root"] { letter-spacing: 0.02em; }
+ult-tabs-tab [part="tab"][data-selected] { font-weight: 600; }
+```
+
+Interactive elements run on Zag.js, bundled inside the file, so nothing is installed alongside it.
+
+## The catalogue
+
+Every element has a **Web component** section on its component page with a live example, its markup, and its attributes. The [gallery](/elements.html) renders all nine in both color modes on one static page.
+
+<ElementIndex />

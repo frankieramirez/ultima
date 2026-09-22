@@ -1,4 +1,5 @@
 import { Demo } from '../../demo';
+import { WebComponent } from '../../web-component';
 import Inline from '../../demos/code/inline';
 import inlineSource from '../../demos/code/inline?raw';
 import Block from '../../demos/code/block';
@@ -76,3 +77,5 @@ Only what Ultima adds. Everything else is native; see MDN's [`code`](https://dev
 
 - **Elements and name.** Native `code`, or `pre` with a `code` child for a block; its content is the accessible text.
 - **Focus and keyboard.** None. Blocks wrap long lines, so they are not scroll regions and need no `tabIndex`.
+
+<WebComponent item="code" />

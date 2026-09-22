@@ -68,6 +68,10 @@ The stable URL is `https://ultima.systems/tokens.css`. Mana's audit report fetch
 
 The export is plain CSS: no `@import`, no `url()`, no remote fonts. It follows `prefers-color-scheme` on `:root` and also ships `[data-theme="dark"]` and `[data-theme="light"]` blocks so you can pin a document to one mode with an attribute on `<html>`.
 
+## Web components
+
+Nine components also ship as custom elements for a host that cannot run React, installed the same way as a registry item (`npx shadcn add @ultima/ult-button`) or loaded from `https://ultima.systems/elements/`. The [Elements](/elements) page has both paths and the styling story.
+
 ## For an agent
 
 Point an agent at [`/llms.txt`](/llms.txt): the principles, the conventions, every component's import and props, and the token names, as plain Markdown at one URL. It is generated on every build, and it is the only guidance Ultima publishes for a consumer's repository — nothing documentary is installed into yours.

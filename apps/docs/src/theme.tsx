@@ -8,6 +8,7 @@ import {
   useLayoutEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 
@@ -20,10 +21,7 @@ export type ThemePreference = 'dark' | 'light' | 'system';
 const ThemeContext = createContext<{
   preference: ThemePreference;
   setPreference: (preference: ThemePreference) => void;
-}>({
-  preference: 'system',
-  setPreference: () => {},
-});
+}>({ preference: 'system', setPreference: () => {} });
 
 function isThemePreference(value: string | null): value is ThemePreference {
   return value === 'dark' || value === 'light' || value === 'system';
@@ -48,6 +46,29 @@ function themeProps(preference: ThemePreference) {
 
 export function useTheme() {
   return useContext(ThemeContext);
+}
+
+const LIGHT_QUERY = '(prefers-color-scheme: light)';
+
+function subscribeToScheme(onChange: () => void) {
+  const query = window.matchMedia(LIGHT_QUERY);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+function readSystemScheme(): 'dark' | 'light' {
+  return window.matchMedia(LIGHT_QUERY).matches ? 'light' : 'dark';
+}
+
+function serverScheme(): 'dark' | 'light' {
+  return 'dark';
+}
+
+/** The color scheme on screen: the stored preference, or the system's answer when the preference is `system`. */
+export function useResolvedScheme(): 'dark' | 'light' {
+  const { preference } = useTheme();
+  const system = useSyncExternalStore(subscribeToScheme, readSystemScheme, serverScheme);
+  return preference === 'system' ? system : preference;
 }
 
 export function ThemeRoot({ children }: { children: ReactNode }) {

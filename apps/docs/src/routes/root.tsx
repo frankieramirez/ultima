@@ -10,7 +10,6 @@ import { SiteFooter } from '../site-footer';
 import { SiteMenu } from '../site-menu';
 import { ThemeRoot } from '../theme';
 
-
 const styles = stylex.create({
   shell: {
     minBlockSize: '100dvh',
@@ -19,37 +18,16 @@ const styles = stylex.create({
     flexDirection: 'column',
     fontFamily: font['--ult-font-sans'],
   },
-  studioViewport: {
-    blockSize: '100dvh',
-  },
-  body: {
-    display: 'flex',
-    inlineSize: '100%',
-    flexGrow: 1,
-  },
-  bounded: {
-    minBlockSize: 0,
-  },
-  content: {
-    flexGrow: 1,
-    minInlineSize: 0,
-    position: 'relative',
-  },
-  workbench: {
-    display: 'flex',
-    flexDirection: 'column',
-    minBlockSize: 0,
-  },
+  studioViewport: { blockSize: '100dvh' },
+  body: { display: 'flex', inlineSize: '100%', flexGrow: 1 },
+  bounded: { minBlockSize: 0 },
+  content: { flexGrow: 1, minInlineSize: 0, position: 'relative' },
+  workbench: { display: 'flex', flexDirection: 'column', minBlockSize: 0 },
 });
 
 // Phosphor's provider replaces its context wholesale and IconBase has no
 // fallback for size, so a partial value renders every glyph at zero.
-const icons: IconProps = {
-  color: 'currentColor',
-  size: '1em',
-  weight: 'regular',
-  mirrored: false,
-};
+const icons: IconProps = { color: 'currentColor', size: '1em', weight: 'regular', mirrored: false };
 
 export function Root() {
   return (
@@ -82,10 +60,11 @@ function Shell() {
   }, [pathname]);
 
   const studio = pathname === '/theme-studio';
+  const home = pathname === '/';
 
   return (
-    <Sidebar.Root open={!studio} style={[styles.shell, studio && styles.studioViewport]}>
-      <Header />
+    <Sidebar.Root open={!studio && !home} style={[styles.shell, studio && styles.studioViewport]}>
+      <Header wide={home} />
       <div {...stylex.props(styles.body, studio && styles.bounded)}>
         <SiteMenu />
         <div ref={content} {...stylex.props(styles.content, studio && styles.workbench)}>
@@ -93,7 +72,7 @@ function Shell() {
         </div>
       </div>
       <Separator />
-      {studio ? null : <SiteFooter />}
+      {studio ? null : <SiteFooter wide={home} />}
     </Sidebar.Root>
   );
 }

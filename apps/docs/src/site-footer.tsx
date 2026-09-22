@@ -40,11 +40,11 @@ const OPTIONS: { value: ThemePreference; label: string }[] = [
   { value: 'system', label: 'System' },
 ];
 
-export function SiteFooter() {
+export function SiteFooter({ wide = false }: { wide?: boolean }) {
   const { preference, setPreference } = useTheme();
 
   return (
-    <footer {...stylex.props(layoutStyles.gutter, styles.bar)}>
+    <footer {...stylex.props(wide ? layoutStyles.gutterWide : layoutStyles.gutter, styles.bar)}>
       <Kicker>ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES</Kicker>
       <div {...stylex.props(styles.cluster)}>
         <div {...stylex.props(styles.links)}>

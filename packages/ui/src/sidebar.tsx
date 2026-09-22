@@ -8,7 +8,6 @@ import {
   easing,
   font,
   motion,
-  radius,
   space,
   text,
 } from "@ultima/tokens/tokens.stylex";
@@ -45,7 +44,10 @@ const styles = stylex.create({
     backgroundColor: color["--ult-color-surface"],
     borderInlineEndColor: color["--ult-color-border"],
     borderInlineEndStyle: "solid",
-    borderInlineEndWidth: 0,
+    borderInlineEndWidth: {
+      default: 0,
+      [DESKTOP]: { default: border.hairline, ":is([data-closed])": 0 },
+    },
     boxSizing: "border-box",
     color: color["--ult-color-text"],
     display: { default: "none", [DESKTOP]: "block" },
@@ -110,7 +112,7 @@ const styles = stylex.create({
     borderInlineStartColor: "transparent",
     borderInlineStartStyle: "solid",
     borderInlineStartWidth: 0,
-    borderRadius: radius["--ult-radius-sm"],
+    borderRadius: 0,
     borderStyle: "none",
     boxSizing: "border-box",
     color: {
@@ -127,7 +129,10 @@ const styles = stylex.create({
     lineHeight: font["--ult-font-leading-normal"],
     margin: 0,
     paddingBlock: space["--ult-space-2"],
-    paddingInline: space["--ult-space-4"],
+    paddingInline: {
+      default: space["--ult-space-4"],
+      ':is([data-active], [aria-current="page"])': `calc(${space["--ult-space-4"]} - ${border.focus})`,
+    },
     textAlign: "start",
     textDecoration: "none",
     transitionDuration: motion["--ult-motion-fast"],
@@ -141,12 +146,13 @@ const styles = stylex.create({
   link: {
     backgroundColor: {
       default: "transparent",
-      ':is([data-active], [aria-current="page"])': color["--ult-color-surface-sunken"],
+      ':is([data-active], [aria-current="page"])':
+        color["--ult-color-surface-sunken"],
       ":hover": color["--ult-color-surface-hover"],
     },
     borderInlineStartColor: {
       default: "transparent",
-      ':is([data-active], [aria-current="page"])': color["--ult-color-accent"],
+      ':is([data-active], [aria-current="page"])': color["--ult-color-text"],
     },
     borderInlineStartWidth: {
       default: 0,

@@ -61,6 +61,7 @@ import { components } from './components';
 import { Prose } from './prose';
 import { ComponentsPage } from './routes/components';
 import { Home } from './routes/home';
+import { ElementsPage } from './routes/elements';
 import { InstallPage } from './routes/install';
 import { NotFound } from './routes/not-found';
 import { PalettePage } from './routes/palette';
@@ -85,6 +86,12 @@ const installRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/install',
   component: InstallPage,
+});
+
+const elementsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/elements',
+  component: ElementsPage,
 });
 
 const tokensRoute = createRoute({
@@ -199,6 +206,7 @@ const themeStudioRoute = createRoute({
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   installRoute,
+  elementsRoute,
   tokensRoute,
   paletteRoute,
   componentsRoute,

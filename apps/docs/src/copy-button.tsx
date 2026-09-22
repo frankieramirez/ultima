@@ -1,21 +1,60 @@
+import { CheckIcon, CopyIcon, WarningIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
+import { color, space } from '@ultima/tokens/tokens.stylex';
 import { Button, type ButtonVariant } from '@ultima/ui';
 import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
-// Word Joiner: invisible and zero-width. Same string twice is not a live-region change; this is.
-const WORD_JOINER = '\u2060';
+import { breakpoints } from './breakpoints.stylex';
 
+// Word Joiner: invisible and zero-width. Same string twice is not a live-region change; this is.
+const WORD_JOINER = '⁠';
+
+const CONFIRMATION_MS = 1500;
+
+type CopyStatus = '' | 'Copied' | 'Copy failed';
+
+const styles = stylex.create({
+  icon: {
+    backgroundColor: {
+      default: color['--ult-color-surface-sunken'],
+      ':hover': color['--ult-color-surface-hover'],
+      [breakpoints.WIDE]: { default: 'transparent', ':hover': color['--ult-color-surface-hover'] },
+    },
+    flexShrink: 0,
+    paddingInline: space['--ult-space-2'],
+    width: space['--ult-space-9'],
+  },
+  floating: {
+    insetBlockStart: space['--ult-space-4'],
+    insetInlineEnd: space['--ult-space-4'],
+    position: 'absolute',
+  },
+});
+
+function glyph(status: CopyStatus) {
+  if (status === 'Copied') return <CheckIcon aria-hidden />;
+  if (status === 'Copy failed') return <WarningIcon aria-hidden />;
+  return <CopyIcon aria-hidden />;
+}
+
+/**
+ * Without `children` it is the site's square icon button, whose name stays `ariaLabel` while the
+ * status region announces the result. A `children` render receives the status and draws its own label.
+ */
 export function CopyButton({
   text,
   ariaLabel,
   variant = 'ghost',
+  floating = false,
   children,
 }: {
   text: string;
   ariaLabel?: string;
   variant?: ButtonVariant;
-  children?: (status: '' | 'Copied' | 'Copy failed') => ReactNode;
+  /** Pin the icon button to the top and inline-end corner of a `position: relative` code block. */
+  floating?: boolean;
+  children?: (status: CopyStatus) => ReactNode;
 }) {
   const [status, setStatus] = useState('');
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -31,18 +70,24 @@ export function CopyButton({
     }
     setStatus((current) => (current === result ? `${result}${WORD_JOINER}` : result));
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setStatus(''), 2000);
+    timer.current = setTimeout(() => setStatus(''), CONFIRMATION_MS);
   }
 
-  const label = status.replace(WORD_JOINER, '') as '' | 'Copied' | 'Copy failed';
+  const label = status.replace(WORD_JOINER, '') as CopyStatus;
 
   return (
     <>
-      <Button variant={variant} size="sm" onClick={copy} aria-label={ariaLabel}>
-        {children ? children(label) : label || 'Copy'}
+      <Button
+        aria-label={label === 'Copy failed' ? 'Copy failed' : (ariaLabel ?? (children ? undefined : 'Copy'))}
+        onClick={copy}
+        size="sm"
+        style={children ? undefined : [styles.icon, floating && styles.floating]}
+        variant={variant}
+      >
+        {children ? children(label) : glyph(label)}
       </Button>
-      {/* The confirmation is a label swap on a button that often carries an `aria-label`, so nothing
-          announces it. This region is in the tree from the first render, which is what makes it speak. */}
+      {/* The confirmation is a glyph or label swap on a button that often carries an `aria-label`, so
+          nothing announces it. This region is in the tree from the first render, which is what makes it speak. */}
       <span role="status" aria-atomic="true" {...stylex.props(visuallyHidden)}>
         {status}
       </span>

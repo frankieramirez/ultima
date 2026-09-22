@@ -25,7 +25,7 @@ const styles = stylex.create({
     inlineSize: '100%',
     paddingBlock: space['--ult-space-8'],
   },
-  brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
+  brandLogo: { display: 'block', height: text['--ult-text-5'], width: 'auto' },
   cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
   trigger: { display: { default: 'inline-flex', [breakpoints.WIDE]: 'none' }, paddingInline: space['--ult-space-4'] },
   links: {
@@ -47,10 +47,10 @@ const LINKS = [
   { label: 'Studio', to: '/theme-studio' },
 ] as const;
 
-export function Header() {
+export function Header({ wide = false }: { wide?: boolean }) {
   return (
     <header {...stylex.props(styles.chrome)}>
-      <div {...stylex.props(layoutStyles.gutter, styles.bar)}>
+      <div {...stylex.props(wide ? layoutStyles.gutterWide : layoutStyles.gutter, styles.bar)}>
         <div {...stylex.props(styles.cluster)}>
           <TextLink variant="muted" render={<Link to="/" aria-label="Ultima home" />}>
             <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
