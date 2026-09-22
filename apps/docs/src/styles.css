@@ -55,7 +55,6 @@
 
   :root {
     --docs-chrome-block: calc(2 * var(--ult-space-8) + var(--ult-space-10) + 1px);
-    --docs-footer-block: calc(2 * var(--ult-space-8) + var(--ult-space-9) + 1px);
   }
 
   html {

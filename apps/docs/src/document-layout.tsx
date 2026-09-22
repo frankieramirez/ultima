@@ -50,7 +50,7 @@ const styles = stylex.create({
     alignSelf: "start",
     display: { default: "none", [DESKTOP]: "block" },
     insetBlockStart: `calc(var(--docs-chrome-block) + ${space["--ult-space-6"]})`,
-    maxBlockSize: `calc(100dvh - var(--docs-chrome-block) - var(--docs-footer-block) - ${space["--ult-space-6"]})`,
+    maxBlockSize: `calc(100dvh - var(--docs-chrome-block) - ${space["--ult-space-6"]})`,
     minInlineSize: 0,
     overflow: "auto",
     position: "sticky",
