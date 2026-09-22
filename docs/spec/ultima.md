@@ -1975,13 +1975,13 @@ Decided on [Testing strategy for v0](https://linear.app/frankie-ramirez/issue/UL
 
 ### Environment
 
-Component interaction tests use Vitest in browser mode with Playwright's Chromium provider. Token logic and source/tooling checks also use Node tests. There is no jsdom project. The planned [production browser runner](agent-infrastructure.md#production-browser-verification) adds real route journeys against built docs using the existing Playwright library; it retains the component proof bar below.
+Rendering and interaction tests use Vitest browser mode with Playwright Chromium. Pure token tests use Node; the elements package has separate browser and Node projects. UI and docs have browser configurations. There is no jsdom project. Planned static contributor-tooling fixtures also run in Node. The planned [production browser runner](agent-infrastructure.md#production-browser-verification) adds real route journeys against built docs using the existing Playwright library; it retains the component proof bar below.
 
 Half of what v0 has to prove is only true in a real browser. `:focus-visible` renders an outline, Base UI's popups position against real layout through Floating UI, `[data-starting-style]` transitions fire, and the `Switch.Thumb` hairline exists for a rendering mode. In jsdom each of those degrades into an assertion about an attribute, which proves the test was written and not that the contract holds. A design system whose product is CSS should not prove itself in an environment with no cascade.
 
 StyleX is a compile-time transform, so the test environment needs the unplugin either way. The Vitest config imports the same plugin configuration as the docs build rather than declaring its own, so the two cannot drift. `useCSSLayers` stays `true` in tests: layer ordering is exactly what the consumer reset rule is about, and an unlayered test environment would prove the wrong thing.
 
-**Viewport.** Both Vitest configurations pin the Chromium instance's viewport, `viewport: { width: 1280, height: 720 }`, rather than inheriting Playwright's default, decided on [What the expanded v0 catalogue changes about the proof bar and the release gate](https://linear.app/frankie-ramirez/issue/ULT-58). Desktop is the stated default width for every test, and a test that depends on width says so: `page.viewport(390, 844)` in a `beforeEach` inside that test's own `describe`, with the desktop width restored in `afterEach`. The viewport persists across the tests in a file, so a stray resize would silently retune every test after it. `page.viewport` resizes the real browser window, so a `matchMedia` subscription such as Sidebar's fires without a mock and no viewport is stubbed anywhere. Sidebar is the first caller; this is the standing pattern for any component whose contract names a breakpoint.
+**Viewport.** The UI and docs browser configurations pin the Chromium instance's viewport, `viewport: { width: 1280, height: 720 }`, rather than inheriting Playwright's default, decided on [What the expanded v0 catalogue changes about the proof bar and the release gate](https://linear.app/frankie-ramirez/issue/ULT-58). Desktop is the stated default width for every test, and a test that depends on width says so: `page.viewport(390, 844)` in a `beforeEach` inside that test's own `describe`, with the desktop width restored in `afterEach`. The viewport persists across the tests in a file, so a stray resize would silently retune every test after it. `page.viewport` resizes the real browser window, so a `matchMedia` subscription such as Sidebar's fires without a mock and no viewport is stubbed anywhere. Sidebar is the first caller; this is the standing pattern for any component whose contract names a breakpoint.
 
 ### What a build ticket proves
 
@@ -2038,7 +2038,7 @@ The smoke install scaffolds both frameworks and installs the released catalogue 
 
 ### CI
 
-One workflow, `.github/workflows/ci.yml`, on `pull_request` and on `push` to `main`. One `check` job, in order:
+The main validation workflow, `.github/workflows/ci.yml`, runs on `pull_request` and on `push` to `main`. Consumer installation also has the separate smoke workflow described above. The main workflow currently has one `check` job, in order:
 
 1. Install.
 2. `pnpm typecheck`.
@@ -2051,7 +2051,7 @@ Steps 5 and 6 are in the list because generation breaking is a real failure mode
 
 v0 shipped without a linter. [Architectural checks](agent-infrastructure.md#architectural-checks), decided on [Architectural checks: coverage, exceptions, and repair diagnostics](https://github.com/frankieramirez/ultima/issues/436), now specifies a repository-owned TypeScript checker for Ultima's contracts, with scoped exceptions and repair diagnostics. Its implementation will add `pnpm check:architecture` as a blocking static gate before browser tests. The command is planned, not yet part of the workflow above.
 
-`packages/tokens` has unit tests for the theme draft and its operations alongside the contrast gate and typecheck. Docs Vitest tests exercise application behavior and demos through development transforms. [Production browser verification](agent-infrastructure.md#production-browser-verification) specifies a separate planned Chromium gate against built routes, with dark/light and desktop/narrow scenarios, isolated state and retained evidence. [Verification CLI](agent-infrastructure.md#verification-cli) specifies selection and aggregate results. These commands are planned; the workflow above describes the current implementation.
+`packages/tokens` has unit tests for the theme draft and its operations alongside the contrast gate and typecheck. Docs Vitest tests exercise application behavior and demos through development transforms. [Production browser verification](agent-infrastructure.md#production-browser-verification) specifies a separate planned Chromium gate against built routes, with 26 minimum scenario cells, dark/light and desktop/narrow scenarios, isolated state and retained evidence. [Verification CLI](agent-infrastructure.md#verification-cli) specifies selection and aggregate results, distinguishing partial coverage, failures and incomplete execution; [adoption](agent-infrastructure.md#adoption-and-maintenance) controls promotion to required CI. These commands are planned; the workflow above describes the current implementation.
 
 ### Considered and declined
 
@@ -2060,6 +2060,8 @@ v0 shipped without a linter. [Architectural checks](agent-infrastructure.md#arch
 The direction matters more than the verdict: demo modules compose into stories later without loss, and stories do not decompose back into copyable demos. Declining now forecloses nothing.
 
 **Visual regression.** Not in v0. The tempting targets are the four overlays and the two Tabs variants, which are also the flakiest screenshots available: enter and exit transitions, Floating UI positioning, and font rasterization that differs between a local machine and a CI container. Baselines want a container matching CI before they are worth anything, and v0's real color risk is already covered twice, by the contrast gate and by axe. Revisit at the first change after v0, when there is a shipped appearance worth protecting rather than a moving one.
+
+The planned [measurement contract](agent-infrastructure.md#efficiency-and-performance) defines repeatable command and production Studio baselines. Timing starts as advisory; existing correctness and element size gates remain. Performance budgets require stable measured evidence and review before becoming blocking.
 
 ## Agent surface
 
@@ -2078,7 +2080,7 @@ The planned [agent infrastructure](agent-infrastructure.md) defines architecture
 
 A rule that needs a paragraph goes in this specification instead. `AGENTS.md` holding a second copy of a convention is how the two drift.
 
-[Agent infrastructure](agent-infrastructure.md) owns the contributor-tooling contracts for architectural enforcement, generated catalogue wiring, verification selection and production browser scenarios, and [executable feature discovery](agent-infrastructure.md#executable-feature-map), with measurement and rollout still on the agent-efficiency map. It distinguishes planned checks from shipped commands; implementation updates this index and the authoring guidance when those commands become available.
+[Agent infrastructure](agent-infrastructure.md) owns the settled contributor-tooling contracts for architectural enforcement, metadata and scaffolding, generated catalogue wiring, verification selection and production browser scenarios, [executable feature discovery](agent-infrastructure.md#executable-feature-map), measurement and adoption. It distinguishes planned checks from shipped commands; implementation updates this index and the authoring guidance when those commands become available.
 
 ### The consumer's agent
 
