@@ -4,6 +4,7 @@ import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Card } from '@ultima/ui';
 
 import { CopyButton } from '../../copy-button';
+import { Kicker } from '../../page';
 
 const SETUP_COMMAND = 'npx shadcn add https://ultima.systems/r/setup-vite.json';
 const COMPONENT_COMMAND = 'npx shadcn add @ultima/button';
@@ -19,12 +20,6 @@ const styles = stylex.create({
     justifyContent: 'space-between',
     paddingBlock: space['--ult-space-6'],
     paddingInline: space['--ult-space-7'],
-  },
-  target: {
-    color: color['--ult-color-text-muted'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
-    letterSpacing: font['--ult-font-tracking-wide'],
   },
   body: {
     display: 'flex',
@@ -47,7 +42,7 @@ export default function Workbench() {
   return (
     <Card.Root style={styles.panel}>
       <div {...stylex.props(styles.toolbar)}>
-        <span {...stylex.props(styles.target)}>{'VITE   /   NEXT.JS'}</span>
+        <Kicker tone="muted">{'VITE   /   NEXT.JS'}</Kicker>
         <CopyButton
           text={`${SETUP_COMMAND}\n${COMPONENT_COMMAND}`}
           ariaLabel="Copy install commands"
