@@ -96,7 +96,7 @@ The planned command a consumer runs with `npx` in their own repository: `doctor`
 
 ## Managed file
 
-A file the consumer CLI writes into a consumer's repository, stamps with its own version, and refreshes on every `install`: the consumer skill and Ultima's hook entries. It points at hosted guidance and never restates a convention. It is the one exception to hosted-only guidance, and it is not a registry item, which the consumer owns outright.
+A file the consumer CLI writes into a consumer's repository and refreshes on every `install`: the consumer skill, stamped with the CLI version that wrote it, and Ultima's hook entries, marked `ultima-systems` and the same in every release. It points at hosted guidance and never restates a convention. It is the one exception to hosted-only guidance, and it is not a registry item, which the consumer owns outright.
 
 ## Consumer skill
 
