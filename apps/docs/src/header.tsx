@@ -1,7 +1,7 @@
 import { ArrowUpRightIcon, ListIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
@@ -41,6 +41,8 @@ const styles = stylex.create({
     color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
     fontSize: text['--ult-text-4'],
     textDecoration: 'none',
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'color',
     ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
   },
   status: {
@@ -57,6 +59,8 @@ const styles = stylex.create({
     gap: space['--ult-space-1'],
     marginInlineStart: 'auto',
     textDecoration: 'none',
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'color',
     ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
   },
 });
