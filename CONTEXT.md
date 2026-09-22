@@ -126,6 +126,10 @@ A per-file hash of a canonical form of the file, prefixed with the scheme that p
 
 What `status` says about one installed file, from comparing its installed, local, and served content hashes: `current`, `edited`, `behind`, `diverged`, `unstamped`, or `retired`. An update is available when a file is `behind` or `diverged`. Only `behind` is safe to reinstall without losing edits.
 
+## Incomplete run
+
+A consumer CLI run whose command was well formed but that could not reach a complete answer, because of the project or the network: a missing `components.json`, an unresolvable value a blocking rule needs, an unreachable registry. It exits 3 and is never a pass. It is not an invalid invocation, which exits 2 and is fixed by changing the command rather than the project.
+
 ## Docs site
 
 The site at `apps/docs`. Three things at once: Ultima's reference, the host that serves the registry and the tokens CSS export, and a portfolio piece. It uses the components by importing them from the workspace, so it is not a consumer.
