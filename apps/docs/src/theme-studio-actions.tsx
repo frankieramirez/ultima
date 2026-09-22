@@ -19,7 +19,7 @@ import {
   type ThemeDraft,
 } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Input, Separator } from '@ultima/ui';
+import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Field, Input, Separator } from '@ultima/ui';
 import { useEffect, useRef, useState } from 'react';
 
 import { CopyButton } from './copy-button';
@@ -96,12 +96,6 @@ const styles = stylex.create({
     gap: space['--ult-space-2'],
     margin: 0,
     paddingInlineStart: space['--ult-space-7'],
-  },
-  acknowledge: {
-    alignItems: 'center',
-    display: 'flex',
-    fontSize: text['--ult-text-4'],
-    gap: space['--ult-space-3'],
   },
   heading: {
     margin: 0,
@@ -421,15 +415,19 @@ function ExportDialog({
                       </li>
                     ))}
                   </ul>
-                  <label {...stylex.props(styles.acknowledge)}>
-                    <Checkbox.Root
-                      checked={acknowledged}
-                      onCheckedChange={(next) => setAcknowledged(next === true)}
-                    >
-                      <Checkbox.Indicator />
-                    </Checkbox.Root>
-                    Export anyway: the artifacts still record the failed pairings.
-                  </label>
+                  <Field.Root name="acknowledge">
+                    <Field.Item>
+                      <Checkbox.Root
+                        checked={acknowledged}
+                        onCheckedChange={(next) => setAcknowledged(next === true)}
+                      >
+                        <Checkbox.Indicator />
+                      </Checkbox.Root>
+                      <Field.Label>
+                        Export anyway: the artifacts still record the failed pairings.
+                      </Field.Label>
+                    </Field.Item>
+                  </Field.Root>
                 </>
               ) : null}
               <h3 {...stylex.props(headings.h3, styles.heading)}>Install</h3>
