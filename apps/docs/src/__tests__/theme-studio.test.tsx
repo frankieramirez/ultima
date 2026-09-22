@@ -551,8 +551,8 @@ test('unlinking splits modes per row, relinking writes dark to both, and reset c
 
   const link = screen.getByRole('button', { name: 'Link --ult-color-accent modes' });
   await userEvent.click(link.element());
-  const dark = screen.getByRole('textbox', { name: '--ult-color-accent dark' });
-  const light = screen.getByRole('textbox', { name: '--ult-color-accent light' });
+  const dark = screen.getByRole('textbox', { name: 'Dark' });
+  const light = screen.getByRole('textbox', { name: 'Light' });
   await expect.element(dark).toBeVisible();
   await expect.element(light).toBeVisible();
   expect(link.element()).toHaveAttribute('aria-pressed', 'false');

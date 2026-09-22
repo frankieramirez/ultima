@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, motion, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Card, Empty, Input, Select } from '@ultima/ui';
-import { useId, useRef, useState } from 'react';
+import { Button, Card, Empty, Field, Input, Select } from '@ultima/ui';
+import { useRef, useState } from 'react';
 
 import { RELEASE_LABELS, RELEASES, components } from '../components';
 import { Page, Section } from '../page';
@@ -21,13 +21,10 @@ const styles = stylex.create({
     gap: space['--ult-space-5'],
     marginBlockStart: space['--ult-space-7'],
   },
-  field: {
-    display: 'grid',
-    gap: space['--ult-space-3'],
+  grow: {
     flexGrow: 1,
     minInlineSize: 0,
   },
-  input: { inlineSize: '100%' },
   list: {
     display: 'grid',
     gap: space['--ult-space-4'],
@@ -61,7 +58,6 @@ export function ComponentsPage() {
   const [query, setQuery] = useState('');
   const [release, setRelease] = useState('all');
   const [sortOrder, setSortOrder] = useState('catalogue');
-  const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const releases = [{ label: 'All releases', value: 'all' }, ...RELEASES.map((value) => ({ label: value, value }))];
   const term = query.trim().toLowerCase();
@@ -79,16 +75,14 @@ export function ComponentsPage() {
   return (
     <Page title="Components" lede="The catalogue, sectioned by release, oldest set first." breadcrumb="COMPONENTS">
       <div {...stylex.props(styles.filters)}>
-        <div {...stylex.props(styles.field)}>
-          <label htmlFor={inputId}>Filter components</label>
+        <Field.Root name="filter" style={styles.grow}>
+          <Field.Label>Filter components</Field.Label>
           <Input
-            id={inputId}
             onChange={(event) => setQuery(event.currentTarget.value)}
             ref={inputRef}
-            style={styles.input}
             value={query}
           />
-        </div>
+        </Field.Root>
         <Select.Root
           items={releases}
           onValueChange={(value) => {
@@ -96,13 +90,13 @@ export function ComponentsPage() {
           }}
           value={release}
         >
-          <div {...stylex.props(styles.field)}>
+          <Field.Root name="release" style={styles.grow}>
             <Select.Label>Release</Select.Label>
             <Select.Trigger>
               <Select.Value />
               <Select.Icon />
             </Select.Trigger>
-          </div>
+          </Field.Root>
           <Select.Portal>
             <Select.Positioner>
               <Select.Popup>
@@ -125,13 +119,13 @@ export function ComponentsPage() {
           }}
           value={sortOrder}
         >
-          <div {...stylex.props(styles.field)}>
+          <Field.Root name="sort-order" style={styles.grow}>
             <Select.Label>Sort order</Select.Label>
             <Select.Trigger>
               <Select.Value />
               <Select.Icon />
             </Select.Trigger>
-          </div>
+          </Field.Root>
           <Select.Portal>
             <Select.Positioner>
               <Select.Popup>

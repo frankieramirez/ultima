@@ -5,6 +5,7 @@ import { font, space } from '@ultima/tokens/tokens.stylex';
 import { Button, ScrollArea, Sidebar } from '@ultima/ui';
 
 import { navigation, type NavLink } from './navigation';
+import { shell } from './shell.stylex';
 
 export const MENU_LABEL = 'Ultima';
 
@@ -15,14 +16,14 @@ const styles = stylex.create({
     alignSelf: 'flex-start',
     blockSize: '100%',
     flexShrink: 0,
-    insetBlockStart: { default: 'auto', [DESKTOP]: 'var(--docs-chrome-block)' },
+    insetBlockStart: { default: 'auto', [DESKTOP]: shell.chromeBlock },
     position: { default: 'static', [DESKTOP]: 'sticky' },
   },
   fillRow: {
     alignSelf: { default: null, [DESKTOP]: 'stretch' },
     blockSize: { default: null, [DESKTOP]: 'auto' },
     contain: { default: null, [DESKTOP]: 'size' },
-    maxBlockSize: { default: null, [DESKTOP]: 'calc(100dvh - var(--docs-chrome-block))' },
+    maxBlockSize: { default: null, [DESKTOP]: `calc(100dvh - ${shell.chromeBlock})` },
   },
   scroll: { blockSize: '100%' },
   dismiss: { display: 'flex', justifyContent: 'flex-end' },

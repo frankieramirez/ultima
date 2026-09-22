@@ -4,17 +4,15 @@ import * as stylex from "@stylexjs/stylex";
 import { border, color, font, space, text } from "@ultima/tokens/tokens.stylex";
 import { Separator } from "@ultima/ui";
 
+import { layoutStyles } from "./layout";
+import { shell } from "./shell.stylex";
+
 const DESKTOP = "@media (min-width: 80rem)";
-const WIDE = "@media (min-width: 48rem)";
 
 const styles = stylex.create({
   main: {
     paddingBlockStart: space["--ult-space-7"],
     paddingBlockEnd: space["--ult-space-12"],
-    marginInline: {
-      default: space["--ult-space-6"],
-      [WIDE]: space["--ult-space-9"],
-    },
   },
   breadcrumb: {
     color: color["--ult-color-text-subtle"],
@@ -49,8 +47,8 @@ const styles = stylex.create({
   indexRail: {
     alignSelf: "start",
     display: { default: "none", [DESKTOP]: "block" },
-    insetBlockStart: `calc(var(--docs-chrome-block) + ${space["--ult-space-6"]})`,
-    maxBlockSize: `calc(100dvh - var(--docs-chrome-block) - ${space["--ult-space-6"]})`,
+    insetBlockStart: `calc(${shell.chromeBlock} + ${space["--ult-space-6"]})`,
+    maxBlockSize: `calc(100dvh - ${shell.chromeBlock} - ${space["--ult-space-6"]})`,
     minInlineSize: 0,
     overflow: "auto",
     position: "sticky",
@@ -141,7 +139,7 @@ export function DocumentLayout({
   }, [children]);
 
   return (
-    <main {...stylex.props(styles.main)}>
+    <main {...stylex.props(layoutStyles.gutter, styles.main)}>
       <div {...stylex.props(styles.grid, !index && styles.fullWidth)}>
         <article
           ref={article}

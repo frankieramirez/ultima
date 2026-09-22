@@ -6,7 +6,7 @@ import {
 import * as stylex from '@stylexjs/stylex';
 import type { ColorMode, GuidedGroup, ResolvedDraft, ThemeDraft } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, ColorField, Input, Toggle } from '@ultima/ui';
+import { Button, ColorField, Field, Input, Toggle } from '@ultima/ui';
 import { useState, type Dispatch, type SetStateAction } from 'react';
 
 import { groupTokens, linkTokenOverride, resetTokenOverride, setTokenOverride } from './theme-studio-draft';
@@ -51,16 +51,9 @@ const styles = stylex.create({
     display: 'flex',
     gap: space['--ult-space-3'],
   },
-  field: {
-    display: 'flex',
-    flexDirection: 'column',
+  grow: {
     flexGrow: 1,
-    gap: space['--ult-space-1'],
     minInlineSize: 0,
-  },
-  mode: {
-    color: color['--ult-color-text-subtle'],
-    fontSize: text['--ult-text-1'],
   },
   colorField: {
     alignItems: 'center',
@@ -140,8 +133,8 @@ function TokenField({
   onCommit: (value: string) => void;
 }) {
   return (
-    <div {...stylex.props(styles.field)}>
-      {modeLabel ? <span {...stylex.props(styles.mode)}>{modeLabel}</span> : null}
+    <Field.Root name={label} style={styles.grow}>
+      {modeLabel ? <Field.Label>{modeLabel}</Field.Label> : null}
       {colorToken ? (
         <ColorField.Root
           onValueChange={(hex) => {
@@ -171,7 +164,7 @@ function TokenField({
           value={value}
         />
       )}
-    </div>
+    </Field.Root>
   );
 }
 
