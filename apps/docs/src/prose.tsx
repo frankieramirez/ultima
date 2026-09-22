@@ -26,8 +26,8 @@ const styles = stylex.create({
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],
-    marginBottom: 0,
-    marginTop: space['--ult-space-7'],
+    marginBottom: space['--ult-space-6'],
+    marginTop: space['--ult-space-4'],
   },
   rule: {
     marginTop: space['--ult-space-11'],
