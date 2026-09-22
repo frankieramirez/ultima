@@ -98,6 +98,10 @@ The planned command a consumer runs with `npx` in their own repository: `doctor`
 
 A file the consumer CLI writes into a consumer's repository, stamps with its own version, and refreshes on every `install`: the consumer skill and Ultima's hook entries. It points at hosted guidance and never restates a convention. It is the one exception to hosted-only guidance, and it is not a registry item, which the consumer owns outright.
 
+## Consumer skill
+
+The skill `install` writes into a consumer's repository, named `ultima-systems`. It is a managed file that versions with the CLI. It says when to fetch `/llms.txt` and which CLI command to run at each step, and each imperative in it is one that `check` enforces. It is not `forge`, the contributor skill, and it is not mana's `ultima` audit skill.
+
 ## Consumer scope
 
 The consumer CLI's way of running the contributor's analysis engine over a consumer's repository. Modules resolve through the consumer's own tsconfig and `components.json` aliases instead of workspace aliases, and a file counts as an installed item only when it carries registry provenance. It shares every rule with the workspace scope and enables a subset of them, which is the whole difference between it and a second engine.
