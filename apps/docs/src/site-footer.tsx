@@ -1,7 +1,7 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
 import { ToggleGroup } from '@ultima/ui';
 
 import { useTheme, type ThemePreference } from './theme';
@@ -43,6 +43,8 @@ const styles = stylex.create({
     fontSize: text['--ult-text-1'],
     gap: space['--ult-space-1'],
     textDecoration: 'none',
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'color',
     ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
   },
 });
