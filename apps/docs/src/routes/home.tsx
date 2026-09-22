@@ -7,6 +7,7 @@ import { Button, Separator } from '@ultima/ui';
 import { contrastStyles } from '../demos/home/contrast';
 import Specimen from '../demos/home/specimen';
 import Workbench from '../demos/home/workbench';
+import { Kicker } from '../page';
 
 const WIDE = '@media (min-width: 48rem)';
 const DESKTOP = '@media (min-width: 64rem)';
@@ -34,13 +35,6 @@ const styles = stylex.create({
     flexGrow: 1,
     gap: space['--ult-space-8'],
     minInlineSize: 0,
-  },
-  index: {
-    color: color['--ult-color-text-muted'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
-    letterSpacing: font['--ult-font-tracking-wide'],
-    margin: 0,
   },
   pitch: {
     alignItems: 'flex-start',
@@ -98,13 +92,6 @@ const styles = stylex.create({
     justifyContent: 'space-between',
     paddingBlock: space['--ult-space-6'],
   },
-  scale: {
-    color: color['--ult-color-text-subtle'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
-    letterSpacing: font['--ult-font-tracking-wide'],
-    margin: 0,
-  },
   workbench: {
     alignItems: 'center',
     display: 'flex',
@@ -149,7 +136,7 @@ export function Home() {
     <main {...stylex.props(styles.page)}>
       <section {...stylex.props(styles.hero)}>
         <div {...stylex.props(styles.editorial)}>
-          <p {...stylex.props(styles.index)}>01 / A SYSTEM FOR BUILDING</p>
+          <Kicker tone="muted">01 / A SYSTEM FOR BUILDING</Kicker>
           <h1 {...stylex.props(styles.pitch)}>
             <span>
               Good interfaces
@@ -176,15 +163,15 @@ export function Home() {
       <section aria-labelledby="specimen-index" {...stylex.props(styles.specimen)}>
         <Separator />
         <div {...stylex.props(styles.metadata)}>
-          <p id="specimen-index" {...stylex.props(styles.index)}>02 / ANATOMY OF AN INTERFACE</p>
-          <p {...stylex.props(styles.scale)}>TOKENS → COMPONENTS → YOUR PRODUCT</p>
+          <Kicker id="specimen-index" tone="muted">02 / ANATOMY OF AN INTERFACE</Kicker>
+          <Kicker>TOKENS → COMPONENTS → YOUR PRODUCT</Kicker>
         </div>
         <Specimen />
       </section>
 
       <section aria-labelledby="install-headline" {...stylex.props(styles.workbench)}>
         <div {...stylex.props(styles.installIntro)}>
-          <p {...stylex.props(styles.index)}>03 / MAKE IT YOURS</p>
+          <Kicker tone="muted">03 / MAKE IT YOURS</Kicker>
           <h2 id="install-headline" {...stylex.props(styles.installHeadline)}>
             From our system
             <br />

@@ -1,9 +1,10 @@
 import { ArrowUUpLeftIcon, ArrowUUpRightIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import type { ShuffleVariation } from '@ultima/tokens';
-import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { space } from '@ultima/tokens/tokens.stylex';
 import { Button, ToggleGroup } from '@ultima/ui';
 
+import { Kicker } from './page';
 import { keepOne } from './theme-studio-draft';
 
 const styles = stylex.create({
@@ -21,12 +22,7 @@ const styles = stylex.create({
   icon: {
     paddingInline: space['--ult-space-4'],
   },
-  fingerprint: {
-    color: color['--ult-color-text-subtle'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
-    marginInlineStart: 'auto',
-  },
+  fingerprint: { marginInlineStart: 'auto' },
 });
 
 export function ThemeStudioShuffleBar({
@@ -86,9 +82,9 @@ export function ThemeStudioShuffleBar({
           <ArrowUUpRightIcon aria-hidden />
         </Button>
       </div>
-      <span title="Theme state fingerprint" {...stylex.props(styles.fingerprint)}>
+      <Kicker title="Theme state fingerprint" style={styles.fingerprint}>
         seed {fingerprint}
-      </span>
+      </Kicker>
     </div>
   );
 }
