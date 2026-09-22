@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import {
@@ -13,39 +13,14 @@ import {
 
 import { DocumentLayout, type Crumb } from './document-layout';
 import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
+import { headings } from './typography';
 
 const styles = stylex.create({
   root: {
     minInlineSize: 0,
   },
   h1: {
-    color: color['--ult-color-text'],
-    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': text['--ult-text-12'] },
-    fontWeight: font['--ult-font-weight-medium'],
-    letterSpacing: font['--ult-font-tracking-tighter'],
-    lineHeight: font['--ult-font-leading-tight'],
-    marginBlock: 0,
     marginBottom: space['--ult-space-6'],
-  },
-  h2: {
-    color: color['--ult-color-text'],
-    fontSize: display.section,
-    fontWeight: font['--ult-font-weight-medium'],
-    letterSpacing: font['--ult-font-tracking-tight'],
-    lineHeight: font['--ult-font-leading-tight'],
-    marginBottom: space['--ult-space-6'],
-    marginTop: space['--ult-space-4'],
-  },
-  rule: {
-    marginTop: space['--ult-space-11'],
-  },
-  h3: {
-    color: color['--ult-color-text'],
-    fontSize: text['--ult-text-6'],
-    fontWeight: font['--ult-font-weight-semibold'],
-    lineHeight: font['--ult-font-leading-snug'],
-    marginBottom: space['--ult-space-4'],
-    marginTop: space['--ult-space-8'],
   },
   p: {
     color: color['--ult-color-text'],
@@ -94,18 +69,18 @@ const styles = stylex.create({
 });
 
 function H1(props: ComponentProps<'h1'>) {
-  return <h1 {...props} {...stylex.props(styles.h1)} />;
+  return <h1 {...props} {...stylex.props(headings.h1, styles.h1)} />;
 }
 function H2(props: ComponentProps<'h2'>) {
   return (
     <>
-      <Separator style={styles.rule} />
-      <h2 {...props} {...stylex.props(styles.h2)} />
+      <Separator style={headings.rule} />
+      <h2 {...props} {...stylex.props(headings.h2)} />
     </>
   );
 }
 function H3(props: ComponentProps<'h3'>) {
-  return <h3 {...props} {...stylex.props(styles.h3)} />;
+  return <h3 {...props} {...stylex.props(headings.h3)} />;
 }
 function P(props: ComponentProps<'p'>) {
   return <p {...props} {...stylex.props(styles.p)} />;

@@ -5,17 +5,16 @@ import * as stylex from "@stylexjs/stylex";
 import { border, color, font, space, text } from "@ultima/tokens/tokens.stylex";
 import { Breadcrumb, Separator } from "@ultima/ui";
 
+import { layoutStyles } from "./layout";
+import { Kicker } from "./page";
+import { shell } from "./shell.stylex";
+
 const DESKTOP = "@media (min-width: 80rem)";
-const WIDE = "@media (min-width: 48rem)";
 
 const styles = stylex.create({
   main: {
     paddingBlockStart: space["--ult-space-7"],
     paddingBlockEnd: space["--ult-space-12"],
-    marginInline: {
-      default: space["--ult-space-6"],
-      [WIDE]: space["--ult-space-9"],
-    },
   },
   breadcrumb: {
     marginBlockEnd: space["--ult-space-8"],
@@ -45,8 +44,8 @@ const styles = stylex.create({
   indexRail: {
     alignSelf: "start",
     display: { default: "none", [DESKTOP]: "block" },
-    insetBlockStart: `calc(var(--docs-chrome-block) + ${space["--ult-space-6"]})`,
-    maxBlockSize: `calc(100dvh - var(--docs-chrome-block) - ${space["--ult-space-6"]})`,
+    insetBlockStart: `calc(${shell.chromeBlock} + ${space["--ult-space-6"]})`,
+    maxBlockSize: `calc(100dvh - ${shell.chromeBlock} - ${space["--ult-space-6"]})`,
     minInlineSize: 0,
     overflow: "auto",
     position: "sticky",
@@ -60,14 +59,7 @@ const styles = stylex.create({
     minInlineSize: 0,
     paddingBlockStart: space["--ult-space-4"],
   },
-  indexLabel: {
-    color: color["--ult-color-text-subtle"],
-    fontFamily: font["--ult-font-mono"],
-    fontSize: text["--ult-text-1"],
-    letterSpacing: font["--ult-font-tracking-wide"],
-    margin: 0,
-    textTransform: "uppercase",
-  },
+  indexLabel: { textTransform: "uppercase" },
   indexList: {
     display: "flex",
     flexDirection: "column",
@@ -142,7 +134,7 @@ export function DocumentLayout({
   }, [children]);
 
   return (
-    <main {...stylex.props(styles.main)}>
+    <main {...stylex.props(layoutStyles.gutter, styles.main)}>
       <div {...stylex.props(styles.grid, !index && styles.fullWidth)}>
         <article
           ref={article}
@@ -177,7 +169,7 @@ export function DocumentLayout({
             <div {...stylex.props(styles.indexInner)}>
               <Separator orientation="vertical" style={styles.divider} />
               <div {...stylex.props(styles.indexContents)}>
-                <p {...stylex.props(styles.indexLabel)}>On this page</p>
+                <Kicker style={styles.indexLabel}>On this page</Kicker>
                 <ul {...stylex.props(styles.indexList)}>
                   {headings.map(({ id, label }) => (
                     <li key={id}>

@@ -1,10 +1,12 @@
 import { ArrowUpRightIcon, ListIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, motion, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
+import { layoutStyles } from './layout';
+import { Kicker } from './page';
 
 const WIDE = '@media (min-width: 48rem)';
 
@@ -22,7 +24,6 @@ const styles = stylex.create({
     gap: space['--ult-space-10'],
     inlineSize: '100%',
     paddingBlock: space['--ult-space-8'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
   },
   brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
   brand: {
@@ -45,12 +46,7 @@ const styles = stylex.create({
     transitionProperty: 'color',
     ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
   },
-  status: {
-    color: color['--ult-color-text-subtle'],
-    display: { default: 'none', [WIDE]: 'block' },
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
-  },
+  status: { display: { default: 'none', [WIDE]: 'block' } },
   github: {
     alignItems: 'center',
     color: { default: color['--ult-color-text'], ':hover': color['--ult-color-text-muted'] },
@@ -75,7 +71,7 @@ const LINKS = [
 export function Header() {
   return (
     <header {...stylex.props(styles.chrome)}>
-      <div {...stylex.props(styles.bar)}>
+      <div {...stylex.props(layoutStyles.gutter, styles.bar)}>
         <div {...stylex.props(styles.cluster)}>
           <Link to="/" aria-label="Ultima home" {...stylex.props(styles.brand)}>
             <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
@@ -91,7 +87,7 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <span {...stylex.props(styles.status)}>v0 / IN DEVELOPMENT</span>
+        <Kicker style={styles.status}>v0 / IN DEVELOPMENT</Kicker>
         <a href="https://github.com/frankieramirez/ultima" {...stylex.props(styles.github)}>
           GitHub <ArrowUpRightIcon aria-hidden />
         </a>

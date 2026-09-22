@@ -1,25 +1,16 @@
 import type { ComponentProps, ReactNode } from "react";
 
 import * as stylex from "@stylexjs/stylex";
-import { color, display, font, space, text } from "@ultima/tokens/tokens.stylex";
+import type { StyleXStyles } from "@stylexjs/stylex";
+import { color, font, space, text } from "@ultima/tokens/tokens.stylex";
 import { Separator } from "@ultima/ui";
 import { DocumentLayout, type Crumb } from "./document-layout";
+import { headings } from "./typography";
 
 const styles = stylex.create({
   page: {
     display: "flex",
     flexDirection: "column",
-  },
-  title: {
-    color: color["--ult-color-text"],
-    fontSize: {
-      default: text["--ult-text-10"],
-      "@media (min-width: 48rem)": text["--ult-text-12"],
-    },
-    fontWeight: font["--ult-font-weight-medium"],
-    letterSpacing: font["--ult-font-tracking-tight"],
-    lineHeight: font["--ult-font-leading-tight"],
-    margin: 0,
   },
   lede: {
     color: color["--ult-color-text-muted"],
@@ -27,19 +18,6 @@ const styles = stylex.create({
     lineHeight: font["--ult-font-leading-normal"],
     marginBlockStart: space["--ult-space-5"],
     marginBlockEnd: 0,
-  },
-  section: {
-    marginBlockStart: space["--ult-space-11"],
-  },
-  sectionTitle: {
-    color: color["--ult-color-text"],
-    fontSize: display.section,
-    fontWeight: font["--ult-font-weight-medium"],
-    letterSpacing: font["--ult-font-tracking-tight"],
-    lineHeight: font["--ult-font-leading-tight"],
-    marginBlock: 0,
-    marginBlockEnd: space["--ult-space-6"],
-    paddingBlockStart: space["--ult-space-4"],
   },
   note: {
     color: color["--ult-color-text-muted"],
@@ -53,6 +31,17 @@ const styles = stylex.create({
     textDecoration: "underline",
     textUnderlineOffset: space["--ult-space-2"],
   },
+  kicker: {
+    fontFamily: font["--ult-font-mono"],
+    fontSize: text["--ult-text-1"],
+    letterSpacing: font["--ult-font-tracking-wide"],
+    margin: 0,
+  },
+});
+
+const kickerTones = stylex.create({
+  muted: { color: color["--ult-color-text-muted"] },
+  subtle: { color: color["--ult-color-text-subtle"] },
 });
 
 export function Page({
@@ -62,17 +51,19 @@ export function Page({
     { label: "Documentation", to: "/install" },
     { label: title },
   ],
+  index = title !== "Tokens" && title !== "Palette",
   children,
 }: {
   title: string;
   lede: ReactNode;
   breadcrumb?: Crumb[];
-  children: ReactNode;
+  index?: boolean;
+  children?: ReactNode;
 }) {
   return (
-    <DocumentLayout breadcrumb={breadcrumb} index={title !== "Tokens" && title !== "Palette"}>
+    <DocumentLayout breadcrumb={breadcrumb} index={index}>
       <div {...stylex.props(styles.page)}>
-        <h1 {...stylex.props(styles.title)}>{title}</h1>
+        <h1 {...stylex.props(headings.h1)}>{title}</h1>
         <p {...stylex.props(styles.lede)}>{lede}</p>
         {children}
       </div>
@@ -88,12 +79,23 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section {...stylex.props(styles.section)}>
-      <Separator />
-      <h2 {...stylex.props(styles.sectionTitle)}>{title}</h2>
+    <section>
+      <Separator style={headings.rule} />
+      <h2 {...stylex.props(headings.h2)}>{title}</h2>
       {children}
     </section>
   );
+}
+
+export function Kicker({
+  tone = "subtle",
+  style,
+  ...props
+}: Omit<ComponentProps<"p">, "style"> & {
+  style?: StyleXStyles;
+  tone?: keyof typeof kickerTones;
+}) {
+  return <p {...props} {...stylex.props(styles.kicker, kickerTones[tone], style)} />;
 }
 
 export function Note({ children }: { children: ReactNode }) {

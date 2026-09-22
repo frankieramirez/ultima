@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
-import { Badge, Button, Card, Input, Tabs } from '@ultima/ui';
+import { Badge, Button, Card, Field, Input, Tabs } from '@ultima/ui';
 
 import { contrastStyles } from './contrast';
 
@@ -49,8 +49,6 @@ const styles = stylex.create({
     fontWeight: font['--ult-font-weight-regular'],
     letterSpacing: font['--ult-font-tracking-normal'],
   },
-  field: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-3'] },
-  label: { color: color['--ult-color-text-muted'], fontSize: text['--ult-text-3'] },
   actions: { display: 'flex', gap: space['--ult-space-5'], paddingBlockStart: space['--ult-space-4'] },
   notes: {
     borderBlockStartColor: color['--ult-color-border'],
@@ -98,14 +96,14 @@ export default function Specimen() {
             <Tabs.Indicator />
           </Tabs.List>
         </Tabs.Root>
-        <label {...stylex.props(styles.field)}>
-          <span {...stylex.props(styles.label)}>Project name</span>
+        <Field.Root name="project-name">
+          <Field.Label>Project name</Field.Label>
           <Input defaultValue="Untitled, but not for long" />
-        </label>
-        <label {...stylex.props(styles.field)}>
-          <span {...stylex.props(styles.label)}>Framework</span>
+        </Field.Root>
+        <Field.Root name="framework">
+          <Field.Label>Framework</Field.Label>
           <Input defaultValue="React + StyleX" />
-        </label>
+        </Field.Root>
         <div {...stylex.props(styles.actions)}>
           <Button style={contrastStyles.root}>Create project</Button>
           <Button variant="outline">Cancel</Button>
