@@ -86,6 +86,10 @@ An authored description of an item's identity, presentation and place in the cat
 
 Any project that installs Ultima. Mana's report is the first consumer of the tokens CSS export. The docs site is not a consumer: it imports the components from the workspace, because the registry is generated from that same source and an installed copy could only be a staler version of it. The one exception is the docs site's static element page, which consumes the element bundle as a built file over HTTP rather than importing it, and so counts as a consumer of the element catalogue.
 
+## Consumer CLI
+
+The planned command a consumer runs with `npx` in their own repository: `doctor` proves the post-install hand steps landed, `status` and `diff` report installed items against the registry, and `check` runs Ultima's contract checks over the consumer's code. It is not `pnpm verify`, the contributor verification CLI, and it is not mana's `ultima` audit skill. [Map: A consumer CLI for Ultima](https://github.com/frankieramirez/ultima/issues/467) owns its decisions.
+
 ## Docs site
 
 The site at `apps/docs`. Three things at once: Ultima's reference, the host that serves the registry and the tokens CSS export, and a portfolio piece. It uses the components by importing them from the workspace, so it is not a consumer.
