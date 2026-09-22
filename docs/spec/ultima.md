@@ -165,7 +165,7 @@ Durations are themeable, so reduced motion for transitions is handled once at th
 | `--ult-motion-slow` | 300ms | 1ms |
 | `--ult-motion-loop` | 1s | 0s |
 
-Easings are compile-time constants: `standard` `cubic-bezier(.2, 0, 0, 1)`, `enter` `cubic-bezier(0, 0, .2, 1)`, `exit` `cubic-bezier(.4, 0, 1, 1)`. A component reads a duration token for `transition-duration` and never writes a millisecond value. Fast, base, and slow are transitions. `--ult-motion-loop` is a repeating animation, themeable so a consumer can slow it, and it cannot reuse `--ult-motion-base`: collapsing a loop to `1ms` is a strobe, which is a WCAG 2.3.1 / 2.3.3 seizure risk rather than a stopped animation. Duration `0s` alone is not enough — some engines keep firing an infinite zero-duration animation — so a looping animation also sets `animation-name: none` under `prefers-reduced-motion: reduce`. That is the one reduced-motion exception to "components never write a `prefers-reduced-motion` query", settled on [ULT-84](https://linear.app/frankie-ramirez/issue/ULT-84/progress-skeleton-spinner-and-empty-the-feedback-set-and-whether-a). Sidebar remains the breakpoint exception. Transitions keep reading fast, base, and slow and never scatter duration queries. Do not add a second token group. Do not put `animation-iteration-count: 1` on the duration tokens themselves. **One component writes a zero duration and it is not a token**, settled on [Drawer's parts, its styled split, and whether it varies the overlay recipe](https://github.com/frankieramirez/ultima/issues/113): `Drawer.Backdrop` under `[data-swiping]`, where the panel is following a finger, so this is the absence of a transition rather than a fast one and collapsing it under reduced motion would mean nothing. No motion token is zero and none is added. Drawer's velocity-scaled exit is not a second exception, because `calc(var(--drawer-swipe-strength) * var(--ult-motion-base))` reads the token and still collapses at it.
+Easings are compile-time constants: `standard` `cubic-bezier(.2, 0, 0, 1)`, `enter` `cubic-bezier(0, 0, .2, 1)`, `exit` `cubic-bezier(.4, 0, 1, 1)`. A component reads a duration token for `transition-duration` and never writes a millisecond value. Fast, base, and slow are transitions. `--ult-motion-loop` is a repeating animation, themeable so a consumer can slow it, and it cannot reuse `--ult-motion-base`: collapsing a loop to `1ms` is a strobe, which is a WCAG 2.3.1 / 2.3.3 seizure risk rather than a stopped animation. Duration `0s` alone is not enough — some engines keep firing an infinite zero-duration animation — so a looping animation also sets `animation-name: none` under `prefers-reduced-motion: reduce`. That is the one reduced-motion exception to "components never write a `prefers-reduced-motion` query", settled on [ULT-84](https://linear.app/frankie-ramirez/issue/ULT-84/progress-skeleton-spinner-and-empty-the-feedback-set-and-whether-a). Sidebar remains the breakpoint exception. Transitions keep reading fast, base, and slow and never scatter duration queries. Do not add a second token group. Do not put `animation-iteration-count: 1` on the duration tokens themselves. **Explicit transition cancellation writes a zero duration rather than a token.** Navigation Menu Positioner cancels under `[data-instant]` through the longhand, as specified under [State styling](#state-styling). Drawer has a separate case, settled on [Drawer's parts, its styled split, and whether it varies the overlay recipe](https://github.com/frankieramirez/ultima/issues/113): `Drawer.Backdrop` under `[data-swiping]`, where the panel is following a finger, so this is the absence of a transition rather than a fast one and collapsing it under reduced motion would mean nothing. No motion token is zero and none is added. Drawer's velocity-scaled exit is not a second exception, because `calc(var(--drawer-swipe-strength) * var(--ult-motion-base))` reads the token and still collapses at it.
 
 `@keyframes` live in the component file via `stylex.keyframes`, private to that file, the same way glyphs are. Progress, Spinner, and Skeleton each own their frames. Hashed animation names cannot be a shared token, so they do not appear in the CSS export. Registry copy-source is fine: the consumer's StyleX build emits the animation, the same way it emits `stylex.create` class names. Docs already call `stylex.keyframes` in `apps/docs/src/demos/tokens/motion.tsx`. Empty does not loop.
 
@@ -1698,6 +1698,8 @@ Offered two ways. The stable URL `https://ultima.systems/tokens.css` is the docu
 
 `registry/` is build output, not source. No file and no dependency list is maintained in two places: a component's source file is the truth for its code and its dependencies, and one manifest holds the prose.
 
+[Component metadata and scaffolding](agent-infrastructure.md#component-metadata-and-scaffolding), decided on [Component metadata: ownership, generated wiring, and scaffolding](https://github.com/frankieramirez/ultima/issues/437), specifies the next ownership model: authored per-item descriptors under `registry/metadata/`, a generated `items.config.ts` compatibility projection, and shared source-derived dependency discovery. Until that migration lands, the handwritten manifest and generation steps below remain the implementation. The migration preserves installable item shapes and keeps recipes outside the registry.
+
 `pnpm registry:build`:
 
 1. **Stage.** Copy `packages/ui/src/*.tsx` to `registry/ultima/ui/`, and `packages/tokens/src/*.ts` plus `packages/ui/src/lib/*.ts` to `registry/ultima/lib/`. `index.ts`, `prototype/`, and `__tests__/` are not staged. Rewrite `@ultima/tokens/*` and `@ultima/ui/lib/*` to `@/registry/ultima/lib/*`, and any other `@ultima/ui/*` to `@/registry/ultima/ui/*`. Those are the specifiers shadcn's `transformImport` rewrites to the consumer's aliases on install; the workspace specifiers Ultima authors against are not.
@@ -1911,6 +1913,8 @@ The theme control stays docs-local, composed from Toggle Group. Ultima ships the
 
 The check is deliberately narrower than the rule. It cannot see a hand-rolled widget, which is the first prong, and that stays a matter of review. It catches the failure that actually happened seven times in this inventory.
 
+The planned [architectural checks](agent-infrastructure.md#docs-controls-and-surfaces) replace this scanner with syntax analysis and add direct-control checks. Ambiguous hand-built interaction remains an advisory review finding. That migration must preserve legitimate docs exceptions while narrowing their current file-wide scope; the existing test remains the gate until its replacement is validated.
+
 ### Sidebar's docs page
 
 Decided on [What shape Sidebar's demo takes on its docs page](https://linear.app/frankie-ramirez/issue/ULT-60). Sidebar is the one component in the catalogue whose presentation depends on the viewport, v0.1 included, since no component in that release writes a breakpoint and Motion keeps Sidebar as the breakpoint exception. So its page needs rules no other page does.
@@ -1936,6 +1940,8 @@ Content pages are MDX, one file per page under `apps/docs/src/content/`, compile
 Demos are real modules at `apps/docs/src/demos/<component>/<name>.tsx`, imported into the MDX and rendered live. The source shown under each demo is the same file read through Vite's `?raw` import, so the running example and the printed code cannot diverge. Each demo block has a copy button.
 
 Props tables are hand-written in the MDX and cover only what Ultima adds: `variants`, `sizes`, the `style` slot, and `render`. The inherited surface links out to Base UI's own documentation. A generator would either dump Base UI's entire prop surface or nothing useful, and it reads namespace-object compound parts badly. Generating them is a later upgrade, not a v0 requirement.
+
+The planned [generated wiring](agent-infrastructure.md#generated-wiring) replaces repeated catalogue entries and MDX page imports with projections of item metadata and authored source. Routes remain code-based, while MDX explanations, props tables and demo behavior remain authored. The associated scaffold creates incomplete authoring files and reports the proof still required; it does not establish a component's behavior by generating files.
 
 ### Hosting
 
@@ -2043,9 +2049,9 @@ One workflow, `.github/workflows/ci.yml`, on `pull_request` and on `push` to `ma
 
 Steps 5 and 6 are in the list because generation breaking is a real failure mode that no unit test observes: the stage globs, the import rewriting, and the dependency derivation all fail silently from a component test's point of view.
 
-No linter in v0. The conventions this system actually cares about are one file per component, the `style` slot with no `className`, and no raw values in component code, and no off-the-shelf configuration checks any of them. A linter that catches unused imports is not worth the configuration it costs. This is worth revisiting when there is a custom rule worth writing, which the authoring skill's arrival is the natural moment for.
+v0 shipped without a linter. [Architectural checks](agent-infrastructure.md#architectural-checks), decided on [Architectural checks: coverage, exceptions, and repair diagnostics](https://github.com/frankieramirez/ultima/issues/436), now specifies a repository-owned TypeScript checker for Ultima's contracts, with scoped exceptions and repair diagnostics. Its implementation will add `pnpm check:architecture` as a blocking static gate before browser tests. The command is planned, not yet part of the workflow above.
 
-`packages/tokens` has no unit tests; its proof is the contrast gate and typecheck. The docs site has no route smoke tests; its proof is that it builds, plus the axe sweep.
+`packages/tokens` now has unit tests for the theme draft and its operations alongside the contrast gate and typecheck. Docs browser tests exercise application behavior and demos; checking built production routes is a separate open decision on [Production browser verification: scenarios, isolation, and CI gates](https://github.com/frankieramirez/ultima/issues/439).
 
 ### Considered and declined
 
@@ -2071,6 +2077,8 @@ The planned [agent infrastructure](agent-infrastructure.md) defines architecture
 - **Commands** — install, dev, build, registry build, palette regeneration.
 
 A rule that needs a paragraph goes in this specification instead. `AGENTS.md` holding a second copy of a convention is how the two drift.
+
+[Agent infrastructure](agent-infrastructure.md) owns the contributor-tooling contracts for architectural enforcement and the remaining decisions on the agent-efficiency map. It distinguishes planned checks from shipped commands; implementation updates this index and the authoring guidance when those commands become available.
 
 ### The consumer's agent
 

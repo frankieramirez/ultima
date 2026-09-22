@@ -2,7 +2,7 @@
 
 This document holds the contributor-infrastructure decisions from [Map: Make Ultima efficient and verifiable for agents](https://github.com/frankieramirez/ultima/issues/435). It specifies work for a later build effort. The checks and commands described below are not implemented by this document.
 
-Public component APIs and copy-source installation contracts stay unchanged. The [Ultima principles](https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md#principles), per-component contracts and ADR amendments remain authoritative. This document owns how contributor tooling enforces them.
+Public component APIs and copy-source installation contracts stay unchanged. The [Ultima principles](ultima.md#principles), per-component contracts and ADR amendments remain authoritative. This document owns how contributor tooling enforces them.
 
 ## Architectural checks
 
@@ -43,7 +43,7 @@ Rule IDs are stable strings. Their wording may improve without changing the ID. 
 | `ULT-DOCS-002` | Docs application layout and chrome, including executable page JSX | Reject direct native interactive controls that replace the kit's controls, and explicit interactive-role substitutes. Preserve semantic markup and supported composition through `render`. |
 | `ULT-IMPORT-001` | Production workspace imports and re-exports | Enforce dependency direction, staged module paths and declared component composition. Resolve aliases and relative paths before classifying the target. |
 | `ULT-REGISTRY-001` | Authored source and registry metadata | Detect missing or stale item metadata, missing staged dependencies, and source/item shape mismatches before the registry build. Reuse the builder's source inventory and dependency logic. |
-| `ULT-SOURCE-001` | Component source layout | Enforce one source file per component, the React client directive, module-scope StyleX tables, and test placement under the package's `src/__tests__/`. Respect element file conventions and documented helper modules. |
+| `ULT-SOURCE-001` | Component source layout | Enforce one source file per component, the React client directive, module-scope StyleX tables, and test placement under the package's `src/__tests__/`. Reject incomplete scaffold markers. Respect element file conventions and documented helper modules. |
 | `ULT-EXCEPTION-001` | Checker configuration | Reject malformed, broad, stale, duplicate or unmatched exception entries and invalid authority links. |
 | `ULT-ANALYSIS-001` | Expressions relevant to a blocking rule | Report constructs the checker cannot resolve; do not interpret an unresolved spread, computed property or dependency as a successful check. |
 
@@ -58,7 +58,7 @@ The first implementation covers every family in this table. Rule internals may l
 - SVG path and view-box geometry, glyph `1em` sizing and `currentColor`, and the specified overlay scale/opacity recipe are valid in those contexts. A number allowed inside SVG geometry does not authorize the same number as component padding.
 - Permit direct semantic token reads and supported token-based calculations. Distinguish imported group names from local aliases of a token value. Follow symbols so renaming the StyleX import cannot bypass analysis.
 - Primitive-owned variables and component runtime variables are permitted where the owning contract names their purpose. Validate their location and property instead of accepting every `var(...)` expression. Preserve Toast's geometry, primitive anchor/panel measurements, and other documented dynamic styles.
-- Media conditions are a different syntactic context from declarations. Preserve the named breakpoint constant pattern and the documented reduced-motion handling for loops. Preserve Drawer Backdrop's zero transition while swiping and Navigation Menu Positioner's instant-state cancellation from [State styling](https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md#state-styling). New exceptions require an owning decision rather than copying those allowances elsewhere.
+- Media conditions are a different syntactic context from declarations. Preserve the named breakpoint constant pattern and the documented reduced-motion handling for loops. Preserve Drawer Backdrop's zero transition while swiping and Navigation Menu Positioner's instant-state cancellation from [State styling](ultima.md#state-styling). New exceptions require an owning decision rather than copying those allowances elsewhere.
 - A runtime inline value such as Aspect Ratio's `ratio` or an indicator's measured width is allowed only on the documented property and part. Preserve any style injected by StyleX or a primitive when merging it. Arbitrary inline colors and lengths remain violations.
 
 The initial grammar uses these categories:
