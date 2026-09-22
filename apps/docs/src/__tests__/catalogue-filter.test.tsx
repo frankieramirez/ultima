@@ -103,7 +103,7 @@ for (const theme of ['dark', 'light']) {
   });
 }
 
-test('sort labels render immediately, keyboard sorting stays within groups, and clear retains order', async () => {
+test('sort labels render immediately, keyboard sorting stays within groups, and clear resets order', async () => {
   const screen = await mount();
   const main = screen.getByRole('main');
   const sort = main.getByRole('combobox', { name: 'Sort order' });
@@ -119,13 +119,13 @@ test('sort labels render immediately, keyboard sorting stays within groups, and 
   await userEvent.keyboard('{Enter}');
   await expect.element(sort).toHaveTextContent('Name Z–A');
   expect(groups()).toEqual(original.map((group) => [...group].sort().reverse()));
-  await expect.element(main.getByRole('button', { name: 'Clear filters' })).toBeDisabled();
+  await expect.element(main.getByRole('button', { name: 'Clear filters' })).not.toBeDisabled();
   const input = main.getByRole('textbox', { name: 'Filter components' });
   await userEvent.fill(input, 'no-such-component');
   await userEvent.click(main.getByRole('button', { name: 'Clear filters' }));
   await expect.element(input).toHaveFocus();
-  await expect.element(sort).toHaveTextContent('Name Z–A');
-  expect(groups()).toEqual(original.map((group) => [...group].sort().reverse()));
+  await expect.element(sort).toHaveTextContent('Catalogue order');
+  expect(groups()).toEqual(original);
   sort.element().focus();
   await userEvent.keyboard('{ArrowDown}');
   await expect.element(screen.getByRole('listbox')).toBeVisible();
