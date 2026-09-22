@@ -22,8 +22,10 @@ import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Input, Separator } from '@ultima/ui';
 import { useEffect, useRef, useState } from 'react';
 
+import { CopyButton } from './copy-button';
 import { readStored, removeStored, writeStored } from './storage';
 import { useStudioDraft as useStoreDraft } from './theme-studio-store';
+import { headings } from './typography';
 
 const STORAGE: StorageLike = {
   getItem: readStored,
@@ -102,8 +104,6 @@ const styles = stylex.create({
     gap: space['--ult-space-3'],
   },
   heading: {
-    fontSize: text['--ult-text-4'],
-    fontWeight: font['--ult-font-weight-semibold'],
     margin: 0,
   },
   note: {
@@ -432,7 +432,7 @@ function ExportDialog({
                   </label>
                 </>
               ) : null}
-              <h3 {...stylex.props(styles.heading)}>Install</h3>
+              <h3 {...stylex.props(headings.h3, styles.heading)}>Install</h3>
               <ol {...stylex.props(styles.steps)}>
                 <li>
                   Download <Code>ultima-theme.registry.json</Code>.
@@ -452,7 +452,7 @@ function ExportDialog({
                 Reinstalling regenerates and replaces the generated files. Keep{' '}
                 <Code>ultima-theme.json</Code>: the draft is the editable source.
               </p>
-              <h3 {...stylex.props(styles.heading)}>Downloads</h3>
+              <h3 {...stylex.props(headings.h3, styles.heading)}>Downloads</h3>
               <ul {...stylex.props(styles.downloads)}>
                 {downloads.map((item) => (
                   <li key={item.name} {...stylex.props(styles.download)}>
@@ -497,14 +497,12 @@ function ShareDialog({
   onClose: () => void;
 }) {
   const [result, setResult] = useState<FragmentEncodeResult | null>(null);
-  const [copied, setCopied] = useState(false);
   const url = result
     ? `${window.location.origin}${window.location.pathname}${result.fragment}`
     : null;
 
   useEffect(() => {
     setResult(null);
-    setCopied(false);
     if (!open) return;
     let live = true;
     void encodeFragment(draft).then((next) => {
@@ -554,20 +552,18 @@ function ShareDialog({
                     style={styles.shareUrl}
                     value={url ?? ''}
                   />
-                  <Button
-                    onClick={() => {
-                      if (url === null) return;
-                      void navigator.clipboard
-                        ?.writeText(url)
-                        .then(() => setCopied(true))
-                        .catch(() => {});
-                    }}
-                    size="sm"
-                    variant="outline"
-                  >
-                    {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}{' '}
-                    {copied ? 'Copied' : 'Copy link'}
-                  </Button>
+                  <CopyButton text={url ?? ''} variant="outline">
+                    {(status) => (
+                      <>
+                        {status === 'Copied' ? (
+                          <CheckIcon aria-hidden />
+                        ) : (
+                          <CopyIcon aria-hidden />
+                        )}{' '}
+                        {status || 'Copy link'}
+                      </>
+                    )}
+                  </CopyButton>
                 </div>
               )}
               <div {...stylex.props(styles.footer)}>
