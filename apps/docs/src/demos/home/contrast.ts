@@ -14,7 +14,7 @@ export const contrastStyles = stylex.create({
   mark: {
     backgroundColor: color['--ult-color-text'],
     color: color['--ult-color-text-inverse'],
-    marginBlockStart: space['--ult-space-8'],
+    marginInline: `calc(${space['--ult-space-5']} * -1)`,
     paddingBlockStart: space['--ult-space-2'],
     paddingBlockEnd: space['--ult-space-4'],
     paddingInline: space['--ult-space-5'],
