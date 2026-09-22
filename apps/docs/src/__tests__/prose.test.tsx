@@ -41,7 +41,7 @@ function PropsTable({ components }: { components?: MDXComponents }) {
 
 test('inline code stays unbroken inside table cells and still wraps in paragraphs', async () => {
   const { container } = await render(
-    <Prose Content={PropsTable} breadcrumb="DOCUMENTATION / TEST" />,
+    <Prose Content={PropsTable} breadcrumb={[{ label: 'Documentation' }, { label: 'Test' }]} />,
   );
 
   for (const code of container.querySelectorAll('td code')) {

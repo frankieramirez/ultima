@@ -17,6 +17,7 @@ import ChartRecipe from '../demos/table/chart';
 import DataTablePagination from '../demos/table/data-table-pagination';
 import { Prose } from '../prose';
 import { PalettePage } from '../routes/palette';
+import { renderWithRouter } from './render-with-router';
 
 const previewColumnInlineSize = '20rem';
 
@@ -28,7 +29,7 @@ test('the palette ramps fit their column at a narrow viewport', async () => {
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
 
-  const { container } = await render(<PalettePage />);
+  const { container } = await renderWithRouter(<PalettePage />);
   const main = container.querySelector('main') as HTMLElement;
   const viewports = container.querySelectorAll<HTMLElement>('[role="presentation"][tabindex]');
 
@@ -43,7 +44,7 @@ test('the palette step captions and ramp labels hold one line at every width', a
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
 
-  const { container } = await render(<PalettePage />);
+  const { container } = await renderWithRouter(<PalettePage />);
   const text = container.textContent ?? '';
 
   expect(text.match(/brand anchor/g) ?? []).toHaveLength(2);
@@ -137,7 +138,9 @@ test('a run of inline code fits the prose column at a narrow viewport', async ()
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
 
-  const { container } = await render(<Prose Content={SlashJoinedCodeRun} breadcrumb="COMPONENTS / TEST" />);
+  const { container } = await render(
+    <Prose Content={SlashJoinedCodeRun} breadcrumb={[{ label: 'Components' }, { label: 'Test' }]} />,
+  );
   const main = container.querySelector('main') as HTMLElement;
 
   expect(main.scrollWidth).toBeLessThanOrEqual(main.clientWidth);

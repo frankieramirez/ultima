@@ -6,7 +6,7 @@ import { DocumentLayout } from '../document-layout';
 
 test('renders a labelled article index from headings and keeps heading anchors addressable', async () => {
   const screen = await render(
-    <DocumentLayout breadcrumb="DOCUMENTATION / INSTALL">
+    <DocumentLayout breadcrumb={[{ label: 'Documentation' }, { label: 'Install' }]}>
       <h1>Install</h1>
       <h2>Commands</h2>
       <p>Install the package.</p>
@@ -26,9 +26,21 @@ test('renders a labelled article index from headings and keeps heading anchors a
   );
 });
 
+test('the trail is a Breadcrumb landmark whose last crumb is current', async () => {
+  const screen = await render(
+    <DocumentLayout breadcrumb={[{ label: 'Documentation' }, { label: 'Install' }]}>
+      <h1>Install</h1>
+    </DocumentLayout>,
+  );
+
+  const trail = screen.container.querySelector('nav[aria-label="Breadcrumb"]')!;
+  expect(trail.querySelectorAll('li:not([role="presentation"])')).toHaveLength(2);
+  expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Install');
+});
+
 test('renders no index when the article has no headings to list', async () => {
   const screen = await render(
-    <DocumentLayout breadcrumb="COMPONENTS">
+    <DocumentLayout breadcrumb={[{ label: 'Components' }]}>
       <h1>Components</h1>
       <p>No sections on this page.</p>
     </DocumentLayout>,
@@ -40,7 +52,7 @@ test('renders no index when the article has no headings to list', async () => {
 test('hides the article index on a narrow viewport', async () => {
   await page.viewport(390, 844);
   const screen = await render(
-    <DocumentLayout breadcrumb="COMPONENTS / BUTTON">
+    <DocumentLayout breadcrumb={[{ label: 'Components' }, { label: 'Button' }]}>
       <h1>Button</h1>
       <h2>Variants</h2>
     </DocumentLayout>,

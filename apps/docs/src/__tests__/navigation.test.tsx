@@ -151,12 +151,25 @@ test('the footer mode control switches the theme', async () => {
   expect([...document.documentElement.classList].some((name) => themeClasses('light').includes(name))).toBe(true);
 });
 
-test('breadcrumbs name the section and page in plain text', async () => {
-  const screen = await mount('/install');
-  await expect.element(screen.getByText('DOCUMENTATION / INSTALL')).toBeVisible();
+test('the article trail is a Breadcrumb landmark that links the section and marks the page current', async () => {
+  const install = await mount('/install');
+  const installTrail = install.container.querySelector('nav[aria-label="Breadcrumb"]')!;
+  expect(installTrail.textContent).toBe('Install');
+  expect(installTrail.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
 
-  await mount('/components/alert-dialog');
-  await expect.element(page.getByText('COMPONENTS / ALERT DIALOG')).toBeVisible();
+  const tokens = await mount('/tokens');
+  const tokensTrail = tokens.container.querySelector('nav[aria-label="Breadcrumb"]')!;
+  const docsLink = tokensTrail.querySelector('a[href="/install"]')!;
+  expect(docsLink.textContent).toBe('Documentation');
+  expect(tokensTrail.querySelector('[aria-current="page"]')?.textContent).toBe('Tokens');
+
+  const component = await mount('/components/alert-dialog');
+  const componentTrail = component.container.querySelector('nav[aria-label="Breadcrumb"]')!;
+  const sectionLink = componentTrail.querySelector('a[href="/components"]')!;
+  expect(sectionLink.textContent).toBe('Components');
+  expect(componentTrail.querySelector('[aria-current="page"]')?.textContent).toBe(
+    'Alert Dialog',
+  );
 });
 
 test('a direct load of a component page marks that link current in the flat catalogue', async () => {

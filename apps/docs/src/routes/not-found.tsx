@@ -14,7 +14,7 @@ const styles = stylex.create({
 export function NotFound() {
   return (
     <Page
-      breadcrumb="NOT FOUND"
+      breadcrumb={[{ label: 'Not Found' }]}
       index={false}
       lede={
         <>

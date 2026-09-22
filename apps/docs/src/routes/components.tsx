@@ -73,7 +73,7 @@ export function ComponentsPage() {
   };
 
   return (
-    <Page title="Components" lede="The catalogue, sectioned by release, oldest set first." breadcrumb="COMPONENTS">
+    <Page title="Components" lede="The catalogue, sectioned by release, oldest set first." breadcrumb={[{ label: 'Components' }]}>
       <div {...stylex.props(styles.filters)}>
         <Field.Root name="filter" style={styles.grow}>
           <Field.Label>Filter components</Field.Label>

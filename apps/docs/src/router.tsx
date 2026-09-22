@@ -119,7 +119,12 @@ function ComponentNamePage() {
   if (!component) return <NotFound />;
   if (!Content) return <Placeholder title={component.name} ticket="a later component-page ticket" />;
 
-  return <Prose Content={Content} breadcrumb={`COMPONENTS / ${component.name.toUpperCase()}`} />;
+  return (
+    <Prose
+      Content={Content}
+      breadcrumb={[{ label: 'Components', to: '/components' }, { label: component.name }]}
+    />
+  );
 }
 
 const writtenPages: Record<string, ComponentType<{ components?: MDXComponents }>> = {

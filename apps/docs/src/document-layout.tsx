@@ -1,8 +1,9 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
+import { Link, type LinkProps } from "@tanstack/react-router";
 import * as stylex from "@stylexjs/stylex";
 import { color, font, space, text } from "@ultima/tokens/tokens.stylex";
-import { Separator } from "@ultima/ui";
+import { Breadcrumb, Separator } from "@ultima/ui";
 
 import { layoutStyles } from "./layout";
 import { Kicker } from "./page";
@@ -17,7 +18,6 @@ const styles = stylex.create({
     paddingBlockEnd: space["--ult-space-12"],
   },
   breadcrumb: {
-    lineHeight: font["--ult-font-leading-none"],
     marginBlockEnd: space["--ult-space-8"],
   },
   grid: {
@@ -89,13 +89,18 @@ function slugify(value: string, used: Set<string>) {
   return id;
 }
 
+export type Crumb = {
+  label: string;
+  to?: NonNullable<LinkProps["to"]>;
+};
+
 export function DocumentLayout({
   children,
   breadcrumb,
   index = true,
 }: {
   children: ReactNode;
-  breadcrumb: string;
+  breadcrumb: Crumb[];
   index?: boolean;
 }) {
   const article = useRef<HTMLElement>(null);
@@ -126,7 +131,27 @@ export function DocumentLayout({
           data-document-article
           {...stylex.props(styles.article, !index && styles.wideArticle)}
         >
-          <Kicker style={styles.breadcrumb}>{breadcrumb}</Kicker>
+          <Breadcrumb.Root style={styles.breadcrumb}>
+            <Breadcrumb.List>
+              {breadcrumb.map((crumb, crumbIndex) => (
+                <Fragment key={crumb.label}>
+                  {crumbIndex > 0 && <Breadcrumb.Separator />}
+                  <Breadcrumb.Item>
+                    <Breadcrumb.Link
+                      active={crumbIndex === breadcrumb.length - 1}
+                      render={
+                        crumb.to ? (
+                          <Link to={crumb.to} activeOptions={{ exact: true }} />
+                        ) : undefined
+                      }
+                    >
+                      {crumb.label}
+                    </Breadcrumb.Link>
+                  </Breadcrumb.Item>
+                </Fragment>
+              ))}
+            </Breadcrumb.List>
+          </Breadcrumb.Root>
           {children}
         </article>
         {index && headings.length > 0 && (
