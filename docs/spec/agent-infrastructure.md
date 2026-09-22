@@ -12,7 +12,7 @@ Decided on [Architectural checks: coverage, exceptions, and repair diagnostics](
 
 Implement a repository-owned checker using the existing TypeScript compiler API. Parse TypeScript and TSX through syntax trees, resolve import symbols and aliases, and use the type checker for public prop contracts. Do not add ESLint solely to host these rules or extend the existing source-text scanners into another parser.
 
-The entry point is `scripts/check-architecture.ts`, exposed as `pnpm check:architecture`. Rule implementations and fixtures live under `scripts/architecture/`. This is a static check: it requires the installed workspace dependencies, but no browser, running server, generated registry, or docs build. Use the repository's supported Node runtime and TypeScript execution convention.
+The entry point is `scripts/check-architecture.ts`, exposed as `pnpm check:architecture`. Rule implementations live in the private workspace package `packages/analysis` (`@ultima/analysis`), with fixtures under `packages/analysis/fixtures/` kept out of its typecheck, so the [consumer CLI](ultima.md#package-and-engine) imports the same engine through a consumer scope. Rules read files only through a scope object and never name workspace paths or aliases directly. Placed on [Where the CLI lives in the workspace and what it consumes from the contributor engine](https://github.com/frankieramirez/ultima/issues/476). This is a static check: it requires the installed workspace dependencies, but no browser, running server, generated registry, or docs build. Use the repository's supported Node runtime and TypeScript execution convention.
 
 The default run examines all authored files in scope. Provide `--format text` and `--format json`; both represent the same diagnostics. Exit 0 means the run completed with no blocking findings, 1 means architectural violations, and 2 means invalid invocation or an incomplete run such as unreadable source, invalid configuration or parser failure. Advisory findings may accompany exit 0. Output must distinguish advisories from blocking findings and list unsupported analysis explicitly.
 
@@ -108,7 +108,7 @@ Extract reusable pure inventory/dependency checks from the registry builder as n
 
 ### Exceptions
 
-Store exceptions as typed repository data under `scripts/architecture/exceptions.ts`. Each entry contains an ID, rule ID, exact repository-relative path, symbol or part, declaration/property or import target, selector/condition when relevant, allowed expression shape, reason, and owning specification section or ADR amendment. Use source structure rather than line numbers so moving a declaration does not invalidate an otherwise identical exception.
+Store exceptions as typed repository data under `packages/analysis/exceptions.ts`, read only by the workspace scope. Each entry contains an ID, rule ID, exact repository-relative path, symbol or part, declaration/property or import target, selector/condition when relevant, allowed expression shape, reason, and owning specification section or ADR amendment. Use source structure rather than line numbers so moving a declaration does not invalidate an otherwise identical exception.
 
 An entry must match exactly the intended site and expected occurrence count. Zero matches, unexpected additional matches, duplicate entries and missing authority targets fail `ULT-EXCEPTION-001`. The reported location comes from the current syntax tree. A migration cannot add an exception just to hide an existing violation; the owning decision must authorize the pattern first.
 

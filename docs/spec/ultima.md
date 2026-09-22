@@ -13,7 +13,7 @@ A principle earns a line here only if it already settled a decision on the map, 
 - **Dark-first, light as a full peer.** Dark is the default and the design target. Light is never best effort: every semantic token, every contrast check, and every demo exists in both modes.
 - **Fantasy in the brand layer only.** The name, the six scale names, page titles, and the 404 carry the theme. Semantic token names, component names, part names, and prop names stay conventional, because they are the surface a stranger has to guess correctly.
 - **One styling engine, one primitive library.** StyleX and Base UI, no Tailwind and no Radix (ADR 0001, ADR 0002). An escape hatch that reintroduces a second system is not an escape hatch, which is why the `style` slot takes StyleX styles and there is no `className`.
-- **The consumer owns what they install.** Registry-first (ADR 0003): Ultima hands over source and gives up control of it. That is right for code and wrong for prose, which is why guidance is hosted rather than installed.
+- **The consumer owns what they install.** Registry-first (ADR 0003): Ultima hands over source and gives up control of it. That is right for code and wrong for prose, which is why guidance is hosted rather than installed. The one exception is a managed file, which the consumer CLI versions and refreshes itself, and even that holds pointers, never conventions (ADR 0005, amended).
 - **Tokens are the only source of raw values.** A literal in component code is a bug, not a shortcut. A new need becomes a new token. The one qualification, decided on [Sidebar's responsive state model](https://linear.app/frankie-ramirez/issue/ULT-54): a media condition is not a value a declaration reads, and a custom property cannot appear in one, so a breakpoint lives as a named module constant in the file that uses it rather than as a token.
 - **Semantic names are stable, values are not.** A consumer re-skins at the semantic layer and nothing renames underneath them (ADR 0004).
 - **Contrast is a build gate, not advice.** WCAG 2.2 AA passes or the palette does not ship. APCA is reported beside the pairings and never fails a build.
@@ -1703,15 +1703,55 @@ Offered two ways. The stable URL `https://ultima.systems/tokens.css` is the docu
 `pnpm registry:build`:
 
 1. **Stage.** Copy `packages/ui/src/*.tsx` to `registry/ultima/ui/`, and `packages/tokens/src/*.ts` plus `packages/ui/src/lib/*.ts` to `registry/ultima/lib/`. `index.ts`, `prototype/`, and `__tests__/` are not staged. Rewrite `@ultima/tokens/*` and `@ultima/ui/lib/*` to `@/registry/ultima/lib/*`, and any other `@ultima/ui/*` to `@/registry/ultima/ui/*`. Those are the specifiers shadcn's `transformImport` rewrites to the consumer's aliases on install; the workspace specifiers Ultima authors against are not.
-2. **Derive.** Each item's `dependencies` come from that file's own imports (`@base-ui/react`, `@stylexjs/stylex`), and its `registryDependencies` from its `@ultima/*` imports.
-3. **Describe.** `title`, `description`, and `docs` come from `registry/items.config.ts`, hand-written.
-4. **Copy through.** `registry/static/**` holds the setup items' files, which are authored, not generated, and are copied untouched.
-5. **Build.** `shadcn build registry.json -c registry -o ../apps/docs/public/r`. The `-c` is required: `shadcn build` resolves `files[].path` from the cwd, not from the directory of the `registry.json` its error message names.
-6. **Publish the exports.** Copy `packages/tokens/dist/tokens.css` and `tokens.json` into `apps/docs/public/`, and write `apps/docs/public/llms.txt` from this specification and `registry/items.config.ts`. The `tokens-css` item's file is the same `tokens.css`, staged in step 1.
+2. **Stamp.** Write an item stamp into every staged file and the same values into the item's `meta.ultima`, as [Versioning and drift](#versioning-and-drift) specifies. The element bundles and the tokens stylesheet are stamped by the same function when they are built, so every file the registry serves carries one.
+3. **Derive.** Each item's `dependencies` come from that file's own imports (`@base-ui/react`, `@stylexjs/stylex`), and its `registryDependencies` from its `@ultima/*` imports.
+4. **Describe.** `title`, `description`, and `docs` come from `registry/items.config.ts`, hand-written.
+5. **Copy through.** `registry/static/**` holds the setup items' files, which are authored, not generated, and are copied untouched.
+6. **Build.** `shadcn build registry.json -c registry -o ../apps/docs/public/r`. The `-c` is required: `shadcn build` resolves `files[].path` from the cwd, not from the directory of the `registry.json` its error message names.
+7. **Publish the exports.** Copy `packages/tokens/dist/tokens.css` and `tokens.json` into `apps/docs/public/`, and write `apps/docs/public/llms.txt` from this specification and `registry/items.config.ts`. The `tokens-css` item's file is the same `tokens.css`, staged in step 1.
 
 `registry/ultima/`, `registry/registry.json`, `apps/docs/public/r/*.json`, and the three published exports are all gitignored. The docs site's build script runs `registry:build` first, so a deploy publishes the registry and the site together from one command.
 
 The same run carries the element catalogue: `registry:build` first builds `packages/elements`, copies its `dist/` into `apps/docs/public/elements/`, and embeds the same bytes in each element's universal item. The contract that produces is the Web components section below.
+
+### Versioning and drift
+
+Decided on [The copy-source registry's versioning and update policy, and what status and diff compare against](https://github.com/frankieramirez/ultima/issues/468), against the facts in `docs/research/2026-09-22-shadcn-install-record-and-drift.md`. The registry stays a moving latest: every deploy replaces what `/r/` serves, there are no versioned URLs and no release numbers, and possession is still the pin (ADR 0003, ADR 0009). What changes is that every served file now says which build it came from and what its code was, so a consumer's copy can be compared with the registry after the fact.
+
+**Two values, each doing one job.** The **catalogue revision** is the commit the registry build ran at, as its first twelve hex characters, or `local` when the build is not at a commit. One revision covers a whole deploy. It answers *when*, and is information only. The **content hash** is per file: the first sixteen hex characters of the SHA-256 of the file's canonical form, prefixed with the scheme that produced it. It answers *what*, and it alone decides state. A revision alone would flag every item after every deploy, and a hash alone could not tell a person which build they hold.
+
+**Canonical forms.** Two schemes, each named by its prefix and pinned in code:
+
+- **`c1`, for TypeScript source** (`registry:ui` and `registry:lib` files). Comments removed; the `"use client"` directive removed; every import specifier that names an Ultima item rewritten to a neutral `@ultima/ui/<name>` or `@ultima/lib/<name>`, whether it arrived as the staged `@/registry/ultima/*` form or as the consumer's aliases from `components.json`; then printed by a pinned Prettier at a fixed configuration with `objectWrap: "collapse"`, blank lines dropped, LF line endings. This is what makes the staged file and its installed copy hash equal despite shadcn's import and RSC transforms, and what keeps a consumer's formatter, quote style, or comments from counting as an edit. A change that moves code counts; a change that only reformats or annotates does not.
+- **`b1`, for vendored bytes** (element bundles and the tokens stylesheet). The file's bytes with CRLF normalised to LF and the stamp line excluded. These files bypass every shadcn transform, so nothing further is needed.
+
+A change to any step of a scheme is a new scheme (`c2`), never a silent redefinition. A CLI that meets a stamp in a scheme it does not know reports it rather than guessing; one that knows the installed scheme and not the served one canonicalises the served content itself.
+
+**Where the stamp lives.** Two places, and no lockfile.
+
+- **In the file.** One comment line, `// @ultima/<item> <revision> <scheme>:<hash>` (or `/* … */` in CSS and in the element bundles), written by the registry build. It sits on the first line, or directly after the directive prologue when the file opens with one, so it is leading trivia of the first import and survives `transformRsc` removing `"use client"` for a Vite consumer. It records what the consumer received. shadcn writes no other record, so this line is the only baseline a consumer has, and it lasts until the consumer deletes it. A consumer may; the file becomes unstamped and nothing else breaks.
+- **In the served JSON.** Each item's entry in `/r/registry.json` and its `/r/<name>.json` carry `meta.ultima`: `{ "revision": "<revision>", "files": { "<file name>": "<scheme>:<hash>" } }`. `meta` is the only free field shadcn's schema offers, and shadcn discards it at install, which is why the file needs its own line. The catalogue entry lets `status` compare everything with one request.
+
+No lockfile, because the consumer installs with shadcn and the Ultima CLI never sees an install happen: a lockfile it wrote after the fact would only restate the stamps. It becomes worth having when the CLI installs or updates items itself, which is `update`'s question.
+
+**States.** For each installed file, compare three hashes: *installed* from the stamp, *local* computed from the file as it now is, *served* from the catalogue. The first row that matches wins.
+
+| State | Condition | Meaning |
+| --- | --- | --- |
+| `current` | local equals served | Nothing to do, whatever the stamp says |
+| `edited` | stamp present, installed equals served, local differs | The consumer changed it; the registry has not moved |
+| `behind` | local equals installed, served differs | The registry moved and the file is untouched; reinstalling loses nothing |
+| `diverged` | stamp present, all three differ | Both moved; reinstalling discards the consumer's edits |
+| `unstamped` | no stamp, local differs from served | Installed, and who changed what cannot be told |
+| `retired` | the stamp names an item the catalogue no longer serves | The file is the consumer's alone now |
+
+**An update is available** when the file is `behind` or `diverged`. Only `behind` gets a reinstall command. Being behind is never a failure: the consumer owns the file, and the registry moving does not make their copy wrong. Nothing in this policy overwrites a file; `shadcn add --overwrite` remains the only way an item is replaced.
+
+**Elements and the tokens stylesheet join the same scheme.** The element build's existing stamp, `/* @ultima/elements <sha> */`, becomes the item stamp above with a `b1` hash: per element file for the element's item, and `@ultima/elements` for the combined `ultima.js`. The served `/tokens.css` carries the `tokens-css` stamp, which is the same file. An edited element or stylesheet is reported as `edited` like anything else; ADR 0009 already says edits to a vendored artifact are forfeit on upgrade, and `status` says so beside it. The setup items are outside the scheme: `components.json` is JSON and takes no comment, and the setup files exist to be edited. Whether they landed is `doctor`'s question.
+
+**What stays open.** A three-way view of a `diverged` file needs the content the consumer installed, and nothing serves it: the repository is private and `apps/docs/public/` is rebuilt on every deploy. The stamp's revision names that content; retrieving it is `update`'s problem, and `update` is not a first-release deliverable.
+
+**Proof.** The smoke install stamps nothing by hand and asserts two things after each framework's install: every installed Ultima file carries a stamp in its expected position, and `status` reports every item `current`. A Vite install that loses the stamp to `transformRsc` fails there first.
 
 ## Web components
 
@@ -1753,7 +1793,7 @@ Settled on [#158](https://github.com/frankieramirez/ultima/issues/158). A `parit
 
 Settled on [the CLI ticket](https://github.com/frankieramirez/ultima/issues/152) and [the distribution ticket](https://github.com/frankieramirez/ultima/issues/157), recorded as ADR 0009. Two surfaces, one build: a universal `registry:item` per element for hosts that can run the CLI, and the same bundled file served at a stable URL beside `/tokens.css` for hosts that cannot. The item is never `registry:ui`; its `dependencies` stay empty and its `registryDependencies` is a manifest-declared URL to `tokens-css`. The element is a vendored artifact, not copy-source: customization is tokens, attributes, and parts, and a consumer who needs different behavior forks the repository.
 
-Versioning follows the same possession contract as the React catalogue, settled on [the pinning ticket](https://github.com/frankieramirez/ultima/issues/185): the served URL always carries the latest build, pinning means vendoring the file, an upgrade is a re-fetch or a reinstall that overwrites local edits, and each bundle carries a build stamp so drift is a diff away. Durable versioned URLs wait on registry-wide versioning, which is undecided.
+Versioning follows the same possession contract as the React catalogue, settled on [the pinning ticket](https://github.com/frankieramirez/ultima/issues/185): the served URL always carries the latest build, pinning means vendoring the file, an upgrade is a re-fetch or a reinstall that overwrites local edits, and each bundle carries a build stamp so drift is a diff away. Registry-wide versioning is now decided and adds no versioned URLs: the bundle's build stamp became the item stamp every served file carries, with a `b1` hash, and `status` reports an element like any other item. See [Versioning and drift](#versioning-and-drift).
 
 ### The build
 
@@ -1840,7 +1880,7 @@ Decided on [Docs site scope](https://linear.app/frankie-ramirez/issue/ULT-14). T
 
 `/palette` is the only page that reads the `defineConsts` layer, and the only place a scale name appears outside the token sources. The two contrast readouts are split by what they describe: the WCAG 2.2 AA gate is reported on `/palette` because it is a property of the steps, and the APCA numbers sit beside each semantic pairing on `/tokens` because they are advice about a role, not a build gate.
 
-There is no changelog page in v0; versioning policy for a copy-source registry is not yet decided. There is no agents page: the agent-facing surface is `/llms.txt`, a generated artifact rather than a route, described in the Agent surface section.
+There is no changelog page. The registry serves a moving latest with a revision and a content hash on every file, per [Versioning and drift](#versioning-and-drift), and a release history would have nothing to number. There is no agents page: the agent-facing surface is `/llms.txt`, a generated artifact rather than a route, described in the Agent surface section.
 
 ### How the site gets its components
 
@@ -2084,7 +2124,7 @@ A rule that needs a paragraph goes in this specification instead. `AGENTS.md` ho
 
 ### The consumer's agent
 
-Nothing is installed into the consumer's repository. Ultima ships no `AGENTS.md`, no `DESIGN.md`, and no guide file, for two reasons.
+Nothing documentary is installed into the consumer's repository. Ultima ships no `AGENTS.md`, no `DESIGN.md`, and no guide file, for two reasons. The consumer CLI's `install` writes managed files, a pointer skill and hook entries, under the rule in [Install](#install); that amendment to ADR 0005 does not reach prose.
 
 A root-level document is exactly the kind of file the consumer's scaffold owns, and the Registry section already forbids a setup item from overwriting one. More than that, a copied document is stale the day the next decision lands: the consumer has no reason to re-run `add` on prose, and unlike a component they have edited, nothing in their workflow will ever surface the drift. Owning source you modify is the point of registry-first. Owning documentation you never update is a liability Ultima would have handed them.
 
@@ -2113,3 +2153,152 @@ Mana's `ultima` audit skill and this design system share a name and nothing else
 The audit skill already reads a repository's `CONTEXT.md`, `docs/adr/`, and decision documents as its prior-decisions block, and already profiles a project for its design-system source of truth and its token values. Ultima's whole obligation is to keep those documents where that profile looks, and to publish `tokens.json` in a shape a generic parser can read.
 
 The audit skill gets no Ultima-aware branch: no import, no special case, no lens that knows the word `mithril`. A project built on Ultima audits well because Ultima's tokens are legible, not because the tool was taught about them. Teaching it Ultima's tokens as a lens was ruled out on [Mana report adoption](https://linear.app/frankie-ramirez/issue/ULT-13) and stays ruled out.
+
+## Consumer CLI
+
+Charted on [Map: A consumer CLI for Ultima](https://github.com/frankieramirez/ultima/issues/467), published as `@ultima-systems/cli`. Each subsection is written when its ticket closes.
+
+### Install
+
+Decided on [Whether install writes into the consumer's repository, and the ADR 0005 amendment](https://github.com/frankieramirez/ultima/issues/474). `install` exists, and it writes into the consumer's repository, never into global harness directories. Codex and Copilot hooks can only be delivered to the project, and a project install keeps the CLI's version in the consumer's lockfile.
+
+**The rule.** `install` writes only managed files. A managed file carries the CLI version that wrote it, is rewritten by the next `install`, and is removed by `uninstall`. Its content points at hosted guidance and at the CLI's own commands and restates no convention. Anything that would have to carry a convention stays on `/llms.txt`.
+
+**What it writes.** The consumer skill (named and written on [What the consumer skill says and how it is versioned](https://github.com/frankieramirez/ultima/issues/475)) and one hook per detected harness:
+
+| Harness | Skill | Hook |
+| --- | --- | --- |
+| Claude Code | `.claude/skills/<skill>/` | entries merged into `.claude/settings.json` |
+| Codex | `.agents/skills/<skill>/` | entries merged into `.codex/hooks.json` |
+| Cursor | `.agents/skills/<skill>/` | entries merged into `.cursor/hooks.json` |
+| Copilot | `.agents/skills/<skill>/` | `.github/hooks/ultima.json`, a file Ultima owns whole |
+
+Skills are real copies, not symlinks. Hook files are the committed project files, never `settings.local.json`, because a hook that enforces the team's contracts belongs to the team, and Copilot's cloud agent reads only committed files. Each hook command runs the CLI the consumer has pinned in `devDependencies` (`npx --no-install @ultima-systems/cli`), guarded so that a missing CLI makes the hook a silent no-op. Which events fire and what they run is still open on the map as hook granularity; `install` writes whatever that decision names. `install` does not edit `package.json`. When the CLI is not a devDependency, it prints the one command that adds it.
+
+**Harness detection.** A harness counts as present when its own marker is: `.claude/` for Claude Code, `.codex/` for Codex, `.cursor/` for Cursor, and `.github/copilot-instructions.md`, `.github/skills/`, or `.github/hooks/` for Copilot. `.agents/skills/` alone implies no harness, since three vendors share it. `--harness <name>` (repeatable) replaces detection. When nothing is detected and no flag is given, `install` writes nothing, names the flag, and exits 0. `--dry-run` prints the plan.
+
+**Re-running.** `install` is idempotent. A skill directory is replaced whole. Each hook entry carries the marker `ultima-systems`; a re-run strips the entries with that marker and appends fresh ones, leaving every other entry and key in the file in place. A run whose output would match what is on disk writes nothing, so Codex, which ties hook trust to the definition's hash, re-prompts only when the definition changed. The stamp in each managed file is its CLI version plus a hash of the content that version wrote.
+
+**What it never overwrites.**
+
+- A managed skill whose content no longer matches its stamp's hash. The consumer edited it; `install` reports the file and skips it unless `--force` is given.
+- A hook file that is not valid JSON. `install` names it, writes nothing to it, and exits non-zero. There is no `--force` for this: repairing a file the consumer owns is the consumer's job.
+- A hook entry without the Ultima marker, or any other key in a hook file.
+- Any root document (`AGENTS.md`, `CLAUDE.md`, `DESIGN.md`, `README.md`), any `.cursor/rules/` file, `package.json`, `components.json`, or an installed registry item.
+- Anything outside the repository root.
+
+**Removing.** `uninstall` deletes the managed skill directories whose stamps match and strips the marked hook entries. It deletes `.github/hooks/ultima.json`, and it deletes a merged hook file only when removing Ultima's entries leaves it holding nothing else.
+
+### Package and engine
+
+Decided on [Where the CLI lives in the workspace and what it consumes from the contributor engine](https://github.com/frankieramirez/ultima/issues/476). The name and the publishing requirements come from [Package name, scope, and distribution for a first Ultima npm package](https://github.com/frankieramirez/ultima/issues/473).
+
+**Location.** The CLI is `packages/cli`, the workspace's only published package. Its `package.json` name is `@ultima-systems/cli` and its `bin` is `ultima`. It drops `private`, builds to `dist/`, and carries `files`, `engines.node`, and `repository`. Every other workspace package stays private and unpublished. ADR 0003's amendment of 2026-09-22 records why.
+
+**One engine, two scopes.** The source-analysis engine from [Agent infrastructure](agent-infrastructure.md#engine-and-command) lives in `packages/analysis`, the private workspace package `@ultima/analysis`. The contributor checker and the CLI both import it. The CLI never carries its own rules. The engine runs over a scope: a classified file inventory, a module resolver, and the rule IDs that apply. It returns diagnostics in the text and JSON shapes the contributor checker defines. Rules read files only through the scope and never name a workspace path or alias. Each rule's ID, repair, and owning-spec link are exported data, so both callers print the same diagnostic. `@ultima/analysis` ships the workspace scope. `packages/cli` owns the consumer scope. [Which contracts check applies to consumer code, and where the line falls](https://github.com/frankieramirez/ultima/issues/469) decides which rule IDs the consumer scope enables.
+
+**The consumer scope.** The consumer scope resolves modules with TypeScript's own resolution against the consumer's tsconfig. It follows `extends` and project `references`, so a Vite project's `tsconfig.app.json` is honoured, and `--project <path>` overrides it. `components.json` `aliases.ui` and `aliases.lib` say where installed items live. Installed-item discovery follows **Check**: a file at `aliases.ui/<name>` is an installed item when it matches the bundled catalogue, or carries the item stamp [Versioning and drift](#versioning-and-drift) defines. A missing or unparseable `components.json` or tsconfig makes the run incomplete (exit 2) and names the file. The scope never guesses an alias.
+
+**Build.** One bundling step writes `dist/cli.js` as ESM with a shebang. `@ultima/analysis` is inlined, so no `@ultima/*` package is published and `@ultima/tokens` stays unpublished. `typescript` is a pinned runtime dependency of the CLI, never a peer, and the CLI never uses the consumer's copy, so one CLI version gives one result. The build also embeds the catalogue and item metadata from its own source commit, which `check` and `doctor` need, so both run offline. `status` and `diff` fetch the hosted registry, since they compare against what the registry currently serves.
+
+**Version.** The CLI's semver is its own and is independent of the catalogue revision. It starts at `0.x` and reaches `1.0.0` when every command in this section is specified and shipped. The hosted registry states its format version, and each CLI release declares the format range it reads. A registry outside that range makes the run incomplete (exit 2), and the output prints the upgrade command. What identifies a catalogue revision belongs to the versioning ticket above.
+
+**Release.** A hand-bumped `version` and a `cli-v<version>` tag trigger a release workflow. The workflow publishes with npm trusted publishing and provenance from a GitHub-hosted runner. The first publish uses a token, because a trusted publisher can only be configured once the package exists. The workflow does not use changesets, since there is one published package.
+
+**Sequencing.** `packages/analysis` is created by slice E of the contributor effort ([Enforce source and import architecture](https://github.com/frankieramirez/ultima/issues/453)) in place of `scripts/architecture/`, so the engine never moves. The CLI's build effort is filed when this map closes. Its package shell, `doctor`, `status`, and `diff` do not import the engine and may start then. `check` and the consumer scope start after slice G ([Enforce public API and registry contracts](https://github.com/frankieramirez/ultima/issues/456)), when every blocking rule family is active. The first npm release ships all four commands together. The CLI's acceptance runs against the consumer project `scripts/smoke-install.sh` builds.
+
+### Doctor
+
+Decided on [What doctor verifies per setup target](https://github.com/frankieramirez/ultima/issues/470). `doctor` proves that the hand steps under [What the consumer still does by hand](#what-the-consumer-still-does-by-hand) landed. It reports and never writes: every repair is printed as the exact edit, and applying it is the consumer's job.
+
+**Scope.** Setup only. `doctor` does not inspect installed registry items, which belong to `status`; the one exception is the literal `./@/` directory, because that is the symptom of a failed setup rather than of an item. It runs in the current directory, or in `--cwd <dir>`, which must hold a `package.json`, and it does not walk workspaces.
+
+**Finding the target.** Each setup item is identified by the files it installs: `ultima.vite.ts` for Vite, `app/ultima.css` with `babel.config.js` for Next.js, with `rsc` in `components.json` confirming it. `--target vite|next` replaces detection. No target found is one blocking finding whose repair is the setup command from Entry point. Both found without `--target` is a usage error.
+
+**What it checks.** File reads and syntax trees only: the TypeScript parser for config and layout modules, `tsconfig` read with its `extends` chain, and a CSS parser for stylesheets. `doctor` never builds a type program, because it must run in a repository that does not yet typecheck, and type-level contracts are `check`'s. A construct it cannot resolve statically, such as a `plugins` array built by a function call, is `ULT-ANALYSIS-001`, never a pass.
+
+| Target | Hand step | Assertion |
+| --- | --- | --- |
+| Both | `components.json` as shipped | Present and valid; `style: "base-ultima"`, `tailwind.cssVariables: true`, `registries["@ultima"]` pointing at the registry root, the flat aliases, and `rsc` matching the target. |
+| Both | Path aliases | Every `@/` alias in `components.json` resolves through `compilerOptions.paths` to a directory inside the project. Vite checks `tsconfig.json`, which the shadcn CLI reads, and `tsconfig.app.json`, which `tsc` reads. |
+| Both | No literal `./@/` | No directory named `@` at the project root. The repair moves its contents once the aliases resolve. |
+| Both | Dependencies | The setup item's `dependencies` and `devDependencies` are declared in `package.json`. |
+| Both | Layered resets | No unlayered rule whose selector is `*`, a pseudo-element of `*`, or a type selector other than `html`, `body`, and `:root`, in any stylesheet reachable from the entry (`index.html` and `src/main.*` for Vite, `layout.tsx` for Next.js) through static imports, including a package's CSS. A package stylesheet is reported at its import site, with `@import … layer(reset)` as the repair. |
+| Vite | Compiler config | `ultima.vite.ts` present. |
+| Vite | Plugin order | `vite.config.*` imports `ultimaStylex` from `./ultima.vite` and its call is the first entry in `plugins`, through `defineConfig` and every return of a config function. |
+| Next.js | Compiler config | `babel.config.js` references `@stylexjs/babel-plugin` and `postcss.config.js` references `@stylexjs/postcss-plugin`, which catches a file kept when the consumer declined the overwrite. |
+| Next.js | Stylesheet import | `ultima.css` sits in the App Router directory that holds `layout.tsx`, `app/` or `src/app/`, and that layout imports it. |
+| Both | Strict CSP nonce | Not verified. The headers are set at runtime or by the host; the report lists it under unsupported analysis. |
+
+**Versions.** `doctor` reads the version each package resolves to from the project root, not the range `package.json` declares, and compares it with supported ranges the CLI bundles at build from the workspace, so it needs no network. `@stylexjs/stylex` and the target's StyleX compiler plugin must resolve to the same version. Below a supported floor blocks; above the tested ceiling is advisory. `@base-ui/react` is checked the same way once it is installed. A package that is declared but does not resolve, including under Yarn Plug'n'Play, makes that check incomplete.
+
+**A third target.** Each hand step lives in its setup item's metadata as its prose plus either one assertion from a closed set of kinds (file present, config references a package, import present, plugin first, alias resolves, layered resets, version in range) or an `unverifiable` reason. The registry build rejects a hand step with neither. The setup item's `docs` field, the install page's list, and `doctor` all read that one list. A target built from existing kinds is data; a new kind is a CLI change.
+
+**Output and exits.** `doctor` uses the output and exit contract under **Check**: its rule IDs are `ULT-SETUP-NNN`, a finding with no position in a file (a missing file, a missing dependency) carries only the path, and the owning-spec link points at the hand step's line under What the consumer still does by hand at the CLI's build commit. JSON adds the detected target. An unparseable config, an unresolvable construct, or a package that does not resolve makes the run incomplete (exit 2), and a blocking finding elsewhere still reports as exit 1.
+
+### Check
+
+Decided on [Which contracts check applies to consumer code, and where the line falls](https://github.com/frankieramirez/ultima/issues/469). `check` runs the [architectural checks](agent-infrastructure.md#architectural-checks) engine with a consumer scope: the same parser, value grammar, and diagnostic shape, a different rule family. It checks what the consumer's code does with Ultima, never how the consumer writes their own components.
+
+**Scope.** The files in the consumer's TypeScript program, plus the CSS files those files import statically. Installed Ultima items are consumer code like any other file, because the consumer owns them; the contributor's authoring rules (`ULT-API-*`, `ULT-SOURCE-*`, `ULT-REGISTRY-*`) do not apply in a consumer's repository, and edits to an installed item are what `status` and `diff` report. Test files (`*.test.*`, `*.spec.*`, anything under `__tests__/`) are excluded structurally. `node_modules`, build output, and files the tsconfig excludes are never read.
+
+**Where the line falls.** Paint comes from tokens and arrangement is free, the same line [The line between a component and page layout](#the-line-between-a-component-and-page-layout) draws for the docs site. Paint is color, shadow, radius, border width, and the type scale (size, family, weight, line height, letter spacing). Arrangement is everything else: spacing, sizing, layout, position, z-index, and motion. The rules that protect a guarantee Ultima makes (color mode, theming, contrast) block. The rules that protect consistency advise, and `--strict` makes them block.
+
+| ID | Severity | Contract |
+| --- | --- | --- |
+| `ULT-APP-CONTRAST-001` | blocking | Every semantic color override the consumer ships passes the [contrast gate](#contrast-gate) pairings in each mode it applies to. |
+| `ULT-APP-THEME-001` | blocking | Overriding a role's base color supplies its state tokens too, as [Overriding](#overriding) requires. |
+| `ULT-APP-PALETTE-001` | blocking | No palette reads. A palette value ignores color mode and every semantic override. |
+| `ULT-APP-PAINT-001` | advisory | Paint properties read a semantic token or a value the contributor value grammar allows (`currentColor`, `transparent`, `inherit`, `none`, zero). |
+| `ULT-APP-PRIMITIVE-001` | advisory | No import of `@base-ui/react/<x>` when an installed item wraps `<x>`. The installed item's own file is exempt. |
+| `ULT-APP-CONTROL-001` | advisory | No native control or explicit interactive-role substitute where an installed item provides that control. A native element passed through a resolved Ultima component's `render` passes. |
+| `ULT-ANALYSIS-001` | incomplete | A value or import a blocking rule needs but cannot resolve. It makes the run incomplete (exit 3), never a pass. Against an advisory rule it is itself advisory. |
+
+`ULT-APP-PAINT-001` reads `stylex.create`, `stylex.keyframes`, and literal JSX `style` objects. `ULT-APP-CONTRAST-001` and `ULT-APP-THEME-001` read `stylex.createTheme` over the `color` group and CSS rules that declare `--ult-color-*`. An override scope bound to one mode, such as a `prefers-color-scheme` block or a scope that also applies `lightTheme` or `darkTheme`, is checked in that mode. Every other scope is checked in both. Tokens a scope leaves unset resolve to Ultima's defaults. Tailwind classes, CSS modules, CSS-in-JS libraries, and computed inline styles are listed as unsupported analysis in the output, never counted as a pass and never as a finding. Which native element each item replaces, and which primitive it wraps, come from the item metadata bundled into the CLI, not from a list in the CLI.
+
+Compound parts rendered outside their root are not checked. Static analysis cannot see a root across a component boundary, and extracting a part into its own component is a legitimate pattern, so any rule would have to guess. Base UI's missing-context error already catches the real failure at runtime.
+
+**Finding the install.** `check` runs in the current directory or `--cwd <dir>`, like `doctor`, and resolves modules and installed items through the consumer scope under **Package and engine**. It reads the catalogue and item metadata bundled into the CLI rather than fetching them, so it runs offline and gives the same answer every time. No `components.json` is an invalid invocation (exit 2) whose repair is to run `doctor`.
+
+**Diagnostics and exits.** `check` uses the output and exit contract under **Doctor**, with `ULT-APP-*` rule IDs. A finding also carries its end position and symbol when available. Its link points at the docs site anchor that states the contract, not at this document: the tokens page for paint, palette, theme and contrast, and the installed item's component page for primitive and control. JSON adds counts of errors, advisories and suppressions. Under `--strict`, advisories count as blocking for exit 1.
+
+**Suppression.** A consumer owns their code, so a finding can be suppressed on one declaration with `// ultima-check-ignore <RULE-ID>: <reason>` on the line before it. Both the rule ID and the reason are required. A suppression that matches no finding is reported as an advisory. There is no configuration file, no directory-wide suppression, and no baseline.
+
+**`--files`.** `check --files <path>...` reports on the named files only, which is what a hook runs. Every consumer rule is file-local: it needs the file's syntax, module resolution through the consumer's aliases, and the bundled catalogue, and never the type checker. That keeps the cost proportional to the files passed. The engine must return the same findings for a file under `--files` as a full run returns for that file, and the CLI's tests prove it. A named path outside the scope, or one that no longer exists, is listed and skipped.
+
+### Status
+
+Decided on [The copy-source registry's versioning and update policy, and what status and diff compare against](https://github.com/frankieramirez/ultima/issues/468). `status` and `diff` are read-only and execute [Versioning and drift](#versioning-and-drift). Unlike `check` and `doctor`, they fetch the hosted registry, because they compare against what it serves now.
+
+**Finding what is installed.** Both commands use the consumer scope under **Package and engine**. The catalogue URL comes from `registries["@ultima"]` in `components.json`, with `registry` substituted for the item name, so a consumer pointed at a local or staging registry is compared with that registry. A file is installed when it sits under `aliases.ui` or `aliases.lib`, or at a served item's target, and either carries an item stamp or has the name of a served item's file. The stamp decides identity over the file name. A file moved outside those places is not found.
+
+```text
+$ npx @ultima-systems/cli status
+Registry  https://ultima.systems/r  revision 3f9c2ab04e1d
+
+item      file                           state      installed
+button    src/components/ui/button.tsx   current    3f9c2ab04e1d
+dialog    src/components/ui/dialog.tsx   behind     1a2b3c4d5e6f
+select    src/components/ui/select.tsx   edited     3f9c2ab04e1d
+sidebar   src/components/ui/sidebar.tsx  diverged   1a2b3c4d5e6f
+lib       src/lib/component.ts           unstamped  -
+
+behind    npx shadcn add @ultima/dialog --overwrite
+diverged  npx @ultima-systems/cli diff sidebar  (reinstalling discards your edits)
+```
+
+One row per installed file, sorted by item then path, with paths relative to the project root. `installed` is the stamp's revision, `-` when there is none. The served revision is printed once, because one deploy serves one revision. The closing lines appear only for states that have files in them: `behind` lists one reinstall command naming every behind item, `diverged` points at `diff`, and `retired` and an unknown scheme each get one explanatory line. Nothing is printed for `current` or `edited` beyond their rows. With `--json` the same report is one object: `{ "registry", "revision", "files": [{ "item", "file", "state", "installed": { "revision", "hash" } | null, "local", "served" }] }`.
+
+Exit 0 whenever the report completes, whatever it contains: drift is information, and a consumer's CI should not fail because Ultima deployed. The run is incomplete (exit 2) when it cannot produce a report: the consumer scope's own conditions under **Package and engine**, no `@ultima` registry in `components.json`, a catalogue that cannot be fetched, or a registry outside the CLI's format range. `status` never exits 1, which `check` and `doctor` keep for findings.
+
+### Diff
+
+```text
+$ npx @ultima-systems/cli diff sidebar
+--- src/components/ui/sidebar.tsx  (local, diverged, installed 1a2b3c4d5e6f)
++++ src/components/ui/sidebar.tsx  (@ultima/sidebar at 3f9c2ab04e1d)
+@@ -41,7 +41,7 @@
+…
+```
+
+`diff [item…]` prints a unified diff from the local file to the served file as it would be installed into this project: import specifiers rewritten to the consumer's aliases, `"use client"` dropped when `components.json` sets `rsc: false`, and the served stamp in place. With no arguments it covers every file that is not `current`. A named item that is `current` prints `<item>: current`, even when its text differs by formatting or comments, because those do not count. The diff is two-way. A three-way view needs the content the consumer installed, which nothing serves, so it waits on `update`. Exit codes match `status`: 0 when the output completes, 2 when it cannot be produced.
