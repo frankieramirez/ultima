@@ -1975,7 +1975,7 @@ Decided on [Testing strategy for v0](https://linear.app/frankie-ramirez/issue/UL
 
 ### Environment
 
-One environment: Vitest in browser mode, Playwright's Chromium provider. There is no jsdom project.
+Component interaction tests use Vitest in browser mode with Playwright's Chromium provider. Token logic and source/tooling checks also use Node tests. There is no jsdom project. The planned [production browser runner](agent-infrastructure.md#production-browser-verification) adds real route journeys against built docs using the existing Playwright library; it retains the component proof bar below.
 
 Half of what v0 has to prove is only true in a real browser. `:focus-visible` renders an outline, Base UI's popups position against real layout through Floating UI, `[data-starting-style]` transitions fire, and the `Switch.Thumb` hairline exists for a rendering mode. In jsdom each of those degrades into an assertion about an attribute, which proves the test was written and not that the contract holds. A design system whose product is CSS should not prove itself in an environment with no cascade.
 
@@ -2051,7 +2051,7 @@ Steps 5 and 6 are in the list because generation breaking is a real failure mode
 
 v0 shipped without a linter. [Architectural checks](agent-infrastructure.md#architectural-checks), decided on [Architectural checks: coverage, exceptions, and repair diagnostics](https://github.com/frankieramirez/ultima/issues/436), now specifies a repository-owned TypeScript checker for Ultima's contracts, with scoped exceptions and repair diagnostics. Its implementation will add `pnpm check:architecture` as a blocking static gate before browser tests. The command is planned, not yet part of the workflow above.
 
-`packages/tokens` now has unit tests for the theme draft and its operations alongside the contrast gate and typecheck. Docs browser tests exercise application behavior and demos; checking built production routes is a separate open decision on [Production browser verification: scenarios, isolation, and CI gates](https://github.com/frankieramirez/ultima/issues/439).
+`packages/tokens` has unit tests for the theme draft and its operations alongside the contrast gate and typecheck. Docs Vitest tests exercise application behavior and demos through development transforms. [Production browser verification](agent-infrastructure.md#production-browser-verification) specifies a separate planned Chromium gate against built routes, with dark/light and desktop/narrow scenarios, isolated state and retained evidence. [Verification CLI](agent-infrastructure.md#verification-cli) specifies selection and aggregate results. These commands are planned; the workflow above describes the current implementation.
 
 ### Considered and declined
 
@@ -2078,7 +2078,7 @@ The planned [agent infrastructure](agent-infrastructure.md) defines architecture
 
 A rule that needs a paragraph goes in this specification instead. `AGENTS.md` holding a second copy of a convention is how the two drift.
 
-[Agent infrastructure](agent-infrastructure.md) owns the contributor-tooling contracts for architectural enforcement and the remaining decisions on the agent-efficiency map. It distinguishes planned checks from shipped commands; implementation updates this index and the authoring guidance when those commands become available.
+[Agent infrastructure](agent-infrastructure.md) owns the contributor-tooling contracts for architectural enforcement, generated catalogue wiring, verification selection and production browser scenarios, and [executable feature discovery](agent-infrastructure.md#executable-feature-map), with measurement and rollout still on the agent-efficiency map. It distinguishes planned checks from shipped commands; implementation updates this index and the authoring guidance when those commands become available.
 
 ### The consumer's agent
 
