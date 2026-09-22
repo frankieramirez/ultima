@@ -19,7 +19,15 @@ import {
   Toggle,
   ToggleGroup,
 } from '@ultima/ui';
-import { useRef, useState, type CSSProperties, type MouseEvent, type ReactNode, type RefObject } from 'react';
+import {
+  useRef,
+  useState,
+  type CSSProperties,
+  type FocusEvent,
+  type MouseEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 
 import { Kicker } from './page';
 import { previewVars } from './theme-studio-draft';
@@ -150,7 +158,23 @@ const styles = stylex.create({
     boxShadow: shadow['--ult-shadow-md'],
   },
   inspectable: {
-    borderRadius: radius['--ult-radius-md'],
+    position: 'relative',
+  },
+  inspectTarget: {
+    backgroundColor: {
+      default: 'transparent',
+      ':active': 'transparent',
+      ':hover': 'transparent',
+    },
+    height: 'auto',
+    inset: 0,
+    position: 'absolute',
+    ':focus-visible': {
+      outlineColor: color['--ult-color-border-focus'],
+      outlineOffset: border.focusOffset,
+      outlineStyle: 'dashed',
+      outlineWidth: border.focus,
+    },
     ':hover': {
       outlineColor: color['--ult-color-border-focus'],
       outlineOffset: border.focusOffset,
@@ -312,7 +336,7 @@ function PreviewPane({
   const scheme = mode === 'dark' ? colorScheme.dark : colorScheme.light;
   const pane = stylex.props(scheme, styles.pane);
 
-  function readTokens(event: MouseEvent<HTMLDivElement>) {
+  function readTokens(event: FocusEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) {
     if (!inspect) return;
     const target = (event.target as HTMLElement | null)?.closest('[data-tokens]');
     if (!(target instanceof HTMLElement) || !event.currentTarget.contains(target)) return;
@@ -325,10 +349,19 @@ function PreviewPane({
     );
   }
 
+  function clearTokens(event: FocusEvent<HTMLDivElement>) {
+    if (!inspect) return;
+    const next = event.relatedTarget;
+    if (next instanceof Node && event.currentTarget.contains(next)) return;
+    onReadout(null);
+  }
+
   return (
     <div
       aria-label={mode === 'dark' ? 'Dark preview' : 'Light preview'}
       className={pane.className}
+      onBlur={clearTokens}
+      onFocus={readTokens}
       onMouseLeave={() => {
         if (inspect) onReadout(null);
       }}
@@ -651,6 +684,9 @@ function Inspectable({
       {...stylex.props(inline ? styles.inspectInline : styles.inspectBlock, inspect && styles.inspectable)}
     >
       {children}
+      {inspect ? (
+        <Button aria-label={`Inspect ${tokens.join(', ')}`} style={styles.inspectTarget} variant="ghost" />
+      ) : null}
     </div>
   );
 }
