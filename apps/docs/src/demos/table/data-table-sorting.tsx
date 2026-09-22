@@ -12,6 +12,7 @@ import {
 } from '@tanstack/react-table';
 import { motion, space } from '@ultima/tokens/tokens.stylex';
 import { Button, Table, type TableSort } from '@ultima/ui';
+import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
 import { useEffect, useRef, useState } from 'react';
 
 // Word Joiner: invisible and zero-width. The same string twice is not a live-region change; this is.
@@ -64,16 +65,6 @@ const styles = stylex.create({
     rotate: { default: '0deg', ':is([data-sort="descending"])': '180deg' },
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'rotate',
-  },
-  // Pre-mounted and clip-hidden. A region inserted with its text already in it is silent, and
-  // `display: none` would keep it out of the accessibility tree.
-  status: {
-    clipPath: 'inset(50%)',
-    height: '1px',
-    overflow: 'hidden',
-    position: 'absolute',
-    whiteSpace: 'nowrap',
-    width: '1px',
   },
   note: { marginBlockEnd: space['--ult-space-4'], marginBlockStart: 0 },
 });
@@ -140,7 +131,7 @@ function RowOrderAnnouncement({ order, sort }: { order: string; sort: string }) 
   }, [order, sort]);
 
   return (
-    <span role="status" aria-atomic="true" {...stylex.props(styles.status)}>
+    <span role="status" aria-atomic="true" {...stylex.props(visuallyHidden)}>
       {message}
     </span>
   );
