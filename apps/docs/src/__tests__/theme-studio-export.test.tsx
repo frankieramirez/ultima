@@ -164,16 +164,21 @@ test('the share dialog announces encoding and copy in a pre-mounted status regio
   await userEvent.click(screen.getByRole('button', { name: 'Share' }));
   const dialog = screen.getByRole('dialog');
 
-  const status = () => dialog.element().querySelector('[role="status"]')!;
-  expect(status()).not.toBeNull();
-  expect(status()).toHaveAttribute('aria-atomic', 'true');
-  await expect.poll(() => status().textContent).toBe('Draft encoded');
+  const status = dialog.getByRole('status', { name: 'Share status' });
+  expect(status.element()).toHaveAttribute('aria-atomic', 'true');
+  await expect.poll(() => status.element().textContent).toBe('Draft encoded');
+
+  const copyStatus = () =>
+    dialog
+      .getByRole('textbox', { name: 'Share URL' })
+      .element()
+      .parentElement!.querySelector('[role="status"]')!;
 
   await userEvent.click(dialog.getByRole('button', { name: 'Copy link' }));
-  await expect.poll(() => status().textContent).toBe('Link copied');
+  await expect.poll(() => copyStatus().textContent).toBe('Copied');
 
   await userEvent.click(dialog.getByRole('button', { name: 'Copied' }));
-  await expect.poll(() => status().textContent).toBe('Link copied\u2060');
+  await expect.poll(() => copyStatus().textContent).toBe('Copied\u2060');
 });
 
 test('share produces a fragment link that reopens the draft', async () => {
@@ -209,7 +214,7 @@ test('an oversize draft offers the draft file instead of a link', async () => {
   await expect.element(dialog.getByText(/Share the draft file instead/i)).toBeVisible();
   await expect.element(dialog.getByRole('textbox', { name: 'Share URL' })).not.toBeInTheDocument();
   await expect
-    .poll(() => dialog.element().querySelector('[role="status"]')?.textContent)
+    .poll(() => dialog.getByRole('status', { name: 'Share status' }).element().textContent)
     .toBe('Draft too large for a share link');
 
   await userEvent.click(dialog.getByRole('button', { name: /ultima-theme\.json/ }));

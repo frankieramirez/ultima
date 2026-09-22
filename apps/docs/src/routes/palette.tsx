@@ -5,6 +5,7 @@ import { ScrollArea, Table } from '@ultima/ui';
 
 import { Note, Page, Section, TextLink } from '../page';
 import { Swatch } from '../swatch';
+import { headings } from '../typography';
 import { contrast } from '../token-data';
 
 const MODES = ['dark', 'light'] as const;
@@ -41,12 +42,6 @@ const GATE_COLUMNS = [
 const styles = stylex.create({
   scale: {
     marginBlockStart: space['--ult-space-8'],
-  },
-  scaleName: {
-    color: color['--ult-color-text'],
-    fontSize: text['--ult-text-6'],
-    fontWeight: font['--ult-font-weight-semibold'],
-    marginBlock: 0,
   },
   ramps: {
     marginBlockStart: space['--ult-space-5'],
@@ -108,7 +103,7 @@ export function PalettePage() {
       <Section title="Scales">
         {palette.map((scale) => (
           <div key={scale.name} {...stylex.props(styles.scale)}>
-            <h3 {...stylex.props(styles.scaleName)}>{scale.name}</h3>
+            <h3 {...stylex.props(headings.h3)}>{scale.name}</h3>
             <ScrollArea.Root style={styles.ramps}>
               <ScrollArea.Viewport>
                 <ScrollArea.Content>

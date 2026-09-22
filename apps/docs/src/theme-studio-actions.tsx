@@ -22,11 +22,10 @@ import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Input, Separator } from '@ultima/ui';
 import { useEffect, useRef, useState } from 'react';
 
+import { CopyButton } from './copy-button';
 import { readStored, removeStored, writeStored } from './storage';
 import { useStudioDraft as useStoreDraft } from './theme-studio-store';
-
-// Word Joiner: invisible and zero-width. Same string twice is not a live-region change; this is.
-const WORD_JOINER = '\u2060';
+import { headings } from './typography';
 
 const STORAGE: StorageLike = {
   getItem: readStored,
@@ -105,8 +104,6 @@ const styles = stylex.create({
     gap: space['--ult-space-3'],
   },
   heading: {
-    fontSize: text['--ult-text-4'],
-    fontWeight: font['--ult-font-weight-semibold'],
     margin: 0,
   },
   note: {
@@ -448,7 +445,7 @@ function ExportDialog({
                   </label>
                 </>
               ) : null}
-              <h3 {...stylex.props(styles.heading)}>Install</h3>
+              <h3 {...stylex.props(headings.h3, styles.heading)}>Install</h3>
               <ol {...stylex.props(styles.steps)}>
                 <li>
                   Download <Code>ultima-theme.registry.json</Code>.
@@ -468,7 +465,7 @@ function ExportDialog({
                 Reinstalling regenerates and replaces the generated files. Keep{' '}
                 <Code>ultima-theme.json</Code>: the draft is the editable source.
               </p>
-              <h3 {...stylex.props(styles.heading)}>Downloads</h3>
+              <h3 {...stylex.props(headings.h3, styles.heading)}>Downloads</h3>
               <ul {...stylex.props(styles.downloads)}>
                 {downloads.map((item) => (
                   <li key={item.name} {...stylex.props(styles.download)}>
@@ -513,7 +510,6 @@ function ShareDialog({
   onClose: () => void;
 }) {
   const [result, setResult] = useState<FragmentEncodeResult | null>(null);
-  const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState('');
   const url = result
     ? `${window.location.origin}${window.location.pathname}${result.fragment}`
@@ -521,7 +517,6 @@ function ShareDialog({
 
   useEffect(() => {
     setResult(null);
-    setCopied(false);
     setStatus('');
     if (!open) return;
     let live = true;
@@ -574,28 +569,26 @@ function ShareDialog({
                     style={styles.shareUrl}
                     value={url ?? ''}
                   />
-                  <Button
-                    onClick={() => {
-                      if (url === null) return;
-                      void navigator.clipboard
-                        ?.writeText(url)
-                        .then(() => {
-                          setCopied(true);
-                          setStatus((current) =>
-                            current === 'Link copied' ? `Link copied${WORD_JOINER}` : 'Link copied',
-                          );
-                        })
-                        .catch(() => {});
-                    }}
-                    size="sm"
-                    variant="outline"
-                  >
-                    {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}{' '}
-                    {copied ? 'Copied' : 'Copy link'}
-                  </Button>
+                  <CopyButton text={url ?? ''} variant="outline">
+                    {(status) => (
+                      <>
+                        {status === 'Copied' ? (
+                          <CheckIcon aria-hidden />
+                        ) : (
+                          <CopyIcon aria-hidden />
+                        )}{' '}
+                        {status || 'Copy link'}
+                      </>
+                    )}
+                  </CopyButton>
                 </div>
               )}
-              <span role="status" aria-atomic="true" {...stylex.props(styles.status)}>
+              <span
+                aria-label="Share status"
+                role="status"
+                aria-atomic="true"
+                {...stylex.props(styles.status)}
+              >
                 {status}
               </span>
               <div {...stylex.props(styles.footer)}>
