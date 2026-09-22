@@ -10,6 +10,7 @@ import { RELEASES, components, componentsInRelease } from '../components';
 import { componentPages, pages } from '../navigation';
 import { router, routeTree } from '../router';
 const NAVIGATION_STORAGE_KEY = 'ultima-navigation';
+import { TextLink } from '../text-link';
 import { THEME_STORAGE_KEY } from '../theme';
 import { MENU_LABEL } from '../site-menu';
 // axe resolves a text contrast against the nearest painted ancestor, and the application's ground
@@ -73,22 +74,61 @@ test('the header offers the workshop nav and hides the menu trigger on desktop',
   expect(getComputedStyle(screen.container.querySelector('header button[aria-label="Toggle navigation"]')!).display).toBe('none');
 });
 
-test('the header and footer links fade their hover color on the fast motion token', async () => {
+test('the chrome links fade their hover color on the fast motion token', async () => {
   const screen = await mount('/');
   const site = screen.getByRole('navigation', { name: 'Site', exact: true });
   await expect.element(site.getByRole('link', { name: 'Components' })).toBeVisible();
 
   const links = [
-    ...site.element().querySelectorAll('a'),
     ...screen.container.querySelectorAll('header a[href*="github"]'),
     ...screen.container.querySelectorAll('footer a'),
   ];
-  expect(links.length).toBe(8);
+  expect(links.length).toBe(4);
   for (const link of links) {
     const style = getComputedStyle(link);
     expect(style.transitionProperty).toBe('color');
     expect(style.transitionDuration).toBe('0.12s');
   }
+});
+
+test('every site link shows the same focus ring', async () => {
+  prefer('dark');
+  const screen = await mount('/');
+  const site = screen.getByRole('navigation', { name: 'Site', exact: true });
+  await expect.element(site.getByRole('link', { name: 'Components' })).toBeVisible();
+
+  const targets = new Set<Element>([
+    site.getByRole('link', { name: 'Components' }).element(),
+    screen.container.querySelector('header a[href*="github"]')!,
+    screen.getByRole('link', { name: 'Installation guide' }).element(),
+    screen.getByRole('link', { name: 'MIT license' }).element(),
+  ]);
+  for (let i = 0; i < 120 && targets.size > 0; i += 1) {
+    await userEvent.keyboard('{Tab}');
+    const focused = document.activeElement;
+    if (focused && targets.has(focused)) {
+      const style = getComputedStyle(focused);
+      expect(style.outlineStyle).toBe('solid');
+      expect(style.outlineWidth).toBe('2px');
+      expect(style.outlineColor).toBe('rgb(131, 148, 255)');
+      targets.delete(focused);
+    }
+  }
+  expect(targets.size).toBe(0);
+});
+
+test('the inline link shows the same focus ring', async () => {
+  prefer('dark');
+  const screen = await render(<TextLink href="/tokens">/tokens</TextLink>);
+  const link = screen.getByRole('link', { name: '/tokens' }).element();
+
+  await userEvent.keyboard('{Tab}');
+
+  expect(document.activeElement).toBe(link);
+  const style = getComputedStyle(link);
+  expect(style.outlineStyle).toBe('solid');
+  expect(style.outlineWidth).toBe('2px');
+  expect(style.outlineColor).toBe('rgb(131, 148, 255)');
 });
 
 test('the footer carries the mode control and the header does not', async () => {

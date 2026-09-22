@@ -1,7 +1,7 @@
 'use client';
 
 import * as stylex from '@stylexjs/stylex';
-import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code, ScrollArea, Separator, Table } from '@ultima/ui';
 
 const styles = stylex.create({
@@ -51,6 +51,10 @@ const styles = stylex.create({
     color: color['--ult-color-highlight-text'],
     textDecoration: 'underline',
     textUnderlineOffset: space['--ult-space-2'],
+    ':focus-visible': {
+      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      outlineOffset: border.focusOffset,
+    },
   },
   blockquote: {
     borderInlineStartColor: color['--ult-color-border'],
