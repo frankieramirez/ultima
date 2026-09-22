@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
@@ -12,12 +13,11 @@ import {
 } from 'react';
 
 import { DocumentLayout } from './document-layout';
+import { CopyButton } from './copy-button';
 import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
 
 const styles = stylex.create({
-  root: {
-    minInlineSize: 0,
-  },
+  root: { minInlineSize: 0 },
   h1: {
     color: color['--ult-color-text'],
     fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': text['--ult-text-12'] },
@@ -36,9 +36,7 @@ const styles = stylex.create({
     marginBottom: space['--ult-space-6'],
     marginTop: space['--ult-space-4'],
   },
-  rule: {
-    marginTop: space['--ult-space-11'],
-  },
+  rule: { marginTop: space['--ult-space-11'] },
   h3: {
     color: color['--ult-color-text'],
     fontSize: text['--ult-text-6'],
@@ -60,37 +58,28 @@ const styles = stylex.create({
     marginBlock: space['--ult-space-5'],
     paddingInlineStart: space['--ult-space-7'],
   },
-  li: {
-    marginBlock: space['--ult-space-3'],
-  },
+  li: { marginBlock: space['--ult-space-3'] },
   a: {
     color: color['--ult-color-highlight-text'],
     textDecoration: 'underline',
     textUnderlineOffset: space['--ult-space-2'],
   },
+  fence: { marginBlock: space['--ult-space-6'], position: 'relative' },
   code: {
-    marginBlock: space['--ult-space-6'],
-    padding: space['--ult-space-7'],
+    paddingBlock: space['--ult-space-7'],
+    paddingInlineEnd: space['--ult-space-12'],
+    paddingInlineStart: space['--ult-space-7'],
   },
-  inlineCode: {
-    overflowWrap: 'anywhere',
-  },
-  inlineCodeInScrollableTable: {
-    overflowWrap: 'normal',
-    whiteSpace: 'nowrap',
-  },
+  inlineCode: { overflowWrap: 'anywhere' },
+  inlineCodeInScrollableTable: { overflowWrap: 'normal', whiteSpace: 'nowrap' },
   blockquote: {
     color: color['--ult-color-text-muted'],
     marginBlock: space['--ult-space-6'],
     marginInline: 0,
     paddingInlineStart: space['--ult-space-6'],
   },
-  uncaptionedTable: {
-    marginBlock: space['--ult-space-6'],
-  },
-  cell: {
-    verticalAlign: 'top',
-  },
+  uncaptionedTable: { marginBlock: space['--ult-space-6'] },
+  cell: { verticalAlign: 'top' },
 });
 
 function H1(props: ComponentProps<'h1'>) {
@@ -119,8 +108,13 @@ function Ol(props: ComponentProps<'ol'>) {
 function Li(props: ComponentProps<'li'>) {
   return <li {...props} {...stylex.props(styles.li)} />;
 }
-function A(props: ComponentProps<'a'>) {
-  return <a {...props} {...stylex.props(styles.a)} />;
+const SERVED_FILE = /\.\w+$/;
+
+function A({ href, ...props }: ComponentProps<'a'>) {
+  if (href?.startsWith('/') && !SERVED_FILE.test(href)) {
+    return <Link to={href} {...props} {...stylex.props(styles.a)} />;
+  }
+  return <a href={href} {...props} {...stylex.props(styles.a)} />;
 }
 const ScrollableTableContext = createContext(false);
 
@@ -133,15 +127,22 @@ function Code({ children }: ComponentProps<'code'>) {
   );
 }
 /** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
+export function Fence({ code, lang }: { code: string; lang?: string }) {
+  return (
+    <div {...stylex.props(styles.fence)}>
+      <HighlightedCode code={code} lang={lang} style={styles.code} />
+      <CopyButton text={code} floating />
+    </div>
+  );
+}
 function Pre({ children }: ComponentProps<'pre'>) {
   const nested = isValidElement<{ children?: ReactNode; className?: string }>(children)
     ? children
     : undefined;
   return (
-    <HighlightedCode
+    <Fence
       code={nodeText(nested ? nested.props.children : children)}
       lang={fenceLanguage(nested?.props.className)}
-      style={styles.code}
     />
   );
 }
@@ -192,6 +193,8 @@ const components = {
   td: Td,
 } satisfies MDXComponents;
 
+export { components as proseComponents };
+
 export function Prose({
   Content,
   breadcrumb,
@@ -199,5 +202,11 @@ export function Prose({
   Content: ComponentType<{ components?: MDXComponents }>;
   breadcrumb: string;
 }) {
-  return <DocumentLayout breadcrumb={breadcrumb}><div {...stylex.props(styles.root)}><Content components={components} /></div></DocumentLayout>;
+  return (
+    <DocumentLayout breadcrumb={breadcrumb}>
+      <div {...stylex.props(styles.root)}>
+        <Content components={components} />
+      </div>
+    </DocumentLayout>
+  );
 }

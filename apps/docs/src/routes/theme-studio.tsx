@@ -11,7 +11,7 @@ import {
   type GuidedGroup,
   type ShuffleExhaustion,
 } from '@ultima/tokens';
-import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Alert, Button, Separator } from '@ultima/ui';
 import { useMemo, useState } from 'react';
 
@@ -46,11 +46,11 @@ const styles = stylex.create({
     flexWrap: 'wrap',
     gap: space['--ult-space-6'],
     inlineSize: '100%',
-    paddingBlock: space['--ult-space-6'],
+    paddingBlock: space['--ult-space-5'],
     paddingInline: space['--ult-space-8'],
   },
   title: {
-    fontSize: text['--ult-text-5'],
+    fontSize: text['--ult-text-6'],
     fontWeight: font['--ult-font-weight-medium'],
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
@@ -60,10 +60,7 @@ const styles = stylex.create({
     fontSize: text['--ult-text-1'],
     marginInlineStart: 'auto',
   },
-  actions: {
-    display: 'flex',
-    gap: space['--ult-space-4'],
-  },
+  actions: { display: 'flex', gap: space['--ult-space-4'] },
   body: {
     display: 'flex',
     flexDirection: { default: 'column', [RAIL]: 'row' },
@@ -72,16 +69,20 @@ const styles = stylex.create({
     minInlineSize: 0,
   },
   editor: {
+    borderInlineEndColor: color['--ult-color-border'],
+    borderInlineEndStyle: 'solid',
+    borderInlineEndWidth: { default: 0, [RAIL]: border.hairline },
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
     flexShrink: { default: 1, [RAIL]: 0 },
-    gap: space['--ult-space-6'],
-    inlineSize: { default: '100%', [RAIL]: '18.75rem' },
+    gap: space['--ult-space-8'],
+    inlineSize: { default: '100%', [RAIL]: '21rem' },
     minBlockSize: { default: '27rem', [RAIL]: 0 },
     order: { default: 1, [RAIL]: 0 },
     overflow: { default: 'auto', [RAIL]: 'visible' },
-    padding: space['--ult-space-8'],
+    paddingBlock: space['--ult-space-8'],
+    paddingInline: space['--ult-space-9'],
   },
   groups: {
     display: 'flex',
@@ -98,16 +99,14 @@ const styles = stylex.create({
     flexShrink: 0,
     flexWrap: 'wrap',
     gap: space['--ult-space-6'],
+    borderBlockStartColor: color['--ult-color-border'],
+    borderBlockStartStyle: 'solid',
+    borderBlockStartWidth: border.hairline,
     marginBlockStart: 'auto',
     paddingBlockStart: space['--ult-space-6'],
   },
-  statusCopy: {
-    color: color['--ult-color-text-subtle'],
-    fontSize: text['--ult-text-1'],
-  },
-  notice: {
-    flexShrink: 0,
-  },
+  statusCopy: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-1'] },
+  notice: { flexShrink: 0 },
 });
 
 function groupLabel(id: GuidedGroup): string {
@@ -207,17 +206,13 @@ export function ThemeStudio() {
             />
           </div>
           <div {...stylex.props(styles.status)}>
-            <Button
-              nativeButton={false}
-              render={<Link to="/tokens" />}
-              size="sm"
-              variant="ghost"
-            >
+            <Button nativeButton={false} render={<Link to="/tokens" />} size="sm" variant="ghost">
               Token contrast · View report <ArrowUpRightIcon aria-hidden />
             </Button>
             <span {...stylex.props(styles.statusCopy)}>Editing both modes</span>
             <span {...stylex.props(styles.statusCopy)}>
-              {overrides} overrides · {locked} locked group{locked === 1 ? '' : 's'}
+              {overrides} overrides · {locked} locked group
+              {locked === 1 ? '' : 's'}
             </span>
             <Button onClick={() => store.commit(() => stockDraft())} size="sm" variant="ghost">
               Reset theme

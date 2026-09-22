@@ -7,20 +7,10 @@ import { Button, ToggleGroup } from '@ultima/ui';
 import { keepOne } from './theme-studio-draft';
 
 const styles = stylex.create({
-  bar: {
-    alignItems: 'center',
-    display: 'flex',
-    flexShrink: 0,
-    flexWrap: 'wrap',
-    gap: space['--ult-space-4'],
-  },
-  history: {
-    display: 'flex',
-    gap: space['--ult-space-2'],
-  },
-  icon: {
-    paddingInline: space['--ult-space-4'],
-  },
+  bar: { display: 'flex', flexDirection: 'column', flexShrink: 0, gap: space['--ult-space-5'] },
+  row: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
+  history: { display: 'flex', gap: space['--ult-space-2'] },
+  icon: { paddingInline: space['--ult-space-4'] },
   fingerprint: {
     color: color['--ult-color-text-subtle'],
     fontFamily: font['--ult-font-mono'],
@@ -50,45 +40,35 @@ export function ThemeStudioShuffleBar({
 }) {
   return (
     <div {...stylex.props(styles.bar)}>
-      <Button onClick={onShuffle} size="sm">
-        Shuffle
-      </Button>
-      <ToggleGroup.Root
-        aria-label="Shuffle variation"
-        onValueChange={(next, eventDetails) => {
-          const selected = keepOne(next, () => eventDetails.cancel());
-          if (selected) onVariationChange(selected as ShuffleVariation);
-        }}
-        value={[variation]}
-      >
-        <ToggleGroup.Item value="broad">Broad</ToggleGroup.Item>
-        <ToggleGroup.Item value="subtle">Subtle</ToggleGroup.Item>
-      </ToggleGroup.Root>
-      <div {...stylex.props(styles.history)}>
-        <Button
-          aria-label="Undo"
-          disabled={!canUndo}
-          onClick={onUndo}
-          size="sm"
-          style={styles.icon}
-          variant="ghost"
-        >
-          <ArrowUUpLeftIcon aria-hidden />
+      <div {...stylex.props(styles.row)}>
+        <Button onClick={onShuffle} variant="outline">
+          Shuffle
         </Button>
-        <Button
-          aria-label="Redo"
-          disabled={!canRedo}
-          onClick={onRedo}
-          size="sm"
-          style={styles.icon}
-          variant="ghost"
-        >
-          <ArrowUUpRightIcon aria-hidden />
-        </Button>
+        <div {...stylex.props(styles.history)}>
+          <Button aria-label="Undo" disabled={!canUndo} onClick={onUndo} style={styles.icon} variant="ghost">
+            <ArrowUUpLeftIcon aria-hidden />
+          </Button>
+          <Button aria-label="Redo" disabled={!canRedo} onClick={onRedo} style={styles.icon} variant="ghost">
+            <ArrowUUpRightIcon aria-hidden />
+          </Button>
+        </div>
       </div>
-      <span title="Theme state fingerprint" {...stylex.props(styles.fingerprint)}>
-        seed {fingerprint}
-      </span>
+      <div {...stylex.props(styles.row)}>
+        <ToggleGroup.Root
+          aria-label="Shuffle variation"
+          onValueChange={(next, eventDetails) => {
+            const selected = keepOne(next, () => eventDetails.cancel());
+            if (selected) onVariationChange(selected as ShuffleVariation);
+          }}
+          value={[variation]}
+        >
+          <ToggleGroup.Item value="subtle">Subtle</ToggleGroup.Item>
+          <ToggleGroup.Item value="broad">Broad</ToggleGroup.Item>
+        </ToggleGroup.Root>
+        <span title="Theme state fingerprint" {...stylex.props(styles.fingerprint)}>
+          seed {fingerprint}
+        </span>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { Demo } from '../../demo';
+import { WebComponent } from '../../web-component';
 import Summary from '../../demos/stat/summary';
 import summarySource from '../../demos/stat/summary?raw';
 
@@ -32,3 +33,5 @@ Only what Ultima adds. The parts otherwise accept native [`div`](https://develop
 - **Elements.** A `div` root with `span` label and value parts.
 - **Reading order.** Put `Stat.Label` before `Stat.Value` in DOM order, as the example does.
 - **Focus and keyboard.** None. Stat is static and uses native reading order.
+
+<WebComponent item="stat" />

@@ -24,10 +24,15 @@ const styles = stylex.create({
     paddingBlock: space['--ult-space-8'],
     paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
   },
-  brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
+  wide: { paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] } },
+  brandLogo: { display: 'block', height: text['--ult-text-5'], width: 'auto' },
   brand: {
-    display: 'inline-flex', alignItems: 'center',
-    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
+    display: 'inline-flex',
+    alignItems: 'center',
+    ':focus-visible': {
+      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      outlineOffset: border.focusOffset,
+    },
   },
   cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
   trigger: { display: { default: 'inline-flex', [WIDE]: 'none' }, paddingInline: space['--ult-space-4'] },
@@ -43,7 +48,10 @@ const styles = stylex.create({
     textDecoration: 'none',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'color',
-    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
+    ':focus-visible': {
+      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      outlineOffset: border.focusOffset,
+    },
   },
   status: {
     color: color['--ult-color-text-subtle'],
@@ -61,7 +69,10 @@ const styles = stylex.create({
     textDecoration: 'none',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'color',
-    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
+    ':focus-visible': {
+      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      outlineOffset: border.focusOffset,
+    },
   },
 });
 
@@ -72,15 +83,17 @@ const LINKS = [
   { label: 'Studio', to: '/theme-studio' },
 ] as const;
 
-export function Header() {
+export function Header({ wide = false }: { wide?: boolean }) {
   return (
     <header {...stylex.props(styles.chrome)}>
-      <div {...stylex.props(styles.bar)}>
+      <div {...stylex.props(styles.bar, wide && styles.wide)}>
         <div {...stylex.props(styles.cluster)}>
           <Link to="/" aria-label="Ultima home" {...stylex.props(styles.brand)}>
             <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
           </Link>
-          <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}>
+          <Sidebar.Trigger
+            render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}
+          >
             <ListIcon aria-hidden />
           </Sidebar.Trigger>
         </div>

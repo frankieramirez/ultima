@@ -26,8 +26,7 @@ const modes = {
   light: stylex.props(lightTheme, colorScheme.light),
 };
 
-const themeClasses = (mode: keyof typeof modes) =>
-  modes[mode].className?.split(/\s+/).filter(Boolean) ?? [];
+const themeClasses = (mode: keyof typeof modes) => modes[mode].className?.split(/\s+/).filter(Boolean) ?? [];
 
 /** ThemeRoot puts back the class the document carried when it mounted, which outlives its own test. */
 function prefer(mode: keyof typeof modes) {
@@ -70,7 +69,10 @@ test('the header offers the workshop nav and hides the menu trigger on desktop',
   await expect.element(site.getByRole('link', { name: 'Documentation' })).toBeVisible();
   await expect.element(site.getByRole('link', { name: 'Studio' })).toBeVisible();
   await expect.element(screen.getByRole('link', { name: 'Ultima home' })).toBeVisible();
-  expect(getComputedStyle(screen.container.querySelector('header button[aria-label="Toggle navigation"]')!).display).toBe('none');
+  expect(
+    getComputedStyle(screen.container.querySelector('header button[aria-label="Toggle navigation"]')!)
+      .display,
+  ).toBe('none');
 });
 
 test('the header and footer links fade their hover color on the fast motion token', async () => {
@@ -108,7 +110,9 @@ test('the footer mode control switches the theme', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Light', exact: true }).element());
 
   expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
-  expect([...document.documentElement.classList].some((name) => themeClasses('light').includes(name))).toBe(true);
+  expect([...document.documentElement.classList].some((name) => themeClasses('light').includes(name))).toBe(
+    true,
+  );
 });
 
 test('breadcrumbs name the section and page in plain text', async () => {
@@ -163,16 +167,25 @@ test('the flat catalogue follows the page links in keyboard order', async () => 
   expect(document.activeElement).toBe(menuLink('Button').element());
 });
 
-test('the logo returns to home without hiding desktop navigation', async () => {
+test('the logo returns to the editorial home page, which folds the menu rail away', async () => {
   const screen = await mount('/install');
+  expect(menu().element()).toHaveAttribute('data-open');
   await userEvent.click(screen.getByRole('link', { name: 'Ultima home' }).element());
   await expect.element(screen.getByRole('heading', { level: 1, name: /Good interfaces/ })).toBeVisible();
+  expect(menu().element()).toHaveAttribute('data-closed');
+  await userEvent.click(
+    screen
+      .getByRole('navigation', { name: 'Site', exact: true })
+      .getByRole('link', { name: 'Documentation' })
+      .element(),
+  );
+  await expect.element(screen.getByText('DOCUMENTATION / INSTALL')).toBeVisible();
   expect(menu().element()).toHaveAttribute('data-open');
 });
 
 test('a legacy collapsed preference cannot hide desktop navigation', async () => {
   localStorage.setItem(NAVIGATION_STORAGE_KEY, 'closed');
-  await mount('/');
+  await mount('/install');
   await expect.element(menuLink('Home')).toBeVisible();
   expect(menu().element()).toHaveAttribute('data-open');
 });
@@ -208,9 +221,9 @@ test('a long page scrolls the document while the chrome and the menu rail stay p
   expect(getComputedStyle(index).position).toBe('sticky');
   expect(index.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
 
-  expect(
-    screen.container.querySelector('footer')!.getBoundingClientRect().bottom,
-  ).toBeGreaterThan(window.innerHeight);
+  expect(screen.container.querySelector('footer')!.getBoundingClientRect().bottom).toBeGreaterThan(
+    window.innerHeight,
+  );
   window.scrollTo(0, 0);
 });
 
@@ -223,17 +236,12 @@ test('the panel and index reach the viewport bottom and still clear the footer',
 
   const index = document.querySelector('aside[aria-label="On this page"]')!;
   const indexStyle = getComputedStyle(index);
-  expect(parseFloat(indexStyle.maxHeight)).toBeCloseTo(
-    window.innerHeight - parseFloat(indexStyle.top),
-    0,
-  );
+  expect(parseFloat(indexStyle.maxHeight)).toBeCloseTo(window.innerHeight - parseFloat(indexStyle.top), 0);
 
   const footer = screen.container.querySelector('footer')!;
   window.scrollTo(0, document.documentElement.scrollHeight);
   await expect.poll(() => footer.getBoundingClientRect().top).toBeLessThan(window.innerHeight);
-  expect(panel.getBoundingClientRect().bottom).toBeLessThanOrEqual(
-    footer.getBoundingClientRect().top,
-  );
+  expect(panel.getBoundingClientRect().bottom).toBeLessThanOrEqual(footer.getBoundingClientRect().top);
   window.scrollTo(0, 0);
 });
 
@@ -320,7 +328,7 @@ test('the close control dismisses the menu and hands focus back to the trigger',
 });
 
 test('the close control is not rendered above the breakpoint', async () => {
-  const screen = await mount('/');
+  const screen = await mount('/install');
   await expect.element(menuLink('Home')).toBeVisible();
 
   expect(screen.container.querySelector('[aria-label="Close navigation"]')).toBeNull();
@@ -347,7 +355,6 @@ for (const theme of ['dark', 'light'] as const) {
 function describe(violation: axe.Result) {
   return `${violation.id}: ${violation.nodes.map((node) => node.html).join(', ')}`;
 }
-
 
 test('the index rides a sticky grid column right of the article and the menu paints a styled bar', async () => {
   await page.viewport(2304, 720);

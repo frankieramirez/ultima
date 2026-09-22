@@ -94,6 +94,10 @@ The site's front door at `/`: the pitch, the live specimen strip, and the instal
 
 The block a component page renders for each example: one Card with the live preview, a hairline, and the example's source. Settled on [#369](https://github.com/frankieramirez/ultima/issues/369): the preview is centered with an 8rem floor, the source rests as a six-line teaser that expands in place (a source of eight lines or fewer never collapses), and copy is an icon button inside the code area's top-right corner. The same copy control serves every code block on the site. It composes catalogue components only, so it sits on the page-layout side of the line.
 
+## Element section
+
+The **Web component** section at the foot of a component page whose item also ships as a custom element: the tag, both acquisition paths, a live example rendered from the served bundle with its markup as the figure's source, the tag family, and the attributes. It reads `apps/docs/src/elements.ts`, which restates each `ult-<item>.element.ts` file's tags and observed attributes and is held to them by a test. `/elements` carries the shared story once and links every section.
+
 ## Token row
 
 The line `/tokens` renders per semantic token. Settled on [#372](https://github.com/frankieramirez/ultima/issues/372): name, purpose, and both color modes on one line at desktop, stacking to three lines at 390px, with a `Separator` closing every row. Each mode is an inline `Swatch`, a 48x20 chip beside the hex, with the palette step on the chip's `title` rather than in the row. Copy is the demo figure's icon button, always visible at the row end. Non-color groups keep the same four columns, reading `Token / Purpose / Value / Specimen`. It paints nothing itself: the rule comes from `Separator`, the button from `Button`, and the chip from `swatch.tsx`, which the specification names as an exception.

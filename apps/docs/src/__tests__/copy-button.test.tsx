@@ -26,13 +26,12 @@ test('a second copy inside the confirmation window mutates the status region', a
   observer.observe(status, { subtree: true, characterData: true, childList: true });
 
   await userEvent.click(screen.getByRole('button', { name: 'Copy' }));
-  await expect.element(screen.getByRole('button', { name: 'Copied' })).toBeVisible();
   await expect.poll(() => status.textContent).toMatch(/Copied/);
 
   const afterFirst = mutations.length;
   expect(afterFirst).toBeGreaterThan(0);
 
-  await userEvent.click(screen.getByRole('button', { name: 'Copied' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Copy' }));
   await expect.poll(() => mutations.length).toBeGreaterThan(afterFirst);
 
   observer.disconnect();

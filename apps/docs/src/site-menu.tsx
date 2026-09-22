@@ -25,6 +25,7 @@ const styles = stylex.create({
     maxBlockSize: { default: null, [DESKTOP]: 'calc(100dvh - var(--docs-chrome-block))' },
   },
   scroll: { blockSize: '100%' },
+  content: { paddingBlock: space['--ult-space-8'], paddingInline: space['--ult-space-4'] },
   dismiss: { display: 'flex', justifyContent: 'flex-end' },
   close: { paddingInline: space['--ult-space-4'] },
   groupLabel: { fontFamily: font['--ult-font-mono'] },
@@ -36,7 +37,7 @@ export function SiteMenu() {
     <Sidebar.Panel aria-label={MENU_LABEL} style={[styles.panel, styles.fillRow]}>
       <ScrollArea.Root style={styles.scroll}>
         <ScrollArea.Viewport>
-          <ScrollArea.Content>
+          <ScrollArea.Content style={styles.content}>
             <div {...stylex.props(styles.dismiss)}>
               <Sidebar.Close
                 render={<Button variant="ghost" aria-label="Close navigation" style={styles.close} />}
@@ -48,7 +49,9 @@ export function SiteMenu() {
               <Sidebar.Group key={group.label}>
                 <Sidebar.GroupLabel style={styles.groupLabel}>{group.label}</Sidebar.GroupLabel>
                 <Sidebar.List style={styles.list}>
-                  {group.links.map((link) => <MenuLink key={link.label} link={link} />)}
+                  {group.links.map((link) => (
+                    <MenuLink key={link.label} link={link} />
+                  ))}
                 </Sidebar.List>
               </Sidebar.Group>
             ))}
@@ -65,9 +68,7 @@ export function SiteMenu() {
 function MenuLink({ link: { label, ...destination } }: { link: NavLink }) {
   return (
     <Sidebar.Item>
-      <Sidebar.Link render={<Link {...destination} activeOptions={{ exact: true }} />}>
-        {label}
-      </Sidebar.Link>
+      <Sidebar.Link render={<Link {...destination} activeOptions={{ exact: true }} />}>{label}</Sidebar.Link>
     </Sidebar.Item>
   );
 }

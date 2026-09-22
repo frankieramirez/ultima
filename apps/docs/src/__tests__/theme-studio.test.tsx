@@ -25,8 +25,7 @@ const stock = {
   light: stylex.props(lightTheme, colorScheme.light),
 };
 
-const themeClasses = (mode: keyof typeof stock) =>
-  stock[mode].className?.split(/\s+/).filter(Boolean) ?? [];
+const themeClasses = (mode: keyof typeof stock) => stock[mode].className?.split(/\s+/).filter(Boolean) ?? [];
 
 function prefer(mode: keyof typeof stock) {
   const root = document.documentElement;
@@ -313,7 +312,10 @@ test('inspect tokens lists declared variables and resolved values per pane mode'
   expect(readout.element().textContent).not.toMatch(/--ult-color-surface-raised/);
 
   await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
-  expect(screen.getByRole('button', { name: 'Inspect tokens' }).element()).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: 'Inspect tokens' }).element()).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
 
   await userEvent.hover(target!);
   await expect.element(readout.getByText('--ult-color-surface-raised')).toBeVisible();
@@ -327,7 +329,9 @@ test('inspect tokens lists declared variables and resolved values per pane mode'
   await userEvent.hover(lightTarget!);
   const lightRaised = getComputedStyle(lightTarget!).getPropertyValue('--ult-color-surface-raised').trim();
   expect(lightRaised).not.toBe(darkRaised);
-  await expect.element(screen.getByRole('status', { name: 'Token readout' }).getByText('--ult-color-surface-raised')).toBeVisible();
+  await expect
+    .element(screen.getByRole('status', { name: 'Token readout' }).getByText('--ult-color-surface-raised'))
+    .toBeVisible();
   expect(screen.getByRole('status', { name: 'Token readout' }).element().textContent).toContain(lightRaised);
 });
 
@@ -394,7 +398,9 @@ test('guided controls write contracted draft parameters and the preview follows'
   const stock = resolveDraft(stockDraft());
 
   expect(readToken(pane, '--ult-space-1')).toBe(stock.dark['--ult-space-1']);
-  await userEvent.click(screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Compact' }));
+  await userEvent.click(
+    screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Compact' }),
+  );
   expect(readToken(pane, '--ult-space-1')).toBe('0.09375rem');
 
   const hue = screen.getByRole('slider', { name: 'Accent hue' });
@@ -402,16 +408,24 @@ test('guided controls write contracted draft parameters and the preview follows'
   await userEvent.keyboard('{ArrowRight}');
   expect(readAccent(pane)).not.toBe(stock.dark['--ult-color-accent']);
 
-  await userEvent.click(screen.getByRole('group', { name: 'Shape preset' }).getByRole('button', { name: 'Sharp' }));
+  await userEvent.click(
+    screen.getByRole('group', { name: 'Shape preset' }).getByRole('button', { name: 'Sharp' }),
+  );
   expect(readToken(pane, '--ult-radius-xs')).toBe('0px');
 
-  await userEvent.click(screen.getByRole('group', { name: 'Elevation strength' }).getByRole('button', { name: 'Flat' }));
+  await userEvent.click(
+    screen.getByRole('group', { name: 'Elevation strength' }).getByRole('button', { name: 'Flat' }),
+  );
   expect(readToken(pane, '--ult-shadow-sm')).toBe('none');
 
-  await userEvent.click(screen.getByRole('group', { name: 'Motion speed' }).getByRole('button', { name: 'Brisk' }));
+  await userEvent.click(
+    screen.getByRole('group', { name: 'Motion speed' }).getByRole('button', { name: 'Brisk' }),
+  );
   expect(readToken(pane, '--ult-motion-fast')).toBe('70ms');
 
-  await userEvent.click(screen.getByRole('group', { name: 'Type scale' }).getByRole('button', { name: '1.25' }));
+  await userEvent.click(
+    screen.getByRole('group', { name: 'Type scale' }).getByRole('button', { name: '1.25' }),
+  );
   const size = screen.getByRole('slider', { name: 'Base size' });
   size.element().focus();
   await userEvent.keyboard('{Home}');
@@ -422,19 +436,23 @@ test('group lock and reset live on the draft', async () => {
   const screen = await mount('/theme-studio');
   const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
 
-  await userEvent.click(screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Roomy' }));
+  await userEvent.click(
+    screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Roomy' }),
+  );
   expect(readToken(pane, '--ult-space-1')).not.toBe('0.125rem');
 
   await userEvent.click(screen.getByRole('button', { name: 'Lock Density' }));
-  expect(screen.getByRole('button', { name: 'Lock Density' }).element()).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: 'Lock Density' }).element()).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await expect.element(screen.getByText(/1 locked group/)).toBeVisible();
 
   await userEvent.click(screen.getByRole('button', { name: 'Reset Density' }));
   expect(readToken(pane, '--ult-space-1')).toBe('0.125rem');
-  expect(screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Cosy' }).element()).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  expect(
+    screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Cosy' }).element(),
+  ).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('the shuffle bar carries shuffle, variation, undo, redo, and the state fingerprint', async () => {
@@ -458,7 +476,10 @@ test('the shuffle bar carries shuffle, variation, undo, redo, and the state fing
 test('shuffle, locks, undo, redo, and reset theme walk one linear history', async () => {
   const screen = await mount('/theme-studio');
   const fingerprint = () =>
-    screen.getByText(/^seed [0-9a-f]{6}$/).element().textContent?.replace('seed ', '') ?? '';
+    screen
+      .getByText(/^seed [0-9a-f]{6}$/)
+      .element()
+      .textContent?.replace('seed ', '') ?? '';
   const undoButton = () => screen.getByRole('button', { name: 'Undo' }).element();
   const redoButton = () => screen.getByRole('button', { name: 'Redo' }).element();
 
@@ -508,6 +529,12 @@ test('every editor control is a catalogue component, including Color Field seeds
   expect(editor.querySelector('select')).toBeNull();
   expect(editor.querySelector('input[type="color"]')).toBeNull();
   for (const role of ['Neutral', 'Accent', 'Action', 'Success', 'Warning', 'Danger']) {
+    await userEvent.click(
+      screen
+        .getByRole('group', { name: 'Color roles' })
+        .getByRole('button', { name: role, exact: true })
+        .element(),
+    );
     await expect.element(screen.getByRole('button', { name: `${role} seed` })).toBeVisible();
     await expect.element(screen.getByRole('slider', { name: `${role} hue` })).toBeVisible();
     await expect.element(screen.getByRole('slider', { name: `${role} saturation` })).toBeVisible();
@@ -586,7 +613,9 @@ test('the token contrast panel reports every pairing per mode at full precision'
   expect(panel.querySelectorAll('li').length).toBe(49);
   await expect.element(screen.getByText('All pairings pass')).toBeVisible();
 
-  const pair = [...panel.querySelectorAll('li')].find((li) => li.textContent?.startsWith('text on surface ·'));
+  const pair = [...panel.querySelectorAll('li')].find((li) =>
+    li.textContent?.startsWith('text on surface ·'),
+  );
   expect(pair).toBeDefined();
   expect(pair!.textContent).toMatch(/min 4\.5:1/);
   expect(pair!.textContent).toMatch(/Dark \d+(\.\d+)?:1 pass/);
@@ -601,7 +630,9 @@ test('the token contrast panel reports every pairing per mode at full precision'
   await userEvent.clear(text.element());
   await userEvent.type(text.element(), '#000000');
 
-  const updated = [...panel.querySelectorAll('li')].find((li) => li.textContent?.startsWith('text on surface ·'));
+  const updated = [...panel.querySelectorAll('li')].find((li) =>
+    li.textContent?.startsWith('text on surface ·'),
+  );
   expect(updated!.textContent).toContain('Dark 21:1 pass');
   expect(updated!.textContent).toContain('Light 21:1 pass');
 });
@@ -621,7 +652,9 @@ test('a failing override applies marked, not blocked, and the row is flagged', a
   expect(readToken(pane, '--ult-color-text')).toBe('#101011');
   await expect.element(screen.getByText(/pairings? failing/)).toBeVisible();
 
-  const pair = [...panel.querySelectorAll('li')].find((li) => li.textContent?.startsWith('text on surface ·'));
+  const pair = [...panel.querySelectorAll('li')].find((li) =>
+    li.textContent?.startsWith('text on surface ·'),
+  );
   expect(pair!.textContent).toMatch(/Dark [\d.]+:1 fail/);
   expect(Number(pair!.textContent!.match(/Dark ([\d.]+):1/)?.[1])).toBeLessThan(4.5);
   expect(pair!.textContent).toMatch(/Light [\d.]+:1 pass/);

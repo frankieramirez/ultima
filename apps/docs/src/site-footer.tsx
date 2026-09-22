@@ -19,22 +19,14 @@ const styles = stylex.create({
     paddingBlock: space['--ult-space-8'],
     paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
   },
+  wide: { paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] } },
   identity: {
     color: color['--ult-color-text-subtle'],
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-1'],
   },
-  cluster: {
-    alignItems: 'center',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: space['--ult-space-8'],
-  },
-  links: {
-    alignItems: 'center',
-    display: 'flex',
-    gap: space['--ult-space-6'],
-  },
+  cluster: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-8'] },
+  links: { alignItems: 'center', display: 'flex', gap: space['--ult-space-6'] },
   link: {
     alignItems: 'center',
     color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
@@ -45,7 +37,10 @@ const styles = stylex.create({
     textDecoration: 'none',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'color',
-    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
+    ':focus-visible': {
+      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      outlineOffset: border.focusOffset,
+    },
   },
 });
 
@@ -55,11 +50,11 @@ const OPTIONS: { value: ThemePreference; label: string }[] = [
   { value: 'system', label: 'System' },
 ];
 
-export function SiteFooter() {
+export function SiteFooter({ wide = false }: { wide?: boolean }) {
   const { preference, setPreference } = useTheme();
 
   return (
-    <footer {...stylex.props(styles.bar)}>
+    <footer {...stylex.props(styles.bar, wide && styles.wide)}>
       <span {...stylex.props(styles.identity)}>ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES</span>
       <div {...stylex.props(styles.cluster)}>
         <div {...stylex.props(styles.links)}>

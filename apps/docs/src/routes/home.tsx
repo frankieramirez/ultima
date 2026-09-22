@@ -20,12 +20,12 @@ const styles = stylex.create({
     maxInlineSize: '90rem',
   },
   hero: {
-    alignItems: { default: 'start', [DESKTOP]: 'end' },
+    alignItems: 'start',
     display: 'flex',
     flexDirection: { default: 'column', [DESKTOP]: 'row' },
     gap: { default: space['--ult-space-10'], [DESKTOP]: space['--ult-space-12'] },
     paddingBlockStart: { default: space['--ult-space-9'], [DESKTOP]: space['--ult-space-12'] },
-    paddingBlockEnd: space['--ult-space-11'],
+    paddingBlockEnd: { default: space['--ult-space-10'], [DESKTOP]: space['--ult-space-11'] },
     paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
   },
   editorial: {
@@ -59,7 +59,7 @@ const styles = stylex.create({
     flexShrink: 0,
     gap: space['--ult-space-8'],
     inlineSize: { default: '100%', [DESKTOP]: '24.5rem' },
-    paddingBlockEnd: { default: 0, [DESKTOP]: space['--ult-space-5'] },
+    paddingBlockStart: { default: 0, [DESKTOP]: space['--ult-space-11'] },
   },
   proposition: {
     color: color['--ult-color-text-muted'],
@@ -67,11 +67,7 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
   },
-  heroAction: {
-    inlineSize: '100%',
-    justifyContent: 'space-between',
-    paddingInline: space['--ult-space-7'],
-  },
+  heroAction: { inlineSize: '100%', justifyContent: 'space-between', paddingInline: space['--ult-space-7'] },
   guide: {
     alignItems: 'center',
     color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
@@ -136,12 +132,7 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-relaxed'],
     margin: 0,
   },
-  commands: {
-    flexBasis: '26rem',
-    flexGrow: 1,
-    maxInlineSize: '40rem',
-    minInlineSize: 0,
-  },
+  commands: { flexBasis: '26rem', flexGrow: 1, maxInlineSize: '40rem', minInlineSize: 0 },
 });
 
 export function Home() {
@@ -161,10 +152,15 @@ export function Home() {
         </div>
         <div {...stylex.props(styles.intro)}>
           <p {...stylex.props(styles.proposition)}>
-            React components with a common language. Precise tokens, Base UI behavior, and StyleX styling. Ready to
-            become your code.
+            React components with a common language. Precise tokens, Base UI behavior, and StyleX styling.
+            Ready to become your code.
           </p>
-          <Button size="lg" style={[contrastStyles.root, styles.heroAction]} render={<Link to="/components" />} nativeButton={false}>
+          <Button
+            size="lg"
+            style={[contrastStyles.root, styles.heroAction]}
+            render={<Link to="/components" />}
+            nativeButton={false}
+          >
             Explore the components <ArrowUpRightIcon aria-hidden />
           </Button>
           <Link to="/install" {...stylex.props(styles.guide)}>
@@ -176,7 +172,9 @@ export function Home() {
       <section aria-labelledby="specimen-index" {...stylex.props(styles.specimen)}>
         <Separator />
         <div {...stylex.props(styles.metadata)}>
-          <p id="specimen-index" {...stylex.props(styles.index)}>02 / ANATOMY OF AN INTERFACE</p>
+          <p id="specimen-index" {...stylex.props(styles.index)}>
+            02 / ANATOMY OF AN INTERFACE
+          </p>
           <p {...stylex.props(styles.scale)}>TOKENS → COMPONENTS → YOUR PRODUCT</p>
         </div>
         <Specimen />
@@ -191,7 +189,8 @@ export function Home() {
             to your source.
           </h2>
           <p {...stylex.props(styles.installDescription)}>
-            Set up StyleX, add a component, and take it from there. No hidden styling layer. No locked-in theme.
+            Set up StyleX, add a component, and take it from there. No hidden styling layer. No locked-in
+            theme.
           </p>
         </div>
         <div {...stylex.props(styles.commands)}>

@@ -11,9 +11,19 @@ import {
   type ThemeDraft,
   type TypeScale,
 } from '@ultima/tokens';
-import { space, text } from '@ultima/tokens/tokens.stylex';
-import { ColorField, Field, Input, ScrollArea, Select, Slider, ToggleGroup } from '@ultima/ui';
-import { useMemo } from 'react';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import {
+  ColorField,
+  Field,
+  Input,
+  ScrollArea,
+  Select,
+  Separator,
+  Slider,
+  Toggle,
+  ToggleGroup,
+} from '@ultima/ui';
+import { useMemo, useState } from 'react';
 
 import {
   GROUPS,
@@ -26,6 +36,7 @@ import {
   sliderNumber,
   type GroupId,
 } from './theme-studio-draft';
+import { SwatchChip } from './swatch';
 import { ThemeStudioGroup } from './theme-studio-group';
 import type { DraftEdit } from './theme-studio-store';
 import { TokenRows, type ModeOffenders } from './theme-studio-token-row';
@@ -40,47 +51,52 @@ const styles = stylex.create({
     flexShrink: 0,
     overflow: 'auto',
   },
-  groups: {
-    flexGrow: 1,
-    minBlockSize: 0,
-    minInlineSize: 0,
-  },
+  groups: { flexGrow: 1, minBlockSize: 0, minInlineSize: 0 },
   groupsContent: {
+    // Base UI's ScrollArea.Content writes `min-width: fit-content` inline, so a wide input would
+    // widen the scrolled content past the rail without this.
+    contain: 'inline-size',
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-8'],
   },
-  preset: {
-    display: 'flex',
-    flexWrap: 'wrap',
+  swatches: { display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-3'] },
+  swatchItem: {
+    blockSize: 'auto',
+    paddingBlock: space['--ult-space-1'],
+    paddingInline: space['--ult-space-1'],
   },
-  group: {
-    display: { default: 'none', [RAIL]: 'flex' },
-    flexDirection: 'column',
-    flexShrink: 0,
+  detail: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-5'] },
+  roleTitle: {
+    fontSize: text['--ult-text-5'],
+    fontWeight: font['--ult-font-weight-medium'],
+    lineHeight: font['--ult-font-leading-tight'],
+    margin: 0,
   },
-  groupActive: {
-    display: 'flex',
+  roleNote: {
+    color: color['--ult-color-text-subtle'],
+    fontSize: text['--ult-text-3'],
+    lineHeight: font['--ult-font-leading-snug'],
+    margin: 0,
   },
-  stack: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space['--ult-space-6'],
-  },
-  row: {
-    alignItems: 'center',
-    display: 'flex',
-    gap: space['--ult-space-4'],
-  },
+  hexRow: { alignItems: 'center', display: 'flex', gap: space['--ult-space-4'] },
+  hexInput: { flexGrow: 1, minInlineSize: 0 },
+  seed: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-3'] },
+  seedHead: { display: 'flex', fontSize: text['--ult-text-3'], justifyContent: 'space-between' },
+  seedLabel: { color: color['--ult-color-text-muted'] },
+  seedValue: { fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'] },
+  preset: { display: 'flex', flexWrap: 'wrap' },
+  group: { display: { default: 'none', [RAIL]: 'flex' }, flexDirection: 'column', flexShrink: 0 },
+  groupActive: { display: 'flex' },
+  divider: { marginBlockEnd: space['--ult-space-8'] },
+  stack: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-6'] },
+  row: { alignItems: 'center', display: 'flex', gap: space['--ult-space-4'] },
   role: {
     flexShrink: 0,
     fontSize: text['--ult-text-3'],
     inlineSize: `calc(${space['--ult-space-12']} + ${space['--ult-space-8']})`,
   },
-  slider: {
-    flexGrow: 1,
-    minInlineSize: 0,
-  },
+  slider: { flexGrow: 1, minInlineSize: 0 },
 });
 
 const SCALE_OPTIONS: { label: string; value: string }[] = [
@@ -115,7 +131,10 @@ function FamilySelect({
   onStack: (stack: string) => void;
 }) {
   const matched = presetValue(stack, presets);
-  const items = [...presets.map((preset) => ({ label: preset.label, value: preset.value })), { label: 'Custom', value: 'custom' }];
+  const items = [
+    ...presets.map((preset) => ({ label: preset.label, value: preset.value })),
+    { label: 'Custom', value: 'custom' },
+  ];
 
   return (
     <>
@@ -192,6 +211,64 @@ function PresetGroup({
   );
 }
 
+const ROLE_NOTES: Record<ScaleName, string> = {
+  mithril: 'Surfaces, text, and borders.',
+  arcane: 'Buttons, selection, and focus.',
+  mana: 'Links, marks, and progress.',
+  verdant: 'Confirmations and passing checks.',
+  ember: 'Cautions that still need a look.',
+  ruin: 'Errors and destructive actions.',
+};
+
+function scaleTitle(scale: ScaleName): string {
+  return `${scale.charAt(0).toUpperCase()}${scale.slice(1)} / ${SCALE_ROLES[scale]}`;
+}
+
+function SeedSlider({
+  label,
+  max,
+  name,
+  onChange,
+  onCommit,
+  unit,
+  value,
+}: {
+  label: string;
+  max: number;
+  name: string;
+  onChange: (value: number) => void;
+  onCommit: (value: number) => void;
+  unit: string;
+  value: number;
+}) {
+  return (
+    <div {...stylex.props(styles.seed)}>
+      <div {...stylex.props(styles.seedHead)}>
+        <span {...stylex.props(styles.seedLabel)}>{label}</span>
+        <span {...stylex.props(styles.seedValue)}>
+          {value}
+          {unit}
+        </span>
+      </div>
+      <Slider.Root
+        max={max}
+        min={0}
+        onValueChange={(next) => onChange(sliderNumber(next))}
+        onValueCommitted={(next) => onCommit(sliderNumber(next))}
+        step={1}
+        value={value}
+      >
+        <Slider.Control>
+          <Slider.Track>
+            <Slider.Indicator />
+            <Slider.Thumb aria-label={name} />
+          </Slider.Track>
+        </Slider.Control>
+      </Slider.Root>
+    </div>
+  );
+}
+
 function ColorControls({
   draft,
   update,
@@ -201,97 +278,87 @@ function ColorControls({
   update: (edit: DraftEdit) => void;
   commit: (edit: DraftEdit) => void;
 }) {
+  const [scale, setScale] = useState<ScaleName>('arcane');
   const scales = useMemo(() => generateScales(draft.color), [draft.color]);
+  const role = SCALE_ROLES[scale];
+  const seed = draft.color[scale];
+  const swatch = scales[scale].dark[8] ?? '#000000';
+
+  const patch = (apply: (edit: DraftEdit) => void, key: 'hue' | 'saturation') => (value: number) => {
+    apply((current) => ({
+      ...current,
+      color: {
+        ...current.color,
+        [scale]: { ...current.color[scale], [key]: key === 'hue' ? value : value / 100 },
+      },
+    }));
+  };
 
   return (
     <div {...stylex.props(styles.stack)}>
-      {(Object.keys(SCALE_ROLES) as ScaleName[]).map((scale) => {
-        const role = SCALE_ROLES[scale];
-        const seed = draft.color[scale];
-        const swatch = scales[scale].dark[8] ?? '#000000';
-        return (
-          <div key={scale} {...stylex.props(styles.row)}>
-            <ColorField.Root
-              onValueChange={(hex) => {
-                commit((current) => ({
-                  ...current,
-                  color: { ...current.color, [scale]: seedFromSrgb(hex, scale, current.color[scale]) },
-                }));
-              }}
-              size="sm"
-              value={swatch}
-            >
-              <ColorField.Swatch aria-label={`${role} seed`} />
-              <ColorField.Portal>
-                <ColorField.Positioner sideOffset={8}>
-                  <ColorField.Popup>
-                    <ColorField.Picker />
-                  </ColorField.Popup>
-                </ColorField.Positioner>
-              </ColorField.Portal>
-            </ColorField.Root>
-            <span {...stylex.props(styles.role)}>{role}</span>
-            <Slider.Root
-              max={359}
-              min={0}
-              onValueChange={(value) => {
-                update((current) => ({
-                  ...current,
-                  color: { ...current.color, [scale]: { ...current.color[scale], hue: sliderNumber(value) } },
-                }));
-              }}
-              onValueCommitted={(value) => {
-                commit((current) => ({
-                  ...current,
-                  color: { ...current.color, [scale]: { ...current.color[scale], hue: sliderNumber(value) } },
-                }));
-              }}
-              step={1}
-              style={styles.slider}
-              value={seed.hue}
-            >
-              <Slider.Control>
-                <Slider.Track>
-                  <Slider.Indicator />
-                  <Slider.Thumb aria-label={`${role} hue`} />
-                </Slider.Track>
-              </Slider.Control>
-            </Slider.Root>
-            <Slider.Root
-              max={150}
-              min={0}
-              onValueChange={(value) => {
-                update((current) => ({
-                  ...current,
-                  color: {
-                    ...current.color,
-                    [scale]: { ...current.color[scale], saturation: sliderNumber(value) / 100 },
-                  },
-                }));
-              }}
-              onValueCommitted={(value) => {
-                commit((current) => ({
-                  ...current,
-                  color: {
-                    ...current.color,
-                    [scale]: { ...current.color[scale], saturation: sliderNumber(value) / 100 },
-                  },
-                }));
-              }}
-              step={1}
-              style={styles.slider}
-              value={Math.round(seed.saturation * 100)}
-            >
-              <Slider.Control>
-                <Slider.Track>
-                  <Slider.Indicator />
-                  <Slider.Thumb aria-label={`${role} saturation`} />
-                </Slider.Track>
-              </Slider.Control>
-            </Slider.Root>
+      <div aria-label="Color roles" role="group" {...stylex.props(styles.swatches)}>
+        {(Object.keys(SCALE_ROLES) as ScaleName[]).map((name) => (
+          <Toggle
+            aria-label={SCALE_ROLES[name]}
+            key={name}
+            onPressedChange={(pressed) => {
+              if (pressed) setScale(name);
+            }}
+            pressed={scale === name}
+            style={styles.swatchItem}
+            variant="outline"
+          >
+            <SwatchChip value={scales[name].dark[8] ?? '#000000'} />
+          </Toggle>
+        ))}
+      </div>
+      <div {...stylex.props(styles.detail)}>
+        <div>
+          <p {...stylex.props(styles.roleTitle)}>{scaleTitle(scale)}</p>
+          <p {...stylex.props(styles.roleNote)}>{ROLE_NOTES[scale]}</p>
+        </div>
+        <ColorField.Root
+          key={scale}
+          onValueChange={(hex) => {
+            commit((current) => ({
+              ...current,
+              color: { ...current.color, [scale]: seedFromSrgb(hex, scale, current.color[scale]) },
+            }));
+          }}
+          size="sm"
+          value={swatch}
+        >
+          <div {...stylex.props(styles.hexRow)}>
+            <ColorField.Swatch aria-label={`${role} seed`} />
+            <ColorField.Input aria-label={`${role} hex`} style={styles.hexInput} />
           </div>
-        );
-      })}
+          <ColorField.Portal>
+            <ColorField.Positioner sideOffset={8}>
+              <ColorField.Popup>
+                <ColorField.Picker />
+              </ColorField.Popup>
+            </ColorField.Positioner>
+          </ColorField.Portal>
+        </ColorField.Root>
+        <SeedSlider
+          label="Hue"
+          max={359}
+          name={`${role} hue`}
+          onChange={patch(update, 'hue')}
+          onCommit={patch(commit, 'hue')}
+          unit="°"
+          value={seed.hue}
+        />
+        <SeedSlider
+          label="Saturation"
+          max={150}
+          name={`${role} saturation`}
+          onChange={patch(update, 'saturation')}
+          onCommit={patch(commit, 'saturation')}
+          unit="%"
+          value={Math.round(seed.saturation * 100)}
+        />
+      </div>
     </div>
   );
 }
@@ -352,7 +419,10 @@ function TypographyControls({
       <PresetGroup
         label="Type scale"
         onChange={(value) =>
-          commit((current) => ({ ...current, typography: { ...current.typography, scale: parseScale(value) } }))
+          commit((current) => ({
+            ...current,
+            typography: { ...current.typography, scale: parseScale(value) },
+          }))
         }
         options={SCALE_OPTIONS}
         value={String(type.scale)}
@@ -384,6 +454,53 @@ function TypographyControls({
 }
 
 type GroupLabel = (typeof GROUPS)[number]['label'];
+
+function optionLabel(options: readonly { label: string; value: string }[], value: string): string {
+  return options.find((option) => option.value === value)?.label ?? value;
+}
+
+const DENSITY_OPTIONS = [
+  { label: 'Compact', value: '0.75' },
+  { label: 'Cosy', value: '1' },
+  { label: 'Roomy', value: '1.25' },
+] as const;
+const SHAPE_OPTIONS = [
+  { label: 'Sharp', value: 'sharp' },
+  { label: 'Default', value: 'default' },
+  { label: 'Round', value: 'round' },
+] as const;
+const ELEVATION_OPTIONS = [
+  { label: 'Flat', value: '0' },
+  { label: 'Subtle', value: '0.5' },
+  { label: 'Default', value: '1' },
+  { label: 'Pronounced', value: '1.5' },
+] as const;
+const MOTION_OPTIONS = [
+  { label: 'Brisk', value: '0.6' },
+  { label: 'Default', value: '1' },
+  { label: 'Gentle', value: '1.5' },
+] as const;
+
+function familyLabel(stack: string, presets: readonly { label: string; value: string }[]): string {
+  return presets.find((preset) => preset.value === stack)?.label ?? 'Custom';
+}
+
+function summarize(group: GroupId, draft: ThemeDraft): string {
+  switch (group) {
+    case 'color':
+      return 'Six seeds, one gate.';
+    case 'typography':
+      return `${familyLabel(draft.typography.sans, SANS_PRESETS)} / ${familyLabel(draft.typography.mono, MONO_PRESETS)}`;
+    case 'density':
+      return optionLabel(DENSITY_OPTIONS, String(draft.density));
+    case 'shape':
+      return optionLabel(SHAPE_OPTIONS, draft.shape);
+    case 'elevation':
+      return optionLabel(ELEVATION_OPTIONS, String(draft.elevation));
+    case 'motion':
+      return optionLabel(MOTION_OPTIONS, String(draft.motion));
+  }
+}
 
 export function ThemeStudioEditor({
   draft,
@@ -440,15 +557,17 @@ export function ThemeStudioEditor({
       <ScrollArea.Root style={styles.groups}>
         <ScrollArea.Viewport>
           <ScrollArea.Content style={styles.groupsContent}>
-            {GROUPS.map((item) => (
+            {GROUPS.map((item, index) => (
               <section
                 aria-labelledby={`${item.label.toLowerCase()}-group`}
                 key={item.id}
                 {...stylex.props(styles.group, group === item.label && styles.groupActive)}
               >
+                {index > 0 ? <Separator style={styles.divider} /> : null}
                 <ThemeStudioGroup
                   label={item.label}
                   locked={draft.locks[item.id]}
+                  summary={summarize(item.id, draft)}
                   onLock={(locked) =>
                     commit((current) => ({ ...current, locks: { ...current.locks, [item.id]: locked } }))
                   }
@@ -464,7 +583,9 @@ export function ThemeStudioEditor({
                     />
                   }
                 >
-                  {item.id === 'color' ? <ColorControls draft={draft} update={update} commit={commit} /> : null}
+                  {item.id === 'color' ? (
+                    <ColorControls draft={draft} update={update} commit={commit} />
+                  ) : null}
                   {item.id === 'typography' ? (
                     <TypographyControls draft={draft} update={update} commit={commit} />
                   ) : null}
@@ -474,11 +595,7 @@ export function ThemeStudioEditor({
                       onChange={(value) =>
                         commit((current) => ({ ...current, density: Number(value) as DensityFactor }))
                       }
-                      options={[
-                        { label: 'Compact', value: '0.75' },
-                        { label: 'Cosy', value: '1' },
-                        { label: 'Roomy', value: '1.25' },
-                      ]}
+                      options={DENSITY_OPTIONS}
                       value={String(draft.density)}
                     />
                   ) : null}
@@ -486,11 +603,7 @@ export function ThemeStudioEditor({
                     <PresetGroup
                       label="Shape preset"
                       onChange={(value) => commit((current) => ({ ...current, shape: value as ShapePreset }))}
-                      options={[
-                        { label: 'Sharp', value: 'sharp' },
-                        { label: 'Default', value: 'default' },
-                        { label: 'Round', value: 'round' },
-                      ]}
+                      options={SHAPE_OPTIONS}
                       value={draft.shape}
                     />
                   ) : null}
@@ -498,12 +611,7 @@ export function ThemeStudioEditor({
                     <PresetGroup
                       label="Elevation strength"
                       onChange={(value) => commit((current) => ({ ...current, elevation: Number(value) }))}
-                      options={[
-                        { label: 'Flat', value: '0' },
-                        { label: 'Subtle', value: '0.5' },
-                        { label: 'Default', value: '1' },
-                        { label: 'Pronounced', value: '1.5' },
-                      ]}
+                      options={ELEVATION_OPTIONS}
                       value={String(draft.elevation)}
                     />
                   ) : null}
@@ -511,11 +619,7 @@ export function ThemeStudioEditor({
                     <PresetGroup
                       label="Motion speed"
                       onChange={(value) => commit((current) => ({ ...current, motion: Number(value) }))}
-                      options={[
-                        { label: 'Brisk', value: '0.6' },
-                        { label: 'Default', value: '1' },
-                        { label: 'Gentle', value: '1.5' },
-                      ]}
+                      options={MOTION_OPTIONS}
                       value={String(draft.motion)}
                     />
                   ) : null}

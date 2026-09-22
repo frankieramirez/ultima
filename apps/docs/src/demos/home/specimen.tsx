@@ -1,17 +1,15 @@
 import * as stylex from '@stylexjs/stylex';
+import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
 import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import { Badge, Button, Card, Input, Tabs } from '@ultima/ui';
 
+import { useResolvedScheme } from '../../theme';
 import { contrastStyles } from './contrast';
 
 const DESKTOP = '@media (min-width: 64rem)';
 
 const NOTES = [
-  {
-    index: 'A',
-    title: 'Shared decisions',
-    body: 'Color, space, type, and motion live in semantic tokens.',
-  },
+  { index: 'A', title: 'Shared decisions', body: 'Color, space, type, and motion live in semantic tokens.' },
   {
     index: 'B',
     title: 'Composed behavior',
@@ -83,45 +81,53 @@ const styles = stylex.create({
 });
 
 export default function Specimen() {
+  const scheme = useResolvedScheme();
+  const dark = scheme === 'dark';
   return (
-    <Card.Root role="region" aria-label="Component specimen" style={styles.panel}>
-      <div {...stylex.props(styles.mock)}>
-        <div {...stylex.props(styles.head)}>
-          <p {...stylex.props(styles.title)}>Project settings</p>
-          <Badge style={styles.draft}>Draft</Badge>
-        </div>
-        <Tabs.Root defaultValue="general">
-          <Tabs.List aria-label="Settings sections">
-            <Tabs.Tab value="general">General</Tabs.Tab>
-            <Tabs.Tab value="members">Members</Tabs.Tab>
-            <Tabs.Tab value="notifications">Notifications</Tabs.Tab>
-            <Tabs.Indicator />
-          </Tabs.List>
-        </Tabs.Root>
-        <label {...stylex.props(styles.field)}>
-          <span {...stylex.props(styles.label)}>Project name</span>
-          <Input defaultValue="Untitled, but not for long" />
-        </label>
-        <label {...stylex.props(styles.field)}>
-          <span {...stylex.props(styles.label)}>Framework</span>
-          <Input defaultValue="React + StyleX" />
-        </label>
-        <div {...stylex.props(styles.actions)}>
-          <Button style={contrastStyles.root}>Create project</Button>
-          <Button variant="outline">Cancel</Button>
-        </div>
-      </div>
-      <div {...stylex.props(styles.notes)}>
-        {NOTES.map(({ index, title, body }) => (
-          <div key={index} {...stylex.props(styles.note)}>
-            <span aria-hidden {...stylex.props(styles.noteIndex)}>{index}</span>
-            <div {...stylex.props(styles.noteCopy)}>
-              <p {...stylex.props(styles.noteTitle)}>{title}</p>
-              <p {...stylex.props(styles.noteBody)}>{body}</p>
-            </div>
+    <div
+      {...stylex.props(dark ? lightTheme : darkTheme, dark ? colorScheme.light : colorScheme.dark)}
+    >
+      <Card.Root role="region" aria-label="Component specimen" style={styles.panel}>
+        <div {...stylex.props(styles.mock)}>
+          <div {...stylex.props(styles.head)}>
+            <p {...stylex.props(styles.title)}>Project settings</p>
+            <Badge style={styles.draft}>Draft</Badge>
           </div>
-        ))}
-      </div>
-    </Card.Root>
+          <Tabs.Root defaultValue="general">
+            <Tabs.List aria-label="Settings sections">
+              <Tabs.Tab value="general">General</Tabs.Tab>
+              <Tabs.Tab value="members">Members</Tabs.Tab>
+              <Tabs.Tab value="notifications">Notifications</Tabs.Tab>
+              <Tabs.Indicator />
+            </Tabs.List>
+          </Tabs.Root>
+          <label {...stylex.props(styles.field)}>
+            <span {...stylex.props(styles.label)}>Project name</span>
+            <Input defaultValue="Untitled, but not for long" />
+          </label>
+          <label {...stylex.props(styles.field)}>
+            <span {...stylex.props(styles.label)}>Framework</span>
+            <Input defaultValue="React + StyleX" />
+          </label>
+          <div {...stylex.props(styles.actions)}>
+            <Button style={contrastStyles.root}>Create project</Button>
+            <Button variant="outline">Cancel</Button>
+          </div>
+        </div>
+        <div {...stylex.props(styles.notes)}>
+          {NOTES.map(({ index, title, body }) => (
+            <div key={index} {...stylex.props(styles.note)}>
+              <span aria-hidden {...stylex.props(styles.noteIndex)}>
+                {index}
+              </span>
+              <div {...stylex.props(styles.noteCopy)}>
+                <p {...stylex.props(styles.noteTitle)}>{title}</p>
+                <p {...stylex.props(styles.noteBody)}>{body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card.Root>
+    </div>
   );
 }
