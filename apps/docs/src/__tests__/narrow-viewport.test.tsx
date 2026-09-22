@@ -39,6 +39,38 @@ test('the palette ramps fit their column at a narrow viewport', async () => {
   expect(main.scrollWidth).toBeLessThanOrEqual(main.clientWidth);
 });
 
+test('the palette step captions and ramp labels hold one line at every width', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+
+  const { container } = await render(<PalettePage />);
+  const text = container.textContent ?? '';
+
+  expect(text.match(/brand anchor/g) ?? []).toHaveLength(2);
+  expect(text).toContain('step 1 is the brand anchor');
+  expect(text).toContain('step 12 is the brand anchor');
+
+  const labels = [...container.querySelectorAll<HTMLElement>('p')].filter((p) =>
+    /^(dark|light)\b/.test(p.textContent ?? ''),
+  );
+  expect(labels.length).toBe(12);
+
+  const assertOneLine = () => {
+    expect(new Set(labels.map((label) => label.getBoundingClientRect().height)).size).toBe(1);
+    for (const label of labels) {
+      const ramp = label.nextElementSibling as HTMLElement;
+      const heights = [...ramp.children].map(
+        (swatch) => (swatch.lastElementChild as HTMLElement).getBoundingClientRect().height,
+      );
+      expect(new Set(heights).size).toBe(1);
+    }
+  };
+
+  assertOneLine();
+  await page.viewport(1440, 900);
+  assertOneLine();
+});
+
 const paginationDemos = [
   { name: 'window', Demo: PageWindow },
   { name: 'links', Demo: LinkedPages },

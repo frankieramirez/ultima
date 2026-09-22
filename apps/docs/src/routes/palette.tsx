@@ -114,14 +114,17 @@ export function PalettePage() {
                 <ScrollArea.Content>
                   {MODES.map((mode) => (
                     <div key={mode}>
-                      <p {...stylex.props(styles.rampLabel)}>{mode}</p>
+                      <p {...stylex.props(styles.rampLabel)}>
+                        {mode}
+                        <AnchorNote scale={scale.name} mode={mode} />
+                      </p>
                       <div {...stylex.props(styles.ramp)}>
                         {scale[mode].map((value, index) => (
                           <Swatch
                             key={value + index}
                             value={value}
                             caption={value}
-                            note={<StepNote scale={scale.name} mode={mode} step={index + 1} />}
+                            note={index + 1}
                           />
                         ))}
                       </div>
@@ -211,8 +214,10 @@ export function PalettePage() {
   );
 }
 
-function StepNote({ scale, mode, step }: { scale: string; mode: string; step: number }) {
+function AnchorNote({ scale, mode }: { scale: string; mode: string }) {
   const anchor = BRAND_ANCHORS[scale];
-  if (anchor?.mode !== mode || anchor.step !== step) return <>{step}</>;
-  return <span {...stylex.props(styles.anchor)}>{step} · brand anchor</span>;
+  if (anchor?.mode !== mode) return null;
+  return (
+    <span {...stylex.props(styles.anchor)}> · step {anchor.step} is the brand anchor</span>
+  );
 }
