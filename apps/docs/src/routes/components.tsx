@@ -142,10 +142,11 @@ export function ComponentsPage() {
           </Select.Portal>
         </Select.Root>
         <Button
-          disabled={query === '' && release === 'all'}
+          disabled={query === '' && release === 'all' && sortOrder === 'catalogue'}
           onClick={() => {
             setQuery('');
             setRelease('all');
+            setSortOrder('catalogue');
             inputRef.current?.focus();
           }}
           variant="outline"
