@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 import * as stylex from "@stylexjs/stylex";
+import type { StyleXStyles } from "@stylexjs/stylex";
 import { color, font, space, text } from "@ultima/tokens/tokens.stylex";
 import { Separator } from "@ultima/ui";
 import { DocumentLayout } from "./document-layout";
@@ -25,6 +26,17 @@ const styles = stylex.create({
     marginBlock: space["--ult-space-4"],
     maxWidth: "44rem",
   },
+  kicker: {
+    fontFamily: font["--ult-font-mono"],
+    fontSize: text["--ult-text-1"],
+    letterSpacing: font["--ult-font-tracking-wide"],
+    margin: 0,
+  },
+});
+
+const kickerTones = stylex.create({
+  muted: { color: color["--ult-color-text-muted"] },
+  subtle: { color: color["--ult-color-text-subtle"] },
 });
 
 export function Page({
@@ -65,6 +77,17 @@ export function Section({
       {children}
     </section>
   );
+}
+
+export function Kicker({
+  tone = "subtle",
+  style,
+  ...props
+}: Omit<ComponentProps<"p">, "style"> & {
+  style?: StyleXStyles;
+  tone?: keyof typeof kickerTones;
+}) {
+  return <p {...props} {...stylex.props(styles.kicker, kickerTones[tone], style)} />;
 }
 
 export function Note({ children }: { children: ReactNode }) {

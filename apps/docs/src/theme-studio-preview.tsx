@@ -21,6 +21,7 @@ import {
 } from '@ultima/ui';
 import { useRef, useState, type CSSProperties, type MouseEvent, type ReactNode, type RefObject } from 'react';
 
+import { Kicker } from './page';
 import { previewVars } from './theme-studio-draft';
 
 const RAIL = '@media (min-width: 52.5rem)';
@@ -175,13 +176,6 @@ const styles = stylex.create({
     flexDirection: 'column',
     gap: space['--ult-space-4'],
     minInlineSize: 0,
-  },
-  specimenLabel: {
-    color: color['--ult-color-text-subtle'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
-    letterSpacing: font['--ult-font-tracking-wide'],
-    margin: 0,
   },
   typeMark: {
     fontSize: text['--ult-text-8'],
@@ -615,11 +609,11 @@ function SpecimenStrip({ inspect }: { inspect: boolean }) {
   return (
     <div data-preview-specimen {...stylex.props(styles.specimen)}>
       <div {...stylex.props(styles.specimenGroup)}>
-        <p {...stylex.props(styles.specimenLabel)}>01 / TYPE</p>
+        <Kicker>01 / TYPE</Kicker>
         <p {...stylex.props(styles.typeMark)}>Aa</p>
       </div>
       <div {...stylex.props(styles.specimenGroup)}>
-        <p {...stylex.props(styles.specimenLabel)}>02 / INTERACTION</p>
+        <Kicker>02 / INTERACTION</Kicker>
         <div {...stylex.props(styles.row)}>
           <Button size="sm">Rest</Button>
           <Button size="sm" style={styles.hover}>
@@ -631,7 +625,7 @@ function SpecimenStrip({ inspect }: { inspect: boolean }) {
         </div>
       </div>
       <div {...stylex.props(styles.specimenGroup)}>
-        <p {...stylex.props(styles.specimenLabel)}>03 / INSPECT</p>
+        <Kicker>03 / INSPECT</Kicker>
         <Inspectable inspect={inspect} tokens={['--ult-color-accent']}>
           <Code>--ult-color-accent</Code>
         </Inspectable>

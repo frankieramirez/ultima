@@ -1,11 +1,12 @@
 import { ArrowUpRightIcon, ListIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, NavigationMenu, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
 import { layoutStyles } from './layout';
+import { Kicker } from './page';
 import { TextLink } from './text-link';
 
 const WIDE = '@media (min-width: 48rem)';
@@ -33,12 +34,7 @@ const styles = stylex.create({
     display: { default: 'none', [WIDE]: 'flex' },
     flexGrow: 1,
   },
-  status: {
-    color: color['--ult-color-text-subtle'],
-    display: { default: 'none', [WIDE]: 'block' },
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
-  },
+  status: { display: { default: 'none', [WIDE]: 'block' } },
   github: {
     fontSize: text['--ult-text-4'],
     marginInlineStart: 'auto',
@@ -75,7 +71,7 @@ export function Header() {
             ))}
           </NavigationMenu.List>
         </NavigationMenu.Root>
-        <span {...stylex.props(styles.status)}>v0 / IN DEVELOPMENT</span>
+        <Kicker style={styles.status}>v0 / IN DEVELOPMENT</Kicker>
         <TextLink variant="muted" style={styles.github} href="https://github.com/frankieramirez/ultima">
           GitHub <ArrowUpRightIcon aria-hidden />
         </TextLink>

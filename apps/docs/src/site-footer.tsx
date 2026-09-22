@@ -1,10 +1,11 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { font, space, text } from '@ultima/tokens/tokens.stylex';
 import { ToggleGroup } from '@ultima/ui';
 
 import { layoutStyles } from './layout';
+import { Kicker } from './page';
 import { TextLink } from './text-link';
 import { useTheme, type ThemePreference } from './theme';
 
@@ -17,11 +18,6 @@ const styles = stylex.create({
     gap: space['--ult-space-8'],
     justifyContent: 'space-between',
     paddingBlock: space['--ult-space-8'],
-  },
-  identity: {
-    color: color['--ult-color-text-subtle'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-1'],
   },
   cluster: {
     alignItems: 'center',
@@ -49,7 +45,7 @@ export function SiteFooter() {
 
   return (
     <footer {...stylex.props(layoutStyles.gutter, styles.bar)}>
-      <span {...stylex.props(styles.identity)}>ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES</span>
+      <Kicker>ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES</Kicker>
       <div {...stylex.props(styles.cluster)}>
         <div {...stylex.props(styles.links)}>
           <TextLink variant="muted" render={<Link to="/install" />}>
