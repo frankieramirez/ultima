@@ -22,6 +22,17 @@ test('the landing renders the workshop hero, specimen, and workbench sections', 
   expect(screen.getByText('npx shadcn add @ultima/button').element()).toBeInTheDocument();
 });
 
+test('the hero mark paints around its text without breaking the line rhythm', async () => {
+  const screen = await mount('/');
+  const heading = screen.getByRole('heading', { level: 1, name: /good parts/i }).element();
+  const mark = [...heading.querySelectorAll('span')].find((span) => span.textContent === 'good parts.')!;
+  const style = getComputedStyle(mark);
+
+  expect(style.marginBlockStart).toBe('0px');
+  expect(Number.parseFloat(style.marginInlineStart)).toBe(-Number.parseFloat(style.paddingInlineStart));
+  expect(Number.parseFloat(style.marginInlineEnd)).toBe(-Number.parseFloat(style.paddingInlineEnd));
+});
+
 test('the specimen tabs and fields are live components', async () => {
   const screen = await mount('/');
 
