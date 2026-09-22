@@ -347,6 +347,32 @@ test('below 840px the editor becomes a bottom sheet with a horizontal group sele
   expect(dark.getBoundingClientRect().bottom).toBeLessThanOrEqual(light.getBoundingClientRect().top + 1);
 });
 
+test('below 840px the rail keeps the group header fully visible in a usable scroll region', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  const viewport = editor.querySelector<HTMLElement>('[role="presentation"][tabindex]')!;
+  const selector = screen.getByRole('group', { name: 'Theme groups' }).element();
+  const headerRow = screen.getByRole('heading', { name: 'Color', level: 2 }).element().parentElement!;
+
+  const view = viewport.getBoundingClientRect();
+  const header = headerRow.getBoundingClientRect();
+  expect(view.height).toBeGreaterThanOrEqual(96);
+  expect(header.top).toBeGreaterThanOrEqual(view.top);
+  expect(header.bottom).toBeLessThanOrEqual(view.bottom);
+  expect(viewport.scrollHeight).toBeGreaterThan(viewport.clientHeight);
+
+  const thumb = editor.querySelector<HTMLElement>('[data-orientation="vertical"] > *');
+  expect(thumb).not.toBeNull();
+  const sel = selector.getBoundingClientRect();
+  const bar = thumb!.getBoundingClientRect();
+  expect(sel.bottom <= bar.top || sel.top >= bar.bottom).toBe(true);
+
+  expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
+});
+
 test('guided controls write contracted draft parameters and the preview follows', async () => {
   const screen = await mount('/theme-studio');
   const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
