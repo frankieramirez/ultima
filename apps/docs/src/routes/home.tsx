@@ -7,9 +7,9 @@ import { Button, Separator } from '@ultima/ui';
 import { contrastStyles } from '../demos/home/contrast';
 import Specimen from '../demos/home/specimen';
 import Workbench from '../demos/home/workbench';
+import { layoutStyles } from '../layout';
 import { Kicker } from '../page';
 
-const WIDE = '@media (min-width: 48rem)';
 const DESKTOP = '@media (min-width: 64rem)';
 
 const styles = stylex.create({
@@ -27,7 +27,6 @@ const styles = stylex.create({
     gap: { default: space['--ult-space-10'], [DESKTOP]: space['--ult-space-12'] },
     paddingBlockStart: { default: space['--ult-space-9'], [DESKTOP]: space['--ult-space-12'] },
     paddingBlockEnd: space['--ult-space-11'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
   },
   editorial: {
     display: 'flex',
@@ -82,7 +81,6 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     paddingBlockEnd: space['--ult-space-11'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
   },
   metadata: {
     alignItems: 'center',
@@ -99,7 +97,6 @@ const styles = stylex.create({
     gap: space['--ult-space-8'],
     paddingBlockStart: space['--ult-space-5'],
     paddingBlockEnd: space['--ult-space-11'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
   },
   installIntro: {
     display: 'flex',
@@ -134,7 +131,7 @@ const styles = stylex.create({
 export function Home() {
   return (
     <main {...stylex.props(styles.page)}>
-      <section {...stylex.props(styles.hero)}>
+      <section {...stylex.props(layoutStyles.gutterWide, styles.hero)}>
         <div {...stylex.props(styles.editorial)}>
           <Kicker tone="muted">01 / A SYSTEM FOR BUILDING</Kicker>
           <h1 {...stylex.props(styles.pitch)}>
@@ -160,7 +157,7 @@ export function Home() {
         </div>
       </section>
 
-      <section aria-labelledby="specimen-index" {...stylex.props(styles.specimen)}>
+      <section aria-labelledby="specimen-index" {...stylex.props(layoutStyles.gutterWide, styles.specimen)}>
         <Separator />
         <div {...stylex.props(styles.metadata)}>
           <Kicker id="specimen-index" tone="muted">02 / ANATOMY OF AN INTERFACE</Kicker>
@@ -169,7 +166,7 @@ export function Home() {
         <Specimen />
       </section>
 
-      <section aria-labelledby="install-headline" {...stylex.props(styles.workbench)}>
+      <section aria-labelledby="install-headline" {...stylex.props(layoutStyles.gutterWide, styles.workbench)}>
         <div {...stylex.props(styles.installIntro)}>
           <Kicker tone="muted">03 / MAKE IT YOURS</Kicker>
           <h2 id="install-headline" {...stylex.props(styles.installHeadline)}>
