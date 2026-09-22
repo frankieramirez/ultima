@@ -1,8 +1,10 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import * as stylex from "@stylexjs/stylex";
-import { border, color, font, space, text } from "@ultima/tokens/tokens.stylex";
+import { color, font, space, text } from "@ultima/tokens/tokens.stylex";
 import { Separator } from "@ultima/ui";
+
+import { TextLink } from "./text-link";
 
 const DESKTOP = "@media (min-width: 80rem)";
 const WIDE = "@media (min-width: 48rem)";
@@ -75,23 +77,12 @@ const styles = stylex.create({
   indexList: {
     display: "flex",
     flexDirection: "column",
+    fontSize: text["--ult-text-3"],
     gap: space["--ult-space-6"],
     listStyle: "none",
     marginBlock: space["--ult-space-6"],
     marginInline: 0,
     padding: 0,
-  },
-  indexLink: {
-    color: {
-      default: color["--ult-color-text-muted"],
-      ":hover": color["--ult-color-text"],
-    },
-    fontSize: text["--ult-text-3"],
-    textDecoration: "none",
-    ":focus-visible": {
-      outline: `${border.focus} solid ${color["--ult-color-border-focus"]}`,
-      outlineOffset: border.focusOffset,
-    },
   },
 });
 
@@ -160,9 +151,9 @@ export function DocumentLayout({
                 <ul {...stylex.props(styles.indexList)}>
                   {headings.map(({ id, label }) => (
                     <li key={id}>
-                      <a href={`#${id}`} {...stylex.props(styles.indexLink)}>
+                      <TextLink href={`#${id}`} variant="muted">
                         {label}
-                      </a>
+                      </TextLink>
                     </li>
                   ))}
                 </ul>

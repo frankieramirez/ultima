@@ -1,12 +1,13 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Separator } from '@ultima/ui';
 
 import { contrastStyles } from '../demos/home/contrast';
 import Specimen from '../demos/home/specimen';
 import Workbench from '../demos/home/workbench';
+import { TextLink } from '../text-link';
 
 const WIDE = '@media (min-width: 48rem)';
 const DESKTOP = '@media (min-width: 64rem)';
@@ -73,16 +74,7 @@ const styles = stylex.create({
     paddingInline: space['--ult-space-7'],
   },
   guide: {
-    alignItems: 'center',
-    color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
-    display: 'inline-flex',
     fontSize: text['--ult-text-4'],
-    gap: space['--ult-space-1'],
-    textDecoration: 'none',
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
-    },
   },
   specimen: {
     display: 'flex',
@@ -167,9 +159,9 @@ export function Home() {
           <Button size="lg" style={[contrastStyles.root, styles.heroAction]} render={<Link to="/components" />} nativeButton={false}>
             Explore the components <ArrowUpRightIcon aria-hidden />
           </Button>
-          <Link to="/install" {...stylex.props(styles.guide)}>
+          <TextLink variant="muted" style={styles.guide} render={<Link to="/install" />}>
             Installation guide <ArrowUpRightIcon aria-hidden />
-          </Link>
+          </TextLink>
         </div>
       </section>
 

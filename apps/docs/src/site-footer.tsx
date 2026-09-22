@@ -1,9 +1,10 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { ToggleGroup } from '@ultima/ui';
 
+import { TextLink } from './text-link';
 import { useTheme, type ThemePreference } from './theme';
 
 const WIDE = '@media (min-width: 48rem)';
@@ -33,19 +34,9 @@ const styles = stylex.create({
   links: {
     alignItems: 'center',
     display: 'flex',
-    gap: space['--ult-space-6'],
-  },
-  link: {
-    alignItems: 'center',
-    color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
-    display: 'inline-flex',
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-1'],
-    gap: space['--ult-space-1'],
-    textDecoration: 'none',
-    transitionDuration: motion['--ult-motion-fast'],
-    transitionProperty: 'color',
-    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
+    gap: space['--ult-space-6'],
   },
 });
 
@@ -63,15 +54,15 @@ export function SiteFooter() {
       <span {...stylex.props(styles.identity)}>ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES</span>
       <div {...stylex.props(styles.cluster)}>
         <div {...stylex.props(styles.links)}>
-          <Link to="/install" {...stylex.props(styles.link)}>
+          <TextLink variant="muted" render={<Link to="/install" />}>
             Documentation <ArrowUpRightIcon aria-hidden />
-          </Link>
-          <a href="https://github.com/frankieramirez/ultima" {...stylex.props(styles.link)}>
+          </TextLink>
+          <TextLink variant="muted" href="https://github.com/frankieramirez/ultima">
             GitHub <ArrowUpRightIcon aria-hidden />
-          </a>
-          <a href="https://github.com/frankieramirez/ultima/blob/main/LICENSE" {...stylex.props(styles.link)}>
+          </TextLink>
+          <TextLink variant="muted" href="https://github.com/frankieramirez/ultima/blob/main/LICENSE">
             MIT license
-          </a>
+          </TextLink>
         </div>
         <ToggleGroup.Root
           aria-label="Color mode"

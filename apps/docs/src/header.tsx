@@ -1,10 +1,11 @@
 import { ArrowUpRightIcon, ListIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Separator, Sidebar } from '@ultima/ui';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { Button, NavigationMenu, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
+import { TextLink } from './text-link';
 
 const WIDE = '@media (min-width: 48rem)';
 
@@ -25,25 +26,12 @@ const styles = stylex.create({
     paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
   },
   brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
-  brand: {
-    display: 'inline-flex', alignItems: 'center',
-    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
-  },
   cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
   trigger: { display: { default: 'inline-flex', [WIDE]: 'none' }, paddingInline: space['--ult-space-4'] },
   links: {
     alignItems: 'center',
     display: { default: 'none', [WIDE]: 'flex' },
     flexGrow: 1,
-    gap: space['--ult-space-8'],
-  },
-  link: {
-    color: { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text'] },
-    fontSize: text['--ult-text-4'],
-    textDecoration: 'none',
-    transitionDuration: motion['--ult-motion-fast'],
-    transitionProperty: 'color',
-    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
   },
   status: {
     color: color['--ult-color-text-subtle'],
@@ -52,16 +40,8 @@ const styles = stylex.create({
     fontSize: text['--ult-text-1'],
   },
   github: {
-    alignItems: 'center',
-    color: { default: color['--ult-color-text'], ':hover': color['--ult-color-text-muted'] },
-    display: 'inline-flex',
     fontSize: text['--ult-text-4'],
-    gap: space['--ult-space-1'],
     marginInlineStart: 'auto',
-    textDecoration: 'none',
-    transitionDuration: motion['--ult-motion-fast'],
-    transitionProperty: 'color',
-    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
   },
 });
 
@@ -77,24 +57,28 @@ export function Header() {
     <header {...stylex.props(styles.chrome)}>
       <div {...stylex.props(styles.bar)}>
         <div {...stylex.props(styles.cluster)}>
-          <Link to="/" aria-label="Ultima home" {...stylex.props(styles.brand)}>
+          <TextLink variant="muted" render={<Link to="/" aria-label="Ultima home" />}>
             <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
-          </Link>
+          </TextLink>
           <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}>
             <ListIcon aria-hidden />
           </Sidebar.Trigger>
         </div>
-        <nav aria-label="Site" {...stylex.props(styles.links)}>
-          {LINKS.map((link) => (
-            <Link key={link.to} to={link.to} {...stylex.props(styles.link)}>
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        <NavigationMenu.Root aria-label="Site" style={styles.links}>
+          <NavigationMenu.List>
+            {LINKS.map((link) => (
+              <NavigationMenu.Item key={link.to}>
+                <NavigationMenu.Link render={<Link to={link.to} />}>
+                  {link.label}
+                </NavigationMenu.Link>
+              </NavigationMenu.Item>
+            ))}
+          </NavigationMenu.List>
+        </NavigationMenu.Root>
         <span {...stylex.props(styles.status)}>v0 / IN DEVELOPMENT</span>
-        <a href="https://github.com/frankieramirez/ultima" {...stylex.props(styles.github)}>
+        <TextLink variant="muted" style={styles.github} href="https://github.com/frankieramirez/ultima">
           GitHub <ArrowUpRightIcon aria-hidden />
-        </a>
+        </TextLink>
       </div>
       <Separator />
     </header>

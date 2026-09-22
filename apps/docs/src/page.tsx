@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import * as stylex from "@stylexjs/stylex";
 import { color, display, font, space, text } from "@ultima/tokens/tokens.stylex";
@@ -48,11 +48,6 @@ const styles = stylex.create({
     marginBlock: space["--ult-space-4"],
     maxWidth: "44rem",
   },
-  link: {
-    color: color["--ult-color-highlight-text"],
-    textDecoration: "underline",
-    textUnderlineOffset: space["--ult-space-2"],
-  },
 });
 
 export function Page({
@@ -97,6 +92,4 @@ export function Note({ children }: { children: ReactNode }) {
   return <p {...stylex.props(styles.note)}>{children}</p>;
 }
 
-export function TextLink(props: ComponentProps<"a">) {
-  return <a {...props} {...stylex.props(styles.link)} />;
-}
+export { TextLink } from "./text-link";

@@ -13,6 +13,7 @@ import {
 
 import { DocumentLayout } from './document-layout';
 import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
+import { TextLink } from './text-link';
 
 const styles = stylex.create({
   root: {
@@ -62,11 +63,6 @@ const styles = stylex.create({
   },
   li: {
     marginBlock: space['--ult-space-3'],
-  },
-  a: {
-    color: color['--ult-color-highlight-text'],
-    textDecoration: 'underline',
-    textUnderlineOffset: space['--ult-space-2'],
   },
   code: {
     marginBlock: space['--ult-space-6'],
@@ -118,9 +114,6 @@ function Ol(props: ComponentProps<'ol'>) {
 }
 function Li(props: ComponentProps<'li'>) {
   return <li {...props} {...stylex.props(styles.li)} />;
-}
-function A(props: ComponentProps<'a'>) {
-  return <a {...props} {...stylex.props(styles.a)} />;
 }
 const ScrollableTableContext = createContext(false);
 
@@ -183,7 +176,7 @@ const components = {
   ul: Ul,
   ol: Ol,
   li: Li,
-  a: A,
+  a: TextLink,
   code: Code,
   pre: Pre,
   blockquote: Blockquote,

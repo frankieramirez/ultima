@@ -3,6 +3,7 @@ import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 
 import { DocumentLayout } from '../document-layout';
+import { TextLink } from '../text-link';
 
 const styles = stylex.create({
   title: {
@@ -20,10 +21,7 @@ const styles = stylex.create({
     marginBlock: space['--ult-space-5'],
   },
   home: {
-    color: color['--ult-color-highlight-text'],
     fontWeight: font['--ult-font-weight-medium'],
-    textDecoration: 'underline',
-    textUnderlineOffset: space['--ult-space-2'],
   },
 });
 
@@ -33,9 +31,9 @@ export function NotFound() {
       <h1 {...stylex.props(styles.title)}>Lost in the aether</h1>
       <p {...stylex.props(styles.lede)}>
         This page is not in the grimoire.{' '}
-        <Link to="/" {...stylex.props(styles.home)}>
+        <TextLink style={styles.home} render={<Link to="/" />}>
           Return to Ultima
-        </Link>
+        </TextLink>
         .
       </p>
     </DocumentLayout>
