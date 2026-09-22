@@ -214,6 +214,29 @@ test('a long page scrolls the document while the chrome and the menu rail stay p
   window.scrollTo(0, 0);
 });
 
+test('the panel and index reach the viewport bottom and still clear the footer', async () => {
+  const screen = await mount('/components/button');
+  await expect.element(page.getByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
+
+  const panel = menu().element();
+  expect(Math.abs(panel.getBoundingClientRect().bottom - window.innerHeight)).toBeLessThan(1);
+
+  const index = document.querySelector('aside[aria-label="On this page"]')!;
+  const indexStyle = getComputedStyle(index);
+  expect(parseFloat(indexStyle.maxHeight)).toBeCloseTo(
+    window.innerHeight - parseFloat(indexStyle.top),
+    0,
+  );
+
+  const footer = screen.container.querySelector('footer')!;
+  window.scrollTo(0, document.documentElement.scrollHeight);
+  await expect.poll(() => footer.getBoundingClientRect().top).toBeLessThan(window.innerHeight);
+  expect(panel.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    footer.getBoundingClientRect().top,
+  );
+  window.scrollTo(0, 0);
+});
+
 test('a short page rests the footer on the viewport bottom', async () => {
   const screen = await mount('/lost-in-the-suite');
   await expect.element(screen.getByRole('heading', { name: 'Lost in the aether' })).toBeVisible();

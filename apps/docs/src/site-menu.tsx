@@ -13,13 +13,16 @@ const DESKTOP = '@media (min-width: 48rem)';
 const styles = stylex.create({
   panel: {
     alignSelf: 'flex-start',
-    blockSize: {
-      default: '100%',
-      [DESKTOP]: 'calc(100dvh - var(--docs-chrome-block) - var(--docs-footer-block))',
-    },
+    blockSize: '100%',
     flexShrink: 0,
     insetBlockStart: { default: 'auto', [DESKTOP]: 'var(--docs-chrome-block)' },
     position: { default: 'static', [DESKTOP]: 'sticky' },
+  },
+  fillRow: {
+    alignSelf: { default: null, [DESKTOP]: 'stretch' },
+    blockSize: { default: null, [DESKTOP]: 'auto' },
+    contain: { default: null, [DESKTOP]: 'size' },
+    maxBlockSize: { default: null, [DESKTOP]: 'calc(100dvh - var(--docs-chrome-block))' },
   },
   scroll: { blockSize: '100%' },
   dismiss: { display: 'flex', justifyContent: 'flex-end' },
@@ -30,7 +33,7 @@ const styles = stylex.create({
 
 export function SiteMenu() {
   return (
-    <Sidebar.Panel aria-label={MENU_LABEL} style={styles.panel}>
+    <Sidebar.Panel aria-label={MENU_LABEL} style={[styles.panel, styles.fillRow]}>
       <ScrollArea.Root style={styles.scroll}>
         <ScrollArea.Viewport>
           <ScrollArea.Content>
