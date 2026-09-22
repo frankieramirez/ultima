@@ -14,6 +14,10 @@ const styles = stylex.create({
     flexWrap: 'wrap',
     gap: space['--ult-space-4'],
   },
+  history: {
+    display: 'flex',
+    gap: space['--ult-space-2'],
+  },
   icon: {
     paddingInline: space['--ult-space-4'],
   },
@@ -60,26 +64,28 @@ export function ThemeStudioShuffleBar({
         <ToggleGroup.Item value="broad">Broad</ToggleGroup.Item>
         <ToggleGroup.Item value="subtle">Subtle</ToggleGroup.Item>
       </ToggleGroup.Root>
-      <Button
-        aria-label="Undo"
-        disabled={!canUndo}
-        onClick={onUndo}
-        size="sm"
-        style={styles.icon}
-        variant="ghost"
-      >
-        <ArrowUUpLeftIcon aria-hidden />
-      </Button>
-      <Button
-        aria-label="Redo"
-        disabled={!canRedo}
-        onClick={onRedo}
-        size="sm"
-        style={styles.icon}
-        variant="ghost"
-      >
-        <ArrowUUpRightIcon aria-hidden />
-      </Button>
+      <div {...stylex.props(styles.history)}>
+        <Button
+          aria-label="Undo"
+          disabled={!canUndo}
+          onClick={onUndo}
+          size="sm"
+          style={styles.icon}
+          variant="ghost"
+        >
+          <ArrowUUpLeftIcon aria-hidden />
+        </Button>
+        <Button
+          aria-label="Redo"
+          disabled={!canRedo}
+          onClick={onRedo}
+          size="sm"
+          style={styles.icon}
+          variant="ghost"
+        >
+          <ArrowUUpRightIcon aria-hidden />
+        </Button>
+      </div>
       <span title="Theme state fingerprint" {...stylex.props(styles.fingerprint)}>
         seed {fingerprint}
       </span>
