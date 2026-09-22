@@ -2,6 +2,7 @@ import { CheckIcon, CopyIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Card } from '@ultima/ui';
+import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
 import { useEffect, useRef, useState } from 'react';
 
 const SETUP_COMMAND = 'npx shadcn add https://ultima.systems/r/setup-vite.json';
@@ -41,14 +42,6 @@ const styles = stylex.create({
   },
   setup: { color: color['--ult-color-text-muted'] },
   component: { color: color['--ult-color-text'] },
-  status: {
-    clipPath: 'inset(50%)',
-    height: '1px',
-    overflow: 'hidden',
-    position: 'absolute',
-    whiteSpace: 'nowrap',
-    width: '1px',
-  },
 });
 
 export default function Workbench() {
@@ -71,7 +64,7 @@ export default function Workbench() {
         <Button variant="ghost" size="sm" onClick={copy} aria-label="Copy install commands" style={styles.copy}>
           {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
         </Button>
-        <span role="status" aria-atomic="true" {...stylex.props(styles.status)}>
+        <span role="status" aria-atomic="true" {...stylex.props(visuallyHidden)}>
           {copied ? 'Copied' : ''}
         </span>
       </div>
