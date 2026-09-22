@@ -2173,11 +2173,11 @@ Decided on [Whether install writes into the consumer's repository, and the ADR 0
 | Cursor | `.agents/skills/<skill>/` | entries merged into `.cursor/hooks.json` |
 | Copilot | `.agents/skills/<skill>/` | `.github/hooks/ultima.json`, a file Ultima owns whole |
 
-Skills are real copies, not symlinks. Hook files are the committed project files, never `settings.local.json`, because a hook that enforces the team's contracts belongs to the team, and Copilot's cloud agent reads only committed files. Each hook command runs the CLI the consumer has pinned in `devDependencies` (`npx --no-install @ultima-systems/cli`), guarded so that a missing CLI makes the hook a silent no-op. Which events fire and what they run is still open on the map as hook granularity; `install` writes whatever that decision names. `install` does not edit `package.json`. When the CLI is not a devDependency, it prints the one command that adds it.
+Skills are real copies, not symlinks. Hook files are the committed project files, never `settings.local.json`, because a hook that enforces the team's contracts belongs to the team, and Copilot's cloud agent reads only committed files. Each hook command runs the CLI the consumer has pinned in `devDependencies` (`npx --no-install @ultima-systems/cli`), guarded so that a missing CLI makes the hook a silent no-op. Which events fire and what they run is under [Hooks](#hooks). `install` does not edit `package.json`. When the CLI is not a devDependency, it prints the one command that adds it.
 
 **Harness detection.** A harness counts as present when its own marker is: `.claude/` for Claude Code, `.codex/` for Codex, `.cursor/` for Cursor, and `.github/copilot-instructions.md`, `.github/skills/`, or `.github/hooks/` for Copilot. `.agents/skills/` alone implies no harness, since three vendors share it. `--harness <name>` (repeatable) replaces detection. When nothing is detected and no flag is given, `install` writes nothing, names the flag, and exits 0. `--dry-run` prints the plan.
 
-**Re-running.** `install` is idempotent. A skill directory is replaced whole. Each hook entry carries the marker `ultima-systems`; a re-run strips the entries with that marker and appends fresh ones, leaving every other entry and key in the file in place. A run whose output would match what is on disk writes nothing, so Codex, which ties hook trust to the definition's hash, re-prompts only when the definition changed. The stamp in each managed file is its CLI version plus a hash of the content that version wrote.
+**Re-running.** `install` is idempotent. A skill directory is replaced whole. Each hook entry carries the marker `ultima-systems`; a re-run strips the entries with that marker and appends fresh ones, leaving every other entry and key in the file in place. A run whose output would match what is on disk writes nothing, so Codex, which ties hook trust to the definition's hash, re-prompts only when the definition changed. The stamp in the managed skill is its CLI version plus a hash of the content that version wrote. A hook entry carries the marker and no version: its command is the same in every CLI release, so upgrading the CLI never changes a hook definition and never re-prompts Codex's trust.
 
 **What it never overwrites.**
 
@@ -2328,3 +2328,39 @@ Decided on [What the consumer skill says and how it is versioned](https://github
 **What may be prose.** A line in the skill is allowed only when it is one of: the trigger description, the order of steps, a CLI command line, the meaning of an exit code, or a one-sentence imperative that names the `check` rule IDs enforcing it and links its docs anchor. Every imperative is therefore something `check` already enforces, and the skill states nothing the CLI cannot verify. Token names, component names, prop names, and values stay on `/llms.txt`. A test in `packages/cli` fails the build when the skill contains an `--ult-` token name, a catalogue item name other than inside `@ultima/<item>`, a color literal, or more than 80 lines.
 
 **Commands are always scoped.** The skill spells every command `npx @ultima-systems/cli`, never `npx ultima`. The `bin` is `ultima`, but where the CLI is not installed, `npx ultima` fetches an unrelated package with that name.
+
+### Hooks
+
+Decided on [Which events each harness hook fires on, what it runs, and what runs in CI](https://github.com/frankieramirez/ultima/issues/480). Each harness gets one hook on one event: after the agent edits a file, `check` runs on that file and its findings go back to the agent in the same turn. Nothing else runs from a hook.
+
+**The events.**
+
+| Harness | Event | Matcher | Why this event |
+| --- | --- | --- | --- |
+| Claude Code | `PostToolUse` | `Edit\|Write` | Its `additionalContext` reaches the model. |
+| Codex | `PostToolUse` | `Edit\|Write\|apply_patch` | Its `additionalContext` is added as developer context. |
+| Cursor | `postToolUse` | `Write` | `afterFileEdit` has no output, so it cannot reach the agent. `preToolUse` runs before the file is on disk, and `check` reads files. |
+| Copilot | `postToolUse` | `edit\|create\|apply_patch` | Its `additionalContext` is appended to the tool result. |
+
+**The command.** Every entry runs `npx --no-install @ultima-systems/cli hook <harness> 2>/dev/null || true`, with `cwd` at the repository root and a 30-second timeout in the harness's own field. Codex also gets a `commandWindows` sibling and Copilot a `powershell` one. `hook` is a hidden subcommand, the adapter between a harness and `check`. It reads the harness's stdin JSON and takes the edited paths from it: `tool_input.file_path` for Claude Code, and the `*** Add File:` and `*** Update File:` headers of the patch for `apply_patch`. For payloads the vendor docs do not describe (Codex's `Edit` and `Write`, Cursor's `Write`, and Copilot's `toolArgs`), the adapter reads a recorded real payload, and the CLI's tests keep one fixture per harness and tool. It then runs `check --files` over those paths in process and writes the harness's JSON to stdout. All harness knowledge lives in the CLI, so the hook definition never changes between releases.
+
+**What reaches the agent.** Findings go into the harness's context field: `hookSpecificOutput.additionalContext` for Claude Code and Codex, `additional_context` for Cursor, and `additionalContext` for Copilot. The text puts blocking findings first, each stated as needing a fix before the work is handed back, then advisories. Each finding is one line with its rule ID, position, message, and repair. There are at most 20 lines, followed by a count of the rest, and the text is kept under Copilot's 10 KB cap. The hook never uses `decision: "block"` or exit 2. Codex's block replaces the tool's result, and Copilot's exit 2 goes to the user rather than the agent. A context field reads the same in all four harnesses. Suppressed findings are not sent. The hook passes no `--strict`, so severities are the ones under [Check](#check).
+
+**Silence.** `hook` always exits 0. It prints nothing when the edited files have no findings, when every path is outside the scope, when it cannot find a path in the payload, when the run is incomplete or invalid (a broken `components.json` is `doctor`'s job, and `doctor` is not run from a hook), and when the CLI is missing. A hook that timed out or failed leaves the agent where it would be with no hook at all.
+
+**What never runs from a hook.**
+
+- A full `check` at turn end (`Stop`, `stop`, `agentStop`). Every consumer rule is file-local, so the post-edit hook has already checked every file the agent touched. A full run would only add findings in files the agent did not touch, and Cursor's and Copilot's stop hooks turn output into another agent turn, which would send the agent off to fix code it was not asked to change. The consumer skill tells the agent to run the full `check` before handing work back.
+- `doctor`. Setup does not change when a component file is edited, and a per-edit or session-start `doctor` would repeat the same report every time.
+- `status` and `diff`. They fetch the registry, and a hook must work offline and within its timeout.
+
+### CI
+
+Decided on [Which events each harness hook fires on, what it runs, and what runs in CI](https://github.com/frankieramirez/ultima/issues/480). `install` writes no CI configuration. A workflow file is the consumer's own and is not a managed file. The docs site's CLI page shows one step to copy:
+
+```sh
+npx --no-install @ultima-systems/cli doctor
+npx --no-install @ultima-systems/cli check
+```
+
+Both commands gate. Any nonzero exit fails the job, including an incomplete run, because in CI an incomplete run means a configuration the team has to fix. `doctor` runs first so a broken setup is reported as itself rather than as a failed `check`. `--strict` is shown as an opt-in for teams that want advisories to block. `status` is shown as an optional, non-gating step (`status --json` for a report artifact). It always exits 0 on a completed report, and a consumer's CI should not fail because Ultima deployed. The page does not recommend `diff` in CI.
