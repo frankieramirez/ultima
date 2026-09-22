@@ -38,6 +38,17 @@ test('the trail is a Breadcrumb landmark whose last crumb is current', async () 
   expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Install');
 });
 
+test('renders no index when the article has no headings to list', async () => {
+  const screen = await render(
+    <DocumentLayout breadcrumb={[{ label: 'Components' }]}>
+      <h1>Components</h1>
+      <p>No sections on this page.</p>
+    </DocumentLayout>,
+  );
+
+  expect(screen.getByRole('complementary', { name: 'On this page' }).query()).toBeNull();
+});
+
 test('hides the article index on a narrow viewport', async () => {
   await page.viewport(390, 844);
   const screen = await render(

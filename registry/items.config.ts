@@ -21,8 +21,8 @@ export const items: Record<string, RegistryItemDescription> = {
   },
   lib: {
     title: 'Ultima component helpers',
-    description: 'The shared prop types every Ultima component is built on.',
-    docs: "import type { PartProps, PlainProps, StyleProp } from '@/lib/component';",
+    description: 'The shared prop types every Ultima component is built on, plus the clip-hidden style for visually hidden elements.',
+    docs: "import type { PartProps, PlainProps, StyleProp } from '@/lib/component';\nimport { visuallyHidden, visuallyHiddenFocusable } from '@/lib/visually-hidden';",
   },
   button: {
     title: 'Button',

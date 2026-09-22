@@ -59,11 +59,11 @@ test('Tab loops the input, the close that reveals on focus, and the scroll regio
   const input = screen.getByRole('combobox', { name: 'Search actions' }).element();
   const close = screen.getByRole('button', { name: 'Close' }).element();
   await expect.poll(() => document.activeElement).toBe(input);
-  expect(getComputedStyle(close).clip).toBe('rect(0px, 0px, 0px, 0px)');
+  expect(getComputedStyle(close).clipPath).toBe('inset(50%)');
 
   await userEvent.tab();
   expect(document.activeElement).toBe(close);
-  await expect.poll(() => getComputedStyle(close).clip).toBe('auto');
+  await expect.poll(() => getComputedStyle(close).clipPath).toBe('none');
   expect(close.getBoundingClientRect().width).toBeGreaterThan(1);
 
   await userEvent.tab();
