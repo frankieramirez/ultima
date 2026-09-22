@@ -29,13 +29,10 @@ const IDENTIFIER = /^[A-Za-z][A-Za-z0-9]*$/;
 function redact(source: string): string {
   const out = source.split('');
   let index = 0;
-  let previous = '';
 
   const blank = (from: number, to: number) => {
     for (let i = from; i < to && i < out.length; i += 1) if (out[i] !== '\n') out[i] = ' ';
   };
-  /** A `/` opens a regular expression where a value may start, and divides where one just ended. */
-  const opensRegex = () => previous === '' || /[({[,;:=!&|?+\-*%<>~^]/.test(previous);
   const closingQuote = (quote: string, from: number) => {
     for (let i = from; i < source.length; i += 1) {
       if (source[i] === '\\') i += 1;
@@ -65,19 +62,11 @@ function redact(source: string): string {
       const end = closingQuote(char, index + 1);
       if (!isKey(source.slice(index + 1, end), end)) blank(index + 1, end);
       index = end + 1;
-      previous = char;
     } else if (char === '`') {
       const end = closingQuote(char, index + 1);
       blank(index + 1, end);
       index = end + 1;
-      previous = char;
-    } else if (char === '/' && opensRegex()) {
-      const end = closingQuote('/', index + 1);
-      blank(index + 1, end);
-      index = end + 1;
-      previous = '/';
     } else {
-      if (!/\s/.test(char)) previous = char;
       index += 1;
     }
   }
@@ -170,6 +159,20 @@ test('the gate catches each of the four painting properties', () => {
     'borderTopWidth',
     'borderInlineStartColor',
     'boxShadow',
+  ]);
+});
+
+test('the gate reads a stylex.create below a JSX closing tag', () => {
+  const source = `
+    const a = stylex.create({ one: { backgroundColor: 'red' } });
+    function C() { return (<div className="x"><svg viewBox="0 0 1 1" /></div>); }
+    const b = stylex.create({ two: { borderRadius: 'r', borderColor: 'c' } });
+  `;
+
+  expect(findForbiddenDeclarations(source)).toEqual([
+    'backgroundColor',
+    'borderRadius',
+    'borderColor',
   ]);
 });
 
