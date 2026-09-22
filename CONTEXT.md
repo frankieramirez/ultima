@@ -397,3 +397,7 @@ The theme studio's working state: guided parameters, per-mode overrides, locks, 
 ## Draft document
 
 The versioned serialization of a theme draft, downloaded as `ultima-theme.json` and carried inside the installable registry item. It is the single artifact the studio's preview, downloads, installation, and reopening all derive from; resolved token values are products of it, never the editable form. A fragment-encoded copy is the shareable URL.
+
+## Feature scenario
+
+A named user behavior with an owning contract, reproducible steps and observable results, linked to executable checks. A feature groups related scenarios across components or application code. The planned [executable feature map](docs/spec/agent-infrastructure.md#executable-feature-map) connects those scenarios to their owners and verification commands. A discovered scenario is not evidence that its checks ran.
