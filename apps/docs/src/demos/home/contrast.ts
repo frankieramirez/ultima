@@ -5,11 +5,17 @@ export const contrastStyles = stylex.create({
   root: {
     backgroundColor: {
       default: color['--ult-color-text'],
-      ':hover': color['--ult-color-text-muted'],
-      ':active': color['--ult-color-text-subtle'],
+      ':active': color['--ult-color-text-inverse'],
     },
-    borderColor: 'transparent',
-    color: color['--ult-color-text-inverse'],
+    borderColor: {
+      default: 'transparent',
+      ':hover': color['--ult-color-text-inverse'],
+      ':active': color['--ult-color-text'],
+    },
+    color: {
+      default: color['--ult-color-text-inverse'],
+      ':active': color['--ult-color-text'],
+    },
   },
   mark: {
     backgroundColor: color['--ult-color-text'],
