@@ -108,6 +108,11 @@ const styles = stylex.create({
     flexDirection: 'column',
     gap: space['--ult-space-6'],
   },
+  mock: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space['--ult-space-8'],
+  },
   row: {
     alignItems: 'center',
     display: 'flex',
@@ -383,7 +388,7 @@ function WorkspaceScene({ inspect, mode }: { inspect: boolean; mode: PaneMode })
           <Card.Title render={<h2 />}>Forma</Card.Title>
           <Card.Description>A live application mock under the draft theme.</Card.Description>
         </Card.Header>
-        <Card.Body {...stylex.props(styles.stack)}>
+        <Card.Body style={styles.mock}>
           <Tabs.Root defaultValue="general">
             <Tabs.List aria-label="Workspace sections">
               <Tabs.Tab value="general">General</Tabs.Tab>
