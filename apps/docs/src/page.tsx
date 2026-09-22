@@ -38,7 +38,8 @@ const styles = stylex.create({
     letterSpacing: font["--ult-font-tracking-tight"],
     lineHeight: font["--ult-font-leading-tight"],
     marginBlock: 0,
-    paddingBlockStart: space["--ult-space-7"],
+    marginBlockEnd: space["--ult-space-6"],
+    paddingBlockStart: space["--ult-space-4"],
   },
   note: {
     color: color["--ult-color-text-muted"],
