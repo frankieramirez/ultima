@@ -2,7 +2,14 @@ import * as stylex from '@stylexjs/stylex';
 import { color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
-import { isValidElement, type ComponentProps, type ComponentType, type ReactNode } from 'react';
+import {
+  createContext,
+  isValidElement,
+  useContext,
+  type ComponentProps,
+  type ComponentType,
+  type ReactNode,
+} from 'react';
 
 import { DocumentLayout } from './document-layout';
 import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
@@ -68,6 +75,10 @@ const styles = stylex.create({
   inlineCode: {
     overflowWrap: 'anywhere',
   },
+  inlineCodeInScrollableTable: {
+    overflowWrap: 'normal',
+    whiteSpace: 'nowrap',
+  },
   blockquote: {
     color: color['--ult-color-text-muted'],
     marginBlock: space['--ult-space-6'],
@@ -111,8 +122,15 @@ function Li(props: ComponentProps<'li'>) {
 function A(props: ComponentProps<'a'>) {
   return <a {...props} {...stylex.props(styles.a)} />;
 }
+const ScrollableTableContext = createContext(false);
+
 function Code({ children }: ComponentProps<'code'>) {
-  return <UltimaCode style={styles.inlineCode}>{children}</UltimaCode>;
+  const inScrollableTable = useContext(ScrollableTableContext);
+  return (
+    <UltimaCode style={[styles.inlineCode, inScrollableTable && styles.inlineCodeInScrollableTable]}>
+      {children}
+    </UltimaCode>
+  );
 }
 /** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
 function Pre({ children }: ComponentProps<'pre'>) {
@@ -139,7 +157,9 @@ function UncaptionedTable(props: MdxTableProps<'table'>) {
     <ScrollArea.Root style={styles.uncaptionedTable}>
       <ScrollArea.Viewport>
         <ScrollArea.Content>
-          <Table.Root {...props} />
+          <ScrollableTableContext.Provider value={true}>
+            <Table.Root {...props} />
+          </ScrollableTableContext.Provider>
         </ScrollArea.Content>
       </ScrollArea.Viewport>
       <ScrollArea.Scrollbar orientation="horizontal">
