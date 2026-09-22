@@ -4,9 +4,8 @@ import * as stylex from '@stylexjs/stylex';
 import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
 import { ToggleGroup } from '@ultima/ui';
 
+import { layoutStyles } from './layout';
 import { useTheme, type ThemePreference } from './theme';
-
-const WIDE = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
   bar: {
@@ -17,7 +16,6 @@ const styles = stylex.create({
     gap: space['--ult-space-8'],
     justifyContent: 'space-between',
     paddingBlock: space['--ult-space-8'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
   },
   identity: {
     color: color['--ult-color-text-subtle'],
@@ -59,7 +57,7 @@ export function SiteFooter() {
   const { preference, setPreference } = useTheme();
 
   return (
-    <footer {...stylex.props(styles.bar)}>
+    <footer {...stylex.props(layoutStyles.gutter, styles.bar)}>
       <span {...stylex.props(styles.identity)}>ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES</span>
       <div {...stylex.props(styles.cluster)}>
         <div {...stylex.props(styles.links)}>
