@@ -239,6 +239,21 @@ test('the workspace scene is an application mock and the specimen strip sits bel
   expect(scene!.getBoundingClientRect().bottom).toBeLessThanOrEqual(strip!.getBoundingClientRect().top + 1);
 });
 
+test('the workspace scene keeps a space-8 step between the tab strip and the form', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const list = pane.querySelector('[aria-label="Workspace sections"]');
+  const label = screen.getByText('Project name').element();
+  expect(list).not.toBeNull();
+
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const declared = readToken(pane, '--ult-space-8');
+  const step = declared.endsWith('rem') ? parseFloat(declared) * rem : parseFloat(declared);
+
+  const gap = label.getBoundingClientRect().top - list!.getBoundingClientRect().bottom;
+  expect(gap).toBeCloseTo(step, 0);
+});
+
 test('the states scene shows forced rest, hover, and active beside live controls', async () => {
   const screen = await mount('/theme-studio');
   await userEvent.click(screen.getByRole('tab', { name: 'States' }).element());
