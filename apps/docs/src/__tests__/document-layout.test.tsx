@@ -26,6 +26,17 @@ test('renders a labelled article index from headings and keeps heading anchors a
   );
 });
 
+test('renders no index when the article has no headings to list', async () => {
+  const screen = await render(
+    <DocumentLayout breadcrumb="COMPONENTS">
+      <h1>Components</h1>
+      <p>No sections on this page.</p>
+    </DocumentLayout>,
+  );
+
+  expect(screen.getByRole('complementary', { name: 'On this page' }).query()).toBeNull();
+});
+
 test('hides the article index on a narrow viewport', async () => {
   await page.viewport(390, 844);
   const screen = await render(

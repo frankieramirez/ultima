@@ -19,7 +19,7 @@ import {
   type ThemeDraft,
 } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Field, Input, Separator } from '@ultima/ui';
+import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Field, Input, Separator, Spinner } from '@ultima/ui';
 import { useEffect, useRef, useState } from 'react';
 
 import { CopyButton } from './copy-button';
@@ -118,6 +118,11 @@ const styles = stylex.create({
     margin: 0,
   },
   share: {
+    display: 'flex',
+    gap: space['--ult-space-3'],
+  },
+  busy: {
+    alignItems: 'center',
     display: 'flex',
     gap: space['--ult-space-3'],
   },
@@ -547,7 +552,10 @@ function ShareDialog({
                 </Dialog.Description>
               </div>
               {result === null ? (
-                <p {...stylex.props(styles.note)}>Encoding the draft…</p>
+                <div aria-busy="true" {...stylex.props(styles.busy)}>
+                  <Spinner />
+                  <p {...stylex.props(styles.note)}>Encoding the draft…</p>
+                </div>
               ) : result.tooLong ? (
                 <>
                   <p {...stylex.props(styles.note)}>

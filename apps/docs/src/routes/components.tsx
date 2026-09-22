@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, motion, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Card, Field, Input, Select } from '@ultima/ui';
+import { Button, Card, Empty, Field, Input, Select } from '@ultima/ui';
 import { useRef, useState } from 'react';
 
 import { RELEASE_LABELS, RELEASES, components } from '../components';
@@ -65,6 +65,12 @@ export function ComponentsPage() {
     (release === 'all' || component.release === release) &&
     `${component.name} ${component.description}`.toLowerCase().includes(term),
   );
+  const clearFilters = () => {
+    setQuery('');
+    setRelease('all');
+    setSortOrder('catalogue');
+    inputRef.current?.focus();
+  };
 
   return (
     <Page title="Components" lede="The catalogue, sectioned by release, oldest set first." breadcrumb="COMPONENTS">
@@ -137,12 +143,7 @@ export function ComponentsPage() {
         </Select.Root>
         <Button
           disabled={query === '' && release === 'all' && sortOrder === 'catalogue'}
-          onClick={() => {
-            setQuery('');
-            setRelease('all');
-            setSortOrder('catalogue');
-            inputRef.current?.focus();
-          }}
+          onClick={clearFilters}
           variant="outline"
         >
           Clear filters
@@ -151,7 +152,15 @@ export function ComponentsPage() {
       <p role="status" {...stylex.props(styles.empty)}>
         {matches.length} {matches.length === 1 ? 'component' : 'components'}
       </p>
-      {matches.length === 0 ? <p {...stylex.props(styles.empty)}>No components match these filters.</p> : null}
+      {matches.length === 0 ? (
+        <Empty.Root>
+          <Empty.Title render={<h2 />}>No components match these filters</Empty.Title>
+          <Empty.Description>
+            Try a different search or release, or clear the filters to browse the catalogue.
+          </Empty.Description>
+          <Button onClick={clearFilters}>Clear filters</Button>
+        </Empty.Root>
+      ) : null}
       {RELEASES.map((release) => {
         const entries = matches.filter((component) => component.release === release);
         if (sortOrder !== 'catalogue') {

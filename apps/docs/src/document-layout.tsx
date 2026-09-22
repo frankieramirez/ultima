@@ -139,7 +139,7 @@ export function DocumentLayout({
           <Kicker style={styles.breadcrumb}>{breadcrumb}</Kicker>
           {children}
         </article>
-        {index && (
+        {index && headings.length > 0 && (
           <aside aria-label="On this page" {...stylex.props(styles.indexRail)}>
             <div {...stylex.props(styles.indexInner)}>
               <Separator orientation="vertical" style={styles.divider} />
