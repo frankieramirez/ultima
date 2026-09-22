@@ -397,3 +397,7 @@ The theme studio's working state: guided parameters, per-mode overrides, locks, 
 ## Draft document
 
 The versioned serialization of a theme draft, downloaded as `ultima-theme.json` and carried inside the installable registry item. It is the single artifact the studio's preview, downloads, installation, and reopening all derive from; resolved token values are products of it, never the editable form. A fragment-encoded copy is the shareable URL.
+
+## Feature scenario
+
+A named user-facing behavior with an owning contract, reproduction steps and required variants, joined to executable tests by a stable ID. It supports discovery and verification selection; its record alone does not prove the behavior.

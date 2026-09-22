@@ -112,7 +112,7 @@ Store exceptions as typed repository data under `scripts/architecture/exceptions
 
 An entry must match exactly the intended site and expected occurrence count. Zero matches, unexpected additional matches, duplicate entries and missing authority targets fail `ULT-EXCEPTION-001`. The reported location comes from the current syntax tree. A migration cannot add an exception just to hide an existing violation; the owning decision must authorize the pattern first.
 
-Do not allow directory globs, whole-file suppression, `disable-all` comments, or a permanent grandfathered baseline. Genuine reusable allowances belong in the property/target policy with fixtures, rather than thousands of repeated exceptions. Temporary advisory rollout of an unvalidated new rule is permitted during its implementation slice, but its final delivery requires a clean blocking run. The later adoption ticket determines the slice order.
+Do not allow directory globs, whole-file suppression, `disable-all` comments, or a permanent grandfathered baseline. Genuine reusable allowances belong in the property/target policy with fixtures, rather than thousands of repeated exceptions. Temporary advisory rollout of an unvalidated new rule is permitted during its implementation slice, but its final delivery requires a clean blocking run. The Adoption and maintenance section determines the slice order.
 
 ### Diagnostics
 
@@ -215,7 +215,7 @@ Generate these small source projections and commit them with the inputs:
 
 For registered React components, a missing MDX module is a generation error. Keep the router's existing unknown-route handling; do not let a placeholder turn missing registered documentation into successful validation. The route structure stays code-based and loading remains eager in this migration. Lazy loading is a separate performance decision.
 
-The static model also exposes source/demo/test paths and recipe membership to future verification selection. It does not dictate scenario IDs or the verification CLI's command shape, which belong to their open tickets.
+The static model also exposes source/demo/test paths and recipe membership to future verification selection. It does not dictate scenario IDs or the verification CLI's command shape, which the Verification CLI and Executable feature map sections define.
 
 Element builds consume the model's validated family inventory and retain per-family classic bundles, the aggregate `ultima.js`, build stamps and existing gzip budgets. There is no element npm barrel to generate. Continue verifying that the staged, served and embedded element artifacts agree.
 
@@ -239,7 +239,7 @@ Validate the entire input model and prepare all outputs before writing. Use a pe
 
 Keep large build artifacts ignored as they are today: staged registry sources, served registry JSON, token exports, agent guide, docs build and element bundles. A freshness check does not require committing them. Release validation rebuilds those outputs from the validated inputs and checks consumer installation. Any timestamp/build-stamp fields use the existing artifact contract when comparing builds.
 
-CI checks freshness before expensive browser/build steps and fails on stale committed projections. Normal validation must not regenerate those files silently and erase the evidence. Root dev/test/typecheck/build and registry commands, plus direct package entry points that consume the projections, must reject stale input before use through a shared nonrecursive preflight. The later verification ticket owns how repeated preflights are consolidated. No generation command may recursively invoke itself through those hooks.
+CI checks freshness before expensive browser/build steps and fails on stale committed projections. Normal validation must not regenerate those files silently and erase the evidence. Root dev/test/typecheck/build and registry commands, plus direct package entry points that consume the projections, must reject stale input before use through a shared nonrecursive preflight. The Verification CLI section defines how repeated preflights are consolidated. No generation command may recursively invoke itself through those hooks.
 
 `ULT-REGISTRY-001` uses the shared model to report membership/reference failures; freshness diagnostics identify the stale path and `pnpm catalogue:generate` as the repair. The architecture checker remains static and does not trigger registry or element builds.
 
@@ -267,10 +267,476 @@ Use exclusive creation for new authored files. After an interrupted write, a rer
 
 Required negative fixtures cover duplicate IDs/order positions, missing source/page/demo/test files, source without metadata, stale descriptors, broken contract anchors, invalid primary exports, duplicate public exports, unresolved dependency candidates, invalid element enum references, recipe records leaking into the registry, stale generated output, authored-file collisions and concurrent/stale scaffold plans. Valid fixtures cover a plain component, a compound with hooks, a Zag React component, an element family, a setup item and a recipe. Preserve separate source-bundle/artifact tests for token exports and helpers.
 
-Prove authoring improvement with the same synthetic component-addition exercise in disposable baseline and migrated checkouts. Keep the contract, dependency, demo and required proof identical; record commands, manual coordination edits, discovery time and failures. After migration, the author should edit the descriptor and authored behavior/docs/tests, with **zero manual edits to the barrel, router/page map, catalogue adapters or optimizer lists for an ordinary component addition**. New dependency-policy decisions and element behavioral parity work remain explicit exceptions to that target. Record wall-clock measurements without inventing a speedup percentage. The later measurement ticket owns the shared benchmark protocol.
+Prove authoring improvement with the same synthetic component-addition exercise in disposable baseline and migrated checkouts. Keep the contract, dependency, demo and required proof identical; record commands, manual coordination edits, discovery time and failures. After migration, the author should edit the descriptor and authored behavior/docs/tests, with **zero manual edits to the barrel, router/page map, catalogue adapters or optimizer lists for an ordinary component addition**. New dependency-policy decisions and element behavioral parity work remain explicit exceptions to that target. Record wall-clock measurements without inventing a speedup percentage. The Efficiency and performance section defines the shared benchmark protocol.
 
 Delete the synthetic component after the exercise and prove regeneration leaves no stale membership. Repeat generation without input changes and require zero diff. Repeating a scaffold write against an existing item must fail without altering any authored bytes.
 
-## Remaining decisions
+## Verification CLI
 
-This document settles architectural enforcement and component metadata/scaffolding. Verification selection and aggregate evidence, production-browser orchestration, executable feature scenarios, measurement baselines and final rollout remain on their own open map tickets. No performance improvement is claimed until implementation supplies comparable evidence.
+Decided on [Verification CLI: selection, failure behavior, and evidence contract](https://github.com/frankieramirez/ultima/issues/438). This section specifies tooling to implement. Existing package commands and CI remain in use until the implementation passes the acceptance cases below.
+
+### Commands and discovery
+
+Expose `scripts/verify.ts` as `pnpm verify`. Use the repository's supported Node runtime and TypeScript execution convention. Keep selection and planning pure, with execution adapters for the existing checks.
+
+```sh
+pnpm verify component button
+pnpm verify component ult-button
+pnpm verify feature theme-studio
+pnpm verify changed --base origin/main
+pnpm verify release
+pnpm verify changed --base origin/main --plan --json
+pnpm verify --help
+pnpm verify list --json
+```
+
+Exactly one mode is required. `component` accepts one or more validated catalogue IDs, including setup items and recipes; the descriptor kind determines coverage. `feature` accepts one or more registered feature IDs. The Executable feature map section defines their registration; `theme-studio` must be registered before use. Unknown explicit IDs and malformed options exit 2 with available choices. They cannot produce an empty successful run.
+
+`list` discovers catalogue IDs, feature IDs, check IDs and their scopes from the shared model and check registry. Each mode supports `--help`. `--plan` resolves inputs and prints the complete ordered plan without running checks or installing prerequisites. Its status is `planned`, including when it exits 0. `--json` writes one versioned JSON document to stdout; progress and child output go to stderr and log files. Human output summarizes the same data. Offer `--output <directory>` for retained evidence and `--timeout <seconds>` for a positive overall deadline. Help states the repository-owned default deadline and per-check deadlines; measurements may tune these later.
+
+Do not expose arbitrary shell commands in item or feature metadata. Adapters own argument arrays and invoke subprocesses without shell interpolation. Paths and IDs cannot become executable arguments by concatenation. A local partial result always names its scope. Full CI remains authoritative for merging and release, even after a local release run passes.
+
+### Selection and dependency expansion
+
+Use the catalogue model selected in the metadata decision, source import analysis and the feature/scenario registry specified below. Build a reverse dependency graph as well as each selected item's forward prerequisites. Follow re-exports, workspace aliases and runtime/type dependencies where they affect the relevant check. Include React consumers, shipped element counterparts and parity tests, docs demos, recipes and feature scenarios reached by those edges. Global check inputs have explicit broad scope. Unsupported analysis expands coverage; it never silently discards an edge.
+
+| Input | Required expansion |
+| --- | --- |
+| React component | Own proof-bar suite, affected component dependants, element counterpart/parity where shipped, consuming demos and feature scenarios; global static/freshness checks and full typecheck. Include registry/production/install checks for affected distributed items. |
+| Element family | Family browser and lifecycle tests, parity gate and bundle assertions, consuming docs/scenarios, tokens dependency and served/embedded bundle checks. |
+| Recipe | Owning demos, composed components and consumer dependencies, both-mode axe and relevant scenarios. It has no registry item; install validation applies to its composed installable inputs. |
+| Setup item | Full consumer smoke across the existing supported targets, registry build and docs install guidance checks, plus static/freshness/type checks. |
+| Shared token source, palette recipe or token export | Full release plan, covering both render targets, contrast, all demos, production output and consumer installation. |
+| Shared helper | Transitive consumers in both targets and docs, registry helper installation and shared suites. If the closure cannot be established, full release plan. |
+| Lockfile, package manifests, TypeScript/StyleX/Vite/Vitest config, workflow, verification tooling or generator | Full release plan. An execution or dependency change can affect every item. |
+| Metadata or generated output | Include owner and reverse consumers using source-derived projections. Unowned/stale output remains a check failure; regeneration cannot conceal it. |
+| Unmapped path or unresolved dependency | Full release plan with the path and fallback reason recorded. |
+
+Start with full-repository architecture and catalogue freshness checks plus `pnpm typecheck` in every executable mode. Narrow browser suites and scenarios only when their discovery proves complete coverage of the affected set. A selector adapter must report discovered test/scenario IDs and the IDs it actually ran. An absent expected suite is incomplete verification. When a current suite has no supported selector, run that entire suite and record the expansion. Never rely on a filename substring or zero-test success as selection proof.
+
+A component/feature mode selects that named scope; it does not imply coverage of unrelated dirty files. Report dirty paths outside the selected scope and recommend `changed` or `release`. Full CI runs the complete release policy independently of local selectors. There is no user skip option that can turn a required check into a pass.
+
+### Changed files and source identity
+
+`changed` defaults to the local `origin/main` ref, and records the resolved base commit plus merge base with HEAD. Union changes from merge-base to HEAD with staged, unstaged and untracked non-ignored paths. Use NUL-delimited Git output. Analyze both base and current inventories: deleted paths retain their former owners/dependants, and a rename includes its old and new identities. A deleted test also selects checks proving its required coverage still exists. If the base inventory is unavailable or either side is ambiguous, broaden to release.
+
+A missing base ref, absent merge base or shallow history chooses release and reports the reason. Do not fetch or mutate Git refs automatically. Explicit unknown component/feature IDs remain usage errors, distinct from unknown changed-path mappings. A genuinely empty changed set still runs the common static/freshness/type checks and reports that no behavioral changes were selected.
+
+Verify a frozen snapshot of the current filesystem contents, including dirty tracked files and untracked non-ignored files. Record HEAD, base/merge-base where applicable, staged and unstaged status, renames/deletions, submodule state if present, and a deterministic SHA-256 manifest of source paths, file types/modes and bytes. Record the index identity separately from the tested worktree bytes. Capture paths with spaces and non-ASCII names losslessly. Exclude only declared generated, dependency, Git-internal and evidence directories; expose that exclusion list in the report. Required ignored inputs or uninitialized submodules make the run incomplete unless an adapter explicitly supplies and hashes them.
+
+Check source stability during snapshot creation; retry a bounded number of times and fail incomplete if a coherent snapshot cannot be captured. All checks consume that same snapshot. Hash the originating source again at completion. If it changed, retain results as evidence for the captured identity, report `sourceChanged: true`, and exit incomplete rather than asserting the current checkout passed. Generated build outputs within the execution directory are recorded as artifacts, separate from the input identity. Freshness checks run before any generator can repair those outputs.
+
+### Check composition
+
+Use an explicit check DAG with prerequisites, required scope, resource locks and deadlines. Continue independent checks after a failure, while marking dependent checks `blocked` with the failing prerequisite. Deduplicate a prerequisite only when input identity, command, configuration and outputs match. Retain nested command information when a package script itself runs a build.
+
+| Check | Existing command or planned adapter |
+| --- | --- |
+| Architecture and metadata | Planned `pnpm check:architecture` and `pnpm catalogue:check`, with their fixture suites included in release validation. |
+| Types | `pnpm typecheck`, including the root TypeScript project. |
+| Unit/browser/axe/parity | Release composes `pnpm test`. Scoped execution invokes existing Vitest projects with explicit validated file/scenario selection, preserving each package's preparation steps. Tokens use their existing suite; elements need token and element builds; docs need the registry build. |
+| Contrast and palette freshness | `python3 packages/tokens/scripts/palette.py --check`; reuse its prerequisites and behavior. |
+| Registry and bundles | `pnpm registry:build`, retaining token/element production builds, bundle limits and registry assertions. |
+| Production docs | `pnpm --filter @ultima/docs build`, retaining its registry prerequisite. `pnpm build` remains supported but is not an additional duplicate proof obligation. |
+| Consumer install | `scripts/smoke-install.sh --keep` against the run's own built registry. Preserve its Vite, Next.js and element checks; scoped runs use the full smoke until a validated selector exists. |
+| Production browser scenarios | Required adapter settled by the production-browser decision; consumes the same run's production build and reports scenario IDs. Development Vitest results cannot satisfy it. |
+
+The release plan includes every row, all registered scenarios and tooling fixtures. Required adapters must exist before the final CLI can report release success. During staged implementation, an absent adapter reports `unavailable` and an incomplete run. Existing CI remains operational while those pieces land. Check discovery tests must prove that every required CI validation obligation maps to a release check, including the separately defined consumer-smoke workflow. Network access needed for consumer installation is a prerequisite; a network failure yields incomplete evidence unless an executed test establishes a product failure.
+
+The current docs `test` and `build` scripts regenerate the registry, and the elements `test` script builds tokens and elements. Preserve those steps until the implementation extracts a reusable preparation adapter with equivalent tests. Keep full package suites when a granular adapter cannot establish equivalence. Avoid duplicating palette calculations, registry dependency logic or smoke assertions in the runner.
+
+### Isolation and cancellation
+
+Create a unique run directory under ignored `.scratch/verify/<run-id>/`, containing `source/`, `artifacts/`, `logs/` and `report.json`. A caller-supplied output directory must be new or empty. Place the frozen source in the private execution directory and direct generated registry, token, element and docs outputs there through that directory's normal relative paths. Never run generators against the caller's authored checkout or reuse another run's output. Prepare dependencies from the matching lockfile inside the execution directory; a shared package-manager content store is allowed, writable workspace dependency/build directories are not. Installation output and duration remain visible as preparation.
+
+Allocate loopback ports per run and pass them explicitly to owned servers. Use dynamic allocation with bounded bind retries and server identity/readiness checks; neither probe-then-assume nor attaching to an existing server establishes isolation. Record the actual URLs and ports. Reuse the smoke script's existing dynamic port allocation and `TMPDIR` support; place its consumers under the run directory and record its actual server URL. Its local path rebuilds assets, so it also runs inside the private execution directory. A deployed `--host` result cannot count as evidence for the local snapshot. Record resolved versions of network-fetched scaffold and CLI tools. Inability to establish ownership or isolation yields incomplete verification.
+
+Keep `fileParallelism: false` for the current browser suites. Run browser projects serially within a run while they share viewport, pointer or document state. Serialize commands that write the same generated directories, including nested package preparation. Separate runs may proceed only through their private source/build directories and allocated ports. Further browser parallelism requires an isolation test proving independent state and outputs.
+
+On timeout, SIGINT or SIGTERM, stop owned process groups, allow a bounded graceful shutdown and then terminate remaining owned descendants. Never kill by port or process name. Always attempt to flush the partial report and retain failure logs/screenshots/traces. Release listeners and temporary consumer processes; retain referenced artifacts and remove only run-owned disposable files. The next invocation diagnoses an abandoned run without treating its partial files as completed evidence. Abrupt termination that prevents report finalization leaves an explicitly unfinished manifest.
+
+### Evidence and exits
+
+Version the report schema. Record run ID, mode and original selectors, requested/effective scopes, source identity, tool versions, platform, prerequisite results, timestamps, monotonic durations and final status. The ordered check records contain stable check ID, argv/cwd, dependency IDs, selection/expansion reason, expected and executed test/scenario IDs, status, exit code/signal, duration and repository/run-relative evidence paths. Include skipped checks with scope reasons and blocked checks with prerequisites. Logs are artifacts; screenshots and traces prove only the scenario and state that produced them.
+
+Check states are `passed`, `failed`, `unavailable`, `timed_out`, `cancelled`, `blocked`, `skipped` and `not_run`. A passed check requires successful execution and validated completion/coverage evidence. Missing prerequisites, runner crashes, unreadable reports and unexecuted checks cannot pass. Unexpected test skips within required coverage make the check incomplete; explicitly inapplicable cases need declared reasons in the scope contract. A zero exit code alone cannot turn zero executed required tests into success.
+
+| Exit | Meaning |
+| --- | --- |
+| 0 | All required checks completed and passed for the stated snapshot/scope; or successful help/list/plan with its non-execution status explicit. |
+| 1 | At least one executed check proved a validation failure; report also preserves any incomplete checks. |
+| 2 | Invalid CLI input or explicit selector. |
+| 3 | Incomplete run: missing prerequisite/adapter, timeout, runner failure, capture failure or source changed during the run, with no established validation failure. |
+| 130 / 143 | Cancellation by SIGINT / SIGTERM; retain all results reached before cancellation. |
+
+Cancellation takes precedence for a cancelled run; otherwise an established validation failure takes precedence over incomplete execution. Every other required check must still show its own outcome. There is no aggregate pass when a required check is incomplete. Distinguish a tool's structured validation failure from launch/infrastructure failures instead of mapping every child nonzero exit to a product defect. A report is evidence of one execution, never a reusable pass cache in the initial implementation.
+
+### Acceptance examples
+
+Prove the selector with fixture repositories and exercise execution adapters with controlled subprocesses, then run representative real repository checks. Implementation must demonstrate:
+
+- `component button` selects the React suite, its shipped element/parity coverage and consuming demos, with every extra selection explained. A recipe selects its executable composition without inventing a registry item; a setup change selects consumer installation.
+- A shared token edit selects the complete release plan, including both color modes, both targets, palette and installation. An unknown non-ignored file chooses the same safe fallback and names that path.
+- A shared helper edit follows reverse dependencies; a deliberately unresolved edge falls back. Renames, deleted owners/tests, staged-only edits and untracked source remain in selection. A missing base chooses release without fetching.
+- An explicit misspelled ID exits 2. An empty diff performs the common checks and reports its limited scope. An expected but missing suite, zero-test run, skipped required test or absent production adapter exits incomplete.
+- A failing assertion exits 1; a missing browser, unavailable network prerequisite or timeout exits 3. A dependent build is blocked when its prerequisite fails. Successful independent checks keep their evidence.
+- Two dirty worktrees run concurrently with distinct source snapshots, generated paths and ports. Each report matches its own bytes; mutation during capture fails or retries, and mutation after capture produces `sourceChanged` with incomplete exit.
+- Cancel a run with live server and child processes. Verify process cleanup, released ports and readable partial evidence. A stale output or foreign server cannot satisfy a new run's checks.
+- Human and JSON modes describe identical selection/outcomes. JSON stdout parses as one document; every retained artifact path exists and resolves inside its run. A plan runs zero check processes and never reports a pass.
+- Compare the release plan against CI and execute it end to end after all required adapters land. Preserve full proof-bar and both-mode coverage; measurement of speedup belongs to the measurement decision.
+
+## Production browser verification
+
+Decided on [Production browser verification: scenarios, isolation, and CI gates](https://github.com/frankieramirez/ultima/issues/439). These requirements describe planned tooling. The current CI builds production docs after development-transformed Vitest tests; this decision adds browser execution against those built files.
+
+### Runner and build identity
+
+Add a small Node runner using the Playwright library already declared by `apps/docs`, with its adapter under `apps/docs/scripts/` and authored scenarios under `apps/docs/tests/production/`. Expose `pnpm --filter @ultima/docs test:production` for the full production matrix. Its standalone entry delegates snapshot preparation and evidence to the verification infrastructure; the verification check calls the runner's internal adapter without recursively invoking the standalone command. Keep the package's existing Vitest command and every applicable item of the eight-item component proof bar.
+
+Use the normal production Vite build and its real entry point, stylesheet order, fonts and route tree. Reuse the existing registry/token/element preparation through the check DAG. Execute against the run's isolated source/build directory, and never import component source through a development server for this check. Share an already completed production build only within the same run and matching input identity. The adapter requires a build manifest containing source identity, production mode, build command and hashes of the served files. A missing manifest, stale file or failed build prevents browser execution from passing.
+
+Serve the built docs from an owned loopback HTTP server bound to port 0. Use a small static-server adapter with explicit HTML-navigation fallback for client-side routes, correct MIME types, and 404 responses for missing assets. Scope files to the build root and reject path traversal. A missing JavaScript file must never receive index.html as a successful asset response. The server exposes a run-only identity response outside the published build; verify its nonce and manifest identity before launching scenarios. Record the actual URL. An arbitrary external URL or already-running server cannot satisfy this local production check.
+
+The runner navigates through the shipped application. Its own scripts may read DOM state, inject the installed axe runtime and seed declared storage preconditions. They must not replace application code, inject corrective CSS or mock production behavior to make assertions pass. Do not introduce a second demo site. Stable internal locator hooks are allowed only where accessible roles/names and existing fixture boundaries cannot identify a repeated specimen.
+
+### Initial matrix
+
+Use the repository's locked Playwright Chromium version, headless, at 1280×720 and 390×844 with device scale factor 1. Run each row below in dark and light at both widths, except the explicitly desktop-only row. Each cell gets a fresh context. Viewport coverage here does not claim real mobile hardware or touch-device coverage. Browser expansion requires its own scoped decision and evidence; Firefox and WebKit are outside this first gate.
+
+| Scenario group | Required production assertions |
+| --- | --- |
+| Site navigation and color mode | Direct-load `/`, `/install` and `/components/button`; navigate using real links and browser back/forward; assert URL, heading and current-page semantics. At narrow width, open the site menu with the keyboard, dismiss with Escape and verify trigger focus, then reopen and select a destination to verify menu closure. Change color mode using the visible control and reload to prove persistence and the computed theme. |
+| Catalogue and documentation | On `/components`, filter to an existing component, exercise empty results and clear the filter; open a result with the keyboard. On `/components/button`, verify the live demo and source are present and copy writes the expected displayed source through the real clipboard API. Assert visible keyboard focus and required control geometry from the computed production CSS. |
+| Compound overlay | On `/components/dialog`, scope one canonical demo, open it by keyboard, verify its accessible name and initial focus, cycle focus within the modal, dismiss with Escape and assert focus return. Assert the visible popup/backdrop and contracted computed positioning/overflow. Existing exhaustive component tests retain other axes. |
+| Studio draft history | Direct-load `/theme-studio`; commit a deterministic valid edit, assert a known preview token changes, reload and verify autosave restoration through the real production entry point, then reset the whole draft and undo that reset. Verify the pre-reset draft returns, including its lock/override state where seeded through supported controls. Assert the site header follows the chosen mode and the editor stays stock dark. At narrow width, use the shipped editor sheet controls and verify preview/editor reachability. |
+| Studio pane boundaries, desktop only | At 1280×720 in both site modes, enter Compare and open an overlay in each pane. Check pane ownership, popup containment and resolved per-pane theme. Editing one draft updates both pane views while preserving their dark/light distinction; the surrounding editor remains unchanged. |
+| Shipped elements | Load `/elements.html` with its built aggregate bundle and token CSS, wait for every tag used by the fixture to be defined, and verify each catalogue family appears. Exercise a button activation, Tabs keyboard selection and Tooltip focus/dismissal behavior; assert the resulting semantic state and computed token styling in each mode. The fixture already renders separate `data-theme` sections; scope each mode cell to its matching section and check document-level errors across the full page. Add any missing family specimen to this existing fixture as part of implementation, preserving it as a consumer of built files. |
+
+This defines 22 required cells before feature registration expands their internal steps. The Executable feature map section defines stable IDs, source/route links and discovery; its registry must describe these obligations and drive selection, with no second handwritten runner inventory. Until that registry lands, the production gate cannot claim complete feature discovery. Additional required scenarios declared there join the full PR/release run.
+
+Assert route-level horizontal fit at both widths with a documented one-CSS-pixel rounding tolerance. An intentional scroll container may overflow internally; it must remain usable and must not widen the document. Verify the target before checking geometry so an absent control or empty page cannot pass. Preserve long-page document scrolling and Studio's separate shell contract.
+
+For computed styles, compare against resolved semantic tokens and explicit component contracts. Check focus outline visibility/width/style, popup positioning and required control/scroll dimensions where relevant. Avoid hashed class names, full computed-style snapshots or copied palette RGB literals. A production stylesheet-order regression must fail a semantic style assertion even if all development-mode tests pass.
+
+Coordinate labels, control location and layout with [Build: Docs site UX refinement](https://github.com/frankieramirez/ultima/issues/424). The inspected checkout still calls its install header link “Documentation” and places its mode control in the footer. Do not assert proposed header controls, install tabs or canvas layout until the corresponding implementation is in the tested revision. When that build changes a contract, update the owning scenario in the same change. Do not use optional selectors or skip-on-missing logic to accept both a shipped regression and a future design.
+
+### State, readiness and deadlines
+
+Launch one browser per run and execute production cells serially. Create a new context/page for every cell, with explicit viewport, mode, locale `en-US`, timezone `UTC` and motion preference. Start with empty cookies, cache and browser storage; seed only each scenario's declared preconditions before loading the application. Grant clipboard permissions only to the local origin for the copy scenario. Use deterministic valid draft values and avoid unseeded shuffle as a prerequisite. Reset by closing the context even after failure. Preserve existing Vitest serialization independently.
+
+Wait for the owned server identity, successful document/assets, the expected accessible application landmark and loaded application behavior. A 200 response alone is insufficient. Await `document.fonts.ready` and verify the expected self-hosted faces loaded; font fallback cannot count as screenshot readiness. Wait for custom-element definitions on element routes. Use bounded condition polling for layout and transition completion; do not rely on network-idle or fixed sleeps. Required same-origin asset failures, uncaught page errors and unexpected console errors fail the scenario. Any intentional diagnostic allowance must name an exact scenario, message and owning reason; broad console suppression is prohibited.
+
+Run interaction/cascade checks with `reducedMotion: no-preference`, and wait for their expected end states. Add four explicit reduced-motion cells, at both widths/modes on the existing Spinner demo route: verify the looping animation stops under the actual media preference. This makes the initial minimum 26 cells. Keep the exhaustive motion assertions in Vitest. Capture evidence only after fonts and the relevant state settle. If an unrelated infinite animation must be suppressed for a supplementary image, label that image and retain the unmodified assertion result; it cannot prove motion behavior.
+
+Initial operational limits are 15 minutes for build/preparation, 30 seconds for server readiness, 15 seconds per navigation, 5 seconds per asserted condition, 60 seconds per cell including readiness, and 10 minutes for the production matrix after build. Overall verification deadlines may shorten these limits. Record effective values; later baseline measurements may tune them through a reviewed configuration change. These are hang limits, not performance budgets. A build assertion/compiler failure is a validation failure; missing browser/dependency, launch failure or expired deadline is incomplete evidence under the verification exit contract.
+
+Run once for gating, with no automatic retry converting a failed attempt to pass. An explicit diagnostic rerun keeps both attempts and the first failure visible. On assertion failure, finish evidence capture under a separate bounded teardown allowance, close the context and continue independent cells where the browser/server remains healthy. A browser crash marks the interrupted cell incomplete and remaining cells not run; a controlled later run is separate evidence.
+
+Always close owned browser contexts, browser and server in a `finally` path. On cancellation or overall timeout, follow the verification runner's process-group shutdown contract, with five seconds of graceful shutdown before terminating remaining owned descendants. Record cleanup failures as incomplete and retain partial evidence. Never attach to or kill another run's browser/server by port or process name.
+
+### Accessibility and evidence
+
+Run the installed axe version after each row's principal ready state, in both modes/widths, with the repository's current applicable WCAG A/AA rules and color contrast enabled. For overlays also check the open state; for narrow navigation check the open menu. Reuse explicit, contract-backed exclusions from existing tests only where they still apply to the production DOM. Record rule IDs, affected nodes and the reason for any scoped exclusion. An inaccessible visible application shell cannot be excluded merely to make a demo pass. The existing full demo axe sweep and generated palette contrast gate remain required.
+
+Every cell reports expected/executed scenario ID and parameters, assertion outcome, source/build identity, URL and duration through the verification schema. Retain server/build logs plus per-cell console/network errors. Start traces before navigation; retain a trace, screenshot and relevant DOM/accessibility diagnostics for failures where the page remains usable. Failure to capture an image must preserve the original error and report the missing artifact. Keep a settled screenshot for each passing cell as review evidence, labelled with revision, mode, viewport and scenario state. Images do not establish keyboard behavior or an accessibility pass.
+
+Store artifacts inside the run's evidence directory, with a versioned machine-readable report and paths that exist. CI uploads the report and logs on every completed or interrupted job where teardown can run, and traces/screenshots when available, retaining them for seven days initially. Forced termination may leave an unfinished run manifest; it can never become a pass. Screenshots have no automatic pixel-diff gate in this first version. Interaction durations and traces are diagnostic; the measurement ticket defines repeatable performance evidence and any future budgets separately.
+
+### Local, PR and release policy
+
+Local component/feature/changed verification selects production scenarios through the proven dependency graph. If selection cannot establish complete affected coverage, run the full production matrix. The standalone package command runs the full matrix, and a direct internal adapter invocation is meaningful only with the verified run/build manifest. Help names build/browser prerequisites and links the report path.
+
+After this gate's implementation passes its acceptance cases, every pull request and push to main runs the full required production matrix against its own production docs build. Do not use changed-path filters for this gate. Preserve existing typecheck, Vitest, contrast and registry checks. Budget CI job time for build plus matrix and upload/cleanup; splitting jobs is allowed only with a verified immutable build artifact and matching source manifest. An absent required cell, skip, unavailable prerequisite or missing report prevents the required job from succeeding. Branch protection configuration must be checked during rollout rather than inferred from workflow YAML.
+
+Release validation runs all registered production scenarios plus full existing proof-bar suites and consumer installation for the same revision. Production docs prove deployed application behavior; consumer smoke separately proves registry copy-source dependencies and compilation in Vite/Next.js, as well as its existing element distribution assertions. Neither check substitutes for the other. Keep weekly/manual consumer smoke, and extend its PR input coverage to element sources and builds, authored catalogue metadata and generators as those become inputs. The final verification release plan always includes full consumer smoke even when a legacy workflow path filter would not trigger it.
+
+### Acceptance evidence
+
+Implementation must demonstrate the matrix on a named revision and retain the report. Inject a production-only stylesheet/order defect and show a computed-style assertion fail while a build still completes. Restore it and confirm a clean run. Separately break a required asset and a fixture bundle reference to prove readiness cannot accept an HTML fallback or an undefined element.
+
+Exercise storage leakage between cells, a stuck readiness condition, absent required scenario, foreign server identity, browser launch failure, assertion failure and cancellation with live child processes. Show the correct failure/incomplete statuses, retained partial reports and released owned resources. Run two worktrees concurrently with distinct output roots and ports; seed different drafts and prove each report/evidence belongs to its own snapshot. Keep browser cells serial until a later isolation proof authorizes parallel execution.
+
+Before switching CI to required, reconcile each scenario with the current docs UX revision, verify all 26 minimum cells execute, prove that a removed/skipped cell fails coverage validation, and run full consumer smoke. If implementation discovers an unsettled product behavior, resolve it through the owning product contract rather than inventing behavior in the test. No runtime implementation or successful production run is claimed by this decision.
+
+## Executable feature map
+
+Decided on [Executable feature map: scenario ownership and discovery](https://github.com/frankieramirez/ultima/issues/440). This section specifies contributor tooling to implement. Discovery and reproduction commands below are planned until their adapters and validation ship.
+
+### Ownership and storage
+
+Keep authored records in `verification/features/<feature-id>.json` and `verification/scenarios/<feature-id>/<scenario-name>.json`, validated by a versioned schema under `scripts/verification/`. Read them as data; discovery must not import application modules, launch a browser or execute a test module. Reuse the shared catalogue model and TypeScript analysis for source references. Do not add executable commands, JavaScript expressions or callback bodies to JSON.
+
+A feature is a named user capability, such as `theme-studio`, with one owning contract and a set of related scenarios. It can span components and packages. Its record contains `schemaVersion`, `id`, `title`, `summary`, search `aliases`, a local specification `contract`, catalogue `items`, and explicit non-catalogue `sourceRoots` for application behavior. The feature ID is unique kebab-case. Item references resolve through the existing item model, which derives their source/demo/test paths. Application roots must be repository-relative, exist, and describe real ownership. Shared dependencies are derived from imports, with narrow explicit extra dependencies only for runtime links such as loading a built element bundle by URL. Each extra dependency carries a reason and a validated item/path reference. Application features also name existing supporting check IDs or suite paths that import analysis cannot establish, validated against runner discovery. These references select existing checks without duplicating their assertions; feature selection unions them with the derived closure.
+
+Scenario IDs have the stable form `<feature-id>.<scenario-name>`, with a kebab-case name. File path and ID must agree. Rename titles freely; retain IDs when the same behavioral obligation moves files. An intentional ID change updates every binding and reference in the same change and leaves a migration note on the build ticket. There is no silent alias from a removed scenario to a different obligation.
+
+Each scenario record contains:
+
+- Its ID, title, concise intent and owning contract reference, plus search aliases where the title misses a common user term.
+- Catalogue item references and any narrower application source references needed for this behavior, resolved within the feature's declared ownership. Include executable demo module references where applicable.
+- Route references: catalogue item routes are derived; application routes name their route definition and expected pathname; static fixtures name their checked-in HTML path and served pathname. Validate routes against the router/static-file inventory without starting the application.
+- Ordered manual reproduction steps using accessible target descriptions, explicit preconditions and expected observable results. State keyboard input, commit actions and final focus where these matter. Prose describes the contract; assertions live in the executable test.
+- Named fixture references and reset policy, with supported data and a reason for any seeded storage. Reuse real demos and existing draft fixtures. Fixture loaders belong to trusted runner adapters, never arbitrary metadata expressions.
+- Required execution targets from a closed enum (`ui-vitest`, `docs-vitest`, `elements-vitest`, `production`), plus applicable mode/viewport/motion variants for each. Every required target has one canonical executable binding. Other tests can remain supporting proof without becoming substitute bindings.
+
+A source path is ownership evidence, not proof that every behavior in that file has coverage. Report discovery completeness separately from execution coverage. Ordinary tests remain valid outside the scenario registry and keep their existing proof obligations. A new interaction or repaired user-facing regression must review the owning feature's scenarios; do not require a scenario record for every static type assertion or palette calculation.
+
+### Executable bindings and discovery
+
+Keep component tests in `packages/ui/src/__tests__/`, element tests in their current test directory, docs tests under `apps/docs/src/__tests__/`, and production scenarios under `apps/docs/tests/production/` as already decided. Metadata cannot move component tests beside production source.
+
+Provide thin repository-local registration helpers for existing Vitest tests and production runner functions. A registration names a literal scenario ID and literal target, then accepts the existing executable callback. Source discovery recognizes imports of those helpers through the TypeScript checker and extracts literal IDs, target and file location. Do not discover bindings by scraping human test titles or searching arbitrary string literals. Dynamic scenario IDs and unsupported computed registrations fail with a repair diagnostic.
+
+The helper expands the scenario's declared variants and gives each invocation a case identity consisting of scenario ID, target and canonical parameter tuple. The Vitest adapter registers normal tests and reports their case identities through its reporter; the production adapter loads only the selected trusted test files after planning. Existing unparameterized Vitest callbacks use one explicit default variant; declaring mode/viewport variants requires the fixture to apply and report them. A helper cannot label one execution as multiple cases. Helpers add registration/reporting only. They must not introduce a generic action language, another assertion library or their own browser lifecycle.
+
+Join records to discovered bindings in memory. The feature record does not list its scenarios; directory discovery derives membership. Scenario records declare required targets but never repeat binding paths or human test names. Generated discovery output supplies those paths and reproduction commands. The runner enumerates that joined model instead of keeping a second list. One binding per scenario/target is required; parameter variants share that binding. If two independently owned obligations need separate executions, give them separate scenario IDs.
+
+An existing behavior test can receive a registration ID around its current callback. Preserve its assertions and setup. Share plain fixture data and small locator/assertion helpers only when their meaning and execution environment agree. Production tests still navigate the real app, while Vitest mounts its fixtures. Keep scenario helpers outside `apps/docs/src/demos/**/*.tsx`, whose existing glob adds every module to the automatic axe sweep. Preserve that sweep independently. Both may prove the same invariant at these distinct integration boundaries; do not delete development proof to avoid that necessary overlap or force the two APIs through a new abstraction framework.
+
+Derived discovery is available in memory and through JSON stdout; keep a generated, ignored copy in each verification report directory with its source-manifest hash. `pnpm verify list` generates it afresh. Do not commit a second scenario index or use a previous report's catalogue as current discovery. The metadata/generator freshness preflight also validates this model, while `pnpm verify list` and `describe` validate it directly. Any future committed documentation projection must use the existing deterministic generation/check mechanism.
+
+### Validation and coverage
+
+Reject duplicate IDs, unknown fields, absent owners, invalid item references, broken contract anchors, paths escaping the repository, missing demo/fixture/source files and unsupported routes. A declared source root must contain owned source. Resolve symlinks before enforcing path boundaries. Every executable registration must have a record, and every required target must have its binding. A renamed/deleted binding must produce an error that names the scenario and expected target.
+
+Compare planned cases with cases actually reported by each runner. Missing, duplicated, skipped or unexpected case identities cannot produce complete coverage. A zero-test success or a passing screenshot cannot satisfy an expected scenario. Malformed discovery is a validation failure; a missing runner/prerequisite is incomplete execution under the verification exit contract. Read-only discovery exits nonzero for malformed records and never reports a runtime pass.
+
+Required production variants come from these records, and the production runner consumes them directly. Preserve the matrix settled above with initial feature/scenario IDs:
+
+| Feature and scenario ID | Production variants |
+| --- | --- |
+| `site-navigation.route-and-mode` | Dark/light × desktop/narrow, normal motion |
+| `catalogue.filter-and-demo` | Dark/light × desktop/narrow, normal motion |
+| `dialog.keyboard-dismissal` | Dark/light × desktop/narrow, normal motion |
+| `theme-studio.draft-history` | Dark/light × desktop/narrow, normal motion |
+| `theme-studio.pane-boundaries` | Dark/light × desktop, normal motion |
+| `elements.fixture-interactions` | Dark/light × desktop/narrow, normal motion |
+| `motion.reduced-loop` | Dark/light × desktop/narrow, reduced motion |
+
+These are the same 26 production cells already decided. Splitting a long scenario is allowed when the replacement IDs retain every obligation and matrix variant, and the reviewed migration records the correspondence. Counts alone do not establish equivalent coverage. Keep a small, independent acceptance fixture for the required obligations and variant expansion; mutation tests must catch a removed target or light/narrow variant. This fixture is a contract test, not a runtime discovery source. Adding a new required production scenario automatically adds its cases to full PR and release verification.
+
+Source import closure plus explicit validated runtime dependencies connects records to changed-file selection. A feature selection includes all its scenarios, affected item proof-bar checks and required build/install checks. A component selection finds scenarios through item references, demo imports and reverse dependencies. Base/current discovery both participate for deletions and renames, as the verification contract requires. Unknown ownership or unsupported dynamic edges expand to release; they cannot silently omit scenarios. Scenario metadata and its executable binding are themselves check inputs. Changes to shared schema/helpers/runner configuration require full release validation.
+
+### Discovery commands and ambiguous reports
+
+Extend the planned read-only interface with:
+
+```sh
+pnpm verify list --search "picker" --json
+pnpm verify describe scenario dialog.keyboard-dismissal --json
+pnpm verify describe feature theme-studio
+pnpm verify feature dialog --plan --json
+pnpm verify feature theme-studio
+```
+
+`list --search` searches feature/scenario IDs, titles, aliases and catalogue item names/descriptions, returning typed candidates with match reasons. Use deterministic token matching and ordering: exact ID/name before alias, then title/description matches, with ID as the final tie-breaker. Never execute a search result automatically. No matches is a valid empty discovery result with a suggestion to inspect the full list; it is not passing verification. Unknown IDs supplied to `describe` or executable selectors exit 2 with available choices.
+
+`describe` returns ownership and contract links, real route/fixture references, preconditions, reproduction steps and expected observations, required variants, binding source locations and planned verification commands. Plain-text output and versioned JSON contain the same facts. Generated commands use validated IDs and the CLI's supported modes. A feature command runs that feature's required cases plus its dependency checks; this first version does not add a scenario-only execution mode or claim a single-case pass from a whole-feature command. `describe scenario` names that broader scope explicitly.
+
+For “the picker broke”, return Date Picker as a catalogue candidate with `packages/ui/src/date-picker.tsx`, its derived docs route `/components/date-picker` and `pnpm verify component date-picker`. Also show other matching items and registered feature aliases, such as a Studio color-editing candidate when that behavior is registered. A catalogue-only match must say no executable feature scenario is registered yet and still point to the existing component proof. Do not fabricate a Date Picker production scenario from a search hit or assume which picker the user meant. The agent uses the reported symptom to choose or asks for the missing context.
+
+### Pilot and reuse
+
+Implement two feature records first: `dialog` and `theme-studio`, with the canonical bindings below. The pilot demonstrates registry mechanics; it does not by itself satisfy the full production matrix or release gate.
+
+For `dialog.keyboard-dismissal`, reuse `apps/docs/src/demos/dialog/basic.tsx` and the owning Dialog contract. Attach the UI binding to the existing keyboard/focus test in `packages/ui/src/__tests__/dialog.test.tsx`. The UI fixture and docs demo retain their own accessible names (currently “Archive run” and “Archive report”); do not assume they are identical or import a test module into the docs app. Its production binding opens that demo at `/components/dialog` using an accessible trigger, verifies title and initial focus, proves Tab/Shift+Tab containment, dismisses with Escape and checks trigger focus. Begin closed and destroy the mounted fixture or browser context afterward. Preserve the existing UI test's variants; the production binding runs all four declared mode/viewport cases.
+
+For `theme-studio.draft-history`, own the scenario at `/theme-studio` and the existing theme draft/history contracts. Reuse the current docs history test in `apps/docs/src/__tests__/theme-studio.test.tsx`; extract its reset/undo segment into a focused registered test if required, retaining shuffle and redo assertions in supporting tests. Use a valid deterministic edit, an override and a lock set through supported controls. Record the draft state before reset, perform whole-draft reset, verify the specified reset state, then undo once and verify the original draft/override/lock state. Assert observed preview values as well as controls, so clicking a button alone cannot pass.
+
+The production binding additionally reloads to prove persisted draft restoration before testing reset/undo. Reload restores the draft but does not imply restoration of prior undo history. Make the reset a new undoable action after reload. Begin with empty storage and URL fragment, keep storage within this one reload journey, and close the context afterward. Use the shipped narrow editor controls where necessary. Share fixture values with the docs test; do not mock the reducer or call internal state setters in production to bypass the UI.
+
+Keep export-parity checks in `apps/docs/src/__tests__/theme-studio-export.test.tsx` and `theme-studio-parity.test.tsx` within the Studio feature's supporting coverage. A native-download/share-link scenario can be added when that behavior is the subject of a change; it is outside the initial pilot. Existing export checks still run when Studio is selected. The feature map must not turn unregistered supporting tests into skipped validation.
+
+After the pilot proves registration, discovery and execution, register the remaining production groups from the table. Element scenarios reference shipped `ult-*` items and their existing fixture, keeping React and element target identities distinct. Recipe scenarios reference the recipe descriptor and its executable demo; they gain no registry item. Setup installation remains a check in the verification DAG rather than an invented browser journey.
+
+### Author guidance and maintenance
+
+When implementation lands, update `skills/forge` to discover related features before editing behavior, keep its eight-item proof bar, and register or revise the scenario for an affected user-facing obligation. The scaffold can emit a visibly incomplete scenario-record template once the author supplies a settled contract; it cannot invent expected behavior or a passing binding. Static validation rejects incomplete records until they are finished.
+
+Update `.agents/skills/testing-ultima-docs` to start from `verify list`/`describe`, follow the recorded accessible steps and run the production command when production proof is required. Retain its development workflow for exploration, clearly labelled with the execution environment. Replace drifting assumptions about fixed control locations with links to current owners and scenario records. These skill edits belong to implementation; this planning session does not advertise unavailable commands as usable tools.
+
+Keep `AGENTS.md` as an index linking the owning infrastructure section. Contributor scenario records and runner dependencies stay repository-local and outside installed component source. Consumer guidance remains hosted/generated through the existing agent guide. Do not copy the internal execution registry into `/llms.txt`; retain visitor-facing component usage and installation guidance there.
+
+When a behavior changes, update its contract, executable assertion and scenario reproduction steps in the same review. Structural validators cannot prove the prose matches the assertion, so the reviewer checks that correspondence explicitly. A recurring agent mistake should produce a precise rule, assertion or corrected canonical example under the adoption decision, rather than another loosely maintained checklist.
+
+### Acceptance evidence
+
+Before widening beyond the pilot, demonstrate read-only discovery with no browser or application startup, one registered Dialog test and one Studio test in their existing Vitest suites, and the corresponding eight production cells. Retain each run's planned and executed case IDs plus source identity. Run the full existing suites to prove that registration has preserved their assertions and teardown.
+
+Use negative fixtures for duplicate records/bindings, an orphan binding, absent target, invalid route/contract anchor, stale source path, unknown item, malformed variant and a required light/narrow variant removed from the model. Prove that skipped and zero-case runner reports are incomplete, and that unknown changed-file ownership expands coverage. Renaming a display title must leave IDs and selection unchanged; deleting a binding must fail before a stale generated index can hide it.
+
+For discovery, use the same named checkout and scripted prompts before and after the change: “Dialog Escape leaves focus behind”, “Reset theme undo lost my override”, and “the picker broke”. Record time to find the owning source and a valid reproduction command, number of files/searches opened, returned candidates and mistakes. The implemented index must expose owner, route and runnable scoped command within a `list` plus `describe` lookup for each registered pilot scenario. The picker prompt must return Date Picker and any matching alternatives with reasons and an honest registration status. Do not impose an invented percentage speedup; the measurement decision owns repeated-run timing and noise treatment.
+
+Finally enumerate and execute the full 26-cell production contract through the same discovery model, then run release validation. Evidence must show that the production runner has no separate hand-maintained scenario list and that scenario edits propagate to selection and reports. This decision claims no shipped registry, measured discovery speedup or runtime pass.
+
+## Efficiency and performance
+
+Decided on [Efficiency and performance: baselines, budgets, and optimization triggers](https://github.com/frankieramirez/ultima/issues/441). This contract specifies the evidence the build effort must collect before changing implementation. It establishes no measured speedup or new timing gate.
+
+Use the settled [verification CLI](https://github.com/frankieramirez/ultima/issues/438), [production browser contract](https://github.com/frankieramirez/ultima/issues/439), and [executable feature map](https://github.com/frankieramirez/ultima/issues/440) for workload selection and source identity. Their contracts appear in the sections above; the issue resolutions retain the recorded decisions.
+
+### Workloads and comparable coverage
+
+The first build slice captures a baseline on the revision before contributor-tooling changes. Add only the measurement harness to that baseline and record its patch/hash separately. Keep fixtures and the harness version identical for the comparison. Later slices capture their own parent/candidate pair so unrelated changes do not receive credit.
+
+| Workload | Evidence required |
+| --- | --- |
+| Single React edit with Dialog as the pilot | Discover ownership and run existing checks that prove the intended change, then compare with the planned component/feature selector. Record selected checks, cases, expansions and omitted coverage. |
+| Studio draft/history edit | Find the owning source and reproduction from the fixed prompts below; run its supporting tests and required production variants. |
+| Shared token edit | Exercise conservative expansion to the full release plan, including contrast, React, shipped elements and consumer installation. |
+| Element family edit | Use the shipped button family to measure family proof, parity, bundles and the fixture. |
+| Setup item and recipe | Measure existing install-smoke coverage for setup and owning demo/axe coverage for a recipe; keep their different distribution obligations explicit. |
+| Ordinary component addition and removal | Repeat the metadata decision's synthetic addition in disposable baseline/candidate checkouts with the same settled contract, dependency, demo and proof. Count manual coordination edits and verify removal leaves no stale membership. |
+| Full release | Record total elapsed time and per-check time for the complete existing release policy, including production coverage when available. |
+
+Measure the whole supported command and its phases separately: current docs tests and builds invoke registry prerequisites. Record generated JS/CSS bytes and initial route loading as diagnostics if a change proposes lazy loading; those observations establish no new size gate.
+
+Baseline commands must exist at that revision. Store the exact argument arrays, working directories, prerequisite steps and resulting coverage with each workload. If production scenarios do not exist yet, the measurement slice may add the same observation harness to both builds. Report the new coverage and its cost separately from any same-coverage timing comparison. A narrower selector may save time by avoiding unrelated work; name that reduction and show it retains every required affected check. It cannot establish a faster full suite.
+
+Use the feature-map prompts verbatim: “Dialog Escape leaves focus behind”, “Reset theme undo lost my override”, and “the picker broke”. Start from the same task description and repository entry point. Record time to locate the owner and a valid reproduction command, searches/files opened, wrong candidates, failed commands and corrective edits. A successful lookup identifies the source and runnable coverage; a plausible answer with an invalid command fails the exercise.
+
+Count distinct manually coordinated files and edit operations for catalogue/barrel/router/optimizer wiring separately from authored behavior, docs and proof. Preserve the metadata decision's target of zero manual projection edits for an ordinary component addition, and the feature-map target of owner/route/scoped command within `list` plus `describe` for registered pilot scenarios. Record unsupported cases and dependency-policy decisions explicitly.
+
+For agent-assisted discovery record model/version when available, tools, starting context and prompt, plus operator/session identity. Reset disposable workspaces between attempts and counterbalance which revision is attempted first. A session that already learned the answer is a learned-condition observation; it cannot serve as a naive discovery baseline. Record directly observed corrections with their cause and denominator. PR counts, generated lines and remembered impressions cannot establish agent productivity. Timing observations remain limited to these tasks and conditions.
+
+### Run protocol and evidence
+
+Record commit IDs, dirty patch and source-manifest hashes, harness/fixture hashes, lockfile hash, runtime/package-manager/browser versions, OS, CPU/RAM, power mode, runner identity/class, concurrency, viewport, mode, motion preference and any throttling. Use the verification report's identity and evidence directory when available; the baseline harness records equivalent fields. Pin the dependency versions for each revision and disclose any required version change. Different hardware, throttling or runner classes produce separate series.
+
+Install dependencies and browser binaries before measurement. Report their setup/download cost separately. Each command run starts a fresh process. Define application-cold as cleared, explicitly inventoried build/Vite/verification caches and generated outputs needed by that workload, with dependencies present; define warm as those outputs retained after one unmeasured priming run. List every cleared/retained path. OS page caches remain uncontrolled and disclosed; this protocol never calls a fresh process a cold machine. A browser-cold run uses a new context and navigation with reset storage and browser cache; a warm interaction run begins after route readiness and one unmeasured sequence, with the draft reset to the same fixture.
+
+For commands, collect five valid measured runs per revision, workload and cache condition. Alternate baseline/candidate order across pairs; clean the same cold inputs before every cold sample. For each production Studio interaction cell, collect five independent browser sessions, each with twenty measured repetitions after priming. Reset the draft between sequences. Report the first navigation/interaction separately so repeated runs do not conceal startup cost. For human/agent discovery and addition exercises, retain at least three paired attempts and their order/learning conditions; treat that small sample as descriptive evidence.
+
+Keep raw samples with run IDs and monotonic elapsed times. Report command median, range and median absolute deviation. For interactions report each session's median and nearest-rank p95, plus the median and range of those session summaries; label sample counts and keep individual events. Report failures/timeouts and missing instrumentation alongside valid runs. Failed runs cannot become fast successful samples. Exclude a sample only for a documented harness/environment fault under a declared rule, retain it with the reason, and collect its replacement. Do not remove slow valid samples.
+
+Compare paired differences under matching conditions. If the median change is within the larger revision's median absolute deviation, or pair directions conflict, mark the result inconclusive and repeat the complete batch once after investigating contention. Continued instability remains advisory and blocks claims of a measured gain. Larger changes still require raw evidence and correct coverage; this rule is an investigation screen, not a statistical significance claim. Percentages may appear only with the absolute baseline/candidate values, sample counts and conditions that produced them.
+
+The machine-readable performance artifact records schema version, workload and case IDs, source/environment identity, setup/cache policy, ordered raw samples, coverage, exclusions, summaries, comparator identity and budget status. Keep a human report beside it linking logs and traces. Retain CI diagnostic artifacts under the production contract's initial seven-day policy; store the small baseline samples, approved budget manifest and report with the build effort's durable evidence so budget decisions survive artifact expiry. Evidence paths must resolve. A missing comparable baseline yields `unavailable`, never a measured pass or zero regression.
+
+### Production Studio measurements
+
+Measure the built docs in Chromium using the production runner's verified build identity, isolation and readiness. Collect dark/light at desktop and narrow viewports, retaining separate results for every cell. Coordinate selectors and behavior expectations with [Build: Docs site UX refinement](https://github.com/frankieramirez/ultima/issues/424). A changed UI contract requires a versioned workload and a new comparable pair.
+
+Use deterministic draft fixtures: stock, a customized draft with guided values and per-mode overrides, and the largest valid override set allowed by the current schema. Include a failing-contrast fixture. Fixtures must stay within supported product input. Record their seed and content hash. Measure a guided edit, repeated slider/key edits, a semantic override, Reset followed by Undo, preview mode/theme changes, bounded Shuffle success/exhaustion, and each export format. Separate per-edit cost from a burst's final settled result.
+
+Record browser-side marks from input-handler entry to the committed draft, resolved token result and contrast result, then to the corresponding visible preview update. Record export activation to generated bytes/download initiation or explicit failure; OS save dialogs and network sharing are separate. Observe the rendered style/result tied to that draft and the next frame opportunity. Label this an application-observed update latency; a frame callback alone does not prove physical pixels reached the display. Runner locator/polling time is orchestration overhead and must not become the browser interaction duration.
+
+Collect input event timing and long-task entries where the pinned browser supports them, recording supported entry types and missing observations. Keep count, total duration and longest observed task for the marked interval. Retain a separate diagnostic trace and profiling run to attribute work to `resolveDraft`, contrast `gate`, React rendering, style/layout, shuffle and serialization. Use the same instrumentation in both measured builds and disclose its overhead; detailed profiling runs stay outside the timing batch. Scripted interactions are laboratory observations and cannot establish a field INP score.
+
+The current `useMemo` calls identify places to profile. Their presence establishes no bottleneck. Check repeated resolver/gate calls in exports and bounded Shuffle separately before changing execution architecture. Assertions must still prove contrast, draft/history and exported values agree; an early stale render or outdated export cannot count as fast completion.
+
+### Budgets and CI policy
+
+Keep existing element gzip budgets and all correctness, contrast, accessibility, coverage and consumer-install gates. The production runner's navigation/readiness/assertion deadlines remain operational hang limits. Timing begins as report-only in local, PR and release runs; label each metric as measured, unavailable or unstable. Missing required correctness evidence still fails under the verification contract.
+
+After the baseline, propose a versioned budget per workload, metric, cache state and runner class. Store units, absolute ceiling, baseline reference, sample/aggregation rule, owner and review rationale. Derive the initial regression allowance from the largest observed spread across three independent complete baseline batches on the intended runner class, and state any additional approved headroom in absolute units. Choose a ceiling above that measured envelope and document the user/feedback-loop requirement it protects. If the baseline already misses the desired responsiveness goal, file optimization work and report that gap; a permissive baseline-derived ceiling cannot declare the goal met.
+
+Promote only metrics whose repeated batches are stable and whose harness/negative fixtures detect a seeded regression. A reviewed build change must approve the exact numeric ceiling and its rationale before CI can block on it. Until then budgets report. Timing gates require dedicated or demonstrably comparable runner conditions. On a violation, retain the failed batch and run one whole confirmation batch; two comparable violations fail the performance check. Conflicting batches or changed runner identity produce an unstable/unavailable status requiring investigation, with no passing performance claim. Once a metric gates, missing or unstable evidence makes that required performance check incomplete. It cannot silently revert to advisory.
+
+Baseline/budget refresh requires review with the previous comparison attached. A slower candidate cannot reset its own baseline to pass. A workload, browser or runner change records why the old series is incompatible and gathers a new series before promotion. Correctness failures take precedence over performance interpretation.
+
+### Optimization and asynchronous ordering
+
+Adopt a worker or other asynchronous boundary only when comparable production runs miss an approved interaction goal, profiles attribute the delay to movable CPU work, and a prototype improves the affected metric beyond measured noise after serialization, transfer, scheduling and rendering costs. First evaluate redundant computations and recomputation scope. If rendering/layout dominates, moving arithmetic to a worker needs separate evidence. Keep the existing synchronous path when the evidence is inconclusive. This decision authorizes a future evidence-backed proposal, not a speculative rewrite.
+
+An asynchronous proposal must specify request identity as a monotonic draft revision plus input/recipe identity. Every draft-changing action, including edit, Undo/Redo, Reset, import and Shuffle, invalidates older work even when values happen to match an earlier draft. Apply a result only to the matching current revision and input. Publish resolved tokens and contrast results for one revision together; pending/error state must be explicit. Cancellation is an optimization and cannot replace stale-result rejection.
+
+Export must capture the revision requested at activation and either await a matching coherent result or stop with an explicit retry/error when that revision is superseded. It may never combine a new draft with old contrast or resolved tokens. The proposal must preserve the existing history/commit semantics and describe error recovery and teardown without changing public behavior silently.
+
+Required deterministic tests control completion order: request A then B, complete B then A; return to A's values under a new revision; Reset/Undo/import while work is pending; export while pending or after a newer edit; worker failure, cancellation and unmount followed by late completion. Assert preview, contrast and export identity, history integrity and listener/worker cleanup. Compare synchronous and asynchronous results for the same valid fixtures, including contrast failures and Shuffle exhaustion. Run production interaction proof and the existing parity/export suites after the isolated ordering tests.
+
+### Build acceptance
+
+The build effort delivers the baseline harness and durable raw samples before optimization, then captures matching after-results for every changed workload. Validate aggregation and statuses with fixtures for missing baselines, failed runs, documented exclusions, mismatched conditions and a seeded timing regression. Exercise the real command/browser path; fixtures alone cannot establish a performance gain.
+
+Acceptance requires correct coverage, the settled wiring/discovery targets, and an honest comparison report. A result of unchanged or inconclusive timing is valid evidence and must remain visible. Any unmet improvement goal gets an explicit follow-up with its evidence and boundary. The adoption decision assigns rollout slices and owners; this section supplies their measurement contract.
+
+## Adoption and maintenance
+
+Decided on [Adoption and maintenance: rollout, canonical examples, and build handoff](https://github.com/frankieramirez/ultima/issues/442). All planning decisions for this effort are settled. This section orders implementation and defines completion; it does not certify that the planned tooling exists.
+
+### Authority and delivery ownership
+
+The principles, component contracts and ADR amendments define permitted behavior. This document owns contributor enforcement, metadata, verification and measurement. Authored descriptors own catalogue facts; authored scenarios own discovery and declared obligations, with executable assertions in their bound tests. Generated projections remain outputs. Skills explain how to use those owners and must link their contracts rather than introduce new exceptions.
+
+The maintainer reviewing a build slice owns its contract migration and exception approval. The build ticket names the implementer, reviewer and source revision before it can close. An agent may propose a narrow exception with authority and proof; an existing violation does not supply authority. If the owning product contract leaves behavior unsettled, file a precise decision in that product effort and block only dependent work. Unrelated slices may continue. Do not reinterpret the architecture checker as permission to change a public API.
+
+Keep one shared TypeScript source-analysis implementation and catalogue model. Checker rules, generation and verification consume it through small interfaces. Keep check adapters and scenario bindings specific to their existing runners. Generic action languages, arbitrary metadata commands and a second test/demo platform remain excluded.
+
+### Ordered build slices
+
+Create a separate build effort using this map as its planning source. The following IDs define proposed build slices and their dependencies; they are not filed issues. A slice closes only with its stated negative tests and real repository evidence. Split an oversized slice along its listed outputs when filing, preserving the dependency and acceptance boundaries.
+
+| ID | Deliverable | Depends on | Required exit evidence |
+| --- | --- | --- | --- |
+| A | Baseline harness and migration inventory | None | Fixed workloads and fixtures, raw baseline samples under the measurement protocol, current export/route/dependency snapshots, existing command/check inventory and recorded environment. Preserve before-revision inputs for later comparisons. |
+| B | Shared source analysis and typed catalogue model | A | Per-kind schemas and complete authored metadata for React, elements, setup, source bundles, artifacts and recipes; bidirectional membership validation, source-derived exports/dependencies and independent negative fixtures. Existing consumers still run. |
+| C | Deterministic projections and consumer migration | B | Generate the fixed outputs in comparison mode, prove public/order/dependency equivalence, switch adapters, and add freshness preflights. Generation works with projections absent; repeated generation gives zero diff. Real browser startup and full consumer smoke pass. |
+| D | Non-overwriting scaffold | C | React/element/recipe dry-run and write flows, collisions/concurrent edits/partial write proof, incomplete markers, synthetic addition/removal and zero ordinary manual projection edits. Update Forge wiring guidance in this slice. |
+| E | Architecture engine and source/import rules | B | Static text/JSON command, scope inventory, diagnostic/exception validation, `ULT-SOURCE-001`, `ULT-IMPORT-001`, `ULT-PRIMITIVE-001` and unresolved-analysis behavior. Whole-scope cleanup and clean blocking evidence for delivered rules. |
+| F | Token, style and docs enforcement | E | `ULT-TOKEN-001`, `ULT-STYLE-001`, `ULT-DOCS-001/002` and the docs advisory; declaration-scoped migration of the old scanner, valid runtime/style cases and forbidden mutations. Retain browser cascade proof. |
+| G | API and registry enforcement | C, E, F | `ULT-API-001/002`, `ULT-REGISTRY-001`, real compiler positive/negative cases, registry membership/staging proof and final full architecture scan. All specified blocking rule families are active. |
+| H | Scenario schema, bindings and read-only discovery | C | Dialog and Studio records/bindings in existing suites; list/describe and validation without app startup; source/route/variant negative tests and retained supporting suites. Partial executable verification remains unavailable until its adapters land. |
+| I | Verification planning, snapshots and process lifecycle | G, H | Conservative base/current dependency selection, immutable dirty-source identity, check DAG and versioned reports; controlled failure/cancel/timeout cases and two-worktree isolation. Missing required adapters report incomplete. |
+| J | Existing-check execution adapters | I | Real static/type/unit/browser/axe/parity/palette/build/install execution, preserved preparation and serialization, JSON/human agreement and selection acceptance cases. Production remains explicitly unavailable until K/L. |
+| K | Production runner and Dialog/Studio pilot | I, H | Verified build/server identity, isolated contexts, cleanup and failure artifacts; all eight pilot production cells plus existing registered tests. Production-only CSS and asset failure injections fail correctly. Standalone entry uses the same run infrastructure. |
+| L | Full production matrix and required CI | J, K | Register and run all seven groups/26 minimum cells, verify dropped/skipped-case failures, extend smoke input coverage and preserve full release obligations. Check required-status configuration and retain a real clean CI run. |
+| M | Comparable measurements and any justified optimization | D, L | Repeat baseline workloads on the completed tooling; publish raw comparisons and wiring/discovery evidence. Record unchanged/inconclusive results honestly. Any optimization gets its own measured before/after change and all affected correctness proof. |
+| N | Final author guidance and release handoff | F, G, M | Complete canonical-example index and skill updates, runnable documented commands, full release and consumer evidence at one revision, maintained ownership links and an explicit disposition for every scoped area. |
+
+E and C may proceed independently after B if they coordinate shared analysis/model files. G follows F so its final scan includes every blocking rule family. H exposes only implemented discovery operations; I/J must never let a partial release command report success. K uses registered pilot scenarios from H, so the production runner never needs a temporary competing scenario list. L expands that model and becomes the full gate. The build effort records actual issue links and claim order when filed.
+
+A may add a portable measurement-only browser harness to the unchanged application where the baseline lacks production execution. Keep its hash identical across paired builds and limit it to observation under the measurement contract. It must not become the production gate's alternative scenario inventory.
+
+### Migration and promotion
+
+Before enabling each rule, enumerate every diagnostic in its complete applicable source scope. Record the exact site, rule, owning contract and disposition in the build ticket's retained inventory. Fix violations with affected behavioral proof; encode reusable contract-backed allowances in policy fixtures; add narrow typed exceptions only for the remaining authorized sites. An unresolved diagnostic cannot disappear through an exclusion or a larger allowlist.
+
+Run a new rule in an explicitly advisory development phase while its fixtures and cleanup are incomplete. That phase ends within the rule's delivery slice: all scope inventory entries are resolved, prohibited mutations fail at the intended location, legitimate examples pass, and the full rule run becomes blocking. Keep `ULT-DOCS-REVIEW-001` advisory because its heuristic cannot establish arbitrary widget correctness. Timing has the separate promotion policy in the measurement section. Existing contrast, parity, accessibility, size and type gates retain their force throughout migration.
+
+Retire a replaced scanner or authored wiring list only in the change that proves the replacement covers its existing contract and accepted exceptions. Keep the old check until then. Compare old/new results on the repository and on independent valid/invalid fixtures. Intentional extra coverage must name the new rule and its cleanup. A smaller diagnostic count alone does not establish equivalence.
+
+Freshness checks run read-only before generation or tests can repair outputs. Rule/scenario validators reject stale owner links and unmatched exceptions. Generated projections have their fixed ownership header; discovery reports identify the source manifest. Reviewers check semantic prose/assertion correspondence because a valid link alone cannot prove agreement. Each contract change updates its checker fixture, scenario or canonical example and relevant skill in the same review.
+
+Promotion to required CI needs a named clean run on the intended runner, complete expected/executed coverage, tested negative failures and verified artifact upload/cleanup. Verify the repository's actual required check names and branch rules through read-only settings inspection. If changing those settings needs maintainer access or approval, record that concrete action on L and keep its protection acceptance incomplete until confirmed; workflow YAML alone cannot establish enforcement. Recompute workflow timeouts from the measured build/matrix limits, including upload and teardown, rather than squeezing the new checks into the old job timeout.
+
+If a promoted check malfunctions, preserve its failing report, file the defect and identify the affected proof. Fix or revert the faulty implementation with the previous validated checks restored. A broad suppression, silent required-check removal or fabricated passing report cannot serve as a rollback. Any temporary reduction of required coverage needs an explicit maintainer decision with scope, owner and restoration condition, and the effort cannot close with that gap unresolved.
+
+### Canonical examples and recurring corrections
+
+Add a concise `docs/agents/canonical-examples.md` index during implementation. Each entry names the contract, actual source symbol/part, demo or fixture, proof file and the pattern it demonstrates. Link to production source and tests rather than copying implementations. Validate referenced paths/symbols and contract anchors with the existing tooling model. Revisit examples when their source contract changes; do not freeze an old component as universal authority.
+
+Retain Forge's existing Button and Dropdown Menu source examples. Add Dialog for compound composition and keyboard proof, Date Picker for the bounded Zag React contract, and Toast for runtime geometry and token expressions. Use the shipped `ult-button` and `ult-tabs` families for element lifecycle/parity. Include a real recipe and Vite/Next.js setup item to make their registry distinctions explicit. Studio's history and export tests demonstrate application-state proof. These are candidate exemplars: review each against the final rules before calling it canonical; repair or choose another scoped example when it fails.
+
+When an agent correction recurs, record the smallest reproduction and the violated owning contract on a maintenance ticket. Prefer a type constraint for an expressible API restriction, a precise architecture rule for a static violation, a behavioral scenario/test for observable state, or a repaired example/skill instruction for discovery and authoring mistakes. Add positive and negative proof where enforcement changes. Record why human review remains necessary when none can prove the issue. Avoid accumulating duplicated prose instructions and blanket comment bans.
+
+Forge remains a React authoring skill. Update it when the corresponding commands ship: discover ownership/scenarios, use the descriptor/scaffold, run generated freshness and applicable architecture checks, retain the eight-item proof bar, and report scoped versus full validation. Include a real dry-run and completed synthetic authoring exercise as proof that the instructions work. Replace the current proof-bar advice that isolated passes can excuse a failing full suite: retain every failed required check and investigate it under the verification outcome contract. An isolated rerun provides diagnostic evidence and cannot override the required full result. Element scaffolding supplies files and wiring; element behavior still follows the Web components contract and parity gate. Expanding Forge into element authoring is outside this delivery.
+
+Update `.agents/skills/testing-ultima-docs/SKILL.md` alongside production/discovery delivery to distinguish exploratory development runs from production proof and to use current scenario reproduction instructions. Correct the current docs-testing skill's stale assumption that mode controls live in the header, using the actual tested UX revision; verify its runtime and browser-tool instructions when updating it. Keep `AGENTS.md` as a short index and advertise commands only after their implementations pass. Validate help/examples from a clean disposable checkout, including failure and missing-prerequisite output. Consumer guidance keeps its hosted installation/component focus; internal verification metadata and tooling stay out of installed source and `/llms.txt`.
+
+### Docs UX coordination
+
+[Build: Docs site UX refinement](https://github.com/frankieramirez/ultima/issues/424) owns its header, navigation, catalogue, Studio canvas and other product changes. This effort owns their contributor proof and measurement. Before editing a shared source, fixture or locator, the build ticket records the tested UX revision and relevant linked UX ticket status. Re-read that state at implementation time.
+
+Write scenarios against the actual accepted behavior at that revision. If a UX change lands while a scenario is in progress, update its reproduction and executable assertions together, then capture evidence on the new revision. Do not accept both contracts with optional selectors or skip-on-missing. Shared-file changes should land in dependency order or be reconciled before validation; claims and ticket links coordinate concurrent agents. A measurement whose workload changes needs a new comparable pair. This map adds no UX redesign and takes no credit for that effort's delivery.
+
+### Completion evidence and bounded deferrals
+
+| Area | Evidence required to close the build effort |
+| --- | --- |
+| Architectural enforcement | Every specified blocking rule active on its whole scope, clean inventory, validated exceptions and meaningful prohibited mutations; original behavioral proof retained. |
+| Metadata and authoring | Complete kinds/inventory, preserved consumer contracts and order, deterministic generation/freshness, safe scaffold/add/remove evidence and zero ordinary manual projection edits. |
+| Repeatable verification | Real changed/component/feature/release paths with source identity, conservative coverage and honest failure states; concurrent worktree and cancellation proof. |
+| Production and scenarios | Authored ownership joined to executable bindings, successful pilot and full minimum matrix, missing-case/production-CSS negative proof, both modes and required viewports; CI enforcement verified. |
+| Efficiency and responsiveness | Durable comparable raw samples, observed coordination/discovery outcomes and stated uncertainty. Any claimed gain has absolute before/after values and matching coverage; any unmet goal has an explicit follow-up. |
+| Maintained conventions | Reconciled spec/index, current canonical examples and skills, real command exercises, correction-to-proof process and validated owner links. |
+
+At the final revision run architecture/freshness fixtures, typecheck, full Vitest/axe/parity suites, palette check, registry/token/element builds, production docs and every registered production scenario, plus full Vite/Next.js/element consumer smoke. The final `verify release` report must map all these obligations and pass; separate CI status and repository enforcement must also be confirmed. Local success cannot substitute for pending remote checks. Preserve before/after public exports, route/item IDs and dependency evidence so tool adoption cannot silently change copy-source contracts.
+
+Timing gates, workers and lazy loading are conditional follow-ups requiring the measurement evidence already specified; an honest no-change result completes the measurement work. Cross-browser expansion, pixel-diff gates, generalized element-authoring skills and unrelated product redesign remain deferred because they expand the agreed delivery. Keep existing tests for unregistered behaviors; registration beyond the initial production obligations grows when its owning behavior changes. A deferred deliverable that belongs to this scope must name its reason and tracking link and keep the corresponding build acceptance open. Optional future work may remain separate without preventing completion.
+
+### Planning completion and next action
+
+The owning document now contains all seven decision contracts, including the previously recorded verification, production-browser and executable-feature resolutions. No in-scope planning question remains. The full decisions also remain on their issue resolutions. Implementation tickets must reference the merged revision of this specification as their durable planning source.
+
+Use the completed planning map [Map: Make Ultima efficient and verifiable for agents](https://github.com/frankieramirez/ultima/issues/435) to propose the implementation work for Ultima's contributor infrastructure. Keep the map as the planning source and create a separate build effort with ordered implementation tickets. Show me the proposed slices before creating tickets, then create the build effort and tickets after I accept them. End by giving me the first available implementation ticket and an exact prompt to start it.

@@ -2,6 +2,8 @@
 
 Read the [Principles](docs/spec/ultima.md#principles) section of the specification before touching anything. It holds what decides the next choice.
 
+Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/agent-infrastructure.md). Its proposed commands become usable when their implementation lands.
+
 ## Layout
 
 - `packages/tokens` — the token sources and themes, the palette generator, and the generated `dist/tokens.css` and `dist/tokens.json`.
