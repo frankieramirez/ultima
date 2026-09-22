@@ -4,25 +4,24 @@ import { Link } from '@tanstack/react-router';
 import { font, space } from '@ultima/tokens/tokens.stylex';
 import { Button, ScrollArea, Sidebar } from '@ultima/ui';
 
+import { breakpoints } from './breakpoints.stylex';
 import { navigation, type NavLink } from './navigation';
 
 export const MENU_LABEL = 'Ultima';
-
-const DESKTOP = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
   panel: {
     alignSelf: 'flex-start',
     blockSize: '100%',
     flexShrink: 0,
-    insetBlockStart: { default: 'auto', [DESKTOP]: 'var(--docs-chrome-block)' },
-    position: { default: 'static', [DESKTOP]: 'sticky' },
+    insetBlockStart: { default: 'auto', [breakpoints.WIDE]: 'var(--docs-chrome-block)' },
+    position: { default: 'static', [breakpoints.WIDE]: 'sticky' },
   },
   fillRow: {
-    alignSelf: { default: null, [DESKTOP]: 'stretch' },
-    blockSize: { default: null, [DESKTOP]: 'auto' },
-    contain: { default: null, [DESKTOP]: 'size' },
-    maxBlockSize: { default: null, [DESKTOP]: 'calc(100dvh - var(--docs-chrome-block))' },
+    alignSelf: { default: null, [breakpoints.WIDE]: 'stretch' },
+    blockSize: { default: null, [breakpoints.WIDE]: 'auto' },
+    contain: { default: null, [breakpoints.WIDE]: 'size' },
+    maxBlockSize: { default: null, [breakpoints.WIDE]: 'calc(100dvh - var(--docs-chrome-block))' },
   },
   scroll: { blockSize: '100%' },
   dismiss: { display: 'flex', justifyContent: 'flex-end' },

@@ -15,13 +15,12 @@ import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Alert, Button, Separator } from '@ultima/ui';
 import { useMemo, useState } from 'react';
 
+import { breakpoints } from '../breakpoints.stylex';
 import { StudioActions, useStudioDraft } from '../theme-studio-actions';
 import { GROUPS } from '../theme-studio-draft';
 import { ThemeStudioEditor } from '../theme-studio-editor';
 import { ThemeStudioPreview } from '../theme-studio-preview';
 import { ThemeStudioShuffleBar } from '../theme-studio-shuffle';
-
-const RAIL = '@media (min-width: 52.5rem)';
 
 const MODES = ['dark', 'light', 'compare'] as const;
 
@@ -66,7 +65,7 @@ const styles = stylex.create({
   },
   body: {
     display: 'flex',
-    flexDirection: { default: 'column', [RAIL]: 'row' },
+    flexDirection: { default: 'column', [breakpoints.RAIL]: 'row' },
     flexGrow: 1,
     minBlockSize: 0,
     minInlineSize: 0,
@@ -75,26 +74,26 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
-    flexShrink: { default: 1, [RAIL]: 0 },
+    flexShrink: { default: 1, [breakpoints.RAIL]: 0 },
     gap: space['--ult-space-6'],
-    inlineSize: { default: '100%', [RAIL]: '18.75rem' },
-    minBlockSize: { default: '27rem', [RAIL]: 0 },
-    order: { default: 1, [RAIL]: 0 },
-    overflow: { default: 'auto', [RAIL]: 'visible' },
+    inlineSize: { default: '100%', [breakpoints.RAIL]: '18.75rem' },
+    minBlockSize: { default: '27rem', [breakpoints.RAIL]: 0 },
+    order: { default: 1, [breakpoints.RAIL]: 0 },
+    overflow: { default: 'auto', [breakpoints.RAIL]: 'visible' },
     padding: space['--ult-space-8'],
   },
   groups: {
     display: 'flex',
     flexDirection: 'column',
     flexGrow: 1,
-    minBlockSize: { default: '9rem', [RAIL]: 0 },
+    minBlockSize: { default: '9rem', [breakpoints.RAIL]: 0 },
     minInlineSize: 0,
     overflow: 'auto',
   },
   status: {
-    alignItems: { default: 'flex-start', [RAIL]: 'center' },
+    alignItems: { default: 'flex-start', [breakpoints.RAIL]: 'center' },
     display: 'flex',
-    flexDirection: { default: 'column', [RAIL]: 'row' },
+    flexDirection: { default: 'column', [breakpoints.RAIL]: 'row' },
     flexShrink: 0,
     flexWrap: 'wrap',
     gap: space['--ult-space-6'],

@@ -4,12 +4,10 @@ import * as stylex from '@stylexjs/stylex';
 import { border, color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Separator } from '@ultima/ui';
 
+import { breakpoints } from '../breakpoints.stylex';
 import { contrastStyles } from '../demos/home/contrast';
 import Specimen from '../demos/home/specimen';
 import Workbench from '../demos/home/workbench';
-
-const WIDE = '@media (min-width: 48rem)';
-const DESKTOP = '@media (min-width: 64rem)';
 
 const styles = stylex.create({
   page: {
@@ -20,13 +18,13 @@ const styles = stylex.create({
     maxInlineSize: '90rem',
   },
   hero: {
-    alignItems: { default: 'start', [DESKTOP]: 'end' },
+    alignItems: { default: 'start', [breakpoints.DESKTOP]: 'end' },
     display: 'flex',
-    flexDirection: { default: 'column', [DESKTOP]: 'row' },
-    gap: { default: space['--ult-space-10'], [DESKTOP]: space['--ult-space-12'] },
-    paddingBlockStart: { default: space['--ult-space-9'], [DESKTOP]: space['--ult-space-12'] },
+    flexDirection: { default: 'column', [breakpoints.DESKTOP]: 'row' },
+    gap: { default: space['--ult-space-10'], [breakpoints.DESKTOP]: space['--ult-space-12'] },
+    paddingBlockStart: { default: space['--ult-space-9'], [breakpoints.DESKTOP]: space['--ult-space-12'] },
     paddingBlockEnd: space['--ult-space-11'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
+    paddingInline: { default: space['--ult-space-6'], [breakpoints.WIDE]: space['--ult-space-12'] },
   },
   editorial: {
     display: 'flex',
@@ -58,8 +56,8 @@ const styles = stylex.create({
     flexDirection: 'column',
     flexShrink: 0,
     gap: space['--ult-space-8'],
-    inlineSize: { default: '100%', [DESKTOP]: '24.5rem' },
-    paddingBlockEnd: { default: 0, [DESKTOP]: space['--ult-space-5'] },
+    inlineSize: { default: '100%', [breakpoints.DESKTOP]: '24.5rem' },
+    paddingBlockEnd: { default: 0, [breakpoints.DESKTOP]: space['--ult-space-5'] },
   },
   proposition: {
     color: color['--ult-color-text-muted'],
@@ -88,7 +86,7 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     paddingBlockEnd: space['--ult-space-11'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
+    paddingInline: { default: space['--ult-space-6'], [breakpoints.WIDE]: space['--ult-space-12'] },
   },
   metadata: {
     alignItems: 'center',
@@ -112,7 +110,7 @@ const styles = stylex.create({
     gap: space['--ult-space-8'],
     paddingBlockStart: space['--ult-space-5'],
     paddingBlockEnd: space['--ult-space-11'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-12'] },
+    paddingInline: { default: space['--ult-space-6'], [breakpoints.WIDE]: space['--ult-space-12'] },
   },
   installIntro: {
     display: 'flex',

@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 
+import { breakpoints } from './breakpoints.stylex';
 import { DocumentLayout } from './document-layout';
 import { fenceLanguage, HighlightedCode, nodeText } from './highlighted-code';
 
@@ -20,7 +21,7 @@ const styles = stylex.create({
   },
   h1: {
     color: color['--ult-color-text'],
-    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': text['--ult-text-12'] },
+    fontSize: { default: text['--ult-text-10'], [breakpoints.WIDE]: text['--ult-text-12'] },
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tighter'],
     lineHeight: font['--ult-font-leading-tight'],

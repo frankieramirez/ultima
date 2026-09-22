@@ -2,12 +2,13 @@ import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 
+import { breakpoints } from '../breakpoints.stylex';
 import { DocumentLayout } from '../document-layout';
 
 const styles = stylex.create({
   title: {
     color: color['--ult-color-text'],
-    fontSize: { default: text['--ult-text-10'], '@media (min-width: 48rem)': text['--ult-text-12'] },
+    fontSize: { default: text['--ult-text-10'], [breakpoints.WIDE]: text['--ult-text-12'] },
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-tight'],

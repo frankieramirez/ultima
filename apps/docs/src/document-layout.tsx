@@ -4,8 +4,7 @@ import * as stylex from "@stylexjs/stylex";
 import { border, color, font, space, text } from "@ultima/tokens/tokens.stylex";
 import { Separator } from "@ultima/ui";
 
-const DESKTOP = "@media (min-width: 80rem)";
-const WIDE = "@media (min-width: 48rem)";
+import { breakpoints } from "./breakpoints.stylex";
 
 const styles = stylex.create({
   main: {
@@ -13,7 +12,7 @@ const styles = stylex.create({
     paddingBlockEnd: space["--ult-space-12"],
     marginInline: {
       default: space["--ult-space-6"],
-      [WIDE]: space["--ult-space-9"],
+      [breakpoints.WIDE]: space["--ult-space-9"],
     },
   },
   breadcrumb: {
@@ -29,7 +28,7 @@ const styles = stylex.create({
     gap: space["--ult-space-9"],
     gridTemplateColumns: {
       default: "minmax(0, 1fr)",
-      [DESKTOP]: "minmax(0, 1fr) 11.5rem",
+      [breakpoints.INDEX]: "minmax(0, 1fr) 11.5rem",
     },
   },
   article: {
@@ -43,12 +42,12 @@ const styles = stylex.create({
   fullWidth: {
     gridTemplateColumns: {
       default: "minmax(0, 1fr)",
-      [DESKTOP]: "minmax(0, 1fr)",
+      [breakpoints.INDEX]: "minmax(0, 1fr)",
     },
   },
   indexRail: {
     alignSelf: "start",
-    display: { default: "none", [DESKTOP]: "block" },
+    display: { default: "none", [breakpoints.INDEX]: "block" },
     insetBlockStart: `calc(var(--docs-chrome-block) + ${space["--ult-space-6"]})`,
     maxBlockSize: `calc(100dvh - var(--docs-chrome-block) - ${space["--ult-space-6"]})`,
     minInlineSize: 0,

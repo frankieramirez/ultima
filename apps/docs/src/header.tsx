@@ -5,8 +5,7 @@ import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.
 import { Button, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
-
-const WIDE = '@media (min-width: 48rem)';
+import { breakpoints } from './breakpoints.stylex';
 
 const styles = stylex.create({
   chrome: {
@@ -22,7 +21,7 @@ const styles = stylex.create({
     gap: space['--ult-space-10'],
     inlineSize: '100%',
     paddingBlock: space['--ult-space-8'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
+    paddingInline: { default: space['--ult-space-6'], [breakpoints.WIDE]: space['--ult-space-9'] },
   },
   brandLogo: { display: 'block', height: '0.8rem', width: 'auto' },
   brand: {
@@ -30,10 +29,10 @@ const styles = stylex.create({
     ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
   },
   cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
-  trigger: { display: { default: 'inline-flex', [WIDE]: 'none' }, paddingInline: space['--ult-space-4'] },
+  trigger: { display: { default: 'inline-flex', [breakpoints.WIDE]: 'none' }, paddingInline: space['--ult-space-4'] },
   links: {
     alignItems: 'center',
-    display: { default: 'none', [WIDE]: 'flex' },
+    display: { default: 'none', [breakpoints.WIDE]: 'flex' },
     flexGrow: 1,
     gap: space['--ult-space-8'],
   },
@@ -47,7 +46,7 @@ const styles = stylex.create({
   },
   status: {
     color: color['--ult-color-text-subtle'],
-    display: { default: 'none', [WIDE]: 'block' },
+    display: { default: 'none', [breakpoints.WIDE]: 'block' },
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-1'],
   },

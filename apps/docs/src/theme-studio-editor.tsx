@@ -15,6 +15,7 @@ import { space, text } from '@ultima/tokens/tokens.stylex';
 import { ColorField, Field, Input, ScrollArea, Select, Slider, ToggleGroup } from '@ultima/ui';
 import { useMemo } from 'react';
 
+import { breakpoints } from './breakpoints.stylex';
 import {
   GROUPS,
   MONO_PRESETS,
@@ -31,11 +32,9 @@ import type { DraftEdit } from './theme-studio-store';
 import { TokenRows, type ModeOffenders } from './theme-studio-token-row';
 import { ThemeStudioValidation } from './theme-studio-validation';
 
-const RAIL = '@media (min-width: 52.5rem)';
-
 const styles = stylex.create({
   selector: {
-    display: { default: 'flex', [RAIL]: 'none' },
+    display: { default: 'flex', [breakpoints.RAIL]: 'none' },
     flexDirection: 'row',
     flexShrink: 0,
     overflow: 'auto',
@@ -55,7 +54,7 @@ const styles = stylex.create({
     flexWrap: 'wrap',
   },
   group: {
-    display: { default: 'none', [RAIL]: 'flex' },
+    display: { default: 'none', [breakpoints.RAIL]: 'flex' },
     flexDirection: 'column',
     flexShrink: 0,
   },

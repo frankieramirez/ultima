@@ -4,9 +4,8 @@ import * as stylex from '@stylexjs/stylex';
 import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
 import { ToggleGroup } from '@ultima/ui';
 
+import { breakpoints } from './breakpoints.stylex';
 import { useTheme, type ThemePreference } from './theme';
-
-const WIDE = '@media (min-width: 48rem)';
 
 const styles = stylex.create({
   bar: {
@@ -17,7 +16,7 @@ const styles = stylex.create({
     gap: space['--ult-space-8'],
     justifyContent: 'space-between',
     paddingBlock: space['--ult-space-8'],
-    paddingInline: { default: space['--ult-space-6'], [WIDE]: space['--ult-space-9'] },
+    paddingInline: { default: space['--ult-space-6'], [breakpoints.WIDE]: space['--ult-space-9'] },
   },
   identity: {
     color: color['--ult-color-text-subtle'],
