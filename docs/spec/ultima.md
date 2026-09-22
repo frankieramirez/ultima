@@ -2124,7 +2124,7 @@ A rule that needs a paragraph goes in this specification instead. `AGENTS.md` ho
 
 ### The consumer's agent
 
-Nothing documentary is installed into the consumer's repository. Ultima ships no `AGENTS.md`, no `DESIGN.md`, and no guide file, for two reasons. The consumer CLI's `install` writes managed files, a pointer skill and hook entries, under the rule in [Install](#install); that amendment to ADR 0005 does not reach prose.
+Nothing documentary is installed into the consumer's repository. Ultima ships no `AGENTS.md`, no `DESIGN.md`, and no guide file, for two reasons. The consumer CLI's `install` writes managed files under the rule in [Install](#install): hook entries and the `ultima-systems` pointer skill described under [Skill](#skill). That amendment to ADR 0005 does not reach prose.
 
 A root-level document is exactly the kind of file the consumer's scaffold owns, and the Registry section already forbids a setup item from overwriting one. More than that, a copied document is stale the day the next decision lands: the consumer has no reason to re-run `add` on prose, and unlike a component they have edited, nothing in their workflow will ever surface the drift. Owning source you modify is the point of registry-first. Owning documentation you never update is a liability Ultima would have handed them.
 
@@ -2164,7 +2164,7 @@ Decided on [Whether install writes into the consumer's repository, and the ADR 0
 
 **The rule.** `install` writes only managed files. A managed file carries the CLI version that wrote it, is rewritten by the next `install`, and is removed by `uninstall`. Its content points at hosted guidance and at the CLI's own commands and restates no convention. Anything that would have to carry a convention stays on `/llms.txt`.
 
-**What it writes.** The consumer skill (named and written on [What the consumer skill says and how it is versioned](https://github.com/frankieramirez/ultima/issues/475)) and one hook per detected harness:
+**What it writes.** The consumer skill, `ultima-systems`, whose content is under [Skill](#skill), and one hook per detected harness:
 
 | Harness | Skill | Hook |
 | --- | --- | --- |
@@ -2291,6 +2291,8 @@ One row per installed file, sorted by item then path, with paths relative to the
 
 Exit 0 whenever the report completes, whatever it contains: drift is information, and a consumer's CI should not fail because Ultima deployed. The run is incomplete (exit 2) when it cannot produce a report: the consumer scope's own conditions under **Package and engine**, no `@ultima` registry in `components.json`, a catalogue that cannot be fetched, or a registry outside the CLI's format range. `status` never exits 1, which `check` and `doctor` keep for findings.
 
+**Managed files.** When `install` has written a consumer skill, `status` adds one line after the item rows: `skill  <path>  <state>  <version>`, where the state is `current`, `stale` when its stamp names a CLI version other than the one running, or `edited` when its content no longer matches the stamp's hash. `stale` closes with `npx @ultima-systems/cli install`. JSON adds `"managed": [{ "file", "state", "version" }]`. A managed file never changes the exit code.
+
 ### Diff
 
 ```text
@@ -2302,3 +2304,27 @@ $ npx @ultima-systems/cli diff sidebar
 ```
 
 `diff [item…]` prints a unified diff from the local file to the served file as it would be installed into this project: import specifiers rewritten to the consumer's aliases, `"use client"` dropped when `components.json` sets `rsc: false`, and the served stamp in place. With no arguments it covers every file that is not `current`. A named item that is `current` prints `<item>: current`, even when its text differs by formatting or comments, because those do not count. The diff is two-way. A three-way view needs the content the consumer installed, which nothing serves, so it waits on `update`. Exit codes match `status`: 0 when the output completes, 2 when it cannot be produced.
+
+### Skill
+
+Decided on [What the consumer skill says and how it is versioned](https://github.com/frankieramirez/ultima/issues/475). The consumer skill is the one skill Ultima puts in a consumer's repository. It tells an agent when to fetch the hosted guidance and which CLI command to run at each step. It holds no convention itself.
+
+**Name.** `ultima-systems`, the same string as the npm scope and the hook marker, so one word identifies everything Ultima writes into a consumer's repository. `ultima` is mana's audit skill, and a consumer with mana installed already has `.claude/skills/ultima/`. `forge` is the contributor skill and stays in this repository.
+
+**Source and version.** The source is `packages/cli/skill/ultima-systems/SKILL.md`, and it ships inside the npm package. It is not under `skills/`, so the repository's skill listing offers `forge` alone and nobody installs an unstamped copy with `npx skills add`. The skill has no version of its own. It names CLI commands and flags, so it versions with the CLI that bundles it, and `install` writes it as a managed file under the rule in [Install](#install). Its stamp is a frontmatter `metadata` entry, `ultima-systems: <cli version> sha256:<hash>`, with the hash taken over the file without that entry. Every harness gets identical bytes.
+
+**Refreshing.** A consumer refreshes the skill by upgrading the pinned CLI and running `npx @ultima-systems/cli install`. `status` reports a skill stamped by another CLI version as `stale`, under [Status](#status). Nothing refreshes it silently, because a hook that rewrote files would edit the consumer's tree mid-task.
+
+**What it says.** In this order:
+
+1. **When it applies.** The description triggers on UI work in a repository whose `components.json` has an `@ultima` registry: adding or editing a component, styling, theming, or replacing a native control.
+2. **Read first.** Fetch `/llms.txt` from the host that `registries["@ultima"]` names, normally `https://ultima.systems/llms.txt`, before the first UI edit of a task.
+3. **Learn what is installed.** Run `npx @ultima-systems/cli status` before adding an item or editing an installed one.
+4. **Reach for the kit.** Before writing a native control or importing `@base-ui/react`, add the item with `npx shadcn add @ultima/<item>`. This line points at `ULT-APP-CONTROL-001` and `ULT-APP-PRIMITIVE-001`.
+5. **Paint from tokens.** A color, shadow, radius, border width, or type value reads a semantic token, and a new need becomes a token override. This line points at `ULT-APP-PAINT-001` and `ULT-APP-PALETTE-001`.
+6. **Check after edits.** Run `npx @ultima-systems/cli check --files <changed files>` after editing, and `check` without `--files` before handing work back. Run `doctor` when styles do not apply at all.
+7. **Reading results.** Exits 0, 1, 2 and 3 as the output contract under [Doctor](#doctor) and [Check](#check) defines them, and that a finding's repair and link are the next thing to read.
+
+**What may be prose.** A line in the skill is allowed only when it is one of: the trigger description, the order of steps, a CLI command line, the meaning of an exit code, or a one-sentence imperative that names the `check` rule IDs enforcing it and links its docs anchor. Every imperative is therefore something `check` already enforces, and the skill states nothing the CLI cannot verify. Token names, component names, prop names, and values stay on `/llms.txt`. A test in `packages/cli` fails the build when the skill contains an `--ult-` token name, a catalogue item name other than inside `@ultima/<item>`, a color literal, or more than 80 lines.
+
+**Commands are always scoped.** The skill spells every command `npx @ultima-systems/cli`, never `npx ultima`. The `bin` is `ultima`, but where the CLI is not installed, `npx ultima` fetches an unrelated package with that name.
