@@ -1,0 +1,23 @@
+{
+  "name": "@ultima-systems/cli",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "ultima": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "node --experimental-strip-types scripts/build.ts",
+    "test": "pnpm build && vitest run --reporter=verbose",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "typescript": "5.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.0",
+    "esbuild": "0.28.2",
+    "vitest": "^5.0.0"
+  }
+}
