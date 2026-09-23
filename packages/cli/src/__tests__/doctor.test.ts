@@ -603,7 +603,7 @@ describe('invocation', () => {
     expect(result.stderr).toContain('package.json');
   });
 
-  it.each(['check', 'install', 'uninstall'])('says %s is not available in this build', async (command) => {
+  it.each(['check'])('says %s is not available in this build', async (command) => {
     const result = await run([command]);
     expect(result.code).toBe(2);
     expect(result.stderr).toContain('not available in this build');

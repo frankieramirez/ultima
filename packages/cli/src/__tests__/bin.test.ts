@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { edit, editComponents, smoke } from './fixtures.ts';
+import { edit, editComponents, project, smoke } from './fixtures.ts';
 
 const cli = join(dirname(fileURLToPath(import.meta.url)), '../../dist/cli.js');
 
@@ -63,6 +63,13 @@ describe('the built binary', () => {
     const result = spawnSync(process.execPath, ['--import', offline, cli, 'doctor', '--cwd', smoke(target)], { encoding: 'utf8' });
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
+  });
+
+  it('installs the skill it ships, stamped with its own version', () => {
+    const root = project();
+    expect(ultima('install', '--cwd', root, '--harness', 'claude').status).toBe(0);
+    const { version } = JSON.parse(readFileSync(join(dirname(cli), '../package.json'), 'utf8'));
+    expect(readFileSync(join(root, '.claude/skills/ultima-systems/SKILL.md'), 'utf8')).toContain(`ultima-systems: ${version} sha256:`);
   });
 
   it('exits 2 on an unknown flag', () => {
