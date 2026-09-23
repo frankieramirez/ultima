@@ -1,4 +1,4 @@
-import { mkdtempSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -7,14 +7,15 @@ import { describe, expect, it } from 'vitest';
 import type { Diagnostic } from '../diagnostic.ts';
 import { detectTarget } from '../doctor.ts';
 import { run } from '../run.ts';
-import { editComponents, installed, project } from './fixtures.ts';
+import { edit, editComponents, installed, project, smoke, snapshot } from './fixtures.ts';
+
+type DoctorReport = { target: string | null; diagnostics: Diagnostic[]; unsupported: { step: string; reason: string }[] };
 
 function doctorJson(root: string, ...flags: string[]) {
+  const before = snapshot(root);
   const result = run(['doctor', '--json', '--cwd', root, ...flags]);
-  return {
-    code: result.code,
-    report: JSON.parse(result.stdout) as { target: string | null; diagnostics: Diagnostic[] },
-  };
+  expect(snapshot(root)).toEqual(before);
+  return { code: result.code, report: JSON.parse(result.stdout) as DoctorReport };
 }
 
 describe('detectTarget', () => {
@@ -44,20 +45,20 @@ describe('detectTarget', () => {
 });
 
 describe('ultima doctor', () => {
-  it('passes a correct Vite install and names the target', () => {
-    const { code, report } = doctorJson(installed('vite'));
-    expect(report).toEqual({ command: 'doctor', target: 'vite', diagnostics: [] });
+  it('passes the smoke-install Vite project and names the target', () => {
+    const { code, report } = doctorJson(smoke('vite'));
+    expect(report).toMatchObject({ command: 'doctor', target: 'vite', diagnostics: [] });
     expect(code).toBe(0);
   });
 
-  it('passes a correct Next.js install and names the target', () => {
-    const { code, report } = doctorJson(installed('next'));
-    expect(report).toEqual({ command: 'doctor', target: 'next', diagnostics: [] });
+  it('passes the smoke-install Next.js project and names the target', () => {
+    const { code, report } = doctorJson(smoke('next'));
+    expect(report).toMatchObject({ command: 'doctor', target: 'next', diagnostics: [] });
     expect(code).toBe(0);
   });
 
   it('passes the production registry root', () => {
-    const root = installed('vite');
+    const root = smoke('vite');
     editComponents(root, (json) => {
       (json.registries as Record<string, unknown>)['@ultima'] = 'https://ultima.systems/r/{name}.json';
     });
@@ -86,13 +87,20 @@ describe('ultima doctor', () => {
   });
 
   it('takes --target in place of detection', () => {
-    const { code, report } = doctorJson(installed('vite', installed('next')), '--target', 'vite');
+    const root = smoke('vite');
+    writeFileSync(join(root, 'babel.config.js'), '');
+    mkdirSync(join(root, 'app'));
+    writeFileSync(join(root, 'app/ultima.css'), '');
+    expect(detectTarget(root)).toBe('both');
+    const { code, report } = doctorJson(root, '--target', 'vite');
     expect(report.target).toBe('vite');
     expect(code).toBe(0);
   });
 
   it('reports a missing components.json as a blocking finding', () => {
-    const { code, report } = doctorJson(project({ 'ultima.vite.ts': '' }));
+    const root = smoke('vite');
+    rmSync(join(root, 'components.json'));
+    const { code, report } = doctorJson(root);
     expect(report.diagnostics).toEqual([
       expect.objectContaining({ ruleId: 'ULT-SETUP-002', severity: 'blocking', file: 'components.json' }),
     ]);
@@ -101,7 +109,8 @@ describe('ultima doctor', () => {
   });
 
   it('makes the run incomplete and names the file when components.json does not parse', () => {
-    const root = project({ 'ultima.vite.ts': '', 'components.json': '{ "style": "base-ultima", }' });
+    const root = smoke('vite');
+    writeFileSync(join(root, 'components.json'), '{ "style": "base-ultima", }');
     const result = run(['doctor', '--cwd', root]);
     expect(result.code).toBe(3);
     expect(result.stdout).toContain('components.json');
@@ -115,7 +124,7 @@ describe('ultima doctor', () => {
   });
 
   it('gives each components.json field violation its own finding with a repair', () => {
-    const root = installed('vite');
+    const root = smoke('vite');
     editComponents(root, (json) => {
       json.style = 'new-york';
       json.rsc = true;
@@ -141,7 +150,7 @@ describe('ultima doctor', () => {
   });
 
   it('points a field finding at the field', () => {
-    const root = installed('vite');
+    const root = smoke('vite');
     editComponents(root, (json) => {
       json.style = 'new-york';
     });
@@ -154,7 +163,7 @@ describe('ultima doctor', () => {
   });
 
   it('reports a missing registry and missing aliases as findings', () => {
-    const root = installed('vite');
+    const root = smoke('vite');
     editComponents(root, (json) => {
       delete json.registries;
       delete json.aliases;
@@ -168,7 +177,7 @@ describe('ultima doctor', () => {
   });
 
   it('prints text by default', () => {
-    const root = installed('vite');
+    const root = smoke('vite');
     editComponents(root, (json) => {
       json.style = 'new-york';
     });
@@ -177,6 +186,212 @@ describe('ultima doctor', () => {
     expect(result.stdout).toContain('components.json:3:12  blocking  ULT-SETUP-004');
     expect(result.stdout).toContain('Repair: ');
     expect(result.stdout).toContain('docs/spec/ultima.md#setup-items');
+  });
+});
+
+function onlyFinding(root: string, ...flags: string[]) {
+  const { code, report } = doctorJson(root, ...flags);
+  expect(report.diagnostics).toHaveLength(1);
+  return { code, diagnostic: report.diagnostics[0] as Diagnostic };
+}
+
+function editJson(root: string, file: string, change: (json: Record<string, any>) => void) {
+  edit(root, file, (text) => {
+    const json = JSON.parse(text);
+    change(json);
+    return JSON.stringify(json);
+  });
+}
+
+describe('the Vite hand steps', () => {
+  it('finds tsconfig.json without the @/ paths alias', () => {
+    const root = smoke('vite');
+    editJson(root, 'tsconfig.json', (json) => delete json.compilerOptions.paths);
+    const { code, diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-009', severity: 'blocking', file: 'tsconfig.json' });
+    expect(diagnostic.message).toContain('tsconfig.json has no compilerOptions.paths, so no @/ alias');
+    expect(diagnostic.repair).toBe('Add "paths": { "@/*": ["./src/*"] } under compilerOptions in tsconfig.json.');
+    expect(code).toBe(1);
+  });
+
+  it('finds tsconfig.app.json without the @/ paths alias, and points at the paths it has', () => {
+    const root = smoke('vite');
+    editJson(root, 'tsconfig.app.json', (json) => {
+      json.compilerOptions.paths = { '~/*': ['./src/*'] };
+    });
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-009', file: 'tsconfig.app.json', start: { line: 1 } });
+    expect(diagnostic.message).toContain('matches no compilerOptions.paths entry');
+  });
+
+  it('follows extends to the file that declares paths, and resolves against it', () => {
+    const root = smoke('vite');
+    editJson(root, 'tsconfig.app.json', (json) => {
+      delete json.compilerOptions.paths;
+      json.extends = './config/tsconfig.paths.json';
+    });
+    mkdirSync(join(root, 'config'));
+    writeFileSync(join(root, 'config/tsconfig.paths.json'), JSON.stringify({ compilerOptions: { paths: { '@/*': ['../src/*'] } } }));
+    expect(doctorJson(root).code).toBe(0);
+  });
+
+  it('finds an alias that maps into a directory the project does not have', () => {
+    const root = smoke('vite');
+    editJson(root, 'tsconfig.json', (json) => {
+      json.compilerOptions.paths = { '@/*': ['./source/*'] };
+    });
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic.message).toContain('maps into source/, which does not exist');
+  });
+
+  it('finds a literal ./@/ directory', () => {
+    const root = smoke('vite');
+    mkdirSync(join(root, '@/components/ui'), { recursive: true });
+    writeFileSync(join(root, '@/components/ui/button.tsx'), '');
+    const { code, diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-010', severity: 'blocking', file: '@' });
+    expect(diagnostic.start).toBeUndefined();
+    expect(diagnostic.repair).toContain('move the contents of ./@/');
+    expect(code).toBe(1);
+  });
+
+  it('finds a setup dependency package.json does not declare', () => {
+    const root = smoke('vite');
+    editJson(root, 'package.json', (json) => delete json.devDependencies.unplugin);
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-011', file: 'package.json' });
+    expect(diagnostic.start).toBeUndefined();
+    expect(diagnostic.repair).toBe("Run `npm install -D unplugin`, or your package manager's equivalent.");
+  });
+
+  it('finds ultima.vite.ts missing', () => {
+    const root = smoke('vite');
+    rmSync(join(root, 'ultima.vite.ts'));
+    const { diagnostic } = onlyFinding(root, '--target', 'vite');
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-012', file: 'ultima.vite.ts' });
+    expect(diagnostic.repair).toBe('Run `npx shadcn add https://ultima.systems/r/setup-vite.json`; it installs ultima.vite.ts.');
+  });
+
+  it('finds ultimaStylex() after another plugin, at the plugins array', () => {
+    const root = smoke('vite');
+    edit(root, 'vite.config.ts', (text) => text.replace('[ultimaStylex(), react()]', '[react(), ultimaStylex()]'));
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({
+      ruleId: 'ULT-SETUP-013',
+      file: 'vite.config.ts',
+      start: { line: 7, column: 12 },
+    });
+    expect(diagnostic.repair).toBe('Move `ultimaStylex()` to the front: `plugins: [ultimaStylex(), …]`.');
+  });
+
+  it('finds vite.config.ts that never imports ultimaStylex', () => {
+    const root = smoke('vite');
+    edit(root, 'vite.config.ts', (text) => text.replace("import { ultimaStylex } from './ultima.vite.ts'\n", ''));
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-013', file: 'vite.config.ts' });
+    expect(diagnostic.message).toBe("vite.config.ts does not import ultimaStylex from './ultima.vite'.");
+  });
+
+  it('follows a renamed import, a const config, and every return of a config function', () => {
+    const root = smoke('vite');
+    writeFileSync(
+      join(root, 'vite.config.ts'),
+      [
+        "import { defineConfig } from 'vite'",
+        "import { ultimaStylex as stylex } from './ultima.vite'",
+        "import react from '@vitejs/plugin-react'",
+        '',
+        'const plugins = [stylex(), react()]',
+        '',
+        'export default defineConfig(({ command }) => {',
+        "  if (command === 'serve') return { plugins }",
+        '  return { plugins: [react(), stylex()] }',
+        '})',
+        '',
+      ].join('\n'),
+    );
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-013', start: { line: 9 } });
+  });
+
+  it('makes the run incomplete when plugins comes from a function call', () => {
+    const root = smoke('vite');
+    edit(root, 'vite.config.ts', (text) => text.replace('[ultimaStylex(), react()]', 'plugins()'));
+    const { code, diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({
+      ruleId: 'ULT-ANALYSIS-001',
+      severity: 'incomplete',
+      file: 'vite.config.ts',
+      start: { line: 7, column: 12 },
+    });
+    expect(code).toBe(3);
+  });
+
+  it('exits 1 with an unresolvable plugins and a blocking finding, and still lists the incomplete item', () => {
+    const root = smoke('vite');
+    edit(root, 'vite.config.ts', (text) => text.replace('[ultimaStylex(), react()]', 'plugins()'));
+    editJson(root, 'package.json', (json) => delete json.dependencies['@stylexjs/stylex']);
+    const { code, report } = doctorJson(root);
+    expect(report.diagnostics.map((diagnostic) => diagnostic.ruleId).sort()).toEqual(['ULT-ANALYSIS-001', 'ULT-SETUP-011']);
+    expect(code).toBe(1);
+  });
+
+  it('lists the CSP nonce and the steps it does not check yet as unsupported, never as a pass', () => {
+    const { report } = doctorJson(smoke('vite'));
+    expect(report.unsupported).toEqual([
+      { step: expect.stringContaining('@layer'), reason: expect.stringContaining('does not check it yet') },
+      { step: expect.stringContaining('CSPProvider'), reason: 'The headers are set at runtime or by the host.' },
+      { step: expect.stringContaining('supported version'), reason: expect.stringContaining('does not check it yet') },
+    ]);
+    const text = run(['doctor', '--cwd', smoke('vite')]).stdout;
+    expect(text).toContain('Unsupported analysis:');
+    expect(text).toContain('No findings.');
+  });
+});
+
+describe('the Next.js hand steps', () => {
+  it('finds babel.config.js without the StyleX Babel plugin', () => {
+    const root = smoke('next');
+    writeFileSync(join(root, 'babel.config.js'), "module.exports = { presets: ['next/babel'] };\n");
+    const { code, diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-014', severity: 'blocking', file: 'babel.config.js' });
+    expect(diagnostic.message).toContain('does not reference @stylexjs/babel-plugin');
+    expect(code).toBe(1);
+  });
+
+  it('finds postcss.config.js without the StyleX PostCSS plugin', () => {
+    const root = smoke('next');
+    writeFileSync(join(root, 'postcss.config.js'), 'module.exports = { plugins: {} };\n');
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-014', file: 'postcss.config.js' });
+    expect(diagnostic.repair).toContain('--overwrite');
+  });
+
+  it('finds a layout that does not import ultima.css', () => {
+    const root = smoke('next');
+    edit(root, 'app/layout.tsx', (text) => text.replace('import "./ultima.css";\n', ''));
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-015', file: 'app/layout.tsx' });
+    expect(diagnostic.repair).toBe("Add `import './ultima.css';` to app/layout.tsx.");
+  });
+
+  it('finds ultima.css outside the App Router directory that holds layout.tsx', () => {
+    const root = smoke('next');
+    mkdirSync(join(root, 'src'));
+    renameSync(join(root, 'app/layout.tsx'), join(root, 'src/app-layout.tsx'));
+    mkdirSync(join(root, 'src/app'));
+    renameSync(join(root, 'src/app-layout.tsx'), join(root, 'src/app/layout.tsx'));
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-015', file: 'src/app/ultima.css' });
+    expect(diagnostic.repair).toBe('Move ultima.css into src/app/.');
+  });
+
+  it('finds tsconfig.json without the @/ paths alias', () => {
+    const root = smoke('next');
+    editJson(root, 'tsconfig.json', (json) => delete json.compilerOptions.paths);
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-009', file: 'tsconfig.json' });
+    expect(diagnostic.repair).toBe('Add "paths": { "@/*": ["./*"] } under compilerOptions in tsconfig.json.');
   });
 });
 

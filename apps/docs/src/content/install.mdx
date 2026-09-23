@@ -1,3 +1,5 @@
+import { HandSteps } from '../hand-steps';
+
 # Install
 
 Ultima ships as a shadcn-compatible registry. You copy source into your project with the CLI and own it after that.
@@ -36,13 +38,17 @@ Both `components.json` files set `style: "base-ultima"` (the `base-` prefix enab
 
 ## Steps you still do by hand
 
-The `docs` field on each setup item prints a short list at install. This page is the long form.
+The `docs` field on each setup item prints the same list at install. This page adds the reasons.
 
-**Vite.** Add `"paths": { "@/*": ["./src/*"] }` to `tsconfig.json` and `tsconfig.app.json`. Without it the CLI writes files into a literal `./@/` directory and reports success. Then add `ultimaStylex()` to `vite.config.ts`, before the React plugin.
+**Vite.**
 
-**Next.js.** Import `./ultima.css` from `app/layout.tsx`.
+<HandSteps item="setup-vite" />
 
-**Both.** Wrap global resets in an `@layer`. Every StyleX rule sits in a cascade layer, so an unlayered reset such as create-next-app's `* { padding: 0 }` beats component styles, including a Button's own padding.
+**Next.js.**
+
+<HandSteps item="setup-next" />
+
+**Why resets need a layer.** Every StyleX rule sits in a cascade layer, so an unlayered reset such as create-next-app's `* { padding: 0 }` beats component styles, including a Button's own padding.
 
 ```css
 @layer reset {

@@ -23,7 +23,10 @@ export function exitCode(run: Run): 0 | 1 | 2 | 3 {
   return 0;
 }
 
-export type Report = { command: string; diagnostics: Diagnostic[] } & Record<string, unknown>;
+/** A check the run lists rather than passes: unverifiable by design, or not yet implemented. */
+export type Unsupported = { step: string; reason: string };
+
+export type Report = { command: string; diagnostics: Diagnostic[]; unsupported?: Unsupported[] } & Record<string, unknown>;
 
 export function print(report: Report, json: boolean): string {
   const diagnostics = [...report.diagnostics].sort(
@@ -35,7 +38,7 @@ export function print(report: Report, json: boolean): string {
   );
   if (json) return `${JSON.stringify({ ...report, diagnostics }, null, 2)}\n`;
 
-  const { command, diagnostics: _, ...facts } = report;
+  const { command, diagnostics: _, unsupported = [], ...facts } = report;
   const lines = [
     `ultima ${command}`,
     ...Object.entries(facts).map(([key, value]) => `${key[0]?.toUpperCase()}${key.slice(1)}: ${value ?? 'none'}`),
@@ -49,6 +52,10 @@ export function print(report: Report, json: boolean): string {
       `  Repair: ${diagnostic.repair}`,
       `  Spec: ${diagnostic.link}`,
     );
+  }
+  if (unsupported.length > 0) {
+    lines.push('', 'Unsupported analysis:');
+    for (const { step, reason } of unsupported) lines.push(`  ${step}`, `    ${reason}`);
   }
   const count = (severity: Diagnostic['severity']) =>
     diagnostics.filter((diagnostic) => diagnostic.severity === severity).length;
