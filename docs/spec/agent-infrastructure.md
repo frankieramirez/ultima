@@ -12,11 +12,11 @@ Decided on [Architectural checks: coverage, exceptions, and repair diagnostics](
 
 Implement a repository-owned checker using the existing TypeScript compiler API. Parse TypeScript and TSX through syntax trees, resolve import symbols and aliases, and use the type checker for public prop contracts. Do not add ESLint solely to host these rules or extend the existing source-text scanners into another parser.
 
-The entry point is `scripts/check-architecture.ts`, exposed as `pnpm check:architecture`. Rule implementations live in the private workspace package `packages/analysis` (`@ultima/analysis`), with fixtures under `packages/analysis/fixtures/` kept out of its typecheck, so the [consumer CLI](ultima.md#package-and-engine) imports the same engine through a consumer scope. Rules read files only through a scope object and never name workspace paths or aliases directly. Placed on [Where the CLI lives in the workspace and what it consumes from the contributor engine](https://github.com/frankieramirez/ultima/issues/476). This is a static check: it requires the installed workspace dependencies, but no browser, running server, generated registry, or docs build. Use the repository's supported Node runtime and TypeScript execution convention.
+The entry point is `scripts/check-architecture.ts`, exposed as `pnpm check:architecture`. Rule implementations will live in the private workspace package `packages/analysis` (`@ultima/analysis`), with fixtures under `packages/analysis/fixtures/` kept out of its typecheck, so the [consumer CLI](ultima.md#package-and-engine) imports the same engine through a consumer scope. Rules read files only through a scope object and never name workspace paths or aliases directly. Placed on [Where the CLI lives in the workspace and what it consumes from the contributor engine](https://github.com/frankieramirez/ultima/issues/476). This is a static check: it requires the installed workspace dependencies, but no browser, running server, generated registry, or docs build. Use the repository's supported Node runtime and TypeScript execution convention.
 
 The default run examines all authored files in scope. Provide `--format text` and `--format json`; both represent the same diagnostics. Exit 0 means the run completed with no blocking findings, 1 means architectural violations, and 2 means invalid invocation or an incomplete run such as unreadable source, invalid configuration or parser failure. Advisory findings may accompany exit 0. Output must distinguish advisories from blocking findings and list unsupported analysis explicitly.
 
-Changed-file selection, aggregate verification results and production-browser orchestration belong to the later verification decisions. This checker supplies the full static check they can invoke.
+Changed-file selection and aggregate verification results belong to the [Verification CLI](#verification-cli); production-browser orchestration belongs to [Production browser verification](#production-browser-verification). This checker supplies the full static check they can invoke.
 
 ### Authority and source scopes
 
@@ -139,7 +139,7 @@ Each rule slice inventories the entire applicable source scope, fixes violations
 
 The source inspection for this decision sampled the existing contracts and checks; it was not a full violation count. It found literal local layering in Tabs/Select, token-derived local expressions in Toast, and Navigation Menu's documented instant-state zero duration alongside the Drawer case. The local-layering policy above preserves the first pattern. Direct token aliases must be expanded while preserving output; derived runtime expressions remain analyzable. Navigation Menu's instant-state duration has its own authority in State styling and an existing browser assertion, so its allowance stays distinct from Drawer's. Any genuinely unsettled product behavior uncovered by the implementation inventory requires a decision before that rule slice can ship.
 
-Before the implementation effort completes, run all architectural checks and the existing typecheck, browser suites, palette check, registry build, docs build and applicable consumer smoke installs. Retain the full validation bar while adding a fast static failure path. The verification and adoption tickets will specify orchestration and staged delivery.
+Before the implementation effort completes, run all architectural checks and the existing typecheck, browser suites, palette check, registry build, docs build and applicable consumer smoke installs. Retain the full validation bar while adding a fast static failure path. [Verification CLI](#verification-cli) specifies orchestration, and [Adoption and maintenance](#adoption-and-maintenance) specifies staged delivery.
 
 ## Component metadata and scaffolding
 
@@ -666,7 +666,7 @@ Keep one shared TypeScript source-analysis implementation and catalogue model. C
 
 ### Ordered build slices
 
-Create a separate build effort using this map as its planning source. The following IDs define proposed build slices and their dependencies; they are not filed issues. A slice closes only with its stated negative tests and real repository evidence. Split an oversized slice along its listed outputs when filing, preserving the dependency and acceptance boundaries.
+[Build: Verified contributor infrastructure for Ultima](https://github.com/frankieramirez/ultima/issues/447) implements these slices, with this map as its planning source. The IDs below are the adoption resolution's slices and dependencies; [Filed build order](#filed-build-order) maps them to issues. A slice closes only with its stated negative tests and real repository evidence. Split an oversized slice along its listed outputs when filing, preserving the dependency and acceptance boundaries.
 
 | ID | Deliverable | Depends on | Required exit evidence |
 | --- | --- | --- | --- |
@@ -676,7 +676,7 @@ Create a separate build effort using this map as its planning source. The follow
 | D | Non-overwriting scaffold | C | React/element/recipe dry-run and write flows, collisions/concurrent edits/partial write proof, incomplete markers, synthetic addition/removal and zero ordinary manual projection edits. Update Forge wiring guidance in this slice. |
 | E | Architecture engine and source/import rules | B | Static text/JSON command, scope inventory, diagnostic/exception validation, `ULT-SOURCE-001`, `ULT-IMPORT-001`, `ULT-PRIMITIVE-001` and unresolved-analysis behavior. Whole-scope cleanup and clean blocking evidence for delivered rules. |
 | F | Token, style and docs enforcement | E | `ULT-TOKEN-001`, `ULT-STYLE-001`, `ULT-DOCS-001/002` and the docs advisory; declaration-scoped migration of the old scanner, valid runtime/style cases and forbidden mutations. Retain browser cascade proof. |
-| G | API and registry enforcement | C, E, F | `ULT-API-001/002`, `ULT-REGISTRY-001`, real compiler positive/negative cases, registry membership/staging proof and final full architecture scan. All specified blocking rule families are active. |
+| G | API and registry enforcement | C, E | `ULT-API-001/002`, `ULT-REGISTRY-001`, real compiler positive/negative cases, registry membership/staging proof and final full architecture scan. All specified blocking rule families are active. |
 | H | Scenario schema, bindings and read-only discovery | C | Dialog and Studio records/bindings in existing suites; list/describe and validation without app startup; source/route/variant negative tests and retained supporting suites. Partial executable verification remains unavailable until its adapters land. |
 | I | Verification planning, snapshots and process lifecycle | G, H | Conservative base/current dependency selection, immutable dirty-source identity, check DAG and versioned reports; controlled failure/cancel/timeout cases and two-worktree isolation. Missing required adapters report incomplete. |
 | J | Existing-check execution adapters | I | Real static/type/unit/browser/axe/parity/palette/build/install execution, preserved preparation and serialization, JSON/human agreement and selection acceptance cases. Production remains explicitly unavailable until K/L. |
@@ -685,9 +685,37 @@ Create a separate build effort using this map as its planning source. The follow
 | M | Comparable measurements and any justified optimization | D, L | Repeat baseline workloads on the completed tooling; publish raw comparisons and wiring/discovery evidence. Record unchanged/inconclusive results honestly. Any optimization gets its own measured before/after change and all affected correctness proof. |
 | N | Final author guidance and release handoff | F, G, M | Complete canonical-example index and skill updates, runnable documented commands, full release and consumer evidence at one revision, maintained ownership links and an explicit disposition for every scoped area. |
 
-E and C may proceed independently after B if they coordinate shared analysis/model files. G follows F so its final scan includes every blocking rule family. H exposes only implemented discovery operations; I/J must never let a partial release command report success. K uses registered pilot scenarios from H, so the production runner never needs a temporary competing scenario list. L expands that model and becomes the full gate. The build effort records actual issue links and claim order when filed.
+E and C may proceed independently after B if they coordinate shared analysis/model files. F and G may proceed independently after their prerequisites. H exposes only implemented discovery operations; I/J must never let a partial release command report success. K uses registered pilot scenarios from H, so the production runner never needs a temporary competing scenario list. L expands that model and becomes the full gate.
 
 A may add a portable measurement-only browser harness to the unchanged application where the baseline lacks production execution. Keep its hash identical across paired builds and limit it to observation under the measurement contract. It must not become the production gate's alternative scenario inventory.
+
+### Filed build order
+
+The build effort files 19 tickets in this claim order. Ticket 1 is the specification handoff that precedes every slice. Four slices split along their listed outputs: F, I, J and L each become two tickets. The split tickets together carry the slice's exit evidence, and dependencies follow the slice table once the splits are unrolled.
+
+| # | Ticket | Slice | After |
+| --- | --- | --- | --- |
+| 1 | [Reconcile and commit the infrastructure specification](https://github.com/frankieramirez/ultima/issues/448) | Handoff | None |
+| 2 | [Capture baselines and migration inventory](https://github.com/frankieramirez/ultima/issues/449) | A | 1 |
+| 3 | [Validate typed catalogue metadata](https://github.com/frankieramirez/ultima/issues/450) | B | 2 |
+| 4 | [Generate catalogue wiring and migrate consumers](https://github.com/frankieramirez/ultima/issues/451) | C | 3 |
+| 5 | [Add safe component scaffolding](https://github.com/frankieramirez/ultima/issues/452) | D | 4 |
+| 6 | [Enforce source and import architecture](https://github.com/frankieramirez/ultima/issues/453) | E | 3 |
+| 7 | [Enforce token and styling contracts](https://github.com/frankieramirez/ultima/issues/454) | F: token and style rules | 6 |
+| 8 | [Enforce docs controls and surface rules](https://github.com/frankieramirez/ultima/issues/455) | F: docs rules and scanner migration | 6 |
+| 9 | [Enforce public API and registry contracts](https://github.com/frankieramirez/ultima/issues/456) | G | 4, 6 |
+| 10 | [Register scenarios and expose discovery](https://github.com/frankieramirez/ultima/issues/457) | H | 4 |
+| 11 | [Plan conservative verification coverage](https://github.com/frankieramirez/ultima/issues/458) | I: selection and planning | 9, 10 |
+| 12 | [Isolate verification runs and process lifecycle](https://github.com/frankieramirez/ultima/issues/459) | I: snapshots and lifecycle | 11 |
+| 13 | [Execute static, type and unit checks](https://github.com/frankieramirez/ultima/issues/460) | J: static, type and unit adapters | 12 |
+| 14 | [Execute browser, build and install checks](https://github.com/frankieramirez/ultima/issues/461) | J: browser, build and install adapters | 13 |
+| 15 | [Run the production Dialog and Studio pilot](https://github.com/frankieramirez/ultima/issues/462) | K | 12 |
+| 16 | [Complete the production scenario matrix](https://github.com/frankieramirez/ultima/issues/463) | L: all 26 cells | 14, 15 |
+| 17 | [Require production verification in CI](https://github.com/frankieramirez/ultima/issues/464) | L: required CI and smoke inputs | 16 |
+| 18 | [Compare efficiency and performance](https://github.com/frankieramirez/ultima/issues/465) | M | 5, 17 |
+| 19 | [Complete author guidance and release handoff](https://github.com/frankieramirez/ultima/issues/466) | N | 7, 8, 9, 18 |
+
+K reaches H through ticket 11. G's all-family architecture proof includes tickets 7 and 8 when they land; ticket 19 follows all three, so the final release scan runs with every blocking rule family active.
 
 ### Migration and promotion
 
@@ -740,4 +768,4 @@ Timing gates, workers and lazy loading are conditional follow-ups requiring the 
 
 The owning document now contains all seven decision contracts, including the previously recorded verification, production-browser and executable-feature resolutions. No in-scope planning question remains. The full decisions also remain on their issue resolutions. Implementation tickets must reference the merged revision of this specification as their durable planning source.
 
-Use the completed planning map [Map: Make Ultima efficient and verifiable for agents](https://github.com/frankieramirez/ultima/issues/435) to propose the implementation work for Ultima's contributor infrastructure. Keep the map as the planning source and create a separate build effort with ordered implementation tickets. Show me the proposed slices before creating tickets, then create the build effort and tickets after I accept them. End by giving me the first available implementation ticket and an exact prompt to start it.
+[Map: Make Ultima efficient and verifiable for agents](https://github.com/frankieramirez/ultima/issues/435) remains the planning source. [Build: Verified contributor infrastructure for Ultima](https://github.com/frankieramirez/ultima/issues/447) holds the [filed build order](#filed-build-order). Its first ticket commits this reconciled specification; the revision where that ticket merges is the durable source the later tickets reference.
