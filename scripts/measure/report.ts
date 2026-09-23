@@ -8,6 +8,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
+import { gunzipSync } from 'node:zlib';
 
 import { median, SCHEMA_VERSION, type CommandSummary, type InteractionSummary, type Sample } from './protocol.ts';
 import { WORKLOADS } from './workloads.ts';
@@ -84,8 +85,11 @@ type StudioReport = {
 const studioRows: string[] = [];
 const firstRows: string[] = [];
 let studio: StudioReport | null = null;
-if (existsSync(join(dir, 'studio/studio.json'))) {
-  studio = readJson<StudioReport>('studio/studio.json');
+// The committed copy is gzipped; a fresh run writes it plain.
+const studioFile = ['studio/studio.json', 'studio/studio.json.gz'].find((file) => existsSync(join(dir, file)));
+if (studioFile) {
+  const raw = readFileSync(join(dir, studioFile));
+  studio = JSON.parse((studioFile.endsWith('.gz') ? gunzipSync(raw) : raw).toString('utf8')) as StudioReport;
   for (const cell of studio.cells) {
     for (const [interaction, summary] of Object.entries(cell.summaries)) {
       studioRows.push(
@@ -148,7 +152,7 @@ writeFileSync(
       environment: identity?.environment ?? null,
       runnerClass: identity?.conditions.runnerClass ?? null,
       commands: index,
-      studio: studio ? { file: 'studio/studio.json', conditions: studio.conditions, fixtures: studio.fixtures } : { status: 'unavailable' },
+      studio: studio ? { file: studioFile, conditions: studio.conditions, fixtures: studio.fixtures } : { status: 'unavailable' },
       exercises: exerciseFiles.map((name) => `exercises/${name}`),
       inventory: inventory ? { file: 'inventory/index.json', snapshots: inventory.snapshots } : { status: 'unavailable' },
     },

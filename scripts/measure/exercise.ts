@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { gzipSync } from 'node:zlib';
 
-import { environment, sha256 } from './identity.ts';
+import { environment, sha256, treeHash } from './identity.ts';
 import { SCHEMA_VERSION } from './protocol.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -143,7 +143,8 @@ function run(cwd: string, argv: string[], timeoutMs: number, stdin?: string) {
     }, timeoutMs);
     child.on('close', (code) => {
       clearTimeout(timer);
-      done({ code, output, elapsedMs: performance.now() - started });
+      // Colour codes split file names in vitest output, which would hide covered tests from scoring.
+      done({ code, output: output.replace(/\x1b\[[0-9;]*m/g, ''), elapsedMs: performance.now() - started });
     });
   });
 }
@@ -220,6 +221,7 @@ const record: Record<string, unknown> = {
   learning: 'naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only',
   operator: { host: environment(root).host, claude: execFileSync('claude', ['--version'], { encoding: 'utf8' }).trim() },
   requestedModel: values.model,
+  harnessSha256: treeHash(root, 'scripts/measure'),
 };
 
 try {
