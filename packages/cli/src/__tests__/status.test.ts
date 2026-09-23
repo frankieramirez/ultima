@@ -4,6 +4,7 @@ import type { AddressInfo } from 'node:net';
 
 import { describe, expect, it } from 'vitest';
 
+import { renderAsInstalled } from '../diff.ts';
 import { CLI_VERSION, skillStamp } from '../install.ts';
 import { run } from '../run.ts';
 import { contentHash, stampLine, withStamp } from '../stamp.ts';
@@ -261,5 +262,123 @@ describe('status', () => {
     const [diagnostic] = JSON.parse(result.stdout).diagnostics;
     expect(diagnostic).toMatchObject({ ruleId, severity: 'incomplete' });
     expect(diagnostic.repair).toMatch(repair);
+  });
+});
+
+async function servedCopy(item: string, source: string) {
+  const hash = await contentHash(source, 'c1');
+  return { hash, content: withStamp(source, stampLine(item, NEW, hash, 'ts')) };
+}
+
+async function diff(root: string, ...args: string[]) {
+  const before = snapshot(root);
+  const result = await run(['diff', '--cwd', root, ...args]);
+  expect(snapshot(root)).toEqual(before);
+  return result;
+}
+
+describe('renderAsInstalled', () => {
+  const aliases = { ui: '@/components/ui', lib: '@/lib' };
+  const served = `'use client';\n\nimport { Spinner } from '@/registry/ultima/ui/spinner';\nimport type { StyleSlot } from "@/registry/ultima/lib/component";\n`;
+
+  it('rewrites the registry specifiers to the aliases', () => {
+    expect(renderAsInstalled(served, aliases, false)).toBe(
+      `'use client';\n\nimport { Spinner } from '@/components/ui/spinner';\nimport type { StyleSlot } from "@/lib/component";\n`,
+    );
+  });
+
+  it('drops the directive without rsc only when shadcn would: unterminated', () => {
+    expect(renderAsInstalled(served.replace("'use client';", "'use client'"), aliases, false)).toMatch(/^import \{ Spinner \}/);
+  });
+
+  it('keeps the directive with rsc', () => {
+    expect(renderAsInstalled(served, aliases, true)).toMatch(/^'use client';\n\nimport \{ Spinner \} from '@\/components\/ui\/spinner';/);
+  });
+});
+
+describe('diff', () => {
+  it('shows only the local edit against the served file as installed here', async () => {
+    const served = await servedCopy('button', staged('Button', 'two'));
+    const registry = await serve([{ name: 'button', files: { 'button.tsx': served.hash }, content: served.content }]);
+    const local = renderAsInstalled(served.content, { ui: '@/components/ui', lib: '@/lib' }, false).replace('label="two"', 'label="mine"');
+    const root = consumer(registry, { 'src/components/ui/button.tsx': local });
+
+    const { code, stdout } = await diff(root, 'button');
+    expect(code).toBe(0);
+    expect(stdout).toBe(
+      [
+        `--- src/components/ui/button.tsx  (local, edited, installed ${NEW})`,
+        `+++ src/components/ui/button.tsx  (@ultima/button at ${NEW})`,
+        '@@ -2,7 +2,7 @@',
+        ' ',
+        " import { Spinner } from '@/components/ui/spinner';",
+        ' ',
+        ' export function Button() {',
+        '-  return <Spinner label="mine" />;',
+        '+  return <Spinner label="two" />;',
+        ' }',
+        ` ${stampLine('button', NEW, served.hash, 'ts')}`,
+        '',
+      ].join('\n'),
+    );
+  });
+
+  it('prints a named item that differs only by formatting and comments as current', async () => {
+    const served = await servedCopy('card', staged('Card', 'two'));
+    const registry = await serve([{ name: 'card', files: { 'card.tsx': served.hash }, content: served.content }]);
+    const reformatted = viteCopy(staged('Card', 'two')).replaceAll("'", '"').replace('export function', '// Ours now.\nexport  function');
+    const root = consumer(registry, { 'src/components/ui/card.tsx': withStamp(reformatted, stampLine('card', NEW, served.hash, 'ts')) });
+    expect(await diff(root, 'card')).toMatchObject({ code: 0, stdout: 'card: current\n' });
+  });
+
+  it('covers exactly the files status reports as not current when given no items', async () => {
+    const items = await Promise.all(['Button', 'Dialog', 'Menu'].map((name) => servedCopy(name.toLowerCase(), staged(name, 'two'))));
+    const [button, dialog, menu] = items as [(typeof items)[0], (typeof items)[0], (typeof items)[0]];
+    const registry = await serve([
+      { name: 'button', files: { 'button.tsx': button.hash }, content: button.content },
+      { name: 'dialog', files: { 'dialog.tsx': dialog.hash }, content: dialog.content },
+      { name: 'menu', files: { 'menu.tsx': menu.hash }, content: menu.content },
+    ]);
+    const root = consumer(registry, {
+      'src/components/ui/button.tsx': await stamped('button', staged('Button', 'two'), NEW),
+      'src/components/ui/dialog.tsx': await stamped('dialog', staged('Dialog', 'two'), NEW, viteCopy(staged('Dialog', 'three'))),
+      'src/components/ui/menu.tsx': await stamped('menu', staged('Menu', 'one'), OLD),
+      'src/components/ui/tabs.tsx': await stamped('tabs', staged('Tabs', 'one'), OLD),
+    });
+
+    const { report } = await statusJson(root);
+    const drifted = report.files.filter(({ state }) => state !== 'current');
+    const { code, stdout } = await diff(root);
+    expect(code).toBe(0);
+    const covered = stdout.split('\n').flatMap((line) => line.match(/^--- (\S+)  \(local, (\S+),/)?.slice(1, 3).join(' ') ?? []);
+    expect(covered).toEqual(drifted.filter(({ state }) => state !== 'retired').map(({ file, state }) => `${file} ${state}`));
+    expect(stdout).toContain('tabs: retired, the registry no longer serves src/components/ui/tabs.tsx\n');
+    expect(drifted.map(({ item }) => item)).toEqual(['dialog', 'menu', 'tabs']);
+  });
+
+  it('prints a served item that is not installed as such', async () => {
+    const registry = await serve([{ name: 'button', files: { 'button.tsx': 'c1:0123456789abcdef' } }]);
+    expect(await diff(consumer(registry), 'button')).toMatchObject({ code: 0, stdout: 'button: not installed\n' });
+  });
+
+  it('exits 2 on an item neither served nor installed', async () => {
+    const registry = await serve([]);
+    const result = await diff(consumer(registry), 'nonexistent-item');
+    expect(result).toMatchObject({ code: 2, stdout: '' });
+    expect(result.stderr).toContain('nonexistent-item is neither served');
+  });
+
+  it('exits 3 on an unreachable registry', async () => {
+    const result = await diff(consumer('http://127.0.0.1:9/r/{name}.json'), 'button');
+    expect(result.code).toBe(3);
+    expect(result.stdout).toContain('ULT-STATUS-002');
+  });
+
+  it("exits 3 when an item's content cannot be fetched", async () => {
+    const registry = await serve([{ name: 'menu', files: { 'menu.tsx': await contentHash(staged('Menu', 'two'), 'c1') } }]);
+    const root = consumer(registry, { 'src/components/ui/menu.tsx': await stamped('menu', staged('Menu', 'one'), OLD) });
+    const result = await diff(root);
+    expect(result.code).toBe(3);
+    expect(result.stdout).toContain('ULT-DIFF-001');
   });
 });

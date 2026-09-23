@@ -3,13 +3,20 @@ import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { exitCode, print } from './diagnostic.ts';
+import { diff } from './diff.ts';
 import { type Target, doctor } from './doctor.ts';
 import { HARNESSES, type Harness, install, printPlan, uninstall } from './install.ts';
 import { printStatus, status } from './status.ts';
 
 const COMMANDS = ['doctor', 'status', 'diff', 'check', 'install', 'uninstall'];
-const USAGE = `usage: ultima <${COMMANDS.join('|')}> [--json] [--cwd <dir>] [--target vite|next] [--project <tsconfig>] [--harness <name>]... [--dry-run] [--force]`;
-const FLAGS: Record<string, string[]> = { doctor: ['target'], status: ['project'], install: ['harness', 'dry-run', 'force'], uninstall: [] };
+const USAGE = `usage: ultima <${COMMANDS.join('|')}> [item…] [--json] [--cwd <dir>] [--target vite|next] [--project <tsconfig>] [--harness <name>]... [--dry-run] [--force]`;
+const FLAGS: Record<string, string[]> = {
+  doctor: ['target', 'json'],
+  status: ['project', 'json'],
+  diff: ['project'],
+  install: ['harness', 'dry-run', 'force', 'json'],
+  uninstall: ['json'],
+};
 
 export async function run(argv: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
   const invocation = parseInvocation(argv);
@@ -32,6 +39,15 @@ export async function run(argv: string[]): Promise<{ code: number; stdout: strin
     }
     return { code: 0, stdout: invocation.json ? `${JSON.stringify(result, null, 2)}\n` : printStatus(result), stderr: '' };
   }
+  if (invocation.command === 'diff') {
+    const result = await diff(invocation.root, invocation.items, { project: invocation.project });
+    if ('usage' in result) return usageError(result);
+    if ('diagnostics' in result) {
+      const report = { command: 'diff', ...result };
+      return { code: exitCode(report), stdout: print(report, false), stderr: '' };
+    }
+    return { code: 0, stdout: result.output, stderr: '' };
+  }
   const result = doctor(invocation.root, invocation.target);
   if ('usage' in result) return usageError(result);
   const report = { command: invocation.command, ...result };
@@ -45,6 +61,7 @@ function usageError(result: { usage: string }) {
 type Invocation = { root: string; json: boolean } & (
   | { command: 'doctor'; target: Target | undefined }
   | { command: 'status'; project: string | undefined }
+  | { command: 'diff'; project: string | undefined; items: string[] }
   | { command: 'install'; harnesses: Harness[] | undefined; dryRun: boolean; force: boolean }
   | { command: 'uninstall' }
 );
@@ -73,9 +90,9 @@ function parseInvocation(argv: string[]): { usage: string } | Invocation {
   if (!COMMANDS.includes(command)) return { usage: `unknown command ${command}` };
   const own = FLAGS[command];
   if (!own) return { usage: `${command} is not available in this build` };
-  if (rest.length > 0) return { usage: `${command} takes no arguments, got ${rest.join(' ')}` };
+  if (rest.length > 0 && command !== 'diff') return { usage: `${command} takes no arguments, got ${rest.join(' ')}` };
   const { target, project, harness, json = false } = args.values;
-  const foreign = Object.keys(args.values).find((flag) => flag !== 'json' && flag !== 'cwd' && !own.includes(flag));
+  const foreign = Object.keys(args.values).find((flag) => flag !== 'cwd' && !own.includes(flag));
   if (foreign) return { usage: `${command} takes no --${foreign}` };
   if (target !== undefined && target !== 'vite' && target !== 'next') {
     return { usage: `--target takes vite or next, got ${target}` };
@@ -87,6 +104,7 @@ function parseInvocation(argv: string[]): { usage: string } | Invocation {
     return { usage: `${root} holds no package.json; pass --cwd with the project root` };
   }
   if (command === 'status') return { command, root, project, json };
+  if (command === 'diff') return { command, root, project, json, items: rest };
   if (command === 'uninstall') return { command, root, json };
   if (command === 'install') {
     return { command, root, json, harnesses: harness as Harness[] | undefined, dryRun: args.values['dry-run'] ?? false, force: args.values.force ?? false };
