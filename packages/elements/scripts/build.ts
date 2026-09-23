@@ -1,5 +1,4 @@
 // Bundle shape (self-contained classic script, injected sheet): docs/spec/ultima.md, Web components.
-import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +8,7 @@ import { transformAsync } from '@babel/core';
 import styleXPlugin, { type Rule as StyleXRule } from '@stylexjs/babel-plugin';
 
 import { stylexOptions } from '../../../stylex.options.ts';
+import { catalogueRevision, contentHash, stampLine, withStamp } from '../../cli/src/stamp.ts';
 import { bundleArtifact } from './bundle.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -87,15 +87,9 @@ function dedup(rules: StyleXRule[]): StyleXRule[] {
   });
 }
 
-function stamp(): string {
-  try {
-    return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
-  } catch {
-    return 'local';
-  }
-}
+const revision = catalogueRevision(packageDir);
 
-function wrap(rules: StyleXRule[], code: string): string {
+async function wrap(item: string, rules: StyleXRule[], code: string): Promise<string> {
   const css = styleXPlugin.processStylexRules(dedup(rules), true) as string;
   const sheet = [
     `const sheet = document.createElement('style');`,
@@ -103,7 +97,8 @@ function wrap(rules: StyleXRule[], code: string): string {
     `sheet.textContent = ${JSON.stringify(css)};`,
     `document.head.appendChild(sheet);`,
   ].join('\n');
-  return `/* @ultima/elements ${stamp()} */\n${sheet}\n${code}\n`;
+  const contents = `${sheet}\n${code}\n`;
+  return withStamp(contents, stampLine(item, revision, await contentHash(contents, 'b1'), 'css'));
 }
 
 rmSync(stageDir, { recursive: true, force: true });
@@ -131,7 +126,8 @@ const artifacts = [
 
 mkdirSync(distDir, { recursive: true });
 for (const artifact of artifacts) {
-  const contents = wrap(artifact.rules, await bundleArtifact(artifact.entry));
+  const item = artifact.name === 'ultima' ? 'elements' : artifact.name;
+  const contents = await wrap(item, artifact.rules, await bundleArtifact(artifact.entry));
   writeFileSync(join(distDir, `${artifact.name}.js`), contents);
   const gzipped = gzipSync(contents, { level: 9 }).length;
   const size = `${contents.length} B, ${(gzipped / 1024).toFixed(1)} KB gzipped`;

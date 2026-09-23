@@ -1703,12 +1703,12 @@ Offered two ways. The stable URL `https://ultima.systems/tokens.css` is the docu
 `pnpm registry:build`:
 
 1. **Stage.** Copy `packages/ui/src/*.tsx` to `registry/ultima/ui/`, and `packages/tokens/src/*.ts` plus `packages/ui/src/lib/*.ts` to `registry/ultima/lib/`. `index.ts`, `prototype/`, and `__tests__/` are not staged. Rewrite `@ultima/tokens/*` and `@ultima/ui/lib/*` to `@/registry/ultima/lib/*`, and any other `@ultima/ui/*` to `@/registry/ultima/ui/*`. Those are the specifiers shadcn's `transformImport` rewrites to the consumer's aliases on install; the workspace specifiers Ultima authors against are not.
-2. **Stamp.** Write an item stamp into every staged file and the same values into the item's `meta.ultima`, as [Versioning and drift](#versioning-and-drift) specifies. The element bundles and the tokens stylesheet are stamped by the same function when they are built, so every file the registry serves carries one.
+2. **Stamp.** Write an item stamp into every staged file and the tokens stylesheet, and the same values into the item's `meta.ultima`, as [Versioning and drift](#versioning-and-drift) specifies. The element build stamps its bundles with the same module, `packages/cli/src/stamp.ts`, so every file the registry serves carries one. The run ends by checking each served payload, `/tokens.css`, and every `/elements/*.js` for exactly one stamp in position that agrees with `meta.ultima`, and fails when one does not.
 3. **Derive.** Each item's `dependencies` come from that file's own imports (`@base-ui/react`, `@stylexjs/stylex`), and its `registryDependencies` from its `@ultima/*` imports.
 4. **Describe.** `title`, `description`, and `docs` come from `registry/items.config.ts`, hand-written.
 5. **Copy through.** `registry/static/**` holds the setup items' files, which are authored, not generated, and are copied untouched.
 6. **Build.** `shadcn build registry.json -c registry -o ../apps/docs/public/r`. The `-c` is required: `shadcn build` resolves `files[].path` from the cwd, not from the directory of the `registry.json` its error message names.
-7. **Publish the exports.** Copy `packages/tokens/dist/tokens.css` and `tokens.json` into `apps/docs/public/`, and write `apps/docs/public/llms.txt` from this specification and `registry/items.config.ts`. The `tokens-css` item's file is the same `tokens.css`, staged in step 1.
+7. **Publish the exports.** Copy `packages/tokens/dist/tokens.json` and the stamped `tokens.css` into `apps/docs/public/`, and write `apps/docs/public/llms.txt` from this specification and `registry/items.config.ts`. The `tokens-css` item's file is the same `tokens.css`, staged in step 1.
 
 `registry/ultima/`, `registry/registry.json`, `apps/docs/public/r/*.json`, and the three published exports are all gitignored. The docs site's build script runs `registry:build` first, so a deploy publishes the registry and the site together from one command.
 
@@ -1729,10 +1729,14 @@ A change to any step of a scheme is a new scheme (`c2`), never a silent redefini
 
 **Where the stamp lives.** Two places, and no lockfile.
 
-- **In the file.** One comment line, `// @ultima/<item> <revision> <scheme>:<hash>` (or `/* … */` in CSS and in the element bundles), written by the registry build. It sits on the first line, or directly after the directive prologue when the file opens with one, so it is leading trivia of the first import and survives `transformRsc` removing `"use client"` for a Vite consumer. It records what the consumer received. shadcn writes no other record, so this line is the only baseline a consumer has, and it lasts until the consumer deletes it. A consumer may; the file becomes unstamped and nothing else breaks.
+- **In the file.** One comment line, `// @ultima/<item> <revision> <scheme>:<hash>` (or `/* … */` in CSS and in the element bundles), written by the registry build. It is the file's last line; blank lines after it are ignored. shadcn 4.21 returns each transformed file as ts-morph's `getText()`, which drops a file's leading comments, so a stamp on the first line, or behind a directive that `transformRsc` removes, never reaches the consumer. Trailing trivia before the end of the file survives every transform. It records what the consumer received. shadcn writes no other record, so this line is the only baseline a consumer has, and it lasts until the consumer deletes it. A consumer may; the file becomes unstamped and nothing else breaks.
 - **In the served JSON.** Each item's entry in `/r/registry.json` and its `/r/<name>.json` carry `meta.ultima`: `{ "revision": "<revision>", "files": { "<file name>": "<scheme>:<hash>" } }`. `meta` is the only free field shadcn's schema offers, and shadcn discards it at install, which is why the file needs its own line. The catalogue entry lets `status` compare everything with one request.
 
 No lockfile, because the consumer installs with shadcn and the Ultima CLI never sees an install happen: a lockfile it wrote after the fact would only restate the stamps. It becomes worth having when the CLI installs or updates items itself, which is `update`'s question.
+
+**The format version.** `/r/registry.json` carries `meta.ultima.format`, an integer that starts at `1` and rises when the shape of the stamp, `meta.ultima`, or the catalogue changes in a way an older CLI would misread. A new hash scheme is not a format change, because a CLI already reports a scheme it does not know. shadcn's registry schema defines no top-level `meta`, but it tolerates the key, and `shadcn build` copies `registry.json` through verbatim when the registry uses no `include`; the registry build fails if the key does not reach the served catalogue.
+
+**One implementation.** `packages/cli/src/stamp.ts` holds the canonicaliser, the hasher, the stamp line, and the format version. The registry build and the element build import it, and `status` and `diff` will too, so no two places compute a hash two ways.
 
 **States.** For each installed file, compare three hashes: *installed* from the stamp, *local* computed from the file as it now is, *served* from the catalogue. The first row that matches wins.
 
