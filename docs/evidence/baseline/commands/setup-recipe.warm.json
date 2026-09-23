@@ -1,0 +1,325 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "setup-recipe",
+    "version": 1,
+    "title": "Setup item and recipe",
+    "phases": [
+      {
+        "id": "smoke-install",
+        "argv": [
+          "scripts/smoke-install.sh"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "registry-build",
+        "argv": [
+          "pnpm",
+          "registry:build"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "test-recipe",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "exec",
+          "vitest",
+          "run",
+          "src/__tests__/data-table.test.tsx",
+          "src/__tests__/axe.test.tsx"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "Setup items: the smoke install is the only coverage for setup-vite and setup-next, and it cannot be narrowed below the whole catalogue",
+        "Recipe (Data Table on the Table page): its demo suite and the axe sweep over every demo"
+      ],
+      "omitted": [
+        "The recipe engine is the consumer dependency; nothing installs it, by contract"
+      ],
+      "unsupported": [
+        "A setup-only or recipe-only selector does not exist at this revision"
+      ]
+    }
+  },
+  "conditions": {
+    "workload": "setup-recipe",
+    "workloadVersion": 1,
+    "cache": "warm",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "c66d38c9d5f3776828310f781180666171f9681faba88a82e5f8a5443fc380e5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "c7996cc51b59fde07e916deb42811707c1958b59d67bd8f0190cbfedc613b6ad",
+    "lockfileSha256": "0d81ed7f53b3f8f339af91ba97eae74237861baec8279f9ef3f95645b6df59db",
+    "harnessSha256": "c66d38c9d5f3776828310f781180666171f9681faba88a82e5f8a5443fc380e5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      2.77,
+      2.78,
+      2.37
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      3.57,
+      3.13,
+      2.67
+    ]
+  },
+  "cachePolicy": {
+    "condition": "warm",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "one unmeasured run immediately before the batch",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "one workload at a time; phases run serially; the host is a shared workstation",
+  "priming": {
+    "runId": "setup-recipe-warm-priming",
+    "order": -1,
+    "startedAt": "2026-09-23T18:04:49.307Z",
+    "elapsedMs": 71885.522524,
+    "status": "valid",
+    "phases": [
+      {
+        "id": "smoke-install",
+        "elapsedMs": 59372.51966,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/setup-recipe-warm-priming/smoke-install.log.gz"
+      },
+      {
+        "id": "registry-build",
+        "elapsedMs": 3403.193922000006,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/setup-recipe-warm-priming/registry-build.log.gz"
+      },
+      {
+        "id": "test-recipe",
+        "elapsedMs": 9106.474501999997,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/setup-recipe-warm-priming/test-recipe.log.gz"
+      }
+    ],
+    "cleared": []
+  },
+  "samples": [
+    {
+      "runId": "setup-recipe-warm-1",
+      "order": 0,
+      "startedAt": "2026-09-23T18:06:01.216Z",
+      "elapsedMs": 69074.75299099999,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "smoke-install",
+          "elapsedMs": 56844.918607,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-1/smoke-install.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3339.7135179999896,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-1/registry-build.log.gz"
+        },
+        {
+          "id": "test-recipe",
+          "elapsedMs": 8887.890034000011,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-1/test-recipe.log.gz"
+        }
+      ],
+      "cleared": []
+    },
+    {
+      "runId": "setup-recipe-warm-2",
+      "order": 1,
+      "startedAt": "2026-09-23T18:07:10.313Z",
+      "elapsedMs": 68756.35638100002,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "smoke-install",
+          "elapsedMs": 56455.352236000006,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-2/smoke-install.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3322.9884569999995,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-2/registry-build.log.gz"
+        },
+        {
+          "id": "test-recipe",
+          "elapsedMs": 8975.750663000013,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-2/test-recipe.log.gz"
+        }
+      ],
+      "cleared": []
+    },
+    {
+      "runId": "setup-recipe-warm-3",
+      "order": 2,
+      "startedAt": "2026-09-23T18:08:19.092Z",
+      "elapsedMs": 71361.40014500002,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "smoke-install",
+          "elapsedMs": 59042.57553900001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-3/smoke-install.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3348.1276039999793,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-3/registry-build.log.gz"
+        },
+        {
+          "id": "test-recipe",
+          "elapsedMs": 8968.565570000035,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-3/test-recipe.log.gz"
+        }
+      ],
+      "cleared": []
+    },
+    {
+      "runId": "setup-recipe-warm-4",
+      "order": 3,
+      "startedAt": "2026-09-23T18:09:30.476Z",
+      "elapsedMs": 71820.546485,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "smoke-install",
+          "elapsedMs": 59348.51054700004,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-4/smoke-install.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3389.5143369999714,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-4/registry-build.log.gz"
+        },
+        {
+          "id": "test-recipe",
+          "elapsedMs": 9080.320999999996,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-4/test-recipe.log.gz"
+        }
+      ],
+      "cleared": []
+    },
+    {
+      "runId": "setup-recipe-warm-5",
+      "order": 4,
+      "startedAt": "2026-09-23T18:10:42.329Z",
+      "elapsedMs": 72165.30806000001,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "smoke-install",
+          "elapsedMs": 59500.77031200001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-5/smoke-install.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3359.649816000019,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-5/registry-build.log.gz"
+        },
+        {
+          "id": "test-recipe",
+          "elapsedMs": 9302.800289999985,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/setup-recipe-warm-5/test-recipe.log.gz"
+        }
+      ],
+      "cleared": []
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 71361.40014500002,
+    "minMs": 68756.35638100002,
+    "maxMs": 72165.30806000001,
+    "madMs": 803.9079149999889
+  },
+  "budget": "report-only"
+}

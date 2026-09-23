@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "picker",
+  "attempt": 3,
+  "revision": "901e286ff3539325ba485ae8bd0ecf35684a9b2e",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.280 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 906.2957139999999
+  },
+  "task": {
+    "text": "You are in the Ultima repository, at its root. A user reports:\n\n\"the picker broke\"\n\nFind the source file that owns this behavior and one shell command, run from the repository root, that runs the existing checks covering it.\nDo not modify any file. When you are done, end your reply with exactly these two lines:\nOWNER: <repository-relative path of the owning source file>\nCOMMAND: <the command>",
+    "sha256": "3cb1e3647266569ba8732983de375cc09fae10d0b4c52c6a956a20b0a8035ef1",
+    "entryPoint": "repository root, no files open"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "tools": [
+      "Bash",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "sessionId": "4fb530aa-6df2-42e3-82bc-3b4d65d9cb22",
+    "argv": [
+      "claude",
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--model",
+      "sonnet",
+      "--permission-mode",
+      "bypassPermissions",
+      "--strict-mcp-config",
+      "--setting-sources",
+      "project",
+      "--tools",
+      "Bash,Read,Grep,Glob"
+    ],
+    "started": "2026-09-23T19:19:05.134Z",
+    "wallMs": 9897.081216,
+    "durationMs": 9017,
+    "turns": 4,
+    "costUsd": 0.026578,
+    "exitCode": 0,
+    "trace": "picker-3.stream.jsonl.gz"
+  },
+  "observation": {
+    "toolCalls": 3,
+    "byTool": {
+      "Glob": 2,
+      "Bash": 1
+    },
+    "searches": [
+      "Glob {\"pattern\":\"packages/ui/src/*icker*\"}",
+      "Glob {\"pattern\":\"packages/ui/src/__tests__/*icker*\"}",
+      "cat packages/ui/package.json | grep -A2 '\"test\"'"
+    ],
+    "filesOpened": [],
+    "failedCommands": [],
+    "failedTools": 0,
+    "edits": [],
+    "bashCommands": [
+      "cat packages/ui/package.json | grep -A2 '\"test\"'"
+    ],
+    "answer": "The picker's behavior lives in `packages/ui/src/date-picker.tsx`, with its checks in `packages/ui/src/__tests__/date-picker.test.tsx`.\n\nOWNER: packages/ui/src/date-picker.tsx\nCOMMAND: pnpm --filter @ultima/ui test -- date-picker"
+  },
+  "score": {
+    "owner": "packages/ui/src/date-picker.tsx",
+    "located": true,
+    "wrongCandidate": null,
+    "commandValid": true,
+    "check": {
+      "command": "pnpm --filter @ultima/ui test -- date-picker",
+      "exitCode": 0,
+      "elapsedMs": 42844.513,
+      "coverageSeen": [
+        "date-picker.test.tsx",
+        "color-field.test.tsx",
+        "calendar.test.tsx"
+      ],
+      "tail": "e root element\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m \u001b[30m\u001b[43m chromium \u001b[49m\u001b[39m src/__tests__/separator.test.tsx\u001b[2m > \u001b[22mstyle slot wins and className is rejected\u001b[32m 17\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m \u001b[30m\u001b[43m chromium \u001b[49m\u001b[39m src/__tests__/stat.test.tsx\u001b[2m > \u001b[22mevery part mounts\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m \u001b[30m\u001b[43m chromium \u001b[49m\u001b[39m src/__tests__/stat.test.tsx\u001b[2m > \u001b[22mlabel and value are spans inside a div root\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m \u001b[30m\u001b[43m chromium \u001b[49m\u001b[39m src/__tests__/stat.test.tsx\u001b[2m > \u001b[22mtabbing through the stat focuses nothing inside it\u001b[32m 32\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m \u001b[30m\u001b[43m chromium \u001b[49m\u001b[39m src/__tests__/stat.test.tsx\u001b[2m > \u001b[22mrender and ref reach the root element\u001b[32m 18\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m \u001b[30m\u001b[43m chromium \u001b[49m\u001b[39m src/__tests__/stat.test.tsx\u001b[2m > \u001b[22mpublic prop types carry the style slot and no className\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m \u001b[30m\u001b[43m chromium \u001b[49m\u001b[39m src/__tests__/environment.test.tsx\u001b[2m > \u001b[22mkeyboard focus renders the focus-visible outline\u001b[32m 20\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m \u001b[30m\u001b[43m chromium \u001b[49m\u001b[39m src/__tests__/environment.test.tsx\u001b[2m > \u001b[22man unlayered rule beats the StyleX rule for the same property\u001b[32m 36\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m55 passed\u001b[39m\u001b[22m\u001b[90m (55)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m749 passed\u001b[39m\u001b[22m\u001b[90m (749)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:19:15\n\u001b[2m   Duration \u001b[22m 41.96s\u001b[2m (worker 98%, tests 2%)\u001b[22m\n\n"
+    },
+    "success": true,
+    "ambiguousPrompt": true,
+    "candidatesNamed": [
+      "packages/ui/src/date-picker.tsx"
+    ],
+    "rule": "success: one picker owner and a passing command that runs its tests; candidatesNamed records whether the answer surfaced the ambiguity"
+  },
+  "corrections": []
+}

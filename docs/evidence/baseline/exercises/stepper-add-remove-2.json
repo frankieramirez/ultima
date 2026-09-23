@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "stepper-add-remove",
+  "attempt": 2,
+  "revision": "901e286ff3539325ba485ae8bd0ecf35684a9b2e",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.280 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 876.1333040000002
+  },
+  "task": {
+    "add": "Add a new catalogue component, Synthetic Stepper, registry item `synthetic-stepper`, to this repository, following its conventions for an ordinary React component.\nContract: a number input with decrement and increment buttons, built on `@base-ui/react/number-field`.\nParts: SyntheticStepper.Root, .Group, .Decrement, .Input, .Increment. One `size` axis, `sm | md`, default `md`.\nIt joins the v0.2 release, last in catalogue order. Its docs page has one live demo.\nProof: a test file that renders it, proves ArrowUp increments the value, and runs axe.\nMake the registry build, typecheck and its own test file pass.\nWhen you finish, list every file you changed.",
+    "remove": "Now remove Synthetic Stepper completely, so the repository is exactly as it was before you added it. Run the registry build and typecheck afterwards. List every file you changed.",
+    "sha256": "76fe2fa72eb961291d090c9b547bcc59f05f8805345b46c5ddf86d8df43a7557"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "sessionId": "d8eb731f-49ab-429e-86bf-0daf8c4cf411",
+    "add": {
+      "wallMs": 1120883.950941,
+      "durationMs": 1120159,
+      "turns": 112,
+      "costUsd": 3.9188008,
+      "exitCode": 0
+    },
+    "remove": {
+      "wallMs": 52654.14049199992,
+      "durationMs": 52000,
+      "turns": 7,
+      "costUsd": 4.2823812000000006,
+      "exitCode": 0
+    },
+    "traces": [
+      "stepper-add-remove-2.add.stream.jsonl.gz",
+      "stepper-add-remove-2.remove.stream.jsonl.gz"
+    ]
+  },
+  "observation": {
+    "addition": {
+      "changedFiles": {
+        "wiring": [
+          "apps/docs/src/components.ts",
+          "apps/docs/src/router.tsx",
+          "packages/ui/src/index.ts",
+          "registry/items.config.ts"
+        ],
+        "authored": [
+          "pps/docs/src/__tests__/components.test.ts",
+          "apps/docs/src/content/components/synthetic-stepper.mdx",
+          "apps/docs/src/demos/synthetic-stepper/basic.tsx",
+          "packages/ui/src/__tests__/synthetic-stepper.test.tsx",
+          "packages/ui/src/synthetic-stepper.tsx"
+        ]
+      },
+      "editOperations": {
+        "wiring": 7,
+        "authored": 11
+      },
+      "editedFiles": {
+        "wiring": [
+          "packages/ui/src/index.ts",
+          "registry/items.config.ts",
+          "apps/docs/src/components.ts",
+          "apps/docs/src/router.tsx"
+        ],
+        "authored": [
+          "packages/ui/src/synthetic-stepper.tsx",
+          "apps/docs/src/__tests__/components.test.ts",
+          "apps/docs/src/demos/synthetic-stepper/basic.tsx",
+          "apps/docs/src/content/components/synthetic-stepper.mdx",
+          "packages/ui/src/__tests__/synthetic-stepper.test.tsx"
+        ]
+      },
+      "bashWrites": [
+        "find / -path /proc -prune -o -type d -name \"number-field\" -print 2>/dev/null; find / -path /proc -prune -o -type d -path \"*@base-ui/react*\" -print 2>/dev/null | head -30",
+        "find node_modules/@base-ui/react -maxdepth 1 -iname \"*number*\" 2>/dev/null; ls node_modules/@base-ui/react | grep -i number",
+        "find . -maxdepth 4 -iname \"node_modules\" -not -path \"*/node_modules/*/node_modules/*\" 2>/dev/null | head; find . -path \"*@base-ui/react*\" -maxdepth 6 -type d 2>/dev/null | head -20",
+        "D=\"node_modules/.pnpm/@base-ui+react@1.8.0_@types+react@19.2.18_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@base-ui/react/number-field\"; cat \"$D/index.d.ts\"; echo ---; cat \"$D/root/index.d.ts\" 2>/dev/null | head -80",
+        "cat packages/ui/src/lib/component.ts 2>/dev/null || find packages/ui/src/lib -iname \"*component*\"",
+        "grep -rn \"v0.2\\|v0\\\\.1\" registry/items.config.ts docs/spec/*.md apps/docs/src 2>/dev/null | head -30",
+        "ls apps/docs/src; echo ---; cat apps/docs/src/components.ts 2>/dev/null | tail -60",
+        "cat apps/docs/src/__tests__/components.test.ts 2>/dev/null | head -80",
+        "ls apps/docs/src/demos/input-otp/ apps/docs/src/demos/resizable/ 2>/dev/null",
+        "cat packages/ui/src/__tests__/axe.ts 2>/dev/null || find packages/ui/src/__tests__ -iname \"axe*\"",
+        "D=\"node_modules/.pnpm/@base-ui+react@1.8.0_@types+react@19.2.18_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@base-ui/react/number-field/root\"; find / -iname \"useNumberFieldStepperButton.js\" 2>/dev/null | head -1",
+        "D=\"node_modules/.pnpm/@base-ui+react@1.8.0_@types+react@19.2.18_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@base-ui/react/number-field/root\"; cat \"$D/useNumberFieldStepperButton.js\" 2>/dev/null || cat \"$D/useNumberFieldStepperButton.mjs\"",
+        "find / -path \"*@base-ui/react*/internals/use-button*\" 2>/dev/null | grep -v pnpm | head; find node_modules/.pnpm -iname \"use-button.js\" -path \"*number-field*\" 2>/dev/null; find node_modules/.pnpm/@base-ui+react@1.8.0*/node_modules/@base-ui/react/internals -iname \"use-button*\"",
+        "grep -n \"aspect-ratio\\|resizable\" apps/docs/src/router.tsx apps/docs/src/navigation.ts 2>/dev/null",
+        "ls apps/docs/src/demos/synthetic-stepper 2>/dev/null; mkdir -p apps/docs/src/demos/synthetic-stepper",
+        "cat apps/docs/src/demos/input-group/basic.tsx 2>/dev/null",
+        "ls apps/docs/src/demos/input-group/ 2>/dev/null; ls apps/docs/src/demos/ | head -60",
+        "D=\"node_modules/.pnpm/@base-ui+react@1.8.0_@types+react@19.2.18_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@base-ui/react/number-field/input\"; cat \"$D/NumberFieldInput.js\" 2>/dev/null | head -160",
+        "pnpm --filter @ultima/ui typecheck 2>&1 | tail -80",
+        "pnpm --filter @ultima/ui typecheck 2>&1 | tail -80",
+        "pnpm --filter @ultima/ui exec vitest run src/__tests__/synthetic-stepper.test.tsx 2>&1 | tail -150",
+        "pnpm --filter @ultima/ui exec vitest run src/__tests__/synthetic-stepper.test.tsx 2>&1 | tail -150",
+        "pnpm typecheck 2>&1 | tail -150",
+        "pnpm registry:build 2>&1 | tail -150",
+        "pnpm --filter @ultima/docs exec vitest run src/__tests__/components.test.ts 2>&1 | tail -100",
+        "grep -rl \"import.meta.glob\" apps/docs/src/__tests__/*.tsx apps/docs/src/__tests__/*.ts 2>/dev/null",
+        "pnpm --filter @ultima/docs exec vitest run src/__tests__/axe.test.tsx 2>&1 | tail -150",
+        "pnpm --filter @ultima/docs exec vitest run src/__tests__/surfaces.test.ts 2>&1 | tail -60",
+        "pnpm test 2>&1 | tail -200",
+        "pnpm registry:build 2>&1 | tail -5 && pnpm --filter @ultima/docs exec vitest run src/__tests__/catalogue-filter.test.tsx 2>&1 | tail -60",
+        "pnpm test 2>&1 | tail -40",
+        "pnpm test 2>&1 | tail -5; echo \"EXIT: $?\"",
+        "pnpm test > /tmp/full-test.log 2>&1; echo \"EXIT CODE: $?\"; tail -20 /tmp/full-test.log"
+      ],
+      "searches": 40,
+      "filesOpened": 9,
+      "failedCommands": [
+        "cat apps/docs/src/demos/input-group/basic.tsx 2>/dev/null"
+      ],
+      "proofs": [
+        {
+          "argv": [
+            "pnpm",
+            "typecheck"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 10947.678206000011,
+          "tail": "\n> ultima-monorepo@ typecheck /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-2-WRGxqq/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "registry:build"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 3622.26330900006,
+          "tail": "icker...\n- Building dialog...\n- Building drawer...\n- Building dropdown-menu...\n- Building empty...\n- Building field...\n- Building fieldset...\n- Building hover-card...\n- Building input-group...\n- Building input-otp...\n- Building input...\n- Building menubar...\n- Building meter...\n- Building native-select...\n- Building navigation-menu...\n- Building pagination...\n- Building popover...\n- Building progress...\n- Building radio-group...\n- Building resizable...\n- Building scroll-area...\n- Building select...\n- Building separator...\n- Building sidebar...\n- Building skeleton...\n- Building slider...\n- Building spinner...\n- Building stat...\n- Building switch...\n- Building synthetic-stepper...\n- Building table...\n- Building tabs...\n- Building textarea...\n- Building toast...\n- Building toggle-group...\n- Building toggle...\n- Building tooltip...\n- Building setup-vite...\n- Building setup-next...\n- Building tokens-css...\n- Building ult-badge...\n- Building ult-button...\n- Building ult-card...\n- Building ult-code...\n- Building ult-meter...\n- Building ult-stat...\n- Building ult-table...\n- Building ult-tabs...\n- Building ult-tooltip...\n✔ Building registry.\nregistry: built 69 items into apps/docs/public/r\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/ui",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/synthetic-stepper.test.tsx"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 3088.3551149999257,
+          "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m/home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-2-WRGxqq/repo/packages/ui\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:57:02\n\u001b[2m   Duration \u001b[22m 2.30s\u001b[2m (tests 45%, import 35%, setup 12%, worker 8%)\u001b[22m\n\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/docs",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/axe.test.tsx",
+            "src/__tests__/components.test.ts"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 8042.3451489999425,
+          "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m/home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-2-WRGxqq/repo/apps/docs\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m324 passed\u001b[39m\u001b[22m\u001b[90m (324)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:57:05\n\u001b[2m   Duration \u001b[22m 7.22s\u001b[2m (worker 57%, tests 30%, import 13%)\u001b[22m\n\n"
+        }
+      ],
+      "servedItem": true
+    },
+    "removal": {
+      "editOperations": 0,
+      "editedFiles": {
+        "wiring": [],
+        "authored": []
+      },
+      "failedCommands": [],
+      "rebuildExit": 0,
+      "leftoverStatus": "",
+      "staleReferences": ""
+    },
+    "wiringFiles": [
+      "packages/ui/src/index.ts",
+      "apps/docs/src/components.ts",
+      "apps/docs/src/router.tsx",
+      "apps/docs/src/navigation.ts",
+      "apps/docs/src/elements.ts",
+      "registry/items.config.ts",
+      "apps/docs/vitest.config.ts",
+      "packages/ui/vitest.config.ts"
+    ]
+  },
+  "score": {
+    "additionComplete": true,
+    "removalClean": true,
+    "manualWiringFiles": 4
+  }
+}

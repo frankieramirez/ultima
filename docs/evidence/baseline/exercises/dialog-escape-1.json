@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "dialog-escape",
+  "attempt": 1,
+  "revision": "901e286ff3539325ba485ae8bd0ecf35684a9b2e",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.280 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "a285b6783f0d905bbddad4116fb792251561716516cc992d05701ef9be9e2c5a",
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 962.3858680000001
+  },
+  "task": {
+    "text": "You are in the Ultima repository, at its root. A user reports:\n\n\"Dialog Escape leaves focus behind\"\n\nFind the source file that owns this behavior and one shell command, run from the repository root, that runs the existing checks covering it.\nDo not modify any file. When you are done, end your reply with exactly these two lines:\nOWNER: <repository-relative path of the owning source file>\nCOMMAND: <the command>",
+    "sha256": "da27b724b92aeb09f48558faf389d9d1a19afc368d5e9fc709f941d75c28ebcd",
+    "entryPoint": "repository root, no files open"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "tools": [
+      "Bash",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "sessionId": "bf749419-31cb-481b-a2f2-304021a7d698",
+    "argv": [
+      "claude",
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--model",
+      "sonnet",
+      "--permission-mode",
+      "bypassPermissions",
+      "--strict-mcp-config",
+      "--setting-sources",
+      "project",
+      "--tools",
+      "Bash,Read,Grep,Glob"
+    ],
+    "started": "2026-09-23T20:17:03.291Z",
+    "wallMs": 113752.133989,
+    "durationMs": 113126,
+    "turns": 9,
+    "costUsd": 0.114297,
+    "exitCode": 0,
+    "trace": "dialog-escape-1.stream.jsonl.gz"
+  },
+  "observation": {
+    "toolCalls": 8,
+    "byTool": {
+      "Glob": 3,
+      "Read": 1,
+      "Bash": 4
+    },
+    "searches": [
+      "Glob {\"pattern\":\"packages/ui/src/Dialog*\"}",
+      "Glob {\"pattern\":\"packages/ui/src/__tests__/*ialog*\"}",
+      "Glob {\"pattern\":\"packages/ui/src/*ialog*\"}",
+      "cat package.json | grep -A5 '\"test\"'; echo ---; cat packages/ui/package.json | grep -A5 '\"test\"'"
+    ],
+    "filesOpened": [
+      "packages/ui/src/__tests__/dialog.test.tsx"
+    ],
+    "failedCommands": [],
+    "failedTools": 0,
+    "edits": [],
+    "bashCommands": [
+      "cat package.json | grep -A5 '\"test\"'; echo ---; cat packages/ui/package.json | grep -A5 '\"test\"'",
+      "cd packages/ui && pnpm test -- dialog.test.tsx 2>&1 | tail -60",
+      "cd /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-1-mB2M5s/repo && pnpm --filter @ultima/ui test -- src/__tests__/dialog.test.tsx 2>&1 | tail -40",
+      "cd /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-1-mB2M5s/repo/packages/ui && npx vitest run --reporter=verbose dialog 2>&1 | tail -40"
+    ],
+    "answer": "This filtered correctly (matched both `dialog.test.tsx` and `alert-dialog.test.tsx`, both containing \"Escape closes and returns focus to the trigger\" tests). The `dialog.tsx` component owns the reported Escape-focus behavior.\n\nOWNER: packages/ui/src/dialog.tsx\nCOMMAND: cd packages/ui && npx vitest run --reporter=verbose dialog"
+  },
+  "score": {
+    "owner": "packages/ui/src/dialog.tsx",
+    "located": true,
+    "wrongCandidate": null,
+    "commandValid": true,
+    "check": {
+      "command": "cd packages/ui && npx vitest run --reporter=verbose dialog",
+      "exitCode": 0,
+      "elapsedMs": 4057.2696219999925,
+      "coverageSeen": [
+        "dialog.test.tsx"
+      ],
+      "tail": "teHandle sit on the namespace as values 11ms\n ✓  chromium  src/__tests__/alert-dialog.test.tsx > public prop types drop className on styled parts and omit modal and disablePointerDismissal 24ms\n ✓  chromium  src/__tests__/alert-dialog.test.tsx > the open popup has no axe violations in dark 86ms\n ✓  chromium  src/__tests__/alert-dialog.test.tsx > the open popup has no axe violations in light 66ms\n ✓  chromium  src/__tests__/dialog.test.tsx > mounts closed with Title, Description, and Close unmounted 5ms\n ✓  chromium  src/__tests__/dialog.test.tsx > mounts open with Title, Description, and Close 16ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the dialog is named by Dialog.Title 14ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the popup has no outline when it holds focus and a child shows a ring 43ms\n ✓  chromium  src/__tests__/dialog.test.tsx > Escape closes and returns focus to the trigger, and Tab loops inside 119ms\n ✓  chromium  src/__tests__/dialog.test.tsx > data-open on Backdrop makes it visible and a closed dialog unmounts the popup 21ms\n ✓  chromium  src/__tests__/dialog.test.tsx > public prop types drop className on styled parts 12ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the open popup has no axe violations in dark 79ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the open popup has no axe violations in light 63ms\n\n Test Files  2 passed (2)\n      Tests  20 passed (20)\n   Start at  16:18:57\n   Duration  3.30s (worker 59%, tests 25%, import 13%, setup 3%)\n\n"
+    },
+    "success": true,
+    "ambiguousPrompt": false,
+    "candidatesNamed": [
+      "packages/ui/src/dialog.tsx"
+    ],
+    "rule": "success: the owner matches the key and the command exits 0 while running a covering test file"
+  },
+  "corrections": []
+}

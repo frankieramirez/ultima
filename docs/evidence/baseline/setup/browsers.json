@@ -1,0 +1,1 @@
+{"argv":["pnpm","--filter","@ultima/ui","exec","playwright","install","chromium"],"exitCode":0,"elapsedMs":491,"note":"binaries were already cached, so this records a verification, not a download"}

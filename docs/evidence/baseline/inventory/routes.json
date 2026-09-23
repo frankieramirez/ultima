@@ -1,0 +1,425 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "routes",
+  "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+  "data": {
+    "staticPaths": [
+      "/",
+      "/install",
+      "/elements",
+      "/tokens",
+      "/palette",
+      "/components",
+      "/components/$name",
+      "/rationale",
+      "/theme-studio"
+    ],
+    "componentPages": [
+      {
+        "path": "/components/button",
+        "item": "button",
+        "page": "written"
+      },
+      {
+        "path": "/components/badge",
+        "item": "badge",
+        "page": "written"
+      },
+      {
+        "path": "/components/card",
+        "item": "card",
+        "page": "written"
+      },
+      {
+        "path": "/components/table",
+        "item": "table",
+        "page": "written"
+      },
+      {
+        "path": "/components/tabs",
+        "item": "tabs",
+        "page": "written"
+      },
+      {
+        "path": "/components/meter",
+        "item": "meter",
+        "page": "written"
+      },
+      {
+        "path": "/components/stat",
+        "item": "stat",
+        "page": "written"
+      },
+      {
+        "path": "/components/code",
+        "item": "code",
+        "page": "written"
+      },
+      {
+        "path": "/components/tooltip",
+        "item": "tooltip",
+        "page": "written"
+      },
+      {
+        "path": "/components/dialog",
+        "item": "dialog",
+        "page": "written"
+      },
+      {
+        "path": "/components/dropdown-menu",
+        "item": "dropdown-menu",
+        "page": "written"
+      },
+      {
+        "path": "/components/select",
+        "item": "select",
+        "page": "written"
+      },
+      {
+        "path": "/components/input",
+        "item": "input",
+        "page": "written"
+      },
+      {
+        "path": "/components/switch",
+        "item": "switch",
+        "page": "written"
+      },
+      {
+        "path": "/components/sidebar",
+        "item": "sidebar",
+        "page": "written"
+      },
+      {
+        "path": "/components/collapsible",
+        "item": "collapsible",
+        "page": "written"
+      },
+      {
+        "path": "/components/toggle-group",
+        "item": "toggle-group",
+        "page": "written"
+      },
+      {
+        "path": "/components/separator",
+        "item": "separator",
+        "page": "written"
+      },
+      {
+        "path": "/components/field",
+        "item": "field",
+        "page": "written"
+      },
+      {
+        "path": "/components/fieldset",
+        "item": "fieldset",
+        "page": "written"
+      },
+      {
+        "path": "/components/checkbox",
+        "item": "checkbox",
+        "page": "written"
+      },
+      {
+        "path": "/components/radio-group",
+        "item": "radio-group",
+        "page": "written"
+      },
+      {
+        "path": "/components/textarea",
+        "item": "textarea",
+        "page": "written"
+      },
+      {
+        "path": "/components/combobox",
+        "item": "combobox",
+        "page": "written"
+      },
+      {
+        "path": "/components/slider",
+        "item": "slider",
+        "page": "written"
+      },
+      {
+        "path": "/components/alert",
+        "item": "alert",
+        "page": "written"
+      },
+      {
+        "path": "/components/alert-dialog",
+        "item": "alert-dialog",
+        "page": "written"
+      },
+      {
+        "path": "/components/toast",
+        "item": "toast",
+        "page": "written"
+      },
+      {
+        "path": "/components/progress",
+        "item": "progress",
+        "page": "written"
+      },
+      {
+        "path": "/components/skeleton",
+        "item": "skeleton",
+        "page": "written"
+      },
+      {
+        "path": "/components/spinner",
+        "item": "spinner",
+        "page": "written"
+      },
+      {
+        "path": "/components/empty",
+        "item": "empty",
+        "page": "written"
+      },
+      {
+        "path": "/components/breadcrumb",
+        "item": "breadcrumb",
+        "page": "written"
+      },
+      {
+        "path": "/components/pagination",
+        "item": "pagination",
+        "page": "written"
+      },
+      {
+        "path": "/components/navigation-menu",
+        "item": "navigation-menu",
+        "page": "written"
+      },
+      {
+        "path": "/components/popover",
+        "item": "popover",
+        "page": "written"
+      },
+      {
+        "path": "/components/drawer",
+        "item": "drawer",
+        "page": "written"
+      },
+      {
+        "path": "/components/context-menu",
+        "item": "context-menu",
+        "page": "written"
+      },
+      {
+        "path": "/components/hover-card",
+        "item": "hover-card",
+        "page": "written"
+      },
+      {
+        "path": "/components/menubar",
+        "item": "menubar",
+        "page": "written"
+      },
+      {
+        "path": "/components/accordion",
+        "item": "accordion",
+        "page": "written"
+      },
+      {
+        "path": "/components/avatar",
+        "item": "avatar",
+        "page": "written"
+      },
+      {
+        "path": "/components/scroll-area",
+        "item": "scroll-area",
+        "page": "written"
+      },
+      {
+        "path": "/components/toggle",
+        "item": "toggle",
+        "page": "written"
+      },
+      {
+        "path": "/components/color-field",
+        "item": "color-field",
+        "page": "written"
+      },
+      {
+        "path": "/components/aspect-ratio",
+        "item": "aspect-ratio",
+        "page": "written"
+      },
+      {
+        "path": "/components/command",
+        "item": "command",
+        "page": "written"
+      },
+      {
+        "path": "/components/calendar",
+        "item": "calendar",
+        "page": "written"
+      },
+      {
+        "path": "/components/date-picker",
+        "item": "date-picker",
+        "page": "written"
+      },
+      {
+        "path": "/components/button-group",
+        "item": "button-group",
+        "page": "written"
+      },
+      {
+        "path": "/components/input-group",
+        "item": "input-group",
+        "page": "written"
+      },
+      {
+        "path": "/components/input-otp",
+        "item": "input-otp",
+        "page": "written"
+      },
+      {
+        "path": "/components/native-select",
+        "item": "native-select",
+        "page": "written"
+      },
+      {
+        "path": "/components/resizable",
+        "item": "resizable",
+        "page": "written"
+      }
+    ],
+    "writtenPagesWithoutCatalogueEntry": [],
+    "mdxContent": [
+      "accordion.mdx",
+      "alert-dialog.mdx",
+      "alert.mdx",
+      "aspect-ratio.mdx",
+      "avatar.mdx",
+      "badge.mdx",
+      "breadcrumb.mdx",
+      "button-group.mdx",
+      "button.mdx",
+      "calendar.mdx",
+      "card.mdx",
+      "checkbox.mdx",
+      "code.mdx",
+      "collapsible.mdx",
+      "color-field.mdx",
+      "combobox.mdx",
+      "command.mdx",
+      "context-menu.mdx",
+      "date-picker.mdx",
+      "dialog.mdx",
+      "drawer.mdx",
+      "dropdown-menu.mdx",
+      "empty.mdx",
+      "field.mdx",
+      "fieldset.mdx",
+      "hover-card.mdx",
+      "input-group.mdx",
+      "input-otp.mdx",
+      "input.mdx",
+      "menubar.mdx",
+      "meter.mdx",
+      "native-select.mdx",
+      "navigation-menu.mdx",
+      "pagination.mdx",
+      "popover.mdx",
+      "progress.mdx",
+      "radio-group.mdx",
+      "resizable.mdx",
+      "scroll-area.mdx",
+      "select.mdx",
+      "separator.mdx",
+      "sidebar.mdx",
+      "skeleton.mdx",
+      "slider.mdx",
+      "spinner.mdx",
+      "stat.mdx",
+      "switch.mdx",
+      "table.mdx",
+      "tabs.mdx",
+      "textarea.mdx",
+      "toast.mdx",
+      "toggle-group.mdx",
+      "toggle.mdx",
+      "tooltip.mdx"
+    ],
+    "demoDirectories": [
+      "accordion",
+      "alert",
+      "alert-dialog",
+      "aspect-ratio",
+      "avatar",
+      "badge",
+      "breadcrumb",
+      "button",
+      "button-group",
+      "calendar",
+      "card",
+      "checkbox",
+      "code",
+      "collapsible",
+      "color-field",
+      "combobox",
+      "command",
+      "context-menu",
+      "date-picker",
+      "dialog",
+      "drawer",
+      "dropdown-menu",
+      "empty",
+      "field",
+      "fieldset",
+      "home",
+      "hover-card",
+      "input",
+      "input-group",
+      "input-otp",
+      "menubar",
+      "meter",
+      "native-select",
+      "navigation-menu",
+      "pagination",
+      "popover",
+      "progress",
+      "radio-group",
+      "resizable",
+      "scroll-area",
+      "select",
+      "separator",
+      "sidebar",
+      "skeleton",
+      "slider",
+      "spinner",
+      "stat",
+      "switch",
+      "table",
+      "tabs",
+      "textarea",
+      "toast",
+      "toggle",
+      "toggle-group",
+      "tokens",
+      "tooltip"
+    ],
+    "staticFiles": [
+      "_headers",
+      "android-chrome-192x192.png",
+      "android-chrome-512x512.png",
+      "apple-touch-icon.png",
+      "brand",
+      "elements",
+      "elements.html",
+      "favicon.ico",
+      "favicon.svg",
+      "fonts",
+      "llms.txt",
+      "og.png",
+      "r",
+      "sidebar-selected-prototype.html",
+      "site.webmanifest",
+      "theme-studio-prototype.html",
+      "tokens.css",
+      "tokens.json"
+    ]
+  }
+}

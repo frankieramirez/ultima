@@ -1,0 +1,4982 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "exports",
+  "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+  "data": {
+    "packageExports": {
+      "ultima-monorepo": null,
+      "@ultima/tokens": {
+        ".": "./src/index.ts",
+        "./tokens.stylex": "./src/tokens.stylex.ts",
+        "./tokens.json": "./dist/tokens.json"
+      },
+      "@ultima/ui": {
+        ".": "./src/index.ts",
+        "./lib/component": "./src/lib/component.ts",
+        "./lib/visually-hidden": "./src/lib/visually-hidden.ts",
+        "./*": "./src/*.tsx"
+      },
+      "@ultima/elements": null,
+      "@ultima-systems/cli": null,
+      "@ultima/docs": null
+    },
+    "symbols": {
+      "packages/ui/src/index.ts": [
+        {
+          "name": "Accordion",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AccordionHeaderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AccordionItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AccordionPanelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AccordionRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AccordionTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Alert",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AlertDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertDialog",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AlertDialogBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertDialogDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertDialogPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertDialogTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertDialogViewportProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AspectRatio",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AspectRatioProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Avatar",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AvatarFallbackProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AvatarImageProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AvatarRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Badge",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "BadgeProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BadgeTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BadgeVariant",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Breadcrumb",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "BreadcrumbItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BreadcrumbLinkProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BreadcrumbListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BreadcrumbRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BreadcrumbSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Button",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ButtonGroup",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ButtonGroupItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonGroupOrientation",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonGroupRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonGroupSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonGroupTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonGroupVariant",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonVariant",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Calendar",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CalendarContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarMonthSelectProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarNextTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarPrevTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarRangeTextProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableBodyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableCellProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableCellTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableHeaderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableHeadProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableRowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarViewControlProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarViewProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarViewTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarYearSelectProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Card",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CardBodyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CardDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CardFooterProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CardHeaderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CardRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CardTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Checkbox",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CheckboxGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CheckboxIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CheckboxRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Code",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CodeProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CodeVariant",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Collapsible",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CollapsiblePanelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CollapsibleRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CollapsibleTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorField",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ColorFieldInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldPickerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldSwatchProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Combobox",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ComboboxArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxChipProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxChipRemoveProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxChipsProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxClearProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxEmptyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxInputGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxRowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxStatusProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Command",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CommandArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandClearProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandEmptyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandInputGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandRowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandStatusProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenu",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ContextMenuArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuCheckboxItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuCheckboxItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuLinkItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuRadioGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuRadioItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuRadioItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuSubmenuRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuSubmenuTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePicker",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "DatePickerClearTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerControlProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerMonthSelectProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerNextTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerPresetTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerPrevTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerRangeTextProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableBodyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableCellProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableCellTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableHeaderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableHeadProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableRowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerViewControlProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerViewProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerViewTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerYearSelectProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Dialog",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "DialogBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DialogDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DialogPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DialogTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DialogViewportProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Drawer",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "DrawerBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerCloseProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerIndentBackgroundProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerIndentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerProviderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerSwipeAreaProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerViewportProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerVirtualKeyboardProviderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenu",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "DropdownMenuArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuCheckboxItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuCheckboxItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuLinkItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuRadioGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuRadioItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuRadioItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuSubmenuRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuSubmenuTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuViewportProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Empty",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "EmptyDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "EmptyIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "EmptyRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "EmptyTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Field",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "FieldControlProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldErrorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Fieldset",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "FieldsetLegendProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldsetRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldValidityProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCard",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "HoverCardArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardViewportProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Input",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "InputGroup",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "InputGroupAddonProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputGroupAlign",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputGroupInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputGroupRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputGroupSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputOTP",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "InputOTPInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputOTPRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputOTPSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputOTPSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Menubar",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "MenubarOrientation",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MenubarProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Meter",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "MeterIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MeterLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MeterRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MeterTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MeterTrackProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MeterValueProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NativeSelect",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "NativeSelectRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NativeSelectSelectProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NativeSelectSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenu",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "NavigationMenuArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuLinkProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuViewportProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Pagination",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "PaginationEllipsisProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationNextProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationPage",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationPageProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationPreviousProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Popover",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "PopoverArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverCloseProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverViewportProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Progress",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ProgressIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ProgressLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ProgressRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ProgressTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ProgressTrackProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ProgressValueProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "RadioGroup",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "RadioGroupIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "RadioGroupItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "RadioGroupRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Resizable",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ResizableApi",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ResizableHandleIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ResizableHandleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ResizableOrientation",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ResizablePanelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ResizableRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollArea",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ScrollAreaContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollAreaCornerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollAreaRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollAreaScrollbarProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollAreaThumbProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollAreaViewportProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Select",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SelectArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectItemTextProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectScrollDownArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectScrollUpArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectValueProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Separator",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SeparatorOrientation",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Sidebar",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SidebarButtonProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarCloseProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarLinkProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarPanelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarState",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Skeleton",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SkeletonProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Slider",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SliderControlProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderThumbProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderTrackProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderValueProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Spinner",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SpinnerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Stat",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "StatLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "StatRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "StatValueProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Switch",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SwitchRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SwitchThumbProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Table",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "TableBodyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableCaptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableCellProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableHeadCellProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableHeadProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableRowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableScrollProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableSort",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableSortButtonProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Tabs",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "TabsIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TabsListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TabsPanelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TabsRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TabsTabProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TabsVariant",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Textarea",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "TextareaProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TextareaSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Toast",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ToastArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastViewportProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Toggle",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ToggleGroup",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ToggleGroupItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToggleGroupRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToggleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToggleSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToggleVariant",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "Tooltip",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "TooltipArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TooltipPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TooltipPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TooltipTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "useColorField",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "useResizable",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "useSidebar",
+          "value": true,
+          "type": false
+        }
+      ],
+      "packages/ui/src/lib/component.ts": [
+        {
+          "name": "PartProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PlainProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "StyleProp",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/lib/visually-hidden.ts": [
+        {
+          "name": "visuallyHidden",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "visuallyHiddenFocusable",
+          "value": true,
+          "type": false
+        }
+      ],
+      "packages/ui/src/accordion.tsx": [
+        {
+          "name": "Accordion",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AccordionHeaderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AccordionItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AccordionPanelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AccordionRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AccordionTriggerProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/alert-dialog.tsx": [
+        {
+          "name": "AlertDialog",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AlertDialogBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertDialogDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertDialogPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertDialogTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertDialogViewportProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/alert.tsx": [
+        {
+          "name": "Alert",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AlertDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AlertTone",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/aspect-ratio.tsx": [
+        {
+          "name": "AspectRatio",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AspectRatioProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/avatar.tsx": [
+        {
+          "name": "Avatar",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AvatarFallbackProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AvatarImageProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "AvatarRootProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/badge.tsx": [
+        {
+          "name": "Badge",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "BadgeProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BadgeTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BadgeVariant",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/breadcrumb.tsx": [
+        {
+          "name": "Breadcrumb",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "BreadcrumbItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BreadcrumbLinkProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BreadcrumbListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BreadcrumbRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "BreadcrumbSeparatorProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/button-group.tsx": [
+        {
+          "name": "ButtonGroup",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ButtonGroupItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonGroupOrientation",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonGroupRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonGroupSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonGroupTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonGroupVariant",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/button.tsx": [
+        {
+          "name": "Button",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ButtonProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ButtonVariant",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/calendar.tsx": [
+        {
+          "name": "Calendar",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CalendarContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarMonthSelectProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarNextTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarPrevTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarRangeTextProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableBodyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableCellProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableCellTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableHeaderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableHeadProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarTableRowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarViewControlProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarViewProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarViewTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CalendarYearSelectProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/card.tsx": [
+        {
+          "name": "Card",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CardBodyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CardDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CardFooterProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CardHeaderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CardRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CardTitleProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/checkbox.tsx": [
+        {
+          "name": "Checkbox",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CheckboxGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CheckboxIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CheckboxRootProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/code.tsx": [
+        {
+          "name": "Code",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CodeProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CodeVariant",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/collapsible.tsx": [
+        {
+          "name": "Collapsible",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CollapsiblePanelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CollapsibleRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CollapsibleTriggerProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/color-field.tsx": [
+        {
+          "name": "ColorField",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ColorFieldInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldPickerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ColorFieldSwatchProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "useColorField",
+          "value": true,
+          "type": false
+        }
+      ],
+      "packages/ui/src/combobox.tsx": [
+        {
+          "name": "Combobox",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ComboboxArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxChipProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxChipRemoveProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxChipsProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxClearProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxEmptyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxInputGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxRowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxStatusProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ComboboxTriggerProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/command.tsx": [
+        {
+          "name": "Command",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "CommandArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandClearProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandEmptyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandInputGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandRowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandStatusProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "CommandTriggerProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/context-menu.tsx": [
+        {
+          "name": "ContextMenu",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ContextMenuArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuCheckboxItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuCheckboxItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuLinkItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuRadioGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuRadioItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuRadioItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuSubmenuRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuSubmenuTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ContextMenuTriggerProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/date-picker.tsx": [
+        {
+          "name": "DatePicker",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "DatePickerClearTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerControlProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerMonthSelectProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerNextTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerPresetTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerPrevTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerRangeTextProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableBodyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableCellProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableCellTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableHeaderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableHeadProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTableRowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerViewControlProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerViewProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerViewTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DatePickerYearSelectProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/dialog.tsx": [
+        {
+          "name": "Dialog",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "DialogBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DialogDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DialogPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DialogTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DialogViewportProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/drawer.tsx": [
+        {
+          "name": "Drawer",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "DrawerBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerCloseProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerIndentBackgroundProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerIndentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerProviderProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerSwipeAreaProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerViewportProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DrawerVirtualKeyboardProviderProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/dropdown-menu.tsx": [
+        {
+          "name": "DropdownMenu",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "DropdownMenuArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuCheckboxItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuCheckboxItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuLinkItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuRadioGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuRadioItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuRadioItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuSubmenuRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuSubmenuTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DropdownMenuViewportProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/empty.tsx": [
+        {
+          "name": "Empty",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "EmptyDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "EmptyIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "EmptyRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "EmptyTitleProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/field.tsx": [
+        {
+          "name": "Field",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "FieldControlProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldErrorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldValidityProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/fieldset.tsx": [
+        {
+          "name": "Fieldset",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "FieldsetLegendProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "FieldsetRootProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/hover-card.tsx": [
+        {
+          "name": "HoverCard",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "HoverCardArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HoverCardViewportProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/input-group.tsx": [
+        {
+          "name": "InputGroup",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "InputGroupAddonProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputGroupAlign",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputGroupInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputGroupRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputGroupSize",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/input-otp.tsx": [
+        {
+          "name": "InputOTP",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "InputOTPInputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputOTPRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputOTPSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputOTPSize",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/input.tsx": [
+        {
+          "name": "Input",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "InputProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "InputSize",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/menubar.tsx": [
+        {
+          "name": "Menubar",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "MenubarOrientation",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MenubarProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/meter.tsx": [
+        {
+          "name": "Meter",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "MeterIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MeterLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MeterRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MeterTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MeterTrackProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "MeterValueProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/native-select.tsx": [
+        {
+          "name": "NativeSelect",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "NativeSelectRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NativeSelectSelectProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NativeSelectSize",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/navigation-menu.tsx": [
+        {
+          "name": "NavigationMenu",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "NavigationMenuArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuLinkProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "NavigationMenuViewportProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/pagination.tsx": [
+        {
+          "name": "Pagination",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "PaginationEllipsisProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationNextProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationPage",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationPageProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationPreviousProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PaginationRootProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/popover.tsx": [
+        {
+          "name": "Popover",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "PopoverArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverCloseProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PopoverViewportProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/progress.tsx": [
+        {
+          "name": "Progress",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ProgressIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ProgressLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ProgressRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ProgressTone",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ProgressTrackProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ProgressValueProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/radio-group.tsx": [
+        {
+          "name": "RadioGroup",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "RadioGroupIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "RadioGroupItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "RadioGroupRootProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/resizable.tsx": [
+        {
+          "name": "Resizable",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ResizableApi",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ResizableHandleIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ResizableHandleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ResizableOrientation",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ResizablePanelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ResizableRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "useResizable",
+          "value": true,
+          "type": false
+        }
+      ],
+      "packages/ui/src/scroll-area.tsx": [
+        {
+          "name": "ScrollArea",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ScrollAreaContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollAreaCornerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollAreaRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollAreaScrollbarProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollAreaThumbProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScrollAreaViewportProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/select.tsx": [
+        {
+          "name": "Select",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SelectArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectBackdropProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectIconProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectItemIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectItemTextProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectPortalProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectScrollDownArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectScrollUpArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectSeparatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SelectValueProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/separator.tsx": [
+        {
+          "name": "Separator",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SeparatorOrientation",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SeparatorProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/sidebar.tsx": [
+        {
+          "name": "Sidebar",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SidebarButtonProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarCloseProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarGroupLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarGroupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarLinkProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarPanelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarState",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SidebarTriggerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "useSidebar",
+          "value": true,
+          "type": false
+        }
+      ],
+      "packages/ui/src/skeleton.tsx": [
+        {
+          "name": "Skeleton",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SkeletonProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/slider.tsx": [
+        {
+          "name": "Slider",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SliderControlProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderThumbProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderTrackProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SliderValueProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/spinner.tsx": [
+        {
+          "name": "Spinner",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SpinnerProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/stat.tsx": [
+        {
+          "name": "Stat",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "StatLabelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "StatRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "StatValueProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/switch.tsx": [
+        {
+          "name": "Switch",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SwitchRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SwitchThumbProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/table.tsx": [
+        {
+          "name": "Table",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "TableBodyProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableCaptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableCellProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableHeadCellProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableHeadProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableRowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableScrollProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableSort",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TableSortButtonProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/tabs.tsx": [
+        {
+          "name": "Tabs",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "TabsIndicatorProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TabsListProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TabsPanelProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TabsRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TabsTabProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TabsVariant",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/textarea.tsx": [
+        {
+          "name": "Textarea",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "TextareaProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TextareaSize",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/toast.tsx": [
+        {
+          "name": "Toast",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ToastArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastContentProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastDescriptionProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastRootProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastTitleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToastViewportProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/toggle-group.tsx": [
+        {
+          "name": "ToggleGroup",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ToggleGroupItemProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToggleGroupRootProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/toggle.tsx": [
+        {
+          "name": "Toggle",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ToggleProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToggleSize",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ToggleVariant",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/ui/src/tooltip.tsx": [
+        {
+          "name": "Tooltip",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "TooltipArrowProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TooltipPopupProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TooltipPositionerProps",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TooltipTriggerProps",
+          "value": false,
+          "type": true
+        }
+      ],
+      "packages/tokens/src/index.ts": [
+        {
+          "name": "arcane",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AUTOSAVE_BACKUP_KEY",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AUTOSAVE_KEY",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "AutosaveResult",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "border",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "canRedo",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "canUndo",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "color",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ColorMode",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "colorScheme",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "commit",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ContrastResult",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "createHistory",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "createRng",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "darkTheme",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "decodeFragment",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "DensityFactor",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "draftFingerprint",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "DraftHistory",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DraftParseReason",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "DraftParseResult",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "easing",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ember",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "encodeFragment",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "filter",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "font",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "FRAGMENT_SAFE_LENGTH",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "FragmentEncodeResult",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "gate",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "GeneratedScales",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "generateScales",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "GuidedGroup",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "HISTORY_LIMIT",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "lightTheme",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "mana",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "MeasurePreset",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "mithril",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "motion",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "Pairing",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PairingModeResult",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PairingResult",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "PAIRINGS",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "palette",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "parseDraft",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "radius",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "RECIPE_VERSION",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "redo",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ResolvedDraft",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "resolveDraft",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "restoreAutosave",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ruin",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "saveAutosave",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "SCALE_NAMES",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ScaleName",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScaleSeed",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ScaleSeeds",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "seedFromSrgb",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "serializeDraft",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "shadow",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ShapePreset",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "SHUFFLE_ATTEMPT_LIMIT",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "shuffleDraft",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ShuffleExhaustion",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ShuffleResult",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ShuffleTarget",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "ShuffleVariation",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "space",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "STOCK_MONO",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "STOCK_SANS",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "STOCK_SEEDS",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "stockDraft",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "StorageLike",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "STUDIO_VERSION",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "text",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "THEME_DRAFT_VERSION",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "ThemeDraft",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "toCss",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "TokenEntry",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TokensJson",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TokenTable",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "TokenValue",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "toRegistryItem",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "toStylex",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "TypeScale",
+          "value": false,
+          "type": true
+        },
+        {
+          "name": "undo",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "verdant",
+          "value": true,
+          "type": false
+        },
+        {
+          "name": "z",
+          "value": true,
+          "type": false
+        }
+      ]
+    }
+  }
+}

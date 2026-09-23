@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "c7996cc51b59fde07e916deb42811707c1958b59d67bd8f0190cbfedc613b6ad",
+    "lockfileSha256": "0d81ed7f53b3f8f339af91ba97eae74237861baec8279f9ef3f95645b6df59db",
+    "harnessSha256": "c66d38c9d5f3776828310f781180666171f9681faba88a82e5f8a5443fc380e5"
+  },
+  "snapshots": {
+    "exports": "26524957e761f10bb50d60f92bb0bc3212bcd75476eb4c04463ec0366ca81591",
+    "routes": "96e743650c0442f49c44c9d0d309058d6373f8b0fe426b0353c135fbc0302727",
+    "catalogue": "f563b38f4eeb43c7c4551bdc488b603d7d04c4222811a843fb2a7c79e3a06f2b",
+    "registry": "846a2d7c4bfbcf161f81e058c9cc27049aad24f105e4fef6531acb8510dd1635",
+    "elements": "7906f1cdbd192334f11a8953cfef14f4b6b206ae274c514c700217a32a6a0829",
+    "optimizer": "2c8ce080d4c45456cdbfd2472f38198674bcbc22fa2cde08698f8cd20dbd9a17",
+    "commands": "14037d1e35e20598d0d53c9c6df247cd445fcb61ff874b747cc2b1eaedf9770c"
+  }
+}

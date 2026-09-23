@@ -1,0 +1,471 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "full-release",
+    "version": 1,
+    "title": "Full release",
+    "phases": [
+      {
+        "id": "typecheck",
+        "argv": [
+          "pnpm",
+          "typecheck"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "test",
+        "argv": [
+          "pnpm",
+          "test"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "contrast",
+        "argv": [
+          "python3",
+          "packages/tokens/scripts/palette.py",
+          "--check"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "registry-build",
+        "argv": [
+          "pnpm",
+          "registry:build"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "docs-build",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "build"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "smoke-install",
+        "argv": [
+          "scripts/smoke-install.sh"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "CI check job in order: pnpm typecheck, pnpm test (every Vitest suite with the axe sweep, element parity and bundle budgets), palette.py --check, pnpm registry:build, docs production build",
+        "Smoke install workflow: Vite and Next.js consumers from a local registry build, the whole registry:ui catalogue, setup items, the element item, doctor, status and diff"
+      ],
+      "omitted": [],
+      "unsupported": [
+        "Production browser scenarios (26-cell matrix): no production runner exists at this revision",
+        "Remote CI status and branch protection: a local run cannot establish them"
+      ]
+    }
+  },
+  "conditions": {
+    "workload": "full-release",
+    "workloadVersion": 1,
+    "cache": "warm",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "c66d38c9d5f3776828310f781180666171f9681faba88a82e5f8a5443fc380e5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "c7996cc51b59fde07e916deb42811707c1958b59d67bd8f0190cbfedc613b6ad",
+    "lockfileSha256": "0d81ed7f53b3f8f339af91ba97eae74237861baec8279f9ef3f95645b6df59db",
+    "harnessSha256": "c66d38c9d5f3776828310f781180666171f9681faba88a82e5f8a5443fc380e5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      2.6,
+      2.27,
+      2.38
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.84,
+      2.07,
+      2.2
+    ]
+  },
+  "cachePolicy": {
+    "condition": "warm",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "one unmeasured run immediately before the batch",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "one workload at a time; phases run serially; the host is a shared workstation",
+  "priming": {
+    "runId": "full-release-warm-priming",
+    "order": -1,
+    "startedAt": "2026-09-23T18:26:33.459Z",
+    "elapsedMs": 173627.49084699998,
+    "status": "valid",
+    "phases": [
+      {
+        "id": "typecheck",
+        "elapsedMs": 10766.938903999999,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/full-release-warm-priming/typecheck.log.gz"
+      },
+      {
+        "id": "test",
+        "elapsedMs": 92730.682032,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/full-release-warm-priming/test.log.gz"
+      },
+      {
+        "id": "contrast",
+        "elapsedMs": 29.9945000000007,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/full-release-warm-priming/contrast.log.gz"
+      },
+      {
+        "id": "registry-build",
+        "elapsedMs": 3340.4810230000003,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/full-release-warm-priming/registry-build.log.gz"
+      },
+      {
+        "id": "docs-build",
+        "elapsedMs": 5968.925575000001,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/full-release-warm-priming/docs-build.log.gz"
+      },
+      {
+        "id": "smoke-install",
+        "elapsedMs": 60783.03758999999,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/full-release-warm-priming/smoke-install.log.gz"
+      }
+    ],
+    "cleared": []
+  },
+  "samples": [
+    {
+      "runId": "full-release-warm-1",
+      "order": 0,
+      "startedAt": "2026-09-23T18:29:27.126Z",
+      "elapsedMs": 171216.87944499997,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck",
+          "elapsedMs": 10328.087916000019,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-1/typecheck.log.gz"
+        },
+        {
+          "id": "test",
+          "elapsedMs": 91850.91694699999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-1/test.log.gz"
+        },
+        {
+          "id": "contrast",
+          "elapsedMs": 31.618530000036117,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-1/contrast.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3332.033315000008,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-1/registry-build.log.gz"
+        },
+        {
+          "id": "docs-build",
+          "elapsedMs": 5965.1662199999555,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-1/docs-build.log.gz"
+        },
+        {
+          "id": "smoke-install",
+          "elapsedMs": 59703.427907000005,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-1/smoke-install.log.gz"
+        }
+      ],
+      "cleared": []
+    },
+    {
+      "runId": "full-release-warm-2",
+      "order": 1,
+      "startedAt": "2026-09-23T18:32:18.383Z",
+      "elapsedMs": 172856.05005099997,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck",
+          "elapsedMs": 10443.442853000015,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-2/typecheck.log.gz"
+        },
+        {
+          "id": "test",
+          "elapsedMs": 92242.49115200003,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-2/test.log.gz"
+        },
+        {
+          "id": "contrast",
+          "elapsedMs": 30.861973999999464,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-2/contrast.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3433.3703950000345,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-2/registry-build.log.gz"
+        },
+        {
+          "id": "docs-build",
+          "elapsedMs": 6012.348400000017,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-2/docs-build.log.gz"
+        },
+        {
+          "id": "smoke-install",
+          "elapsedMs": 60688.236014000024,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-2/smoke-install.log.gz"
+        }
+      ],
+      "cleared": []
+    },
+    {
+      "runId": "full-release-warm-3",
+      "order": 2,
+      "startedAt": "2026-09-23T18:35:11.278Z",
+      "elapsedMs": 173520.882261,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck",
+          "elapsedMs": 10375.715970000078,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-3/typecheck.log.gz"
+        },
+        {
+          "id": "test",
+          "elapsedMs": 94462.36461100006,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-3/test.log.gz"
+        },
+        {
+          "id": "contrast",
+          "elapsedMs": 30.954768999945372,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-3/contrast.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3449.289586000028,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-3/registry-build.log.gz"
+        },
+        {
+          "id": "docs-build",
+          "elapsedMs": 6011.974030999932,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-3/docs-build.log.gz"
+        },
+        {
+          "id": "smoke-install",
+          "elapsedMs": 59185.675558999996,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-3/smoke-install.log.gz"
+        }
+      ],
+      "cleared": []
+    },
+    {
+      "runId": "full-release-warm-4",
+      "order": 3,
+      "startedAt": "2026-09-23T18:38:04.839Z",
+      "elapsedMs": 175544.68803199998,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck",
+          "elapsedMs": 10715.41887699999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-4/typecheck.log.gz"
+        },
+        {
+          "id": "test",
+          "elapsedMs": 94252.66298399994,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-4/test.log.gz"
+        },
+        {
+          "id": "contrast",
+          "elapsedMs": 33.69727099989541,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-4/contrast.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3541.698187000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-4/registry-build.log.gz"
+        },
+        {
+          "id": "docs-build",
+          "elapsedMs": 6157.680024000001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-4/docs-build.log.gz"
+        },
+        {
+          "id": "smoke-install",
+          "elapsedMs": 60836.82681,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-4/smoke-install.log.gz"
+        }
+      ],
+      "cleared": []
+    },
+    {
+      "runId": "full-release-warm-5",
+      "order": 4,
+      "startedAt": "2026-09-23T18:41:00.423Z",
+      "elapsedMs": 170267.22351799998,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck",
+          "elapsedMs": 10401.778072000016,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-5/typecheck.log.gz"
+        },
+        {
+          "id": "test",
+          "elapsedMs": 90997.26958600001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-5/test.log.gz"
+        },
+        {
+          "id": "contrast",
+          "elapsedMs": 31.364732999936678,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-5/contrast.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3424.6431590000866,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-5/registry-build.log.gz"
+        },
+        {
+          "id": "docs-build",
+          "elapsedMs": 6051.435049999971,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-5/docs-build.log.gz"
+        },
+        {
+          "id": "smoke-install",
+          "elapsedMs": 59355.38497500005,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/full-release-warm-5/smoke-install.log.gz"
+        }
+      ],
+      "cleared": []
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 172856.05005099997,
+    "minMs": 170267.22351799998,
+    "maxMs": 175544.68803199998,
+    "madMs": 1639.1706059999997
+  },
+  "budget": "report-only"
+}

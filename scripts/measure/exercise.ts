@@ -241,7 +241,8 @@ try {
     let check: Record<string, unknown> | null = null;
     if (command) {
       const executed = await run(checkout, ['bash', '-c', command], 15 * 60_000);
-      const covered = exercise.coverage.filter((file) => executed.output.includes(file));
+      // The default reporter names no files on a passing non-TTY run, so a command that names the file counts too.
+      const covered = exercise.coverage.filter((file) => executed.output.includes(file) || command.includes(file));
       check = { command, exitCode: executed.code, elapsedMs: executed.elapsedMs, coverageSeen: covered, tail: executed.output.slice(-1500) };
     }
     const commandValid = check !== null && check.exitCode === 0 && (check.coverageSeen as string[]).length > 0;
@@ -278,7 +279,8 @@ try {
   } else {
     const added = await agent(checkout, exercise.add, null, false);
     writeFileSync(join(out, `${id}.add.stream.jsonl.gz`), gzipSync(added.raw));
-    const addedFiles = git(checkout, ['status', '--porcelain', '--untracked-files=all'])
+    // Untrimmed: each porcelain line starts with a two-column status that may begin with a space.
+    const addedFiles = execFileSync('git', ['status', '--porcelain', '--untracked-files=all'], { cwd: checkout, encoding: 'utf8' })
       .split('\n')
       .filter(Boolean)
       .map((line) => line.slice(3));

@@ -1,0 +1,1847 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "registry",
+  "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+  "data": {
+    "order": [
+      "tokens",
+      "lib",
+      "accordion",
+      "alert-dialog",
+      "alert",
+      "aspect-ratio",
+      "avatar",
+      "badge",
+      "breadcrumb",
+      "button-group",
+      "button",
+      "calendar",
+      "card",
+      "checkbox",
+      "code",
+      "collapsible",
+      "color-field",
+      "combobox",
+      "command",
+      "context-menu",
+      "date-picker",
+      "dialog",
+      "drawer",
+      "dropdown-menu",
+      "empty",
+      "field",
+      "fieldset",
+      "hover-card",
+      "input-group",
+      "input-otp",
+      "input",
+      "menubar",
+      "meter",
+      "native-select",
+      "navigation-menu",
+      "pagination",
+      "popover",
+      "progress",
+      "radio-group",
+      "resizable",
+      "scroll-area",
+      "select",
+      "separator",
+      "sidebar",
+      "skeleton",
+      "slider",
+      "spinner",
+      "stat",
+      "switch",
+      "table",
+      "tabs",
+      "textarea",
+      "toast",
+      "toggle-group",
+      "toggle",
+      "tooltip",
+      "setup-vite",
+      "setup-next",
+      "tokens-css",
+      "ult-badge",
+      "ult-button",
+      "ult-card",
+      "ult-code",
+      "ult-meter",
+      "ult-stat",
+      "ult-table",
+      "ult-tabs",
+      "ult-tooltip"
+    ],
+    "items": [
+      {
+        "name": "tokens",
+        "type": "registry:lib",
+        "title": "Ultima tokens",
+        "description": "Ultima's design tokens and the dark and light themes, as StyleX variables.",
+        "docsSha256": "f480ad9b3732cfb86ba67ea306cc9e323f2b3ef2e23b0b42f1a0e29e58845133",
+        "docs": "import { color, space, text } from '@/lib/tokens.stylex';\nimport { colorScheme, darkTheme, lightTheme } from '@/lib/themes';\n\nApply colorScheme to <html> and a theme to any subtree to pin it.",
+        "dependencies": [
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [],
+        "files": [
+          {
+            "path": "ultima/lib/palette.ts",
+            "type": "registry:lib",
+            "target": null
+          },
+          {
+            "path": "ultima/lib/themes.ts",
+            "type": "registry:lib",
+            "target": null
+          },
+          {
+            "path": "ultima/lib/tokens-json.ts",
+            "type": "registry:lib",
+            "target": null
+          },
+          {
+            "path": "ultima/lib/tokens.stylex.ts",
+            "type": "registry:lib",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "lib",
+        "type": "registry:lib",
+        "title": "Ultima component helpers",
+        "description": "The shared prop types every Ultima component is built on, plus the clip-hidden style for visually hidden elements.",
+        "docsSha256": "5c5df206f4e8f0dcd8077fdd20b04c8dc566e919666760bdf62e3a3ca0f45e8c",
+        "docs": "import type { PartProps, PlainProps, StyleProp } from '@/lib/component';\nimport { visuallyHidden, visuallyHiddenFocusable } from '@/lib/visually-hidden';",
+        "dependencies": [
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [],
+        "files": [
+          {
+            "path": "ultima/lib/component.ts",
+            "type": "registry:lib",
+            "target": null
+          },
+          {
+            "path": "ultima/lib/visually-hidden.ts",
+            "type": "registry:lib",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "accordion",
+        "type": "registry:ui",
+        "title": "Accordion",
+        "description": "Disclosure sections under one shared value, on Base UI, with the heading level left to you.",
+        "docsSha256": "0981172920437818c6804d91bbcb6f9b1b72e0f5f3f2838ba434443128796d1d",
+        "docs": "import { Accordion } from '@/components/ui/accordion';\n\n<Accordion.Root>\n  <Accordion.Item value=\"a\">\n    <Accordion.Header>\n      <Accordion.Trigger>Details</Accordion.Trigger>\n    </Accordion.Header>\n    <Accordion.Panel>\n      <div style={{ padding: '1rem' }}>Anything.</div>\n    </Accordion.Panel>\n  </Accordion.Item>\n</Accordion.Root>\n\nThe heading level is yours: Header renders an h3 by default, change it through render. Do not pass a Button through render on Trigger; it is the styled control and paints its own full-measure row. The panel's content padding goes on a wrapper inside the panel, never on the panel itself.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/accordion.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "alert-dialog",
+        "type": "registry:ui",
+        "title": "Alert Dialog",
+        "description": "A confirmation overlay that Escape closes and a backdrop click does not, on Base UI.",
+        "docsSha256": "5b1050d9ef91fde6e7f5808b28075b3e12bfb94bb5f4637a19d740e884019f09",
+        "docs": "import { AlertDialog } from '@/components/ui/alert-dialog';\nimport { Button } from '@/components/ui/button';\n\n<AlertDialog.Root>\n  <AlertDialog.Trigger render={<Button />}>Delete report</AlertDialog.Trigger>\n  <AlertDialog.Portal>\n    <AlertDialog.Backdrop />\n    <AlertDialog.Viewport>\n      <AlertDialog.Popup>\n        <AlertDialog.Title>Delete report</AlertDialog.Title>\n        <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>\n        <AlertDialog.Close render={<Button variant=\"ghost\" />}>Cancel</AlertDialog.Close>\n        <AlertDialog.Close render={<Button tone=\"danger\" />}>Delete</AlertDialog.Close>\n      </AlertDialog.Popup>\n    </AlertDialog.Viewport>\n  </AlertDialog.Portal>\n</AlertDialog.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/alert-dialog.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "alert",
+        "type": "registry:ui",
+        "title": "Alert",
+        "description": "A static in-page callout in six tones.",
+        "docsSha256": "d78624d8b91d548e1dd578b8fa23f483309c5c9a9bfd60b97bc3e8ee0b0e9a09",
+        "docs": "import { Alert } from '@/components/ui/alert';\n\n<Alert.Root tone=\"warning\">\n  <Alert.Title>Disk almost full</Alert.Title>\n  <Alert.Description>87% of 500 GB used.</Alert.Description>\n</Alert.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/alert.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "aspect-ratio",
+        "type": "registry:ui",
+        "title": "Aspect Ratio",
+        "description": "A fixed-ratio box for media, with the box and the radius left to the style slot.",
+        "docsSha256": "083b4412bcdaf1471a2ec6a392c58459641884fc8cf7c0eac80b0c8987299ead",
+        "docs": "import { AspectRatio } from '@/components/ui/aspect-ratio';\n\n<AspectRatio ratio={16 / 9}>\n  <img src=\"/cover.png\" alt=\"Ridgeline at dusk\" />\n</AspectRatio>\n\nratio is a number written inline as aspect-ratio, the file's one runtime declaration. The box and the radius go through the style slot, and render swaps the div for your own element, like a figure.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/aspect-ratio.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "avatar",
+        "type": "registry:ui",
+        "title": "Avatar",
+        "description": "An image that falls back to whatever you put behind it, at whatever size you set.",
+        "docsSha256": "63aae02b3bcd96c3bd6427a6e93c2564b0e6234a3d9fbe4c75574ba1f6b56030",
+        "docs": "import { Avatar } from '@/components/ui/avatar';\n\n<Avatar.Root>\n  <Avatar.Fallback>FR</Avatar.Fallback>\n  <Avatar.Image src=\"/avatar.png\" alt=\"Frankie\" />\n</Avatar.Root>\n\nFallback goes before Image in DOM order; the not-yet-loaded image is hidden with visibility, never display, so keepMounted and lazy loading work. alt is yours: empty beside a visible name, a name when the avatar stands alone. The box and the radius are the style slot: there is no size or shape prop.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/avatar.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "badge",
+        "type": "registry:ui",
+        "title": "Badge",
+        "description": "A small static label in two variants and six tones.",
+        "docsSha256": "dd9d43d924d79163a86298b437d5bd1e518b94e68e2a8ac0cca8ead795587123",
+        "docs": "import { Badge } from '@/components/ui/badge';\n\n<Badge variant=\"subtle\" tone=\"success\">Passing</Badge>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/badge.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "breadcrumb",
+        "type": "registry:ui",
+        "title": "Breadcrumb",
+        "description": "A trail of links to the current page, with a swappable separator glyph.",
+        "docsSha256": "0d6e5cd2f5a6de18b5cd52b58a207f60984ba29ad6ccbb48080262f86c0c61d7",
+        "docs": "import { Breadcrumb } from '@/components/ui/breadcrumb';\n\n<Breadcrumb.Root>\n  <Breadcrumb.List>\n    <Breadcrumb.Item>\n      <Breadcrumb.Link href=\"/\">Home</Breadcrumb.Link>\n    </Breadcrumb.Item>\n    <Breadcrumb.Separator />\n    <Breadcrumb.Item>\n      <Breadcrumb.Link href=\"/settings\" active>Settings</Breadcrumb.Link>\n    </Breadcrumb.Item>\n  </Breadcrumb.List>\n</Breadcrumb.Root>\n\nRoot carries aria-label=\"Breadcrumb\" unless you name it yourself. A second trail on one page needs its own name.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/breadcrumb.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "button-group",
+        "type": "registry:ui",
+        "title": "Button Group",
+        "description": "A row of buttons joined as one control, in three variants and two tones, on Base UI.",
+        "docsSha256": "1232056aa92e565ead8b53a5c55ca64f2e4c071eed0249b397ac5ade5c36c7ed",
+        "docs": "import { ButtonGroup } from '@/components/ui/button-group';\n\n<ButtonGroup.Root aria-label=\"Text actions\">\n  <ButtonGroup.Item>Cut</ButtonGroup.Item>\n  <ButtonGroup.Item>Copy</ButtonGroup.Item>\n  <ButtonGroup.Item>Paste</ButtonGroup.Item>\n</ButtonGroup.Root>\n\nvariant, size, and tone sit on Root and reach every Item; an Item takes its own variant and tone, which win, and no size.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/button-group.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "button",
+        "type": "registry:ui",
+        "title": "Button",
+        "description": "A button in three variants, three sizes, and two tones, on Base UI.",
+        "docsSha256": "9c3f944ecd8b8ea13bdf4f0c0dd3fdf70ce65423ed84288de2f84a516b74ec37",
+        "docs": "import { Button } from '@/components/ui/button';\n\n<Button variant=\"solid\" size=\"md\" tone=\"accent\">Save</Button>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/button.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "calendar",
+        "type": "registry:ui",
+        "title": "Calendar",
+        "description": "An inline day, month, and year grid for picking dates, on Zag.",
+        "docsSha256": "16747342a7729b52ddd3cb6b21de72f7ef4287d54b15d4c02397ab48fff241db",
+        "docs": "import { Calendar } from '@/components/ui/calendar';\n\n<Calendar.Root>\n  <Calendar.Label>Release date</Calendar.Label>\n  <Calendar.Content>\n    <Calendar.View view=\"day\">\n      <Calendar.ViewControl view=\"day\">\n        <Calendar.PrevTrigger />\n        <Calendar.ViewTrigger>\n          <Calendar.RangeText />\n        </Calendar.ViewTrigger>\n        <Calendar.NextTrigger />\n      </Calendar.ViewControl>\n      <Calendar.Table view=\"day\" />\n    </Calendar.View>\n  </Calendar.Content>\n</Calendar.Root>\n\nThe machine runs inline. selectionMode is single, multiple, or range, and value is a @internationalized/date DateValue[]. Label names the grid; Content and Table keep Zag's hidden and role=grid wiring. MonthSelect and YearSelect stay native. For the input-and-popup composition, use Date Picker.",
+        "dependencies": [
+          "@internationalized/date",
+          "@stylexjs/stylex",
+          "@zag-js/date-picker",
+          "@zag-js/react"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/calendar.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "card",
+        "type": "registry:ui",
+        "title": "Card",
+        "description": "A surface with a header, body, and footer for grouping related content.",
+        "docsSha256": "e22b328bc8a6a00efb2f82eb19cef32419a02aab88bb4a34022f5808ffd1bdcb",
+        "docs": "import { Card } from '@/components/ui/card';\n\n<Card.Root>\n  <Card.Header>\n    <Card.Title>Ultima</Card.Title>\n    <Card.Description>A design system.</Card.Description>\n  </Card.Header>\n  <Card.Body>Anything.</Card.Body>\n</Card.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/card.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "checkbox",
+        "type": "registry:ui",
+        "title": "Checkbox",
+        "description": "A checkbox with a check, a dash for mixed, and an optional group, on Base UI.",
+        "docsSha256": "038248f96fb89cf9d8427a2b56881a96b9070d58231f30212d947f720b7574a6",
+        "docs": "import { Checkbox } from '@/components/ui/checkbox';\n\n<label>\n  Accept terms\n  <Checkbox.Root>\n    <Checkbox.Indicator />\n  </Checkbox.Root>\n</label>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/checkbox.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "code",
+        "type": "registry:ui",
+        "title": "Code",
+        "description": "Monospaced code, inline in a sentence or as a block.",
+        "docsSha256": "e85770442abe47358142189c9294d831ed5916e460bd775ab8a3761b137c75d6",
+        "docs": "import { Code } from '@/components/ui/code';\n\n<Code>npx shadcn add @ultima/button</Code>\n<Code variant=\"block\">{source}</Code>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/code.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "collapsible",
+        "type": "registry:ui",
+        "title": "Collapsible",
+        "description": "A disclosure that animates its panel open and closed, on Base UI.",
+        "docsSha256": "8d047480d850f91d234461bc71f315f17b62265073b9731351ff9f988744c2b5",
+        "docs": "import { Button } from '@/components/ui/button';\nimport { Collapsible } from '@/components/ui/collapsible';\n\n<Collapsible.Root>\n  <Collapsible.Trigger render={<Button variant=\"ghost\" />}>Details</Collapsible.Trigger>\n  <Collapsible.Panel>Anything.</Collapsible.Panel>\n</Collapsible.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/collapsible.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "color-field",
+        "type": "registry:ui",
+        "title": "Color Field",
+        "description": "An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.",
+        "docsSha256": "b1f2beb6a09cdc3b36bc1c69b890cc91cce9726f5dfa722e5398034248c0444e",
+        "docs": "import { ColorField } from '@/components/ui/color-field';\n\n<ColorField.Root defaultValue=\"#3366ff\">\n  <ColorField.Swatch aria-label=\"Pick accent\" />\n  <ColorField.Input aria-label=\"Hex\" />\n  <ColorField.Portal>\n    <ColorField.Positioner sideOffset={8}>\n      <ColorField.Popup>\n        <ColorField.Picker />\n      </ColorField.Popup>\n    </ColorField.Positioner>\n  </ColorField.Portal>\n</ColorField.Root>\n\nThe value is an opaque sRGB #rrggbb string. size is sm, md, or lg on Root. Name the swatch with aria-label; the popup defaults to aria-label=\"Color picker\". Input fills Field's control slot, so invalid hex carries the validation state. There is no alpha and no wide-gamut format.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib",
+          "@ultima/popover"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/color-field.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "combobox",
+        "type": "registry:ui",
+        "title": "Combobox",
+        "description": "A filterable input whose value is restricted to the item set, on Base UI.",
+        "docsSha256": "7adad67f0f900994c168ead4832f494a96d28b638825eb5b46ec496dac84c0e6",
+        "docs": "import { Combobox } from '@/components/ui/combobox';\n\n<Combobox.Root items={['Apple', 'Banana']}>\n  <Combobox.InputGroup>\n    <Combobox.Input placeholder=\"Search fruit\" />\n    <Combobox.Clear />\n    <Combobox.Trigger>\n      <Combobox.Icon />\n    </Combobox.Trigger>\n  </Combobox.InputGroup>\n  <Combobox.Portal>\n    <Combobox.Positioner>\n      <Combobox.Popup>\n        <Combobox.Empty>No fruit matches.</Combobox.Empty>\n        <Combobox.List>\n          {(item) => (\n            <Combobox.Item key={item} value={item}>\n              <Combobox.ItemIndicator />\n              {item}\n            </Combobox.Item>\n          )}\n        </Combobox.List>\n      </Combobox.Popup>\n    </Combobox.Positioner>\n  </Combobox.Portal>\n</Combobox.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/combobox.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "command",
+        "type": "registry:ui",
+        "title": "Command",
+        "description": "A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.",
+        "docsSha256": "d0399961e2166c6f0931d9fbafefb7d1f48b8df0dc0b7d59b54f082bc8805c3c",
+        "docs": "import { Command } from '@/components/ui/command';\n\n<Command.Root items={['New file', 'Open report', 'Export PDF']}>\n  <Command.InputGroup>\n    <Command.Input placeholder=\"Search actions\" aria-label=\"Search actions\" />\n    <Command.Clear aria-label=\"Clear\" />\n    <Command.Trigger aria-label=\"Open actions\">\n      <Command.Icon />\n    </Command.Trigger>\n  </Command.InputGroup>\n  <Command.Portal>\n    <Command.Positioner>\n      <Command.Popup>\n        <Command.Empty>No action matches.</Command.Empty>\n        <Command.List>\n          {(action) => <Command.Item key={action} value={action}>{action}</Command.Item>}\n        </Command.List>\n      </Command.Popup>\n    </Command.Positioner>\n  </Command.Portal>\n</Command.Root>\n\nFor the palette, render the list in place: <Command.Root open inline items={...}> and drop Portal, Positioner, and Popup. The filter prop takes your own scorer; without it the default Collator filter runs.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/command.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "context-menu",
+        "type": "registry:ui",
+        "title": "Context Menu",
+        "description": "A menu opened by right click or long press, anchored to the pointer rather than to a control.",
+        "docsSha256": "0b5baf05ddf2199692e92b5863abebbec8b163c90d618a997d573c8d3eec7ae9",
+        "docs": "import { ContextMenu } from '@/components/ui/context-menu';\n\n<ContextMenu.Root>\n  <ContextMenu.Trigger>Quarterly report</ContextMenu.Trigger>\n  <ContextMenu.Portal>\n    <ContextMenu.Backdrop />\n    <ContextMenu.Positioner>\n      <ContextMenu.Popup aria-label=\"Quarterly report\">\n        <ContextMenu.Item>Rename</ContextMenu.Item>\n        <ContextMenu.Separator />\n        <ContextMenu.Item>Archive</ContextMenu.Item>\n      </ContextMenu.Popup>\n    </ContextMenu.Positioner>\n  </ContextMenu.Portal>\n</ContextMenu.Root>\n\nTrigger is the region you right-click, wrapping your own content: no role, no ARIA, not focusable, and never a Button. Put the same actions on a visible control too, or a keyboard user cannot reach them. Name the popup with aria-label; a submenu popup is named by its SubmenuTrigger. Portalling needs isolation: isolate on your app root and body { position: relative } for iOS 26 Safari.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/context-menu.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "date-picker",
+        "type": "registry:ui",
+        "title": "Date Picker",
+        "description": "A date input with a popup day, month, and year grid, on Zag.",
+        "docsSha256": "ddfae13b6f9956035343aaa095ea4a7f590df8c203aab7cbd4a310726830cfa4",
+        "docs": "import { DatePicker } from '@/components/ui/date-picker';\n\n<DatePicker.Root>\n  <DatePicker.Label>Release date</DatePicker.Label>\n  <DatePicker.Control>\n    <DatePicker.Input />\n    <DatePicker.ClearTrigger />\n    <DatePicker.Trigger />\n  </DatePicker.Control>\n  <DatePicker.Portal>\n    <DatePicker.Positioner>\n      <DatePicker.Content>\n        <DatePicker.View view=\"day\">\n          <DatePicker.ViewControl view=\"day\">\n            <DatePicker.PrevTrigger />\n            <DatePicker.ViewTrigger>\n              <DatePicker.RangeText />\n            </DatePicker.ViewTrigger>\n            <DatePicker.NextTrigger />\n          </DatePicker.ViewControl>\n          <DatePicker.Table view=\"day\" />\n        </DatePicker.View>\n      </DatePicker.Content>\n    </DatePicker.Positioner>\n  </DatePicker.Portal>\n</DatePicker.Root>\n\nsize is sm, md, or lg on Control, default md. Label names the input; a Field.Label does not reach it, so use DatePicker.Label or aria-labelledby. selectionMode=\"range\" pairs two Inputs at index 0 and 1, and PresetTrigger commits a named range. For the grid alone, use Calendar.",
+        "dependencies": [
+          "@internationalized/date",
+          "@stylexjs/stylex",
+          "@zag-js/date-picker",
+          "@zag-js/react"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/date-picker.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "dialog",
+        "type": "registry:ui",
+        "title": "Dialog",
+        "description": "A modal overlay with a title, a description, and a close slot rendered by the caller.",
+        "docsSha256": "c937b407f1eedbde3c2015a4ebb05e79c7f523e8cef16a89f1974fb5450a177a",
+        "docs": "import { Dialog } from '@/components/ui/dialog';\n\n<Dialog.Root>\n  <Dialog.Trigger render={<Button />}>Open</Dialog.Trigger>\n  <Dialog.Portal>\n    <Dialog.Backdrop />\n    <Dialog.Viewport>\n      <Dialog.Popup>\n        <Dialog.Title>Title</Dialog.Title>\n        <Dialog.Description>Description</Dialog.Description>\n        <Dialog.Close render={<Button variant=\"ghost\">Close</Button>} />\n      </Dialog.Popup>\n    </Dialog.Viewport>\n  </Dialog.Portal>\n</Dialog.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/dialog.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "drawer",
+        "type": "registry:ui",
+        "title": "Drawer",
+        "description": "An edge-anchored panel with swipe gestures, snap points, and the Android back gesture, on Base UI.",
+        "docsSha256": "43c994d51559a64aecb6a695e897fcf145e5fb89b690bf1b4bc9bcd3c8ffa63c",
+        "docs": "import { Button } from '@/components/ui/button';\nimport { Drawer } from '@/components/ui/drawer';\n\n<Drawer.Root>\n  <Drawer.Trigger render={<Button />}>Filters</Drawer.Trigger>\n  <Drawer.Portal>\n    <Drawer.Backdrop />\n    <Drawer.Viewport>\n      <Drawer.Popup>\n        <Drawer.Title>Filters</Drawer.Title>\n        <Drawer.Description>Narrow the report to one team.</Drawer.Description>\n        <Drawer.Close render={<Button variant=\"ghost\" />}>Done</Drawer.Close>\n      </Drawer.Popup>\n    </Drawer.Viewport>\n  </Drawer.Portal>\n</Drawer.Root>\n\nRoot > Portal > Viewport > Popup is the minimum spine: without the Viewport the swipe gesture and touch scroll locking are both off. swipeDirection is the direction the drawer is dismissed toward, which is the edge it sits on, and its values are physical: 'down' by default, or 'up', 'left', 'right'. Trigger and Close are unstyled slots: render an Ultima Button or an element with its own focus ring. Ship a Trigger alongside any SwipeArea, because swiping a drawer open has no keyboard equivalent. Indent and IndentBackground pass through unstyled; the app-shell CSS that animates them is on the documentation page. Portalling needs isolation: isolate on your app root and body { position: relative } for iOS 26 Safari.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/drawer.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "dropdown-menu",
+        "type": "registry:ui",
+        "title": "Dropdown Menu",
+        "description": "A keyboard-navigable menu with items, submenus, and selection controls, on Base UI.",
+        "docsSha256": "991258ddead99e0235d60d9655e66f4d856b0208e88c6023e92a53027e178589",
+        "docs": "import { Button } from '@/components/ui/button';\nimport { DropdownMenu } from '@/components/ui/dropdown-menu';\n\n<DropdownMenu.Root>\n  <DropdownMenu.Trigger render={<Button />}>Actions</DropdownMenu.Trigger>\n  <DropdownMenu.Portal>\n    <DropdownMenu.Positioner>\n      <DropdownMenu.Popup>\n        <DropdownMenu.Item>Settings</DropdownMenu.Item>\n      </DropdownMenu.Popup>\n    </DropdownMenu.Positioner>\n  </DropdownMenu.Portal>\n</DropdownMenu.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/dropdown-menu.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "empty",
+        "type": "registry:ui",
+        "title": "Empty",
+        "description": "A centered placeholder for a collection with nothing in it.",
+        "docsSha256": "a6c937f865a0edf7c2fcb77cb9d3f2c4feaa1e502522fc25fb0f76dbf8dd51de",
+        "docs": "import { Button } from '@/components/ui/button';\nimport { Empty } from '@/components/ui/empty';\n\n<Empty.Root>\n  <Empty.Title>No reports yet</Empty.Title>\n  <Empty.Description>Run an audit to see its findings here.</Empty.Description>\n  <Button>Run an audit</Button>\n</Empty.Root>\n\nThe action is children, a Button, not a part.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/empty.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "field",
+        "type": "registry:ui",
+        "title": "Field",
+        "description": "A label, description, and error bound to one control, on Base UI.",
+        "docsSha256": "a1f9f298dc8c663604b43909dcf74073bdd61e7bb548eef1477eefe7f833a606",
+        "docs": "import { Field } from '@/components/ui/field';\nimport { Input } from '@/components/ui/input';\n\n<Field.Root name=\"email\">\n  <Field.Label>Email</Field.Label>\n  <Input type=\"email\" required />\n  <Field.Description>We never share this.</Field.Description>\n  <Field.Error />\n</Field.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/field.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "fieldset",
+        "type": "registry:ui",
+        "title": "Fieldset",
+        "description": "A legend and related controls as a real fieldset, on Base UI.",
+        "docsSha256": "f5871cf855c4d67cd18b0c98cf47493eedbf7dcc183304f094c065554c29966b",
+        "docs": "import { Field } from '@/components/ui/field';\nimport { Fieldset } from '@/components/ui/fieldset';\nimport { Input } from '@/components/ui/input';\n\n<Fieldset.Root>\n  <Fieldset.Legend>Account</Fieldset.Legend>\n  <Field.Root name=\"email\">\n    <Field.Label>Email</Field.Label>\n    <Input type=\"email\" />\n  </Field.Root>\n</Fieldset.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/fieldset.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "hover-card",
+        "type": "registry:ui",
+        "title": "Hover Card",
+        "description": "A preview of where a link goes, opened by hovering or focusing the link itself.",
+        "docsSha256": "7cb547aa881d05abb1c9752b453356d9c059e2f9cc98cf6e34696cf29041fbfb",
+        "docs": "import { HoverCard } from '@/components/ui/hover-card';\n\n<p>\n  The gate is documented in the{' '}\n  <HoverCard.Root>\n    <HoverCard.Trigger href=\"/docs/contrast-gate\">contrast gate</HoverCard.Trigger>\n    <HoverCard.Portal>\n      <HoverCard.Positioner sideOffset={8}>\n        <HoverCard.Popup>\n          <HoverCard.Arrow />\n          Every semantic pairing is checked against WCAG AA before a palette ships.\n        </HoverCard.Popup>\n      </HoverCard.Positioner>\n    </HoverCard.Portal>\n  </HoverCard.Root>{' '}\n  section, which lists the pairings it covers.\n</p>\n\nTrigger is the link itself, an <a> with your own href, styled by Ultima and underlined because it sits in your prose. It is the one Ultima link that underlines. Put everything the card shows at that destination too: the card never opens on touch, and a screen reader reads its content as unlabelled text, so the link must be the whole story on its own. There is no Title, no Description, and no Close. delay and closeDelay are Trigger props, defaulting to 600 and 300.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/hover-card.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "input-group",
+        "type": "registry:ui",
+        "title": "Input Group",
+        "description": "A field box holding an input with leading and trailing addons, in three sizes.",
+        "docsSha256": "d2f5c0ffe92ef73241485527e0e975eb678f9e1c332566102a54accae7238d51",
+        "docs": "import { InputGroup } from '@/components/ui/input-group';\n\n<InputGroup.Root>\n  <InputGroup.Addon>@</InputGroup.Addon>\n  <InputGroup.Input placeholder=\"handle\" />\n  <InputGroup.Addon align=\"end\">.dev</InputGroup.Addon>\n</InputGroup.Root>\n\nRoot is a visual box with no role; a Field or Fieldset owns the semantics. The name is the inner input's own: a label, aria-label, or Field.Label. align on Addon positions it, not the DOM order.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/input-group.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "input-otp",
+        "type": "registry:ui",
+        "title": "Input OTP",
+        "description": "A one-time-code field of uniform square slots, on Base UI.",
+        "docsSha256": "abcb604449bde32bcd5823ac09004dd88b411ac2a64591a5072c61898e509752",
+        "docs": "import { InputOTP } from '@/components/ui/input-otp';\n\n<label htmlFor=\"code\">Verification code</label>\n<InputOTP.Root id=\"code\" length={6}>\n  {Array.from({ length: 6 }, (_, index) => (\n    <InputOTP.Input key={index} aria-label={index === 0 ? undefined : `Character ${index + 1} of 6`} />\n  ))}\n</InputOTP.Root>\n\nlength is required; the consumer renders one Input per slot. size sits on Root and reaches the slots through context. Slots two through N take their own aria-label because the first slot is named by the field's label.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/input-otp.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "input",
+        "type": "registry:ui",
+        "title": "Input",
+        "description": "A text input in three sizes, on Base UI.",
+        "docsSha256": "5724d911899984b243926addb3e4e19e9bbcb326616f6127c4c069ca3e2bd78c",
+        "docs": "import { Input } from '@/components/ui/input';\n\n<label htmlFor=\"email\">Email</label>\n<Input id=\"email\" size=\"md\" />",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/input.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "menubar",
+        "type": "registry:ui",
+        "title": "Menubar",
+        "description": "A persistent bar of menu titles, holding your own Dropdown Menus and sized to its triggers.",
+        "docsSha256": "b2ebfa84f3ff33a9bfb6afe3ab2725c9d6aad5393df6d066e9d82ab904c0391f",
+        "docs": "import { Menubar } from '@/components/ui/menubar';\n\n<Menubar aria-label=\"Document\">\n  <DropdownMenu.Root>\n    <DropdownMenu.Trigger render={<Button variant=\"ghost\" size=\"sm\" />}>File</DropdownMenu.Trigger>\n    <DropdownMenu.Portal>\n      <DropdownMenu.Positioner>\n        <DropdownMenu.Popup>\n          <DropdownMenu.Item>New</DropdownMenu.Item>\n        </DropdownMenu.Popup>\n      </DropdownMenu.Positioner>\n    </DropdownMenu.Portal>\n  </DropdownMenu.Root>\n</Menubar>\n\nThe menus are yours: install @ultima/dropdown-menu alongside this, because the bar declares no dependency on it and ships none of its paint. One component, no parts. The accessible name is required by the types, as aria-label or aria-labelledby. The bar is sized to its triggers, since a modal menu cuts its backdrop hole from that box; set an inline size through style for full-bleed chrome.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/menubar.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "meter",
+        "type": "registry:ui",
+        "title": "Meter",
+        "description": "A bounded measurement as a toned bar, on Base UI.",
+        "docsSha256": "40b71678d7f0cc7fc4168229165cefd6f499e297b2ffecc73ce9fd7bc589a30b",
+        "docs": "import { Meter } from '@/components/ui/meter';\n\n<Meter.Root value={72} tone=\"warning\">\n  <Meter.Label>Disk used</Meter.Label>\n  <Meter.Track>\n    <Meter.Indicator />\n  </Meter.Track>\n  <Meter.Value />\n</Meter.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/meter.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "native-select",
+        "type": "registry:ui",
+        "title": "Native Select",
+        "description": "A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.",
+        "docsSha256": "f8298ca0cfecf2eab8ae5c5661d05af3ddccd086a08b431bd6c02b24c7446487",
+        "docs": "import { NativeSelect } from '@/components/ui/native-select';\n\n<label htmlFor=\"fruit\">Fruit</label>\n<NativeSelect.Root>\n  <NativeSelect.Select id=\"fruit\">\n    <option value=\"apple\">Apple</option>\n    <option value=\"pear\">Pear</option>\n  </NativeSelect.Select>\n</NativeSelect.Root>\n\nOptions and optgroups are children, not parts. Select is Field.Control rendered as a <select>, so inside a Field.Root the label, description, and invalid state reach it on their own. Reach for it when the OS-native popup is the point; Select stays the default when the option list wants Ultima's overlay styling.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/native-select.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "navigation-menu",
+        "type": "registry:ui",
+        "title": "Navigation Menu",
+        "description": "A top-level navigation whose panels morph between one another, on two nav landmarks.",
+        "docsSha256": "cd8321cbca0f6a21e3dc5f9495cc410e9a8a5c705a434033cf8845352b09e621",
+        "docs": "import { NavigationMenu } from '@/components/ui/navigation-menu';\n\n<NavigationMenu.Root aria-label=\"Main\">\n  <NavigationMenu.List>\n    <NavigationMenu.Item>\n      <NavigationMenu.Trigger>Components<NavigationMenu.Icon /></NavigationMenu.Trigger>\n      <NavigationMenu.Content>\n        <NavigationMenu.Link href=\"/components/button\">Button</NavigationMenu.Link>\n      </NavigationMenu.Content>\n    </NavigationMenu.Item>\n  </NavigationMenu.List>\n  <NavigationMenu.Portal>\n    <NavigationMenu.Positioner sideOffset={8}>\n      <NavigationMenu.Popup>\n        <NavigationMenu.Arrow />\n        <NavigationMenu.Viewport />\n      </NavigationMenu.Popup>\n    </NavigationMenu.Positioner>\n  </NavigationMenu.Portal>\n</NavigationMenu.Root>\n\nOne Portal for the whole menu, not one per Item: the active Content is portalled into the Viewport. Name Root yourself; Popup carries aria-label=\"Submenu\" unless you name it. Portalling needs isolation: isolate on your app root and body { position: relative } for iOS 26 Safari.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/navigation-menu.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "pagination",
+        "type": "registry:ui",
+        "title": "Pagination",
+        "description": "A page window with truncation, disabled ends, and a pure function that computes the window.",
+        "docsSha256": "35bd5756f7f3e06fd1bc1a988ef30b4904a219d7b75966dd0d237053cdf29780",
+        "docs": "import { Pagination } from '@/components/ui/pagination';\n\n<Pagination.Root>\n  <Pagination.List>\n    <Pagination.Item>\n      <Pagination.Previous href=\"?page=1\" disabled>Previous</Pagination.Previous>\n    </Pagination.Item>\n    {Pagination.getPages({ page, count }).map((entry, index) =>\n      entry.type === 'ellipsis' ? (\n        <Pagination.Item key={`gap-${index}`}><Pagination.Ellipsis /></Pagination.Item>\n      ) : (\n        <Pagination.Item key={entry.page}>\n          <Pagination.Page href={`?page=${entry.page}`} current={entry.page === page}>{entry.page}</Pagination.Page>\n        </Pagination.Item>\n      ),\n    )}\n    <Pagination.Item>\n      <Pagination.Next href=\"?page=2\">Next</Pagination.Next>\n    </Pagination.Item>\n  </Pagination.List>\n</Pagination.Root>\n\ngetPages is pure arithmetic and you render the result, so a page item can be your router's link. Root carries aria-label=\"Pagination\" unless you name it yourself, and a second control on one page needs its own name. Do not render an Ultima Button into these parts: two Ultima styles collide rather than cascade.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/pagination.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "popover",
+        "type": "registry:ui",
+        "title": "Popover",
+        "description": "An anchored panel of rich content, opened from a control and dismissed without blocking the page.",
+        "docsSha256": "0999f034bd35700786ba0a48ed655cf7125842a3879b53ec56d964147352645a",
+        "docs": "import { Popover } from '@/components/ui/popover';\n\n<Popover.Root>\n  <Popover.Trigger render={<Button />}>Share</Popover.Trigger>\n  <Popover.Portal>\n    <Popover.Positioner sideOffset={8}>\n      <Popover.Popup>\n        <Popover.Arrow />\n        <Popover.Title>Share this report</Popover.Title>\n        <Popover.Description>Anyone with the link can read it.</Popover.Description>\n      </Popover.Popup>\n    </Popover.Positioner>\n  </Popover.Portal>\n</Popover.Root>\n\nTrigger and Close are unstyled slots: render an Ultima Button or an element with its own focus ring. Name the popup with Popover.Title, or with aria-label on Popup when it has no visible heading. openOnHover, delay, and closeDelay are Trigger props, not Root's.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/popover.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "progress",
+        "type": "registry:ui",
+        "title": "Progress",
+        "description": "A task completion bar in five tones, determinate or indeterminate, on Base UI.",
+        "docsSha256": "83a35eaf8ba2612c811ae0a8ebf3e34c1c8f93c87081a0f2eaf0e3c06c13c7e5",
+        "docs": "import { Progress } from '@/components/ui/progress';\n\n<Progress.Root value={64} tone=\"highlight\">\n  <Progress.Label>Uploading</Progress.Label>\n  <Progress.Track>\n    <Progress.Indicator />\n  </Progress.Track>\n  <Progress.Value />\n</Progress.Root>\n\nPass value={null} for an indeterminate bar.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/progress.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "radio-group",
+        "type": "registry:ui",
+        "title": "Radio Group",
+        "description": "A radio group with a filled-circle indicator, on Base UI.",
+        "docsSha256": "54e5ebeef3dd2e7d031609be49bcf2d84d138fbca7cfe946de9ffa53d357e9de",
+        "docs": "import { RadioGroup } from '@/components/ui/radio-group';\n\n<RadioGroup.Root aria-label=\"Plan\" defaultValue=\"pro\">\n  <RadioGroup.Item value=\"hobby\">\n    <RadioGroup.Indicator />\n  </RadioGroup.Item>\n  <RadioGroup.Item value=\"pro\">\n    <RadioGroup.Indicator />\n  </RadioGroup.Item>\n</RadioGroup.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/radio-group.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "resizable",
+        "type": "registry:ui",
+        "title": "Resizable",
+        "description": "Panels with boundaries you drag or arrow, on Zag.",
+        "docsSha256": "2aca549c1100861111caaa4eb6db3568c7d7e588da5e5ac0ffb29288d159a41e",
+        "docs": "import { Resizable } from '@/components/ui/resizable';\n\n<Resizable.Root panels={[{ id: 'nav' }, { id: 'main' }]}>\n  <Resizable.Panel id=\"nav\">Navigation</Resizable.Panel>\n  <Resizable.Handle id=\"nav:main\" aria-label=\"Resize navigation\">\n    <Resizable.HandleIndicator />\n  </Resizable.Handle>\n  <Resizable.Panel id=\"main\">Content</Resizable.Panel>\n</Resizable.Root>\n\nEvery Handle needs a name: the type requires one of aria-label or aria-labelledby, the system's fourth enforced attribute. Sizing metadata (minSize, maxSize, collapsible, collapsedSize) lives on each panels entry, defaultSize sizes them at mount, and keyboardResizeBy sets the arrow step. The machine owns the panels' layout inline styles, including overflow: hidden. A strict CSP needs the nonce prop for the drag cursor <style>.",
+        "dependencies": [
+          "@stylexjs/stylex",
+          "@zag-js/react",
+          "@zag-js/splitter"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/resizable.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "scroll-area",
+        "type": "registry:ui",
+        "title": "Scroll Area",
+        "description": "A native scroll container with scrollbars you can see and a viewport a keyboard can reach.",
+        "docsSha256": "098b3a29f6f55a943539044812404d4f206a32bb6bf590d5fa724d62e7f84c53",
+        "docs": "import { ScrollArea } from '@/components/ui/scroll-area';\n\n<ScrollArea.Root style={styles.bounds}>\n  <ScrollArea.Viewport>\n    <ScrollArea.Content>Anything.</ScrollArea.Content>\n  </ScrollArea.Viewport>\n  <ScrollArea.Scrollbar>\n    <ScrollArea.Thumb />\n  </ScrollArea.Scrollbar>\n</ScrollArea.Root>\n\nThe bound is yours: give Root a block size through the style slot, or nothing scrolls. A horizontal bar is a second Scrollbar with orientation=\"horizontal\", and Corner fills the intersection when both overflow. The bar is visible whenever its axis overflows; there is no type prop and no hide delay.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/scroll-area.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "select",
+        "type": "registry:ui",
+        "title": "Select",
+        "description": "A form control for choosing a predefined value from a popup list.",
+        "docsSha256": "4a2fc749c0ac9435cce1fdb8c44deeb930eed4fd27ee83fcdac0272b2759c7e6",
+        "docs": "import { Select } from '@/components/ui/select';\n\n<Select.Root>\n  <Select.Label>Fruit</Select.Label>\n  <Select.Trigger>\n    <Select.Value placeholder=\"Pick a fruit\" />\n    <Select.Icon />\n  </Select.Trigger>\n  <Select.Portal>\n    <Select.Positioner>\n      <Select.Popup>\n        <Select.List>\n          <Select.Item value=\"apple\">\n            <Select.ItemIndicator />\n            <Select.ItemText>Apple</Select.ItemText>\n          </Select.Item>\n        </Select.List>\n      </Select.Popup>\n    </Select.Positioner>\n  </Select.Portal>\n</Select.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/select.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "separator",
+        "type": "registry:ui",
+        "title": "Separator",
+        "description": "A horizontal or vertical divider between sections of content.",
+        "docsSha256": "49019e04a17e809d91d6ab1818d5fa83fad8a9cd9b9950ffaa3b50bbf94f2af0",
+        "docs": "import { Separator } from '@/components/ui/separator';\n\n<Separator />",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/separator.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "sidebar",
+        "type": "registry:ui",
+        "title": "Sidebar",
+        "description": "A collapsible navigation panel with groups, nested lists, and an active-page indication.",
+        "docsSha256": "211ca0a27ae0d8bb9ee56e4915cd1fdfc7643c38cadb36999515e0c80af66a8a",
+        "docs": "import { Button } from '@/components/ui/button';\nimport { Sidebar, useSidebar } from '@/components/ui/sidebar';\n\n<Sidebar.Root>\n  <Sidebar.Trigger render={<Button variant=\"ghost\" aria-label=\"Toggle navigation\" />} />\n  <Sidebar.Panel aria-label=\"Main\">\n    <Sidebar.Group>\n      <Sidebar.GroupLabel>Reference</Sidebar.GroupLabel>\n      <Sidebar.List>\n        <Sidebar.Item>\n          <Sidebar.Link href=\"/tokens\" active>Tokens</Sidebar.Link>\n        </Sidebar.Item>\n      </Sidebar.List>\n    </Sidebar.Group>\n  </Sidebar.Panel>\n</Sidebar.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib",
+          "@ultima/dialog"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/sidebar.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "skeleton",
+        "type": "registry:ui",
+        "title": "Skeleton",
+        "description": "A sunken placeholder that pulses while its content loads.",
+        "docsSha256": "9aa47f1042f6ccf6064458ae1835ce3e451b91a089774c6543d7504ed95c5630",
+        "docs": "import { Skeleton } from '@/components/ui/skeleton';\n\n<Skeleton />\n\nSize it through the style slot, and put aria-busy on the container it stands in for. The pulse stops under prefers-reduced-motion.",
+        "dependencies": [
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/skeleton.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "slider",
+        "type": "registry:ui",
+        "title": "Slider",
+        "description": "A value picker with one thumb per value and an accent fill, on Base UI.",
+        "docsSha256": "f885a849867518553dc81e68c4c1d79f04d4213e8883bc6363edcdce56c050ca",
+        "docs": "import { Slider } from '@/components/ui/slider';\n\n<Slider.Root defaultValue={40}>\n  <Slider.Label>Volume</Slider.Label>\n  <Slider.Value />\n  <Slider.Control>\n    <Slider.Track>\n      <Slider.Indicator />\n      <Slider.Thumb />\n    </Slider.Track>\n  </Slider.Control>\n</Slider.Root>\n\nFor a range, pass an array to defaultValue and render one Thumb per value with its own index.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/slider.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "spinner",
+        "type": "registry:ui",
+        "title": "Spinner",
+        "description": "A looping loading mark drawn in CSS, sized and colored by its surrounding text.",
+        "docsSha256": "21580aa8cebf448e97838e45e054e99db03e7273571b3df53578c8db33ade41b",
+        "docs": "import { Spinner } from '@/components/ui/spinner';\n\n<Spinner />\n\nThe mark is aria-hidden. Put aria-busy on the container being waited on, and announce the wait through a live region rather than the glyph.",
+        "dependencies": [
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/spinner.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "stat",
+        "type": "registry:ui",
+        "title": "Stat",
+        "description": "A single number with its label, for dashboards and summaries.",
+        "docsSha256": "8197a12ed3e64ae6c15634e45c09b4eb778fec50c802508380c7fe70c1844538",
+        "docs": "import { Stat } from '@/components/ui/stat';\n\n<Stat.Root>\n  <Stat.Label>Tokens</Stat.Label>\n  <Stat.Value>95</Stat.Value>\n</Stat.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/stat.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "switch",
+        "type": "registry:ui",
+        "title": "Switch",
+        "description": "An on-off toggle with a sliding thumb, on Base UI.",
+        "docsSha256": "ffe021f451733dbe2ff7f93bfc384811a25d694c6deaae765c087d1dc159b644",
+        "docs": "import { Switch } from '@/components/ui/switch';\n\n<label>\n  Notifications\n  <Switch.Root>\n    <Switch.Thumb />\n  </Switch.Root>\n</label>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/switch.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "table",
+        "type": "registry:ui",
+        "title": "Table",
+        "description": "A data table as native table parts, with an optional caption and scroll region.",
+        "docsSha256": "74eba0f60ebb741c7c142459a3c6de2103b06d6ae105adbfd82f632671129f3f",
+        "docs": "import { Table } from '@/components/ui/table';\n\n<Table.Root>\n  <Table.Caption>Latency by region</Table.Caption>\n  <Table.Head>\n    <Table.Row>\n      <Table.HeadCell>Region</Table.HeadCell>\n    </Table.Row>\n  </Table.Head>\n  <Table.Body>\n    <Table.Row>\n      <Table.Cell>us-east-1</Table.Cell>\n    </Table.Row>\n  </Table.Body>\n</Table.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/table.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "tabs",
+        "type": "registry:ui",
+        "title": "Tabs",
+        "description": "Tabbed sections in an underline or a segmented variant, on Base UI.",
+        "docsSha256": "f533dbf667f84ba386e9a41d7c29c04c6a6ad181ec655d7f87ba029226ccb7cc",
+        "docs": "import { Tabs } from '@/components/ui/tabs';\n\n<Tabs.Root variant=\"underline\" defaultValue=\"tokens\">\n  <Tabs.List>\n    <Tabs.Tab value=\"tokens\">Tokens</Tabs.Tab>\n    <Tabs.Tab value=\"themes\">Themes</Tabs.Tab>\n    <Tabs.Indicator />\n  </Tabs.List>\n  <Tabs.Panel value=\"tokens\">Anything.</Tabs.Panel>\n</Tabs.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/tabs.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "textarea",
+        "type": "registry:ui",
+        "title": "Textarea",
+        "description": "A multiline text field in three sizes, on Base UI.",
+        "docsSha256": "8e4ee2e11b1e6cb3c78d565f677bf7ba8570ad32573838842d00fe557b8448c2",
+        "docs": "import { Textarea } from '@/components/ui/textarea';\n\n<label htmlFor=\"bio\">Biography</label>\n<Textarea id=\"bio\" size=\"md\" />",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/textarea.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "toast",
+        "type": "registry:ui",
+        "title": "Toast",
+        "description": "A stacked notification in six tones, queued from a manager, on Base UI.",
+        "docsSha256": "36b551c0b3d1f0de84aa955fdcb471de69fc68424d93e6a681a75418e4e235be",
+        "docs": "import { Button } from '@/components/ui/button';\nimport { Toast } from '@/components/ui/toast';\n\nMount Provider, Portal, and Viewport once; they stay mounted when the stack is empty.\n\n<Toast.Provider>\n  <Toast.Portal>\n    <Toast.Viewport>{/* map Toast.useToastManager().toasts to Toast.Root */}</Toast.Viewport>\n  </Toast.Portal>\n</Toast.Provider>\n\nToast.useToastManager().add({ title: 'Report exported', type: 'success' });",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/toast.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "toggle-group",
+        "type": "registry:ui",
+        "title": "Toggle Group",
+        "description": "A segmented group of toggle buttons with roving focus, on Base UI.",
+        "docsSha256": "5370bcfff90dcb33c2f5e6902134393009f8c6fb51d772adcc0d94fd6387d761",
+        "docs": "import { ToggleGroup } from '@/components/ui/toggle-group';\n\n<ToggleGroup.Root aria-label=\"Layout\" defaultValue={['list']}>\n  <ToggleGroup.Item value=\"list\">List</ToggleGroup.Item>\n  <ToggleGroup.Item value=\"grid\">Grid</ToggleGroup.Item>\n</ToggleGroup.Root>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/toggle-group.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "toggle",
+        "type": "registry:ui",
+        "title": "Toggle",
+        "description": "A two-state button in two variants and three sizes, on Base UI.",
+        "docsSha256": "a0aa0053c78d693775979812a1fb308e45231ade7d5da0e9c2ce30e795f4a438",
+        "docs": "import { Toggle } from '@/components/ui/toggle';\n\n<Toggle>Bold</Toggle>\n\nThe name is the text content; an icon-only toggle passes aria-label and squares the box with a style override on paddingInline. There is no value prop: value identifies a toggle to a ToggleGroup, and a toggle inside one is ToggleGroup.Item, which keeps both.",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/toggle.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "tooltip",
+        "type": "registry:ui",
+        "title": "Tooltip",
+        "description": "A short overlay on hover or focus, labelled through aria-label on its trigger.",
+        "docsSha256": "0152bf7276895026832a34dd6d4722aa76224b24a73ebca93413c687422c0997",
+        "docs": "import { Tooltip } from '@/components/ui/tooltip';\n\n<Tooltip.Provider>\n  <Tooltip.Root>\n    <Tooltip.Trigger aria-label=\"Copied\" render={<Button />}>Copy</Tooltip.Trigger>\n    <Tooltip.Portal>\n      <Tooltip.Positioner>\n        <Tooltip.Popup>Copied</Tooltip.Popup>\n      </Tooltip.Positioner>\n    </Tooltip.Portal>\n  </Tooltip.Root>\n</Tooltip.Provider>",
+        "dependencies": [
+          "@base-ui/react",
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [],
+        "registryDependencies": [
+          "@ultima/tokens",
+          "@ultima/lib"
+        ],
+        "files": [
+          {
+            "path": "ultima/ui/tooltip.tsx",
+            "type": "registry:ui",
+            "target": null
+          }
+        ]
+      },
+      {
+        "name": "setup-vite",
+        "type": "registry:item",
+        "title": "Ultima setup for Vite",
+        "description": "components.json and ultima.vite.ts, the StyleX plugin preconfigured. Universal item: installs without Tailwind and without an existing components.json.",
+        "docsSha256": "79eb90dc5865c015dba0b05e404da40e67ae9ce59e2a7e7ab2448d4de7ef3129",
+        "docs": "Steps you still do by hand:\n1. Add `\"paths\": { \"@/*\": [\"./src/*\"] }` to tsconfig.json and tsconfig.app.json. Without it the CLI writes files into a literal ./@/ directory.\n2. In vite.config.ts, `import { ultimaStylex } from './ultima.vite.ts'` and put `ultimaStylex()` in plugins, before the React plugin.\n3. Wrap any global CSS reset in an @layer, or it beats every component style.\n4. A strict CSP needs a nonce: pass it to Base UI's `CSPProvider` at your app root.\n\nThen: npx shadcn add @ultima/button",
+        "dependencies": [
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [
+          "@stylexjs/unplugin",
+          "unplugin"
+        ],
+        "registryDependencies": [],
+        "files": [
+          {
+            "path": "static/setup-vite/components.json",
+            "type": "registry:file",
+            "target": "~/components.json"
+          },
+          {
+            "path": "static/setup-vite/ultima.vite.ts",
+            "type": "registry:file",
+            "target": "~/ultima.vite.ts"
+          }
+        ]
+      },
+      {
+        "name": "setup-next",
+        "type": "registry:item",
+        "title": "Ultima setup for Next.js App Router",
+        "description": "components.json, babel.config.js, postcss.config.js, and the @stylex; stylesheet. Universal item: installs without Tailwind and without an existing components.json.",
+        "docsSha256": "35b0dcc9bd577afd4f9bfe579a7f5d0d9df7c3d5eede18139ee0b2822fac8fa9",
+        "docs": "Steps you still do by hand:\n1. Import './ultima.css' from app/layout.tsx.\n2. Wrap any global CSS reset in an @layer. create-next-app ships `* { padding: 0 }`, which beats every component style.\n3. A strict CSP needs a nonce: pass it to Base UI's `CSPProvider` at your app root.\n\nThen: npx shadcn add @ultima/button",
+        "dependencies": [
+          "@stylexjs/stylex"
+        ],
+        "devDependencies": [
+          "@stylexjs/babel-plugin",
+          "@stylexjs/postcss-plugin"
+        ],
+        "registryDependencies": [],
+        "files": [
+          {
+            "path": "static/setup-next/app/ultima.css",
+            "type": "registry:file",
+            "target": "~/app/ultima.css"
+          },
+          {
+            "path": "static/setup-next/babel.config.js",
+            "type": "registry:file",
+            "target": "~/babel.config.js"
+          },
+          {
+            "path": "static/setup-next/components.json",
+            "type": "registry:file",
+            "target": "~/components.json"
+          },
+          {
+            "path": "static/setup-next/postcss.config.js",
+            "type": "registry:file",
+            "target": "~/postcss.config.js"
+          }
+        ]
+      },
+      {
+        "name": "tokens-css",
+        "type": "registry:item",
+        "title": "Ultima tokens as CSS",
+        "description": "The generated token stylesheet, for a project that cannot run StyleX.",
+        "docsSha256": "1656e383fc81dfcf216f224099d81ab77b253e6a4f6475897ee0630e4634a85c",
+        "docs": "Import './ultima-tokens.css' once, from your root layout or entry stylesheet, then read the tokens with var(--ult-color-surface) and friends. Set data-theme=\"dark\" or \"light\" on <html> to pin a mode; without it the file follows the operating system.",
+        "dependencies": [],
+        "devDependencies": [],
+        "registryDependencies": [],
+        "files": [
+          {
+            "path": "ultima/tokens.css",
+            "type": "registry:file",
+            "target": "~/ultima-tokens.css"
+          }
+        ]
+      },
+      {
+        "name": "ult-badge",
+        "type": "registry:item",
+        "title": "Badge element",
+        "description": "Ultima Badge as a custom element, vendored for a host that cannot run React.",
+        "docsSha256": "5c2abf450602616ca3d7e0e4ec002227358ff611f59e02ccb1af9ac7cb94e733",
+        "docs": "<script type=\"module\" src=\"./ult-badge.js\"></script>\n\n<ult-badge variant=\"subtle\" tone=\"success\">Passing</ult-badge>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nAxes are attributes carrying the React prop values verbatim: variant and tone.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+        "dependencies": [],
+        "devDependencies": [],
+        "registryDependencies": [
+          "https://ultima.systems/r/tokens-css.json"
+        ],
+        "files": [
+          {
+            "path": "ultima/elements/ult-badge.js",
+            "type": "registry:file",
+            "target": "~/ult-badge.js"
+          }
+        ]
+      },
+      {
+        "name": "ult-button",
+        "type": "registry:item",
+        "title": "Button element",
+        "description": "Ultima Button as a custom element, vendored for a host that cannot run React.",
+        "docsSha256": "09b48b5be7987121ad9186935d8853b845bab64072ebfc11d43349e89e1840dd",
+        "docs": "<script type=\"module\" src=\"./ult-button.js\"></script>\n\n<ult-button variant=\"solid\" size=\"md\" tone=\"accent\">Save</ult-button>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nAxes are attributes carrying the React prop values verbatim: variant, size, tone, and disabled.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+        "dependencies": [],
+        "devDependencies": [],
+        "registryDependencies": [
+          "https://ultima.systems/r/tokens-css.json"
+        ],
+        "files": [
+          {
+            "path": "ultima/elements/ult-button.js",
+            "type": "registry:file",
+            "target": "~/ult-button.js"
+          }
+        ]
+      },
+      {
+        "name": "ult-card",
+        "type": "registry:item",
+        "title": "Card element",
+        "description": "Ultima Card as a custom element family, vendored for a host that cannot run React.",
+        "docsSha256": "5c21df12ee8ba795441f6e0479de4404d31a3eb297cd38887facbf35c531b4c2",
+        "docs": "<script type=\"module\" src=\"./ult-card.js\"></script>\n\n<ult-card>\n  <ult-card-header>\n    <ult-card-title>Latency</ult-card-title>\n    <ult-card-description>p95 over the last hour</ult-card-description>\n  </ult-card-header>\n  <ult-card-body>Body</ult-card-body>\n  <ult-card-footer>Footer</ult-card-footer>\n</ult-card>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nAxes are attributes carrying the React prop values verbatim; Card declares none.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+        "dependencies": [],
+        "devDependencies": [],
+        "registryDependencies": [
+          "https://ultima.systems/r/tokens-css.json"
+        ],
+        "files": [
+          {
+            "path": "ultima/elements/ult-card.js",
+            "type": "registry:file",
+            "target": "~/ult-card.js"
+          }
+        ]
+      },
+      {
+        "name": "ult-code",
+        "type": "registry:item",
+        "title": "Code element",
+        "description": "Ultima Code as a custom element, vendored for a host that cannot run React.",
+        "docsSha256": "a0d72286a61c970d7ca97dbfc709dc52bad47361726b8a5ffbdfd46508bd5364",
+        "docs": "<script type=\"module\" src=\"./ult-code.js\"></script>\n\n<ult-code>npx shadcn add @ultima/button</ult-code>\n<ult-code variant=\"block\">pnpm install\npnpm dev</ult-code>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nAxes are attributes carrying the React prop values verbatim: variant.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+        "dependencies": [],
+        "devDependencies": [],
+        "registryDependencies": [
+          "https://ultima.systems/r/tokens-css.json"
+        ],
+        "files": [
+          {
+            "path": "ultima/elements/ult-code.js",
+            "type": "registry:file",
+            "target": "~/ult-code.js"
+          }
+        ]
+      },
+      {
+        "name": "ult-meter",
+        "type": "registry:item",
+        "title": "Meter element",
+        "description": "Ultima Meter as custom elements, vendored for a host that cannot run React.",
+        "docsSha256": "a6a73c7531c8d44fdb818d42dd41eec7baaed57467e0fe7caf551f8d6c647b09",
+        "docs": "<script type=\"module\" src=\"./ult-meter.js\"></script>\n\n<ult-meter value=\"72\" tone=\"warning\">\n  <ult-meter-label>Disk used</ult-meter-label>\n  <ult-meter-track>\n    <ult-meter-indicator></ult-meter-indicator>\n  </ult-meter-track>\n  <ult-meter-value></ult-meter-value>\n</ult-meter>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nAxes are attributes carrying the React prop values verbatim: tone sits on ult-meter and a part-level tone on ult-meter-indicator or ult-meter-value wins; value, min, and max carry the reading.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+        "dependencies": [],
+        "devDependencies": [],
+        "registryDependencies": [
+          "https://ultima.systems/r/tokens-css.json"
+        ],
+        "files": [
+          {
+            "path": "ultima/elements/ult-meter.js",
+            "type": "registry:file",
+            "target": "~/ult-meter.js"
+          }
+        ]
+      },
+      {
+        "name": "ult-stat",
+        "type": "registry:item",
+        "title": "Stat element",
+        "description": "Ultima Stat as a family of custom elements, vendored for a host that cannot run React.",
+        "docsSha256": "5231fa4640abd51b2ffcf42c581375f5826feb7588a7c61b279a9aba29af5eb8",
+        "docs": "<script type=\"module\" src=\"./ult-stat.js\"></script>\n\n<ult-stat><ult-stat-label>Tokens</ult-stat-label><ult-stat-value>95</ult-stat-value></ult-stat>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nThe parts are the family tags: ult-stat, ult-stat-label, and ult-stat-value. Stat declares no axes.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+        "dependencies": [],
+        "devDependencies": [],
+        "registryDependencies": [
+          "https://ultima.systems/r/tokens-css.json"
+        ],
+        "files": [
+          {
+            "path": "ultima/elements/ult-stat.js",
+            "type": "registry:file",
+            "target": "~/ult-stat.js"
+          }
+        ]
+      },
+      {
+        "name": "ult-table",
+        "type": "registry:item",
+        "title": "Table element",
+        "description": "Ultima Table as a family of custom elements, vendored for a host that cannot run React.",
+        "docsSha256": "c523ecfb2d7b76520f5eea41704a9ea6504e75f886fe17a7a1af7d111ace5073",
+        "docs": "<script type=\"module\" src=\"./ult-table.js\"></script>\n\n<ult-table-scroll aria-labelledby=\"latency-caption\">\n  <ult-table>\n    <ult-table-caption id=\"latency-caption\">Latency by region</ult-table-caption>\n    <ult-table-head>\n      <ult-table-row><ult-table-head-cell>Region</ult-table-head-cell></ult-table-row>\n    </ult-table-head>\n    <ult-table-body>\n      <ult-table-row><ult-table-cell>us-east-1</ult-table-cell></ult-table-row>\n    </ult-table-body>\n  </ult-table>\n</ult-table-scroll>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nOne element per part: ult-table, ult-table-scroll, ult-table-head, ult-table-body, ult-table-row, ult-table-head-cell, ult-table-sort-button, ult-table-cell, ult-table-caption. sort is an attribute on ult-table-head-cell carrying the React prop values verbatim.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+        "dependencies": [],
+        "devDependencies": [],
+        "registryDependencies": [
+          "https://ultima.systems/r/tokens-css.json"
+        ],
+        "files": [
+          {
+            "path": "ultima/elements/ult-table.js",
+            "type": "registry:file",
+            "target": "~/ult-table.js"
+          }
+        ]
+      },
+      {
+        "name": "ult-tabs",
+        "type": "registry:item",
+        "title": "Tabs element",
+        "description": "Ultima Tabs as a family of custom elements, vendored for a host that cannot run React.",
+        "docsSha256": "4380ba220531eba1ac19824c97c5fd0a4d27480902c1c11351bbda8d233021e9",
+        "docs": "<script type=\"module\" src=\"./ult-tabs.js\"></script>\n\n<ult-tabs value=\"tokens\">\n  <ult-tabs-list aria-label=\"Docs sections\">\n    <ult-tabs-tab value=\"tokens\">Tokens</ult-tabs-tab>\n    <ult-tabs-tab value=\"themes\">Themes</ult-tabs-tab>\n    <ult-tabs-indicator></ult-tabs-indicator>\n  </ult-tabs-list>\n  <ult-tabs-panel value=\"tokens\">Anything.</ult-tabs-panel>\n  <ult-tabs-panel value=\"themes\">More.</ult-tabs-panel>\n</ult-tabs>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nThe parts are the family tags: ult-tabs, ult-tabs-list, ult-tabs-tab, ult-tabs-panel, and ult-tabs-indicator. Axes are attributes carrying the React prop values verbatim: variant on ult-tabs (underline or segmented), value and disabled on ult-tabs-tab, value on ult-tabs-panel, and orientation and value on ult-tabs. Selection defaults to manual activation; set activate-on-focus on ult-tabs-list to select on arrow.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+        "dependencies": [],
+        "devDependencies": [],
+        "registryDependencies": [
+          "https://ultima.systems/r/tokens-css.json"
+        ],
+        "files": [
+          {
+            "path": "ultima/elements/ult-tabs.js",
+            "type": "registry:file",
+            "target": "~/ult-tabs.js"
+          }
+        ]
+      },
+      {
+        "name": "ult-tooltip",
+        "type": "registry:item",
+        "title": "Tooltip element",
+        "description": "Ultima Tooltip as a family of custom elements, vendored for a host that cannot run React.",
+        "docsSha256": "19fde9e03e6f16d7ad585e40e78e45fd50cae96d33f01a8f746bd604e7a42806",
+        "docs": "<script type=\"module\" src=\"./ult-tooltip.js\"></script>\n\n<ult-tooltip>\n  <ult-tooltip-trigger><button type=\"button\" aria-label=\"Copied to clipboard\">Copy</button></ult-tooltip-trigger>\n  <ult-tooltip-positioner>\n    <ult-tooltip-popup>Copied to clipboard<ult-tooltip-arrow></ult-tooltip-arrow></ult-tooltip-popup>\n  </ult-tooltip-positioner>\n</ult-tooltip>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nOne element per part: ult-tooltip, ult-tooltip-trigger, ult-tooltip-positioner, ult-tooltip-popup, ult-tooltip-arrow. The trigger wraps your own focusable element and the aria-label on it must match the tooltip text, because the popup is role=\"tooltip\" and never the name. The open attribute pins the tooltip open; Tooltip declares no axes.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+        "dependencies": [],
+        "devDependencies": [],
+        "registryDependencies": [
+          "https://ultima.systems/r/tokens-css.json"
+        ],
+        "files": [
+          {
+            "path": "ultima/elements/ult-tooltip.js",
+            "type": "registry:file",
+            "target": "~/ult-tooltip.js"
+          }
+        ]
+      }
+    ],
+    "authoredDescriptions": [
+      "tokens",
+      "lib",
+      "button",
+      "dropdown-menu",
+      "badge",
+      "card",
+      "collapsible",
+      "code",
+      "field",
+      "fieldset",
+      "alert",
+      "alert-dialog",
+      "slider",
+      "progress",
+      "toast",
+      "skeleton",
+      "spinner",
+      "empty",
+      "checkbox",
+      "radio-group",
+      "combobox",
+      "textarea",
+      "input",
+      "meter",
+      "stat",
+      "select",
+      "switch",
+      "table",
+      "tabs",
+      "toggle-group",
+      "separator",
+      "tooltip",
+      "dialog",
+      "sidebar",
+      "breadcrumb",
+      "pagination",
+      "navigation-menu",
+      "popover",
+      "drawer",
+      "context-menu",
+      "hover-card",
+      "menubar",
+      "accordion",
+      "avatar",
+      "scroll-area",
+      "toggle",
+      "color-field",
+      "aspect-ratio",
+      "command",
+      "calendar",
+      "date-picker",
+      "button-group",
+      "input-group",
+      "input-otp",
+      "native-select",
+      "resizable",
+      "tokens-css",
+      "ult-badge",
+      "ult-button",
+      "ult-card",
+      "ult-code",
+      "ult-meter",
+      "ult-stat",
+      "ult-table",
+      "ult-tabs",
+      "ult-tooltip"
+    ],
+    "setupItems": [
+      "setup-vite",
+      "setup-next"
+    ],
+    "served": [
+      "accordion.json",
+      "alert-dialog.json",
+      "alert.json",
+      "aspect-ratio.json",
+      "avatar.json",
+      "badge.json",
+      "breadcrumb.json",
+      "button-group.json",
+      "button.json",
+      "calendar.json",
+      "card.json",
+      "checkbox.json",
+      "code.json",
+      "collapsible.json",
+      "color-field.json",
+      "combobox.json",
+      "command.json",
+      "context-menu.json",
+      "date-picker.json",
+      "dialog.json",
+      "drawer.json",
+      "dropdown-menu.json",
+      "empty.json",
+      "field.json",
+      "fieldset.json",
+      "hover-card.json",
+      "input-group.json",
+      "input-otp.json",
+      "input.json",
+      "lib.json",
+      "menubar.json",
+      "meter.json",
+      "native-select.json",
+      "navigation-menu.json",
+      "pagination.json",
+      "popover.json",
+      "progress.json",
+      "radio-group.json",
+      "registry.json",
+      "resizable.json",
+      "scroll-area.json",
+      "select.json",
+      "separator.json",
+      "setup-next.json",
+      "setup-vite.json",
+      "sidebar.json",
+      "skeleton.json",
+      "slider.json",
+      "spinner.json",
+      "stat.json",
+      "switch.json",
+      "table.json",
+      "tabs.json",
+      "textarea.json",
+      "toast.json",
+      "toggle-group.json",
+      "toggle.json",
+      "tokens-css.json",
+      "tokens.json",
+      "tooltip.json",
+      "ult-badge.json",
+      "ult-button.json",
+      "ult-card.json",
+      "ult-code.json",
+      "ult-meter.json",
+      "ult-stat.json",
+      "ult-table.json",
+      "ult-tabs.json",
+      "ult-tooltip.json"
+    ],
+    "llmsTxtSha256": "e3c123f2b876e0c4393f454247ce461bdd83eb5c7c4775e55006d06f25aacdce"
+  }
+}
