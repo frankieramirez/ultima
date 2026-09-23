@@ -210,6 +210,23 @@ assert_doctor_passes() {
   node "$ROOT/packages/cli/dist/cli.js" doctor --cwd "$1"
 }
 
+# docs/spec/ultima.md, Versioning and drift, Proof: a fresh install reports every item current.
+assert_status_current() {
+  node "$ROOT/packages/cli/dist/cli.js" status --json --cwd "$1" >"$WORK/status.json"
+  STATUS="$WORK/status.json" NAMES="$CATALOGUE" node --input-type=module -e '
+import { readFileSync } from "node:fs";
+
+const { files } = JSON.parse(readFileSync(process.env.STATUS, "utf8"));
+const missing = process.env.NAMES.split(/\s+/).filter((name) => name && !files.some((row) => row.item === name));
+const drifted = files.filter((row) => row.state !== "current").map((row) => `${row.file} (${row.state})`);
+if (missing.length > 0 || drifted.length > 0) {
+  console.error(`smoke-install: status reports ${[...missing.map((name) => `${name} (not found)`), ...drifted].join(", ")}`);
+  process.exit(1);
+}
+console.log(`smoke-install: status reports all ${files.length} installed files current`);
+'
+}
+
 assert_installed() {
   local app="$1"
   shift
@@ -355,6 +372,9 @@ import { ultimaStylex } from './ultima.vite.ts'"
 
   step "vite: ultima doctor"
   assert_doctor_passes "$app"
+
+  step "vite: ultima status"
+  assert_status_current "$app"
 }
 
 next_target() {
@@ -392,6 +412,9 @@ import "./ultima.css";'
 
   step "next: ultima doctor"
   assert_doctor_passes "$app"
+
+  step "next: ultima status"
+  assert_status_current "$app"
 }
 
 sidebar_target() {

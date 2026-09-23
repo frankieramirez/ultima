@@ -6,17 +6,13 @@ import { join } from 'node:path';
 import ts from 'typescript';
 
 import { setupItems } from '../../../registry/items.config.ts';
-import type { Diagnostic, Unsupported } from './diagnostic.ts';
+import { type Diagnostic, SPEC, type Unsupported } from './diagnostic.ts';
 import type { HandStep } from './hand-steps.ts';
 import { checkStep, jsonPosition } from './setup.ts';
 
 export type Target = 'vite' | 'next';
 
-declare const __ULTIMA_COMMIT__: string | undefined;
 declare const __ULTIMA_SPEC_LINES__: Record<string, number> | undefined;
-const SPEC = `https://github.com/frankieramirez/ultima/blob/${
-  typeof __ULTIMA_COMMIT__ === 'string' ? __ULTIMA_COMMIT__ : 'main'
-}/docs/spec/ultima.md`;
 const SPEC_LINES = typeof __ULTIMA_SPEC_LINES__ === 'object' ? __ULTIMA_SPEC_LINES__ : {};
 
 function stepLink(step: HandStep): string {
