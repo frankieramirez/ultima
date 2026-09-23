@@ -7,6 +7,10 @@
   "bin": {
     "ultima": "./dist/cli.js"
   },
+  "files": [
+    "dist",
+    "skill"
+  ],
   "scripts": {
     "build": "node --experimental-strip-types scripts/build.ts",
     "test": "pnpm build && vitest run --reporter=verbose",

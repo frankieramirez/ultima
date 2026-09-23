@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 
 import { type Diagnostic, SPEC } from './diagnostic.ts';
+import { type ManagedState, managedSkills } from './install.ts';
 import { type ConsumerScope, consumerScope } from './scope.ts';
 import { REGISTRY_FORMAT, type Scheme, contentHash, readStamp } from './stamp.ts';
 
@@ -21,7 +22,12 @@ export type Row = {
   served: string | null;
 };
 
-export type StatusReport = { registry: string; revision: string | null; files: Row[] };
+export type StatusReport = {
+  registry: string;
+  revision: string | null;
+  files: Row[];
+  managed: { file: string; state: ManagedState; version: string }[];
+};
 
 type CatalogueItem = {
   name: string;
@@ -84,6 +90,7 @@ export async function status(root: string, options: { project?: string }): Promi
     registry: url.replace(/\/\{name\}\.json$/, ''),
     revision: items.find(({ meta }) => meta?.ultima)?.meta?.ultima?.revision ?? null,
     files,
+    managed: managedSkills(root),
   };
 }
 
@@ -175,12 +182,14 @@ const CLOSING: Partial<Record<Row['state'], (items: string[]) => string>> = {
     `${items.join(', ')} ${items.length === 1 ? 'carries' : 'carry'} a hash scheme this CLI does not know; upgrade it: ${UPGRADE}`,
 };
 
-export function printStatus({ registry, revision, files }: StatusReport): string {
+export function printStatus({ registry, revision, files, managed }: StatusReport): string {
   const closing = Object.entries(CLOSING).flatMap(([state, line]) => {
     const items = [...new Set(files.filter((row) => row.state === state).map(({ item }) => item))];
     return items.length > 0 ? [[state, (line as (items: string[]) => string)(items)]] : [];
   });
-  const table = [['item', 'file', 'state', 'installed'], ...files.map((row) => [row.item, row.file, row.state, row.installed?.revision ?? '-'])];
+  if (managed.some(({ state }) => state === 'stale')) closing.push(['stale', 'npx @ultima-systems/cli install']);
+  const skills = managed.map(({ file, state, version }) => ['skill', file, state, version]);
+  const table = [['item', 'file', 'state', 'installed'], ...files.map((row) => [row.item, row.file, row.state, row.installed?.revision ?? '-']), ...skills];
   const width = (column: string[]) => Math.max(...column.map((cell) => cell.length)) + 2;
   const first = width([...table.map(([item]) => item as string), ...closing.map(([state]) => state as string)]);
   const widths = [first, width(table.map((row) => row[1] as string)), width(table.map((row) => row[2] as string))];
@@ -188,7 +197,8 @@ export function printStatus({ registry, revision, files }: StatusReport): string
 
   const lines = [`Registry  ${registry}  revision ${revision ?? 'none'}`, ''];
   if (files.length === 0) lines.push('No installed Ultima files found.');
-  else lines.push(...table.map(line));
+  else lines.push(...table.slice(0, table.length - skills.length).map(line));
+  lines.push(...skills.map(line));
   if (closing.length > 0) lines.push('', ...closing.map(([state, text]) => `${(state as string).padEnd(first)}${text}`));
   return `${lines.join('\n')}\n`;
 }

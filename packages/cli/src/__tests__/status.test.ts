@@ -1,8 +1,10 @@
+import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
 import { describe, expect, it } from 'vitest';
 
+import { CLI_VERSION, skillStamp } from '../install.ts';
 import { run } from '../run.ts';
 import { contentHash, stampLine, withStamp } from '../stamp.ts';
 import { fileState } from '../status.ts';
@@ -219,6 +221,32 @@ describe('status', () => {
     expect(lines.slice(-2)).toEqual([
       'retired         the registry no longer serves tabs; those files are yours alone now',
       'unknown-scheme  toast carries a hash scheme this CLI does not know; upgrade it: npm install -D @ultima-systems/cli@latest',
+    ]);
+  });
+
+  it('adds a row per managed skill, current, stale, or edited, and never changes the exit code', async () => {
+    const skill = readFileSync(new URL('../../skill/ultima-systems/SKILL.md', import.meta.url), 'utf8');
+    const registry = await serve([{ name: 'button', files: { 'button.tsx': await contentHash(staged('Button', 'two'), 'c1') } }]);
+    const files = {
+      'src/components/ui/button.tsx': await stamped('button', staged('Button', 'two'), NEW),
+      '.claude/skills/ultima-systems/SKILL.md': skillStamp(skill, '0.0.0-old'),
+      '.agents/skills/ultima-systems/SKILL.md': `${skillStamp(skill, CLI_VERSION)}Our own line.\n`,
+    };
+    const root = consumer(registry, files);
+    const { code, stdout } = await status(root);
+    expect(code).toBe(0);
+    expect(stdout.trimEnd().split('\n').slice(-5)).toEqual([
+      `button  src/components/ui/button.tsx            current  ${NEW}`,
+      'skill   .claude/skills/ultima-systems/SKILL.md  stale    0.0.0-old',
+      `skill   .agents/skills/ultima-systems/SKILL.md  edited   ${CLI_VERSION}`,
+      '',
+      'stale   npx @ultima-systems/cli install',
+    ]);
+
+    const { report } = await statusJson(consumer(registry, { ...files, '.claude/skills/ultima-systems/SKILL.md': skillStamp(skill, CLI_VERSION) }));
+    expect((report as unknown as { managed: unknown[] }).managed).toEqual([
+      { file: '.claude/skills/ultima-systems/SKILL.md', state: 'current', version: CLI_VERSION },
+      { file: '.agents/skills/ultima-systems/SKILL.md', state: 'edited', version: CLI_VERSION },
     ]);
   });
 
