@@ -1,0 +1,553 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "catalogue",
+  "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+  "data": {
+    "releases": [
+      "v0",
+      "v0.1",
+      "v0.2"
+    ],
+    "components": [
+      {
+        "index": 0,
+        "name": "Button",
+        "item": "button",
+        "description": "A button in three variants, three sizes, and two tones, on Base UI.",
+        "release": "v0"
+      },
+      {
+        "index": 1,
+        "name": "Badge",
+        "item": "badge",
+        "description": "A small static label in two variants and six tones.",
+        "release": "v0"
+      },
+      {
+        "index": 2,
+        "name": "Card",
+        "item": "card",
+        "description": "A surface with a header, body, and footer for grouping related content.",
+        "release": "v0"
+      },
+      {
+        "index": 3,
+        "name": "Table",
+        "item": "table",
+        "description": "A data table as native table parts, with an optional caption and scroll region.",
+        "release": "v0"
+      },
+      {
+        "index": 4,
+        "name": "Tabs",
+        "item": "tabs",
+        "description": "Tabbed sections in an underline or a segmented variant, on Base UI.",
+        "release": "v0"
+      },
+      {
+        "index": 5,
+        "name": "Meter",
+        "item": "meter",
+        "description": "A bounded measurement as a toned bar, on Base UI.",
+        "release": "v0"
+      },
+      {
+        "index": 6,
+        "name": "Stat",
+        "item": "stat",
+        "description": "A single number with its label, for dashboards and summaries.",
+        "release": "v0"
+      },
+      {
+        "index": 7,
+        "name": "Code",
+        "item": "code",
+        "description": "Monospaced code, inline in a sentence or as a block.",
+        "release": "v0"
+      },
+      {
+        "index": 8,
+        "name": "Tooltip",
+        "item": "tooltip",
+        "description": "A short overlay on hover or focus, labelled through aria-label on its trigger.",
+        "release": "v0"
+      },
+      {
+        "index": 9,
+        "name": "Dialog",
+        "item": "dialog",
+        "description": "A modal overlay with a title, a description, and a close slot rendered by the caller.",
+        "release": "v0"
+      },
+      {
+        "index": 10,
+        "name": "Dropdown Menu",
+        "item": "dropdown-menu",
+        "description": "A keyboard-navigable menu with items, submenus, and selection controls, on Base UI.",
+        "release": "v0"
+      },
+      {
+        "index": 11,
+        "name": "Select",
+        "item": "select",
+        "description": "A selection control in three sizes with keyboard navigation and typeahead, on Base UI.",
+        "release": "v0"
+      },
+      {
+        "index": 12,
+        "name": "Input",
+        "item": "input",
+        "description": "A text input in three sizes, on Base UI.",
+        "release": "v0"
+      },
+      {
+        "index": 13,
+        "name": "Switch",
+        "item": "switch",
+        "description": "An on-off toggle with a sliding thumb, on Base UI.",
+        "release": "v0"
+      },
+      {
+        "index": 14,
+        "name": "Sidebar",
+        "item": "sidebar",
+        "description": "A collapsible navigation panel with groups, nested lists, and an active-page indication.",
+        "release": "v0"
+      },
+      {
+        "index": 15,
+        "name": "Collapsible",
+        "item": "collapsible",
+        "description": "A disclosure that animates its panel open and closed, on Base UI.",
+        "release": "v0"
+      },
+      {
+        "index": 16,
+        "name": "Toggle Group",
+        "item": "toggle-group",
+        "description": "A segmented group of toggle buttons with roving focus, on Base UI.",
+        "release": "v0"
+      },
+      {
+        "index": 17,
+        "name": "Separator",
+        "item": "separator",
+        "description": "A horizontal or vertical divider between sections of content.",
+        "release": "v0"
+      },
+      {
+        "index": 18,
+        "name": "Field",
+        "item": "field",
+        "description": "A label, description, and error bound to one control, on Base UI.",
+        "release": "v0.1"
+      },
+      {
+        "index": 19,
+        "name": "Fieldset",
+        "item": "fieldset",
+        "description": "A legend and related controls as a real fieldset, on Base UI.",
+        "release": "v0.1"
+      },
+      {
+        "index": 20,
+        "name": "Checkbox",
+        "item": "checkbox",
+        "description": "A checkbox with a check, a dash for mixed, and an optional group, on Base UI.",
+        "release": "v0.1"
+      },
+      {
+        "index": 21,
+        "name": "Radio Group",
+        "item": "radio-group",
+        "description": "A radio group with a filled-circle indicator, on Base UI.",
+        "release": "v0.1"
+      },
+      {
+        "index": 22,
+        "name": "Textarea",
+        "item": "textarea",
+        "description": "A multiline text field in three sizes, on Base UI.",
+        "release": "v0.1"
+      },
+      {
+        "index": 23,
+        "name": "Combobox",
+        "item": "combobox",
+        "description": "A filterable input whose value is restricted to the item set, on Base UI.",
+        "release": "v0.1"
+      },
+      {
+        "index": 24,
+        "name": "Slider",
+        "item": "slider",
+        "description": "A value picker with one thumb per value and an accent fill, on Base UI.",
+        "release": "v0.1"
+      },
+      {
+        "index": 25,
+        "name": "Alert",
+        "item": "alert",
+        "description": "A static in-page callout in six tones.",
+        "release": "v0.1"
+      },
+      {
+        "index": 26,
+        "name": "Alert Dialog",
+        "item": "alert-dialog",
+        "description": "A confirmation overlay that Escape closes and a backdrop click does not, on Base UI.",
+        "release": "v0.1"
+      },
+      {
+        "index": 27,
+        "name": "Toast",
+        "item": "toast",
+        "description": "A stacked notification in six tones, queued from a manager, on Base UI.",
+        "release": "v0.1"
+      },
+      {
+        "index": 28,
+        "name": "Progress",
+        "item": "progress",
+        "description": "A task completion bar in five tones, determinate or indeterminate, on Base UI.",
+        "release": "v0.1"
+      },
+      {
+        "index": 29,
+        "name": "Skeleton",
+        "item": "skeleton",
+        "description": "A sunken placeholder that pulses while its content loads.",
+        "release": "v0.1"
+      },
+      {
+        "index": 30,
+        "name": "Spinner",
+        "item": "spinner",
+        "description": "A looping loading mark drawn in CSS, sized and colored by its surrounding text.",
+        "release": "v0.1"
+      },
+      {
+        "index": 31,
+        "name": "Empty",
+        "item": "empty",
+        "description": "A centered placeholder for a collection with nothing in it.",
+        "release": "v0.1"
+      },
+      {
+        "index": 32,
+        "name": "Breadcrumb",
+        "item": "breadcrumb",
+        "description": "A trail of links to the current page, with a swappable separator glyph.",
+        "release": "v0.2"
+      },
+      {
+        "index": 33,
+        "name": "Pagination",
+        "item": "pagination",
+        "description": "A page window with truncation, disabled ends, and a pure function that computes the window.",
+        "release": "v0.2"
+      },
+      {
+        "index": 34,
+        "name": "Navigation Menu",
+        "item": "navigation-menu",
+        "description": "A top-level navigation whose panels morph between one another, on two nav landmarks.",
+        "release": "v0.2"
+      },
+      {
+        "index": 35,
+        "name": "Popover",
+        "item": "popover",
+        "description": "An anchored panel of rich content, opened from a control and dismissed without blocking the page.",
+        "release": "v0.2"
+      },
+      {
+        "index": 36,
+        "name": "Drawer",
+        "item": "drawer",
+        "description": "An edge-anchored panel with swipe gestures, snap points, and the Android back gesture.",
+        "release": "v0.2"
+      },
+      {
+        "index": 37,
+        "name": "Context Menu",
+        "item": "context-menu",
+        "description": "A menu opened by right click or long press, anchored to the pointer rather than to a control.",
+        "release": "v0.2"
+      },
+      {
+        "index": 38,
+        "name": "Hover Card",
+        "item": "hover-card",
+        "description": "A preview of where a link goes, opened by hovering or focusing the link itself.",
+        "release": "v0.2"
+      },
+      {
+        "index": 39,
+        "name": "Menubar",
+        "item": "menubar",
+        "description": "A persistent bar of menu titles, holding your own Dropdown Menus and sized to its triggers.",
+        "release": "v0.2"
+      },
+      {
+        "index": 40,
+        "name": "Accordion",
+        "item": "accordion",
+        "description": "Disclosure sections under one shared value, on Base UI, with the heading level left to you.",
+        "release": "v0.2"
+      },
+      {
+        "index": 41,
+        "name": "Avatar",
+        "item": "avatar",
+        "description": "An image that falls back to whatever you put behind it, at whatever size you set.",
+        "release": "v0.2"
+      },
+      {
+        "index": 42,
+        "name": "Scroll Area",
+        "item": "scroll-area",
+        "description": "A native scroll container with scrollbars you can see and a viewport a keyboard can reach.",
+        "release": "v0.2"
+      },
+      {
+        "index": 43,
+        "name": "Toggle",
+        "item": "toggle",
+        "description": "A two-state button in two variants and three sizes, on Base UI.",
+        "release": "v0.2"
+      },
+      {
+        "index": 44,
+        "name": "Color Field",
+        "item": "color-field",
+        "description": "An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.",
+        "release": "v0.2"
+      },
+      {
+        "index": 45,
+        "name": "Aspect Ratio",
+        "item": "aspect-ratio",
+        "description": "A fixed-ratio box for media, with the box and the radius left to the style slot.",
+        "release": "v0.2"
+      },
+      {
+        "index": 46,
+        "name": "Command",
+        "item": "command",
+        "description": "A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.",
+        "release": "v0.2"
+      },
+      {
+        "index": 47,
+        "name": "Calendar",
+        "item": "calendar",
+        "description": "An inline day, month, and year grid for picking dates, on Zag.",
+        "release": "v0.2"
+      },
+      {
+        "index": 48,
+        "name": "Date Picker",
+        "item": "date-picker",
+        "description": "A date input with a popup day, month, and year grid, on Zag.",
+        "release": "v0.2"
+      },
+      {
+        "index": 49,
+        "name": "Button Group",
+        "item": "button-group",
+        "description": "A row of buttons joined as one control, with per-item variant and tone overrides.",
+        "release": "v0.2"
+      },
+      {
+        "index": 50,
+        "name": "Input Group",
+        "item": "input-group",
+        "description": "A field box holding an input with leading and trailing addons, in three sizes.",
+        "release": "v0.2"
+      },
+      {
+        "index": 51,
+        "name": "Input OTP",
+        "item": "input-otp",
+        "description": "A one-time-code field of uniform square slots, on Base UI.",
+        "release": "v0.2"
+      },
+      {
+        "index": 52,
+        "name": "Native Select",
+        "item": "native-select",
+        "description": "A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.",
+        "release": "v0.2"
+      },
+      {
+        "index": 53,
+        "name": "Resizable",
+        "item": "resizable",
+        "description": "Panels with boundaries you drag or arrow, on Zag.",
+        "release": "v0.2"
+      }
+    ],
+    "elements": [
+      {
+        "index": 0,
+        "item": "button",
+        "tag": "ult-button",
+        "tags": [
+          "ult-button"
+        ]
+      },
+      {
+        "index": 1,
+        "item": "badge",
+        "tag": "ult-badge",
+        "tags": [
+          "ult-badge"
+        ]
+      },
+      {
+        "index": 2,
+        "item": "card",
+        "tag": "ult-card",
+        "tags": [
+          "ult-card",
+          "ult-card-header",
+          "ult-card-title",
+          "ult-card-description",
+          "ult-card-body",
+          "ult-card-footer"
+        ]
+      },
+      {
+        "index": 3,
+        "item": "table",
+        "tag": "ult-table",
+        "tags": [
+          "ult-table",
+          "ult-table-scroll",
+          "ult-table-caption",
+          "ult-table-head",
+          "ult-table-body",
+          "ult-table-row",
+          "ult-table-head-cell",
+          "ult-table-sort-button",
+          "ult-table-cell"
+        ]
+      },
+      {
+        "index": 4,
+        "item": "tabs",
+        "tag": "ult-tabs",
+        "tags": [
+          "ult-tabs",
+          "ult-tabs-list",
+          "ult-tabs-tab",
+          "ult-tabs-panel",
+          "ult-tabs-indicator"
+        ]
+      },
+      {
+        "index": 5,
+        "item": "meter",
+        "tag": "ult-meter",
+        "tags": [
+          "ult-meter",
+          "ult-meter-label",
+          "ult-meter-track",
+          "ult-meter-indicator",
+          "ult-meter-value"
+        ]
+      },
+      {
+        "index": 6,
+        "item": "stat",
+        "tag": "ult-stat",
+        "tags": [
+          "ult-stat",
+          "ult-stat-label",
+          "ult-stat-value"
+        ]
+      },
+      {
+        "index": 7,
+        "item": "code",
+        "tag": "ult-code",
+        "tags": [
+          "ult-code"
+        ]
+      },
+      {
+        "index": 8,
+        "item": "tooltip",
+        "tag": "ult-tooltip",
+        "tags": [
+          "ult-tooltip",
+          "ult-tooltip-trigger",
+          "ult-tooltip-positioner",
+          "ult-tooltip-popup",
+          "ult-tooltip-arrow"
+        ]
+      }
+    ],
+    "uiDependents": {
+      "accordion": [],
+      "alert-dialog": [],
+      "alert": [],
+      "aspect-ratio": [],
+      "avatar": [],
+      "badge": [],
+      "breadcrumb": [],
+      "button-group": [],
+      "button": [],
+      "calendar": [],
+      "card": [],
+      "checkbox": [],
+      "code": [],
+      "collapsible": [],
+      "color-field": [],
+      "combobox": [],
+      "command": [],
+      "context-menu": [],
+      "date-picker": [],
+      "dialog": [
+        "sidebar"
+      ],
+      "drawer": [],
+      "dropdown-menu": [],
+      "empty": [],
+      "field": [],
+      "fieldset": [],
+      "hover-card": [],
+      "input-group": [],
+      "input-otp": [],
+      "input": [],
+      "menubar": [],
+      "meter": [],
+      "native-select": [],
+      "navigation-menu": [],
+      "pagination": [],
+      "popover": [
+        "color-field"
+      ],
+      "progress": [],
+      "radio-group": [],
+      "resizable": [],
+      "scroll-area": [],
+      "select": [],
+      "separator": [],
+      "sidebar": [],
+      "skeleton": [],
+      "slider": [],
+      "spinner": [],
+      "stat": [],
+      "switch": [],
+      "table": [],
+      "tabs": [],
+      "textarea": [],
+      "toast": [],
+      "toggle-group": [],
+      "toggle": [],
+      "tooltip": []
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "dialog-escape",
+  "attempt": 3,
+  "revision": "901e286ff3539325ba485ae8bd0ecf35684a9b2e",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.280 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "a285b6783f0d905bbddad4116fb792251561716516cc992d05701ef9be9e2c5a",
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 848.068972
+  },
+  "task": {
+    "text": "You are in the Ultima repository, at its root. A user reports:\n\n\"Dialog Escape leaves focus behind\"\n\nFind the source file that owns this behavior and one shell command, run from the repository root, that runs the existing checks covering it.\nDo not modify any file. When you are done, end your reply with exactly these two lines:\nOWNER: <repository-relative path of the owning source file>\nCOMMAND: <the command>",
+    "sha256": "da27b724b92aeb09f48558faf389d9d1a19afc368d5e9fc709f941d75c28ebcd",
+    "entryPoint": "repository root, no files open"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "tools": [
+      "Bash",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "sessionId": "9eae48eb-cefc-4ef8-aa50-02dbc9133160",
+    "argv": [
+      "claude",
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--model",
+      "sonnet",
+      "--permission-mode",
+      "bypassPermissions",
+      "--strict-mcp-config",
+      "--setting-sources",
+      "project",
+      "--tools",
+      "Bash,Read,Grep,Glob"
+    ],
+    "started": "2026-09-23T20:26:08.259Z",
+    "wallMs": 13072.336971,
+    "durationMs": 12301,
+    "turns": 8,
+    "costUsd": 0.0606654,
+    "exitCode": 0,
+    "trace": "dialog-escape-3.stream.jsonl.gz"
+  },
+  "observation": {
+    "toolCalls": 7,
+    "byTool": {
+      "Bash": 2,
+      "Grep": 4,
+      "Read": 1
+    },
+    "searches": [
+      "Grep {\"pattern\":\"scape|focus\",\"path\":\"packages/ui/src/dialog.tsx\",\"-n\":true}",
+      "Grep {\"pattern\":\"scape|focus\",\"path\":\"packages/ui/src/__tests__/dialog.test.tsx\",\"-n\":true}",
+      "Grep {\"pattern\":\"scape|focus\",\"path\":\"packages/ui/src/dialog.tsx\",\"-n\":true,\"output_mode\":\"content\",\"-i\":true}",
+      "Grep {\"pattern\":\"scape|focus\",\"path\":\"packages/ui/src/__tests__/dialog.test.tsx\",\"-n\":true,\"output_mode\":\"content\",\"-i\":true}",
+      "find packages/ui/src -iname \"*dialog*\"",
+      "grep -n \"\\\"test\\\"\" packages/ui/package.json 2>/dev/null; cat package.json | grep -n '\"test\"'"
+    ],
+    "filesOpened": [
+      "packages/ui/src/dialog.tsx"
+    ],
+    "failedCommands": [],
+    "failedTools": 0,
+    "edits": [],
+    "bashCommands": [
+      "find packages/ui/src -iname \"*dialog*\"",
+      "grep -n \"\\\"test\\\"\" packages/ui/package.json 2>/dev/null; cat package.json | grep -n '\"test\"'"
+    ],
+    "answer": "The targeted way to run just this file's checks from the repo root:\n\nOWNER: packages/ui/src/dialog.tsx\nCOMMAND: pnpm --filter @ultima/ui test -- src/__tests__/dialog.test.tsx"
+  },
+  "score": {
+    "owner": "packages/ui/src/dialog.tsx",
+    "located": true,
+    "wrongCandidate": null,
+    "commandValid": true,
+    "check": {
+      "command": "pnpm --filter @ultima/ui test -- src/__tests__/dialog.test.tsx",
+      "exitCode": 0,
+      "elapsedMs": 41996.974507,
+      "coverageSeen": [
+        "dialog.test.tsx"
+      ],
+      "tail": "card focuses nothing inside it 31ms\n ✓  chromium  src/__tests__/card.test.tsx > render and ref reach the root element 18ms\n ✓  chromium  src/__tests__/card.test.tsx > public prop types carry the style slot and no className 17ms\n ✓  chromium  src/__tests__/separator.test.tsx > renders a horizontal separator 4ms\n ✓  chromium  src/__tests__/separator.test.tsx > renders a vertical separator with its orientation 31ms\n ✓  chromium  src/__tests__/separator.test.tsx > is static and does not enter the tab order 16ms\n ✓  chromium  src/__tests__/separator.test.tsx > render and ref reach the root element 17ms\n ✓  chromium  src/__tests__/separator.test.tsx > style slot wins and className is rejected 17ms\n ✓  chromium  src/__tests__/stat.test.tsx > every part mounts 4ms\n ✓  chromium  src/__tests__/stat.test.tsx > label and value are spans inside a div root 10ms\n ✓  chromium  src/__tests__/stat.test.tsx > tabbing through the stat focuses nothing inside it 32ms\n ✓  chromium  src/__tests__/stat.test.tsx > render and ref reach the root element 18ms\n ✓  chromium  src/__tests__/stat.test.tsx > public prop types carry the style slot and no className 16ms\n ✓  chromium  src/__tests__/environment.test.tsx > keyboard focus renders the focus-visible outline 35ms\n ✓  chromium  src/__tests__/environment.test.tsx > an unlayered rule beats the StyleX rule for the same property 18ms\n\n Test Files  55 passed (55)\n      Tests  749 passed (749)\n   Start at  16:26:22\n   Duration  41.17s (worker 98%, tests 2%)\n\n"
+    },
+    "success": true,
+    "ambiguousPrompt": false,
+    "candidatesNamed": [
+      "packages/ui/src/dialog.tsx"
+    ],
+    "rule": "success: the owner matches the key and the command exits 0 while running a covering test file"
+  },
+  "corrections": []
+}

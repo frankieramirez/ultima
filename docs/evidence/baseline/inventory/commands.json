@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "commands",
+  "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+  "data": {
+    "scripts": {
+      "ultima-monorepo": {
+        "dev": "pnpm --filter @ultima/docs dev",
+        "build": "pnpm -r build",
+        "test": "pnpm -r test",
+        "typecheck": "tsc -p tsconfig.json && pnpm -r typecheck",
+        "registry:build": "pnpm --filter @ultima/tokens build && pnpm --filter @ultima/elements build && node --experimental-strip-types scripts/build-registry.ts"
+      },
+      "@ultima/tokens": {
+        "build": "node --experimental-strip-types scripts/build-tokens.ts",
+        "test": "vitest run --reporter=verbose",
+        "typecheck": "tsc -p tsconfig.json"
+      },
+      "@ultima/ui": {
+        "build": "echo \"@ultima/ui: source-only, compiled by the consumer\"",
+        "test": "vitest run --reporter=verbose",
+        "typecheck": "tsc -p tsconfig.json"
+      },
+      "@ultima/elements": {
+        "build": "node --experimental-strip-types scripts/build.ts",
+        "test": "pnpm --filter @ultima/tokens build && pnpm build && vitest run --reporter=verbose",
+        "typecheck": "tsc -p tsconfig.json"
+      },
+      "@ultima-systems/cli": {
+        "build": "node --experimental-strip-types scripts/build.ts",
+        "test": "pnpm build && vitest run --reporter=verbose",
+        "typecheck": "tsc -p tsconfig.json"
+      },
+      "@ultima/docs": {
+        "dev": "vite",
+        "build": "pnpm -w run registry:build && vite build",
+        "preview": "vite preview",
+        "test": "pnpm -w run registry:build && vitest run --reporter=verbose",
+        "typecheck": "tsc -p tsconfig.json"
+      }
+    },
+    "workflows": {
+      "ci.yml": {
+        "sha256": "a08b7902a6173cdc8ff2500579e03b82902defcb3cafd223c26db2285b6bdcac",
+        "timeouts": [
+          20
+        ],
+        "text": "name: CI\n\non:\n  pull_request:\n  push:\n    branches:\n      - main\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\njobs:\n  check:\n    runs-on: ubuntu-latest\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@v5\n\n      - uses: pnpm/action-setup@v4\n\n      - uses: actions/setup-node@v5\n        with:\n          node-version: 22\n          cache: pnpm\n\n      - name: Install\n        run: pnpm install --frozen-lockfile\n\n      - name: Typecheck\n        run: pnpm typecheck\n\n      - name: Test\n        run: |\n          pnpm --filter @ultima/ui exec playwright install --with-deps chromium\n          pnpm test\n\n      - name: Contrast gate\n        run: python3 packages/tokens/scripts/palette.py --check\n\n      - name: Registry build\n        run: pnpm registry:build\n\n      - name: Docs build\n        run: pnpm --filter @ultima/docs build\n"
+      },
+      "smoke-install.yml": {
+        "sha256": "b23d6f59d0b9dff3dabc7a90a0ba62f179f3d1e9e745192576da9cb199bd00fe",
+        "timeouts": [
+          45
+        ],
+        "text": "name: Smoke install\n\non:\n  schedule:\n    - cron: '17 6 * * 1'\n  workflow_dispatch:\n  pull_request:\n    paths:\n      - 'registry/static/**'\n      - 'registry/items.config.ts'\n      - 'scripts/build-registry.ts'\n      - 'scripts/build-agent-guide.ts'\n      - 'scripts/smoke-install.sh'\n      - 'packages/ui/src/**'\n      - 'packages/tokens/**'\n      - '**/package.json'\n      - 'pnpm-workspace.yaml'\n      - 'pnpm-lock.yaml'\n      - '.github/workflows/smoke-install.yml'\n\njobs:\n  smoke-install:\n    runs-on: ubuntu-latest\n    timeout-minutes: 45\n    steps:\n      - uses: actions/checkout@v5\n\n      - uses: pnpm/action-setup@v4\n\n      - uses: actions/setup-node@v5\n        with:\n          node-version: 22\n          cache: pnpm\n\n      - run: pnpm install --frozen-lockfile\n\n      # mktemp honours TMPDIR, so the consumer apps land somewhere the upload\n      # step can name.\n      - name: Smoke install\n        run: |\n          mkdir -p \"$RUNNER_TEMP/smoke\"\n          TMPDIR=\"$RUNNER_TEMP/smoke\" ./scripts/smoke-install.sh --keep\n\n      - if: failure()\n        uses: actions/upload-artifact@v4\n        with:\n          name: smoke-install-apps\n          path: |\n            ${{ runner.temp }}/smoke\n            !${{ runner.temp }}/smoke/**/node_modules/**\n          retention-days: 7\n"
+      }
+    },
+    "testFiles": {
+      "packages/ui": [
+        "packages/ui/src/__tests__/accordion.test.tsx",
+        "packages/ui/src/__tests__/alert-dialog.test.tsx",
+        "packages/ui/src/__tests__/alert.test.tsx",
+        "packages/ui/src/__tests__/aspect-ratio.test.tsx",
+        "packages/ui/src/__tests__/avatar.test.tsx",
+        "packages/ui/src/__tests__/badge.test.tsx",
+        "packages/ui/src/__tests__/breadcrumb.test.tsx",
+        "packages/ui/src/__tests__/button-group.test.tsx",
+        "packages/ui/src/__tests__/button.test.tsx",
+        "packages/ui/src/__tests__/calendar.test.tsx",
+        "packages/ui/src/__tests__/card.test.tsx",
+        "packages/ui/src/__tests__/checkbox.test.tsx",
+        "packages/ui/src/__tests__/code.test.tsx",
+        "packages/ui/src/__tests__/collapsible.test.tsx",
+        "packages/ui/src/__tests__/color-field.test.tsx",
+        "packages/ui/src/__tests__/combobox.test.tsx",
+        "packages/ui/src/__tests__/command.test.tsx",
+        "packages/ui/src/__tests__/context-menu.test.tsx",
+        "packages/ui/src/__tests__/date-picker.test.tsx",
+        "packages/ui/src/__tests__/dialog.test.tsx",
+        "packages/ui/src/__tests__/drawer.test.tsx",
+        "packages/ui/src/__tests__/dropdown-menu.test.tsx",
+        "packages/ui/src/__tests__/empty.test.tsx",
+        "packages/ui/src/__tests__/environment.test.tsx",
+        "packages/ui/src/__tests__/field.test.tsx",
+        "packages/ui/src/__tests__/fieldset.test.tsx",
+        "packages/ui/src/__tests__/hover-card.test.tsx",
+        "packages/ui/src/__tests__/input-group.test.tsx",
+        "packages/ui/src/__tests__/input-otp.test.tsx",
+        "packages/ui/src/__tests__/input.test.tsx",
+        "packages/ui/src/__tests__/menubar.test.tsx",
+        "packages/ui/src/__tests__/meter.test.tsx",
+        "packages/ui/src/__tests__/native-select.test.tsx",
+        "packages/ui/src/__tests__/navigation-menu.test.tsx",
+        "packages/ui/src/__tests__/pagination.test.tsx",
+        "packages/ui/src/__tests__/popover.test.tsx",
+        "packages/ui/src/__tests__/progress.test.tsx",
+        "packages/ui/src/__tests__/radio-group.test.tsx",
+        "packages/ui/src/__tests__/resizable.test.tsx",
+        "packages/ui/src/__tests__/scroll-area.test.tsx",
+        "packages/ui/src/__tests__/select.test.tsx",
+        "packages/ui/src/__tests__/separator.test.tsx",
+        "packages/ui/src/__tests__/sidebar.test.tsx",
+        "packages/ui/src/__tests__/skeleton.test.tsx",
+        "packages/ui/src/__tests__/slider.test.tsx",
+        "packages/ui/src/__tests__/spinner.test.tsx",
+        "packages/ui/src/__tests__/stat.test.tsx",
+        "packages/ui/src/__tests__/switch.test.tsx",
+        "packages/ui/src/__tests__/table.test.tsx",
+        "packages/ui/src/__tests__/tabs.test.tsx",
+        "packages/ui/src/__tests__/textarea.test.tsx",
+        "packages/ui/src/__tests__/toast.test.tsx",
+        "packages/ui/src/__tests__/toggle-group.test.tsx",
+        "packages/ui/src/__tests__/toggle.test.tsx",
+        "packages/ui/src/__tests__/tooltip.test.tsx"
+      ],
+      "packages/tokens": [
+        "packages/tokens/src/__tests__/autosave.test.ts",
+        "packages/tokens/src/__tests__/codec.test.ts",
+        "packages/tokens/src/__tests__/export.test.ts",
+        "packages/tokens/src/__tests__/gate.test.ts",
+        "packages/tokens/src/__tests__/generate-scales.test.ts",
+        "packages/tokens/src/__tests__/history.test.ts",
+        "packages/tokens/src/__tests__/resolve-draft.test.ts",
+        "packages/tokens/src/__tests__/shuffle.test.ts"
+      ],
+      "packages/elements": [
+        "packages/elements/src/__tests__/agent-guide.node.test.ts",
+        "packages/elements/src/__tests__/bundle.node.test.ts",
+        "packages/elements/src/__tests__/parity.test.ts",
+        "packages/elements/src/__tests__/ult-badge.test.ts",
+        "packages/elements/src/__tests__/ult-button.test.ts",
+        "packages/elements/src/__tests__/ult-card.test.ts",
+        "packages/elements/src/__tests__/ult-code.test.ts",
+        "packages/elements/src/__tests__/ult-meter.test.ts",
+        "packages/elements/src/__tests__/ult-stat.test.ts",
+        "packages/elements/src/__tests__/ult-table.test.ts",
+        "packages/elements/src/__tests__/ult-tabs.test.ts",
+        "packages/elements/src/__tests__/ult-tooltip.test.ts"
+      ],
+      "packages/cli": [
+        "packages/cli/src/__tests__/bin.test.ts",
+        "packages/cli/src/__tests__/doctor.test.ts",
+        "packages/cli/src/__tests__/exit.test.ts",
+        "packages/cli/src/__tests__/hand-steps.test.ts",
+        "packages/cli/src/__tests__/hooks.test.ts",
+        "packages/cli/src/__tests__/install.test.ts",
+        "packages/cli/src/__tests__/scope.test.ts",
+        "packages/cli/src/__tests__/skill.test.ts",
+        "packages/cli/src/__tests__/stamp.test.ts",
+        "packages/cli/src/__tests__/status.test.ts"
+      ],
+      "apps/docs": [
+        "apps/docs/src/__tests__/axe.test.tsx",
+        "apps/docs/src/__tests__/catalogue-filter.test.tsx",
+        "apps/docs/src/__tests__/command-dialog.test.tsx",
+        "apps/docs/src/__tests__/components.test.ts",
+        "apps/docs/src/__tests__/copy-button.test.tsx",
+        "apps/docs/src/__tests__/data-table.test.tsx",
+        "apps/docs/src/__tests__/demo.test.tsx",
+        "apps/docs/src/__tests__/document-layout.test.tsx",
+        "apps/docs/src/__tests__/elements.test.ts",
+        "apps/docs/src/__tests__/elements.test.tsx",
+        "apps/docs/src/__tests__/highlighted-code.test.tsx",
+        "apps/docs/src/__tests__/home.test.tsx",
+        "apps/docs/src/__tests__/kicker.test.tsx",
+        "apps/docs/src/__tests__/narrow-viewport.test.tsx",
+        "apps/docs/src/__tests__/navigation.test.tsx",
+        "apps/docs/src/__tests__/not-found.test.tsx",
+        "apps/docs/src/__tests__/placeholder.test.tsx",
+        "apps/docs/src/__tests__/prose.test.tsx",
+        "apps/docs/src/__tests__/scroll-regions.test.tsx",
+        "apps/docs/src/__tests__/surfaces.test.ts",
+        "apps/docs/src/__tests__/theme-studio-export.test.tsx",
+        "apps/docs/src/__tests__/theme-studio-parity.test.tsx",
+        "apps/docs/src/__tests__/theme-studio.test.tsx",
+        "apps/docs/src/__tests__/token-previews.test.tsx"
+      ]
+    },
+    "otherChecks": [
+      "python3 packages/tokens/scripts/palette.py --check",
+      "scripts/smoke-install.sh [--host <url>] [--keep]"
+    ],
+    "plannedButAbsent": [
+      "pnpm verify",
+      "pnpm check:architecture",
+      "catalogue generation and freshness",
+      "component scaffolding",
+      "production browser runner"
+    ]
+  }
+}

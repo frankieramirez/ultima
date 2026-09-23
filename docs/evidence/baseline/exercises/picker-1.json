@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "picker",
+  "attempt": 1,
+  "revision": "901e286ff3539325ba485ae8bd0ecf35684a9b2e",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.280 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "a285b6783f0d905bbddad4116fb792251561716516cc992d05701ef9be9e2c5a",
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 874.758438
+  },
+  "task": {
+    "text": "You are in the Ultima repository, at its root. A user reports:\n\n\"the picker broke\"\n\nFind the source file that owns this behavior and one shell command, run from the repository root, that runs the existing checks covering it.\nDo not modify any file. When you are done, end your reply with exactly these two lines:\nOWNER: <repository-relative path of the owning source file>\nCOMMAND: <the command>",
+    "sha256": "3cb1e3647266569ba8732983de375cc09fae10d0b4c52c6a956a20b0a8035ef1",
+    "entryPoint": "repository root, no files open"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "tools": [
+      "Bash",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "sessionId": "ba2949b1-9fc1-47c3-940f-1a0b84b9f181",
+    "argv": [
+      "claude",
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--model",
+      "sonnet",
+      "--permission-mode",
+      "bypassPermissions",
+      "--strict-mcp-config",
+      "--setting-sources",
+      "project",
+      "--tools",
+      "Bash,Read,Grep,Glob"
+    ],
+    "started": "2026-09-23T20:19:59.842Z",
+    "wallMs": 3353.377271,
+    "durationMs": 2525,
+    "turns": 2,
+    "costUsd": 0.0192574,
+    "exitCode": 0,
+    "trace": "picker-1.stream.jsonl.gz"
+  },
+  "observation": {
+    "toolCalls": 1,
+    "byTool": {
+      "Glob": 1
+    },
+    "searches": [
+      "Glob {\"pattern\":\"packages/ui/src/**/*[Pp]icker*\"}"
+    ],
+    "filesOpened": [],
+    "failedCommands": [],
+    "failedTools": 0,
+    "edits": [],
+    "bashCommands": [],
+    "answer": "OWNER: packages/ui/src/date-picker.tsx\nCOMMAND: pnpm --filter @ultima/ui test -- date-picker"
+  },
+  "score": {
+    "owner": "packages/ui/src/date-picker.tsx",
+    "located": true,
+    "wrongCandidate": null,
+    "commandValid": true,
+    "check": {
+      "command": "pnpm --filter @ultima/ui test -- date-picker",
+      "exitCode": 0,
+      "elapsedMs": 42368.579285,
+      "coverageSeen": [
+        "date-picker.test.tsx",
+        "color-field.test.tsx",
+        "calendar.test.tsx"
+      ],
+      "tail": " card focuses nothing inside it 30ms\n ✓  chromium  src/__tests__/card.test.tsx > render and ref reach the root element 18ms\n ✓  chromium  src/__tests__/card.test.tsx > public prop types carry the style slot and no className 16ms\n ✓  chromium  src/__tests__/separator.test.tsx > renders a horizontal separator 3ms\n ✓  chromium  src/__tests__/separator.test.tsx > renders a vertical separator with its orientation 3ms\n ✓  chromium  src/__tests__/separator.test.tsx > is static and does not enter the tab order 17ms\n ✓  chromium  src/__tests__/separator.test.tsx > render and ref reach the root element 17ms\n ✓  chromium  src/__tests__/separator.test.tsx > style slot wins and className is rejected 17ms\n ✓  chromium  src/__tests__/stat.test.tsx > every part mounts 5ms\n ✓  chromium  src/__tests__/stat.test.tsx > label and value are spans inside a div root 17ms\n ✓  chromium  src/__tests__/stat.test.tsx > tabbing through the stat focuses nothing inside it 31ms\n ✓  chromium  src/__tests__/stat.test.tsx > render and ref reach the root element 18ms\n ✓  chromium  src/__tests__/stat.test.tsx > public prop types carry the style slot and no className 16ms\n ✓  chromium  src/__tests__/environment.test.tsx > keyboard focus renders the focus-visible outline 23ms\n ✓  chromium  src/__tests__/environment.test.tsx > an unlayered rule beats the StyleX rule for the same property 18ms\n\n Test Files  55 passed (55)\n      Tests  749 passed (749)\n   Start at  16:20:03\n   Duration  41.53s (worker 98%, tests 2%)\n\n"
+    },
+    "success": true,
+    "ambiguousPrompt": true,
+    "candidatesNamed": [
+      "packages/ui/src/date-picker.tsx"
+    ],
+    "rule": "success: one picker owner and a passing command that runs its tests; candidatesNamed records whether the answer surfaced the ambiguity"
+  },
+  "corrections": []
+}

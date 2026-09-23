@@ -11,6 +11,9 @@ importers:
       '@types/node':
         specifier: ^26.5.0
         version: 26.5.0
+      playwright:
+        specifier: 1.63.0
+        version: 1.63.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

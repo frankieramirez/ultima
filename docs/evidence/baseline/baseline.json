@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "kind": "performance-baseline",
+  "comparator": null,
+  "budget": "report-only: no budget is proposed until three independent complete batches exist on the intended runner class",
+  "source": {
+    "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "c7996cc51b59fde07e916deb42811707c1958b59d67bd8f0190cbfedc613b6ad",
+    "lockfileSha256": "0d81ed7f53b3f8f339af91ba97eae74237861baec8279f9ef3f95645b6df59db",
+    "harnessSha256": "c66d38c9d5f3776828310f781180666171f9681faba88a82e5f8a5443fc380e5"
+  },
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      2.25,
+      2.24,
+      1.74
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      2.17,
+      2.21,
+      1.75
+    ]
+  },
+  "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+  "commands": [
+    {
+      "workload": "dialog-edit",
+      "cache": "cold",
+      "series": "commands/dialog-edit.cold.json",
+      "samplesFrom": null,
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 6991.045978,
+        "minMs": 6868.384138999998,
+        "maxMs": 7044.095073,
+        "madMs": 53.04909500000031
+      }
+    },
+    {
+      "workload": "dialog-edit",
+      "cache": "warm",
+      "series": "commands/dialog-edit.warm.json",
+      "samplesFrom": null,
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 6579.616374000001,
+        "minMs": 6567.846535,
+        "maxMs": 6631.394854000002,
+        "madMs": 10.08556299999691
+      }
+    },
+    {
+      "workload": "studio-history",
+      "cache": "cold",
+      "series": "commands/studio-history.cold.json",
+      "samplesFrom": null,
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 30085.502286000003,
+        "minMs": 29870.253262999995,
+        "maxMs": 30297.879042000015,
+        "madMs": 187.00916600000346
+      }
+    },
+    {
+      "workload": "studio-history",
+      "cache": "warm",
+      "series": "commands/studio-history.warm.json",
+      "samplesFrom": null,
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 29833.203007000004,
+        "minMs": 29504.963858000003,
+        "maxMs": 30030.377408999993,
+        "madMs": 74.10499799999525
+      }
+    },
+    {
+      "workload": "token-edit",
+      "cache": "cold",
+      "series": "commands/full-release.cold.json",
+      "samplesFrom": "full-release",
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 174762.06002700003,
+        "minMs": 170669.56166300003,
+        "maxMs": 179097.1642,
+        "madMs": 3336.317958999891
+      }
+    },
+    {
+      "workload": "token-edit",
+      "cache": "warm",
+      "series": "commands/full-release.warm.json",
+      "samplesFrom": "full-release",
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 172856.05005099997,
+        "minMs": 170267.22351799998,
+        "maxMs": 175544.68803199998,
+        "madMs": 1639.1706059999997
+      }
+    },
+    {
+      "workload": "ult-button",
+      "cache": "cold",
+      "series": "commands/ult-button.cold.json",
+      "samplesFrom": null,
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 13551.290874000002,
+        "minMs": 13354.860515,
+        "maxMs": 13697.816326999999,
+        "madMs": 42.45901700000468
+      }
+    },
+    {
+      "workload": "ult-button",
+      "cache": "warm",
+      "series": "commands/ult-button.warm.json",
+      "samplesFrom": null,
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 12566.860123000006,
+        "minMs": 12324.686737,
+        "maxMs": 12625.638616000004,
+        "madMs": 58.77849299999798
+      }
+    },
+    {
+      "workload": "setup-recipe",
+      "cache": "cold",
+      "series": "commands/setup-recipe.cold.json",
+      "samplesFrom": null,
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 73914.300414,
+        "minMs": 70514.05003700001,
+        "maxMs": 79946.030584,
+        "madMs": 2239.672823000001
+      }
+    },
+    {
+      "workload": "setup-recipe",
+      "cache": "warm",
+      "series": "commands/setup-recipe.warm.json",
+      "samplesFrom": null,
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 71361.40014500002,
+        "minMs": 68756.35638100002,
+        "maxMs": 72165.30806000001,
+        "madMs": 803.9079149999889
+      }
+    },
+    {
+      "workload": "full-release",
+      "cache": "cold",
+      "series": "commands/full-release.cold.json",
+      "samplesFrom": null,
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 174762.06002700003,
+        "minMs": 170669.56166300003,
+        "maxMs": 179097.1642,
+        "madMs": 3336.317958999891
+      }
+    },
+    {
+      "workload": "full-release",
+      "cache": "warm",
+      "series": "commands/full-release.warm.json",
+      "samplesFrom": null,
+      "summary": {
+        "status": "measured",
+        "required": 5,
+        "valid": 5,
+        "failed": 0,
+        "excluded": 0,
+        "medianMs": 172856.05005099997,
+        "minMs": 170267.22351799998,
+        "maxMs": 175544.68803199998,
+        "madMs": 1639.1706059999997
+      }
+    }
+  ],
+  "studio": {
+    "file": "studio/studio.json.gz",
+    "conditions": {
+      "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+      "harnessHash": "c66d38c9d5f3776828310f781180666171f9681faba88a82e5f8a5443fc380e5",
+      "fixtureHash": "146550b4d310a540208656ff95f897b140c4f9dcc6323aae19fe50ebec9ac562"
+    },
+    "fixtures": {
+      "stock": {
+        "sha256": "5a2269959c1ef523f82ba3c1ba955ea7b2bd6519e08379516eba8ebc860c54c5",
+        "overrides": 0,
+        "failingPairings": 0
+      },
+      "customized": {
+        "sha256": "7f5e861537d007318480a2ccf12f0633aced4bd0752e1b7197b1cb18f4b7ed5b",
+        "overrides": 4,
+        "failingPairings": 0
+      },
+      "max-overrides": {
+        "sha256": "0286b5e3c8c84352ffcdc7fb3b5fca005c0a371601cdf597c38cbfe79d4b196e",
+        "overrides": 202,
+        "failingPairings": 0
+      },
+      "failing-contrast": {
+        "sha256": "d9d0d035ca59077f23b27aa69a2bc1e13310dc4b78ed0dcd483aeb5d86b6e41d",
+        "overrides": 2,
+        "failingPairings": 4
+      }
+    }
+  },
+  "exercises": [
+    "exercises/dialog-escape-1.json",
+    "exercises/dialog-escape-2.json",
+    "exercises/dialog-escape-3.json",
+    "exercises/picker-1.json",
+    "exercises/picker-2.json",
+    "exercises/picker-3.json",
+    "exercises/reset-undo-1.json",
+    "exercises/reset-undo-2.json",
+    "exercises/reset-undo-3.json",
+    "exercises/stepper-add-remove-1.json",
+    "exercises/stepper-add-remove-2.json",
+    "exercises/stepper-add-remove-3.json"
+  ],
+  "inventory": {
+    "file": "inventory/index.json",
+    "snapshots": {
+      "exports": "26524957e761f10bb50d60f92bb0bc3212bcd75476eb4c04463ec0366ca81591",
+      "routes": "96e743650c0442f49c44c9d0d309058d6373f8b0fe426b0353c135fbc0302727",
+      "catalogue": "f563b38f4eeb43c7c4551bdc488b603d7d04c4222811a843fb2a7c79e3a06f2b",
+      "registry": "846a2d7c4bfbcf161f81e058c9cc27049aad24f105e4fef6531acb8510dd1635",
+      "elements": "7906f1cdbd192334f11a8953cfef14f4b6b206ae274c514c700217a32a6a0829",
+      "optimizer": "2c8ce080d4c45456cdbfd2472f38198674bcbc22fa2cde08698f8cd20dbd9a17",
+      "commands": "14037d1e35e20598d0d53c9c6df247cd445fcb61ff874b747cc2b1eaedf9770c"
+    }
+  }
+}
