@@ -3,11 +3,12 @@ import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { exitCode, print } from './diagnostic.ts';
+import { diff } from './diff.ts';
 import { type Target, doctor } from './doctor.ts';
 import { printStatus, status } from './status.ts';
 
 const COMMANDS = ['doctor', 'status', 'diff', 'check', 'install', 'uninstall'];
-const USAGE = `usage: ultima <${COMMANDS.join('|')}> [--json] [--cwd <dir>] [--target vite|next] [--project <tsconfig>]`;
+const USAGE = `usage: ultima <${COMMANDS.join('|')}> [item…] [--json] [--cwd <dir>] [--target vite|next] [--project <tsconfig>]`;
 
 export async function run(argv: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
   const invocation = parseInvocation(argv);
@@ -19,6 +20,15 @@ export async function run(argv: string[]): Promise<{ code: number; stdout: strin
       return { code: exitCode(report), stdout: print(report, invocation.json), stderr: '' };
     }
     return { code: 0, stdout: invocation.json ? `${JSON.stringify(result, null, 2)}\n` : printStatus(result), stderr: '' };
+  }
+  if (invocation.command === 'diff') {
+    const result = await diff(invocation.root, invocation.items, { project: invocation.project });
+    if ('usage' in result) return usageError(result);
+    if ('diagnostics' in result) {
+      const report = { command: 'diff', ...result };
+      return { code: exitCode(report), stdout: print(report, false), stderr: '' };
+    }
+    return { code: 0, stdout: result.output, stderr: '' };
   }
   const result = doctor(invocation.root, invocation.target);
   if ('usage' in result) return usageError(result);
@@ -35,7 +45,8 @@ function parseInvocation(
 ):
   | { usage: string }
   | { command: 'doctor'; root: string; target: Target | undefined; json: boolean }
-  | { command: 'status'; root: string; project: string | undefined; json: boolean } {
+  | { command: 'status'; root: string; project: string | undefined; json: boolean }
+  | { command: 'diff'; root: string; project: string | undefined; items: string[] } {
   let args;
   try {
     args = parseArgs({
@@ -49,12 +60,13 @@ function parseInvocation(
   const [command, ...rest] = args.positionals;
   if (!command) return { usage: 'no command given' };
   if (!COMMANDS.includes(command)) return { usage: `unknown command ${command}` };
-  if (command !== 'doctor' && command !== 'status') return { usage: `${command} is not available in this build` };
-  if (rest.length > 0) return { usage: `${command} takes no arguments, got ${rest.join(' ')}` };
+  if (command !== 'doctor' && command !== 'status' && command !== 'diff') return { usage: `${command} is not available in this build` };
+  if (rest.length > 0 && command !== 'diff') return { usage: `${command} takes no arguments, got ${rest.join(' ')}` };
   const { target, project, json = false } = args.values;
-  if (command === 'status' ? target !== undefined : project !== undefined) {
-    return { usage: `${command} takes no --${command === 'status' ? 'target' : 'project'}` };
+  if (command === 'doctor' ? project !== undefined : target !== undefined) {
+    return { usage: `${command} takes no --${command === 'doctor' ? 'project' : 'target'}` };
   }
+  if (command === 'diff' && json) return { usage: 'diff takes no --json' };
   if (target !== undefined && target !== 'vite' && target !== 'next') {
     return { usage: `--target takes vite or next, got ${target}` };
   }
@@ -62,5 +74,6 @@ function parseInvocation(
   if (!existsSync(join(root, 'package.json'))) {
     return { usage: `${root} holds no package.json; pass --cwd with the project root` };
   }
+  if (command === 'diff') return { command, root, project, items: rest };
   return command === 'status' ? { command, root, project, json } : { command, root, target, json };
 }
