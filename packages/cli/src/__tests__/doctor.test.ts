@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import type { Diagnostic } from '../diagnostic.ts';
 import { detectTarget } from '../doctor.ts';
 import { run } from '../run.ts';
-import { edit, editComponents, installed, project, smoke, snapshot } from './fixtures.ts';
+import { edit, editComponents, installed, project, smoke, snapshot, write } from './fixtures.ts';
 
 type DoctorReport = { target: string | null; diagnostics: Diagnostic[]; unsupported: { step: string; reason: string }[] };
 
@@ -336,12 +336,10 @@ describe('the Vite hand steps', () => {
     expect(code).toBe(1);
   });
 
-  it('lists the CSP nonce and the steps it does not check yet as unsupported, never as a pass', () => {
+  it('lists the CSP nonce as unsupported, never as a pass', () => {
     const { report } = doctorJson(smoke('vite'));
     expect(report.unsupported).toEqual([
-      { step: expect.stringContaining('@layer'), reason: expect.stringContaining('does not check it yet') },
       { step: expect.stringContaining('CSPProvider'), reason: 'The headers are set at runtime or by the host.' },
-      { step: expect.stringContaining('supported version'), reason: expect.stringContaining('does not check it yet') },
     ]);
     const text = run(['doctor', '--cwd', smoke('vite')]).stdout;
     expect(text).toContain('Unsupported analysis:');
@@ -394,6 +392,190 @@ describe('the Next.js hand steps', () => {
     expect(diagnostic.repair).toBe('Add "paths": { "@/*": ["./*"] } under compilerOptions in tsconfig.json.');
   });
 });
+
+describe('layered resets', () => {
+  it("blocks create-next-app's unlayered reset at its file and line", () => {
+    const root = smoke('next');
+    writeFileSync(join(root, 'app/globals.css'), 'html,\nbody {\n  max-width: 100vw;\n}\n\n* {\n  padding: 0;\n}\n');
+    const { code, diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({
+      ruleId: 'ULT-SETUP-016',
+      severity: 'blocking',
+      file: 'app/globals.css',
+      start: { line: 6, column: 1 },
+    });
+    expect(diagnostic.repair).toContain('@layer');
+    expect(code).toBe(1);
+  });
+
+  it('passes the same rule inside @layer, and html, body, and :root outside one', () => {
+    const root = smoke('next');
+    writeFileSync(
+      join(root, 'app/globals.css'),
+      [
+        '@layer reset {',
+        '  *, *::before, ::after { padding: 0; }',
+        '  @media (min-width: 1px) { h1 { margin: 0; } }',
+        '}',
+        'html, body { max-width: 100vw; }',
+        ':root { --foreground: #171717; }',
+        'HTML::selection, .card p, a:hover, button[disabled], :where(ul) { color: red; }',
+        '@keyframes spin { from { rotate: 0deg; } to { rotate: 360deg; } }',
+        '.card { & p { margin: 0; } }',
+      ].join('\n'),
+    );
+    expect(doctorJson(root)).toMatchObject({ code: 0, report: { diagnostics: [] } });
+  });
+
+  it('finds every reset shape outside a layer, including one inside @media', () => {
+    const root = smoke('next');
+    writeFileSync(
+      join(root, 'app/globals.css'),
+      '*::before, ::after { box-sizing: border-box; }\n@media (prefers-color-scheme: dark) {\n  h1, body { margin: 0; }\n}\n',
+    );
+    const { report } = doctorJson(root);
+    expect(report.diagnostics.map(({ start, message }) => [start?.line, message])).toEqual([
+      [1, expect.stringContaining('`*::before`, `::after`')],
+      [3, expect.stringContaining('`h1`')],
+    ]);
+  });
+
+  it("reports a package stylesheet's reset at its import site, with layer(reset) as the repair", () => {
+    const root = smoke('next');
+    write(root, 'node_modules/normalize.css/package.json', JSON.stringify({ name: 'normalize.css', style: 'normalize.css' }));
+    write(root, 'node_modules/normalize.css/normalize.css', 'html { line-height: 1.15; }\nbody { margin: 0; }\nh1 { font-size: 2em; }\n');
+    writeFileSync(join(root, 'app/globals.css'), '@import "normalize.css";\n@layer reset { * { padding: 0; } }\n');
+    const { code, diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-016', severity: 'blocking', file: 'app/globals.css', start: { line: 1 } });
+    expect(diagnostic.message).toContain('node_modules/normalize.css/normalize.css');
+    expect(diagnostic.repair).toBe('Import it into a layer: `@import "normalize.css" layer(reset);`.');
+    expect(code).toBe(1);
+
+    edit(root, 'app/globals.css', (text) => text.replace('"normalize.css";', '"normalize.css" layer(reset);'));
+    expect(doctorJson(root).code).toBe(0);
+  });
+
+  it('reports a package stylesheet a module imports at that import', () => {
+    const root = smoke('vite');
+    write(root, 'node_modules/modern-normalize/modern-normalize.css', '*, ::before, ::after { box-sizing: border-box; }\n');
+    edit(root, 'src/main.tsx', (text) => `${text}import 'modern-normalize/modern-normalize.css'\n`);
+    const { diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ file: 'src/main.tsx', start: { line: 3, column: 1 } });
+    expect(diagnostic.repair).toContain('`@import "modern-normalize/modern-normalize.css" layer(reset);`');
+  });
+
+  it('makes the run incomplete when a package stylesheet does not resolve', () => {
+    const root = smoke('vite');
+    edit(root, 'src/main.tsx', (text) => `${text}import 'modern-normalize/modern-normalize.css'\n`);
+    const { code, diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-ANALYSIS-001', severity: 'incomplete', file: 'src/main.tsx' });
+    expect(code).toBe(3);
+  });
+
+  it('follows index.html, relative modules, @/ aliases, and CSS @import to every stylesheet', () => {
+    const root = smoke('vite');
+    edit(root, 'index.html', (text) => `<link rel="stylesheet" href="/src/fonts.css">\n<style>\n  p { margin: 0; }\n</style>\n${text}`);
+    writeFileSync(join(root, 'src/fonts.css'), 'img { display: block; }\n');
+    edit(root, 'src/App.tsx', (text) => `import { Card } from '@/card';\nimport './App.css';\n${text}`);
+    writeFileSync(join(root, 'src/App.css'), '@import "./base.css";\n');
+    writeFileSync(join(root, 'src/base.css'), 'button { font: inherit; }\n');
+    writeFileSync(join(root, 'src/card.tsx'), "import './card.css';\nexport function Card() {}\n");
+    writeFileSync(join(root, 'src/card.css'), 'ul { list-style: none; }\n');
+    const { report } = doctorJson(root);
+    expect(report.diagnostics.map(({ file, start }) => `${file}:${start?.line}:${start?.column}`).sort()).toEqual([
+      'index.html:3:3',
+      'src/base.css:1:1',
+      'src/card.css:1:1',
+      'src/fonts.css:1:1',
+    ]);
+  });
+});
+
+describe('versions', () => {
+  it('blocks when @stylexjs/stylex and the compiler plugin resolve to different versions', () => {
+    const root = smoke('vite');
+    installVersion(root, '@stylexjs/unplugin', '0.0.1');
+    installVersion(root, '@stylexjs/stylex', '0.0.2');
+    const { code, report } = doctorJson(root);
+    expect(report.diagnostics).toContainEqual(
+      expect.objectContaining({
+        ruleId: 'ULT-SETUP-017',
+        severity: 'blocking',
+        file: 'package.json',
+        message: expect.stringContaining('@stylexjs/stylex 0.0.2 and @stylexjs/unplugin 0.0.1'),
+      }),
+    );
+    expect(code).toBe(1);
+  });
+
+  it('advises, and exits 0, when both resolve to one version above the tested ceiling', () => {
+    const root = smoke('next');
+    installVersion(root, '@stylexjs/stylex', '99.0.0');
+    installVersion(root, '@stylexjs/babel-plugin', '99.0.0');
+    const { code, report } = doctorJson(root);
+    expect(report.diagnostics).toEqual([
+      expect.objectContaining({ ruleId: 'ULT-SETUP-017', severity: 'advisory', file: 'package.json', start: expect.anything() }),
+      expect.objectContaining({ ruleId: 'ULT-SETUP-017', severity: 'advisory', file: 'package.json', start: expect.anything() }),
+    ]);
+    expect(report.diagnostics[0]?.message).toContain('99.0.0');
+    expect(code).toBe(0);
+  });
+
+  it('blocks a version below the supported floor', () => {
+    const root = smoke('next');
+    installVersion(root, '@stylexjs/stylex', '0.0.1');
+    installVersion(root, '@stylexjs/babel-plugin', '0.0.1');
+    const { code, report } = doctorJson(root);
+    expect(report.diagnostics.map(({ severity, message }) => [severity, message])).toEqual([
+      ['blocking', expect.stringMatching(/^@stylexjs\/stylex resolves to 0\.0\.1, below the supported floor/)],
+      ['blocking', expect.stringMatching(/^@stylexjs\/babel-plugin resolves to 0\.0\.1, below the supported floor/)],
+    ]);
+    expect(code).toBe(1);
+  });
+
+  it('reads the version a parent directory resolves, as a hoisted workspace install has it', () => {
+    const workspace = project();
+    const root = smoke('vite');
+    renameSync(join(root, 'node_modules'), join(workspace, 'node_modules'));
+    renameSync(root, join(workspace, 'app'));
+    expect(doctorJson(join(workspace, 'app')).code).toBe(0);
+  });
+
+  it('makes the run incomplete when a declared package does not resolve', () => {
+    const root = smoke('vite');
+    rmSync(join(root, 'node_modules/@stylexjs/unplugin'), { recursive: true });
+    const { code, diagnostic } = onlyFinding(root);
+    expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-017', severity: 'incomplete', file: 'package.json' });
+    expect(diagnostic.message).toContain('@stylexjs/unplugin is declared but does not resolve');
+    expect(code).toBe(3);
+  });
+
+  it("names Yarn Plug'n'Play when it keeps a declared package from resolving", () => {
+    const root = smoke('vite');
+    rmSync(join(root, 'node_modules'), { recursive: true });
+    writeFileSync(join(root, '.pnp.cjs'), '');
+    const { code, report } = doctorJson(root);
+    expect(report.diagnostics).toHaveLength(2);
+    expect(report.diagnostics[0]?.message).toContain("Yarn Plug'n'Play");
+    expect(report.diagnostics[0]?.repair).toContain('nodeLinker: node-modules');
+    expect(code).toBe(3);
+  });
+
+  it('checks @base-ui/react once package.json declares it', () => {
+    const root = smoke('vite');
+    editJson(root, 'package.json', (json) => {
+      json.dependencies['@base-ui/react'] = '^0.1.0';
+    });
+    installVersion(root, '@base-ui/react', '0.1.0');
+    const { code, diagnostic } = onlyFinding(root);
+    expect(diagnostic.message).toMatch(/^@base-ui\/react resolves to 0\.1\.0, below the supported floor/);
+    expect(code).toBe(1);
+  });
+});
+
+function installVersion(root: string, name: string, version: string) {
+  write(root, `node_modules/${name}/package.json`, JSON.stringify({ name, version }));
+}
 
 describe('invocation', () => {
   it('rejects an unknown flag before anything runs', () => {
