@@ -15,8 +15,8 @@ export type Assertion =
   | { kind: 'alias-resolves'; tsconfigs: string[] }
   /** No unlayered reset in a stylesheet reachable from `entries`. */
   | { kind: 'layered-resets'; entries: string[] }
-  /** The StyleX packages resolve to one supported version. */
-  | { kind: 'version-in-range' };
+  /** Each of `packages` that package.json declares resolves inside its supported range, and all to one version. */
+  | { kind: 'version-in-range'; packages: string[] };
 
 export const KINDS = [
   'file-present',

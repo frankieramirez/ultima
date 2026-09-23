@@ -13,6 +13,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "postcss": "8.5.28",
+    "postcss-selector-parser": "7.1.6",
     "prettier": "3.9.8",
     "typescript": "5.9.3"
   },

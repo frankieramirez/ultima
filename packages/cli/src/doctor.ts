@@ -8,11 +8,12 @@ import ts from 'typescript';
 import { setupItems } from '../../../registry/items.config.ts';
 import { type Diagnostic, SPEC, type Unsupported } from './diagnostic.ts';
 import type { HandStep } from './hand-steps.ts';
-import { checkStep, jsonPosition } from './setup.ts';
+import { type SupportedRanges, checkStep, jsonPosition } from './setup.ts';
 
 export type Target = 'vite' | 'next';
 
 declare const __ULTIMA_SPEC_LINES__: Record<string, number> | undefined;
+declare const __ULTIMA_SUPPORTED_RANGES__: SupportedRanges;
 const SPEC_LINES = typeof __ULTIMA_SPEC_LINES__ === 'object' ? __ULTIMA_SPEC_LINES__ : {};
 
 function stepLink(step: HandStep): string {
@@ -76,6 +77,7 @@ function checkTarget(root: string, target: Target): { diagnostics: Diagnostic[];
       dependencies,
       devDependencies,
       aliases,
+      supportedRanges: __ULTIMA_SUPPORTED_RANGES__,
       link: stepLink(step),
     });
     diagnostics.push(...result.diagnostics);

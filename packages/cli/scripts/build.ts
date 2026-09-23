@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 
 import { setupItems } from '../../../registry/items.config.ts';
+import { supportedRanges } from './supported-ranges.ts';
 
 const packageDir = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outfile = join(packageDir, 'dist/cli.js');
@@ -40,7 +41,11 @@ await build({
   target: 'node22',
   banner: { js: '#!/usr/bin/env node' },
   external: Object.keys(dependencies),
-  define: { __ULTIMA_COMMIT__: JSON.stringify(commit), __ULTIMA_SPEC_LINES__: JSON.stringify(specLines()) },
+  define: {
+    __ULTIMA_COMMIT__: JSON.stringify(commit),
+    __ULTIMA_SPEC_LINES__: JSON.stringify(specLines()),
+    __ULTIMA_SUPPORTED_RANGES__: JSON.stringify(supportedRanges(join(packageDir, '../..'))),
+  },
   logLevel: 'warning',
 });
 chmodSync(outfile, 0o755);

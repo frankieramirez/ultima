@@ -1,12 +1,16 @@
 // docs/spec/ultima.md, Consumer CLI, Doctor, What it checks: the assertion kinds a setup
 // item's hand steps declare, executed over file reads and syntax trees.
-import { existsSync, readFileSync, statSync } from 'node:fs';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
+import postcss, { type AtRule, type Root, type Rule } from 'postcss';
+import selectorParser from 'postcss-selector-parser';
 import ts from 'typescript';
 
 import type { Diagnostic, Position, Unsupported } from './diagnostic.ts';
 import type { Assertion, HandStep } from './hand-steps.ts';
+
+export type SupportedRanges = Record<string, { floor: string; ceiling: string }>;
 
 export type StepContext = {
   root: string;
@@ -14,10 +18,9 @@ export type StepContext = {
   dependencies: string[];
   devDependencies: string[];
   aliases: string[];
+  supportedRanges: SupportedRanges;
   link: string;
 };
-
-const NOT_YET_CHECKED = 'Declared, but this version of doctor does not check it yet.';
 
 export function checkStep(step: HandStep, context: StepContext): { diagnostics: Diagnostic[]; unsupported?: Unsupported } {
   if (step.assertion === undefined) return { diagnostics: [], unsupported: { step: step.prose, reason: step.unverifiable } };
@@ -39,8 +42,9 @@ export function checkStep(step: HandStep, context: StepContext): { diagnostics: 
     case 'alias-resolves':
       return { diagnostics: [...aliasesResolve(assertion.tsconfigs, context), ...noLiteralAtDirectory(context)] };
     case 'layered-resets':
+      return { diagnostics: layeredResets(assertion.entries, context) };
     case 'version-in-range':
-      return { diagnostics: [], unsupported: { step: step.prose, reason: NOT_YET_CHECKED } };
+      return { diagnostics: versionInRange(assertion.packages, context) };
   }
 }
 
@@ -409,6 +413,430 @@ function resolveExtends(specifier: string, from: string): string | undefined {
       ? [resolve(from, specifier), resolve(from, `${specifier}.json`)]
       : [join(from, 'node_modules', specifier), join(from, 'node_modules', `${specifier}.json`), join(from, 'node_modules', specifier, 'tsconfig.json')];
   return candidates.find((candidate) => existsSync(candidate) && statSync(candidate).isFile());
+}
+
+function versionInRange(packages: string[], context: StepContext): Diagnostic[] {
+  const ruleId = 'ULT-SETUP-017';
+  const file = 'package.json';
+  let text: string;
+  let json: { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
+  try {
+    text = readFileSync(join(context.root, file), 'utf8');
+    json = JSON.parse(text);
+  } catch {
+    return [];
+  }
+  const source = ts.parseJsonText(file, text);
+  const pnp = existsSync(join(context.root, '.pnp.cjs'));
+  const diagnostics: Diagnostic[] = [];
+  const resolved: [string, string][] = [];
+  for (const name of packages) {
+    const field = (['dependencies', 'devDependencies'] as const).find((key) => json[key]?.[name] !== undefined);
+    if (!field) continue;
+    const at = jsonPosition(source, [field, name]);
+    const version = resolveInstalledVersion(context.root, name);
+    if (!version) {
+      diagnostics.push(
+        finding(context, {
+          ruleId,
+          severity: 'incomplete',
+          file,
+          ...at,
+          message: pnp
+            ? `${name} is declared but does not resolve: Yarn Plug'n'Play leaves no node_modules to read its version from.`
+            : `${name} is declared but does not resolve from the project root, so its version is unknown.`,
+          repair: pnp
+            ? 'Set `nodeLinker: node-modules` in .yarnrc.yml and run `yarn install`.'
+            : "Run `npm install`, or your package manager's equivalent.",
+        }),
+      );
+      continue;
+    }
+    resolved.push([name, version]);
+    const range = context.supportedRanges[name];
+    if (!range) throw new Error(`this build of the CLI bundles no supported range for ${name}`);
+    if (compareVersions(version, range.floor) < 0) {
+      diagnostics.push(
+        finding(context, {
+          ruleId,
+          file,
+          ...at,
+          message: `${name} resolves to ${version}, below the supported floor ${range.floor}.`,
+          repair: `Run \`npm install ${name}@${range.ceiling}\`, or your package manager's equivalent.`,
+        }),
+      );
+    } else if (compareVersions(version, range.ceiling) > 0) {
+      diagnostics.push(
+        finding(context, {
+          ruleId,
+          severity: 'advisory',
+          file,
+          ...at,
+          message: `${name} resolves to ${version}, above ${range.ceiling}, the newest version this CLI was tested with.`,
+          repair: `Nothing to do if it works; \`npm install ${name}@${range.ceiling}\` returns to the tested version.`,
+        }),
+      );
+    }
+  }
+  if (new Set(resolved.map(([, version]) => version)).size > 1) {
+    diagnostics.push(
+      finding(context, {
+        ruleId,
+        file,
+        message: `${resolved.map(([name, version]) => `${name} ${version}`).join(' and ')} differ; the StyleX runtime and compiler must be one release.`,
+        repair: `Run \`npm install ${resolved
+          .map(([name]) => `${name}@${context.supportedRanges[name]?.ceiling}`)
+          .join(' ')}\`, or your package manager's equivalent.`,
+      }),
+    );
+  }
+  return diagnostics;
+}
+
+/** The version `name` resolves to from `root`, read from its installed package.json, the way Node looks it up. */
+export function resolveInstalledVersion(root: string, name: string): string | undefined {
+  for (let directory = root; ; directory = dirname(directory)) {
+    const manifest = join(directory, 'node_modules', name, 'package.json');
+    if (existsSync(manifest)) {
+      try {
+        const { version } = JSON.parse(readFileSync(manifest, 'utf8')) as { version?: unknown };
+        return typeof version === 'string' ? version : undefined;
+      } catch {
+        return undefined;
+      }
+    }
+    if (dirname(directory) === directory) return undefined;
+  }
+}
+
+/** Orders x.y.z versions; a prerelease sorts below its release. */
+export function compareVersions(a: string, b: string): number {
+  const parse = (version: string) => {
+    const [core = '', prerelease] = version.split(/-(.*)/s);
+    return { parts: core.split('.').map(Number), prerelease };
+  };
+  const left = parse(a);
+  const right = parse(b);
+  for (let index = 0; index < 3; index++) {
+    const difference = (left.parts[index] ?? 0) - (right.parts[index] ?? 0);
+    if (difference !== 0) return difference;
+  }
+  return Number(!left.prerelease) - Number(!right.prerelease);
+}
+
+const SCRIPTS = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'];
+
+type ImportSite = { file: string; start: Position; end: Position; specifier: string; fromStylesheet: boolean };
+
+function layeredResets(entries: string[], context: StepContext): Diagnostic[] {
+  const ruleId = 'ULT-SETUP-016';
+  const files = entries.flatMap((entry) => expandEntry(entry, context.root));
+  if (files.length === 0) {
+    return [
+      finding(context, {
+        ruleId,
+        severity: 'incomplete',
+        file: entries[0] ?? '.',
+        message: `None of ${entries.join(', ')} exists, so no stylesheet could be followed from the entry.`,
+        repair: 'Restore the entry the target scaffold ships.',
+      }),
+    ];
+  }
+  const diagnostics: Diagnostic[] = [];
+  const seen = new Set<string>();
+  const aliases = aliasConfig(context.root);
+  const name = (path: string) => relative(context.root, path).split(sep).join('/');
+
+  const visit = (path: string, packageSite: ImportSite | undefined) => {
+    if (seen.has(path)) return;
+    seen.add(path);
+    const extension = extname(path);
+    if (extension === '.html') return visitHtml(path);
+    if (SCRIPTS.includes(extension)) return visitScript(path);
+    if (extension === '.css') return visitStylesheet(path, packageSite);
+  };
+
+  const follow = (specifier: string, from: string, site: ImportSite, stylesheet: boolean) => {
+    const target = resolveImport(specifier, from, stylesheet, context.root, aliases);
+    if (target) return visit(target, isPackage(target, context.root) ? site : undefined);
+    if (!isProjectSpecifier(specifier, aliases) && (stylesheet || extname(specifier) === '.css')) {
+      diagnostics.push(
+        finding(context, {
+          ruleId: 'ULT-ANALYSIS-001',
+          severity: 'incomplete',
+          file: site.file,
+          start: site.start,
+          end: site.end,
+          message: `doctor cannot resolve the stylesheet '${specifier}', so whether it holds an unlayered reset is unknown.`,
+          repair: `Install the package that provides '${specifier}', or remove the import.`,
+        }),
+      );
+    }
+  };
+
+  const visitScript = (path: string) => {
+    const file = name(path);
+    const parsed = parse(file, ruleId, context);
+    if ('diagnostics' in parsed) return diagnostics.push(...parsed.diagnostics);
+    const { source } = parsed;
+    for (const statement of source.statements) {
+      const specifier =
+        (ts.isImportDeclaration(statement) && !statement.importClause?.isTypeOnly) ||
+        (ts.isExportDeclaration(statement) && !statement.isTypeOnly)
+          ? statement.moduleSpecifier
+          : undefined;
+      if (!specifier || !ts.isStringLiteral(specifier)) continue;
+      follow(specifier.text, path, {
+        file,
+        start: position(source, statement.getStart(source)),
+        end: position(source, statement.getEnd()),
+        specifier: specifier.text,
+        fromStylesheet: false,
+      }, false);
+    }
+  };
+
+  const visitHtml = (path: string) => {
+    const file = name(path);
+    const text = readFileSync(path, 'utf8');
+    const at = (offset: number) => {
+      const lines = text.slice(0, offset).split('\n');
+      return { line: lines.length, column: (lines.at(-1)?.length ?? 0) + 1 };
+    };
+    for (const link of text.matchAll(/<link\b[^>]*>/gi)) {
+      const attributes = Object.fromEntries(
+        [...link[0].matchAll(/([\w-]+)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/g)].map(([, key = '', value = '']) => [
+          key.toLowerCase(),
+          value.replace(/^["']|["']$/g, ''),
+        ]),
+      );
+      const { rel, href } = attributes;
+      if (rel?.toLowerCase() !== 'stylesheet' || !href || isRemoteHref(href)) continue;
+      const site = { file, start: at(link.index), end: at(link.index + link[0].length), specifier: href, fromStylesheet: false };
+      follow(href.startsWith('/') ? `.${href}` : href, path, site, true);
+    }
+    const css = styleTagsInPlace(text);
+    if (css.trim()) checkRules(file, path, css, undefined);
+  };
+
+  const visitStylesheet = (path: string, packageSite: ImportSite | undefined) => {
+    const file = name(path);
+    const root = checkRules(file, path, readFileSync(path, 'utf8'), packageSite);
+    root?.walkAtRules(/^import$/i, (rule) => {
+      const { specifier, layered } = importParams(rule.params);
+      if (!specifier || layered) return;
+      const inner: ImportSite = packageSite ?? {
+        file,
+        start: { line: rule.source?.start?.line ?? 1, column: rule.source?.start?.column ?? 1 },
+        end: { line: rule.source?.end?.line ?? 1, column: (rule.source?.end?.column ?? 0) + 1 },
+        specifier,
+        fromStylesheet: true,
+      };
+      follow(specifier, path, inner, true);
+    });
+  };
+
+  const reported = new Set<ImportSite>();
+  const checkRules = (file: string, path: string, text: string, packageSite: ImportSite | undefined): Root | undefined => {
+    let root: Root;
+    try {
+      root = postcss.parse(text, { from: path });
+    } catch (error) {
+      const { line = 1, column = 1, reason } = error as { line?: number; column?: number; reason?: string };
+      diagnostics.push(
+        finding(context, {
+          ruleId,
+          severity: 'incomplete',
+          file: packageSite?.file ?? file,
+          start: packageSite?.start ?? { line, column },
+          message: `${file} does not parse as CSS: ${reason ?? (error as Error).message}.`,
+          repair: `Repair the syntax in ${file}.`,
+        }),
+      );
+      return undefined;
+    }
+    root.walkRules((rule) => {
+      const resets = unlayeredResets(rule);
+      if (resets.length === 0) return;
+      const shown = resets.map((selector) => `\`${selector}\``).join(', ');
+      if (packageSite) {
+        if (reported.has(packageSite)) return;
+        reported.add(packageSite);
+        diagnostics.push(
+          finding(context, {
+            ruleId,
+            file: packageSite.file,
+            start: packageSite.start,
+            end: packageSite.end,
+            message: `${file} holds an unlayered reset (${shown}), which beats every component style.`,
+            repair: packageSite.fromStylesheet
+              ? `Import it into a layer: \`@import "${packageSite.specifier}" layer(reset);\`.`
+              : `Remove this import and add \`@import "${packageSite.specifier}" layer(reset);\` to your global stylesheet.`,
+          }),
+        );
+        return;
+      }
+      diagnostics.push(
+        finding(context, {
+          ruleId,
+          file,
+          start: { line: rule.source?.start?.line ?? 1, column: rule.source?.start?.column ?? 1 },
+          end: { line: rule.source?.end?.line ?? 1, column: (rule.source?.end?.column ?? 0) + 1 },
+          message: `${shown} is an unlayered reset, which beats every component style.`,
+          repair: 'Wrap the reset in `@layer reset { … }`.',
+        }),
+      );
+    });
+    return root;
+  };
+
+  for (const file of files) visit(file, undefined);
+  return diagnostics;
+}
+
+function expandEntry(entry: string, root: string): string[] {
+  if (!entry.endsWith('.*')) return existsSync(join(root, entry)) ? [join(root, entry)] : [];
+  const directory = join(root, dirname(entry));
+  const stem = entry.slice(entry.lastIndexOf('/') + 1, -1);
+  if (!existsSync(directory)) return [];
+  return readdirSync(directory)
+    .filter((name) => name.startsWith(stem) && SCRIPTS.includes(name.slice(stem.length - 1)))
+    .map((name) => join(directory, name));
+}
+
+/** Conditional at-rules: a rule inside one still applies to the whole page when it applies. */
+const UNSCOPED_AT_RULES = ['media', 'supports', 'container'];
+
+const LEGACY_PSEUDO_ELEMENTS = [':before', ':after', ':first-line', ':first-letter'];
+
+function unlayeredResets(rule: Rule): string[] {
+  for (let parent = rule.parent; parent && parent.type !== 'root'; parent = parent.parent) {
+    if (parent.type !== 'atrule') return [];
+    const name = (parent as AtRule).name.toLowerCase();
+    if (name === 'layer' || !UNSCOPED_AT_RULES.includes(name)) return [];
+  }
+  const resets: string[] = [];
+  selectorParser((selectors) => {
+    selectors.each((selector) => {
+      const nodes = selector.nodes.filter((node) => node.type !== 'comment');
+      const [subject, ...rest] = nodes;
+      const pseudoElement = (node: selectorParser.Node) =>
+        node.type === 'pseudo' &&
+        (node.value.startsWith('::') || LEGACY_PSEUDO_ELEMENTS.includes(node.value.toLowerCase()));
+      const reset =
+        subject !== undefined &&
+        (subject.type === 'universal' ||
+          (subject.type === 'tag' && !['html', 'body'].includes(subject.value.toLowerCase())) ||
+          pseudoElement(subject)) &&
+        rest.every(pseudoElement);
+      if (reset) resets.push(selector.toString().trim());
+    });
+  }).processSync(rule.selector);
+  return resets;
+}
+
+function importParams(params: string): { specifier: string | undefined; layered: boolean } {
+  const [first, ...rest] = postcss.list.space(params);
+  if (!first) return { specifier: undefined, layered: false };
+  const url = /^url\(\s*(.*?)\s*\)$/i.exec(first)?.[1] ?? first;
+  return { specifier: url.replace(/^["']|["']$/g, ''), layered: rest.some((part) => /^layer(\(|$)/i.test(part)) };
+}
+
+function isRemoteHref(href: string): boolean {
+  return /^[a-z]+:|^\/\//i.test(href);
+}
+
+/** The bodies of the file's <style> tags, with everything else blanked so positions stay the file's. */
+function styleTagsInPlace(html: string): string {
+  let css = html.replace(/[^\n]/g, ' ');
+  for (const style of html.matchAll(/(<style\b[^>]*>)([\s\S]*?)<\/style>/gi)) {
+    const start = style.index + (style[1]?.length ?? 0);
+    const body = style[2] ?? '';
+    css = css.slice(0, start) + body + css.slice(start + body.length);
+  }
+  return css;
+}
+
+function isProjectSpecifier(specifier: string, aliases: Aliases): boolean {
+  return specifier.startsWith('.') || specifier.startsWith('/') || aliasCandidates(specifier, aliases).length > 0;
+}
+
+function isPackage(path: string, root: string): boolean {
+  return relative(root, path).split(sep).includes('node_modules');
+}
+
+type Aliases = { paths: Record<string, string[]>; base: string } | undefined;
+
+function aliasConfig(root: string): Aliases {
+  for (const file of ['tsconfig.app.json', 'tsconfig.json']) {
+    if (!existsSync(join(root, file))) continue;
+    const config = readTsConfig(join(root, file));
+    if (!('error' in config) && config.paths) return { paths: config.paths, base: config.baseUrl ?? config.pathsBase ?? root };
+  }
+  return undefined;
+}
+
+function aliasCandidates(specifier: string, aliases: Aliases): string[] {
+  if (!aliases) return [];
+  const candidates: string[] = [];
+  for (const [pattern, targets] of Object.entries(aliases.paths)) {
+    const star = pattern.indexOf('*');
+    const prefix = star === -1 ? pattern : pattern.slice(0, star);
+    const suffix = star === -1 ? '' : pattern.slice(star + 1);
+    if (star === -1 ? specifier !== pattern : !specifier.startsWith(prefix) || !specifier.endsWith(suffix)) continue;
+    const matched = specifier.slice(prefix.length, specifier.length - suffix.length);
+    for (const target of targets) candidates.push(resolve(aliases.base, target.replace('*', matched)));
+  }
+  return candidates;
+}
+
+function resolveImport(
+  specifier: string,
+  from: string,
+  stylesheet: boolean,
+  root: string,
+  aliases: Aliases,
+): string | undefined {
+  const candidates: string[] = [];
+  if (specifier.startsWith('.') || isAbsolute(specifier)) candidates.push(resolve(dirname(from), specifier));
+  else {
+    // CSS resolves a bare @import beside the file first, the way postcss-import and Vite do.
+    if (stylesheet) candidates.push(resolve(dirname(from), specifier));
+    candidates.push(...aliasCandidates(specifier, aliases));
+    if (stylesheet || extname(specifier) === '.css') {
+      for (let directory = root; ; directory = dirname(directory)) {
+        candidates.push(...packageStylesheet(join(directory, 'node_modules'), specifier));
+        if (dirname(directory) === directory) break;
+      }
+    }
+  }
+  const isFile = (path: string) => existsSync(path) && statSync(path).isFile();
+  for (const candidate of candidates) {
+    const found = [
+      candidate,
+      ...SCRIPTS.map((extension) => `${candidate}${extension}`),
+      ...SCRIPTS.map((extension) => candidate.replace(/\.[mc]?jsx?$/, extension)),
+      ...SCRIPTS.map((extension) => join(candidate, `index${extension}`)),
+    ].find(isFile);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+function packageStylesheet(modules: string, specifier: string): string[] {
+  const direct = join(modules, specifier);
+  const manifest = join(direct, 'package.json');
+  if (!existsSync(manifest)) return [direct];
+  try {
+    const { style, exports } = JSON.parse(readFileSync(manifest, 'utf8')) as { style?: unknown; exports?: unknown };
+    const dot = (typeof exports === 'object' && exports !== null ? (exports as Record<string, unknown>)['.'] : undefined) as
+      | { style?: unknown }
+      | undefined;
+    const entry = typeof dot === 'object' && dot !== null && typeof dot.style === 'string' ? dot.style : style;
+    return typeof entry === 'string' ? [join(direct, entry)] : [];
+  } catch {
+    return [];
+  }
 }
 
 function noLiteralAtDirectory(context: StepContext): Diagnostic[] {

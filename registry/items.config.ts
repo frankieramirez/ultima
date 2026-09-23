@@ -375,9 +375,14 @@ const cspNonce: HandStep = {
   unverifiable: 'The headers are set at runtime or by the host.',
 };
 
-const versions: HandStep = {
-  prose: '`@stylexjs/stylex` and the StyleX compiler plugin resolve to the same supported version.',
-  assertion: { kind: 'version-in-range' },
+const versions = (plugin: string): HandStep => ({
+  prose: `\`@stylexjs/stylex\` and \`${plugin}\` resolve to the same supported version.`,
+  assertion: { kind: 'version-in-range', packages: ['@stylexjs/stylex', plugin] },
+});
+
+const baseUi: HandStep = {
+  prose: '`@base-ui/react`, once installed, resolves to a supported version.',
+  assertion: { kind: 'version-in-range', packages: ['@base-ui/react'] },
 };
 
 const dependencies: HandStep = {
@@ -415,7 +420,8 @@ export const setupItems = {
     checks: [
       { prose: 'ultima.vite.ts sits at the project root.', assertion: { kind: 'file-present', path: 'ultima.vite.ts' } },
       dependencies,
-      versions,
+      versions('@stylexjs/unplugin'),
+      baseUi,
     ],
   },
   'setup-next': {
@@ -451,7 +457,8 @@ export const setupItems = {
         assertion: { kind: 'alias-resolves', tsconfigs: ['tsconfig.json'] },
       },
       dependencies,
-      versions,
+      versions('@stylexjs/babel-plugin'),
+      baseUi,
     ],
   },
 } satisfies Record<string, SetupItemDescription>;

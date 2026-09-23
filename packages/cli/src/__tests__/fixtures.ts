@@ -3,16 +3,20 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { supportedRanges } from '../../scripts/supported-ranges.ts';
+
 const setupItems = join(dirname(fileURLToPath(import.meta.url)), '../../../../registry/static');
 const LOCAL_REGISTRY = 'http://127.0.0.1:4321/r/{name}.json';
 
 export function project(files: Record<string, string> = {}): string {
   const root = mkdtempSync(join(tmpdir(), 'ultima-cli-'));
-  for (const [path, content] of Object.entries({ 'package.json': '{}', ...files })) {
-    mkdirSync(dirname(join(root, path)), { recursive: true });
-    writeFileSync(join(root, path), content);
-  }
+  for (const [path, content] of Object.entries({ 'package.json': '{}', ...files })) write(root, path, content);
   return root;
+}
+
+export function write(root: string, path: string, content: string) {
+  mkdirSync(dirname(join(root, path)), { recursive: true });
+  writeFileSync(join(root, path), content);
 }
 
 export function installed(target: 'vite' | 'next', root = project()): string {
@@ -27,8 +31,17 @@ function pointAtLocalRegistry(root: string) {
   });
 }
 
+const RANGES = supportedRanges(join(dirname(fileURLToPath(import.meta.url)), '../../../..'));
+
 export function smoke(target: 'vite' | 'next'): string {
-  return installed(target, project(SMOKE[target]));
+  const root = installed(target, project(SMOKE[target]));
+  const { dependencies = {}, devDependencies = {} } = JSON.parse(SMOKE[target]['package.json'] ?? '{}');
+  for (const [name, { ceiling }] of Object.entries(RANGES)) {
+    if (name in dependencies || name in devDependencies) {
+      write(root, `node_modules/${name}/package.json`, JSON.stringify({ name, version: ceiling }));
+    }
+  }
+  return root;
 }
 
 const SMOKE: Record<'vite' | 'next', Record<string, string>> = {
