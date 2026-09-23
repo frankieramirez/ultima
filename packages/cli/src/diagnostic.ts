@@ -1,6 +1,11 @@
 // Output and exits: docs/spec/ultima.md, Consumer CLI, Package and engine.
 // The shape follows the contributor checker's (docs/spec/agent-infrastructure.md, Diagnostics).
 
+declare const __ULTIMA_COMMIT__: string | undefined;
+export const SPEC = `https://github.com/frankieramirez/ultima/blob/${
+  typeof __ULTIMA_COMMIT__ === 'string' ? __ULTIMA_COMMIT__ : 'main'
+}/docs/spec/ultima.md`;
+
 export type Position = { line: number; column: number };
 
 export type Diagnostic = {
