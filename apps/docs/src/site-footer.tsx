@@ -45,7 +45,7 @@ export function SiteFooter({ wide = false }: { wide?: boolean }) {
 
   return (
     <footer {...stylex.props(wide ? layoutStyles.gutterWide : layoutStyles.gutter, styles.bar)}>
-      <Kicker>ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES</Kicker>
+      <Kicker>ULTIMA / A SYSTEM FOR BUILDING INTERFACES</Kicker>
       <div {...stylex.props(styles.cluster)}>
         <div {...stylex.props(styles.links)}>
           <TextLink variant="muted" render={<Link to="/install" />}>
