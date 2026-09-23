@@ -129,6 +129,42 @@ add_catalogue() {
   done
 }
 
+assert_stamped() {
+  local root="$1"
+  curl -fsS "$HOST/r/registry.json" -o "$WORK/registry.json"
+  REGISTRY="$WORK/registry.json" ROOT_DIR="$root" STAMP="$ROOT/packages/cli/src/stamp.ts" \
+    node --experimental-strip-types --input-type=module -e '
+import { readFileSync } from "node:fs";
+import { basename, join } from "node:path";
+import { pathToFileURL } from "node:url";
+
+const { readStamp } = await import(pathToFileURL(process.env.STAMP).href);
+const registry = JSON.parse(readFileSync(process.env.REGISTRY, "utf8"));
+const folder = { "registry:ui": "components/ui", "registry:lib": "lib" };
+const failures = [];
+let checked = 0;
+for (const item of registry.items) {
+  if (!folder[item.type]) continue;
+  for (const file of item.files) {
+    const name = basename(file.path);
+    const text = readFileSync(join(process.env.ROOT_DIR, folder[item.type], name), "utf8");
+    const stamp = readStamp(text);
+    const stamps = text.split("\n").filter((line) => readStamp(line)).length;
+    const hash = stamp && `${stamp.scheme}:${stamp.hash}`;
+    if (!stamp || stamps !== 1 || stamp.item !== item.name || hash !== item.meta.ultima.files[name]) {
+      failures.push(`${folder[item.type]}/${name}`);
+    }
+    checked += 1;
+  }
+}
+if (failures.length > 0) {
+  console.error(`smoke-install: these installed files lost their item stamp or moved it: ${failures.join(", ")}`);
+  process.exit(1);
+}
+console.log(`smoke-install: ${checked} installed files carry their item stamp`);
+'
+}
+
 # Imports every installed component and reads the array, so the consumer's bundler compiles all of
 # them. Without the reference it drops the imports and the build proves only that the files parsed.
 write_catalogue_module() {
@@ -307,6 +343,7 @@ import { ultimaStylex } from './ultima.vite.ts'"
 
   step "vite: npx shadcn add the catalogue"
   add_catalogue "$app" "$app/src"
+  assert_stamped "$app/src"
   write_catalogue_module "$app/src/App.tsx" App
 
   step "vite: npm run build"
@@ -337,6 +374,7 @@ import "./ultima.css";'
 
   step "next: npx shadcn add the catalogue"
   add_catalogue "$app" "$app"
+  assert_stamped "$app"
 
   # The page is a server component and stays one: `rsc: true` does not insert a
   # "use client" directive, and each component's own boundary covers it.
