@@ -16,7 +16,8 @@ import {
   stampLine,
   withStamp,
 } from '../packages/cli/src/stamp.ts';
-import { items } from '../registry/items.config.ts';
+import { type SetupItemDescription, items, setupItems } from '../registry/items.config.ts';
+import { validateHandSteps } from '../packages/cli/src/hand-steps.ts';
 import { agentGuide, type GuideComponent } from './build-agent-guide.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -224,22 +225,28 @@ function filesUnder(dir: string, prefix = ''): string[] {
   return found;
 }
 
+function handStepDocs(handSteps: SetupItemDescription['handSteps']): string {
+  const steps = handSteps.map(({ prose }, index) => `${index + 1}. ${prose}`);
+  return ['Steps you still do by hand:', ...steps, '', 'Then: npx shadcn add @ultima/button'].join('\n');
+}
+
 /** Where a file sits under `registry/static/<name>/` is where it installs in the consumer. */
-function setupItem(name: string): RegistryItem {
-  const { title, description, docs, dependencies, devDependencies } = describe(name);
+function setupItem(name: keyof typeof setupItems): RegistryItem {
+  const { title, description, dependencies, devDependencies, handSteps, checks } = setupItems[name];
+  validateHandSteps(name, [...handSteps, ...checks]);
   return {
     name,
     type: 'registry:item',
     title,
     description,
-    ...(dependencies && { dependencies }),
-    ...(devDependencies && { devDependencies }),
+    dependencies,
+    devDependencies,
     files: filesUnder(join(STATIC_DIR, name)).map((path) => ({
       path: `static/${name}/${path}`,
       type: 'registry:file',
       target: `~/${path}`,
     })),
-    docs,
+    docs: handStepDocs(handSteps),
   };
 }
 

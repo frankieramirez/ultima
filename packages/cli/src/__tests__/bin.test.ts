@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { installed } from './fixtures.ts';
+import { edit, editComponents, smoke } from './fixtures.ts';
 
 const cli = join(dirname(fileURLToPath(import.meta.url)), '../../dist/cli.js');
 
@@ -19,15 +19,31 @@ describe('the built binary', () => {
   });
 
   it('exits 0 on a correct Vite install', () => {
-    const result = ultima('doctor', '--cwd', installed('vite'));
+    const result = ultima('doctor', '--cwd', smoke('vite'));
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);
   });
 
   it('links the spec at the commit it was built from', () => {
-    const result = ultima('doctor', '--json', '--cwd', installed('vite', installed('next')), '--target', 'next');
-    const [diagnostic] = JSON.parse(result.stdout).diagnostics;
+    const root = smoke('vite');
+    editComponents(root, (json) => {
+      json.style = 'new-york';
+    });
+    const [diagnostic] = JSON.parse(ultima('doctor', '--json', '--cwd', root).stdout).diagnostics;
     expect(diagnostic.link).toMatch(/^https:\/\/github\.com\/frankieramirez\/ultima\/blob\/[0-9a-f]{40}\/docs\/spec\/ultima\.md#setup-items$/);
+  });
+
+  it("links a hand step's finding to its line under What the consumer still does by hand", () => {
+    const root = smoke('vite');
+    edit(root, 'vite.config.ts', (text) => text.replace('[ultimaStylex(), react()]', '[react(), ultimaStylex()]'));
+    const [diagnostic] = JSON.parse(ultima('doctor', '--json', '--cwd', root).stdout).diagnostics;
+    const match = /^https:\/\/github\.com\/frankieramirez\/ultima\/blob\/[0-9a-f]{40}\/docs\/spec\/ultima\.md\?plain=1#L(\d+)$/.exec(
+      diagnostic.link,
+    );
+    expect(match).not.toBeNull();
+    const line = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../../docs/spec/ultima.md'), 'utf8')
+      .split('\n')[Number(match?.[1]) - 1];
+    expect(line).toMatch(/^- \*\*Vite\.\*\* Add `"paths"/);
   });
 
   it('exits 2 on an unknown flag', () => {

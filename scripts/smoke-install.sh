@@ -206,6 +206,10 @@ assert_docs_printed() {
   done
 }
 
+assert_doctor_passes() {
+  node "$ROOT/packages/cli/dist/cli.js" doctor --cwd "$1"
+}
+
 assert_installed() {
   local app="$1"
   shift
@@ -348,6 +352,9 @@ import { ultimaStylex } from './ultima.vite.ts'"
 
   step "vite: npm run build"
   (cd "$app" && npm run build)
+
+  step "vite: ultima doctor"
+  assert_doctor_passes "$app"
 }
 
 next_target() {
@@ -382,6 +389,9 @@ import "./ultima.css";'
 
   step "next: npm run build"
   (cd "$app" && npm run build)
+
+  step "next: ultima doctor"
+  assert_doctor_passes "$app"
 }
 
 sidebar_target() {
@@ -481,6 +491,9 @@ fi
 HOST="${HOST%/}"
 
 curl -fsS "$HOST/r/registry.json" >/dev/null
+
+step "building the CLI"
+(cd "$ROOT" && pnpm --filter @ultima-systems/cli build)
 
 CATALOGUE="$(catalogue)"
 echo "smoke-install: the catalogue is $(echo "$CATALOGUE" | wc -w | tr -d ' ') components"
