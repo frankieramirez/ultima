@@ -1,3 +1,5 @@
+import type { HandStep } from '../packages/cli/src/hand-steps.ts';
+
 /**
  * `docs` is printed by the shadcn CLI after an install.
  */
@@ -6,9 +8,6 @@ export type RegistryItemDescription = {
   title: string;
   description: string;
   docs: string;
-  /** Setup items only: their files are authored, so their npm packages cannot be derived. */
-  dependencies?: string[];
-  devDependencies?: string[];
   /** Element items only: a vendored bundle has no imports to derive from, so the tokens-css URL is declared here. */
   registryDependencies?: string[];
 };
@@ -294,22 +293,6 @@ export const items: Record<string, RegistryItemDescription> = {
     description: 'Panels with boundaries you drag or arrow, on Zag.',
     docs: "import { Resizable } from '@/components/ui/resizable';\n\n<Resizable.Root panels={[{ id: 'nav' }, { id: 'main' }]}>\n  <Resizable.Panel id=\"nav\">Navigation</Resizable.Panel>\n  <Resizable.Handle id=\"nav:main\" aria-label=\"Resize navigation\">\n    <Resizable.HandleIndicator />\n  </Resizable.Handle>\n  <Resizable.Panel id=\"main\">Content</Resizable.Panel>\n</Resizable.Root>\n\nEvery Handle needs a name: the type requires one of aria-label or aria-labelledby, the system's fourth enforced attribute. Sizing metadata (minSize, maxSize, collapsible, collapsedSize) lives on each panels entry, defaultSize sizes them at mount, and keyboardResizeBy sets the arrow step. The machine owns the panels' layout inline styles, including overflow: hidden. A strict CSP needs the nonce prop for the drag cursor <style>.",
   },
-  'setup-vite': {
-    title: 'Ultima setup for Vite',
-    description:
-      'components.json and ultima.vite.ts, the StyleX plugin preconfigured. Universal item: installs without Tailwind and without an existing components.json.',
-    docs: 'Ultima on Vite, three steps:\n1. Add "paths": { "@/*": ["./src/*"] } to tsconfig.json and tsconfig.app.json. Without it the CLI writes files into a literal ./@/ directory.\n2. In vite.config.ts, import { ultimaStylex } from \'./ultima.vite.ts\' and put ultimaStylex() in plugins, before the React plugin.\n3. Wrap any global CSS reset in an @layer, or it beats every component style.\n\nThen: npx shadcn add @ultima/button',
-    dependencies: ['@stylexjs/stylex'],
-    devDependencies: ['@stylexjs/unplugin', 'unplugin'],
-  },
-  'setup-next': {
-    title: 'Ultima setup for Next.js App Router',
-    description:
-      'components.json, babel.config.js, postcss.config.js, and the @stylex; stylesheet. Universal item: installs without Tailwind and without an existing components.json.',
-    docs: "Ultima on Next.js, two steps:\n1. Import './ultima.css' from app/layout.tsx.\n2. Wrap any global CSS reset in an @layer. create-next-app ships `* { padding: 0 }`, which beats every component style.\n\nThen: npx shadcn add @ultima/button",
-    dependencies: ['@stylexjs/stylex'],
-    devDependencies: ['@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'],
-  },
   'tokens-css': {
     title: 'Ultima tokens as CSS',
     description: 'The generated token stylesheet, for a project that cannot run StyleX.',
@@ -370,3 +353,105 @@ export const items: Record<string, RegistryItemDescription> = {
     registryDependencies: ['https://ultima.systems/r/tokens-css.json'],
   },
 };
+
+/**
+ * A setup item's `docs` and the install page's list are generated from `handSteps`, and
+ * `doctor` checks every step and every entry in `checks`. `checks` holds what the item
+ * installs or the scaffold already provides, which doctor confirms and the item never prints.
+ */
+export type SetupItemDescription = {
+  title: string;
+  description: string;
+  /** Their files are authored, so their npm packages cannot be derived. */
+  dependencies: string[];
+  devDependencies: string[];
+  handSteps: HandStep[];
+  checks: HandStep[];
+};
+
+const cspNonce: HandStep = {
+  prose: "A strict CSP needs a nonce: pass it to Base UI's `CSPProvider` at your app root.",
+  spec: 'A strict CSP needs a nonce.',
+  unverifiable: 'The headers are set at runtime or by the host.',
+};
+
+const versions: HandStep = {
+  prose: '`@stylexjs/stylex` and the StyleX compiler plugin resolve to the same supported version.',
+  assertion: { kind: 'version-in-range' },
+};
+
+const dependencies: HandStep = {
+  prose: "The setup item's dependencies are declared in package.json.",
+  assertion: { kind: 'config-references', file: 'package.json' },
+};
+
+export const setupItems = {
+  'setup-vite': {
+    title: 'Ultima setup for Vite',
+    description:
+      'components.json and ultima.vite.ts, the StyleX plugin preconfigured. Universal item: installs without Tailwind and without an existing components.json.',
+    dependencies: ['@stylexjs/stylex'],
+    devDependencies: ['@stylexjs/unplugin', 'unplugin'],
+    handSteps: [
+      {
+        prose:
+          'Add `"paths": { "@/*": ["./src/*"] }` to tsconfig.json and tsconfig.app.json. Without it the CLI writes files into a literal ./@/ directory.',
+        spec: 'Vite.',
+        assertion: { kind: 'alias-resolves', tsconfigs: ['tsconfig.json', 'tsconfig.app.json'] },
+      },
+      {
+        prose:
+          "In vite.config.ts, `import { ultimaStylex } from './ultima.vite.ts'` and put `ultimaStylex()` in plugins, before the React plugin.",
+        spec: 'Vite.',
+        assertion: { kind: 'plugin-first', plugin: 'ultimaStylex', from: './ultima.vite' },
+      },
+      {
+        prose: 'Wrap any global CSS reset in an @layer, or it beats every component style.',
+        spec: 'Both.',
+        assertion: { kind: 'layered-resets', entries: ['index.html', 'src/main.*'] },
+      },
+      cspNonce,
+    ],
+    checks: [
+      { prose: 'ultima.vite.ts sits at the project root.', assertion: { kind: 'file-present', path: 'ultima.vite.ts' } },
+      dependencies,
+      versions,
+    ],
+  },
+  'setup-next': {
+    title: 'Ultima setup for Next.js App Router',
+    description:
+      'components.json, babel.config.js, postcss.config.js, and the @stylex; stylesheet. Universal item: installs without Tailwind and without an existing components.json.',
+    dependencies: ['@stylexjs/stylex'],
+    devDependencies: ['@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'],
+    handSteps: [
+      {
+        prose: "Import './ultima.css' from app/layout.tsx.",
+        spec: 'Next.js.',
+        assertion: { kind: 'import-present', importers: ['app/layout.tsx', 'src/app/layout.tsx'], specifier: './ultima.css' },
+      },
+      {
+        prose: 'Wrap any global CSS reset in an @layer. create-next-app ships `* { padding: 0 }`, which beats every component style.',
+        spec: 'Both.',
+        assertion: { kind: 'layered-resets', entries: ['app/layout.tsx', 'src/app/layout.tsx'] },
+      },
+      cspNonce,
+    ],
+    checks: [
+      {
+        prose: 'babel.config.js runs the StyleX Babel plugin.',
+        assertion: { kind: 'config-references', file: 'babel.config.js', package: '@stylexjs/babel-plugin' },
+      },
+      {
+        prose: 'postcss.config.js runs the StyleX PostCSS plugin.',
+        assertion: { kind: 'config-references', file: 'postcss.config.js', package: '@stylexjs/postcss-plugin' },
+      },
+      {
+        prose: 'The `@/` aliases resolve through tsconfig.json.',
+        assertion: { kind: 'alias-resolves', tsconfigs: ['tsconfig.json'] },
+      },
+      dependencies,
+      versions,
+    ],
+  },
+} satisfies Record<string, SetupItemDescription>;
