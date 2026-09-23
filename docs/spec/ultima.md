@@ -2318,7 +2318,7 @@ $ npx @ultima-systems/cli diff sidebar
 …
 ```
 
-`diff [item…]` prints a unified diff from the local file to the served file as it would be installed into this project: import specifiers rewritten to the consumer's aliases, `"use client"` dropped when `components.json` sets `rsc: false`, and the served stamp in place. With no arguments it covers every file that is not `current`. A named item that is `current` prints `<item>: current`, even when its text differs by formatting or comments, because those do not count. The diff is two-way. A three-way view needs the content the consumer installed, which nothing serves, so it waits on `update`. Exit codes match `status`: 0 when the output completes, 3 when it cannot be produced, and 2 when a named item is not one the registry serves or has installed.
+`diff [item…]` prints a unified diff from the local file to the served file as it would be installed into this project: import specifiers rewritten to the consumer's aliases, `"use client"` dropped when `components.json` sets `rsc: false` and shadcn would drop it (only a directive with no semicolon, since shadcn matches the statement's text with the semicolon included), and the served stamp in place. With no arguments it covers every file that is not `current`. A named item that is `current` prints `<item>: current`, even when its text differs by formatting or comments, because those do not count. The diff is two-way. A three-way view needs the content the consumer installed, which nothing serves, so it waits on `update`. Exit codes match `status`: 0 when the output completes, 3 when it cannot be produced, and 2 when a named item is not one the registry serves or has installed.
 
 ### Skill
 

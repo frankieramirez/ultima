@@ -43,6 +43,15 @@ export function fileState(installed: string | null, local: string, served: strin
 }
 
 export async function status(root: string, options: { project?: string }): Promise<StatusReport | { diagnostics: Diagnostic[] }> {
+  const surveyed = await survey(root, options);
+  return 'diagnostics' in surveyed ? surveyed : surveyed.report;
+}
+
+/** The status report, with the scope and catalogue it was made from, for `diff`. */
+export async function survey(
+  root: string,
+  options: { project?: string },
+): Promise<{ report: StatusReport; scope: ConsumerScope; url: string; items: CatalogueItem[] } | { diagnostics: Diagnostic[] }> {
   const scope = consumerScope(root, options);
   if ('incomplete' in scope) return { diagnostics: [scope.incomplete] };
 
@@ -80,11 +89,12 @@ export async function status(root: string, options: { project?: string }): Promi
     if (row) files.push(row);
   }
   files.sort((a, b) => a.item.localeCompare(b.item) || a.file.localeCompare(b.file));
-  return {
+  const report = {
     registry: url.replace(/\/\{name\}\.json$/, ''),
     revision: items.find(({ meta }) => meta?.ultima)?.meta?.ultima?.revision ?? null,
     files,
   };
+  return { report, scope, url, items };
 }
 
 function servedFiles(root: string, scope: ConsumerScope, items: CatalogueItem[]): Served[] {
@@ -154,7 +164,7 @@ async function servedHashInScheme(url: string, served: Served, scheme: Scheme): 
   return content === undefined ? null : contentHash(content, scheme);
 }
 
-async function fetchJson(url: string): Promise<unknown> {
+export async function fetchJson(url: string): Promise<unknown> {
   try {
     const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
     return response.ok ? await response.json() : undefined;

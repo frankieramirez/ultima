@@ -227,6 +227,23 @@ console.log(`smoke-install: status reports all ${files.length} installed files c
 '
 }
 
+# docs/spec/ultima.md, Diff: an edit shows alone, with no hunks from alias rewrites or the RSC directive.
+assert_diff_shows_only_the_edit() {
+  local button="$1/components/ui/button.tsx"
+  cp "$button" "$WORK/button.tsx"
+  printf 'export const smokeEdit = 1;\n' | cat - "$WORK/button.tsx" >"$button"
+  node "$ROOT/packages/cli/dist/cli.js" diff button --cwd "$2" >"$WORK/diff.txt"
+  cp "$WORK/button.tsx" "$button"
+  local changed
+  changed="$(grep -E '^[-+]' "$WORK/diff.txt" | grep -vE '^(---|\+\+\+) ' || true)"
+  if [ "$changed" != "-export const smokeEdit = 1;" ]; then
+    echo "smoke-install: diff button shows more than the edit:" >&2
+    cat "$WORK/diff.txt" >&2
+    exit 1
+  fi
+  echo "smoke-install: diff button shows only the edit"
+}
+
 assert_installed() {
   local app="$1"
   shift
@@ -375,6 +392,9 @@ import { ultimaStylex } from './ultima.vite.ts'"
 
   step "vite: ultima status"
   assert_status_current "$app"
+
+  step "vite: ultima diff"
+  assert_diff_shows_only_the_edit "$app/src" "$app"
 }
 
 next_target() {
@@ -415,6 +435,9 @@ import "./ultima.css";'
 
   step "next: ultima status"
   assert_status_current "$app"
+
+  step "next: ultima diff"
+  assert_diff_shows_only_the_edit "$app" "$app"
 }
 
 sidebar_target() {
