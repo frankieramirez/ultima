@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -44,6 +45,24 @@ describe('the built binary', () => {
     const line = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../../docs/spec/ultima.md'), 'utf8')
       .split('\n')[Number(match?.[1]) - 1];
     expect(line).toMatch(/^- \*\*Vite\.\*\* Add `"paths"/);
+  });
+
+  it.each(['vite', 'next'] as const)('passes the smoke-install %s project without touching the network', (target) => {
+    const offline = join(mkdtempSync(join(tmpdir(), 'ultima-offline-')), 'offline.mjs');
+    writeFileSync(
+      offline,
+      [
+        "import dns from 'node:dns';",
+        "import net from 'node:net';",
+        'const refuse = () => { process.stderr.write("network request\\n"); process.exit(99); };',
+        'net.Socket.prototype.connect = refuse;',
+        'dns.lookup = refuse;',
+        'globalThis.fetch = refuse;',
+      ].join('\n'),
+    );
+    const result = spawnSync(process.execPath, ['--import', offline, cli, 'doctor', '--cwd', smoke(target)], { encoding: 'utf8' });
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
   });
 
   it('exits 2 on an unknown flag', () => {
