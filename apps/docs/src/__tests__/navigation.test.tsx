@@ -137,7 +137,7 @@ test('the footer carries the mode control and the header does not', async () => 
   const screen = await mount('/');
 
   const footer = screen.container.querySelector('footer')!;
-  expect(footer.textContent).toContain('ULTIMA / THE FINAL SPELL FOR YOUR INTERFACES');
+  expect(footer.textContent).toContain('ULTIMA / A SYSTEM FOR BUILDING INTERFACES');
   await expect.element(screen.getByRole('group', { name: 'Color mode' })).toBeVisible();
   expect(footer.contains(screen.getByRole('group', { name: 'Color mode' }).element())).toBe(true);
   expect(screen.container.querySelector('header [role="group"]')).toBeNull();
