@@ -156,7 +156,7 @@ async function servedHashInScheme(url: string, served: Served, scheme: Scheme): 
 
 async function fetchJson(url: string): Promise<unknown> {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
     return response.ok ? await response.json() : undefined;
   } catch {
     return undefined;
