@@ -153,6 +153,6 @@ describe('uninstall', () => {
     const root = project({ [CLAUDE]: SOURCE });
     const result = await run(['uninstall', '--cwd', root]);
     expect(read(root, CLAUDE)).toBe(SOURCE);
-    expect(result.stdout).toContain('No managed skill found.');
+    expect(result.stdout).toContain('No managed skill or hook found.');
   });
 });

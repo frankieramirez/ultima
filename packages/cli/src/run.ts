@@ -29,7 +29,7 @@ export async function run(argv: string[]): Promise<{ code: number; stdout: strin
     const stdout = invocation.json
       ? `${JSON.stringify({ command: invocation.command, ...result }, null, 2)}\n`
       : printPlan(invocation.command, result);
-    return { code: 0, stdout, stderr: '' };
+    return { code: result.files.some(({ action }) => action === 'invalid') ? 3 : 0, stdout, stderr: '' };
   }
   if (invocation.command === 'status') {
     const result = await status(invocation.root, { project: invocation.project });
