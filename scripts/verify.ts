@@ -4,9 +4,12 @@
  * afresh from the records, the catalogue and the bindings in source, launch no process and load no
  * application or test module. The execution modes resolve a verification plan; `--plan` prints it and
  * exits 0 with status `planned`. Only Git runs, to read the change set, and no check process starts.
- * Without `--plan` a mode reports `unavailable` with exit 3 until its adapters land; it never passes.
+ * Without `--plan` a mode executes: it captures the checkout into its own run directory, plans from
+ * those bytes and runs the check DAG there (scripts/verification/run.ts). A check without an adapter is
+ * `unavailable`, so until the adapters land every run exits 3 and none passes.
  *
- * Exits: 0 discovery or a plan, 1 malformed records, 2 usage or an unknown ID, 3 unavailable execution.
+ * Exits: 0 discovery, a plan or a passed run; 1 malformed records or a proven validation failure; 2 usage
+ * or an unknown ID; 3 incomplete; 130 and 143 cancelled by SIGINT and SIGTERM.
  */
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
@@ -30,6 +33,8 @@ import {
 import { type Mode, type Snapshot, ambiguous, formatPlan, plan, snapshot } from './verification/plan.ts';
 import type { Target } from './verification/schema.ts';
 import { type Candidate, search } from './verification/search.ts';
+import { ADAPTERS } from './verification/adapters.ts';
+import { type Adapters, type Cancellation, type Report, type RunOptions, executeRun, formatReport, newRunId, runDirectory } from './verification/run.ts';
 
 export const REPORT_VERSION = 1;
 
@@ -40,7 +45,8 @@ Discovery (available, read-only):
   describe scenario <id> [--json]        owner, routes, fixtures, steps, variants, bindings and commands
   describe feature <id> [--json]         owner, contract, sources, scenarios and supporting suites
 
-Planning (available with --plan; execution is unavailable in this build and exits 3):
+Planning and execution (a run captures the checkout and runs in .scratch/verify/<run-id>/; no
+execution adapter is registered yet, so every selected check is unavailable and a run exits 3):
   component <id>... [--plan]             catalogue items of any kind; the descriptor kind decides coverage
   feature <id>... [--plan]               registered features, with every scenario case and supporting suite
   changed [--base <ref>] [--plan]        merge base..HEAD plus staged, unstaged and untracked paths;
@@ -49,18 +55,24 @@ Planning (available with --plan; execution is unavailable in this build and exit
 
 Options for the planning modes:
   --plan               resolve and print the ordered check plan; nothing runs and nothing passes
-  --json               one versioned JSON document on stdout
+  --json               one versioned JSON document on stdout; progress goes to stderr
   --timeout <seconds>  the overall deadline; default ${DEFAULT_DEADLINE_SECONDS}s. Per-check deadlines:
                        ${CHECKS.map((entry) => `${entry.id} ${entry.deadlineSeconds}s`).join(', ')}
-  --output <dir>       a new or empty evidence directory for an executed run; a plan writes nothing
+  --output <dir>       a new or empty run directory outside the checkout, instead of
+                       .scratch/verify/<run-id>/; a plan writes nothing
 
-Exits: 0 discovered or planned, 1 malformed records, 2 usage or unknown ID, 3 unavailable execution.`;
+A run holds source/ (the frozen snapshot, removed at the end), artifacts/, logs/ and report.json. It
+hashes the checkout again when it finishes: a checkout that changed reports sourceChanged and exit 3.
+
+Exits: 0 discovered, planned or passed; 1 malformed records or a proven validation failure; 2 usage or
+unknown ID; 3 incomplete (unavailable adapter or prerequisite, timeout, crash, capture failure or a
+changed source); 130 and 143 cancelled by SIGINT and SIGTERM.`;
 
 const UNAVAILABLE: Record<string, string> = {
-  component: '`--plan` resolves it; execution lands with #459 and #460',
-  feature: '`--plan` resolves it; execution lands with #459 and #460',
-  changed: '`--plan` resolves it; execution lands with #459 and #460',
-  release: '`--plan` resolves it; the full release gate needs every adapter through #464',
+  component: 'runs in an isolated snapshot; its check adapters land with #460 and #461',
+  feature: 'runs in an isolated snapshot; its check adapters land with #460 through #462',
+  changed: 'runs in an isolated snapshot; its check adapters land with #460 and #461',
+  release: 'runs in an isolated snapshot; the full release gate needs every adapter through #464',
 };
 
 class UsageError extends Error {}
@@ -232,7 +244,7 @@ function modes() {
   return [
     { mode: 'list', status: 'available' },
     { mode: 'describe', status: 'available' },
-    ...Object.entries(UNAVAILABLE).map(([mode, note]) => ({ mode, status: 'plan-only', note })),
+    ...Object.entries(UNAVAILABLE).map(([mode, note]) => ({ mode, status: 'adapters-unavailable', note })),
   ];
 }
 
@@ -323,26 +335,22 @@ function planOptions(mode: Mode, rest: string[]): PlanOptions {
 /** Everything but binary assets, which no model reads. */
 const readable = (path: string) => !/\.(png|jpe?g|gif|webp|avif|ico|woff2?|ttf|otf|pdf|zip|pen)$/i.test(path);
 
-function planMode(mode: Mode, rest: string[], root: string, out: (document: object, human: string, exit?: number) => Output): Output {
-  const options = planOptions(mode, rest);
-  const { files, read } = recording(repositoryFiles(root));
-  const current: Snapshot = snapshot(files);
-  const named = mode === 'component' || mode === 'feature';
-  const unreadable = ambiguous(current);
-  if (named && unreadable.length > 0) {
-    return out(
-      { command: mode, status: 'invalid', diagnostics: unreadable, sourceManifest: manifest(files, [...read]) },
-      `verify: the catalogue or feature map cannot be read, so ${mode} IDs cannot be resolved\n${unreadable.map((d) => `  ${d.code} ${d.path}: ${d.message}`).join('\n')}`,
-      1,
-    );
-  }
-  if (named) {
-    const choices = mode === 'component' ? current.model.items.map((item) => item.id) : current.model.features.map((f) => f.id);
-    if (options.selectors.length === 0) throw new UsageError(`${mode} needs at least one ID; available: ${choices.join(', ')}`);
-    const unknown = options.selectors.filter((id) => !choices.includes(id));
-    if (unknown.length > 0) throw new UsageError(`unknown ${mode} ID ${unknown.map((id) => `"${id}"`).join(', ')}; available: ${choices.join(', ')}`);
-  }
+type Execution = { execute: { mode: Mode; options: PlanOptions } };
 
+/** For a named scope: exit 1 when the model cannot be read, a usage error for an unknown ID, else null. */
+function namedProblem(mode: Mode, options: PlanOptions, current: Snapshot): { unreadable: ReturnType<typeof ambiguous> } | null {
+  if (mode !== 'component' && mode !== 'feature') return null;
+  const unreadable = ambiguous(current);
+  if (unreadable.length > 0) return { unreadable };
+  const choices = mode === 'component' ? current.model.items.map((item) => item.id) : current.model.features.map((f) => f.id);
+  if (options.selectors.length === 0) throw new UsageError(`${mode} needs at least one ID; available: ${choices.join(', ')}`);
+  const unknown = options.selectors.filter((id) => !choices.includes(id));
+  if (unknown.length > 0) throw new UsageError(`unknown ${mode} ID ${unknown.map((id) => `"${id}"`).join(', ')}; available: ${choices.join(', ')}`);
+  return null;
+}
+
+/** The plan for `current`, with the change set and dirty paths read from Git in `root`. */
+function buildPlan(mode: Mode, options: PlanOptions, root: string, current: Snapshot) {
   const repository = git(root);
   const input: Parameters<typeof plan>[0] = { mode, selectors: options.selectors, current, timeoutSeconds: options.timeoutSeconds, output: options.output };
   if (mode === 'changed') {
@@ -360,23 +368,31 @@ function planMode(mode: Mode, rest: string[], root: string, out: (document: obje
       if (!('failure' in local)) changes = local.changes;
     }
     Object.assign(input, { baseInfo, changes });
-  } else if (named) {
+  } else if (mode === 'component' || mode === 'feature') {
     const dirty = dirtyPaths(repository);
     input.dirty = 'failure' in dirty ? dirty : dirty.changes;
   }
-
-  const document = plan(input);
-  const sourceManifest = manifest(files, [...read]);
-  if (options.planOnly) return out({ ...document, sourceManifest }, formatPlan(document));
-  const note = UNAVAILABLE[mode] as string;
-  return out(
-    { command: mode, status: 'unavailable', selectors: options.selectors, note, plan: document, sourceManifest },
-    `verify ${mode}: unavailable in this build (${note}). Nothing ran and nothing passed. The plan it would run:\n${formatPlan(document)}`,
-    3,
-  );
+  return plan(input);
 }
 
-function dispatch(argv: string[], root: string): Output {
+function planMode(mode: Mode, rest: string[], root: string, out: (document: object, human: string, exit?: number) => Output): Output | Execution {
+  const options = planOptions(mode, rest);
+  const { files, read } = recording(repositoryFiles(root));
+  const current: Snapshot = snapshot(files);
+  const problem = namedProblem(mode, options, current);
+  if (problem) {
+    return out(
+      { command: mode, status: 'invalid', diagnostics: problem.unreadable, sourceManifest: manifest(files, [...read]) },
+      `verify: the catalogue or feature map cannot be read, so ${mode} IDs cannot be resolved\n${problem.unreadable.map((d) => `  ${d.code} ${d.path}: ${d.message}`).join('\n')}`,
+      1,
+    );
+  }
+  if (!options.planOnly) return { execute: { mode, options } };
+  const document = buildPlan(mode, options, root, current);
+  return out({ ...document, sourceManifest: manifest(files, [...read]) }, formatPlan(document));
+}
+
+function dispatch(argv: string[], root: string): Output | Execution {
   const json = argv.includes('--json');
   const args = argv.filter((arg) => arg !== '--json');
   const out = (document: object, human: string, exit = 0): Output => ({
@@ -492,18 +508,91 @@ function dispatch(argv: string[], root: string): Output {
   throw new UsageError(`unknown command "${mode}"\n${USAGE}`);
 }
 
+function usageOutput(argv: string[], error: UsageError): Output {
+  const document = { schemaVersion: REPORT_VERSION, command: argv[0] ?? null, status: 'usage-error', message: error.message };
+  return { exit: 2, stdout: argv.includes('--json') ? `${JSON.stringify(document, null, 2)}\n` : '', stderr: `verify: ${error.message}\n` };
+}
+
+/** Discovery, help and plans, which never execute; an execution mode needs `execute`. */
 export function run(argv: string[], root: string): Output {
   try {
-    return dispatch(argv, root);
+    const result = dispatch(argv, root);
+    if ('execute' in result) throw new Error('an execution mode runs through execute(), which is asynchronous');
+    return result;
   } catch (error) {
     if (!(error instanceof UsageError)) throw error;
-    const document = { schemaVersion: REPORT_VERSION, command: argv[0] ?? null, status: 'usage-error', message: error.message };
-    return { exit: 2, stdout: argv.includes('--json') ? `${JSON.stringify(document, null, 2)}\n` : '', stderr: `verify: ${error.message}\n` };
+    return usageOutput(argv, error);
   }
 }
 
+export type ExecuteOptions = {
+  signal?: AbortSignal;
+  adapters?: Adapters;
+  /** Where a relative `--output` resolves. */
+  cwd?: string;
+  onProgress?: (line: string) => void;
+  /** Test seams for the runner: probes, preparation, capture hooks, grace and concurrency. */
+  runner?: Partial<Pick<RunOptions, 'probes' | 'preparation' | 'capture' | 'graceMs' | 'concurrency' | 'runId'>>;
+};
+
+/** Every command, execution included. The report is the one JSON document on stdout. */
+export async function execute(argv: string[], root: string, options: ExecuteOptions = {}): Promise<Output & { report?: Report }> {
+  let result: Output | Execution;
+  try {
+    result = dispatch(argv, root);
+  } catch (error) {
+    if (!(error instanceof UsageError)) throw error;
+    return usageOutput(argv, error);
+  }
+  if (!('execute' in result)) return result;
+  const { mode, options: planned } = result.execute;
+  const runId = options.runner?.runId ?? newRunId();
+  const location = runDirectory(root, runId, planned.output, options.cwd ?? process.env.INIT_CWD ?? process.cwd());
+  if ('usage' in location) return usageOutput(argv, new UsageError(location.usage));
+  const report = await executeRun({
+    root,
+    directory: location.directory,
+    runId,
+    command: mode,
+    selectors: planned.selectors,
+    planFrom(source) {
+      const current = snapshot(repositoryFiles(source));
+      const unreadable = ambiguous(current);
+      if ((mode === 'component' || mode === 'feature') && unreadable.length > 0) {
+        return { failure: `the captured catalogue or feature map cannot be read: ${unreadable.map((d) => `${d.code} ${d.path}`).join('; ')}` };
+      }
+      try {
+        namedProblem(mode, planned, current);
+      } catch (error) {
+        if (error instanceof UsageError) return { failure: `the captured snapshot no longer resolves the selectors: ${error.message}` };
+        throw error;
+      }
+      return buildPlan(mode, planned, root, current);
+    },
+    adapters: options.adapters ?? ADAPTERS,
+    overallDeadlineSeconds: planned.timeoutSeconds ?? DEFAULT_DEADLINE_SECONDS,
+    deadlineSource: planned.timeoutSeconds ? '--timeout' : 'default',
+    signal: options.signal,
+    onProgress: options.onProgress,
+    ...options.runner,
+  });
+  const json = argv.includes('--json');
+  return { exit: report.exit ?? 3, stdout: `${json ? JSON.stringify(report, null, 2) : formatReport(report)}\n`, stderr: '', report };
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { exit, stdout, stderr } = run(process.argv.slice(2), join(dirname(fileURLToPath(import.meta.url)), '..'));
+  const controller = new AbortController();
+  const cancel = (signal: Cancellation) => () => {
+    if (controller.signal.aborted) return;
+    process.stderr.write(`verify: ${signal} received; stopping owned processes and writing the partial report\n`);
+    controller.abort(signal);
+  };
+  process.on('SIGINT', cancel('SIGINT'));
+  process.on('SIGTERM', cancel('SIGTERM'));
+  const { exit, stdout, stderr } = await execute(process.argv.slice(2), join(dirname(fileURLToPath(import.meta.url)), '..'), {
+    signal: controller.signal,
+    onProgress: (line) => process.stderr.write(`${line}\n`),
+  });
   process.stdout.write(stdout);
   process.stderr.write(stderr);
   process.exitCode = exit;
