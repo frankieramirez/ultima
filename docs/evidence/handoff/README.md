@@ -57,7 +57,11 @@ Every failure was an infrastructure flake, not a contract violation: the Vitest 
 
 ## CI and enforcement
 
-Not confirmed — unchanged from [#464](https://github.com/frankieramirez/ultima/issues/464)'s closing record, re-verified read-only on 2026-09-24: `repos/frankieramirez/ultima/branches/main/protection` returns 404, `rules/branches/main` is `[]`, and Actions jobs do not start ("recent account payments have failed or your spending limit needs to be increased" on both `check` and `production`). The four maintainer actions stand: fix billing, re-run CI on a merged commit, add a `main` ruleset requiring `check` and `production`, confirm with `gh api`. Local success cannot substitute for pending remote checks, so this obligation stays open and the build effort cannot close with the gap unresolved.
+Explicitly deferred by maintainer decision. On 2026-09-24 @frankieramirez decided that Actions billing will not be fixed, so no required-status enforcement exists or will exist on `main` until that changes. Re-verified read-only the same day: `branches/main/protection` returns 404, `rules/branches/main` is `[]`, and Actions jobs cannot start.
+
+- **Scope of the reduction:** no remote gate; the local `pnpm verify release` run is the release check, and reviewers must not merge on a red or absent local report.
+- **Owner:** @frankieramirez.
+- **Restoration condition:** when Actions billing is fixed, add a `main` ruleset requiring the `CI` workflow's `check` and `production` jobs, confirm with `gh api repos/frankieramirez/ultima/rules/branches/main`, and record a clean remote run. The deferred acceptance on [#464](https://github.com/frankieramirez/ultima/issues/464) describes the same actions.
 
 ## Disposition by area
 
@@ -66,14 +70,14 @@ Not confirmed — unchanged from [#464](https://github.com/frankieramirez/ultima
 | Architectural enforcement | `architecture` green in all three runs at `b24e222`; per-family slice evidence in #453, #454, #455, #456 |
 | Metadata and authoring | `catalogue-freshness` green in all three runs; scaffold and generation evidence in `../catalogue/` |
 | Repeatable verification | The run lifecycle, isolation, locks and honest failure states all exercised by these runs — including `incomplete` classification doing its job on the flakes |
-| Production and scenarios | 26/26 production cells green in all three runs; consumer smoke green (Vite, Next.js, sidebar, element). CI enforcement **open** above |
+| Production and scenarios | 26/26 production cells green in all three runs; consumer smoke green (Vite, Next.js, sidebar, element). CI enforcement deferred by maintainer decision, above |
 | Efficiency and responsiveness | Measured in #465 (`../comparison/`): every same-command workload slower beyond the noise, priced as the cost of the added gates |
 | Maintained conventions | This slice: the index, the skill updates, the exercised commands, the filed flake ticket |
 
 ## Open obligations and deferrals
 
 - **Passing release report** (resolved after this file first landed): the flake surface was fixed by #557 (Chromium garbage collection between browser test files), #559 (SIGINT test waits for the check to start) and #560 (retry a browser that never started); #554 is closed. The retained passing run is named above.
-- **CI enforcement** (in scope, unresolved): maintainer actions on billing and the `main` ruleset, per #464.
+- **CI enforcement** (deferred by maintainer decision, recorded above): remote required checks until billing is restored.
 - **#551**: its symptom no longer reproduces — `tooling-tests`, including `production-gate.test.ts`, passed in runs 1 and 3 — consistent with the snapshot Git work-tree fix in #545. Confirm and close.
 - **Optional deferrals**: Forge stays a React authoring skill — element files remain hand-authored against the Web components contract and parity gate, by spec. No Studio download/share-link scenario until that behavior is the subject of a change ([Pilot and reuse](../../spec/agent-infrastructure.md#pilot-and-reuse)).
 - **Correction-to-proof ownership**: recurring mistakes file a maintenance ticket naming the smallest reproduction and violated contract; the fix is a type constraint, a precise rule, a scenario or a repaired example — not duplicated prose. `canonical-examples.md` owns exemplar drift and is revisited when a listed contract changes.
