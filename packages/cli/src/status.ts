@@ -5,11 +5,14 @@ import { basename, join, relative } from 'node:path';
 import { type Diagnostic, SPEC } from './diagnostic.ts';
 import { type ManagedState, managedSkills } from './install.ts';
 import { type ConsumerScope, consumerScope } from './scope.ts';
-import { REGISTRY_FORMAT, type Scheme, contentHash, readStamp } from './stamp.ts';
+import { type Scheme, contentHash, readStamp } from './stamp.ts';
 
 export type State = 'current' | 'edited' | 'behind' | 'diverged' | 'unstamped' | 'retired';
 
-const READABLE_FORMATS = { min: 1, max: REGISTRY_FORMAT };
+// Each release declares the registry formats it reads in its package.json: Package and engine, Version.
+const READABLE_FORMATS: { min: number; max: number } = JSON.parse(
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+).ultima.registryFormats;
 const SCHEMES: string[] = ['c1', 'b1'] satisfies Scheme[];
 const UPGRADE = 'npm install -D @ultima-systems/cli@latest';
 
