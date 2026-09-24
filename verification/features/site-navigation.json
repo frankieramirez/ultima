@@ -3,6 +3,7 @@
   "id": "site-navigation",
   "title": "Site navigation and color mode",
   "summary": "The docs shell: direct loads, the header links and the narrow site menu, browser history, current-page state and the persisted color-mode preference.",
+  "knowledge": "proposed",
   "aliases": ["navigation", "nav", "header", "site menu", "sidebar", "back button", "history", "color mode", "dark mode", "light mode", "theme toggle"],
   "contract": "docs/spec/ultima.md#docs-navigation-and-component-ownership",
   "items": ["sidebar", "navigation-menu", "toggle-group"],

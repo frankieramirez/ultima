@@ -5,6 +5,15 @@ description: How to run and end-to-end test the Ultima docs site (apps/docs) whe
 
 # Testing the Ultima docs site
 
+## Control
+
+Command: `node --experimental-strip-types scripts/verify.ts`
+Prepare: `pnpm install --frozen-lockfile --offline`
+Features: verification/features
+Scenarios: verification/scenarios
+Bindings: packages, apps
+Breaks: verification/breaks
+
 ## Dev server
 
 - Node is not on PATH by default: `export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"` (node v24, pnpm via corepack).

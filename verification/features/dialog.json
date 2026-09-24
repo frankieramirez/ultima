@@ -3,6 +3,7 @@
   "id": "dialog",
   "title": "Dialog",
   "summary": "A modal overlay that takes focus, keeps Tab inside, and closes back to its trigger.",
+  "knowledge": "proposed",
   "aliases": ["modal", "overlay", "popup"],
   "contract": "docs/spec/ultima.md#accessibility-contract",
   "items": ["dialog"],

@@ -49,3 +49,4 @@ Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/a
 Issue tracker: GitHub frankieramirez/ultima. See `docs/agents/issue-tracker.md`.
 Roadmap: https://github.com/frankieramirez/ultima/issues/161
 Validation: `pnpm test`
+Control: `.agents/skills/testing-ultima-docs/SKILL.md`

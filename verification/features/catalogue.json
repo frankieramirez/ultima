@@ -3,6 +3,7 @@
   "id": "catalogue",
   "title": "Component catalogue and documentation",
   "summary": "The /components index with its filter and empty state, and each component page's live demo figure with its copyable source.",
+  "knowledge": "proposed",
   "aliases": ["components page", "component index", "filter", "search", "empty state", "demo", "copy", "copy source", "code block"],
   "contract": "docs/spec/ultima.md#page-set",
   "items": ["button", "card", "input-group", "empty"],
