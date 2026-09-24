@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { border, color, display, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, display, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
 import { Card, Separator } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
@@ -97,9 +97,6 @@ const styles = stylex.create({
   specimen: { inlineSize: '100%' },
   toolbar: {
     alignItems: 'center',
-    borderBlockEndColor: color['--ult-color-border'],
-    borderBlockEndStyle: 'solid',
-    borderBlockEndWidth: border.hairline,
     display: 'flex',
     justifyContent: 'space-between',
     paddingBlock: space['--ult-space-5'],
@@ -196,6 +193,7 @@ export function ComingSoon() {
               <p {...stylex.props(styles.kicker, styles.subtle)}>ultima.css</p>
               <p {...stylex.props(styles.kicker, styles.state)}>BUILDING</p>
             </div>
+            <Separator />
             <pre {...stylex.props(styles.code)}>
               {':root {\n  '}
               <span {...stylex.props(styles.property)}>--ultima</span>

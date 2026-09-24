@@ -4,6 +4,7 @@ import { applyExceptions } from './exceptions.ts';
 import { ruleStatuses } from './rules.ts';
 import { checkApi } from './rules/api.ts';
 import { createContext } from './rules/context.ts';
+import { checkDocs } from './rules/docs.ts';
 import { checkImports } from './rules/imports.ts';
 import { checkRegistry } from './rules/registry.ts';
 import { checkSource } from './rules/source.ts';
@@ -24,6 +25,7 @@ export function check(scope: Scope): Report {
   checkStyle(context);
   checkApi(context, scope.inventory.filter(({ kind }) => kind === 'react-component').map(({ path }) => path));
   checkRegistry(context);
+  checkDocs(context);
 
   const { diagnostics, excepted } = applyExceptions(scope, [...scope.problems, ...context.diagnostics]);
   const unique = new Map<string, Diagnostic>();
@@ -49,7 +51,7 @@ export function check(scope: Scope): Report {
         .map((rule) => ({ step: rule.id, reason: `Not implemented in this run; ${rule.owner} delivers it. Its contract is unchecked.` })),
       {
         step: 'MDX page JSX',
-        reason: 'Parsed with locations kept, and read for imports, scaffold markers, stylesheets and inline styles; no docs control or surface rule checks its elements yet.',
+        reason: 'Parsed with locations kept, and read for imports, scaffold markers, stylesheets, inline styles, and the docs control and surface rules. StyleX tables in its ESM are read; the API and token rules do not cover it.',
       },
       ...scope.excluded.map(({ path, reason }) => ({ step: `Excluded: ${path}`, reason: `${reason}; a structural scope, never read.` })),
     ],

@@ -10,8 +10,11 @@ import type { Position } from './diagnostic.ts';
 /** One executable unit of a file. `shift` maps an offset in `file` back to an offset in the original text. */
 export type Segment = { file: ts.SourceFile; shift: number; role: 'module' | 'esm' | 'expression' };
 
-/** A JSX element an MDX page executes, located in the page. */
-export type MdxElement = { name: string | null; start: number; end: number };
+/** An attribute of an MDX JSX element. `value` is the literal, null for a bare attribute, undefined for an expression or spread. */
+export type MdxAttribute = { name: string | null; value: string | null | undefined; start: number; end: number };
+
+/** A JSX element an MDX page executes, located in the page, with its attributes. */
+export type MdxElement = { name: string | null; start: number; end: number; attributes: MdxAttribute[] };
 
 export type Parsed = {
   path: string;
@@ -105,7 +108,21 @@ function parseMdx(path: string, text: string): Parsed {
       if (node.type === 'mdxjsEsm') segment(text.slice(start, end), start, 'esm');
       else if (node.type === 'mdxFlowExpression' || node.type === 'mdxTextExpression') braced(start, end, 'expression');
       else if (node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement') {
-        parsed.elements.push({ name: node.name ?? null, start, end });
+        const attributes: MdxAttribute[] = [];
+        for (const attribute of node.attributes ?? []) {
+          const from = attribute.position?.start.offset;
+          const to = attribute.position?.end.offset;
+          if (from === undefined || to === undefined) continue;
+          const spread = attribute.type === 'mdxJsxExpressionAttribute';
+          const value = attribute.value;
+          attributes.push({
+            name: spread ? null : (attribute.name ?? null),
+            value: spread || (typeof value === 'object' && value !== null) ? undefined : typeof value === 'string' ? value : null,
+            start: from,
+            end: to,
+          });
+        }
+        parsed.elements.push({ name: node.name ?? null, start, end, attributes });
       } else if (node.type === 'code' || node.type === 'inlineCode') parsed.examples.push({ start, end });
     }
     for (const attribute of node.attributes ?? []) {

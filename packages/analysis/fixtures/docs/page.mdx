@@ -1,0 +1,17 @@
+import { Button } from '@ultima/ui';
+
+# Fixture page
+
+<button type="button">Raw</button>
+
+<div role="tab">Tab</div>
+
+<Button render={<button type="button" />}>Composed</Button>
+
+<section onClick={() => {}}>Handled</section>
+
+```tsx
+<button type="button">Printed, not executed</button>
+```
+
+Inline `<button>` is printed too.

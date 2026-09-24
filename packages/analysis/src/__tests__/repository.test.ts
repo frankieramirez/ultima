@@ -19,7 +19,7 @@ describe('the repository', () => {
   test('passes every delivered rule with no finding, and each exception matches its one site', () => {
     assert.deepEqual(report.diagnostics, []);
     assert.equal(report.status, 'clean');
-    assert.equal(report.counts.excepted, 9);
+    assert.equal(report.counts.excepted, 50);
     assert.equal(exitCode(report), 0);
   });
 
@@ -29,6 +29,8 @@ describe('the repository', () => {
       'ULT-ANALYSIS-001',
       'ULT-API-001',
       'ULT-API-002',
+      'ULT-DOCS-001',
+      'ULT-DOCS-002',
       'ULT-EXCEPTION-001',
       'ULT-IMPORT-001',
       'ULT-PRIMITIVE-001',
@@ -37,6 +39,7 @@ describe('the repository', () => {
       'ULT-STYLE-001',
       'ULT-TOKEN-001',
     ]);
+    assert.deepEqual(report.rules.filter((rule) => rule.status === 'advisory').map((rule) => rule.id), ['ULT-DOCS-REVIEW-001']);
     for (const rule of report.rules.filter((entry) => entry.status === 'pending')) {
       assert.ok(report.unsupported.some((entry) => entry.step === rule.id), `${rule.id} is listed as unsupported`);
     }
@@ -100,7 +103,7 @@ describe('the output', () => {
     const json = JSON.parse(formatJson(failing));
     assert.equal(json.schemaVersion, 1);
     assert.equal(json.status, 'violations');
-    assert.deepEqual(json.counts, { blocking: 2, advisory: 0, incomplete: 2, excepted: 9 });
+    assert.deepEqual(json.counts, { blocking: 2, advisory: 0, incomplete: 2, excepted: 50 });
     assert.ok(json.scopes.some((entry: { kind: string }) => entry.kind === 'react-component'));
     for (const diagnostic of json.diagnostics) {
       for (const field of ['ruleId', 'severity', 'file', 'start', 'end', 'message', 'repair', 'link']) assert.ok(field in diagnostic, field);

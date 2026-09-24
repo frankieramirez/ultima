@@ -31,22 +31,19 @@ export const RULES = {
     link: `${INFRA}#target-and-api-distinctions`,
   },
   'ULT-DOCS-001': {
-    status: 'pending',
+    status: 'blocking',
     scope: 'Docs application layout and chrome',
     link: `${INFRA}#docs-controls-and-surfaces`,
-    owner: 'https://github.com/frankieramirez/ultima/issues/455',
   },
   'ULT-DOCS-002': {
-    status: 'pending',
+    status: 'blocking',
     scope: 'Docs application layout and chrome, including executable page JSX',
     link: `${INFRA}#docs-controls-and-surfaces`,
-    owner: 'https://github.com/frankieramirez/ultima/issues/455',
   },
   'ULT-DOCS-REVIEW-001': {
-    status: 'pending',
+    status: 'advisory',
     scope: 'Ambiguous handler-driven widgets in docs chrome (advisory)',
     link: `${INFRA}#docs-controls-and-surfaces`,
-    owner: 'https://github.com/frankieramirez/ultima/issues/455',
   },
   'ULT-IMPORT-001': {
     status: 'blocking',
