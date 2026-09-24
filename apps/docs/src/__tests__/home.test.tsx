@@ -42,3 +42,35 @@ test('the specimen tabs and fields are live components', async () => {
   await expect.element(screen.getByRole('textbox', { name: 'Project name' })).toHaveValue('Untitled, but not for long');
   await expect.element(screen.getByRole('textbox', { name: 'Framework' })).toHaveValue('React + StyleX');
 });
+
+test('the workbench tabs the two setup targets and copies the active pair', async () => {
+  const written: string[] = [];
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: (text: string) => (written.push(text), Promise.resolve()) },
+  });
+  const screen = await mount('/');
+  const list = screen.getByRole('tablist', { name: 'Setup target' });
+  expect(list.element()).toBeInTheDocument();
+
+  const vite = list.getByRole('tab', { name: 'Vite' });
+  const next = list.getByRole('tab', { name: 'Next.js' });
+  expect(vite.element()).toHaveAttribute('aria-selected', 'true');
+  const panel = () =>
+    document.getElementById(list.element().querySelector('[aria-selected="true"]')!.getAttribute('aria-controls')!)!;
+  expect(panel().textContent).toContain('https://ultima.systems/r/setup-vite.json');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Copy Vite install commands' }).element());
+  expect(written.at(-1)).toBe(
+    'npx shadcn add https://ultima.systems/r/setup-vite.json\nnpx shadcn add @ultima/button',
+  );
+
+  await userEvent.click(next.element());
+  expect(next.element()).toHaveAttribute('aria-selected', 'true');
+  expect(panel().textContent).toContain('https://ultima.systems/r/setup-next.json');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Copy Next.js install commands' }).element());
+  expect(written.at(-1)).toBe(
+    'npx shadcn add https://ultima.systems/r/setup-next.json\nnpx shadcn add @ultima/button',
+  );
+});
