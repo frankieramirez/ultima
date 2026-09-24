@@ -16,7 +16,8 @@
     "catalogue:generate": "node --experimental-strip-types scripts/catalogue/generate.ts",
     "catalogue:check": "node --experimental-strip-types scripts/catalogue/generate.ts check",
     "scaffold": "node --experimental-strip-types scripts/catalogue/scaffold.ts",
-    "verify": "node --experimental-strip-types scripts/verify.ts"
+    "verify": "node --experimental-strip-types scripts/verify.ts",
+    "check:architecture": "node --experimental-strip-types scripts/check-architecture.ts"
   },
   "devDependencies": {
     "@types/node": "^26.5.0",

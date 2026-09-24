@@ -30,6 +30,9 @@ jobs:
       - name: Catalogue freshness
         run: pnpm catalogue:check
 
+      - name: Architecture
+        run: pnpm check:architecture
+
       - name: Typecheck
         run: pnpm typecheck
 

@@ -127,6 +127,19 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@5.0.0)
 
+  packages/analysis:
+    dependencies:
+      '@mdx-js/mdx':
+        specifier: ^3.1.1
+        version: 3.1.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+    devDependencies:
+      '@types/node':
+        specifier: ^26.5.0
+        version: 26.5.0
+
   packages/cli:
     dependencies:
       diff:
