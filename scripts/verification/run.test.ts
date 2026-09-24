@@ -75,6 +75,7 @@ function planOf(ids: CheckId[], changes: Partial<Record<CheckId, Partial<Planned
       cwd: definition.cwd,
       nested: [],
       prerequisites: definition.prerequisites.filter((prerequisite) => ids.includes(prerequisite)),
+      after: (definition.after ?? []).filter((earlier) => ids.includes(earlier)),
       locks: definition.locks,
       needs: definition.needs,
       deadlineSeconds: definition.deadlineSeconds,
@@ -609,9 +610,9 @@ describe('two dirty worktrees at once', () => {
 });
 
 describe('the verify command', () => {
-  test('runs a real mode in .scratch/verify, reports every check unavailable and exits 3 with one JSON document', async () => {
+  test('runs a real mode in .scratch/verify; with no adapter registered it reports every check unavailable and exits 3 with one JSON document', async () => {
     const root = repository({ 'README.md': '# Fixture\n', '.gitignore': '.scratch/\n' });
-    const output = await execute(['release', '--json'], root, { runner: { preparation: NO_PREPARATION } });
+    const output = await execute(['release', '--json'], root, { adapters: {}, runner: { preparation: NO_PREPARATION } });
     assert.equal(output.exit, EXIT.incomplete);
     const document = JSON.parse(output.stdout) as Report;
     assert.equal(document.kind, 'verification-run');
@@ -638,7 +639,7 @@ describe('the verify command', () => {
   test('writes a run to a new --output directory, with human output summarizing the same report', async () => {
     const root = repository();
     const directory = join(mkdtempSync(join(scratch, 'evidence-')), 'new');
-    const output = await execute(['release', '--output', directory], root, { runner: { preparation: NO_PREPARATION } });
+    const output = await execute(['release', '--output', directory], root, { adapters: {}, runner: { preparation: NO_PREPARATION } });
     assert.equal(output.exit, EXIT.incomplete);
     assert.equal(output.report?.directory.run, directory);
     assert.match(output.stdout, /^verify release: incomplete \(exit 3\)/);

@@ -5,8 +5,9 @@
  * those argument arrays, and no path or ID becomes an argument by string concatenation. Planning reads
  * this table and runs nothing.
  *
- * No execution adapter exists yet, so every check is `unavailable` and no plan can report a pass. The
- * `lands` field names the build slice that delivers each adapter.
+ * The static, type, palette and non-browser suites have adapters (scripts/verification/adapters.ts,
+ * #460). The rest are `unavailable` until the build slice their `lands` field names delivers them, so no
+ * plan that selects one can report a pass.
  */
 
 export type CheckId =
@@ -50,6 +51,12 @@ export type CheckDefinition = {
   prerequisites: CheckId[];
   /** Prerequisites only a scoped invocation needs, because the package script it bypasses ran them. */
   scopedPrerequisites?: CheckId[];
+  /**
+   * Checks that finish first, whatever their outcome, without blocking this one: it runs a build or
+   * generator in the snapshot, and the read-only architecture and freshness checks must see the captured
+   * bytes before anything can repair them.
+   */
+  after?: CheckId[];
   locks: Lock[];
   needs: Need[];
   deadlineSeconds: number;
@@ -60,14 +67,16 @@ export type CheckDefinition = {
   package?: string;
   /** Where the suite's tests live, for selection and deleted-test ownership. */
   tests?: string;
-  adapter: { status: 'unavailable'; lands: string };
+  adapter: { status: 'available'; since: string } | { status: 'unavailable'; lands: string };
 };
 
-const STATIC = { status: 'unavailable', lands: '#460 (static, type and unit checks)' } as const;
+const STATIC = { status: 'available', since: '#460 (static, type and unit checks)' } as const;
 const BROWSER = { status: 'unavailable', lands: '#461 (browser, build and install checks)' } as const;
 const PRODUCTION = { status: 'unavailable', lands: '#462 (Dialog and Studio pilot) and #463 (the full matrix)' } as const;
 
 const FRESHNESS: CheckId[] = ['catalogue-freshness'];
+/** The read-only checks every writer waits for. */
+const READ_FIRST: CheckId[] = ['architecture', 'catalogue-freshness'];
 
 /** In plan order: the global static checks first, then suites, builds, installation and production. */
 export const CHECKS: readonly CheckDefinition[] = [
@@ -197,6 +206,7 @@ export const CHECKS: readonly CheckDefinition[] = [
     cwd: '.',
     nested: ['pnpm --filter @ultima/tokens build', 'pnpm build (elements)', 'vitest run'],
     prerequisites: FRESHNESS,
+    after: READ_FIRST,
     locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist'],
     needs: ['chromium'],
     deadlineSeconds: 900,
@@ -216,6 +226,7 @@ export const CHECKS: readonly CheckDefinition[] = [
     nested: ['pnpm -w run registry:build', 'vitest run'],
     prerequisites: FRESHNESS,
     scopedPrerequisites: ['registry-build'],
+    after: READ_FIRST,
     locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
     needs: ['chromium'],
     deadlineSeconds: 1200,
@@ -232,6 +243,7 @@ export const CHECKS: readonly CheckDefinition[] = [
     cwd: '.',
     nested: ['pnpm build (cli)', 'vitest run'],
     prerequisites: FRESHNESS,
+    after: READ_FIRST,
     locks: [],
     needs: [],
     deadlineSeconds: 600,
@@ -247,6 +259,7 @@ export const CHECKS: readonly CheckDefinition[] = [
     cwd: '.',
     nested: ['pnpm --filter @ultima/tokens build', 'pnpm --filter @ultima/elements build', 'scripts/build-registry.ts'],
     prerequisites: FRESHNESS,
+    after: READ_FIRST,
     locks: ['writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
     needs: [],
     deadlineSeconds: 600,
@@ -261,6 +274,7 @@ export const CHECKS: readonly CheckDefinition[] = [
     cwd: '.',
     nested: ['pnpm -w run registry:build', 'vite build'],
     prerequisites: ['catalogue-freshness', 'registry-build'],
+    after: READ_FIRST,
     locks: ['writes:tokens-dist', 'writes:elements-dist', 'writes:registry', 'writes:docs-dist'],
     needs: [],
     deadlineSeconds: 900,
@@ -275,6 +289,7 @@ export const CHECKS: readonly CheckDefinition[] = [
     cwd: '.',
     nested: ['local registry build and server', 'Vite consumer', 'Next.js consumer', 'element consumer'],
     prerequisites: ['registry-build'],
+    after: READ_FIRST,
     locks: ['writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
     needs: ['network', 'loopback-port'],
     deadlineSeconds: 2700,

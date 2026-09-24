@@ -147,10 +147,10 @@ describe('pnpm verify describe', () => {
 });
 
 describe('execution modes', () => {
-  test('without --plan run in an isolated snapshot, report every check unavailable, exit 3 and never pass', async () => {
+  test('without --plan run in an isolated snapshot; with no adapter registered every check is unavailable, exit 3 and never a pass', async () => {
     for (const argv of [['feature', 'dialog'], ['component', 'date-picker'], ['release'], ['changed', '--base', 'origin/main']]) {
       const output = join(mkdtempSync(join(scratch, 'run-')), 'evidence');
-      const { exit, stdout } = await execute([...argv, '--output', output, '--json'], root);
+      const { exit, stdout } = await execute([...argv, '--output', output, '--json'], root, { adapters: {} });
       const document = JSON.parse(stdout);
       assert.equal(exit, 3, argv.join(' '));
       assert.equal(document.status, 'incomplete');

@@ -1,8 +1,8 @@
 /**
  * An executed verification run, per Isolation and cancellation and Evidence and exits under
  * Verification CLI in docs/spec/agent-infrastructure.md. A run owns one directory, by default
- * `.scratch/verify/<run-id>/`, holding `source/`, `artifacts/`, `logs/`, `tmp/` and `report.json`. It
- * captures the checkout into `source/`, plans from those bytes, prepares dependencies there from the
+ * `.scratch/verify/<run-id>/`, holding `source/`, `artifacts/`, `logs/` and `report.json`, plus a private
+ * TMPDIR under the system temporary directory, outside any checkout. It captures the checkout into `source/`, plans from those bytes, prepares dependencies there from the
  * matching lockfile when an adapter needs them, and executes the plan's check DAG with owned processes,
  * resource locks and deadlines. It hashes the checkout again at the end, writes one versioned report and
  * returns the exit the contract assigns.
@@ -14,8 +14,8 @@
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { lookup } from 'node:dns/promises';
-import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { hostname } from 'node:os';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { hostname, tmpdir } from 'node:os';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 import { CHECKS, type CheckId, type Need } from './checks.ts';
@@ -64,13 +64,18 @@ export type AdapterContext = {
   run: string;
   artifacts: string;
   logs: string;
+  /** The check's log, `logs/<check>.log`, which every launch appends standard error (and, by default, output) to. */
+  log: string;
   env: NodeJS.ProcessEnv;
   /** Aborted on the check's deadline or the run's cancellation. */
   signal: AbortSignal;
   /** Milliseconds left before the check's deadline. */
   remainingMs(): number;
-  /** Runs an owned child from an argument array in `cwd` (relative to `source`), logging to `logs/<check>.log`. */
-  launch(argv: string[], options?: { cwd?: string }): Promise<ProcessResult>;
+  /**
+   * Runs an owned child from an argument array in `cwd` (relative to `source`), logging to `log`. `stdout`
+   * sends standard output alone to a file, for a tool that prints its report there; `env` adds variables.
+   */
+  launch(argv: string[], options?: { cwd?: string; stdout?: string; env?: Record<string, string> }): Promise<ProcessResult>;
   /** Starts an owned server on a fresh loopback port and waits for its identity. */
   startServer(argv: string[], options: { readinessMs: number; cwd?: string }): Promise<{ server: OwnedServer } | { failure: string }>;
 };
@@ -294,11 +299,15 @@ function writeReport(directory: string, report: Report) {
   renameSync(`${path}.tmp`, path);
 }
 
-/** A child's environment: the caller's, minus what points package scripts back at the caller's checkout. */
-function childEnvironment(runId: string, source: string, tmp: string): NodeJS.ProcessEnv {
+/**
+ * A child's environment: the caller's, minus what points package scripts back at the caller's checkout,
+ * and minus NODE_TEST_CONTEXT, which would make a `node --test` check report to a test runner that
+ * started this run instead of to its own reporters.
+ */
+export function childEnvironment(runId: string, source: string, tmp: string): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const [key, value] of Object.entries(process.env)) {
-    if (/^(npm_|PNPM_SCRIPT_SRC_DIR$|INIT_CWD$|OLDPWD$)/.test(key)) continue;
+    if (/^(npm_|PNPM_SCRIPT_SRC_DIR$|INIT_CWD$|OLDPWD$|NODE_TEST_CONTEXT$)/.test(key)) continue;
     env[key] = value;
   }
   return { ...env, PWD: source, TMPDIR: tmp, ULTIMA_VERIFY_RUN: runId, ULTIMA_VERIFY_SOURCE: source };
@@ -384,8 +393,11 @@ export async function executeRun(options: RunOptions): Promise<Report> {
   const { root, directory, runId } = options;
   const progress = options.onProgress ?? (() => {});
   const graceMs = options.graceMs ?? GRACE_MS;
-  const paths = { source: join(directory, 'source'), artifacts: join(directory, 'artifacts'), logs: join(directory, 'logs'), tmp: join(directory, 'tmp') };
-  for (const path of [directory, paths.artifacts, paths.logs, paths.tmp]) mkdirSync(path, { recursive: true });
+  const paths = { source: join(directory, 'source'), artifacts: join(directory, 'artifacts'), logs: join(directory, 'logs') };
+  for (const path of [directory, paths.artifacts, paths.logs]) mkdirSync(path, { recursive: true });
+  // Outside any checkout: a test's scratch repository under the run directory would sit inside the
+  // caller's Git work tree and pnpm workspace, and Git and pnpm would find them.
+  const tmp = mkdtempSync(join(tmpdir(), `ultima-verify-${runId}-`));
   const deadlineAt = started + options.overallDeadlineSeconds * 1000;
   const cancellation = () => (options.signal?.aborted ? (options.signal.reason as Cancellation) : null);
 
@@ -451,7 +463,7 @@ export async function executeRun(options: RunOptions): Promise<Report> {
     }
     try {
       rmSync(paths.source, { recursive: true, force: true });
-      rmSync(paths.tmp, { recursive: true, force: true });
+      rmSync(tmp, { recursive: true, force: true });
       report.directory.sourceRetained = false;
     } catch (error) {
       report.cleanup.errors.push(`the run's disposable source could not be removed: ${String(error)}`);
@@ -513,7 +525,8 @@ export async function executeRun(options: RunOptions): Promise<Report> {
     if (!options.adapters[check.id]) {
       const entry = records.get(check.id) as CheckRecord;
       entry.status = 'unavailable';
-      entry.reason = `no execution adapter yet; it lands with ${check.adapter.lands}`;
+      entry.reason =
+        check.adapter.status === 'unavailable' ? `no execution adapter yet; it lands with ${check.adapter.lands}` : 'no execution adapter was registered for this run';
     }
   }
   const runnable = plan.checks.filter((check) => options.adapters[check.id]);
@@ -540,7 +553,7 @@ export async function executeRun(options: RunOptions): Promise<Report> {
   }
   const executable = runnable.filter((check) => (records.get(check.id) as CheckRecord).status === 'not_run');
 
-  const env = childEnvironment(runId, paths.source, paths.tmp);
+  const env = childEnvironment(runId, paths.source, tmp);
   const preparation = options.preparation ?? PREPARATION;
   report.preparation.argv = preparation.argv;
   report.preparation.lockfile = capture.manifest.entries.find((entry) => entry.path === 'pnpm-lock.yaml')?.sha256 ?? null;
@@ -619,6 +632,7 @@ export async function executeRun(options: RunOptions): Promise<Report> {
       run: directory,
       artifacts: paths.artifacts,
       logs: paths.logs,
+      log,
       env,
       signal: controller.signal,
       remainingMs: () => Math.max(0, checkDeadline - performance.now()),
@@ -626,8 +640,9 @@ export async function executeRun(options: RunOptions): Promise<Report> {
         const result = await launch({
           argv,
           cwd: join(paths.source, launchOptions.cwd ?? check.cwd),
-          env,
+          env: { ...env, ...launchOptions.env },
           log,
+          ...(launchOptions.stdout ? { stdout: launchOptions.stdout } : {}),
           token,
           deadlineMs: Math.max(0, checkDeadline - performance.now()),
           signal: controller.signal,
@@ -737,7 +752,9 @@ export async function executeRun(options: RunOptions): Promise<Report> {
         continue;
       }
       const ready = check.prerequisites.every((prerequisite) => records.get(prerequisite)?.status === 'passed');
-      if (!ready || running.size >= concurrency || check.locks.some((lock) => held.has(lock))) continue;
+      // An ordering, not a prerequisite: it writes outputs these read, so it waits for them to finish however they end.
+      const waiting = check.after.some((earlier) => selected.has(earlier) && !finished.has(earlier));
+      if (!ready || waiting || running.size >= concurrency || check.locks.some((lock) => held.has(lock))) continue;
       pending.splice(pending.indexOf(id), 1);
       start(check);
     }
@@ -809,6 +826,8 @@ export function formatReport(report: Report): string {
   for (const entry of report.checks) {
     lines.push(`  ${entry.id}: ${entry.status}${entry.failure ? ` [${entry.failure.kind}]` : ''} — ${entry.reason}`);
     if (entry.executed.length + entry.expected.length > 0) lines.push(`    coverage: ${entry.executed.length} executed of ${entry.expected.length} expected`);
+    if (entry.blockedBy.length > 0) lines.push(`    blocked by: ${entry.blockedBy.join(', ')}`);
+    for (const failure of entry.failure?.failures ?? []) lines.push(`    failure: ${failure}`);
     for (const server of entry.servers) lines.push(`    server ${server.url || 'none'} (${server.attempts.map((a) => `${a.port}: ${a.outcome}`).join('; ')})`);
     for (const path of entry.evidence) lines.push(`    evidence ${path}`);
     for (const path of entry.missingEvidence) lines.push(`    missing evidence ${path}`);

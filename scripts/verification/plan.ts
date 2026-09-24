@@ -52,6 +52,8 @@ export type PlannedCheck = {
   cwd: string;
   nested: string[];
   prerequisites: CheckId[];
+  /** Checks that must finish first, whatever their outcome, because this one writes outputs they read. */
+  after: CheckId[];
   locks: CheckDefinition['locks'];
   needs: CheckDefinition['needs'];
   deadlineSeconds: number;
@@ -87,7 +89,8 @@ export type Plan = {
   checks: PlannedCheck[];
   deadline: { overallSeconds: number; source: 'default' | '--timeout' };
   output: string | null;
-  outcome: { status: 'planned'; ran: 0; passed: 0; canPass: false; unavailable: CheckId[]; note: string };
+  /** `canPass` says only that every selected check has an adapter; a plan itself never passes. */
+  outcome: { status: 'planned'; ran: 0; passed: 0; canPass: boolean; unavailable: CheckId[]; note: string };
 };
 
 export type PlanInput = {
@@ -613,7 +616,7 @@ function composeChecks(selection: Selection, release: boolean): PlannedCheck[] {
     if (sorted.includes(id)) return;
     const definition = check(id);
     const entry = chosen.get(id);
-    for (const prerequisite of [...definition.prerequisites, ...(entry?.scope === 'files' ? (definition.scopedPrerequisites ?? []) : [])]) {
+    for (const prerequisite of [...definition.prerequisites, ...(entry?.scope === 'files' ? (definition.scopedPrerequisites ?? []) : []), ...(definition.after ?? [])]) {
       if (chosen.has(prerequisite)) visit(prerequisite);
     }
     sorted.push(id);
@@ -642,6 +645,7 @@ function composeChecks(selection: Selection, release: boolean): PlannedCheck[] {
       cwd: definition.cwd,
       nested: scoped ? [] : definition.nested,
       prerequisites,
+      after: (definition.after ?? []).filter((earlier) => chosen.has(earlier)),
       locks: definition.locks,
       needs: definition.needs,
       deadlineSeconds: definition.deadlineSeconds,
@@ -722,7 +726,7 @@ export function plan(input: PlanInput): Plan {
   const release = mode === 'release' || selection.fallbacks.length > 0;
   const checks = composeChecks(selection, release);
   const behavioral = checks.some((entry) => entry.scope !== 'global');
-  const unavailable = checks.map((entry) => entry.id);
+  const unavailable = checks.filter((entry) => entry.adapter.status === 'unavailable').map((entry) => entry.id);
 
   let unrelatedDirty: Plan['unrelatedDirty'] = null;
   if (mode === 'component' || mode === 'feature') {
@@ -768,9 +772,13 @@ export function plan(input: PlanInput): Plan {
       status: 'planned',
       ran: 0,
       passed: 0,
-      canPass: false,
+      canPass: unavailable.length === 0,
       unavailable,
-      note: `Planned only: no check ran and nothing passed. ${unavailable.length} selected check(s) have no execution adapter yet, so no run can report ${release ? 'release ' : ''}success.${
+      note: `Planned only: no check ran and nothing passed. ${
+        unavailable.length > 0
+          ? `${unavailable.length} selected check(s) have no execution adapter yet, so no run can report ${release ? 'release ' : ''}success.`
+          : 'Every selected check has an execution adapter; only a run can pass.'
+      }${
         !release && !behavioral ? ' No behavioral change was selected; the common static, freshness and type checks still run.' : ''
       }`,
     },
@@ -809,12 +817,14 @@ export function formatPlan(document: Plan): string {
     lines.push('findings the freshness check will fail on:');
     for (const finding of document.findings) lines.push(`  ${finding}`);
   }
-  lines.push(`checks (${document.checks.length}), in order; each is planned, adapter unavailable:`);
+  lines.push(`checks (${document.checks.length}), in order; each is planned:`);
   document.checks.forEach((entry, index) => {
     lines.push(`  ${index + 1}. ${entry.id} [${entry.scope}] ${entry.title}`);
-    lines.push(`     $ ${entry.argv.join(' ')}  (cwd ${entry.cwd}, deadline ${entry.deadlineSeconds}s, adapter lands ${entry.adapter.lands})`);
+    const adapter = entry.adapter.status === 'available' ? 'adapter available' : `adapter unavailable, lands ${entry.adapter.lands}`;
+    lines.push(`     $ ${entry.argv.join(' ')}  (cwd ${entry.cwd}, deadline ${entry.deadlineSeconds}s, ${adapter})`);
     if (entry.nested.length > 0) lines.push(`     nested: ${entry.nested.join('; ')}`);
-    if (entry.prerequisites.length > 0) lines.push(`     after: ${entry.prerequisites.join(', ')}`);
+    if (entry.prerequisites.length > 0) lines.push(`     requires passed: ${entry.prerequisites.join(', ')}`);
+    if (entry.after.length > 0) lines.push(`     after finished: ${entry.after.join(', ')}`);
     if (entry.locks.length + entry.needs.length > 0) lines.push(`     locks: ${entry.locks.join(', ') || 'none'}; needs: ${entry.needs.join(', ') || 'none'}`);
     lines.push(`     why: ${entry.reasons.join('; ')}`);
     for (const file of entry.files) lines.push(`     file ${file.path}${file.present ? '' : ' (expected, absent)'}: ${file.reasons.join('; ')}`);
@@ -828,6 +838,6 @@ export function formatPlan(document: Plan): string {
     }
   }
   lines.push(`deadline: ${document.deadline.overallSeconds}s overall (${document.deadline.source})${document.output ? `; evidence directory ${document.output} (not written by a plan)` : ''}`);
-  lines.push(`outcome: planned; ran ${document.outcome.ran}, passed ${document.outcome.passed}; unavailable: ${document.outcome.unavailable.join(', ')}`);
+  lines.push(`outcome: planned; ran ${document.outcome.ran}, passed ${document.outcome.passed}; unavailable: ${document.outcome.unavailable.join(', ') || 'none'}`);
   return lines.join('\n');
 }
