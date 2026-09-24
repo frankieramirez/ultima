@@ -2,6 +2,9 @@ import type { ColorMode } from '../palette.ts';
 import type { ResolvedDraft, TokenTable } from './draft.ts';
 import { contrastRatio } from './recipe.ts';
 
+// The pairings and the ratio are the gate itself: `ultima check` measures a consumer's overrides with them.
+export { contrastRatio };
+
 export type Pairing = {
   foreground: string;
   background: string;

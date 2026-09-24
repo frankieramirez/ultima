@@ -5,6 +5,7 @@ import { type Diagnostic, type RuleStatus, type Unsupported, compareDiagnostics 
 import { APP_RULES, CHECK_SPEC, RULES } from './rules.ts';
 import { type Skipped, checkApp } from './rules/app.ts';
 import { createContext } from './rules/context.ts';
+import { checkThemes } from './rules/theme.ts';
 import type { Scope } from './scope.ts';
 
 // The consumer CLI's entry: everything it needs to build a scope and run the consumer rules, and
@@ -15,6 +16,8 @@ export type { Classified, InstalledItem, Resolution, Scope, SourceKind } from '.
 
 /** The rule IDs a consumer scope enables. No contributor family ever runs in a consumer's repository. */
 export const CONSUMER_RULES = [
+  'ULT-APP-CONTRAST-001',
+  'ULT-APP-THEME-001',
   'ULT-APP-PALETTE-001',
   'ULT-APP-PAINT-001',
   'ULT-APP-PRIMITIVE-001',
@@ -46,6 +49,7 @@ export function checkConsumer(scope: Scope, { strict = false }: { strict?: boole
   const context = createContext(scope);
   const skipped: Skipped = new Map();
   checkApp(context, skipped);
+  checkThemes(context);
 
   // A diagnostic's link is absolute in a consumer's output: a repository path means nothing there.
   const found = [...scope.problems, ...context.diagnostics].map((diagnostic) => (/^https?:/.test(diagnostic.link) ? diagnostic : { ...diagnostic, link: CHECK_SPEC }));

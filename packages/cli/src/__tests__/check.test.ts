@@ -4,10 +4,25 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { PAIRINGS } from '../../../tokens/src/theme/gate.ts';
+import { parseColor } from '../../../analysis/src/rules/theme.ts';
+import { bundledColorDefaults } from '../../scripts/bundled.ts';
 import { run } from '../run.ts';
 import { analysisFixture, installCatalogue, project, smoke, write } from './fixtures.ts';
 
-type Finding = { ruleId: string; severity: string; file: string; start: { line: number }; end: { line: number }; symbol?: string; link: string };
+type Finding = {
+  ruleId: string;
+  severity: string;
+  file: string;
+  start: { line: number };
+  end: { line: number };
+  symbol?: string;
+  target?: string;
+  selector?: string;
+  message: string;
+  repair: string;
+  link: string;
+};
 type Report = {
   status: string;
   counts: { errors: number; advisories: number; incomplete: number; suppressions: number };
@@ -47,7 +62,7 @@ describe('check', () => {
   });
 
   it('returns exactly the full run’s findings for each fixture file under --files', async () => {
-    for (const name of FIXTURES.filter((file) => file.endsWith('.tsx'))) {
+    for (const name of FIXTURES.filter((file) => /\.(tsx|css)$/.test(file) && !file.endsWith('.module.css'))) {
       const file = `src/fixtures/${name}`;
       const { report } = await check(root, '--files', file);
       expect(report.diagnostics, file).toEqual(at(full, file));
@@ -148,8 +163,72 @@ describe('check', () => {
     expect(strict.code).toBe(1);
   });
 
+  it('blocks a role base override without its states, with a repair naming the missing tokens', async () => {
+    const findings = at(full, 'src/fixtures/theme-state.tsx');
+    expect(lines(findings)).toEqual(['8 ULT-APP-THEME-001']);
+    expect(findings[0]).toMatchObject({ severity: 'blocking', symbol: 'brand', target: '--ult-color-accent', link: 'https://ultima.systems/tokens#overriding' });
+    expect(findings[0]?.message).toMatch(/in dark mode/);
+    expect(findings[0]?.repair).toBe('Set --ult-color-accent-hover and --ult-color-accent-active in the same override, next to --ult-color-accent.');
+    expect((await check(consumer(['theme-state.tsx']))).code).toBe(1);
+  });
+
+  it('checks an override in each mode it applies to: unbound and dark-bound block, light-bound passes', async () => {
+    // CSS: .unbound on line 5 and the dark block on line 10 fail on the dark surfaces; the light block passes.
+    const css = at(full, 'src/fixtures/theme-contrast.css');
+    expect(lines(css)).toEqual(['5 ULT-APP-CONTRAST-001', '10 ULT-APP-CONTRAST-001']);
+    expect(css.map(({ selector }) => selector)).toEqual(['.unbound', '@media (prefers-color-scheme: dark) .dark']);
+    for (const finding of css) {
+      expect(finding).toMatchObject({ severity: 'blocking', target: '--ult-color-text-subtle', link: 'https://ultima.systems/tokens#pairings' });
+      expect(finding.message).toMatch(/in dark mode: text-subtle on surface is 2\.55:1 against 4\.5:1/);
+      expect(finding.message).not.toMatch(/light mode/);
+    }
+    // StyleX: applied alone and beside darkTheme block; beside lightTheme passes.
+    const stylex = at(full, 'src/fixtures/theme-contrast.tsx');
+    expect(stylex.map(({ ruleId, symbol }) => `${symbol} ${ruleId}`)).toEqual(['quiet ULT-APP-CONTRAST-001', 'quietDark ULT-APP-CONTRAST-001']);
+    expect((await check(consumer(['theme-contrast.tsx', 'theme-contrast.css']))).code).toBe(1);
+  });
+
+  it('passes an override bound to the mode it was designed for', async () => {
+    const root = smoke('vite');
+    write(root, 'src/main.tsx', "import './index.css'\nimport './theme.css'\n");
+    write(root, 'src/theme.css', '@media (prefers-color-scheme: light) {\n  :root { --ult-color-text-subtle: #555555; }\n}\n');
+    const { code, report } = await check(root);
+    expect(report.diagnostics).toEqual([]);
+    expect(code).toBe(0);
+  });
+
+  it('is incomplete when a createTheme value comes from an import it does not follow', async () => {
+    expect(at(full, 'src/fixtures/theme-import.tsx').map(({ ruleId, severity, target }) => `${ruleId} ${severity} ${target}`)).toEqual([
+      'ULT-ANALYSIS-001 incomplete --ult-color-accent',
+      'ULT-ANALYSIS-001 incomplete --ult-color-accent-hover',
+      'ULT-ANALYSIS-001 incomplete --ult-color-accent-active',
+    ]);
+    const { code, report } = await check(consumer(['theme-import.tsx']));
+    expect(report.status).toBe('incomplete');
+    expect(code).toBe(3);
+  });
+
+  it('measures CSS overrides layered by mode, as the cascade applies them', async () => {
+    const root = smoke('vite');
+    write(root, 'src/main.tsx', "import './index.css'\nimport './theme.css'\n");
+    write(
+      root,
+      'src/theme.css',
+      [
+        ':root { --ult-color-accent: #7b8cff; --ult-color-accent-hover: #8e9dff; --ult-color-accent-active: #a3b0ff; }',
+        '@media (prefers-color-scheme: light) {',
+        '  :root { --ult-color-accent: #4f58d6; --ult-color-accent-hover: #454dc6; --ult-color-accent-active: #3c42b8; }',
+        '}',
+        '',
+      ].join('\n'),
+    );
+    const { code, report } = await check(root);
+    expect(report.diagnostics).toEqual([]);
+    expect(code).toBe(0);
+  });
+
   it('adds counts of errors, advisories and suppressions to JSON', () => {
-    expect(full.counts).toEqual({ errors: 1, advisories: 14, incomplete: 0, suppressions: 1 });
+    expect(full.counts).toEqual({ errors: 6, advisories: 14, incomplete: 3, suppressions: 1 });
   });
 
   it('lists and skips a --files path outside the scope or missing', async () => {
@@ -164,6 +243,54 @@ describe('check', () => {
       write(root, path, "export const Card = () => <p style={{ color: '#f00' }} />;\n");
     }
     expect((await check(root)).report.diagnostics).toEqual([]);
+  });
+});
+
+describe('theme overrides', () => {
+  it('bundles an opaque default for every token the contrast gate pairs, in both modes', () => {
+    const defaults = bundledColorDefaults(join(dirname(fileURLToPath(import.meta.url)), '../../../..'));
+    for (const mode of ['dark', 'light'] as const) {
+      for (const { foreground, background } of PAIRINGS) {
+        expect(parseColor(defaults[mode][foreground] ?? ''), `${mode} ${foreground}`).toMatch(/^#[0-9a-f]{6}$/);
+        expect(parseColor(defaults[mode][background] ?? ''), `${mode} ${background}`).toMatch(/^#[0-9a-f]{6}$/);
+      }
+    }
+  });
+
+  it('measures hex and rgb() colors, and refuses what it cannot measure', () => {
+    expect(parseColor('#abc')).toBe('#aabbcc');
+    expect(parseColor('#AABBCCFF')).toBe('#aabbcc');
+    expect(parseColor('rgb(255 0 0)')).toBe('#ff0000');
+    expect(parseColor('rgba(0, 128, 255, 1)')).toBe('#0080ff');
+    expect(parseColor('#14151680')).toMatchObject({ reason: expect.stringMatching(/translucent/) });
+    expect(parseColor('rgb(0 0 0 / 50%)')).toMatchObject({ reason: expect.stringMatching(/translucent/) });
+    expect(parseColor('oklch(70% 0.1 250)')).toMatchObject({ reason: expect.stringMatching(/not a color the checker can measure/) });
+  });
+
+  it('reads a conditional createTheme value per mode, and follows var() to another semantic token', async () => {
+    const root = installCatalogue(smoke('vite'), VITE);
+    write(
+      root,
+      'src/theme.tsx',
+      [
+        "import * as stylex from '@stylexjs/stylex';",
+        "import { color } from '@/lib/tokens.stylex';",
+        '',
+        'export const quiet = stylex.createTheme(color, {',
+        "  '--ult-color-text-subtle': { default: '#9a9a9a', '@media (prefers-color-scheme: light)': '#555555' },",
+        '});',
+        '',
+      ].join('\n'),
+    );
+    write(root, 'src/main.tsx', "import './index.css'\nimport './theme.css'\n");
+    write(root, 'src/theme.css', '.card { --ult-color-text-muted: var(--ult-color-surface); }\n.odd { --ult-color-text: var(--brand-ink); }\n');
+    const { code, report } = await check(root);
+    expect(report.diagnostics.map(({ file, ruleId, severity }) => `${file} ${ruleId} ${severity}`)).toEqual([
+      'src/theme.css ULT-APP-CONTRAST-001 blocking',
+      'src/theme.css ULT-ANALYSIS-001 incomplete',
+    ]);
+    expect(report.diagnostics[0]?.message).toMatch(/in dark mode: text-muted on surface is 1\.00:1/);
+    expect(code).toBe(1);
   });
 });
 

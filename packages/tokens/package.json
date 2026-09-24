@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./tokens.stylex": "./src/tokens.stylex.ts",
-    "./tokens.json": "./dist/tokens.json"
+    "./tokens.json": "./dist/tokens.json",
+    "./gate": "./src/theme/gate.ts"
   },
   "scripts": {
     "build": "node --experimental-strip-types scripts/build-tokens.ts",

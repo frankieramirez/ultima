@@ -1,0 +1,19 @@
+/* #555555 as subtle text fails on the dark surfaces and passes on the light ones. */
+
+/* Unbound: checked in both modes, and blocks in dark. */
+.unbound {
+  --ult-color-text-subtle: #555555;
+}
+
+@media (prefers-color-scheme: dark) {
+  .dark {
+    --ult-color-text-subtle: #555555;
+  }
+}
+
+/* Bound to light: passes. */
+@media (prefers-color-scheme: light) {
+  .light {
+    --ult-color-text-subtle: #555555;
+  }
+}

@@ -16,6 +16,7 @@ declare const __ULTIMA_CATALOGUE__: { item: string; folder: 'ui' | 'lib'; name: 
 declare const __ULTIMA_TOKENS__: string;
 declare const __ULTIMA_AUTHORIZED__: NonNullable<Scope['authorized']>;
 declare const __ULTIMA_KIT__: Omit<InstalledItem, 'specifier'>[];
+declare const __ULTIMA_COLOR_DEFAULTS__: NonNullable<Scope['colorDefaults']>;
 
 export type ConsumerScope = Scope & {
   root: string;
@@ -213,6 +214,7 @@ export function consumerScope(
     rules: CONSUMER_RULES,
     authorized: __ULTIMA_AUTHORIZED__,
     kit: { installed },
+    colorDefaults: __ULTIMA_COLOR_DEFAULTS__,
     problems: [],
   };
 }

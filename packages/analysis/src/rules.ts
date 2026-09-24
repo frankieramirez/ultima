@@ -81,6 +81,16 @@ export const CHECK_SPEC = 'https://github.com/frankieramirez/ultima/blob/main/do
 // The consumer rule family: docs/spec/ultima.md, Consumer CLI, Check. `check` enables these and
 // `ULT-ANALYSIS-001`, never a contributor family, and links each to the docs-site page stating its contract.
 export const APP_RULES = {
+  'ULT-APP-CONTRAST-001': {
+    status: 'blocking',
+    scope: 'Semantic color overrides in consumer stylex.createTheme calls and CSS, in each mode they apply to',
+    link: `${SITE}/tokens#pairings`,
+  },
+  'ULT-APP-THEME-001': {
+    status: 'blocking',
+    scope: 'Role base color overrides in consumer stylex.createTheme calls and CSS',
+    link: `${SITE}/tokens#overriding`,
+  },
   'ULT-APP-PALETTE-001': {
     status: 'blocking',
     scope: 'Consumer code reading a palette scale',

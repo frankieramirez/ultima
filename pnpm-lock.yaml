@@ -132,6 +132,12 @@ importers:
       '@mdx-js/mdx':
         specifier: ^3.1.1
         version: 3.1.1
+      '@ultima/tokens':
+        specifier: workspace:*
+        version: link:../tokens
+      postcss:
+        specifier: 8.5.28
+        version: 8.5.28
       typescript:
         specifier: 5.9.3
         version: 5.9.3
