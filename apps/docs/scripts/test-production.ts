@@ -14,11 +14,11 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { ADAPTERS } from '../../../scripts/verification/adapters.ts';
 import { DEFAULT_DEADLINE_SECONDS } from '../../../scripts/verification/checks.ts';
 import { repositoryFiles } from '../../../scripts/verification/model.ts';
 import { type Plan, ambiguous, plan, snapshot } from '../../../scripts/verification/plan.ts';
 import { EXIT, type Report, type RunOptions, executeRun, formatReport, newRunId, runDirectory } from '../../../scripts/verification/run.ts';
-import { docsBuildPreparation, productionAdapter } from './production-adapter.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
@@ -117,7 +117,7 @@ export async function runStandalone(argv: string[], extra: StandaloneOptions = {
     command: 'test:production',
     selectors: [],
     planFrom: productionPlan,
-    adapters: extra.adapters ?? { 'docs-build': docsBuildPreparation, 'production-scenarios': productionAdapter },
+    adapters: extra.adapters ?? { 'docs-build': ADAPTERS['docs-build'], 'production-scenarios': ADAPTERS['production-scenarios'] },
     overallDeadlineSeconds: parsed.timeout ?? DEFAULT_DEADLINE_SECONDS,
     deadlineSource: parsed.timeout ? '--timeout' : 'default',
     signal: extra.signal,

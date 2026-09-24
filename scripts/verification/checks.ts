@@ -5,10 +5,9 @@
  * those argument arrays, and no path or ID becomes an argument by string concatenation. Planning reads
  * this table and runs nothing.
  *
- * The static, type, palette and non-browser suites have adapters (scripts/verification/adapters.ts,
- * #460), and so do the production scenarios (#462), which wait on `docs-build`. The rest are
- * `unavailable` until the build slice their `lands` field names delivers them, so no plan that selects
- * one can report a pass.
+ * Every check has an adapter in scripts/verification/adapters.ts: the static, type, palette and
+ * non-browser suites (#460), the browser suites, builds and consumer install (#461), and the production
+ * scenarios (#462; #463 completes the matrix), which wait on `docs-build`.
  */
 
 export type CheckId =
@@ -72,7 +71,7 @@ export type CheckDefinition = {
 };
 
 const STATIC = { status: 'available', since: '#460 (static, type and unit checks)' } as const;
-const BROWSER = { status: 'unavailable', lands: '#461 (browser, build and install checks)' } as const;
+const BROWSER = { status: 'available', since: '#461 (browser, build and install checks)' } as const;
 const PRODUCTION = { status: 'available', since: '#462 (Dialog and Studio pilot); #463 completes the matrix' } as const;
 
 const FRESHNESS: CheckId[] = ['catalogue-freshness'];
@@ -289,10 +288,11 @@ export const CHECKS: readonly CheckDefinition[] = [
     title: 'Consumer install: Vite, Next.js and element consumers',
     argv: ['scripts/smoke-install.sh', '--keep'],
     cwd: '.',
-    nested: ['local registry build and server', 'Vite consumer', 'Next.js consumer', 'element consumer'],
+    // Its local path builds tokens, the registry and the docs, then serves apps/docs/dist itself.
+    nested: ['pnpm --filter @ultima/tokens build', 'pnpm registry:build', 'pnpm --filter @ultima/docs build', 'loopback server on port 0', 'Vite consumer', 'Next.js consumer', 'sidebar consumer', 'element consumer'],
     prerequisites: ['registry-build'],
     after: READ_FIRST,
-    locks: ['writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
+    locks: ['writes:tokens-dist', 'writes:elements-dist', 'writes:registry', 'writes:docs-dist'],
     needs: ['network', 'loopback-port'],
     deadlineSeconds: 2700,
     scope: 'scoped',
@@ -307,7 +307,10 @@ export const CHECKS: readonly CheckDefinition[] = [
     cwd: '.',
     nested: [],
     prerequisites: ['docs-build'],
-    locks: ['browser'],
+    // It writes nothing, but it serves apps/docs/dist, which consumer-smoke rebuilds, so it holds that
+    // lock to keep writers out while it runs; the build manifest still rejects any byte that changed
+    // between the build and the serving. docs-build already runs after the read-only checks.
+    locks: ['browser', 'writes:docs-dist'],
     needs: ['chromium', 'loopback-port'],
     deadlineSeconds: 1800,
     scope: 'scoped',
@@ -315,6 +318,15 @@ export const CHECKS: readonly CheckDefinition[] = [
     tests: 'apps/docs/tests/production',
     adapter: PRODUCTION,
   },
+];
+
+/**
+ * Release obligations no check can satisfy yet. While any remain, a release plan cannot pass and a release
+ * run ends incomplete whatever its checks report, because a run only proves the scenarios registered so
+ * far. #463 empties it when the full production matrix is registered.
+ */
+export const RELEASE_PENDING: readonly string[] = [
+  'the production matrix: only the Dialog and Studio pilot cells are registered, and #463 (Complete the production scenario matrix) registers the rest of the 26 required cells',
 ];
 
 export const CHECK_BY_ID = new Map(CHECKS.map((check) => [check.id, check]));

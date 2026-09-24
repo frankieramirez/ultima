@@ -63,6 +63,8 @@ export type AdapterContext = {
   /** Absolute paths inside the run. `source` is the frozen snapshot the check runs against. */
   source: string;
   run: string;
+  /** The captured snapshot's identity, which build manifests carry. */
+  identity: SourceIdentity;
   artifacts: string;
   logs: string;
   /** The check's log, `logs/<check>.log`, which every launch appends standard error (and, by default, output) to. */
@@ -510,9 +512,11 @@ export async function executeRun(options: RunOptions): Promise<Report> {
   }
   report.plan = plan;
   report.scope.effective = plan.scope;
+  const releasePending = plan.scope === 'release' ? (plan.outcome?.pending ?? []) : [];
+  if (releasePending.length > 0) incomplete = true;
   report.scope.note =
     plan.scope === 'release'
-      ? 'The release plan; its success still needs every adapter, and full CI remains authoritative.'
+      ? `The release plan; its success still needs every adapter, and full CI remains authoritative.${releasePending.map((obligation) => ` Pending, so it cannot pass: ${obligation}.`).join('')}`
       : `A local ${plan.scope} result for \`${report.scope.requested}\` only; it says nothing about paths outside that scope.`;
 
   const selected = new Map(plan.checks.map((check) => [check.id, check]));
@@ -645,6 +649,7 @@ export async function executeRun(options: RunOptions): Promise<Report> {
       check,
       source: paths.source,
       run: directory,
+      identity: capture.identity,
       artifacts: paths.artifacts,
       logs: paths.logs,
       log,
@@ -818,7 +823,9 @@ function summarize(report: Report): string {
             ? `the source could not be captured: ${report.source.capture.reason}`
             : report.source.sourceChanged
               ? 'the checkout changed during the run, so results describe the captured snapshot only'
-              : 'at least one required check did not pass, and nothing failed validation';
+              : report.checks.every((entry) => entry.status === 'passed' || entry.status === 'skipped') && (report.plan?.outcome?.pending.length ?? 0) > 0
+                ? `every check passed, but a release cannot pass while obligations are pending: ${report.plan?.outcome.pending.join('; ')}`
+                : 'at least one required check did not pass, and nothing failed validation';
   return `${report.status} (exit ${report.exit}): ${why}. Checks: ${counts || 'none'}.`;
 }
 

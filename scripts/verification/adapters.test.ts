@@ -12,10 +12,10 @@ import { dirname, join, relative } from 'node:path';
 import { after, describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { contextFor, planned } from './adapter-context.ts';
 import { ADAPTERS, DISCOVERY, discover, typecheckPackages } from './adapters.ts';
 import { CHECKS, type CheckId, check } from './checks.ts';
 import type { Plan, PlannedCheck } from './plan.ts';
-import { launch, ownerToken } from './process.ts';
 import { type AdapterContext, type AdapterReport, type Adapters, type Report, EXIT, childEnvironment, executeRun, formatReport, judge } from './run.ts';
 import { architecture, freshness, nodeTest, palette, typecheck, vitest, type VitestReport } from './tool-reports.ts';
 
@@ -33,89 +33,28 @@ function write(directory: string, files: Record<string, string>) {
   }
 }
 
-function planned(id: CheckId, changes: Partial<PlannedCheck> = {}): PlannedCheck {
-  const definition = check(id);
-  return {
-    id,
-    title: definition.title,
-    status: 'planned',
-    adapter: definition.adapter,
-    argv: definition.argv,
-    cwd: definition.cwd,
-    nested: definition.nested,
-    prerequisites: [],
-    after: [],
-    locks: definition.locks,
-    needs: definition.needs,
-    deadlineSeconds: definition.deadlineSeconds,
-    scope: 'whole',
-    reasons: ['chosen by the test'],
-    files: [],
-    cases: [],
-    ...changes,
-  };
-}
-
-/** An adapter context over `source` without a run: the adapter's own launch, log and evidence paths. */
-function contextFor(source: string, entry: PlannedCheck): AdapterContext {
-  const run = mkdtempSync(join(scratch, 'run-'));
-  const artifacts = join(run, 'artifacts');
-  const logs = join(run, 'logs');
-  mkdirSync(artifacts);
-  mkdirSync(logs);
-  const log = join(logs, `${entry.id}.log`);
-  const env = childEnvironment('adapter-test', source, mkdtempSync(join(scratch, 'tmp-')));
-  const token = ownerToken('adapter-test');
-  const signal = new AbortController().signal;
-  return {
-    runId: 'adapter-test',
-    check: entry,
-    source,
-    run,
-    artifacts,
-    logs,
-    log,
-    env,
-    signal,
-    remainingMs: () => entry.deadlineSeconds * 1000,
-    launch: (argv, options = {}) =>
-      launch({
-        argv,
-        cwd: join(source, options.cwd ?? entry.cwd),
-        env: { ...env, ...options.env },
-        log,
-        ...(options.stdout ? { stdout: options.stdout } : {}),
-        token,
-        deadlineMs: entry.deadlineSeconds * 1000,
-        signal,
-        graceMs: 500,
-      }),
-    startServer: async () => ({ failure: 'no server in this test' }),
-  };
-}
-
 async function runAdapter(id: CheckId, source: string, changes: Partial<PlannedCheck> = {}) {
   const entry = planned(id, changes);
-  const context = contextFor(source, entry);
+  const context = contextFor(scratch, source, entry);
   const report = (await (ADAPTERS[id] as NonNullable<Adapters[CheckId]>).run(context)) as AdapterReport;
   const expected = [...new Set([...entry.files.filter((file) => file.present).map((file) => file.path), ...(report.expected ?? [])])];
   return { report, judged: judge(report, expected), context };
 }
 
 describe('the adapter registry', () => {
-  test('registers exactly the checks the table marks available: static, type, unit and production, nothing browser, build or install', () => {
-    const available = CHECKS.filter((entry) => entry.adapter.status === 'available').map((entry) => entry.id);
-    assert.deepEqual(Object.keys(ADAPTERS).sort(), [...available].sort());
-    assert.deepEqual(available.sort(), ['analysis-fixtures', 'architecture', 'catalogue-freshness', 'cli-tests', 'palette', 'production-scenarios', 'tokens-tests', 'tooling-tests', 'typecheck']);
-    for (const id of ['ui-tests', 'elements-tests', 'docs-tests', 'registry-build', 'docs-build', 'consumer-smoke'] as CheckId[]) {
-      assert.equal(check(id).adapter.status, 'unavailable', id);
-    }
+  test('registers an adapter for every check the table holds', () => {
+    assert.deepEqual(Object.keys(ADAPTERS).sort(), CHECKS.map((entry) => entry.id).sort());
+    assert.ok(CHECKS.every((entry) => entry.adapter.status === 'available'));
   });
 
   test('every check that writes into the snapshot runs after the read-only architecture and freshness checks', () => {
     for (const entry of CHECKS) {
       if (entry.locks.some((lock) => lock.startsWith('writes:')) || entry.nested.some((command) => /build/.test(command))) {
-        assert.deepEqual(entry.after, ['architecture', 'catalogue-freshness'], entry.id);
+        // Directly, or through a prerequisite that does: production-scenarios holds docs-dist to keep
+        // writers out while it serves the build its docs-build prerequisite wrote.
+        const ordered = (id: CheckId): boolean =>
+          JSON.stringify(check(id).after) === JSON.stringify(['architecture', 'catalogue-freshness']) || check(id).prerequisites.some(ordered);
+        assert.ok(ordered(entry.id), entry.id);
       }
     }
     assert.equal(check('architecture').prerequisites.length + (check('architecture').after?.length ?? 0), 0);
