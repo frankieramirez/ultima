@@ -1,6 +1,6 @@
-import { Fragment, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
-import { Link, type LinkProps } from "@tanstack/react-router";
+import { Link, useLocation, type LinkProps } from "@tanstack/react-router";
 import * as stylex from "@stylexjs/stylex";
 import { color, font, space, text } from "@ultima/tokens/tokens.stylex";
 import { Breadcrumb, Separator } from "@ultima/ui";
@@ -17,7 +17,18 @@ const styles = stylex.create({
     paddingBlockEnd: space["--ult-space-12"],
   },
   breadcrumb: {
+    fontFamily: font["--ult-font-mono"],
+    letterSpacing: font["--ult-font-tracking-wide"],
     marginBlockEnd: space["--ult-space-8"],
+    textTransform: "uppercase",
+  },
+  breadcrumbList: { fontSize: text["--ult-text-1"] },
+  crumb: {
+    color: {
+      default: color["--ult-color-text-subtle"],
+      ':is([data-active], [aria-current="page"])': color["--ult-color-text"],
+      ":hover": color["--ult-color-text"],
+    },
   },
   grid: {
     display: "grid",
@@ -69,6 +80,10 @@ const styles = stylex.create({
     marginBlock: space["--ult-space-6"],
     marginInline: 0,
     padding: 0,
+  },
+  current: {
+    color: color["--ult-color-text"],
+    fontWeight: font["--ult-font-weight-medium"],
   },
 });
 
@@ -122,6 +137,39 @@ export function DocumentLayout({
     setHeadings(next);
   }, [children]);
 
+  const rail = useRef<HTMLElement>(null);
+  const [current, setCurrent] = useState<string | null>(null);
+  useEffect(() => {
+    const aside = rail.current;
+    if (!aside || headings.length === 0) return;
+    const targets = headings.flatMap(({ id }) => document.getElementById(id) ?? []);
+    // The reading line sits where the rail sticks, just under the sticky chrome, which is also
+    // where the document's scroll padding lands a heading reached by its anchor.
+    const line = parseFloat(getComputedStyle(aside).top) || 0;
+    const mark = () => {
+      if (!aside.checkVisibility()) return;
+      let passed: string | null = null;
+      for (const target of targets) {
+        if (target.getBoundingClientRect().top - line >= 1) break;
+        passed = target.id;
+      }
+      setCurrent(passed);
+    };
+    const observer = new IntersectionObserver(mark, {
+      rootMargin: `-${line}px 0px 0px 0px`,
+    });
+    targets.forEach((target) => observer.observe(target));
+    // A jump that carries a heading from below the viewport to above the line in one frame never
+    // intersects the band, so the settled scroll re-reads the positions too.
+    window.addEventListener("scrollend", mark);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scrollend", mark);
+    };
+  }, [headings]);
+
+  const { pathname } = useLocation();
+
   return (
     <main {...stylex.props(layoutStyles.gutter, styles.main)}>
       <div {...stylex.props(styles.grid, !index && styles.fullWidth)}>
@@ -131,18 +179,15 @@ export function DocumentLayout({
           {...stylex.props(styles.article, !index && styles.wideArticle)}
         >
           <Breadcrumb.Root style={styles.breadcrumb}>
-            <Breadcrumb.List>
+            <Breadcrumb.List style={styles.breadcrumbList}>
               {breadcrumb.map((crumb, crumbIndex) => (
                 <Fragment key={crumb.label}>
-                  {crumbIndex > 0 && <Breadcrumb.Separator />}
+                  {crumbIndex > 0 && <Breadcrumb.Separator>/</Breadcrumb.Separator>}
                   <Breadcrumb.Item>
                     <Breadcrumb.Link
                       active={crumbIndex === breadcrumb.length - 1}
-                      render={
-                        crumb.to ? (
-                          <Link to={crumb.to} activeOptions={{ exact: true }} />
-                        ) : undefined
-                      }
+                      style={styles.crumb}
+                      render={<Link to={crumb.to ?? pathname} activeOptions={{ exact: true }} />}
                     >
                       {crumb.label}
                     </Breadcrumb.Link>
@@ -154,7 +199,7 @@ export function DocumentLayout({
           {children}
         </article>
         {index && headings.length > 0 && (
-          <aside aria-label="On this page" {...stylex.props(styles.indexRail)}>
+          <aside ref={rail} aria-label="On this page" {...stylex.props(styles.indexRail)}>
             <div {...stylex.props(styles.indexInner)}>
               <Separator orientation="vertical" style={styles.divider} />
               <div {...stylex.props(styles.indexContents)}>
@@ -162,7 +207,12 @@ export function DocumentLayout({
                 <ul {...stylex.props(styles.indexList)}>
                   {headings.map(({ id, label }) => (
                     <li key={id}>
-                      <TextLink href={`#${id}`} variant="muted">
+                      <TextLink
+                        href={`#${id}`}
+                        variant="muted"
+                        aria-current={id === current ? "location" : undefined}
+                        style={id === current ? styles.current : undefined}
+                      >
                         {label}
                       </TextLink>
                     </li>

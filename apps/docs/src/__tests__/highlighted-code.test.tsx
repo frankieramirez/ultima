@@ -10,6 +10,7 @@ import { render } from 'vitest-browser-react';
 import { Demo } from '../demo';
 import { fenceLanguage, HighlightedCode, nodeText } from '../highlighted-code';
 import { Prose } from '../prose';
+import { renderWithRouter } from './render-with-router';
 
 const styles = stylex.create({
   accent: { color: color['--ult-color-accent-text'] },
@@ -123,8 +124,8 @@ test('an MDX fence highlights its source in a bordered block', async () => {
     );
   }
 
-  const screen = await render(
-    <Prose Content={Content} breadcrumb={[{ label: 'Components' }, { label: 'Button' }]} />,
+  const screen = await renderWithRouter(
+    <Prose Content={Content} breadcrumb={[{ label: 'Components', to: '/components' }, { label: 'Button' }]} />,
   );
   const article = screen.getByRole('article').element();
   expect(article.querySelector('pre')?.textContent).toBe(SOURCE);

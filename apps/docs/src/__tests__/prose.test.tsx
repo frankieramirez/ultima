@@ -1,9 +1,9 @@
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentProps, ComponentType } from 'react';
 import { expect, test } from 'vitest';
-import { render } from 'vitest-browser-react';
 
 import { Prose } from '../prose';
+import { renderWithRouter } from './render-with-router';
 
 /** What `@mdx-js/rollup` hands `Prose` for a props table plus a paragraph. */
 function PropsTable({ components }: { components?: MDXComponents }) {
@@ -40,8 +40,8 @@ function PropsTable({ components }: { components?: MDXComponents }) {
 }
 
 test('inline code stays unbroken inside table cells and still wraps in paragraphs', async () => {
-  const { container } = await render(
-    <Prose Content={PropsTable} breadcrumb={[{ label: 'Documentation' }, { label: 'Test' }]} />,
+  const { container } = await renderWithRouter(
+    <Prose Content={PropsTable} breadcrumb={[{ label: 'Documentation', to: '/install' }, { label: 'Test' }]} />,
   );
 
   for (const code of container.querySelectorAll('td code')) {
