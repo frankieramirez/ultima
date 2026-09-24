@@ -12,6 +12,9 @@ const WORD_JOINER = '⁠';
 
 const CONFIRMATION_MS = 1500;
 
+/** 28px: the square the demo figure decision (#369) sets, a step between the space scale's 1.5rem and 2rem. */
+const ICON_SQUARE = `calc(${space['--ult-space-8']} + ${space['--ult-space-2']})`;
+
 type CopyStatus = '' | 'Copied' | 'Copy failed';
 
 const styles = stylex.create({
@@ -22,8 +25,9 @@ const styles = stylex.create({
       [breakpoints.WIDE]: { default: 'transparent', ':hover': color['--ult-color-surface-hover'] },
     },
     flexShrink: 0,
-    paddingInline: space['--ult-space-2'],
-    width: space['--ult-space-9'],
+    height: ICON_SQUARE,
+    paddingInline: 0,
+    width: ICON_SQUARE,
   },
   floating: {
     insetBlockStart: space['--ult-space-4'],

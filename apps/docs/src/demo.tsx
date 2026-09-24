@@ -3,10 +3,9 @@ import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.
 import { Button, Card, Separator } from '@ultima/ui';
 import { useLayoutEffect, useRef, useState, type ComponentType, type RefObject } from 'react';
 
+import { breakpoints } from './breakpoints.stylex';
 import { CopyButton } from './copy-button';
 import { HighlightedCode } from './highlighted-code';
-
-const WIDE = '@media (min-width: 48rem)';
 
 const ALWAYS_OPEN_LINES = 8;
 const TEASER_LINES = 6;
@@ -20,7 +19,7 @@ const styles = stylex.create({
     alignItems: 'center',
     display: 'flex',
     justifyContent: 'center',
-    minBlockSize: { default: '6rem', [WIDE]: '8rem' },
+    minBlockSize: { default: '6rem', [breakpoints.WIDE]: '8rem' },
     overflowX: 'auto',
     paddingBlock: space['--ult-space-9'],
     paddingInline: space['--ult-space-9'],
@@ -137,10 +136,11 @@ export function Demo({
       <Separator />
       <div {...stylex.props(styles.code, !open && styles.teaser)}>
         <HighlightedCode code={source} lang={lang} style={styles.source} />
-        <CopyButton text={source} ariaLabel="Copy example source" floating />
         {collapsible && !open ? <div aria-hidden {...stylex.props(styles.fade)} /> : null}
         {collapsible && !open ? control : null}
         {collapsible && open ? <div {...stylex.props(styles.reveal)}>{control}</div> : null}
+        {/* Last, so it paints above the cover that makes the whole teaser a click target. */}
+        <CopyButton text={source} ariaLabel="Copy example source" floating />
       </div>
     </Card.Root>
   );

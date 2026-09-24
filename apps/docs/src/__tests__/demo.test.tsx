@@ -1,5 +1,5 @@
-import { expect, test } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { expect, onTestFinished, test } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import { Demo } from '../demo';
@@ -53,4 +53,41 @@ test('the preview centers its content over a floor', async () => {
   const mid = (rect: DOMRect) => rect.left + rect.width / 2;
   expect(Math.abs(mid(live.getBoundingClientRect()) - mid(figure.getBoundingClientRect()))).toBeLessThan(2);
   expect(figure.querySelector('footer')).toBeNull();
+});
+
+test('copy is a 28px icon button in the code area top-right corner that swaps to a check', async () => {
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: () => Promise.resolve() },
+  });
+  const screen = await render(<Demo component={Example} source={LONG} />);
+  const copy = screen.getByRole('button', { name: 'Copy example source' });
+  const button = copy.element();
+  const code = screen.container.querySelector('pre')!.parentElement!.getBoundingClientRect();
+  const rect = button.getBoundingClientRect();
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+  expect(rect.width).toBeCloseTo(1.75 * rem, 0);
+  expect(rect.height).toBeCloseTo(1.75 * rem, 0);
+  expect(rect.top - code.top).toBeCloseTo(0.5 * rem, 0);
+  expect(code.right - rect.right).toBeCloseTo(0.5 * rem, 0);
+
+  const glyph = () => button.querySelector('svg')?.outerHTML;
+  const resting = glyph();
+  await userEvent.click(copy);
+  await expect.poll(() => screen.getByRole('status').element().textContent).toMatch(/Copied/);
+  expect(glyph()).not.toBe(resting);
+});
+
+test('the figure keeps its structure at 390px', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+
+  const screen = await render(<Demo component={Example} source={LONG} />);
+  const figure = screen.container.querySelector('figure')!;
+  expect(getComputedStyle(figure).borderRadius).toBe('0px');
+  expect(figure.querySelector('[role="separator"], hr')).not.toBeNull();
+  await expect.element(screen.getByRole('button', { name: 'Show code' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Copy example source' })).toBeVisible();
+  expect(figure.scrollWidth).toBeLessThanOrEqual(figure.clientWidth);
 });

@@ -5,13 +5,13 @@ import { APCAcontrast, sRGBtoY } from 'apca-w3';
 
 import { breakpoints } from '../breakpoints.stylex';
 import { CopyButton } from '../copy-button';
-import { HighlightedCode } from '../highlighted-code';
 import MotionTrack from '../demos/tokens/motion';
 import RadiusSpecimen from '../demos/tokens/radius';
 import ShadowSpecimen from '../demos/tokens/shadow';
 import SpaceBar from '../demos/tokens/space';
 import TypeSample from '../demos/tokens/text';
 import { Note, Page, Section, TextLink } from '../page';
+import { Fence } from '../prose';
 import { Swatch } from '../swatch';
 import { contrast, tokenGroups, tokensByName, type Token } from '../token-data';
 import { describeToken } from '../token-roles';
@@ -73,9 +73,6 @@ const styles = stylex.create({
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-3'],
     minWidth: '10rem',
-  },
-  override: {
-    marginBlockStart: space['--ult-space-6'],
   },
   scroll: {
     marginBlockStart: space['--ult-space-6'],
@@ -286,8 +283,8 @@ function Overriding() {
         export re-skins with plain CSS on the root. A consumer compiling with StyleX gets the same
         result from <Code>createTheme</Code>, which returns a class to put on any subtree.
       </Note>
-      <HighlightedCode code={OVERRIDE_CSS} lang="css" style={styles.override} />
-      <HighlightedCode code={OVERRIDE_STYLEX} lang="ts" style={styles.override} />
+      <Fence code={OVERRIDE_CSS} lang="css" />
+      <Fence code={OVERRIDE_STYLEX} lang="ts" />
     </Section>
   );
 }
