@@ -29,7 +29,7 @@ export type Base = {
   fallback: string | null;
 };
 
-export type Git = { run(args: string[], input?: string): { status: number | null; stdout: Buffer; stderr: string } };
+export type Git = { run(args: string[], input?: string | Buffer): { status: number | null; stdout: Buffer; stderr: string } };
 
 export function git(root: string): Git {
   return {
