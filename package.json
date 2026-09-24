@@ -14,7 +14,8 @@
     "typecheck": "node --experimental-strip-types scripts/catalogue/preflight.ts \"tsc -p tsconfig.json && pnpm -r typecheck\"",
     "registry:build": "node --experimental-strip-types scripts/catalogue/preflight.ts \"pnpm --filter @ultima/tokens build && pnpm --filter @ultima/elements build && node --experimental-strip-types scripts/build-registry.ts\"",
     "catalogue:generate": "node --experimental-strip-types scripts/catalogue/generate.ts",
-    "catalogue:check": "node --experimental-strip-types scripts/catalogue/generate.ts check"
+    "catalogue:check": "node --experimental-strip-types scripts/catalogue/generate.ts check",
+    "scaffold": "node --experimental-strip-types scripts/catalogue/scaffold.ts"
   },
   "devDependencies": {
     "@types/node": "^26.5.0",

@@ -143,7 +143,7 @@ Before the implementation effort completes, run all architectural checks and the
 
 ## Component metadata and scaffolding
 
-Decided on [Component metadata: ownership, generated wiring, and scaffolding](https://github.com/frankieramirez/ultima/issues/437). This section specifies a migration. The descriptors, generated wiring and freshness checks have landed ([#450](https://github.com/frankieramirez/ultima/issues/450), [#451](https://github.com/frankieramirez/ultima/issues/451)); the scaffold has not.
+Decided on [Component metadata: ownership, generated wiring, and scaffolding](https://github.com/frankieramirez/ultima/issues/437). This section specifies a migration. The descriptors, generated wiring and freshness checks have landed ([#450](https://github.com/frankieramirez/ultima/issues/450), [#451](https://github.com/frankieramirez/ultima/issues/451)), and so has the scaffold ([#452](https://github.com/frankieramirez/ultima/issues/452)). `ULT-SOURCE-001`, which rejects its incomplete marker, has not.
 
 ### Ownership
 
@@ -254,6 +254,16 @@ A React scaffold creates one metadata descriptor, one component file, its correc
 Generated skeletons visibly mark incomplete work with an `@ultima-scaffold-incomplete` marker. `ULT-SOURCE-001` rejects that marker until the author completes the contract and removes it. Scaffolding is not proof-bar coverage, and it must not create passing tests that merely assert the scaffold exists. The dry-run names the remaining behavioral and accessibility work.
 
 Scaffolding regenerates the small wiring projections through the same catalogue model. It does not edit the router, package exports or optimizer config by string substitution. Before writing, check all intended authored paths, metadata IDs, public export names and release positions for collisions, as well as the generated-output plan. A request targeting an existing authored item fails without changing it. There is no overwrite or force mode.
+
+The request is one JSON object, `{ "descriptor": …, "brief": … }`. `descriptor` holds the kind's descriptor fields apart from `id` and `kind`, which come from the command. The brief is per kind:
+
+| Kind | Brief | Creates |
+| --- | --- | --- |
+| `react` | `primitive` (`{ kind: 'native', element }`, `{ kind: 'base-ui', module, export }` or `{ kind: 'zag', module, element }`), `shape` (`plain` or `compound`), `parts` for a compound (`name`, `styled`, and `element` when native or Zag), `axes` (`{}` or `variant`/`size`/`tone` with `values`, `default` and, on a compound, `part`), and `proofBar`, the eight answers. | Descriptor, `packages/ui/src/<id>.tsx`, `packages/ui/src/__tests__/<id>.test.tsx`, `apps/docs/src/demos/<id>/basic.tsx` and the MDX page importing it live and `?raw`. |
+| `element` | `enums`, the values of every attribute `symbol`; `parity`, the `axes`, `parts` and `stateMap` entry for the parity test; and `proof`, what the element tests must prove. | Descriptor, `packages/elements/src/<id>.element.ts` registering exactly its `tags`, and `packages/elements/src/__tests__/<id>.test.ts`. The parity entry is printed, not applied. |
+| `recipe` | `proof`, what the recipe's tests must prove. | Descriptor, each demo in `demos`, and `apps/docs/src/__tests__/<id>.test.tsx`. The page imports and section are printed, not applied; generation waits until the author applies them. |
+
+Every created test is `test.todo` per requirement, so a scaffolded item reports todos, never passes. The manifest and lock live under the ignored `.scaffold/`.
 
 Use exclusive creation for new authored files. After an interrupted write, a rerun identifies the partial files and stops with recovery instructions. It must not delete or overwrite them to simulate idempotence. Concurrent edits invalidate the plan, and operations leave a manifest of paths they created or updated so recovery can inspect the exact scope.
 
