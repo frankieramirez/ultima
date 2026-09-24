@@ -250,6 +250,32 @@ assert_diff_shows_only_the_edit() {
   echo "smoke-install: diff button shows only the edit"
 }
 
+# docs/spec/ultima.md, Hooks: install the Claude Code hook, then pipe a recorded payload for a file
+# with a palette read into the command it installed; the finding comes back in additionalContext.
+assert_hook_returns_the_finding() {
+  local app="$1"
+  node "$ROOT/packages/cli/dist/cli.js" install --harness claude --cwd "$app" >/dev/null
+  # npx --no-install resolves the CLI from node_modules, as it would once the package is installed.
+  mkdir -p "$app/node_modules/@ultima-systems" "$app/node_modules/.bin"
+  ln -sfn "$ROOT/packages/cli" "$app/node_modules/@ultima-systems/cli"
+  ln -sfn ../@ultima-systems/cli/dist/cli.js "$app/node_modules/.bin/ultima"
+  cp "$ROOT/packages/analysis/fixtures/app/palette.tsx" "$app/src/SmokePalette.tsx"
+  local command
+  command="$(node -e 'const s = require(process.argv[1]); console.log(s.hooks.PostToolUse.find((e) => e.matcher === "Edit|Write").hooks[0].command)' "$app/.claude/settings.json")"
+  PAYLOAD="$ROOT/packages/cli/src/__tests__/payloads/claude-edit.json" FILE="$app/src/SmokePalette.tsx" node -e '
+const payload = JSON.parse(require("node:fs").readFileSync(process.env.PAYLOAD, "utf8"));
+payload.tool_input.file_path = process.env.FILE;
+process.stdout.write(JSON.stringify(payload));
+' | (cd "$app" && CLAUDE_PROJECT_DIR="$app" sh -c "$command") >"$WORK/hook.json"
+  rm "$app/src/SmokePalette.tsx"
+  if ! grep -q 'ULT-APP-PALETTE-001 src/SmokePalette.tsx' "$WORK/hook.json"; then
+    echo "smoke-install: the installed Claude Code hook did not return the palette finding:" >&2
+    cat "$WORK/hook.json" >&2
+    exit 1
+  fi
+  echo "smoke-install: the installed Claude Code hook returns the palette finding"
+}
+
 assert_installed() {
   local app="$1"
   shift
@@ -404,6 +430,9 @@ import { ultimaStylex } from './ultima.vite.ts'"
 
   step "vite: ultima diff"
   assert_diff_shows_only_the_edit "$app/src" "$app"
+
+  step "vite: ultima hook"
+  assert_hook_returns_the_finding "$app"
 }
 
 next_target() {

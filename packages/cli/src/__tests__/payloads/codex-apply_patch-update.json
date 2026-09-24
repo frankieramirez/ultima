@@ -1,0 +1,15 @@
+{
+  "session_id": "01a0d220-cf05-75b1-bc9a-e29e7141e3ef",
+  "turn_id": "01a0d220-cf9d-72f0-9fa4-f4d48f87f9a9",
+  "transcript_path": "/home/user/.codex/sessions/2026/09/24/rollout-2026-09-24T02-36-00-01a0d220-cf05-75b1-bc9a-e29e7141e3ef.jsonl",
+  "cwd": "/repo",
+  "hook_event_name": "PostToolUse",
+  "model": "gpt-6-astra",
+  "permission_mode": "bypassPermissions",
+  "tool_name": "apply_patch",
+  "tool_input": {
+    "command": "*** Begin Patch\n*** Update File: src/existing.ts\n@@\n-export const a = 1;\n+export const a = 3;\n*** End Patch"
+  },
+  "tool_response": "Exit code: 0\nWall time: 0 seconds\nOutput:\nSuccess. Updated the following files:\nM src/existing.ts\n",
+  "tool_use_id": "exec-8e2ec678-3b22-4b1d-9e3b-c5aed1dd8e26"
+}
