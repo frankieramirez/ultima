@@ -4,17 +4,22 @@ on:
   schedule:
     - cron: '17 6 * * 1'
   workflow_dispatch:
+  # Every input the consumer apps install or build from: the registry's authored files and catalogue
+  # metadata, the generators that project them, the React, element and token sources, and the element
+  # build that the registry vendors.
   pull_request:
     paths:
       - 'registry/static/**'
       - 'registry/items.config.ts'
       - 'registry/metadata/**'
       - 'scripts/catalogue/**'
+      - 'scripts/generated/**'
       - 'scripts/build-registry.ts'
       - 'scripts/build-agent-guide.ts'
       - 'scripts/smoke-install.sh'
       - 'packages/cli/**'
       - 'packages/ui/src/**'
+      - 'packages/elements/**'
       - 'packages/tokens/**'
       - '**/package.json'
       - 'pnpm-workspace.yaml'
