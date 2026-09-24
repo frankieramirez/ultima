@@ -7,7 +7,7 @@
  */
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { chmodSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { createServer, connect } from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -19,6 +19,7 @@ import { commandAdapter } from './adapters.ts';
 import { type CheckId, check } from './checks.ts';
 import type { Plan, PlannedCheck } from './plan.ts';
 import { type Adapter, type AdapterContext, type Adapters, type Report, type RunOptions, EXIT, executeRun, judge, outcome } from './run.ts';
+import { dirtyPaths, git as gitOf } from './changes.ts';
 import { captureSource, hashSource } from './source.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -162,7 +163,36 @@ describe('source capture', () => {
     assert.equal(readFileSync(join(destination, 'notes/a file with spaces ü.txt'), 'utf8'), 'untracked\n');
     assert.equal(lstatSync(join(destination, 'bin/run.sh')).mode & 0o111, 0o111);
     assert.equal(readlinkSync(join(destination, 'src/link')), '../README.md');
-    for (const absent of ['src/gone.txt', 'ignored/secret.txt', 'packages/x/node_modules/dep/index.js', '.git']) assert.ok(!existsSync(join(destination, absent)), absent);
+    for (const absent of ['src/gone.txt', 'ignored/secret.txt', 'packages/x/node_modules/dep/index.js', '.git/refs/heads/main']) assert.ok(!existsSync(join(destination, absent)), absent);
+  });
+
+  test('is its own Git work tree at the captured HEAD, index and status', () => {
+    assert.ok(capture.ok);
+    assert.equal(git(destination, 'rev-parse', '--show-toplevel'), realpathSync(destination));
+    assert.equal(git(destination, 'rev-parse', 'HEAD'), capture.identity.head);
+    const snapshot = hashSource(destination);
+    assert.ok(snapshot.ok, snapshot.ok ? '' : snapshot.reason);
+    assert.equal(snapshot.manifest.digest, capture.identity.manifest.digest, 'Git lists the same files and the same bytes');
+    assert.equal(snapshot.index.digest, capture.identity.index.digest);
+    const status = (changes: ReturnType<typeof dirtyPaths>) => ('changes' in changes ? changes.changes.filter((change) => !change.path.includes('node_modules/')) : changes);
+    assert.deepEqual(status(dirtyPaths(gitOf(destination))), status(dirtyPaths(gitOf(root))), 'staged, unstaged and untracked as in the checkout');
+  });
+
+  test('inside the checkout, Git in the snapshot resolves the snapshot and not the caller', () => {
+    // Where `pnpm verify` places a run by default: under the checkout's ignored .scratch/.
+    const origin = repository({ 'README.md': '# Fixture\n', 'src/value.txt': 'base\n', '.gitignore': '.scratch/\n' });
+    writeFileSync(join(origin, 'src/value.txt'), 'dirty\n');
+    const nested = join(origin, '.scratch/verify/run/source');
+    const inside = captureSource(origin, nested);
+    assert.ok(inside.ok, inside.ok ? '' : inside.reason);
+    assert.equal(git(nested, 'rev-parse', '--show-toplevel'), realpathSync(nested));
+    const again = hashSource(nested);
+    assert.ok(again.ok, again.ok ? '' : again.reason);
+    assert.equal(again.manifest.digest, inside.identity.manifest.digest);
+    assert.equal(again.head, inside.identity.head);
+    assert.equal(git(nested, 'diff', '--name-only'), 'src/value.txt', 'the edit is unstaged in the snapshot, as in the checkout');
+    assert.equal(git(nested, 'diff', '--cached', '--name-only'), '');
+    assert.equal(git(origin, 'status', '--porcelain', '--ignored', '--', '.scratch'), '!! .scratch/', 'the checkout still ignores the snapshot');
   });
 
   test('records a deterministic manifest, HEAD, the index apart from the bytes, status and exclusions', () => {

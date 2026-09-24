@@ -8,10 +8,17 @@
  * times and then fails. The origin is hashed again when the run completes, so a checkout that changed
  * during the run is reported as `sourceChanged` and never as the tested bytes.
  *
- * Git runs with argument arrays and reads only. Nothing here writes to the checkout, its index or refs.
+ * The copy is its own Git work tree at the captured identity: HEAD detached at the checkout's commit,
+ * the index rebuilt from the recorded stage listing, and objects read through an alternate pointing at
+ * the checkout's object store. Git run inside a snapshot therefore sees the tested bytes. Without it, a
+ * snapshot under the checkout's ignored `.scratch/` would resolve the caller's repository, and one
+ * under `--output` would find none.
+ *
+ * Git runs with argument arrays. Nothing here writes to the checkout, its index or refs; the only
+ * repository it writes is the snapshot's own.
  */
 import { createHash } from 'node:crypto';
-import { chmodSync, lstatSync, mkdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import { type Change, type Git, dirtyPaths, git, isRepository } from './changes.ts';
@@ -66,8 +73,8 @@ export type Capture =
 
 class CaptureFailure extends Error {}
 
-function required(repository: Git, args: string[]): Buffer {
-  const result = repository.run(args);
+function required(repository: Git, args: string[], input?: Buffer): Buffer {
+  const result = repository.run(args, input);
   if (result.status !== 0) throw new CaptureFailure(`git ${args.join(' ')} failed: ${result.stderr.trim()}`);
   return result.stdout;
 }
@@ -87,7 +94,14 @@ function names(output: Buffer): string[] {
   return result;
 }
 
-type Listing = { head: string | null; index: SourceIdentity['index']; paths: string[]; submodules: Submodule[] };
+type Listing = {
+  head: string | null;
+  index: SourceIdentity['index'];
+  /** The `git ls-files --stage -z` output the index digest hashes. */
+  stage: Buffer;
+  paths: string[];
+  submodules: Submodule[];
+};
 
 function list(root: string, repository: Git): Listing {
   if (!isRepository(repository)) throw new CaptureFailure('the checkout is not a Git work tree');
@@ -110,7 +124,7 @@ function list(root: string, repository: Git): Listing {
   }
   const listed = names(required(repository, ['ls-files', '-z', '--cached', '--others', '--exclude-standard']));
   const paths = [...new Set(listed)].filter((path) => !gitlinks.has(path) && !excluded(path)).sort(compare);
-  return { head, index: { algorithm: 'sha256', digest: createHash('sha256').update(stage).digest('hex'), entries: stageEntries.length }, paths, submodules };
+  return { head, index: { algorithm: 'sha256', digest: createHash('sha256').update(stage).digest('hex'), entries: stageEntries.length }, stage, paths, submodules };
 }
 
 /** Byte order, so the manifest never depends on locale. */
@@ -160,6 +174,29 @@ export function hashSource(root: string): { ok: true; manifest: Manifest; head: 
     if (error instanceof CaptureFailure) return { ok: false, reason: error.message };
     throw error;
   }
+}
+
+/**
+ * Makes `destination` a Git work tree with the captured HEAD and index. The checkout's object store is
+ * an alternate, read and never written, so no object is copied; `.git/info/exclude` is copied so the
+ * snapshot ignores what the checkout ignores. Both identities are read back and must match.
+ */
+function initializeRepository(repository: Git, destination: string, listing: Listing): void {
+  const common = required(repository, ['rev-parse', '--path-format=absolute', '--git-common-dir']).toString('utf8').trim();
+  const snapshot = git(destination);
+  required(snapshot, ['init', '--quiet']);
+  writeFileSync(join(destination, '.git/objects/info/alternates'), `${join(common, 'objects')}\n`);
+  const exclude = join(common, 'info/exclude');
+  if (existsSync(exclude)) {
+    mkdirSync(join(destination, '.git/info'), { recursive: true });
+    copyFileSync(exclude, join(destination, '.git/info/exclude'));
+  }
+  if (listing.head) required(snapshot, ['update-ref', '--no-deref', 'HEAD', listing.head]);
+  if (listing.stage.length > 0) required(snapshot, ['update-index', '-z', '--index-info'], listing.stage);
+  const head = snapshot.run(['rev-parse', '--verify', '--quiet', 'HEAD']);
+  if ((head.status === 0 ? head.stdout.toString('utf8').trim() : null) !== listing.head) throw new CaptureFailure('the snapshot repository does not resolve the captured HEAD');
+  const stage = required(snapshot, ['ls-files', '--stage', '-z']);
+  if (!stage.equals(listing.stage)) throw new CaptureFailure('the snapshot repository does not hold the captured index');
 }
 
 export type CaptureOptions = {
@@ -222,6 +259,7 @@ export function captureSource(root: string, destination: string, options: Captur
           durationMs: performance.now() - started,
         };
       }
+      initializeRepository(repository, destination, before);
       const dirty = dirtyPaths(repository);
       const { entries: _entries, ...summary } = manifest;
       return {
