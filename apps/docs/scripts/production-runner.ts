@@ -302,10 +302,22 @@ async function runCell(browser: Browser, cell: Cell, record: CellResult, options
       if (problems.length > 0) throw new AssertionError({ message: `the page loaded with failures: ${problems.join('; ')}` });
     };
 
+    /** A navigation that never finishes is a hang, unless a failed asset or page error already explains it. */
+    const navigate = async (go: () => Promise<Response | null>, what: string) => {
+      try {
+        return await go();
+      } catch (error) {
+        const problems = assetProblems();
+        if (problems.length > 0) throw new AssertionError({ message: `${what} failed because the build is broken: ${problems.join('; ')}` });
+        if (error instanceof Error && error.name === 'TimeoutError') throw new Readiness(`${what} did not finish loading within ${limits.navigationMs}ms`);
+        throw error;
+      }
+    };
+
     const open = async (pathname: string) => {
       const url = new URL(pathname, options.baseUrl).href;
       record.url = url;
-      await ready(await live.goto(url, { waitUntil: 'load' }), pathname);
+      await ready(await navigate(() => live.goto(url, { waitUntil: 'load' }), pathname), pathname);
       if (!checkedStorage) {
         checkedStorage = true;
         record.initialStorage = (await live.evaluate(() => (window as unknown as { __ultimaInitialStorage?: { local: number; session: number } }).__ultimaInitialStorage)) ?? null;
@@ -317,7 +329,8 @@ async function runCell(browser: Browser, cell: Cell, record: CellResult, options
 
     const reload = async () => {
       if (!checkedStorage) throw new AssertionError({ message: 'reload before open: the cell has no page to reload' });
-      await ready(await live.reload({ waitUntil: 'load' }), `reloading ${new URL(live.url()).pathname}`);
+      const what = `reloading ${new URL(live.url()).pathname}`;
+      await ready(await navigate(() => live.reload({ waitUntil: 'load' }), what), what);
     };
 
     const axe = async (state: string) => {
