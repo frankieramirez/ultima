@@ -425,7 +425,7 @@ describe('executing the DAG', () => {
     const captured = captureSource(repository(), outer);
     assert.ok(captured.ok, captured.ok ? '' : captured.reason);
     const report = await runIn(outer, planOf(['typecheck']), { typecheck: passing('typecheck') });
-    assert.equal(report.source.capture.status, 'captured', report.source.capture.reason ?? undefined);
+    assert.equal(report.source.capture.status, 'captured', report.source.capture.reason ?? 'no capture reason');
     assert.equal(stateOf(report, 'typecheck')?.status, 'passed');
     assert.equal(report.status, 'passed');
   });
