@@ -1,4 +1,5 @@
 import { HandSteps } from '../hand-steps';
+import { InstallCommands } from '../install-commands';
 
 # Install
 
@@ -8,33 +9,21 @@ Ultima ships as a shadcn-compatible registry. You copy source into your project 
 
 ## Commands
 
-Vite:
-
-```bash
-npx shadcn add https://ultima.systems/r/setup-vite.json
-npx shadcn add @ultima/button
-```
-
-Next.js App Router:
-
-```bash
-npx shadcn add https://ultima.systems/r/setup-next.json
-npx shadcn add @ultima/button
-```
+<InstallCommands />
 
 The first command writes `components.json` and the StyleX compiler config. It also writes the `@ultima` registry into that file, so the second command resolves through the namespace. You never run `shadcn registry add` by hand.
 
-Add more components the same way: `npx shadcn add @ultima/card`. `registryDependencies` pulls `tokens` and `lib` transitively.
+Add more components the same way: `npx shadcn add @ultima/card`. `registryDependencies` pulls the tokens and lib items in transitively.
 
 ## What the setup item installs
 
 A setup item never overwrites a file your scaffold already owns.
 
-**Vite.** `components.json` and `ultima.vite.ts` at the project root. `ultima.vite.ts` exports `ultimaStylex()`, the StyleX unplugin with `useCSSLayers: true`, `runtimeInjection: false`, the `unstable_moduleResolution` root, and the `@/` alias. You add two lines to your own `vite.config.ts`: the import, and `ultimaStylex()` first in `plugins`. Shipping a `vite.config.ts` would destroy yours.
+**Vite.** `components.json` and `ultima.vite.ts` at the project root. The second exports `ultimaStylex()`, the StyleX unplugin set up with CSS layers on, runtime injection off, module resolution rooted at the project, and the `@/` alias. You add two lines to your own Vite config: the import, and the plugin call first in the plugin list. Shipping a Vite config of our own would destroy yours.
 
-**Next.js App Router.** `components.json`, `babel.config.js`, `postcss.config.js`, and `app/ultima.css` (the `@stylex;` marker). None of those exist in a fresh App Router app, so nothing is clobbered. Turbopack finds the Babel config on its own.
+**Next.js App Router.** `components.json`, a Babel config, a PostCSS config, and `app/ultima.css`, which holds the StyleX marker. None of those exist in a fresh App Router app, so nothing is clobbered. Turbopack finds the Babel config on its own.
 
-Both `components.json` files set `style: "base-ultima"` (the `base-` prefix enables Base UI's `render` transform), an empty `tailwind.config`, `tailwind.cssVariables: true` (`false` turns on `transformCssVars`, which rewrites string literals in installed source), flat aliases (`@/components/ui`, `@/lib`), and `registries["@ultima"]`. `rsc` is `true` for Next and `false` for Vite.
+**Both.** Each `components.json` sets the style to `base-ultima`, whose prefix enables Base UI's `render` transform. It leaves the Tailwind config empty and keeps Tailwind's CSS variables on, because turning them off enables a transform that rewrites string literals in installed source. The aliases are flat, for components and lib, and the file registers the `@ultima` namespace. React Server Components are on for Next and off for Vite.
 
 ## Steps you still do by hand
 
@@ -72,7 +61,7 @@ Components need a StyleX compiler. Tokens do not.
 
 The stable URL is `https://ultima.systems/tokens.css`. Mana's audit report fetches or vendors that file and inlines it. The `tokens-css` registry item writes the same generated stylesheet to `~/ultima-tokens.css` if you want it committed next to your source.
 
-The export is plain CSS: no `@import`, no `url()`, no remote fonts. It follows `prefers-color-scheme` on `:root` and also ships `[data-theme="dark"]` and `[data-theme="light"]` blocks so you can pin a document to one mode with an attribute on `<html>`.
+The export is plain CSS, with no imports, no URL references, and no remote fonts. It follows the system color scheme on `:root` and also ships `[data-theme="dark"]` and `[data-theme="light"]` blocks, so an attribute on the root element pins a document to one mode.
 
 ## Web components
 
