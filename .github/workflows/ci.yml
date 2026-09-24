@@ -49,3 +49,50 @@ jobs:
 
       - name: Docs build
         run: pnpm --filter @ultima/docs build
+
+  # The full production matrix on every pull request and push to main, against this job's own
+  # production docs build: docs/spec/agent-infrastructure.md, Local, PR and release policy. No path
+  # filter. `test:production` snapshots the checkout, installs, builds and runs every registered case in
+  # one run, so no build crosses a job boundary. The gate then rejects an absent report, an unavailable
+  # prerequisite, a skipped cell or a registered cell the report never planned or executed.
+  #
+  # Limits, per State, readiness and deadlines: 15 minutes for preparation and the build plus 10 for the
+  # matrix is 25; the run's deadline adds 5 for the snapshot's install. The job adds 10 for setup ahead
+  # of the run and 5 for the gate, the upload and teardown. A warm local run took 53 seconds (#464).
+  production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Chromium
+        run: pnpm --filter @ultima/docs exec playwright install --with-deps chromium
+
+      - name: Production matrix
+        run: pnpm --filter @ultima/docs test:production --output "$RUNNER_TEMP/production" --timeout 1800
+
+      - name: Production gate
+        if: ${{ !cancelled() }}
+        run: node --experimental-strip-types apps/docs/scripts/production-gate.ts "$RUNNER_TEMP/production" --head "$GITHUB_SHA"
+
+      # The report, logs and per-cell images and traces, on success and failure. The snapshot's source
+      # directory is dropped after the run and never uploaded.
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-report
+          path: |
+            ${{ runner.temp }}/production
+            !${{ runner.temp }}/production/source/**
+          if-no-files-found: warn
+          retention-days: 7

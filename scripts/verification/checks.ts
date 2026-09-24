@@ -359,6 +359,17 @@ export const CI_OBLIGATIONS: readonly { workflow: string; command: string; check
   { workflow: 'ci.yml', command: 'python3 packages/tokens/scripts/palette.py --check', checks: ['palette'] },
   { workflow: 'ci.yml', command: 'pnpm registry:build', checks: ['registry-build'] },
   { workflow: 'ci.yml', command: 'pnpm --filter @ultima/docs build', checks: ['docs-build'] },
+  { workflow: 'ci.yml', command: 'pnpm --filter @ultima/docs exec playwright install --with-deps chromium', preparation: 'the chromium the production matrix needs' },
+  {
+    workflow: 'ci.yml',
+    command: 'pnpm --filter @ultima/docs test:production --output "$RUNNER_TEMP/production" --timeout 1800',
+    checks: ['docs-build', 'production-scenarios'],
+  },
+  {
+    workflow: 'ci.yml',
+    command: 'node --experimental-strip-types apps/docs/scripts/production-gate.ts "$RUNNER_TEMP/production" --head "$GITHUB_SHA"',
+    checks: ['production-scenarios'],
+  },
   { workflow: 'smoke-install.yml', command: 'pnpm install --frozen-lockfile', preparation: 'dependency installation from the lockfile' },
   { workflow: 'smoke-install.yml', command: 'mkdir -p "$RUNNER_TEMP/smoke"', preparation: 'the TMPDIR the consumer apps land in' },
   { workflow: 'smoke-install.yml', command: 'TMPDIR="$RUNNER_TEMP/smoke" ./scripts/smoke-install.sh --keep', checks: ['consumer-smoke'] },
