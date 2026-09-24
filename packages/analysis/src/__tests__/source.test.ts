@@ -2,8 +2,10 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
+import { optimizerPolicy } from '../../../../scripts/catalogue/optimizer-policy.ts';
+import { planScaffold } from '../../../../scripts/catalogue/scaffold.ts';
 import { INCOMPLETE_MARKER } from '../rules/source.ts';
-import { fixture, located, run, source } from './support.ts';
+import { fixture, located, repository, run, source } from './support.ts';
 
 const SEPARATOR = 'packages/ui/src/separator.tsx';
 const PAGE = 'apps/docs/src/content/components/separator.mdx';
@@ -80,5 +82,35 @@ describe('ULT-SOURCE-001', () => {
     assert.deepEqual(located(run({ [PAGE]: fixture('source/marker.mdx') })), [
       { ruleId: 'ULT-SOURCE-001', file: PAGE, line: 13, column: 5, target: INCOMPLETE_MARKER },
     ]);
+  });
+
+  test('rejects every marker a real scaffold writes, and nothing else, until the author removes them', () => {
+    const request = {
+      descriptor: {
+        title: 'Ribbon',
+        description: 'A ribbon, for the checker fixture.',
+        contract: 'docs/spec/ultima.md#one-file-per-component',
+        installDocs: "import { Ribbon } from '@/components/ui/ribbon';",
+        primaryExport: 'Ribbon',
+        release: 'v0.1',
+        order: 99,
+      },
+      brief: {
+        primitive: { kind: 'native', element: 'div' },
+        shape: 'plain',
+        axes: { variant: { values: ['subtle', 'solid'], default: 'subtle' } },
+        proofBar: ['renders', 'named', 'no ring', 'plain', 'no state', 'types', 'no behavior', 'no primitive css'],
+      },
+    };
+    const plan = planScaffold(repository, 'react', 'ribbon', request, optimizerPolicy);
+    const created = Object.fromEntries(plan.create);
+    const report = run(created);
+    const marked = Object.keys(created).filter((path) => created[path]?.includes(INCOMPLETE_MARKER));
+    assert.ok(marked.length >= 4, marked.join(', '));
+    assert.ok(report.diagnostics.every((diagnostic) => diagnostic.ruleId === 'ULT-SOURCE-001' && diagnostic.target === INCOMPLETE_MARKER));
+    assert.deepEqual([...new Set(report.diagnostics.map((diagnostic) => diagnostic.file))].sort(), marked.sort());
+
+    const completed = Object.fromEntries(Object.entries(created).map(([path, text]) => [path, text.split(INCOMPLETE_MARKER).join('completed')]));
+    assert.deepEqual(located(run(completed)), []);
   });
 });

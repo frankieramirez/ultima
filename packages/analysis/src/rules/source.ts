@@ -3,6 +3,7 @@
 // catalogue; docs/spec/ultima.md, One file per component.
 import ts from 'typescript';
 
+import { INCOMPLETE_MARKER } from '../../../../scripts/catalogue/scaffold.ts';
 import type { Diagnostic } from '../diagnostic.ts';
 import { DOCS_KINDS, PRODUCTION_KINDS, type SourceKind } from '../scope.ts';
 import type { Parsed } from '../sources.ts';
@@ -14,7 +15,7 @@ const ONE_FILE = 'docs/spec/ultima.md#one-file-per-component';
 const TESTS = 'docs/spec/ultima.md#what-a-build-ticket-proves';
 const SCAFFOLD = `${INFRA}#scaffolding`;
 
-export const INCOMPLETE_MARKER = '@ultima-scaffold-incomplete';
+export { INCOMPLETE_MARKER };
 
 /** Kinds whose StyleX tables must sit at module scope: every component and element file, and the shared helpers. */
 const TABLE_KINDS: readonly SourceKind[] = ['react-component', 'react-helper', 'element'];
