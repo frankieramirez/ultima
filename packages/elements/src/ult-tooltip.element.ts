@@ -131,6 +131,8 @@ function createTooltipMachine(host: HTMLElement, open: boolean) {
     getRootNode: () => host.getRootNode(),
     defaultOpen: open,
     positioning: { placement: 'top' },
+    // The element tracks scroll itself: see UltTooltip.onScroll.
+    closeOnScroll: false,
   });
 }
 
@@ -152,10 +154,12 @@ class UltTooltip extends HTMLElement {
       this.observer = new MutationObserver(() => this.paint());
       this.observer.observe(this, { childList: true, subtree: true });
     }
+    this.ownerDocument.addEventListener('scroll', this.onScroll, { capture: true, passive: true });
     this.paint();
   }
 
   disconnectedCallback(): void {
+    this.ownerDocument.removeEventListener('scroll', this.onScroll, { capture: true });
     this.observer?.disconnect();
     this.unsubscribe?.();
     this.machine?.stop();
@@ -173,6 +177,23 @@ class UltTooltip extends HTMLElement {
       connectTooltip(this.machine.service, normalizeProps).setOpen(this.hasAttribute('open'));
     }
   }
+
+  // Zag closes on any scroll of the trigger's scroll ancestors, and a Tab that
+  // scrolls its trigger into view fires that scroll a frame after the focus that
+  // opened the tooltip (#541). A focused trigger keeps its tooltip, which follows
+  // it through the scroll; a pointer-opened tooltip still closes as Zag's does.
+  private onScroll = (event: Event): void => {
+    const machine = this.machine;
+    const state = machine?.state.get();
+    if (!machine || (state !== 'open' && state !== 'opening')) return;
+    const trigger = this.querySelector(':scope > ult-tooltip-trigger')?.firstElementChild;
+    if (!trigger) return;
+    const target = event.target instanceof Document ? event.target.documentElement : event.target;
+    if (!(target instanceof Node) || !target.contains(trigger)) return;
+    const root = trigger.getRootNode() as Document | ShadowRoot;
+    if (root.activeElement === trigger) return;
+    machine.send({ type: 'close', src: 'scroll' });
+  };
 
   private spread(target: Element | null | undefined, attrs: Attrs): void {
     if (!(target instanceof HTMLElement)) return;

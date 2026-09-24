@@ -86,16 +86,27 @@ export default productionScenario('elements.fixture-interactions', 'production',
   const copy = section.getByRole('button', { name: 'Copied to clipboard', exact: true });
   const tip = section.getByRole('tooltip', { name: 'Copied to clipboard' });
   assert.ok(!(await tip.isVisible()), 'the tooltip starts closed');
-  // The trigger is scrolled into view first, as a reader would, and reached with one Tab from the control
-  // before it. A Tab that has to scroll the trigger into view closes the tooltip it just opened: that is
-  // #541, not this obligation.
-  await copy.scrollIntoViewIfNeeded();
-  // The scroll event lands a frame after the scroll; let it pass before the trigger opens.
+  // The trigger starts out of view, so the one Tab that reaches it from the control before it also scrolls
+  // it into view. That scroll lands a frame after the focus and must not close the tooltip it opened (#541).
+  await copy.evaluate((trigger) => {
+    const { top, bottom } = trigger.getBoundingClientRect();
+    const below = top - innerHeight - 1;
+    window.scrollBy(0, scrollY + below >= 0 ? below : bottom + 1);
+  });
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  const outOfView = () => copy.evaluate((trigger) => {
+    const { top, bottom } = trigger.getBoundingClientRect();
+    return top >= innerHeight || bottom <= 0;
+  });
+  assert.ok(await outOfView(), 'the trigger starts out of view');
+  const scrollBefore = await page.evaluate(() => scrollY);
   await section.getByRole('tabpanel', { name: 'Grid' }).evaluate((panel) => (panel as HTMLElement).focus({ preventScroll: true }));
   await page.keyboard.press('Tab');
   await eventually(() => isFocused(copy), 'Tab reaches the tooltip trigger');
   await tip.waitFor({ state: 'visible' });
+  await eventually(async () => (await page.evaluate(() => scrollY)) !== scrollBefore, 'the Tab scrolls the trigger into view');
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  assert.ok(await tip.isVisible(), 'the scroll that brought the trigger into view keeps the tooltip open');
   await animationsSettle(tip, 'the tooltip finishes opening');
   const tipFill = await tip.evaluate((popup) => getComputedStyle(popup).backgroundColor);
   await assertColor(page, tipFill, await shippedColor(page, '--ult-color-surface-raised', variant.mode), 'the tooltip surface');

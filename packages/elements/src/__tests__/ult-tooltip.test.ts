@@ -17,6 +17,8 @@ import perElementBundle from '../../dist/ult-tooltip.js?raw';
  * 4. The primitive is still wired: Zag drives it — the trigger carries Zag's
  *    data-scope/data-part/id and aria-describedby only while open, hover and focus
  *    open after their delays, Escape and blur close, and touch never opens.
+ *    Scroll closes as Zag's closeOnScroll does, except while the trigger holds
+ *    focus, so a Tab that scrolls the trigger into view keeps its tooltip (#541).
  * 5. Documented state drives its style: data-state is on the styled parts, and the
  *    element-held data-ending-style covers Zag's closing window.
  * 6. Typecheck passes: the element file is covered by pnpm typecheck.
@@ -148,6 +150,76 @@ test('focus opens the tooltip and blur closes it', async () => {
   expect(document.activeElement).toBe(trigger);
   await vi.waitFor(() => expect(popup!.hasAttribute('hidden')).toBe(false), { timeout: 2000 });
   await userEvent.tab();
+  await vi.waitFor(() => expect(popup!.hasAttribute('hidden')).toBe(true), { timeout: 2000 });
+});
+
+function mountBelowFold(): { before: HTMLButtonElement; root: HTMLElement } {
+  const before = document.createElement('button');
+  before.type = 'button';
+  before.textContent = 'Before';
+  const spacer = document.createElement('div');
+  spacer.style.height = '200vh';
+  document.body.append(before, spacer);
+  return { before, root: mountTooltip() };
+}
+
+function frames(count: number): Promise<void> {
+  return new Promise((resolve) => {
+    const step = (left: number) =>
+      left === 0 ? resolve() : requestAnimationFrame(() => step(left - 1));
+    step(count);
+  });
+}
+
+test('a Tab that scrolls the trigger into view keeps the tooltip it opened (#541)', async () => {
+  const { before, root } = mountBelowFold();
+  await flush();
+  const { trigger, popup } = parts(root);
+  before.focus();
+  let scrolled = false;
+  document.addEventListener('scroll', () => (scrolled = true), { capture: true, once: true });
+  await userEvent.tab();
+  expect(document.activeElement).toBe(trigger);
+  await vi.waitFor(() => expect(popup!.hasAttribute('hidden')).toBe(false), { timeout: 2000 });
+  await vi.waitFor(() => expect(scrolled).toBe(true), { timeout: 2000 });
+  await frames(3);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  expect(popup!.hasAttribute('hidden')).toBe(false);
+  expect(popup!.getAttribute('data-state')).toBe('open');
+  window.scrollTo(0, 0);
+});
+
+test('scrolling closes a tooltip whose trigger does not hold focus', async () => {
+  const { root } = mountBelowFold();
+  await flush();
+  const { trigger, popup } = parts(root);
+  trigger!.scrollIntoView();
+  await frames(2);
+  await userEvent.hover(trigger!);
+  await vi.waitFor(() => expect(popup!.hasAttribute('hidden')).toBe(false), { timeout: 2000 });
+  expect(document.activeElement).not.toBe(trigger);
+  window.scrollBy(0, -50);
+  await vi.waitFor(() => expect(popup!.hasAttribute('hidden')).toBe(true), { timeout: 2000 });
+  await userEvent.unhover(trigger!);
+  window.scrollTo(0, 0);
+});
+
+test('scrolling a region that does not hold the trigger leaves the tooltip open', async () => {
+  const root = mountTooltip();
+  const region = document.createElement('div');
+  region.style.height = '100px';
+  region.style.overflow = 'auto';
+  region.innerHTML = '<div style="height: 400px"></div>';
+  document.body.appendChild(region);
+  await flush();
+  const { trigger, popup } = parts(root);
+  await userEvent.hover(trigger!);
+  await vi.waitFor(() => expect(popup!.hasAttribute('hidden')).toBe(false), { timeout: 2000 });
+  region.scrollTop = 50;
+  await frames(3);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  expect(popup!.hasAttribute('hidden')).toBe(false);
+  await userEvent.unhover(trigger!);
   await vi.waitFor(() => expect(popup!.hasAttribute('hidden')).toBe(true), { timeout: 2000 });
 });
 
