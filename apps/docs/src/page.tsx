@@ -46,7 +46,7 @@ export function Page({
     { label: "Install", to: "/install" },
     { label: title },
   ],
-  index = title !== "Tokens" && title !== "Palette",
+  index = true,
   children,
 }: {
   title: string;

@@ -26,6 +26,13 @@ const styles = stylex.create({
 
 const fill = stylex.create({ chip: (value: string) => ({ backgroundColor: value }) });
 
+/** The Token row's chip: a 48x20 bar beside its hex, settled on #372. */
+const inline = stylex.create({
+  root: { alignItems: 'center', flexDirection: 'row', gap: space['--ult-space-4'] },
+  chip: { flexShrink: 0, height: space['--ult-space-7'], width: space['--ult-space-11'] },
+  caption: { fontSize: text['--ult-text-2'], overflowWrap: 'anywhere' },
+});
+
 const square = stylex.create({
   chip: { display: 'block', height: space['--ult-space-9'], width: space['--ult-space-9'] },
 });
@@ -34,11 +41,28 @@ export function SwatchChip({ value }: { value: string }) {
   return <span aria-hidden {...stylex.props(styles.chip, square.chip, fill.chip(value))} />;
 }
 
-export function Swatch({ value, caption, note }: { value: string; caption: string; note?: ReactNode }) {
+/**
+ * `stacked` is the chip over its caption, the Palette ramp. `inline` is the chip beside it, the
+ * Token row, where `title` carries what the stacked `note` would.
+ */
+export function Swatch({
+  value,
+  caption,
+  note,
+  title,
+  layout = 'stacked',
+}: {
+  value: string;
+  caption: string;
+  note?: ReactNode;
+  title?: string;
+  layout?: 'stacked' | 'inline';
+}) {
+  const isInline = layout === 'inline';
   return (
-    <div {...stylex.props(styles.root)}>
-      <div aria-hidden {...stylex.props(styles.chip, fill.chip(value))} />
-      <span {...stylex.props(styles.caption)}>{caption}</span>
+    <div {...stylex.props(styles.root, isInline && inline.root)}>
+      <div aria-hidden title={title} {...stylex.props(styles.chip, isInline && inline.chip, fill.chip(value))} />
+      <span {...stylex.props(styles.caption, isInline && inline.caption)}>{caption}</span>
       {note ? <span {...stylex.props(styles.note)}>{note}</span> : null}
     </div>
   );
