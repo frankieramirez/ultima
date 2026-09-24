@@ -10,7 +10,7 @@ import { loadavg } from 'node:os';
 import { dirname, join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
-import { environment, runnerClass, sourceIdentity, type Environment, type SourceIdentity } from './identity.ts';
+import { environment, plainEnvironment, runnerClass, sourceIdentity, type Environment, type SourceIdentity } from './identity.ts';
 import { SCHEMA_VERSION, summarizeCommand, type PhaseSample, type Sample, type Series } from './protocol.ts';
 import { COLD_PATHS, RETAINED, type Phase, type Workload } from './workloads.ts';
 
@@ -53,7 +53,7 @@ function runPhase(root: string, phase: Phase, logs: string, runId: string, tmp: 
   return new Promise((done) => {
     const child = spawn(phase.argv[0]!, phase.argv.slice(1), {
       cwd: join(root, phase.cwd),
-      env: { ...process.env, TMPDIR: tmp, FORCE_COLOR: '0' },
+      env: { ...plainEnvironment(), TMPDIR: tmp },
       stdio: ['ignore', 'pipe', 'pipe'],
       detached: true,
     });

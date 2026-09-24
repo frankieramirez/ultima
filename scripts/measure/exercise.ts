@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { gzipSync } from 'node:zlib';
 
-import { environment, sha256, treeHash } from './identity.ts';
+import { environment, plainEnvironment, sha256, treeHash } from './identity.ts';
 import { SCHEMA_VERSION } from './protocol.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -150,7 +150,7 @@ function git(cwd: string, args: string[]): string {
 function run(cwd: string, argv: string[], timeoutMs: number, stdin?: string) {
   return new Promise<{ code: number | null; output: string; elapsedMs: number }>((done) => {
     const started = performance.now();
-    const child = spawn(argv[0]!, argv.slice(1), { cwd, stdio: ['pipe', 'pipe', 'pipe'], detached: true, env: { ...process.env, FORCE_COLOR: '0' } });
+    const child = spawn(argv[0]!, argv.slice(1), { cwd, stdio: ['pipe', 'pipe', 'pipe'], detached: true, env: plainEnvironment() });
     let output = '';
     child.stdout.on('data', (chunk) => (output += chunk));
     child.stderr.on('data', (chunk) => (output += chunk));

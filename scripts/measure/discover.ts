@@ -15,7 +15,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { sourceIdentity } from './identity.ts';
+import { plainEnvironment, sourceIdentity } from './identity.ts';
 import { SCHEMA_VERSION } from './protocol.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -74,7 +74,7 @@ function verify(args: string[]) {
 
 function execute(command: Command) {
   const started = performance.now();
-  const result = spawnSync(command.argv[0]!, command.argv.slice(1), { cwd: root, encoding: 'utf8', env: { ...process.env, FORCE_COLOR: '0' } });
+  const result = spawnSync(command.argv[0]!, command.argv.slice(1), { cwd: root, encoding: 'utf8', env: plainEnvironment() });
   return { argv: command.argv, exitCode: result.status, elapsedMs: performance.now() - started, tail: `${result.stdout}${result.stderr}`.slice(-800) };
 }
 
