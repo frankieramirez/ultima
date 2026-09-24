@@ -14,6 +14,7 @@ Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/a
 - `verification/` — feature and scenario records, one JSON file each; `scripts/verification/` validates them and holds the registration helpers.
 - `scripts/catalogue/` — the catalogue model and the generator for the committed wiring: `registry/items.config.ts`, `packages/ui/src/index.ts`, `apps/docs/src/generated/` and `scripts/generated/`.
 - `skills/` — Ultima's own agent skills; [`forge`](skills/forge/SKILL.md) authors and revises a component.
+- `docs/agents/` — contributor guidance for agents: the issue-tracker adapter conventions and [`canonical-examples.md`](docs/agents/canonical-examples.md), the index of validated exemplars with their contracts and proof files.
 
 ## Rules that are easy to break
 
