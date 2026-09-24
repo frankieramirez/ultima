@@ -23,6 +23,20 @@ export function bundledTokens(repository: string): string {
   return readFileSync(join(repository, 'packages/tokens/src/tokens.stylex.ts'), 'utf8');
 }
 
+/** Ultima's semantic color values in each mode, read from the shipped light and dark themes: what a token an override leaves unset resolves to. */
+export type ColorDefaults = Record<'dark' | 'light', Record<string, string>>;
+
+export function bundledColorDefaults(repository: string): ColorDefaults {
+  const text = readFileSync(join(repository, 'packages/tokens/src/themes.ts'), 'utf8');
+  const table = (name: string) => {
+    const start = text.indexOf(`export const ${name} = stylex.createTheme(color, {`);
+    const end = text.indexOf('});', start);
+    if (start === -1 || end === -1) throw new Error(`no ${name} createTheme table in packages/tokens/src/themes.ts`);
+    return Object.fromEntries([...text.slice(start, end).matchAll(/'(--ult-color-[\w-]+)': '([^']+)'/g)].map(([, token, value]) => [token as string, value as string]));
+  };
+  return { dark: table('darkTheme'), light: table('lightTheme') };
+}
+
 /** A value Ultima's own typed exceptions authorize in a component, which its installed copy keeps. */
 export type Authorized = { item: string; ruleId: string; symbol: string; target: string; selector?: string; expression?: string };
 

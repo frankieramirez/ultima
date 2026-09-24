@@ -118,6 +118,11 @@ export type Scope = {
    * whatever files a run reads, so `--files` sees the same kit as a full run.
    */
   kit?: { installed(): readonly InstalledItem[] };
+  /**
+   * Ultima's semantic color values in each mode, which a theme override's unset tokens resolve to.
+   * Only the consumer scope sets them, from the shipped themes bundled at build.
+   */
+  colorDefaults?: Readonly<Record<'dark' | 'light', Readonly<Record<string, string>>>>;
   /** Failures that keep the scope itself from being complete. */
   problems: Diagnostic[];
 };
