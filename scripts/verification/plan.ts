@@ -12,7 +12,7 @@
 import type { Files } from '../catalogue/files.ts';
 import { type Catalogue, type Diagnostic, loadCatalogue } from '../catalogue/model.ts';
 import type { Base, Change } from './changes.ts';
-import { CHECKS, type CheckDefinition, type CheckId, DEFAULT_DEADLINE_SECONDS, check } from './checks.ts';
+import { CHECKS, type CheckDefinition, type CheckId, DEFAULT_DEADLINE_SECONDS, RELEASE_PENDING, check } from './checks.ts';
 import { type Graph, type Reach, buildGraph, dependantsOf } from './graph.ts';
 import { type JoinedScenario, type VerificationDiagnostic, type VerificationModel, loadVerification } from './model.ts';
 import type { Target } from './schema.ts';
@@ -90,7 +90,8 @@ export type Plan = {
   deadline: { overallSeconds: number; source: 'default' | '--timeout' };
   output: string | null;
   /** `canPass` says only that every selected check has an adapter; a plan itself never passes. */
-  outcome: { status: 'planned'; ran: 0; passed: 0; canPass: boolean; unavailable: CheckId[]; note: string };
+  /** `pending`: release obligations no check can meet yet (checks.ts), which keep a release from passing. */
+  outcome: { status: 'planned'; ran: 0; passed: 0; canPass: boolean; unavailable: CheckId[]; pending: string[]; note: string };
 };
 
 export type PlanInput = {
@@ -727,6 +728,7 @@ export function plan(input: PlanInput): Plan {
   const checks = composeChecks(selection, release);
   const behavioral = checks.some((entry) => entry.scope !== 'global');
   const unavailable = checks.filter((entry) => entry.adapter.status === 'unavailable').map((entry) => entry.id);
+  const pending = release ? [...RELEASE_PENDING] : [];
 
   let unrelatedDirty: Plan['unrelatedDirty'] = null;
   if (mode === 'component' || mode === 'feature') {
@@ -772,12 +774,15 @@ export function plan(input: PlanInput): Plan {
       status: 'planned',
       ran: 0,
       passed: 0,
-      canPass: unavailable.length === 0,
+      canPass: unavailable.length === 0 && pending.length === 0,
       unavailable,
+      pending,
       note: `Planned only: no check ran and nothing passed. ${
         unavailable.length > 0
           ? `${unavailable.length} selected check(s) have no execution adapter yet, so no run can report ${release ? 'release ' : ''}success.`
-          : 'Every selected check has an execution adapter; only a run can pass.'
+          : pending.length > 0
+            ? `Every selected check has an execution adapter, but release success waits on ${pending.length} pending obligation(s).`
+            : 'Every selected check has an execution adapter; only a run can pass.'
       }${
         !release && !behavioral ? ' No behavioral change was selected; the common static, freshness and type checks still run.' : ''
       }`,
@@ -839,5 +844,6 @@ export function formatPlan(document: Plan): string {
   }
   lines.push(`deadline: ${document.deadline.overallSeconds}s overall (${document.deadline.source})${document.output ? `; evidence directory ${document.output} (not written by a plan)` : ''}`);
   lines.push(`outcome: planned; ran ${document.outcome.ran}, passed ${document.outcome.passed}; unavailable: ${document.outcome.unavailable.join(', ') || 'none'}`);
+  for (const obligation of document.outcome.pending) lines.push(`pending: ${obligation}`);
   return lines.join('\n');
 }

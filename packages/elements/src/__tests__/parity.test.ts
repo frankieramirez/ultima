@@ -213,7 +213,9 @@ describe.each(ELEMENTS)('$tag', (decl) => {
     expect(() => assertParity(drifted)).toThrow(/stylex tables differ|token reads differ/);
   });
 
-  test.skipIf(Object.keys(decl.axes).length === 0)('fails when an axis drifts', () => {
+  // Registered only for a family that has axes or state selectors: one with none has nothing to drift,
+  // and a skipped test in a required suite would read as missing coverage.
+  if (Object.keys(decl.axes).length > 0) test('fails when an axis drifts', () => {
     const axis = Object.keys(decl.axes)[0] as string;
     const missing = {
       ...decl,
@@ -232,7 +234,7 @@ describe.each(ELEMENTS)('$tag', (decl) => {
     expect(() => assertParity(drifted)).toThrow(/part= targets differ/);
   });
 
-  test.skipIf(Object.keys(decl.stateMap).length === 0)('fails when a state selector drifts', () => {
+  if (Object.keys(decl.stateMap).length > 0) test('fails when a state selector drifts', () => {
     const elementState = Object.values(decl.stateMap)[0] as string;
     const drifted = { ...decl, element: decl.element.replaceAll(elementState, 'data-inert') };
     expect(() => assertParity(drifted)).toThrow();

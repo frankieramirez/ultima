@@ -7,18 +7,12 @@
  * the standalone command), and turns that report into coverage: the case IDs that reached a verdict, the
  * validation failures, and the evidence paths. A missing manifest or report is incomplete.
  *
- * `docsBuildPreparation` is the bounded stand-in for the `docs-build` adapter #461 delivers: the package's
- * own `build` script (its catalogue preflight, `registry:build` and `vite build`) in the snapshot, then a
- * manifest of what it produced. It has the same interface and output path, so the production adapter
- * reads a build the same way whichever wrote it; once #461 lands, it replaces this and the standalone
- * entry stops passing it. It is not in the shared adapter map, so release plans keep `docs-build`
- * unavailable until then.
+ * The run's `docs-build` check (scripts/verification/adapters.ts) writes that manifest.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import type { Adapter, AdapterContext, AdapterReport } from '../../../scripts/verification/run.ts';
-import { createManifest } from './build-manifest.ts';
 import type { ProductionReport } from './production.ts';
 
 /** Where a run's `docs-build` check leaves its manifest, relative to the run's artifacts. */
@@ -47,29 +41,6 @@ export function runSource(context: Pick<AdapterContext, 'artifacts' | 'run'>): {
     return null;
   }
 }
-
-export const docsBuildPreparation: Adapter = {
-  async run(context) {
-    const source = runSource(context);
-    if (!source) return { verdict: 'incomplete', process: null, executed: [], reason: 'the run has no readable source manifest, so a build cannot be tied to it' };
-    const process = await context.launch(BUILD_ARGV, { cwd: '.' });
-    if (process.status !== 'exited') return { verdict: 'incomplete', process, executed: [], reason: `the build ${process.status}` };
-    if (process.exitCode !== 0) {
-      return {
-        verdict: 'validation-failure',
-        process,
-        executed: [],
-        failures: [`${BUILD_ARGV.join(' ')} exited ${process.exitCode}`],
-        reason: `the production docs build failed (exit ${process.exitCode}); its log holds the compiler or preflight output`,
-      };
-    }
-    const path = join(context.artifacts, BUILD_MANIFEST);
-    mkdirSync(join(context.artifacts, 'docs-build'), { recursive: true });
-    const manifest = createManifest({ source: context.source, root: BUILD_ROOT, sourceDigest: source.digest, head: source.head, argv: BUILD_ARGV, cwd: '.' });
-    writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
-    return { verdict: 'passed', process, executed: ['docs-build:production'], expected: ['docs-build:production'], artifacts: [relative(context.run, path)] };
-  },
-};
 
 export const productionAdapter: Adapter = {
   async run(context): Promise<AdapterReport> {

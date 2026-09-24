@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 import { memoryFiles } from '../catalogue/files.ts';
 import { execute, run } from '../verify.ts';
-import { CHECKS, CI_OBLIGATIONS, check } from './checks.ts';
+import { CHECKS, CI_OBLIGATIONS, RELEASE_PENDING, check } from './checks.ts';
 import { validFixture } from './fixture.ts';
 import { type Plan, plan, snapshot } from './plan.ts';
 
@@ -96,7 +96,12 @@ function assertPlanned(document: Plan) {
   assert.equal(document.outcome.passed, 0);
   const unavailable = document.checks.filter((entry) => check(entry.id).adapter.status === 'unavailable').map((entry) => entry.id);
   assert.deepEqual(document.outcome.unavailable, unavailable);
-  assert.equal(document.outcome.canPass, unavailable.length === 0, 'a plan can lead to a pass only when every selected check has an adapter');
+  assert.equal(
+    document.outcome.canPass,
+    unavailable.length === 0 && document.outcome.pending.length === 0,
+    'a plan can lead to a pass only when every selected check has an adapter and no release obligation is pending',
+  );
+  assert.deepEqual(document.outcome.pending, document.scope === 'release' ? [...RELEASE_PENDING] : []);
   for (const id of GLOBAL) assert.ok(checkIds(document).includes(id), `${id} runs in every executable plan`);
   for (const entry of document.checks) {
     assert.equal(entry.status, 'planned');
@@ -486,7 +491,9 @@ describe('execution without --plan', () => {
     const document = JSON.parse(output.stdout);
     assert.equal(document.status, 'incomplete');
     assert.equal(document.plan.status, 'planned');
-    assert.equal(document.plan.outcome.canPass, false);
+    // The plan could pass with every adapter registered; this run registered none, so it cannot.
+    assert.equal(document.plan.outcome.canPass, true);
+    assert.ok(document.checks.filter((entry: { status: string }) => entry.status !== 'skipped').every((entry: { status: string }) => entry.status === 'unavailable'));
     assert.deepEqual(document.plan.checks.map((entry: { id: string }) => entry.id), planOf(['component', 'button'], directory).document.checks.map((entry) => entry.id));
   });
 });
@@ -504,9 +511,10 @@ describe('the release plan', () => {
     assert.deepEqual(checkOf(document, 'docs-tests')?.cases, ['theme-studio.draft-history@docs-vitest[default]']);
     assert.deepEqual(
       document.outcome.unavailable.sort(),
-      ['consumer-smoke', 'docs-build', 'docs-tests', 'elements-tests', 'registry-build', 'ui-tests'],
-      'browser, build and install adapters have not landed, so release success is unavailable',
+      [],
+      'every check has an execution adapter',
     );
+    assert.deepEqual(document.outcome.pending, [...RELEASE_PENDING], 'the unregistered production cells keep release from passing');
     assert.equal(document.outcome.canPass, false);
   });
 

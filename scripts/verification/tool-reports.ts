@@ -271,3 +271,164 @@ export function nodeTest(lines: string, relative: (path: string) => string): Par
   if (unloaded.length > 0) return incomplete(`test(s) did not finish: ${unloaded.join('; ')}`, { expected, executed: done, skipped });
   return { verdict: 'passed', expected, executed: done, skipped };
 }
+
+/**
+ * The lines the registry pipeline prints: the token build, each element bundle with its gzip budget,
+ * and the registry build, whose stamp verification runs before its closing line. Its own failures (a
+ * contrast or token error, a bundle over budget, compiled source that kept an export, a thrown
+ * build-registry error) are validation failures. A `npx shadcn` that could not run is not one.
+ */
+export function registryLog(log: string): { executed: string[]; failures: string[] } {
+  const executed: string[] = [];
+  const failures: string[] = [];
+  const lines = log.split('\n');
+  lines.forEach((line, index) => {
+    if (/^@ultima\/tokens: wrote dist\/tokens\.css and dist\/tokens\.json /.test(line)) executed.push('build:tokens');
+    const bundle = /^@ultima\/elements: wrote dist\/(\S+)\.js \(.*?(, budget [\d.]+ KB)?\)$/.exec(line);
+    if (bundle) {
+      executed.push(`bundle:${bundle[1]}`);
+      if (bundle[2]) executed.push(`budget:${bundle[1]}`);
+    }
+    if (/^registry: built \d+ items into apps\/docs\/public\/r$/.test(line)) executed.push('registry:items and stamps');
+    if (/^@ultima\/tokens build: /.test(line) || /^@ultima\/elements build: /.test(line)) failures.push(line);
+    if (/^@ultima\/elements: dist\/\S+ is .*, over the recorded [\d.]+ KB budget$/.test(line)) failures.push(line);
+    if (/: compiled source still has exports or runtime stylex:/.test(line)) failures.push(line);
+    const thrown = /^Error: (.+)$/.exec(line);
+    if (thrown && !/^Command failed/.test(thrown[1] as string) && lines.slice(index + 1, index + 4).some((frame) => /scripts\/build-registry\.ts/.test(frame))) {
+      failures.push(`scripts/build-registry.ts: ${thrown[1]}`);
+    }
+  });
+  return { executed, failures };
+}
+
+/** `pnpm registry:build`: the token build, each family bundle and the aggregate, and the registry. */
+export function registryBuild(log: string, exitCode: number | null, families: string[]): Parsed {
+  const expected = ['build:tokens', ...families.map((family) => `bundle:${family}`), 'bundle:ultima', 'registry:items and stamps'];
+  const { executed, failures } = registryLog(log);
+  if (failures.length > 0) return { verdict: 'validation-failure', expected, executed, failures, reason: `${failures.length} registry build failure(s)` };
+  if (exitCode !== 0) return incomplete(`registry:build exited ${exitCode} without a failure the build names, such as npx shadcn failing to run`, { expected, executed });
+  return { verdict: 'passed', expected, executed };
+}
+
+/**
+ * `pnpm --filter @ultima/docs build`: the registry pipeline its script runs, then `vite build`. Vite
+ * names the mode it built for; an `error during build:` is a compile failure in the checked source.
+ */
+export function docsBuild(log: string, exitCode: number | null, families: string[]): Parsed & { mode: string | null; builder: string | null } {
+  const registry = registryBuild(log, 0, families);
+  const expected = [...(registry.expected ?? []), 'build:vite'];
+  const executed = [...registry.executed];
+  const failures = [...(registry.failures ?? [])];
+  let mode: string | null = null;
+  let builder: string | null = null;
+  const lines = log.split('\n');
+  lines.forEach((line, index) => {
+    const building = /^(vite v\S+) building (?:client environment )?for (\w+)/.exec(line);
+    if (building) {
+      builder = building[1] as string;
+      mode = building[2] as string;
+    }
+    if (/^✓ built in /.test(line)) executed.push('build:vite');
+    if (/error during build:/.test(line)) failures.push(`vite build: ${lines.slice(index + 1).find((next) => next.trim() !== '')?.trim() ?? 'failed'}`);
+  });
+  if (failures.length > 0) return { verdict: 'validation-failure', expected, executed, failures, reason: `${failures.length} docs build failure(s)`, mode, builder };
+  if (exitCode !== 0) return { ...incomplete(`the docs build exited ${exitCode} without a failure the build names`, { expected, executed }), mode, builder };
+  if (mode !== 'production') return { ...incomplete(`vite reported building for ${mode ?? 'no mode'}, not production`, { expected, executed }), mode, builder };
+  return { verdict: 'passed', expected, executed, mode, builder };
+}
+
+/** What `scripts/smoke-install.sh` prints about its own progress rather than a failed assertion. */
+const SMOKE_PROGRESS = [
+  /^serving /,
+  /^kept /,
+  /^packed /,
+  /^the catalogue is \d+ components$/,
+  /^\d+ installed files carry their item stamp$/,
+  /^status reports all \d+ installed files current$/,
+  /^diff button shows only the edit$/,
+  /^the installed Claude Code hook returns the palette finding$/,
+  /^every target passed against /,
+  /^FAILED in the \S+ target$/,
+  // The script's own server failing to start is infrastructure, not a product failure.
+  /^the static server did not start$/,
+];
+
+/** Output of a consumer's own compiler: the installed source did not build. */
+const CONSUMER_COMPILE = /error TS\d+:|Failed to compile|Type error:|error during build:|Build error occurred/;
+const NETWORK = /ENOTFOUND|EAI_AGAIN|ECONNRESET|ETIMEDOUT|ECONNREFUSED|ENETUNREACH|getaddrinfo|network request|fetch failed/i;
+
+/** The targets the smoke script runs, in order: the `<name>_target` calls at its top level. */
+export function smokeTargets(script: string): string[] {
+  return [...script.matchAll(/^([a-z]+)_target$/gm)].map((match) => match[1] as string);
+}
+
+/**
+ * `scripts/smoke-install.sh --keep` on its local path. Coverage is the local registry build, the packed
+ * CLI, the served catalogue and each target that finished; a target finishes when the next one starts
+ * or the script reports every target passed. The server URL must be the loopback one the script
+ * started itself: a `--host` run proves nothing about the snapshot. A failed assertion the script
+ * prints, or a consumer's compiler rejecting installed source, is a validation failure; a network or
+ * scaffolding failure short of one is incomplete.
+ */
+export function smoke(log: string, exitCode: number | null, targets: string[]): Parsed & { url: string | null; work: string | null } {
+  const expected = ['smoke:local registry build', 'smoke:cli packed', 'smoke:catalogue served', ...targets.map((target) => `smoke:target:${target}`)];
+  const lines = log.split('\n');
+  const served = lines.map((line) => /^smoke-install: serving (\S+)$/.exec(line)?.[1]).filter((url): url is string => url !== undefined);
+  const url = served.length === 1 ? (served[0] as string) : null;
+  const work = lines.map((line) => /^smoke-install: kept (.+)$/.exec(line)?.[1]).find((path) => path !== undefined) ?? null;
+  const at = (text: string) => (url ? text.split(url).join('$HOST') : text);
+  const executed: string[] = [];
+  const started: string[] = [];
+  let step: string | null = null;
+  const passedAgainst = lines.map((line) => /^smoke-install: every target passed against (\S+)$/.exec(line)?.[1]).find((host) => host !== undefined) ?? null;
+  for (const line of lines) {
+    const heading = /^── (.+)$/.exec(line);
+    if (heading) {
+      step = at(heading[1] as string);
+      executed.push(`smoke:step:${step}`);
+      if (step === 'building the registry') executed.push('smoke:local registry build');
+      const target = /^([a-z]+): /.exec(step)?.[1];
+      if (target && targets.includes(target) && !started.includes(target)) {
+        const previous = started.at(-1);
+        if (previous) executed.push(`smoke:target:${previous}`);
+        started.push(target);
+      }
+    }
+    if (/^smoke-install: packed ultima-systems-cli-.+\.tgz$/.test(line)) executed.push('smoke:cli packed');
+    if (/^smoke-install: the catalogue is \d+ components$/.test(line)) executed.push('smoke:catalogue served');
+  }
+  if (passedAgainst !== null && exitCode === 0) {
+    const last = started.at(-1);
+    if (last) executed.push(`smoke:target:${last}`);
+  }
+  const failedTarget = lines.map((line) => /^smoke-install: FAILED in the (\S+) target$/.exec(line)?.[1]).find((target) => target !== undefined) ?? null;
+  const assertions = lines
+    .map((line) => /^smoke-install: (.+)$/.exec(line)?.[1])
+    .filter((message): message is string => message !== undefined && !SMOKE_PROGRESS.some((pattern) => pattern.test(message)))
+    .map((message) => `${failedTarget ?? 'smoke'}: ${at(message)}`);
+  const extra = { url, work };
+  if (url === null) {
+    return { ...incomplete(served.length > 1 ? 'the smoke script reported more than one server' : 'the smoke script started no local server of its own, so it did not test this snapshot'), expected, executed, ...extra };
+  }
+  if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(url)) return { ...incomplete(`the smoke script served ${url}, not a loopback address it owns`), expected, executed, ...extra };
+  if (exitCode === 0) {
+    if (passedAgainst !== url) return { ...incomplete(`the smoke script exited 0 without reporting every target passed against ${url}`), expected, executed, ...extra };
+    return { verdict: 'passed', expected, executed, ...extra };
+  }
+  if (assertions.length > 0) return { verdict: 'validation-failure', expected, executed, failures: assertions, reason: `the ${failedTarget ?? 'smoke'} target failed an assertion`, ...extra };
+  const built = step === 'building the registry' ? registryLog(log).failures : [];
+  if (built.length > 0) return { verdict: 'validation-failure', expected, executed, failures: built, reason: 'the local registry build failed', ...extra };
+  const compile = step && /: npm run build$/.test(step) ? lines.find((line) => CONSUMER_COMPILE.test(line)) : undefined;
+  if (compile) {
+    return { verdict: 'validation-failure', expected, executed, failures: [`${failedTarget ?? 'smoke'}: the consumer build rejected installed source: ${compile.trim()}`], reason: `the ${failedTarget} consumer did not compile`, ...extra };
+  }
+  const network = lines.find((line) => NETWORK.test(line));
+  return {
+    ...incomplete(
+      `the smoke script exited ${exitCode}${failedTarget ? ` in the ${failedTarget} target` : ''}${step ? ` during "${step}"` : ''} without a failed assertion${network ? `; the network failed: ${network.trim()}` : ''}`,
+    ),
+    expected,
+    executed,
+    ...extra,
+  };
+}
