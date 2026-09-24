@@ -1,0 +1,22 @@
+{
+  "name": "@ultima/analysis",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "echo \"@ultima/analysis: source-only, run through Node's type stripping\"",
+    "test": "node --experimental-strip-types --test src/__tests__/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mdx-js/mdx": "^3.1.1",
+    "typescript": "5.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.0"
+  }
+}

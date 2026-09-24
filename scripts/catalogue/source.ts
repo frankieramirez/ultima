@@ -8,6 +8,9 @@ export type Import = {
   names: { imported: string; typeOnly: boolean }[];
   dynamic: boolean;
   line: number;
+  /** Offsets of the specifier, or of the whole `import()` call when it is dynamic. */
+  start: number;
+  end: number;
 };
 
 export type Export = {
@@ -22,7 +25,7 @@ export type Export = {
   line: number;
 };
 
-export type SourceProblem = { line: number; message: string };
+export type SourceProblem = { line: number; message: string; start?: number; end?: number };
 
 export function parse(path: string, text: string): ts.SourceFile {
   const kind = path.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
@@ -57,6 +60,8 @@ export function importsOf(file: ts.SourceFile): { imports: Import[]; problems: S
         names,
         dynamic: false,
         line: lineOf(file, node),
+        start: node.moduleSpecifier.getStart(file),
+        end: node.moduleSpecifier.getEnd(),
       });
     } else if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
       imports.push({
@@ -65,13 +70,28 @@ export function importsOf(file: ts.SourceFile): { imports: Import[]; problems: S
         names: [],
         dynamic: false,
         line: lineOf(file, node),
+        start: node.moduleSpecifier.getStart(file),
+        end: node.moduleSpecifier.getEnd(),
       });
     } else if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
       const [argument] = node.arguments;
       if (argument && ts.isStringLiteralLike(argument)) {
-        imports.push({ specifier: argument.text, typeOnly: false, names: [], dynamic: true, line: lineOf(file, node) });
+        imports.push({
+          specifier: argument.text,
+          typeOnly: false,
+          names: [],
+          dynamic: true,
+          line: lineOf(file, node),
+          start: node.getStart(file),
+          end: node.getEnd(),
+        });
       } else {
-        problems.push({ line: lineOf(file, node), message: 'a dynamic import with a computed specifier' });
+        problems.push({
+          line: lineOf(file, node),
+          message: 'a dynamic import with a computed specifier',
+          start: node.getStart(file),
+          end: node.getEnd(),
+        });
       }
     }
     ts.forEachChild(node, visit);
