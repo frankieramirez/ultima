@@ -355,6 +355,7 @@ The full `color` group in v0. Every token resolves to one step in both modes exc
 | `--ult-color-surface-raised` | mithril2 | cards, panels, popovers |
 | `--ult-color-surface-sunken` | mithril3 | wells, inputs, code blocks |
 | `--ult-color-surface-hover` | mithril4 | rows and items on hover |
+| `--ult-color-surface-active` | mithril5 | component chrome at rest, such as a scrollbar thumb |
 | `--ult-color-surface-overlay` | mithril2 at alpha `b3` dark, `cc` light | glass tiles and scrims; the one token with alpha |
 | `--ult-color-text` | mithril12 | body text |
 | `--ult-color-text-muted` | mithril11 | secondary text |
@@ -404,6 +405,7 @@ Lowest measured ratios today: `text-subtle` on `surface-hover` 4.78 dark and 4.9
 | `--ult-color-surface-raised` | `#111324` |
 | `--ult-color-surface-sunken` | `#181c33` |
 | `--ult-color-surface-hover` | `#212540` |
+| `--ult-color-surface-active` | `#313134` |
 | `--ult-color-text` | `#e3e7f7` |
 | `--ult-color-text-muted` | `#afb6d4` |
 | `--ult-color-text-subtle` | `#8990b4` |
@@ -456,6 +458,7 @@ Lowest measured ratios today: `text-subtle` on `surface-hover` 4.78 dark and 4.9
 | `--ult-color-surface-raised` | `#f7f9ff` |
 | `--ult-color-surface-sunken` | `#eff1fa` |
 | `--ult-color-surface-hover` | `#e7e9f3` |
+| `--ult-color-surface-active` | `#dcdfeb` |
 | `--ult-color-text` | `#181a24` |
 | `--ult-color-text-muted` | `#4f525e` |
 | `--ult-color-text-subtle` | `#60636f` |
@@ -891,7 +894,7 @@ Toggle, Accordion, Avatar, and Scroll Area, the four v0.2 components that share 
 
 **What Base UI leaves out is the one thing `Scrollbar` needs: a cross-axis size.** The inline style sets the bar's extent along the scroll axis and nothing across it, so an unstyled `Scrollbar` is zero pixels wide, the `Thumb` inside it is invisible, and the component appears to have no scrollbar at all. That is the first clause in its strongest form — the part does not exist visually without Ultima — and it is not the second clause, because the failure is entirely cosmetic: `thumbSize` is computed from the bar's length rather than its thickness, so the measurement, the attributes, and the drag all keep working behind a bar nobody can see.
 
-**The paint.** `Scrollbar` is space step 5 (12px) across, with space step 1 of padding, `display: flex`, and `justify-content: center`; the track is transparent. Its thickness is keyed on `':is([data-orientation="vertical"])'` and `':is([data-orientation="horizontal"])'` in one flat table, which is `separator.tsx`'s and `menubar.tsx`'s shape for a pass-through `orientation` and is **not** an axis. `Thumb` is `--ult-radius-full`, `--ult-color-border`, the matching cross-axis 100%, and a `background-color` transition over `--ult-motion-fast`. `Viewport` is the two structural declarations and the ring.
+**The paint.** `Scrollbar` is space step 5 (12px) across, with space step 1 of padding, `display: flex`, and `justify-content: center`; the track is transparent. Its thickness is keyed on `':is([data-orientation="vertical"])'` and `':is([data-orientation="horizontal"])'` in one flat table, which is `separator.tsx`'s and `menubar.tsx`'s shape for a pass-through `orientation` and is **not** an axis. `Thumb` is `--ult-radius-full`, `--ult-color-surface-active` at rest, the matching cross-axis 100%, and a `background-color` transition over `--ult-motion-fast`. `Viewport` is the two structural declarations and the ring.
 
 **One visibility mode, no `type` prop, and no `scrollHideDelay`.** The bar is visible whenever its axis overflows, and it emphasizes on `':is([data-hovering], [data-scrolling])'` by taking the thumb to `--ult-color-border-strong`. **It is a colour change and never an opacity gate**, which is the whole decision. Radix ships four modes and defaults to `hover` at 600ms, shadcn forwards that unchanged, and Base UI's own demo is a fifth mode Radix has no name for, hover-or-scrolling at `opacity: 0` with `pointer-events: none`. Ultima declines all of them on two facts rather than on taste. **`data-hovering` is never set for a touch pointer**, since Base UI excludes `pointerType === 'touch'` outright, so every hover-gated mode hides the scrollbar from every touch user at rest and shows it only during the 500ms after a scroll they have already managed without it. And **a bar at `opacity: 0` with `pointer-events: none` cannot be grabbed**, so those modes make the thumb — the component's only pointer affordance, and the reason the custom scrollbar exists at all — conditionally unusable, which is a discoverability failure dressed as restraint. Base UI's built-in behaviour is already Radix's `auto`, so this mode costs no Base UI prop and no hide CSS; the five lines that produce the fade are printed on the docs page as a `style` override for a consumer who wants it.
 

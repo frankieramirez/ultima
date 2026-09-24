@@ -77,7 +77,7 @@ HUES=['arcane','mana','verdant','ember','ruin']
 ROLE={'accent':'arcane','highlight':'mana','success':'verdant','warning':'ember','danger':'ruin'}
 def semantic(p,mode):
     m=lambda s,i:p[s][mode][i-1]
-    t={'surface':m('mithril',1),'surface-raised':m('mithril',2),'surface-sunken':m('mithril',3),'surface-hover':m('mithril',4),
+    t={'surface':m('mithril',1),'surface-raised':m('mithril',2),'surface-sunken':m('mithril',3),'surface-hover':m('mithril',4),'surface-active':m('mithril',5),
        'text':m('mithril',12),'text-muted':m('mithril',11),'text-subtle':m('mithril',10),'text-inverse':m('mithril',1),
        'border':m('mithril',6),'border-strong':m('mithril',8),'border-focus':m('arcane',9)}
     for role,s in ROLE.items():
