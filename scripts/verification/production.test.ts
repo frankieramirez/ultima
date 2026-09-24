@@ -71,8 +71,8 @@ const painted: Cell['run'] = async ({ page, open, axe }) => {
 async function runOn(root: string, cells: Cell[], extra: Partial<RunnerOptions> = {}) {
   const server = await startStaticServer({ root, nonce: 'n', manifestDigest: 'd' });
   const evidence = mkdtempSync(join(scratch, 'evidence-'));
-  try {
-    const result = await runCells({
+  const run = () =>
+    runCells({
       baseUrl: server.url,
       cells,
       evidence,
@@ -83,6 +83,10 @@ async function runOn(root: string, cells: Cell[], extra: Partial<RunnerOptions> 
       limits: { conditionMs: 1500, cellMs: 20_000 },
       ...extra,
     });
+  try {
+    let result = await run();
+    // A browser that never launches or dies before any cell runs is infrastructure, not a verdict; retry once.
+    if (result.cells.every((c) => /^the browser (could not launch|disconnected)/.test(c.failure?.message ?? ''))) result = await run();
     return { result, evidence, requests: server.requests };
   } finally {
     await server.close();
@@ -240,7 +244,7 @@ describe('the runner', () => {
     const broken = site();
     rmSync(join(broken, 'assets/app.js'));
     const { result, requests } = await runOn(broken, [cell('fixture.paint@production[dark]', painted)]);
-    assert.equal(result.status, 'failed');
+    assert.equal(result.status, 'failed', `${result.cells[0]?.failure?.kind}: ${result.cells[0]?.failure?.message}; browser=${result.browser.error}`);
     assert.equal(result.cells[0]?.failure?.kind, 'validation');
     assert.match(result.cells[0]?.failure?.message ?? '', /GET \/assets\/app\.js: 404/);
     assert.deepEqual(requests.filter((r) => r.path === '/assets/app.js').map((r) => [r.status, r.file]), [[404, null]]);
