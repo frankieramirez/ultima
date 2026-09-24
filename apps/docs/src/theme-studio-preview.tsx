@@ -14,6 +14,7 @@ import {
   Meter,
   Popover,
   Progress,
+  Separator,
   Spinner,
   Stat,
   Switch,
@@ -105,23 +106,35 @@ const styles = stylex.create({
     flexBasis: 0,
     flexDirection: 'column',
     flexGrow: 1,
-    gap: space['--ult-space-6'],
     minBlockSize: 0,
     minInlineSize: 0,
     position: 'relative',
   },
-  sheet: {
+  // The preview canvas: one framed surface per pane, drawn from the draft theme.
+  canvas: {
     backgroundColor: color['--ult-color-surface'],
     borderColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     color: color['--ult-color-text'],
+    display: 'flex',
+    flexDirection: 'column',
     flexGrow: 1,
     fontFamily: font['--ult-font-sans'],
     minBlockSize: 0,
+    overflow: 'hidden',
+  },
+  // The scene box owns the canvas height above the strip and is the only part that scrolls.
+  sheet: {
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+    minBlockSize: 0,
     overflow: 'auto',
   },
+  // Auto margins centre a short scene and fall to zero once it overflows, so nothing clips.
+  centred: { flexShrink: 0, marginBlock: 'auto' },
   scene: {
     display: 'flex',
     flexDirection: 'column',
@@ -277,10 +290,6 @@ const styles = stylex.create({
   inspectInline: { display: 'inline-flex' },
   specimen: {
     backgroundColor: color['--ult-color-surface-raised'],
-    borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-md'],
-    borderStyle: 'solid',
-    borderWidth: border.hairline,
     color: color['--ult-color-text'],
     display: 'grid',
     flexShrink: { default: 1, [breakpoints.RAIL]: 0 },
@@ -478,12 +487,15 @@ function PreviewPane({
       role="region"
       style={{ ...pane.style, ...previewVars(table) } as CSSProperties}
     >
-      <div data-preview-scene={scene} {...stylex.props(styles.sheet)}>
-        <div {...stylex.props(scene === 'workspace' ? styles.app : styles.scene)}>
-          <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />
+      <div data-preview-canvas {...stylex.props(styles.canvas)}>
+        <div data-preview-scene={scene} {...stylex.props(styles.sheet)}>
+          <div {...stylex.props(scene === 'workspace' ? styles.app : styles.scene, styles.centred)}>
+            <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />
+          </div>
         </div>
+        <Separator />
+        <SpecimenStrip inspect={inspect} mode={mode} />
       </div>
-      <SpecimenStrip inspect={inspect} mode={mode} />
     </div>
   );
 }
