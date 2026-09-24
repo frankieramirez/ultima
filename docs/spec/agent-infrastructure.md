@@ -345,6 +345,8 @@ Delete the synthetic component after the exercise and prove regeneration leaves 
 
 Decided on [Verification CLI: selection, failure behavior, and evidence contract](https://github.com/frankieramirez/ultima/issues/438). This section specifies tooling to implement. Existing package commands and CI remain in use until the implementation passes the acceptance cases below.
 
+Planning shipped with [Plan conservative verification coverage](https://github.com/frankieramirez/ultima/issues/458): `component`, `feature`, `changed` and `release` accept `--plan`, the check DAG and its CI mapping live in `scripts/verification/checks.ts`, and `scripts/verification/plan.test.ts` proves selection on fixture repositories. No execution adapter exists yet, so every planned check is `unavailable`, a mode without `--plan` exits 3, and no run can report success.
+
 ### Commands and discovery
 
 Expose `scripts/verify.ts` as `pnpm verify`. Use the repository's supported Node runtime and TypeScript execution convention. Keep selection and planning pure, with execution adapters for the existing checks.
@@ -383,6 +385,8 @@ Use the catalogue model selected in the metadata decision, source import analysi
 | Unmapped path or unresolved dependency | Full release plan with the path and fallback reason recorded. |
 
 Start with full-repository architecture and catalogue freshness checks plus `pnpm typecheck` in every executable mode. Narrow browser suites and scenarios only when their discovery proves complete coverage of the affected set. A selector adapter must report discovered test/scenario IDs and the IDs it actually ran. An absent expected suite is incomplete verification. When a current suite has no supported selector, run that entire suite and record the expansion. Never rely on a filename substring or zero-test success as selection proof.
+
+The planner draws a few lines the table leaves open. Docs chrome, a global stylesheet or a served asset renders on every route, so a change to one selects every production scenario; a route table reached only through its imports does not. A reached Vitest binding selects that target's cases, not the scenario's production cells. A test file that reads the file system, fetches or names a served URL cannot be narrowed by imports and joins every run of its suite. Prose under `docs/`, root Markdown and agent configuration select only the common checks, which own their links and anchors; `docs/spec/ultima.md` feeds the registry and agent guide, so it selects release. Metadata that cannot be read leaves ownership unknown and selects release; other catalogue findings keep the scope and are listed for the freshness check to fail on.
 
 A component/feature mode selects that named scope; it does not imply coverage of unrelated dirty files. Report dirty paths outside the selected scope and recommend `changed` or `release`. Full CI runs the complete release policy independently of local selectors. There is no user skip option that can turn a required check into a pass.
 
@@ -531,7 +535,7 @@ Before switching CI to required, reconcile each scenario with the current docs U
 
 ## Executable feature map
 
-Decided on [Executable feature map: scenario ownership and discovery](https://github.com/frankieramirez/ultima/issues/440). This section specifies contributor tooling to implement. Discovery and reproduction commands below are planned until their adapters and validation ship. The records, the registration helpers in `scripts/verification/` and the read-only `pnpm verify list` (with `--search`) and `pnpm verify describe` shipped with [Register scenarios and expose discovery](https://github.com/frankieramirez/ultima/issues/457), covering the `dialog` and `theme-studio` pilot. The execution modes still report `unavailable`, and the production bindings under `apps/docs/tests/production/` are authored but have not executed.
+Decided on [Executable feature map: scenario ownership and discovery](https://github.com/frankieramirez/ultima/issues/440). This section specifies contributor tooling to implement. Discovery and reproduction commands below are planned until their adapters and validation ship. The records, the registration helpers in `scripts/verification/` and the read-only `pnpm verify list` (with `--search`) and `pnpm verify describe` shipped with [Register scenarios and expose discovery](https://github.com/frankieramirez/ultima/issues/457), covering the `dialog` and `theme-studio` pilot. The execution modes resolve plans with `--plan` since [Plan conservative verification coverage](https://github.com/frankieramirez/ultima/issues/458) and otherwise report `unavailable`, and the production bindings under `apps/docs/tests/production/` are authored but have not executed.
 
 ### Ownership and storage
 

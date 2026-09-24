@@ -39,7 +39,8 @@ Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/a
 | `pnpm check:architecture` | The static architecture check: source layout, import boundaries, primitive sources, token values, the styling engine, the public `style`-slot API and registry metadata. `--format json` for the versioned report. Exit 1 on a violation, 2 on an invalid or incomplete run. |
 | `pnpm catalogue:check` | Fail on stale generated wiring or an invalid feature map, read-only. `dev`, `build`, `test`, `typecheck` and `registry:build` run it first. |
 | `pnpm scaffold <kind> <id> --from <request.json>` | Plan a React, element or recipe item as a dry run; `--write` creates its files, never over existing ones, and regenerates the wiring. |
-| `pnpm verify list [--search <text>]` | Discover features, scenarios and catalogue items, read-only. `describe scenario <id>` and `describe feature <id>` give owners, routes, steps and commands. Execution modes report `unavailable`. |
+| `pnpm verify list [--search <text>]` | Discover features, scenarios and catalogue items, read-only. `describe scenario <id>` and `describe feature <id>` give owners, routes, steps and commands. |
+| `pnpm verify component\|feature\|changed\|release --plan [--json]` | The ordered check plan for a scope, read-only: selection with reasons, prerequisites, locks and deadlines. `changed` defaults to `--base origin/main`, never fetches, and broadens to release when the base or a dependency is unknown. Reports `planned`, never a pass; without `--plan` a mode exits 3 as `unavailable`. |
 | `python3 packages/tokens/scripts/palette.py` | Regenerate `palette.json`; `--check` fails on a hand edit. |
 
 ## Agent skills

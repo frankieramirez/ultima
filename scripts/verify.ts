@@ -1,11 +1,12 @@
 /**
  * `pnpm verify`, per Verification CLI and Executable feature map in docs/spec/agent-infrastructure.md.
- * This slice ships the read-only discovery commands, `list` (with `--search`) and `describe`. They
- * derive the feature map afresh from the records, the catalogue and the bindings in source, launch no
- * process and load no application or test module. The execution modes are planned and report
- * `unavailable` with exit 3 until their adapters land; they never report a pass.
+ * The read-only discovery commands, `list` (with `--search`) and `describe`, derive the feature map
+ * afresh from the records, the catalogue and the bindings in source, launch no process and load no
+ * application or test module. The execution modes resolve a verification plan; `--plan` prints it and
+ * exits 0 with status `planned`. Only Git runs, to read the change set, and no check process starts.
+ * Without `--plan` a mode reports `unavailable` with exit 3 until its adapters land; it never passes.
  *
- * Exits: 0 discovery succeeded, 1 malformed records, 2 usage or an unknown ID, 3 unavailable mode.
+ * Exits: 0 discovery or a plan, 1 malformed records, 2 usage or an unknown ID, 3 unavailable execution.
  */
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
@@ -13,6 +14,8 @@ import { fileURLToPath } from 'node:url';
 
 import { formatDiagnostics, loadCatalogue } from './catalogue/model.ts';
 import { TARGET_DIRECTORIES } from './verification/bindings.ts';
+import { type Change, changedPaths, commitFiles, dirtyPaths, git, resolveBase } from './verification/changes.ts';
+import { CHECKS, DEFAULT_DEADLINE_SECONDS } from './verification/checks.ts';
 import {
   type ItemSummary,
   type JoinedFeature,
@@ -24,6 +27,7 @@ import {
   loadVerification,
   repositoryFiles,
 } from './verification/model.ts';
+import { type Mode, type Snapshot, ambiguous, formatPlan, plan, snapshot } from './verification/plan.ts';
 import type { Target } from './verification/schema.ts';
 import { type Candidate, search } from './verification/search.ts';
 
@@ -36,16 +40,27 @@ Discovery (available, read-only):
   describe scenario <id> [--json]        owner, routes, fixtures, steps, variants, bindings and commands
   describe feature <id> [--json]         owner, contract, sources, scenarios and supporting suites
 
-Execution (planned, unavailable in this build; exits 3):
-  component <id>...   feature <id>...   changed --base <ref>   release
+Planning (available with --plan; execution is unavailable in this build and exits 3):
+  component <id>... [--plan]             catalogue items of any kind; the descriptor kind decides coverage
+  feature <id>... [--plan]               registered features, with every scenario case and supporting suite
+  changed [--base <ref>] [--plan]        merge base..HEAD plus staged, unstaged and untracked paths;
+                                         --base defaults to origin/main and is never fetched
+  release [--plan]                       every check, every whole suite and every registered scenario
 
-Exits: 0 discovered, 1 malformed records, 2 usage or unknown ID, 3 unavailable mode.`;
+Options for the planning modes:
+  --plan               resolve and print the ordered check plan; nothing runs and nothing passes
+  --json               one versioned JSON document on stdout
+  --timeout <seconds>  the overall deadline; default ${DEFAULT_DEADLINE_SECONDS}s. Per-check deadlines:
+                       ${CHECKS.map((entry) => `${entry.id} ${entry.deadlineSeconds}s`).join(', ')}
+  --output <dir>       a new or empty evidence directory for an executed run; a plan writes nothing
+
+Exits: 0 discovered or planned, 1 malformed records, 2 usage or unknown ID, 3 unavailable execution.`;
 
 const UNAVAILABLE: Record<string, string> = {
-  component: 'planning lands with #458 and execution with #460',
-  feature: 'planning lands with #458 and execution with #460',
-  changed: 'planning lands with #458 and execution with #460',
-  release: 'planning lands with #458; the full release gate needs every adapter through #464',
+  component: '`--plan` resolves it; execution lands with #459 and #460',
+  feature: '`--plan` resolves it; execution lands with #459 and #460',
+  changed: '`--plan` resolves it; execution lands with #459 and #460',
+  release: '`--plan` resolves it; the full release gate needs every adapter through #464',
 };
 
 class UsageError extends Error {}
@@ -217,7 +232,7 @@ function modes() {
   return [
     { mode: 'list', status: 'available' },
     { mode: 'describe', status: 'available' },
-    ...Object.entries(UNAVAILABLE).map(([mode, note]) => ({ mode, status: 'unavailable', note })),
+    ...Object.entries(UNAVAILABLE).map(([mode, note]) => ({ mode, status: 'plan-only', note })),
   ];
 }
 
@@ -277,6 +292,90 @@ function humanFeature(document: ReturnType<typeof featureDocument>): string {
 
 type Output = { exit: number; stdout: string; stderr: string };
 
+type PlanOptions = { selectors: string[]; planOnly: boolean; base: string; timeoutSeconds?: number; output?: string };
+
+function planOptions(mode: Mode, rest: string[]): PlanOptions {
+  const options: PlanOptions = { selectors: [], planOnly: false, base: 'origin/main' };
+  const value = (option: string, index: number) => {
+    const next = rest[index + 1];
+    if (next === undefined || next.startsWith('-')) throw new UsageError(`${option} needs a value`);
+    return next;
+  };
+  for (let index = 0; index < rest.length; index += 1) {
+    const argument = rest[index] as string;
+    if (argument === '--plan') options.planOnly = true;
+    else if (argument === '--base' && mode === 'changed') options.base = value(argument, index++);
+    else if (argument === '--timeout') {
+      const seconds = value(argument, index++);
+      if (!/^[1-9][0-9]*$/.test(seconds)) throw new UsageError(`--timeout takes a positive whole number of seconds, not "${seconds}"`);
+      options.timeoutSeconds = Number(seconds);
+    } else if (argument === '--output') options.output = value(argument, index++);
+    else if (argument.startsWith('-')) {
+      throw new UsageError(`unknown option "${argument}" for ${mode}; it takes ${mode === 'changed' ? '--base <ref>, ' : ''}--plan, --json, --timeout <seconds> and --output <dir>`);
+    } else options.selectors.push(argument);
+  }
+  if ((mode === 'changed' || mode === 'release') && options.selectors.length > 0) {
+    throw new UsageError(`${mode} takes no IDs; got ${options.selectors.join(' ')}`);
+  }
+  return options;
+}
+
+/** Everything but binary assets, which no model reads. */
+const readable = (path: string) => !/\.(png|jpe?g|gif|webp|avif|ico|woff2?|ttf|otf|pdf|zip|pen)$/i.test(path);
+
+function planMode(mode: Mode, rest: string[], root: string, out: (document: object, human: string, exit?: number) => Output): Output {
+  const options = planOptions(mode, rest);
+  const { files, read } = recording(repositoryFiles(root));
+  const current: Snapshot = snapshot(files);
+  const named = mode === 'component' || mode === 'feature';
+  const unreadable = ambiguous(current);
+  if (named && unreadable.length > 0) {
+    return out(
+      { command: mode, status: 'invalid', diagnostics: unreadable, sourceManifest: manifest(files, [...read]) },
+      `verify: the catalogue or feature map cannot be read, so ${mode} IDs cannot be resolved\n${unreadable.map((d) => `  ${d.code} ${d.path}: ${d.message}`).join('\n')}`,
+      1,
+    );
+  }
+  if (named) {
+    const choices = mode === 'component' ? current.model.items.map((item) => item.id) : current.model.features.map((f) => f.id);
+    if (options.selectors.length === 0) throw new UsageError(`${mode} needs at least one ID; available: ${choices.join(', ')}`);
+    const unknown = options.selectors.filter((id) => !choices.includes(id));
+    if (unknown.length > 0) throw new UsageError(`unknown ${mode} ID ${unknown.map((id) => `"${id}"`).join(', ')}; available: ${choices.join(', ')}`);
+  }
+
+  const repository = git(root);
+  const input: Parameters<typeof plan>[0] = { mode, selectors: options.selectors, current, timeoutSeconds: options.timeoutSeconds, output: options.output };
+  if (mode === 'changed') {
+    let baseInfo = resolveBase(repository, options.base);
+    let changes: Change[] = [];
+    const { mergeBase } = baseInfo;
+    if (mergeBase && !baseInfo.fallback) {
+      const listed = changedPaths(repository, mergeBase);
+      if ('failure' in listed) baseInfo = { ...baseInfo, fallback: listed.failure };
+      else changes = listed.changes;
+      const baseFiles = commitFiles(repository, mergeBase, readable);
+      input.base = 'failure' in baseFiles ? baseFiles : snapshot(baseFiles);
+    } else {
+      const local = dirtyPaths(repository);
+      if (!('failure' in local)) changes = local.changes;
+    }
+    Object.assign(input, { baseInfo, changes });
+  } else if (named) {
+    const dirty = dirtyPaths(repository);
+    input.dirty = 'failure' in dirty ? dirty : dirty.changes;
+  }
+
+  const document = plan(input);
+  const sourceManifest = manifest(files, [...read]);
+  if (options.planOnly) return out({ ...document, sourceManifest }, formatPlan(document));
+  const note = UNAVAILABLE[mode] as string;
+  return out(
+    { command: mode, status: 'unavailable', selectors: options.selectors, note, plan: document, sourceManifest },
+    `verify ${mode}: unavailable in this build (${note}). Nothing ran and nothing passed. The plan it would run:\n${formatPlan(document)}`,
+    3,
+  );
+}
+
 function dispatch(argv: string[], root: string): Output {
   const json = argv.includes('--json');
   const args = argv.filter((arg) => arg !== '--json');
@@ -290,6 +389,8 @@ function dispatch(argv: string[], root: string): Output {
   if (mode === undefined || mode === '--help' || mode === '-h' || rest.includes('--help')) {
     return out({ command: 'help', status: 'help', modes: modes() }, USAGE);
   }
+
+  if (mode in UNAVAILABLE) return planMode(mode as Mode, rest, root, out);
 
   const { model, catalogueDiagnostics, diagnostics, sourceManifest } = discover(root);
   const invalid: (VerificationDiagnostic | { code: string; path: string; message: string })[] = [...catalogueDiagnostics, ...diagnostics];
@@ -351,6 +452,7 @@ function dispatch(argv: string[], root: string): Output {
         })),
       })),
       items: model.items.map((item) => ({ id: item.id, kind: item.kind, title: item.title, registration: registrationOf(model, item).status })),
+      checks: CHECKS.map((entry) => ({ id: entry.id, title: entry.title, scope: entry.scope, selector: entry.selector, adapter: entry.adapter })),
     };
     const human = [
       `features (${document.features.length}):`,
@@ -361,6 +463,8 @@ function dispatch(argv: string[], root: string): Output {
       ...[...new Set(document.items.map((item) => item.kind))].map(
         (kind) => `  ${kind}: ${document.items.filter((item) => item.kind === kind).map((item) => item.id).join(', ')}`,
       ),
+      `checks (${document.checks.length}):`,
+      ...document.checks.map((c) => `  ${c.id} — ${c.title} [${c.scope}, selects ${c.selector === 'file' ? 'test files' : 'the whole check'}; adapter ${c.adapter.status}]`),
       'modes:',
       ...document.modes.map((m) => `  ${m.mode}: ${m.status}${'note' in m ? ` (${m.note})` : ''}`),
       `source manifest: ${sourceManifest.algorithm} ${sourceManifest.digest} over ${sourceManifest.files} files`,
@@ -383,19 +487,6 @@ function dispatch(argv: string[], root: string): Output {
     if (!feature) throw new UsageError(`unknown feature "${id}"; available: ${model.features.map((f) => f.id).join(', ')}`);
     const document = featureDocument(model, feature);
     return out({ command: 'describe', status: 'discovered', type, feature: document, sourceManifest }, humanFeature(document));
-  }
-
-  if (mode in UNAVAILABLE) {
-    const ids = rest.filter((arg) => !arg.startsWith('--'));
-    const choices = mode === 'component' ? model.items.map((item) => item.id) : mode === 'feature' ? model.features.map((f) => f.id) : [];
-    if ((mode === 'component' || mode === 'feature') && ids.length === 0) throw new UsageError(`${mode} needs at least one ID; available: ${choices.join(', ')}`);
-    const unknown = ids.filter((id) => (mode === 'component' || mode === 'feature') && !choices.includes(id));
-    if (unknown.length > 0) throw new UsageError(`unknown ${mode} ID ${unknown.map((id) => `"${id}"`).join(', ')}; available: ${choices.join(', ')}`);
-    return out(
-      { command: mode, status: 'unavailable', selectors: ids, note: UNAVAILABLE[mode] },
-      `verify ${mode}: unavailable in this build (${UNAVAILABLE[mode]}). Nothing ran and nothing passed.`,
-      3,
-    );
   }
 
   throw new UsageError(`unknown command "${mode}"\n${USAGE}`);
