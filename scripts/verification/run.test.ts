@@ -303,6 +303,17 @@ describe('executing the DAG', () => {
     assert.equal(stateOf(report, 'typecheck')?.status, 'unavailable', 'no adapter wins over its blocked prerequisite');
   });
 
+  test('a check whose prerequisite has no adapter is blocked before preparation, so it costs no install', async () => {
+    const report = await runIn(repository(), planOf(['docs-build', 'production-scenarios']), { 'production-scenarios': passing('x') }, {
+      preparation: { argv: [process.execPath, '-e', 'process.exit(9)'], deadlineSeconds: 30 },
+    });
+    assert.equal(report.exit, EXIT.incomplete);
+    assert.equal(stateOf(report, 'docs-build')?.status, 'unavailable');
+    assert.deepEqual([stateOf(report, 'production-scenarios')?.status, stateOf(report, 'production-scenarios')?.blockedBy], ['blocked', ['docs-build']]);
+    assert.match(stateOf(report, 'production-scenarios')?.reason ?? '', /which cannot run/);
+    assert.equal(report.preparation.status, 'not_run', 'the install that would fail never started');
+  });
+
   test('a missing prerequisite makes its check unavailable and is recorded', async () => {
     const report = await runIn(repository(), planOf(['palette']), { palette: passing('x') }, { probes: { python3: async () => 'python3 is not on PATH' } });
     assert.equal(report.exit, EXIT.incomplete);

@@ -504,8 +504,8 @@ describe('the release plan', () => {
     assert.deepEqual(checkOf(document, 'docs-tests')?.cases, ['theme-studio.draft-history@docs-vitest[default]']);
     assert.deepEqual(
       document.outcome.unavailable.sort(),
-      ['consumer-smoke', 'docs-build', 'docs-tests', 'elements-tests', 'production-scenarios', 'registry-build', 'ui-tests'],
-      'browser, build, install and production adapters have not landed, so release success is unavailable',
+      ['consumer-smoke', 'docs-build', 'docs-tests', 'elements-tests', 'registry-build', 'ui-tests'],
+      'browser, build and install adapters have not landed, so release success is unavailable',
     );
     assert.equal(document.outcome.canPass, false);
   });

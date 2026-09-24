@@ -42,7 +42,7 @@ describe('pnpm verify list', () => {
       document.modes.filter((m: { status: string }) => m.status === 'available').map((m: { mode: string }) => m.mode),
       ['list', 'describe'],
     );
-    assert.ok(document.checks.some((c: { id: string; adapter: { status: string } }) => c.id === 'production-scenarios' && c.adapter.status === 'unavailable'));
+    assert.ok(document.checks.some((c: { id: string; adapter: { status: string } }) => c.id === 'production-scenarios' && c.adapter.status === 'available'));
   });
 
   test('derives the same model twice', () => assert.deepEqual(json(['list']).document, json(['list']).document));

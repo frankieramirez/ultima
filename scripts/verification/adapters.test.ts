@@ -103,11 +103,11 @@ async function runAdapter(id: CheckId, source: string, changes: Partial<PlannedC
 }
 
 describe('the adapter registry', () => {
-  test('registers exactly the checks the table marks available, and nothing browser, build, install or production', () => {
+  test('registers exactly the checks the table marks available: static, type, unit and production, nothing browser, build or install', () => {
     const available = CHECKS.filter((entry) => entry.adapter.status === 'available').map((entry) => entry.id);
     assert.deepEqual(Object.keys(ADAPTERS).sort(), [...available].sort());
-    assert.deepEqual(available.sort(), ['analysis-fixtures', 'architecture', 'catalogue-freshness', 'cli-tests', 'palette', 'tokens-tests', 'tooling-tests', 'typecheck']);
-    for (const id of ['ui-tests', 'elements-tests', 'docs-tests', 'registry-build', 'docs-build', 'consumer-smoke', 'production-scenarios'] as CheckId[]) {
+    assert.deepEqual(available.sort(), ['analysis-fixtures', 'architecture', 'catalogue-freshness', 'cli-tests', 'palette', 'production-scenarios', 'tokens-tests', 'tooling-tests', 'typecheck']);
+    for (const id of ['ui-tests', 'elements-tests', 'docs-tests', 'registry-build', 'docs-build', 'consumer-smoke'] as CheckId[]) {
       assert.equal(check(id).adapter.status, 'unavailable', id);
     }
   });

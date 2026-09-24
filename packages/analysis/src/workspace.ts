@@ -53,7 +53,7 @@ const CLASSES: readonly [RegExp, SourceKind][] = [
   [/^registry\/metadata\/.+\.ts$/, 'metadata'],
   [/^registry\/static\//, 'setup-template'],
   [/^scripts\/.+\.ts$/, 'tooling'],
-  [/^packages\/[^/]+\/scripts\/.+\.ts$/, 'tooling'],
+  [/^(apps|packages)\/[^/]+\/scripts\/.+\.ts$/, 'tooling'],
   [/^packages\/(analysis|cli)\/src\/.+\.ts$/, 'tooling'],
   [/^packages\/analysis\/exceptions\.ts$/, 'tooling'],
   [/^(apps|packages)\/[^/]+\/(vite|vitest)\.config\.ts$/, 'tooling'],

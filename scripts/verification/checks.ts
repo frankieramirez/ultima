@@ -6,8 +6,9 @@
  * this table and runs nothing.
  *
  * The static, type, palette and non-browser suites have adapters (scripts/verification/adapters.ts,
- * #460). The rest are `unavailable` until the build slice their `lands` field names delivers them, so no
- * plan that selects one can report a pass.
+ * #460), and so do the production scenarios (#462), which wait on `docs-build`. The rest are
+ * `unavailable` until the build slice their `lands` field names delivers them, so no plan that selects
+ * one can report a pass.
  */
 
 export type CheckId =
@@ -72,7 +73,7 @@ export type CheckDefinition = {
 
 const STATIC = { status: 'available', since: '#460 (static, type and unit checks)' } as const;
 const BROWSER = { status: 'unavailable', lands: '#461 (browser, build and install checks)' } as const;
-const PRODUCTION = { status: 'unavailable', lands: '#462 (Dialog and Studio pilot) and #463 (the full matrix)' } as const;
+const PRODUCTION = { status: 'available', since: '#462 (Dialog and Studio pilot); #463 completes the matrix' } as const;
 
 const FRESHNESS: CheckId[] = ['catalogue-freshness'];
 /** The read-only checks every writer waits for. */
@@ -129,8 +130,9 @@ export const CHECKS: readonly CheckDefinition[] = [
     cwd: '.',
     nested: [],
     prerequisites: FRESHNESS,
-    locks: [],
-    needs: [],
+    // The production runner's fixture cells launch the locked Chromium on a loopback server.
+    locks: ['browser'],
+    needs: ['chromium', 'loopback-port'],
     deadlineSeconds: 600,
     scope: 'scoped',
     selector: 'none',

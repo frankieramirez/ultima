@@ -48,7 +48,9 @@ Discovery (available, read-only):
 
 Planning and execution (a run captures the checkout and runs in .scratch/verify/<run-id>/. The
 architecture, freshness, typecheck, palette, tooling, checker, tokens and CLI checks execute; browser,
-build, install and production checks are unavailable until #461 to #463, so a run selecting one exits 3):
+build and install checks are unavailable until #461, and the production scenarios, which have an adapter,
+wait on docs-build, so a run selecting one exits 3; \`pnpm --filter @ultima/docs test:production\` runs the
+registered production cases on their own):
   component <id>... [--plan]             catalogue items of any kind; the descriptor kind decides coverage
   feature <id>... [--plan]               registered features, with every scenario case and supporting suite
   changed [--base <ref>] [--plan]        merge base..HEAD plus staged, unstaged and untracked paths;
