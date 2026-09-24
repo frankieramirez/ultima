@@ -3,6 +3,7 @@ const NEUTRAL: Record<string, string> = {
   'surface-raised': 'cards, panels, popovers',
   'surface-sunken': 'wells, inputs, code blocks',
   'surface-hover': 'rows and items on hover',
+  'surface-active': 'component chrome at rest, such as a scrollbar thumb',
   'surface-overlay': 'glass tiles and scrims; the one token with alpha',
   text: 'body text',
   'text-muted': 'secondary text',

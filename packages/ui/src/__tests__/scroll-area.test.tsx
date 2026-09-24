@@ -1,5 +1,6 @@
 import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
 import * as stylex from '@stylexjs/stylex';
+import { color } from '@ultima/tokens/tokens.stylex';
 import { ScrollArea, type ScrollAreaThumbProps } from '@ultima/ui';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
@@ -9,6 +10,8 @@ const styles = stylex.create({
   bound: { blockSize: '9rem', inlineSize: '18rem' },
   tall: { blockSize: '36rem' },
   wide: { inlineSize: '36rem', blockSize: '36rem' },
+  surfaceActive: { backgroundColor: color['--ult-color-surface-active'] },
+  border: { backgroundColor: color['--ult-color-border'] },
 });
 
 const themes = [
@@ -190,3 +193,26 @@ test('the thumb type exposes the style slot and no className', () => {
   expectTypeOf<ScrollAreaThumbProps>().not.toHaveProperty('className');
   expectTypeOf<ScrollAreaThumbProps>().toHaveProperty('style');
 });
+
+for (const mode of themes) {
+  test(`the resting thumb paints surface-active and the bar never hides in ${mode.name}`, async () => {
+    const screen = await render(
+      <div {...stylex.props(mode.theme, mode.scheme)}>
+        <Sample />
+        <div data-testid="surface-active" {...stylex.props(styles.surfaceActive)} />
+        <div data-testid="border" {...stylex.props(styles.border)} />
+      </div>,
+    );
+    const thumb = (await waitForPart(screen, 'thumb')) as HTMLElement;
+    const scrollbar = screen.getByTestId('scrollbar').element();
+    expect(scrollbar.hasAttribute('data-hovering')).toBe(false);
+    expect(scrollbar.hasAttribute('data-scrolling')).toBe(false);
+
+    const surfaceActive = getComputedStyle(screen.getByTestId('surface-active').element()).backgroundColor;
+    const border = getComputedStyle(screen.getByTestId('border').element()).backgroundColor;
+    expect(surfaceActive).not.toBe(border);
+    await expect.poll(() => getComputedStyle(thumb).backgroundColor).toBe(surfaceActive);
+    expect(getComputedStyle(scrollbar).opacity).toBe('1');
+    expect(getComputedStyle(scrollbar).visibility).toBe('visible');
+  });
+}

@@ -132,6 +132,7 @@ function colorTable(scales: ReturnType<typeof generateScales>, mode: ColorMode):
     '--ult-color-surface-raised': m('mithril', 2),
     '--ult-color-surface-sunken': m('mithril', 3),
     '--ult-color-surface-hover': m('mithril', 4),
+    '--ult-color-surface-active': m('mithril', 5),
     '--ult-color-text': m('mithril', 12),
     '--ult-color-text-muted': m('mithril', 11),
     '--ult-color-text-subtle': m('mithril', 10),

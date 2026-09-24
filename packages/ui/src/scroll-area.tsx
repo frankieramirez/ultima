@@ -18,9 +18,6 @@ const styles = stylex.create({
     },
   },
   scrollbar: {
-    opacity: { default: 0, ':is([data-hovering], [data-scrolling])': 1 },
-    transitionDuration: motion['--ult-motion-fast'],
-    transitionProperty: 'opacity',
     blockSize: { default: null, ':is([data-orientation="horizontal"])': space['--ult-space-5'] },
     display: 'flex',
     flexDirection: { default: null, ':is([data-orientation="horizontal"])': 'column' },
@@ -30,7 +27,7 @@ const styles = stylex.create({
   },
   thumb: {
     backgroundColor: {
-      default: color['--ult-color-border'],
+      default: color['--ult-color-surface-active'],
       [stylex.when.ancestor(':is([data-hovering], [data-scrolling])')]: color['--ult-color-border-strong'],
     },
     blockSize: { default: null, ':is([data-orientation="horizontal"])': '100%' },

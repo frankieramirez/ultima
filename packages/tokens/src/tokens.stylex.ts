@@ -177,6 +177,7 @@ export const color = stylex.defineVars({
   '--ult-color-surface-raised': { default: mithril.dark2, [LIGHT]: mithril.light2 },
   '--ult-color-surface-sunken': { default: mithril.dark3, [LIGHT]: mithril.light3 },
   '--ult-color-surface-hover': { default: mithril.dark4, [LIGHT]: mithril.light4 },
+  '--ult-color-surface-active': { default: mithril.dark5, [LIGHT]: mithril.light5 },
   '--ult-color-surface-overlay': { default: `${mithril.dark2}b3`, [LIGHT]: `${mithril.light2}cc` },
   '--ult-color-text': { default: mithril.dark12, [LIGHT]: mithril.light12 },
   '--ult-color-text-muted': { default: mithril.dark11, [LIGHT]: mithril.light11 },
