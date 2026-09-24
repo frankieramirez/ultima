@@ -3,5 +3,5 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": ["scripts", "registry/items.config.ts"]
+  "include": ["scripts", "registry/items.config.ts", "registry/metadata"]
 }

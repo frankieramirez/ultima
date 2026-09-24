@@ -90,6 +90,8 @@ const indicators = stylex.create({
 });
 
 const VARIANTS = ['underline', 'segmented'] as const;
+const ORIENTATIONS = ['horizontal', 'vertical'] as const;
+const DIRECTIONS = ['ltr', 'rtl'] as const;
 
 let uid = 0;
 
@@ -299,10 +301,10 @@ class UltTabs extends UltTabsPart {
     return {
       id: this.scopeId,
       defaultValue: this.getAttribute('value') ?? this.firstEnabledValue(),
-      orientation: this.getAttribute('orientation') === 'vertical' ? 'vertical' : 'horizontal',
+      orientation: pick(this.getAttribute('orientation'), ORIENTATIONS, 'horizontal'),
       activationMode: list?.hasAttribute('activate-on-focus') ? 'automatic' : 'manual',
       loopFocus: list?.getAttribute('loop-focus') !== 'false',
-      dir: pick(this.getAttribute('dir'), ['ltr', 'rtl'] as const, 'ltr'),
+      dir: pick(this.getAttribute('dir'), DIRECTIONS, 'ltr'),
       // getById needs a Document; the host's own root node is just the host
       // once it is detached, and queued machine work can outlive connection.
       getRootNode: () => this.ownerDocument,
