@@ -220,6 +220,71 @@ test('seven scene tabs show one scene at a time in each pane', async () => {
   expect(readAccent(light)).toBe(tables.light['--ult-color-accent']);
 });
 
+function canvasParts(pane: Element) {
+  const canvas = pane.querySelector<HTMLElement>('[data-preview-canvas]')!;
+  const sheet = canvas.querySelector<HTMLElement>('[data-preview-scene]')!;
+  return {
+    canvas,
+    sheet,
+    scene: sheet.firstElementChild as HTMLElement,
+    separator: canvas.querySelector<HTMLElement>('[role="separator"]')!,
+    strip: canvas.querySelector<HTMLElement>('[data-preview-specimen]')!,
+  };
+}
+
+test('the preview pane is a canvas: a short scene centres and the strip docks at its foot', async () => {
+  await page.viewport(1440, 900);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('tab', { name: 'Motion' }).element());
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  await expect.poll(() => pane.querySelector('[data-preview-scene="motion"]')).not.toBeNull();
+  const { canvas, sheet, scene, separator, strip } = canvasParts(pane);
+
+  expect(separator).not.toBeNull();
+  const box = sheet.getBoundingClientRect();
+  const body = scene.getBoundingClientRect();
+  const rule = separator.getBoundingClientRect();
+  const foot = strip.getBoundingClientRect();
+  expect(Math.abs(box.bottom - rule.top)).toBeLessThanOrEqual(1);
+  expect(Math.abs(rule.bottom - foot.top)).toBeLessThanOrEqual(1);
+  expect(Math.abs(canvas.getBoundingClientRect().bottom - foot.bottom)).toBeLessThanOrEqual(2);
+  // Spare height is matting on both sides of the scene, not a void under it.
+  expect(body.top - box.top).toBeGreaterThan(40);
+  expect(Math.abs(body.top - box.top - (box.bottom - body.bottom))).toBeLessThanOrEqual(2);
+});
+
+test('a tall scene scrolls inside the canvas while the strip stays docked', async () => {
+  await page.viewport(1440, 900);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  await expect.element(screen.getByRole('heading', { name: 'Forma' })).toBeVisible();
+  const { sheet, scene, strip } = canvasParts(pane);
+
+  expect(sheet.scrollHeight).toBeGreaterThan(sheet.clientHeight);
+  expect(scene.getBoundingClientRect().top).toBe(sheet.getBoundingClientRect().top);
+  const before = strip.getBoundingClientRect().top;
+  sheet.scrollTop = sheet.scrollHeight;
+  await expect.poll(() => sheet.scrollTop).toBeGreaterThan(0);
+  expect(strip.getBoundingClientRect().top).toBe(before);
+});
+
+test('compare aligns both scenes and both hairlines across the panes', async () => {
+  await page.viewport(1440, 900);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('tab', { name: 'Motion' }).element());
+  await userEvent.click(screen.getByRole('button', { name: 'Compare' }).element());
+  const dark = canvasParts(screen.getByRole('region', { name: 'Dark preview' }).element());
+  const light = canvasParts(screen.getByRole('region', { name: 'Light preview' }).element());
+
+  expect(dark.scene.getBoundingClientRect().top).toBe(light.scene.getBoundingClientRect().top);
+  expect(dark.scene.getBoundingClientRect().bottom).toBe(light.scene.getBoundingClientRect().bottom);
+  expect(dark.separator.getBoundingClientRect().top).toBe(light.separator.getBoundingClientRect().top);
+  expect(readToken(dark.separator, '--ult-color-border')).not.toBe(readToken(light.separator, '--ult-color-border'));
+});
+
 test('the workspace scene is an application mock and the specimen strip sits below it', async () => {
   const screen = await mount('/theme-studio');
   const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
@@ -654,6 +719,20 @@ test('every editor control is a catalogue component, including Color Field seeds
   }
   await expect.element(screen.getByRole('combobox', { name: 'Sans family' })).toBeVisible();
   await expect.element(screen.getByRole('combobox', { name: 'Mono family' })).toBeVisible();
+});
+
+test('the hue and saturation sliders are named by an aria-hidden mono header with no tab stop', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  await expect.element(screen.getByRole('slider', { name: 'Accent hue' })).toBeVisible();
+  const headers = [...editor.querySelectorAll<HTMLElement>('[data-seed-header]')];
+
+  expect(headers.map((header) => header.firstElementChild?.textContent)).toEqual(['HUE', 'SAT']);
+  for (const header of headers) {
+    expect(header).toHaveAttribute('aria-hidden', 'true');
+    expect(header.querySelector('a, button, input, [tabindex]')).toBeNull();
+    expect(getComputedStyle(header).fontFamily).not.toBe(getComputedStyle(editor).fontFamily);
+  }
 });
 
 test('token override rows are linked by default and a committed edit writes both modes', async () => {

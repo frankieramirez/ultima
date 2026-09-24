@@ -81,9 +81,19 @@ const styles = stylex.create({
   hexRow: { alignItems: 'center', display: 'flex', gap: space['--ult-space-4'] },
   hexInput: { flexGrow: 1, minInlineSize: 0 },
   seed: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-3'] },
-  seedHead: { display: 'flex', fontSize: text['--ult-text-3'], justifyContent: 'space-between' },
-  seedLabel: { color: color['--ult-color-text-muted'] },
-  seedValue: { fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'] },
+  // The mono micro-label voice names each slider once; the thumb's own label carries it for assistive tech.
+  seedHead: {
+    alignItems: 'baseline',
+    display: 'flex',
+    fontFamily: font['--ult-font-mono'],
+    justifyContent: 'space-between',
+  },
+  seedLabel: {
+    color: color['--ult-color-text-subtle'],
+    fontSize: text['--ult-text-1'],
+    letterSpacing: font['--ult-font-tracking-wide'],
+  },
+  seedValue: { fontSize: text['--ult-text-2'] },
   preset: { display: 'flex', flexWrap: 'wrap' },
   group: { display: { default: 'none', [breakpoints.RAIL]: 'flex' }, flexDirection: 'column', flexShrink: 0 },
   groupActive: { display: 'flex' },
@@ -242,7 +252,7 @@ function SeedSlider({
 }) {
   return (
     <div {...stylex.props(styles.seed)}>
-      <div {...stylex.props(styles.seedHead)}>
+      <div aria-hidden data-seed-header {...stylex.props(styles.seedHead)}>
         <span {...stylex.props(styles.seedLabel)}>{label}</span>
         <span {...stylex.props(styles.seedValue)}>
           {value}
@@ -340,7 +350,7 @@ function ColorControls({
           </ColorField.Portal>
         </ColorField.Root>
         <SeedSlider
-          label="Hue"
+          label="HUE"
           max={359}
           name={`${role} hue`}
           onChange={patch(update, 'hue')}
@@ -349,7 +359,7 @@ function ColorControls({
           value={seed.hue}
         />
         <SeedSlider
-          label="Saturation"
+          label="SAT"
           max={150}
           name={`${role} saturation`}
           onChange={patch(update, 'saturation')}
