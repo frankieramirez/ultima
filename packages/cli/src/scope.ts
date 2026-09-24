@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 
-import { CONSUMER_RULES, type Classified, POLICY, type Resolution, STYLE_POLICY, type Scope, type SourceKind } from '@ultima/analysis/consumer';
+import { CONSUMER_RULES, type Classified, type InstalledItem, POLICY, type Resolution, STYLE_POLICY, type Scope, type SourceKind } from '@ultima/analysis/consumer';
 import ts from 'typescript';
 
 import { type Files, diskFiles } from '../../../scripts/catalogue/files.ts';
@@ -15,6 +15,7 @@ import { readStamp } from './stamp.ts';
 declare const __ULTIMA_CATALOGUE__: { item: string; folder: 'ui' | 'lib'; name: string }[];
 declare const __ULTIMA_TOKENS__: string;
 declare const __ULTIMA_AUTHORIZED__: NonNullable<Scope['authorized']>;
+declare const __ULTIMA_KIT__: Omit<InstalledItem, 'specifier'>[];
 
 export type ConsumerScope = Scope & {
   root: string;
@@ -145,6 +146,22 @@ export function consumerScope(
     BUNDLED_TOKENS,
   ];
 
+  // Every installed React item, found in `aliases.ui` whatever files the run reads, in catalogue order.
+  let kit: InstalledItem[] | undefined;
+  const installed = () => {
+    if (kit) return kit;
+    const found = new Map<string, string>();
+    for (const name of existsSync(directories.ui as string) ? readdirSync(directories.ui as string) : []) {
+      if (!SOURCE.test(name) || TEST.test(name)) continue;
+      const item = itemOf(toScope(join(directories.ui as string, name)));
+      if (item !== undefined && !found.has(item)) found.set(item, `${aliases.ui}/${name.replace(SOURCE, '')}`);
+    }
+    return (kit = __ULTIMA_KIT__.flatMap((entry) => {
+      const specifier = found.get(entry.item);
+      return specifier === undefined ? [] : [{ ...entry, specifier }];
+    }));
+  };
+
   let built: { inventory: Classified[]; skipped: ConsumerScope['skipped'] } | undefined;
   const build = () => {
     if (built) return built;
@@ -195,6 +212,7 @@ export function consumerScope(
     anchors: () => undefined,
     rules: CONSUMER_RULES,
     authorized: __ULTIMA_AUTHORIZED__,
+    kit: { installed },
     problems: [],
   };
 }

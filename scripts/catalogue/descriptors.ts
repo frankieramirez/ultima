@@ -145,6 +145,16 @@ const attribute: Check = (value, where) => {
   return problems;
 };
 
+const pattern =
+  (shape: RegExp, what: string): Check =>
+  (value, where) =>
+    typeof value === 'string' && shape.test(value) ? [] : [`${where} is not ${what}`];
+
+const replaces = object({
+  elements: { check: list(pattern(/^[a-z][a-z0-9]*(\[type=[a-z-]+\])?$/, 'a tag or input[type=<type>]')), optional: true },
+  roles: { check: list(pattern(/^[a-z]+$/, 'an ARIA role')), optional: true },
+});
+
 const common: Fields = {
   id: { check: text },
   kind: { check: oneOf(...KINDS) },
@@ -161,6 +171,7 @@ const FIELDS: Record<Kind, Fields> = {
     primaryExport: { check: text },
     release: { check: text },
     order: { check: integer },
+    replaces: { check: replaces, optional: true },
   },
   element: {
     ...common,

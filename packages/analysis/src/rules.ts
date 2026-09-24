@@ -91,6 +91,16 @@ export const APP_RULES = {
     scope: 'Paint in consumer stylex.create and stylex.keyframes tables and literal JSX style objects',
     link: `${SITE}/tokens`,
   },
+  'ULT-APP-PRIMITIVE-001': {
+    status: 'advisory',
+    scope: 'Consumer imports of a Base UI primitive an installed item wraps',
+    link: `${SITE}/components`,
+  },
+  'ULT-APP-CONTROL-001': {
+    status: 'advisory',
+    scope: 'Native controls and interactive roles in consumer JSX where an installed item provides the control',
+    link: `${SITE}/components`,
+  },
   'ULT-APP-SUPPRESSION-001': {
     status: 'advisory',
     scope: 'ultima-check-ignore comments in consumer code',
@@ -99,6 +109,11 @@ export const APP_RULES = {
 } as const satisfies Record<string, Omit<RuleStatus, 'id'>>;
 
 export type AppRuleId = keyof typeof APP_RULES;
+
+/** An installed item's component page, which states the contract its primitive and control findings point at. */
+export function componentPage(item: string): string {
+  return `${SITE}/components/${item}`;
+}
 
 export function ruleStatuses(): RuleStatus[] {
   return Object.entries(RULES).map(([id, rule]) => ({ id, ...rule }));

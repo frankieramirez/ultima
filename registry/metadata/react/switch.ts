@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Switch',
   release: 'v0',
   order: 14,
+  replaces: { roles: ['switch'] },
 } satisfies ReactDescriptor;

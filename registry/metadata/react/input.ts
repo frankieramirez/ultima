@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Input',
   release: 'v0',
   order: 13,
+  replaces: { elements: ['input[type=text]', 'input[type=email]', 'input[type=password]', 'input[type=search]', 'input[type=tel]', 'input[type=url]', 'input[type=number]'], roles: ['textbox', 'searchbox'] },
 } satisfies ReactDescriptor;

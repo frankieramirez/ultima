@@ -11,10 +11,17 @@ import type { Scope } from './scope.ts';
 // nothing of the workspace scope or the MDX pipeline, which it never loads.
 export type { Diagnostic, RuleStatus, Unsupported } from './diagnostic.ts';
 export { POLICY, STYLE_POLICY } from './policy.ts';
-export type { Classified, Resolution, Scope, SourceKind } from './scope.ts';
+export type { Classified, InstalledItem, Resolution, Scope, SourceKind } from './scope.ts';
 
 /** The rule IDs a consumer scope enables. No contributor family ever runs in a consumer's repository. */
-export const CONSUMER_RULES = ['ULT-APP-PALETTE-001', 'ULT-APP-PAINT-001', 'ULT-APP-SUPPRESSION-001', 'ULT-ANALYSIS-001'] as const;
+export const CONSUMER_RULES = [
+  'ULT-APP-PALETTE-001',
+  'ULT-APP-PAINT-001',
+  'ULT-APP-PRIMITIVE-001',
+  'ULT-APP-CONTROL-001',
+  'ULT-APP-SUPPRESSION-001',
+  'ULT-ANALYSIS-001',
+] as const;
 
 export type ConsumerReport = {
   command: 'check';

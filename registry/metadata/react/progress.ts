@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Progress',
   release: 'v0.1',
   order: 11,
+  replaces: { elements: ['progress'], roles: ['progressbar'] },
 } satisfies ReactDescriptor;

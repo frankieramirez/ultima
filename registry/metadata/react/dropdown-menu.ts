@@ -10,4 +10,5 @@ export default {
   primaryExport: 'DropdownMenu',
   release: 'v0',
   order: 11,
+  replaces: { roles: ['menu', 'menuitem', 'menuitemcheckbox', 'menuitemradio'] },
 } satisfies ReactDescriptor;

@@ -60,6 +60,18 @@ export type TypeInputs = {
 /** A staged module a production file may import through its package specifier, and the item that stages it. */
 export type Staged = { item: string; kind: 'token-source' | 'react-helper' | 'react-component'; specifier: string };
 
+/** An installed React item: the Base UI primitives it wraps and the native elements and roles it replaces. */
+export type InstalledItem = {
+  item: string;
+  /** The specifier the project imports it by, such as `@/components/ui/select`. */
+  specifier: string;
+  primaryExport: string;
+  primitives: readonly string[];
+  /** Tags, or `input[type=<type>]`. */
+  elements: readonly string[];
+  roles: readonly string[];
+};
+
 export type Scope = {
   name: string;
   files: Files;
@@ -100,6 +112,12 @@ export type Scope = {
    * because the consumer chose where the item lives. Only the consumer scope sets them.
    */
   authorized?: readonly { item: string; ruleId: string; symbol: string; target: string; selector?: string; expression?: string }[];
+  /**
+   * The React items this project has installed, from the item metadata the consumer CLI bundles, and
+   * the specifier each is imported by. Only the consumer scope sets it. It holds every installed item
+   * whatever files a run reads, so `--files` sees the same kit as a full run.
+   */
+  kit?: { installed(): readonly InstalledItem[] };
   /** Failures that keep the scope itself from being complete. */
   problems: Diagnostic[];
 };

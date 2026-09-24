@@ -183,10 +183,10 @@ function checkSurfaces(context: Context, parsed: Parsed, segment: Segment): void
 // ---------------------------------------------------------------------------------------------------
 // ULT-DOCS-002 and ULT-DOCS-REVIEW-001
 
-type Imported = { specifier: string; imported: string };
+export type Imported = { specifier: string; imported: string };
 
 /** Each local import binding in the file, across an MDX page's ESM blocks. */
-function importMap(parsed: Parsed): Map<string, Imported> {
+export function importMap(parsed: Parsed): Map<string, Imported> {
   const map = new Map<string, Imported>();
   for (const segment of parsed.segments) {
     for (const statement of segment.file.statements) {
@@ -239,7 +239,7 @@ function isUltimaComponent(context: Context, parsed: Parsed, tag: string, import
   return false;
 }
 
-function tagText(name: ts.JsxTagNameExpression): string | undefined {
+export function tagText(name: ts.JsxTagNameExpression): string | undefined {
   if (ts.isIdentifier(name)) return name.text;
   if (ts.isPropertyAccessExpression(name)) {
     const owner = tagText(name.expression as ts.JsxTagNameExpression);
@@ -249,7 +249,7 @@ function tagText(name: ts.JsxTagNameExpression): string | undefined {
   return undefined;
 }
 
-const intrinsic = (tag: string) => /^[a-z]/.test(tag) && !tag.includes('.');
+export const intrinsic = (tag: string) => /^[a-z]/.test(tag) && !tag.includes('.');
 
 /** Frames a render value may pass through between the element and the attribute it is handed to. */
 function passes(node: ts.Node): boolean {
@@ -266,7 +266,7 @@ function passes(node: ts.Node): boolean {
 }
 
 /** The component a native element is handed to through `render`, when it is handed to one. */
-function renderOwner(element: ts.Node, attribute: Parsed['attributes'][number] | undefined): string | null | undefined {
+export function renderOwner(element: ts.Node, attribute: Parsed['attributes'][number] | undefined): string | null | undefined {
   let current: ts.Node = element;
   for (let parent = current.parent; parent; current = parent, parent = parent.parent) {
     if (passes(parent)) continue;
@@ -285,12 +285,12 @@ function renderOwner(element: ts.Node, attribute: Parsed['attributes'][number] |
   return undefined;
 }
 
-function attributeNamed(attributes: ts.JsxAttributes, name: string): ts.JsxAttribute | undefined {
+export function attributeNamed(attributes: ts.JsxAttributes, name: string): ts.JsxAttribute | undefined {
   return attributes.properties.find((property): property is ts.JsxAttribute => ts.isJsxAttribute(property) && ts.isIdentifier(property.name) && property.name.text === name);
 }
 
 /** A literal attribute value; null for a bare attribute; undefined for an expression that does not resolve. */
-function attributeValue(attribute: ts.JsxAttribute): string | null | undefined {
+export function attributeValue(attribute: ts.JsxAttribute): string | null | undefined {
   const initializer = attribute.initializer;
   if (!initializer) return null;
   if (ts.isStringLiteral(initializer)) return initializer.text;
@@ -304,7 +304,7 @@ function attributeValue(attribute: ts.JsxAttribute): string | null | undefined {
   return undefined;
 }
 
-const firstRole = (value: string) => value.trim().split(/\s+/)[0] ?? '';
+export const firstRole = (value: string) => value.trim().split(/\s+/)[0] ?? '';
 
 function checkControls(context: Context, parsed: Parsed, segment: Segment, index: number, imports: Map<string, Imported>): void {
   const { file, shift } = segment;

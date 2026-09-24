@@ -165,6 +165,13 @@ describe('descriptor shape and identity', () => {
   test('rejects a missing field', () => {
     expectDiagnostic(edit(BUTTON, (v) => delete v.primaryExport), 'invalid-descriptor', 'descriptor.primaryExport is missing');
   });
+  test('rejects a replaced element that is neither a tag nor one input type', () => {
+    expectDiagnostic(
+      edit(BUTTON, (v) => (v.replaces = { elements: ['input[type=text'], roles: ['button'] })),
+      'invalid-descriptor',
+      'descriptor.replaces.elements[0] is not a tag or input[type=<type>]',
+    );
+  });
   test('rejects a non-integer order', () => expectDiagnostic(edit(BUTTON, (v) => (v.order = 1.5)), 'invalid-descriptor', 'not an integer'));
   test('rejects a kind filed under another kind', () => {
     expectDiagnostic({ 'registry/metadata/element/button.ts': validFixture()[BUTTON], [BUTTON]: undefined }, 'invalid-descriptor', 'sits under element/');

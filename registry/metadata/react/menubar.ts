@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Menubar',
   release: 'v0.2',
   order: 8,
+  replaces: { roles: ['menubar'] },
 } satisfies ReactDescriptor;

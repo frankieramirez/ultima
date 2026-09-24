@@ -158,10 +158,13 @@ const REPOSITORY = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 
 /**
  * Every staged source written where shadcn installs it, its imports rewritten to the default aliases
- * as the registry build and shadcn do together: the whole catalogue, as a consumer owns it.
+ * as the registry build and shadcn do together: the whole catalogue, as a consumer owns it, or only
+ * the named items with the tokens and lib they build on.
  */
-export function installCatalogue(root: string, directories: { ui: string; lib: string }): string {
-  for (const { source, staged } of stagedSources(diskFiles(REPOSITORY)).sources) {
+export function installCatalogue(root: string, directories: { ui: string; lib: string }, only?: string[]): string {
+  const items = only && new Set(['tokens', 'lib', ...only]);
+  for (const { item, source, staged } of stagedSources(diskFiles(REPOSITORY)).sources) {
+    if (items && !items.has(item)) continue;
     const text = readFileSync(join(REPOSITORY, source), 'utf8')
       .replace(/(['"])@ultima\/(tokens|ui\/lib)\//g, '$1@/lib/')
       .replace(/(['"])@ultima\/ui\//g, '$1@/components/ui/');

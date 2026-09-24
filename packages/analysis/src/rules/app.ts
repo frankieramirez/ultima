@@ -1,6 +1,6 @@
 // The consumer rules `check` runs over a consumer scope: docs/spec/ultima.md, Consumer CLI, Check.
 // ULT-APP-PALETTE-001: no palette reads. ULT-APP-PAINT-001: paint reads a semantic token or a value the
-// contributor grammar allows, and arrangement is free. Styling the checker cannot read is listed as
+// contributor grammar allows, and arrangement is free. The kit rules are in kit.ts. Styling the checker cannot read is listed as
 // unsupported analysis, never a pass and never a finding. Every rule here is file-local.
 import ts from 'typescript';
 
@@ -11,6 +11,7 @@ import { APP_RULES, CHECK_SPEC } from '../rules.ts';
 import type { Parsed } from '../sources.ts';
 import { type Evaluator, type TokenGroup, createEvaluator, declarationOf, declarationsOf, groupsIn, tokenModel, topLevelName, unwrap } from '../stylex.ts';
 import type { Context } from './context.ts';
+import { checkKit } from './kit.ts';
 
 /** Paint is color, shadow, radius, border width and the type scale; everything else is arrangement. */
 const PAINT: readonly CategoryId[] = [
@@ -80,6 +81,7 @@ export function checkApp(context: Context, skipped: Skipped): void {
       inlineStyles(context, parsed, file, evaluator, skip);
     }
     unreadStyling(context, path, file, skip);
+    checkKit(context, parsed, file);
   }
 }
 

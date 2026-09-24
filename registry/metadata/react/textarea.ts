@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Textarea',
   release: 'v0.1',
   order: 5,
+  replaces: { elements: ['textarea'] },
 } satisfies ReactDescriptor;
