@@ -2,9 +2,10 @@
  * Execution adapters, keyed by check ID, per Check composition under Verification CLI in
  * docs/spec/agent-infrastructure.md. The static, type, palette and non-browser suites run here (#460):
  * architecture, catalogue freshness, typecheck, the tooling and checker fixtures, the palette gate and
- * the tokens and CLI suites. Browser, build and install adapters land with #461 and production scenarios
- * with #462 and #463; until then the runner reports those checks `unavailable` and no run that selects
- * one can pass.
+ * the tokens and CLI suites. The production scenarios run through `apps/docs/scripts/production-adapter.ts`
+ * (#462; #463 completes the matrix) after `docs-build`. Browser, build and install adapters land with
+ * #461; until then the runner reports those checks `unavailable`, the production check `blocked`, and no
+ * run that selects one can pass.
  *
  * Each adapter runs the check's existing command from its argument array in the snapshot, adding only
  * what makes the tool write a machine-readable report (`--format json`, `--json`, a reporter, `-v`),
@@ -21,6 +22,7 @@ import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from '
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { productionAdapter } from '../../apps/docs/scripts/production-adapter.ts';
 import { CI_OBLIGATIONS, type CheckId } from './checks.ts';
 import type { ProcessResult } from './process.ts';
 import type { Adapter, AdapterContext, AdapterReport, Adapters } from './run.ts';
@@ -282,4 +284,5 @@ export const ADAPTERS: Adapters = {
   palette: paletteAdapter,
   'tokens-tests': vitestSuite(),
   'cli-tests': vitestSuite(),
+  'production-scenarios': productionAdapter,
 };

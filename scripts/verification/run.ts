@@ -552,7 +552,21 @@ export async function executeRun(options: RunOptions): Promise<Report> {
     entry.status = 'unavailable';
     entry.reason = `missing prerequisite: ${absent.map((need) => missing.get(need)).join('; ')}`;
   }
+  // A check whose prerequisite cannot run is blocked now, so it never costs a dependency install.
   const executable = runnable.filter((check) => (records.get(check.id) as CheckRecord).status === 'not_run');
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const check of [...executable]) {
+      const doomed = check.prerequisites.filter((prerequisite) => selected.has(prerequisite) && !executable.some((entry) => entry.id === prerequisite));
+      if (doomed.length === 0) continue;
+      const entry = records.get(check.id) as CheckRecord;
+      entry.status = 'blocked';
+      entry.blockedBy = doomed;
+      entry.reason = `blocked by ${doomed.map((prerequisite) => `${prerequisite} (${records.get(prerequisite)?.status})`).join(', ')}, which cannot run`;
+      executable.splice(executable.indexOf(check), 1);
+      changed = true;
+    }
+  }
 
   const env = childEnvironment(runId, paths.source, tmp);
   const preparation = options.preparation ?? PREPARATION;

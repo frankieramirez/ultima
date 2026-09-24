@@ -23,3 +23,9 @@ description: How to run and end-to-end test the Ultima docs site (apps/docs) whe
 - Components are Base UI primitives: pressed toggles carry `aria-pressed` and `data-pressed`; disabled carries `data-disabled`. Query `main figure button` in the console to inspect demo controls; `read_dom` output strips these attributes, so use `browser_console` + `getComputedStyle`/`getAttribute` for definitive state checks.
 - Focus ring appears on `:focus-visible` (accent outline). Reach a demo toggle by clicking it once (sets focus), then press Tab to move to the next toggle with a visible ring.
 - Accent tokens flip between light and dark themes; verify pressed/accent states in both via the header Dark button, then restore System.
+
+## Production proof
+
+- The dev server above is for exploration; it is not production evidence. Start from `pnpm verify list` and `pnpm verify describe scenario <id>` for the owner, route and recorded steps of a registered scenario.
+- When production proof is required, run `pnpm --filter @ultima/docs test:production`. It captures the checkout into `.scratch/verify/<run-id>/`, builds the docs in production mode there and runs every registered production case (Dialog and Studio so far) at 1280×720 and 390×844 in both modes. The report is `<run>/report.json`; per-case screenshots, failure traces and the server log are under `<run>/artifacts/production/`.
+

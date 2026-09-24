@@ -9,7 +9,8 @@
     "build": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"pnpm -w run registry:build && vite build\"",
     "preview": "vite preview",
     "test": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"pnpm -w run registry:build && vitest run --reporter=verbose\"",
-    "typecheck": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"tsc -p tsconfig.json\""
+    "typecheck": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"tsc -p tsconfig.json\"",
+    "test:production": "node --experimental-strip-types scripts/production.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
