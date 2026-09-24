@@ -2,6 +2,7 @@
 // or token source imports belongs to a declared, spec-linked category. A new package needs a review of
 // this policy, never an automatic allowance. docs/spec/agent-infrastructure.md, Import and registry
 // boundaries, and Target and API distinctions.
+import type { RuntimeVariable } from './grammar.ts';
 import type { SourceKind } from './scope.ts';
 
 export type Category =
@@ -105,3 +106,92 @@ export function allows(policy: DependencyPolicy, kind: SourceKind, category: Cat
     (allowance) => allowance.categories.includes(category) && (!allowance.items || (item !== undefined && allowance.items.includes(item))),
   );
 }
+
+// ---------------------------------------------------------------------------------------------
+// Styling: docs/spec/agent-infrastructure.md, Values and runtime styles, and the ULT-STYLE-001 row.
+// ---------------------------------------------------------------------------------------------
+
+export type StylePolicy = {
+  /** Primitive-owned and component runtime variables: who writes each, which items read it and on what. */
+  variables: readonly RuntimeVariable[];
+  /** Styling engines other than StyleX, and class-name composers that exist to feed one. */
+  engines: (name: string) => boolean;
+};
+
+export const STYLE_ENGINES = (name: string): boolean =>
+  [
+    'styled-components',
+    'styled-jsx',
+    'goober',
+    'jss',
+    'react-jss',
+    'aphrodite',
+    'radium',
+    'linaria',
+    'astroturf',
+    'twin.macro',
+    'tailwindcss',
+    'tailwind-merge',
+    'tailwind-variants',
+    'class-variance-authority',
+    'clsx',
+    'classnames',
+    'unocss',
+    'sass',
+    'less',
+    'stylus',
+    'postcss',
+  ].includes(name) ||
+  ['@emotion', '@vanilla-extract', '@linaria', '@pandacss', '@stitches', '@griffel', '@compiled', '@tailwindcss', '@unocss', '@styled-system'].some((scope) =>
+    name.startsWith(`${scope}/`),
+  );
+
+const OVERLAYS = 'docs/spec/ultima.md#overlays';
+const STYLED_PARTS = 'docs/spec/ultima.md#styled-parts';
+const NOTES = 'docs/spec/ultima.md#per-component-notes';
+const ELEMENT_PRIMITIVES = 'docs/spec/ultima.md#the-primitive-layer';
+
+const variable = (owner: string, items: readonly string[], categories: RuntimeVariable['categories'], authority: string, ...names: string[]) =>
+  names.map((name): RuntimeVariable => ({ name, owner, items, categories, authority }));
+
+/**
+ * Every variable a component reads that it does not declare as a token: the primitive or component
+ * that writes it, the items that may read it, and the value categories it may feed. A new read needs
+ * its owning contract first, then an entry here.
+ */
+export const RUNTIME_VARIABLES: readonly RuntimeVariable[] = [
+  ...variable(
+    "Base UI's positioner, and Zag's for the tooltip element",
+    ['alert-dialog', 'combobox', 'command', 'context-menu', 'dialog', 'dropdown-menu', 'hover-card', 'popover', 'select', 'tooltip', 'ult-tooltip'],
+    ['origin'],
+    OVERLAYS,
+    '--transform-origin',
+  ),
+  ...variable("Base UI's positioner", ['combobox', 'command', 'navigation-menu'], ['length'], NOTES, '--available-width'),
+  ...variable("Base UI's positioner", ['combobox', 'command'], ['length'], NOTES, '--available-height', '--anchor-width'),
+  ...variable("Base UI's Navigation Menu", ['navigation-menu'], ['length'], NOTES, '--positioner-width', '--positioner-height', '--popup-width', '--popup-height'),
+  ...variable(
+    "Base UI's Tabs indicator, restated by the tabs element",
+    ['tabs', 'ult-tabs'],
+    ['length'],
+    STYLED_PARTS,
+    '--active-tab-left',
+    '--active-tab-top',
+    '--active-tab-width',
+    '--active-tab-height',
+    '--active-tab-bottom',
+  ),
+  ...variable("Base UI's Accordion panel", ['accordion'], ['length'], STYLED_PARTS, '--accordion-panel-height'),
+  ...variable("Base UI's Collapsible panel", ['collapsible'], ['length'], STYLED_PARTS, '--collapsible-panel-height'),
+  ...variable("Base UI's Toast", ['toast'], ['translation', 'scale', 'z-index'], NOTES, '--toast-index'),
+  ...variable("Base UI's Toast", ['toast'], ['length', 'translation'], NOTES, '--toast-height', '--toast-frontmost-height'),
+  ...variable("Base UI's Toast", ['toast'], ['translation'], NOTES, '--toast-offset-y', '--toast-swipe-movement-x', '--toast-swipe-movement-y'),
+  ...variable("Base UI's Drawer", ['drawer'], ['opacity'], NOTES, '--drawer-swipe-progress'),
+  ...variable("Base UI's Drawer: the velocity-scaled exit reads the duration token", ['drawer'], ['duration'], 'docs/spec/ultima.md#motion', '--drawer-swipe-strength'),
+  ...variable("Base UI's Drawer", ['drawer'], ['length'], NOTES, '--drawer-height'),
+  ...variable("Base UI's Drawer", ['drawer'], ['translation'], NOTES, '--drawer-snap-point-offset', '--drawer-swipe-movement-x', '--drawer-swipe-movement-y'),
+  ...variable('Sidebar, set by the consumer on the panel', ['sidebar'], ['keyword'], 'docs/spec/ultima.md#sidebar', '--sidebar-scrollbar-width'),
+  ...variable("Zag's tabs indicator, mapped onto Base UI's names", ['ult-tabs'], ['custom-property'], ELEMENT_PRIMITIVES, '--left', '--top', '--width', '--height'),
+];
+
+export const STYLE_POLICY: StylePolicy = { variables: RUNTIME_VARIABLES, engines: STYLE_ENGINES };

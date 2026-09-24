@@ -6,11 +6,7 @@ import { border, color, easing, motion, radius, space } from '@ultima/tokens/tok
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
-const trackWidth = space['--ult-space-10'];
-const trackHeight = space['--ult-space-8'];
-const thumbSize = space['--ult-space-7'];
-const inset = space['--ult-space-1'];
-const travel = `calc(${trackWidth} - ${thumbSize} - 2 * ${inset})`;
+const travel = `calc(${space['--ult-space-10']} - ${space['--ult-space-7']} - 2 * ${space['--ult-space-1']})`;
 
 const styles = stylex.create({
   root: {
@@ -23,14 +19,14 @@ const styles = stylex.create({
     borderRadius: radius['--ult-radius-full'],
     boxSizing: 'border-box',
     display: 'inline-flex',
-    height: trackHeight,
+    height: space['--ult-space-8'],
     margin: 0,
     opacity: { default: 1, ':is([data-disabled])': 0.5 },
-    padding: inset,
+    padding: space['--ult-space-1'],
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color',
     transitionTimingFunction: easing.standard,
-    width: trackWidth,
+    width: space['--ult-space-10'],
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
@@ -44,12 +40,12 @@ const styles = stylex.create({
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
-    height: thumbSize,
+    height: space['--ult-space-7'],
     translate: { default: 0, ':is([data-checked])': travel },
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'translate',
     transitionTimingFunction: easing.standard,
-    width: thumbSize,
+    width: space['--ult-space-7'],
   },
 });
 

@@ -76,6 +76,57 @@ The checker must reject an unknown declaration category with an analysis diagnos
 
 StyleX `create` and `keyframes` declarations are both in scope. Analyze nested selectors and conditions, aliased calls, statically resolvable object spreads and computed keys. Unsupported computed code at a checked declaration produces `ULT-ANALYSIS-001` with the expression location and a supported alternative. This failure means the checker could not establish the contract, not that it proved the value is wrong. A rule-relevant parse failure makes the run incomplete.
 
+### Value grammar
+
+The grammar `ULT-TOKEN-001` applies, as delivered on [Enforce token and styling contracts](https://github.com/frankieramirez/ultima/issues/454). It lives in `packages/analysis/src/grammar.ts`, and its fixtures under `packages/analysis/fixtures/tokens/`. Every checked property maps to one category; a property with no category is an `ULT-ANALYSIS-001` finding until it is classified here and in the grammar. A value is evaluated into literal text, token reads, runtime values and keyframes references, through local constants, template literals, conditionals, `stylex.firstThatWorks`, statically resolvable spreads and computed keys. Literal text is tokenized as CSS and each piece is judged by the category of the property or of the function it sits in. The CSS-wide keywords are accepted everywhere, and a CSS named color, a hex color or a color function is rejected everywhere.
+
+| Category | Properties | Accepted |
+| --- | --- | --- |
+| `color` | `color`, `backgroundColor`, the border and outline colors, `caretColor`, `accentColor` and similar | `color` tokens, `transparent`, `currentColor` |
+| `paint` | `fill`, `stroke` | as `color`, plus `none` |
+| `length` | box dimensions, insets, padding, margin, gaps, `flexBasis`, `textUnderlineOffset` | `space` tokens and `border` constants, zero, percentages, viewport units, `auto`, `none` and the content-sizing keywords, `fit-content()` |
+| `radius` | `borderRadius` and its corners | `radius` tokens, zero |
+| `border-width` | border and outline widths | `border` constants, zero |
+| `outline-offset` | `outlineOffset` | `border` constants, zero |
+| `border` | `border`, `outline` and the side shorthands | `border` constants, `color` tokens, zero, line-style keywords |
+| `shadow` | `boxShadow`, `textShadow` | `shadow` tokens; a ring from zero, `border` constants and `color` tokens; `none`, `inset` |
+| `font-size` | `fontSize` | `text` tokens |
+| `font-weight` | `fontWeight` | font weight tokens |
+| `line-height` | `lineHeight` | font leading tokens, `normal` |
+| `letter-spacing` | `letterSpacing`, `wordSpacing` | font tracking tokens, zero, `normal` |
+| `font-family` | `fontFamily` | `--ult-font-sans`, `--ult-font-mono` |
+| `duration` | `transitionDuration`, `animationDuration` | `motion` tokens; never a literal, and never zero outside a typed exception naming its contract |
+| `delay` | `transitionDelay`, `animationDelay` | `motion` tokens, zero |
+| `easing` | the timing functions | `easing` constants, `linear` |
+| `z-index` | `zIndex` | `z` constants, a local `0` or `1`, `auto` |
+| `opacity` | `opacity` and the SVG opacities | a unitless number from 0 to 1 |
+| `transform` | `transform` | `none`, and the functions below |
+| `translation` | `translate`, `translate*()`, `inset()` | `space` tokens and `border` constants, zero, percentages |
+| `scale` | `scale`, `scale*()` | unitless factors |
+| `angle` | `rotate`, `rotate*()`, `skew*()` | angles, zero |
+| `origin` | `transformOrigin`, the background and object positions | position keywords, zero, percentages, `space` tokens |
+| `filter` | `filter`, `backdropFilter` | `filter` tokens, `none` |
+| `keyword` | display, positioning, alignment, overflow, appearance, cursor, selection, text behavior, line styles, `transitionProperty` and similar enumerated behavior | any keyword and string; a runtime value, because the property takes nothing a design value could hide in |
+| `content` | `content` | strings, keywords, `attr()` |
+| `count` | `flexGrow`, `flexShrink`, `order`, `animationIterationCount`, line clamps | unitless numbers, keywords |
+| `flex` | `flex` | unitless factors, zero, percentages, `space` tokens, sizing keywords |
+| `grid-template` | the grid template and auto track properties | `fr`, percentages, zero, unitless counts, keywords, strings, `space` tokens, `repeat()`, `minmax()` |
+| `grid-placement` | `gridColumn`, `gridRow`, `gridArea` and their lines | line numbers, spans, keywords |
+| `aspect-ratio` | `aspectRatio` | unitless ratios, `auto`, a runtime value |
+| `animation-name` | `animationName` | a `stylex.keyframes` binding in the same file, `none` |
+| `image` | `backgroundImage`, `maskImage` | `none`, and gradients |
+| `gradient` | the arguments of a gradient | `color` tokens, direction keywords, zero, percentages, angles |
+| `clip` | `clipPath`, `clip` | `none`, `auto`, zero, and `inset()` or `rect()` as `translation` |
+| `custom-property` | a `--*` declaration | any semantic token or constant, a runtime variable its policy places here, zero, percentages, keywords |
+
+Inside `calc()`, `min()`, `max()` and `clamp()`, a unitless number in a dimensioned category only scales a token or a runtime value, so `calc(2 * ${space['--ult-space-2']})` passes and `calc(${space['--ult-space-4']} + 2px)` fails at the `2px`. In a unitless category, such as `z-index`, the numbers stay checked. Two contexts carry their own geometry. A glyph box, a namespace applied to an inline `<svg>` or one sized `1em` by `1em`, may use `1em` on its dimensions, following Iconography. The clip-hidden recipe, a declaration block that clips with `inset(50%)`, may use its `1px` box and `-1px` margin, following Live regions. Neither permission reaches another declaration.
+
+A token read is checked against the group the import resolves to through the scope: the key must exist in that group, the group must not be a palette scale, and the token's family must be one the category accepts. A local constant holding nothing but one token read is an alias that hides the token value and fails at its use; a constant that combines token reads with other terms is evaluated. A `var(--*)` read of a variable that is not a token must name a runtime variable in the policy (`RUNTIME_VARIABLES` in `packages/analysis/src/policy.ts`), which records the variable's writer, the registry items that may read it, the categories it may feed and its authority. A parameter of a dynamic style, or any other value computed at run time, passes only where its category accepts runtime values, or where a unit shows its category: `${x}%` is a percentage.
+
+`ULT-STYLE-001` judges inline styles with the same grammar. An inline style must be the `style` that `stylex.props` or `stylex.attrs` returned, passed through, or declarations whose values pass the grammar without a token read, such as Aspect Ratio's `ratio` or a measured percentage. A token read inline is a design style and belongs in a table. A custom property set inline may bridge a primitive's variables. `style` on an Ultima component is the StyleX slot and is not an inline style. Stylesheet imports are limited to the docs global stylesheet from the docs entry modules, and runtime stylesheet injection is rejected.
+
+The repository's remaining sites are typed exceptions in `packages/analysis/exceptions.ts`, each naming its part, property, condition and, where it has one, its exact value: the Drawer and Navigation Menu zero durations, Toast's intra-stack `z-index`, Avatar's container-query initials, Native Select's chevron room, Color Field's hue, area and swatch paints, and the Theme Studio preview's draft variables.
+
 ### Target and API distinctions
 
 Read the bounded React Zag allowance from ADR 0002 and the per-component contracts. Calendar, Date Picker and Resizable are existing cases; do not allow arbitrary future Zag usage simply because the package is installed. Element production code cannot import React or Base UI. Recipe engines permitted by ADR 0007 belong in recipe/demo scope and must not become hidden component dependencies. Installed registry components cannot import an icon package where the contract requires private glyphs.

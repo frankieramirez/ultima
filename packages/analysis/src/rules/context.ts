@@ -10,6 +10,8 @@ export type Finding = {
   end: number;
   symbol?: string;
   target?: string;
+  selector?: string;
+  expression?: string;
   message: string;
   repair: string;
   link: string;
@@ -41,6 +43,8 @@ export function createContext(scope: Scope): Context {
       end: positionAt(parsed.text, end),
       ...(rest.symbol !== undefined && { symbol: rest.symbol }),
       ...(rest.target !== undefined && { target: rest.target }),
+      ...(rest.selector !== undefined && { selector: rest.selector }),
+      ...(rest.expression !== undefined && { expression: rest.expression }),
       message: rest.message.charAt(0).toUpperCase() + rest.message.slice(1),
       repair: rest.repair,
       link: rest.link,

@@ -3,7 +3,7 @@
 // scope and a consumer scope supply them. docs/spec/ultima.md, Package and engine.
 import type { Files } from '../../../scripts/catalogue/files.ts';
 import type { Diagnostic } from './diagnostic.ts';
-import type { DependencyPolicy } from './policy.ts';
+import type { DependencyPolicy, StylePolicy } from './policy.ts';
 
 export type SourceKind =
   // Production render targets and the token sources they read.
@@ -52,6 +52,12 @@ export type Scope = {
   /** The registry item a production source belongs to, when it is a component or element file. */
   itemOf(path: string): string | undefined;
   policy: DependencyPolicy;
+  /** Runtime variables, alternative styling engines and the other value policy the style rules read. */
+  styles: StylePolicy;
+  /** The token sources whose `defineVars` and `defineConsts` groups components read. */
+  tokenSources: string[];
+  /** Documented global stylesheets, and the entry modules that may import each one. */
+  globalStyles: { stylesheet: string; importers: string[]; authority: string }[];
   /** Where each component package keeps its tests. */
   testPlacement: { package: string; tests: string }[];
   /** Component and element files no descriptor claims, from the catalogue. */

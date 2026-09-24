@@ -18,6 +18,10 @@ export type Diagnostic = {
   symbol?: string;
   /** The import specifier, directive or call the finding is about. */
   target?: string;
+  /** The style namespace's condition or selector a declaration sits under, when it has one. */
+  selector?: string;
+  /** The declaration's value as written, whitespace collapsed, when the finding is about one. */
+  expression?: string;
   /** The failed condition. */
   message: string;
   repair: string;
@@ -75,10 +79,10 @@ export function formatText(report: Report): string {
   );
   for (const diagnostic of report.diagnostics) {
     const { start, end } = diagnostic;
-    const where = diagnostic.symbol ? `  ${diagnostic.symbol}` : '';
+    const where = [diagnostic.symbol, diagnostic.target, diagnostic.selector].filter((part) => part !== undefined).join(' ');
     lines.push(
       '',
-      `${diagnostic.file}:${start.line}:${start.column}-${end.line}:${end.column}  ${diagnostic.severity}  ${diagnostic.ruleId}${where}`,
+      `${diagnostic.file}:${start.line}:${start.column}-${end.line}:${end.column}  ${diagnostic.severity}  ${diagnostic.ruleId}${where ? `  ${where}` : ''}`,
       `  ${diagnostic.message}`,
       `  Repair: ${diagnostic.repair}`,
       `  Spec: ${diagnostic.link}`,
