@@ -138,8 +138,8 @@ test('a run of inline code fits the prose column at a narrow viewport', async ()
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
 
-  const { container } = await render(
-    <Prose Content={SlashJoinedCodeRun} breadcrumb={[{ label: 'Components' }, { label: 'Test' }]} />,
+  const { container } = await renderWithRouter(
+    <Prose Content={SlashJoinedCodeRun} breadcrumb={[{ label: 'Components', to: '/components' }, { label: 'Test' }]} />,
   );
   const main = container.querySelector('main') as HTMLElement;
 

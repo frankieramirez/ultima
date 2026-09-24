@@ -250,9 +250,10 @@ test('the article trail is a Breadcrumb landmark that links the section and mark
   const componentTrail = component.container.querySelector('nav[aria-label="Breadcrumb"]')!;
   const sectionLink = componentTrail.querySelector('a[href="/components"]')!;
   expect(sectionLink.textContent).toBe('Components');
-  expect(componentTrail.querySelector('[aria-current="page"]')?.textContent).toBe(
-    'Alert Dialog',
-  );
+  const currentCrumb = componentTrail.querySelector('[aria-current="page"]')!;
+  expect(currentCrumb.textContent).toBe('Alert Dialog');
+  expect(currentCrumb).toHaveAttribute('href', '/components/alert-dialog');
+  expect(componentTrail.querySelector('[role="presentation"]')?.textContent).toBe('/');
 });
 
 test('a direct load of a component page marks that link current in the flat catalogue', async () => {
