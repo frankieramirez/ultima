@@ -21,8 +21,8 @@ const styles = make({
   },
 });
 
-function Separator() {
-  return <hr {...props(styles.root)} />;
+function Separator({ style, ...rest }: import('@ultima/ui/lib/component').PlainProps<'hr'>) {
+  return <hr {...rest} {...props(styles.root, style)} />;
 }
 
 export { Separator };

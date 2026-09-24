@@ -12,9 +12,9 @@ async function load() {
   return [literal, computed, common];
 }
 
-function Separator() {
+function Separator({ style, ...rest }: import('@ultima/ui/lib/component').PlainProps<'hr'>) {
   void load;
-  return <hr {...stylex.props(styles.root)} />;
+  return <hr {...rest} {...stylex.props(styles.root, style)} />;
 }
 
 export { Separator };

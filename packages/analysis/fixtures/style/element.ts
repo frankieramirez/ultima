@@ -23,3 +23,9 @@ class UltBadge extends HTMLElement {
 }
 
 customElements.define('ult-badge', UltBadge);
+
+// The attribute tables the item's descriptor names, so the catalogue reads the family whole.
+const VARIANTS = ['subtle', 'solid'] as const;
+const TONES = ['neutral', 'accent', 'highlight', 'success', 'warning', 'danger'] as const;
+void VARIANTS;
+void TONES;

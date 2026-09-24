@@ -6,8 +6,8 @@ import { space } from '@ultima/tokens/tokens.stylex';
 const styles = stylex.create({ root: { margin: 0 } });
 const loose = { color: 'red' };
 
-function Separator({ ratio }: { ratio: number }) {
-  const { style: injected, ...rest } = stylex.props(styles.root);
+function Separator({ ratio, style }: import('@ultima/ui/lib/component').PlainProps<'div'> & { ratio: number }) {
+  const { style: injected, ...rest } = stylex.props(styles.root, style);
   return (
     <div>
       <hr {...rest} style={{ ...injected, aspectRatio: ratio, display: 'block' }} />

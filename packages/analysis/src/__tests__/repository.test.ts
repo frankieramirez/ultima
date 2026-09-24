@@ -25,7 +25,18 @@ describe('the repository', () => {
 
   test('runs the delivered rules as blocking and lists the rest as unsupported', () => {
     const active = report.rules.filter((rule) => rule.status === 'blocking').map((rule) => rule.id);
-    assert.deepEqual(active.sort(), ['ULT-ANALYSIS-001', 'ULT-EXCEPTION-001', 'ULT-IMPORT-001', 'ULT-PRIMITIVE-001', 'ULT-SOURCE-001', 'ULT-STYLE-001', 'ULT-TOKEN-001']);
+    assert.deepEqual(active.sort(), [
+      'ULT-ANALYSIS-001',
+      'ULT-API-001',
+      'ULT-API-002',
+      'ULT-EXCEPTION-001',
+      'ULT-IMPORT-001',
+      'ULT-PRIMITIVE-001',
+      'ULT-REGISTRY-001',
+      'ULT-SOURCE-001',
+      'ULT-STYLE-001',
+      'ULT-TOKEN-001',
+    ]);
     for (const rule of report.rules.filter((entry) => entry.status === 'pending')) {
       assert.ok(report.unsupported.some((entry) => entry.step === rule.id), `${rule.id} is listed as unsupported`);
     }

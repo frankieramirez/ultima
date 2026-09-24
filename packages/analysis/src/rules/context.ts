@@ -23,6 +23,8 @@ export type Context = {
   source(path: string): Parsed | undefined;
   report(finding: Finding): void;
   diagnostics: Diagnostic[];
+  /** Whether a rule already reported this file and line, so a later rule does not repeat the site. */
+  reportedAt(file: string, line: number): boolean;
 };
 
 export function severityOf(ruleId: string): Diagnostic['severity'] {
@@ -88,5 +90,7 @@ export function createContext(scope: Scope): Context {
     return parsed;
   };
 
-  return { scope, source, report, diagnostics };
+  const reportedAt = (file: string, line: number) => diagnostics.some((diagnostic) => diagnostic.file === file && diagnostic.start.line === line);
+
+  return { scope, source, report, diagnostics, reportedAt };
 }

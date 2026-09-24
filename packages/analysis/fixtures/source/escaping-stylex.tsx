@@ -9,9 +9,9 @@ function tables(engine: typeof stylex) {
   return engine;
 }
 
-function Separator() {
+function Separator({ style, ...rest }: import('@ultima/ui/lib/component').PlainProps<'hr'>) {
   tables(stylex);
-  return <hr {...stylex.props(styles.root)} />;
+  return <hr {...rest} {...stylex.props(styles.root, style)} />;
 }
 
 export { Separator };
