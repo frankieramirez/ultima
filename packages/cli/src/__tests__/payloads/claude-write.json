@@ -1,0 +1,26 @@
+{
+  "session_id": "1bf03cd9-8e79-4157-9e86-c5b342859f19",
+  "transcript_path": "/home/user/.claude/projects/-repo/1bf03cd9-8e79-4157-9e86-c5b342859f19.jsonl",
+  "cwd": "/repo",
+  "prompt_id": "631d34ce-9228-4256-9acf-cbe801036999",
+  "permission_mode": "acceptEdits",
+  "effort": {
+    "level": "medium"
+  },
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/repo/src/created.ts",
+    "content": "export const b = 2;\n"
+  },
+  "tool_response": {
+    "type": "create",
+    "filePath": "/repo/src/created.ts",
+    "content": "export const b = 2;\n",
+    "structuredPatch": [],
+    "originalFile": null,
+    "userModified": false
+  },
+  "tool_use_id": "toolu_01Nx9DShm1JZ5vfsUbK2XrCQ",
+  "duration_ms": 2
+}

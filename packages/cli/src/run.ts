@@ -6,6 +6,7 @@ import { check, checkExit, printCheck } from './check.ts';
 import { exitCode, print } from './diagnostic.ts';
 import { diff } from './diff.ts';
 import { type Target, doctor } from './doctor.ts';
+import { hook } from './hook.ts';
 import { HARNESSES, type Harness, install, printPlan, uninstall } from './install.ts';
 import { printStatus, status } from './status.ts';
 
@@ -20,7 +21,9 @@ const FLAGS: Record<string, string[]> = {
   uninstall: ['json'],
 };
 
-export async function run(argv: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
+export async function run(argv: string[], stdin = ''): Promise<{ code: number; stdout: string; stderr: string }> {
+  // `hook` is hidden from usage and never fails: a harness hook must leave the agent where no hook would.
+  if (argv[0] === 'hook') return { code: 0, stdout: hookInvocation(argv.slice(1), stdin), stderr: '' };
   const invocation = parseInvocation(argv);
   if ('usage' in invocation) return usageError(invocation);
   if (invocation.command === 'install' || invocation.command === 'uninstall') {
@@ -62,6 +65,15 @@ export async function run(argv: string[]): Promise<{ code: number; stdout: strin
   if ('usage' in result) return usageError(result);
   const report = { command: invocation.command, ...result };
   return { code: exitCode(report), stdout: print(report, invocation.json), stderr: '' };
+}
+
+function hookInvocation(argv: string[], stdin: string): string {
+  try {
+    const { positionals, values } = parseArgs({ args: argv, allowPositionals: true, options: { cwd: { type: 'string' } } });
+    return positionals.length === 1 ? hook(resolve(values.cwd ?? '.'), positionals[0], stdin) : '';
+  } catch {
+    return '';
+  }
 }
 
 function usageError(result: { usage: string }) {

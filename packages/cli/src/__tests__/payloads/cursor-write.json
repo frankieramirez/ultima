@@ -1,0 +1,18 @@
+{
+  "conversation_id": "5b1f3f2e-7d7a-4c1e-9d55-2f0a6f3d9c11",
+  "generation_id": "0f6e2c1a-3a8b-4f7e-8d2b-6c9e1f4a7b20",
+  "model": "default",
+  "hook_event_name": "postToolUse",
+  "cursor_version": "2026.09.23-86fc751",
+  "workspace_roots": ["/repo"],
+  "user_email": null,
+  "transcript_path": null,
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/repo/src/created.ts",
+    "content": "export const b = 2;\n"
+  },
+  "tool_output": "{\"path\":\"/repo/src/created.ts\"}",
+  "duration": 12,
+  "tool_use_id": "toolu_cursor_write"
+}

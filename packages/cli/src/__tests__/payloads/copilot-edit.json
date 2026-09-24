@@ -1,0 +1,15 @@
+{
+  "sessionId": "6eeee698-6472-4f18-b770-ed9957ee9be9",
+  "timestamp": 1790231766118,
+  "cwd": "/repo",
+  "toolName": "edit",
+  "toolArgs": {
+    "path": "/repo/src/existing.ts",
+    "old_str": "export const a = 1;",
+    "new_str": "export const a = 3;"
+  },
+  "toolResult": {
+    "resultType": "success",
+    "textResultForLlm": "File /repo/src/existing.ts updated with changes."
+  }
+}
