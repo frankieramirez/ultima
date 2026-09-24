@@ -419,6 +419,16 @@ describe('executing the DAG', () => {
     assert.match(stateOf(report, 'typecheck')?.reason ?? '', /overall deadline expired before it started/);
     assert.equal(report.exit, EXIT.incomplete);
   });
+
+  test('runs against a captured snapshot as its root, the way a check nesting its own run does', async () => {
+    const outer = join(scratch, 'snapshot-root');
+    const captured = captureSource(repository(), outer);
+    assert.ok(captured.ok, captured.ok ? '' : captured.reason);
+    const report = await runIn(outer, planOf(['typecheck']), { typecheck: passing('typecheck') });
+    assert.equal(report.source.capture.status, 'captured', report.source.capture.reason ?? undefined);
+    assert.equal(stateOf(report, 'typecheck')?.status, 'passed');
+    assert.equal(report.status, 'passed');
+  });
 });
 
 describe('owned servers', () => {
