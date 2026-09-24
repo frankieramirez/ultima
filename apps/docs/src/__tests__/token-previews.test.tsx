@@ -102,3 +102,14 @@ function reducedMotionRules(element: Element): CSSStyleRule[] {
 
   return found;
 }
+
+test('the overriding examples carry the site copy button', async () => {
+  const { container } = await renderWithRouter(<TokensPage />);
+  const fences = Array.from(container.querySelectorAll('pre')).filter((pre) =>
+    /createTheme|:root/.test(pre.textContent ?? ''),
+  );
+  expect(fences.length).toBe(2);
+  for (const pre of fences) {
+    expect(pre.parentElement?.querySelector('button[aria-label="Copy"]')).not.toBeNull();
+  }
+});

@@ -51,3 +51,19 @@ test('inline code stays unbroken inside table cells and still wraps in paragraph
   expect(paragraphCode).not.toBeNull();
   expect(getComputedStyle(paragraphCode as Element).overflowWrap).toBe('anywhere');
 });
+
+function Fenced({ components }: { components?: MDXComponents }) {
+  const Pre = (components?.pre ?? 'pre') as ComponentType<ComponentProps<'pre'>>;
+  return (
+    <Pre>
+      <code className="language-bash">pnpm dlx shadcn@latest add @ultima/button</code>
+    </Pre>
+  );
+}
+
+test('a prose fence carries the site copy button', async () => {
+  const screen = await render(
+    <Prose Content={Fenced} breadcrumb={[{ label: 'Install' }]} />,
+  );
+  await expect.element(screen.getByRole('button', { name: 'Copy' })).toBeVisible();
+});
