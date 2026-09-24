@@ -211,3 +211,37 @@ export function compareSeries(baseline: Series | undefined, candidate: Series | 
   if (directions.size > 1) return { status: 'inconclusive', ...base, reason: 'paired differences conflict in direction' };
   return { status: change > 0 ? 'slower' : 'faster', ...base, reason: 'every pair moved the same way beyond the larger MAD' };
 }
+
+/**
+ * The same screen for an interaction: pairs the i-th session of each side by its
+ * session median, and uses the larger spread of session medians as the noise floor.
+ * An incomplete side leaves the comparison unavailable.
+ */
+export function compareInteraction(
+  baseline: InteractionSummary | undefined,
+  candidate: InteractionSummary | undefined,
+): Comparison {
+  if (!baseline) return { status: 'unavailable', reason: 'no comparable baseline' };
+  if (!candidate) return { status: 'unavailable', reason: 'no candidate series' };
+  if (baseline.status !== 'measured') return { status: 'unavailable', reason: 'baseline incomplete' };
+  if (candidate.status !== 'measured') return { status: 'unavailable', reason: 'candidate incomplete' };
+  const a = baseline.sessions.map((s) => s.medianMs);
+  const b = candidate.sessions.map((s) => s.medianMs);
+  const pairs = Math.min(a.length, b.length);
+  const differences = Array.from({ length: pairs }, (_, i) => b[i]! - a[i]!);
+  const change = median(differences);
+  const largerMad = Math.max(medianAbsoluteDeviation(a), medianAbsoluteDeviation(b));
+  const directions = new Set(differences.filter((d) => d !== 0).map(Math.sign));
+  const base = {
+    baselineMedianMs: median(a),
+    candidateMedianMs: median(b),
+    medianPairedDifferenceMs: change,
+    largerMadMs: largerMad,
+    pairs,
+  };
+  if (Math.abs(change) <= largerMad) {
+    return { status: 'inconclusive', ...base, reason: 'median change within the larger MAD of session medians' };
+  }
+  if (directions.size > 1) return { status: 'inconclusive', ...base, reason: 'paired session differences conflict in direction' };
+  return { status: change > 0 ? 'slower' : 'faster', ...base, reason: 'every session pair moved the same way beyond the larger MAD' };
+}

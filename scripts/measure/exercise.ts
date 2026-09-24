@@ -4,8 +4,11 @@
  * comparable coverage, and the synthetic component addition and removal.
  *
  *   node --experimental-strip-types scripts/measure/exercise.ts \
- *     --exercise dialog-escape --attempt 1 --revision <sha> --out <dir> [--model sonnet]
+ *     --exercise dialog-escape --attempt 1 --revision <sha> --out <dir> [--model sonnet] \
+ *     [--side baseline|candidate --position first|second]
  *
+ * --side and --position record the counterbalancing of a paired attempt: which
+ * revision it stands for, and whether it ran before or after its partner.
  * Each attempt gets a new worktree path, so no project memory or earlier session
  * carries the answer; that makes it a naive observation. The worktree is removed
  * afterwards. Scoring rules live beside the prompts in EXERCISES.
@@ -92,7 +95,12 @@ export const EXERCISES: Record<string, Discovery | Addition> = {
   },
 };
 
-/** Files an ordinary addition coordinates by hand at this revision, apart from its own behavior, docs and proof. */
+/**
+ * Catalogue, barrel, router and optimizer wiring, apart from an addition's own
+ * behavior, docs and proof. The baseline coordinates the first eight by hand; the
+ * candidate generates the barrel, the registry descriptions and the last four from
+ * descriptors, so a change there is manual only when an agent edits it itself.
+ */
 const WIRING = [
   'packages/ui/src/index.ts',
   'apps/docs/src/components.ts',
@@ -102,7 +110,16 @@ const WIRING = [
   'registry/items.config.ts',
   'apps/docs/vitest.config.ts',
   'packages/ui/vitest.config.ts',
+  'apps/docs/src/generated/catalogue.ts',
+  'apps/docs/src/generated/component-pages.ts',
+  'apps/docs/src/generated/elements.ts',
+  'scripts/generated/browser-dependencies.ts',
 ];
+
+/** A proof file that repeated the catalogue at the baseline, so editing it there was coordination too. */
+const COORDINATION_PROOF = ['apps/docs/src/__tests__/components.test.ts'];
+
+const WRITES = /(>|sed -i|tee |cp |mv |rm |perl -pi|python3? )/;
 
 const { values } = parseArgs({
   options: {
@@ -112,6 +129,8 @@ const { values } = parseArgs({
     out: { type: 'string' },
     model: { type: 'string', default: 'sonnet' },
     'max-minutes': { type: 'string', default: '40' },
+    side: { type: 'string' },
+    position: { type: 'string' },
   },
 });
 const exercise = values.exercise ? EXERCISES[values.exercise] : undefined;
@@ -121,7 +140,7 @@ if (!exercise || !values.attempt || !values.revision || !values.out) {
 }
 const out = resolve(values.out);
 mkdirSync(out, { recursive: true });
-const id = `${values.exercise}-${values.attempt}`;
+const id = values.side ? `${values.exercise}-${values.side}-${values.attempt}` : `${values.exercise}-${values.attempt}`;
 const deadline = Number(values['max-minutes']) * 60_000;
 
 function git(cwd: string, args: string[]): string {
@@ -222,6 +241,7 @@ const record: Record<string, unknown> = {
   operator: { host: environment(root).host, claude: execFileSync('claude', ['--version'], { encoding: 'utf8' }).trim() },
   requestedModel: values.model,
   harnessSha256: treeHash(root, 'scripts/measure'),
+  pairing: values.side ? { side: values.side, position: values.position ?? null } : null,
 };
 
 try {
@@ -261,7 +281,12 @@ try {
       exitCode: session.exitCode,
       trace: `${id}.stream.jsonl.gz`,
     };
-    record.observation = { ...describeCalls(session.calls, checkout), answer: answer.slice(-2000) };
+    const calls = describeCalls(session.calls, checkout);
+    record.observation = {
+      ...calls,
+      discoveryCommands: calls.bashCommands.filter((command) => /verify (list|describe)/.test(command)),
+      answer: answer.slice(-2000),
+    };
     record.score = {
       owner,
       located,
@@ -319,9 +344,19 @@ try {
       remove: { wallMs: removed.wallMs, durationMs: removed.result?.duration_ms ?? null, turns: removed.result?.num_turns ?? null, costUsd: removed.result?.total_cost_usd ?? null, exitCode: removed.exitCode },
       traces: [`${id}.add.stream.jsonl.gz`, `${id}.remove.stream.jsonl.gz`],
     };
+    // A manual projection edit is an edit tool call on a wiring file, or a shell write that names one.
+    const manualProjectionEdits = [
+      ...addCalls.edits.filter((edit) => WIRING.includes(edit.file)).map((edit) => `${edit.tool} ${edit.file}`),
+      ...addCalls.bashCommands.filter((command) => WRITES.test(command) && WIRING.some((file) => command.includes(file))),
+    ];
+    const changedWiring = classify(addedFiles).wiring;
     record.observation = {
       addition: {
         changedFiles: classify(addedFiles),
+        manualProjectionEdits,
+        projectionsChangedWithoutManualEdit: changedWiring.filter((file) => !manualProjectionEdits.some((edit) => edit.includes(file))),
+        coordinationProofEdits: addCalls.edits.filter((edit) => COORDINATION_PROOF.includes(edit.file)).length,
+        commandsRun: addCalls.bashCommands.filter((command) => /pnpm (scaffold|catalogue:generate|catalogue:check|verify|check:architecture)/.test(command)),
         editOperations: {
           wiring: addCalls.edits.filter((edit) => WIRING.includes(edit.file)).length,
           authored: addCalls.edits.filter((edit) => !WIRING.includes(edit.file)).length,
@@ -347,7 +382,9 @@ try {
     record.score = {
       additionComplete: proofs.every((proof) => proof.exitCode === 0) && servedItem,
       removalClean: leftover === baseline && stale.output.trim() === '',
+      // Wiring files changed in the final tree, by hand or by a generator.
       manualWiringFiles: classify(addedFiles).wiring.length,
+      manualProjectionEdits: manualProjectionEdits.length,
     };
   }
 } catch (error) {
