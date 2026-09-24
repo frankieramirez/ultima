@@ -17,7 +17,7 @@ export const LOCK = '.catalogue-generate.lock';
 
 export type Freshness = { added: string[]; changed: string[]; stale: string[] };
 
-function recording(files: Files) {
+export function recording(files: Files) {
   const reads = new Map<string, string | undefined>();
   const lists = new Map<string, string | undefined>();
   const recorded: Files = {

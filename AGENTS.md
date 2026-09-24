@@ -35,6 +35,7 @@ Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/a
 | `pnpm registry:build` | Regenerate `registry/`, `/r/*.json`, the token exports, and `/llms.txt`. |
 | `pnpm catalogue:generate` | Rewrite the generated wiring from `registry/metadata/` and the sources. |
 | `pnpm catalogue:check` | Fail on stale generated wiring, read-only. `dev`, `build`, `test`, `typecheck` and `registry:build` run it first. |
+| `pnpm scaffold <kind> <id> --from <request.json>` | Plan a React, element or recipe item as a dry run; `--write` creates its files, never over existing ones, and regenerates the wiring. |
 | `python3 packages/tokens/scripts/palette.py` | Regenerate `palette.json`; `--check` fails on a hand edit. |
 
 ## Agent skills

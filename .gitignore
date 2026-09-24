@@ -18,3 +18,5 @@ apps/docs/public/llms.txt
 apps/docs/public/elements/
 
 .catalogue-generate.lock
+# Manifests and the lock `pnpm scaffold --write` leaves for recovery.
+.scaffold/

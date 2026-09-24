@@ -1,3 +1,6 @@
+import type { OptimizerPolicy } from './browser.ts';
+import { OUTPUTS } from './projections.ts';
+
 export const descriptor = (kind: string, type: string, value: object) =>
   `import type { ${type} } from '../schema.ts';\n\nexport default ${JSON.stringify(value, null, 2)} satisfies ${type};\n`;
 
@@ -219,5 +222,64 @@ export function validFixture(): Record<string, string> {
       'export default function Sorting() { return <Button />; }',
     ].join('\n'),
     'apps/docs/src/demos/button/rows.ts': "import { format } from 'd3-format';\nexport const rows = [format('.2f')(1)];\n",
+  };
+}
+
+export const testPolicy: OptimizerPolicy = {
+  ui: {
+    add: [],
+    exclude: [
+      { specifier: 'react', reason: 'the React plugin prebundles it', source: 'packages/ui/vitest.config.ts' },
+      { specifier: 'vitest', reason: 'Vitest serves it', source: 'packages/ui/vitest.config.ts' },
+    ],
+  },
+  docs: {
+    add: [{ specifier: 'react-dom/client', reason: 'the renderer imports it late', source: 'apps/docs/vitest.config.ts' }],
+    exclude: [
+      { specifier: 'react', reason: 'the React plugin prebundles it', source: 'apps/docs/vitest.config.ts' },
+      { specifier: 'vitest', reason: 'Vitest serves it', source: 'apps/docs/vitest.config.ts' },
+    ],
+  },
+};
+
+/** The valid fixture with its generated projections absent and the package manifests the optimizer reads. */
+export function diskFixture(): Record<string, string> {
+  const files = validFixture();
+  delete files[OUTPUTS.barrel];
+  delete files[OUTPUTS.registry];
+  return {
+    ...files,
+    'packages/ui/package.json': JSON.stringify({
+      name: '@ultima/ui',
+      exports: { '.': './src/index.ts', './lib/visually-hidden': './src/lib/visually-hidden.ts', './*': './src/*.tsx' },
+      dependencies: { '@base-ui/react': '1', '@stylexjs/stylex': '1', '@zag-js/date-picker': '1', '@zag-js/react': '1' },
+      devDependencies: { vitest: '1', 'vitest-browser-react': '1' },
+    }),
+    'packages/tokens/package.json': JSON.stringify({
+      name: '@ultima/tokens',
+      exports: { './tokens.stylex': './src/tokens.stylex.ts', './tokens.json': './dist/tokens.json' },
+      dependencies: { '@stylexjs/stylex': '1' },
+    }),
+    'apps/docs/package.json': JSON.stringify({
+      name: '@ultima/docs',
+      dependencies: { '@tanstack/react-table': '1', 'd3-format': '1', 'react-dom': '1' },
+      devDependencies: { vitest: '1' },
+    }),
+    'packages/ui/src/__tests__/setup.ts': "import { configure } from 'vitest-browser-react';\nconfigure();\n",
+    'packages/ui/src/__tests__/calendar.test.tsx': [
+      "import { test } from 'vitest';",
+      "import { Calendar } from '../calendar';",
+      "import { Sidebar } from '../sidebar';",
+      "test('calendar', () => [Calendar, Sidebar]);",
+    ].join('\n'),
+    'apps/docs/src/__tests__/pages.test.tsx': [
+      "import type { Row } from 'lodash';",
+      "import { test } from 'vitest';",
+      "import tokens from '@ultima/tokens/tokens.json';",
+      "import { componentPages } from '../generated/component-pages';",
+      "const sources = import.meta.glob('../../../../packages/elements/src/*.element.ts', { query: '?raw' });",
+      "const demos = import.meta.glob('../demos/**/*.tsx', { eager: true });",
+      'test("pages", () => [componentPages, sources, demos, tokens]);',
+    ].join('\n'),
   };
 }
