@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
 import { EXCEPTIONS } from '../workspace.ts';
-import { afterFirstLine, fixture, run, source } from './support.ts';
+import { afterFirstLine, fixture, run, source, withRepositoryExceptions } from './support.ts';
+
+const fixtureWithRepository = (name: string) => withRepositoryExceptions(fixture(name));
 
 const SEPARATOR = 'packages/ui/src/separator.tsx';
 const withDialog = afterFirstLine(source(SEPARATOR), "import { Dialog } from './dialog';");
@@ -15,18 +17,24 @@ function exceptionFindings(report: ReturnType<typeof run>) {
 }
 
 describe('ULT-EXCEPTION-001', () => {
-  test('the repository needs no exception', () => {
-    assert.match(source(EXCEPTIONS), /export default \[\] satisfies ArchitectureException\[\];/);
+  test('the repository excepts only token and style sites, each with its own authority', () => {
+    const report = run();
+    const ids = [...source(EXCEPTIONS).matchAll(/\bid: '([a-z0-9-]+)'/g)].map((match) => match[1]);
+    const rules = [...source(EXCEPTIONS).matchAll(/\brule: '([A-Z0-9-]+)'/g)].map((match) => match[1]);
+    assert.equal(ids.length, 9);
+    assert.deepEqual([...new Set(rules)].sort(), ['ULT-STYLE-001', 'ULT-TOKEN-001']);
+    assert.equal(report.counts.excepted, ids.length);
+    assert.deepEqual(report.diagnostics, []);
   });
 
   test('an exactly matched entry excepts its one site and nothing else', () => {
-    const report = run({ [SEPARATOR]: withDialog, [EXCEPTIONS]: fixture('exceptions/valid.ts') });
+    const report = run({ [SEPARATOR]: withDialog, [EXCEPTIONS]: fixtureWithRepository('exceptions/valid.ts') });
     assert.equal(report.status, 'clean');
-    assert.equal(report.counts.excepted, 1);
+    assert.equal(report.counts.excepted, 1 + 9);
     assert.deepEqual(report.diagnostics, []);
 
     const second = afterFirstLine(withDialog, "import { Popover } from './popover';");
-    const other = run({ [SEPARATOR]: second, [EXCEPTIONS]: fixture('exceptions/valid.ts') });
+    const other = run({ [SEPARATOR]: second, [EXCEPTIONS]: fixtureWithRepository('exceptions/valid.ts') });
     assert.deepEqual(
       other.diagnostics.map((diagnostic) => [diagnostic.ruleId, diagnostic.target]),
       [['ULT-IMPORT-001', './popover']],
@@ -34,7 +42,7 @@ describe('ULT-EXCEPTION-001', () => {
   });
 
   test('the entry goes stale when its site is fixed', () => {
-    const report = run({ [EXCEPTIONS]: fixture('exceptions/valid.ts') });
+    const report = run({ [EXCEPTIONS]: fixtureWithRepository('exceptions/valid.ts') });
     assert.deepEqual(exceptionFindings(report), [
       { exception: 'separator-relative-dialog', line: 4, message: 'Exception "separator-relative-dialog" matches no site: it is stale.' },
     ]);
@@ -42,7 +50,7 @@ describe('ULT-EXCEPTION-001', () => {
   });
 
   test('rejects stale, broad, directory, miscounted, duplicate, unlinked, unexceptable and unknown-field entries', () => {
-    const report = run({ [SEPARATOR]: withDialog, [EXCEPTIONS]: fixture('exceptions/invalid.ts') });
+    const report = run({ [SEPARATOR]: withDialog, [EXCEPTIONS]: fixtureWithRepository('exceptions/invalid.ts') });
     const findings = exceptionFindings(report);
     const about = (id: string) => findings.filter((finding) => finding.exception === id).map((finding) => finding.message);
     assert.deepEqual(about('broad-glob'), ['Exception "broad-glob" is broad: it names a glob, a directory or a wildcard.']);
@@ -58,11 +66,11 @@ describe('ULT-EXCEPTION-001', () => {
     assert.ok(stale.includes('Exception id "stale" is declared twice.'), stale.join('\n'));
     // A miscounted entry excepts nothing: the site it names stays a violation.
     assert.ok(report.diagnostics.some((diagnostic) => diagnostic.ruleId === 'ULT-IMPORT-001' && diagnostic.target === './dialog'));
-    assert.equal(report.counts.excepted, 0);
+    assert.equal(report.counts.excepted, 9);
   });
 
   test('locates each finding at its entry in the exceptions file', () => {
-    const report = run({ [SEPARATOR]: withDialog, [EXCEPTIONS]: fixture('exceptions/invalid.ts') });
+    const report = run({ [SEPARATOR]: withDialog, [EXCEPTIONS]: fixtureWithRepository('exceptions/invalid.ts') });
     const lines = Object.fromEntries(exceptionFindings(report).map((finding) => [finding.exception, finding.line]));
     assert.equal(lines['broad-glob'], 14);
     assert.equal(lines.directory, 24);
@@ -76,9 +84,13 @@ describe('ULT-EXCEPTION-001', () => {
     assert.ok(findings.every((finding) => finding.message.startsWith('The exceptions file is not plain data')));
   });
 
-  test('a missing exceptions file makes the run incomplete', () => {
+  test('a missing exceptions file makes the run incomplete, and the sites it excepted return', () => {
     const report = run({ [EXCEPTIONS]: null });
-    assert.equal(report.status, 'incomplete');
-    assert.deepEqual(report.diagnostics.map((diagnostic) => [diagnostic.ruleId, diagnostic.file]), [['ULT-ANALYSIS-001', EXCEPTIONS]]);
+    const incomplete = report.diagnostics.filter((diagnostic) => diagnostic.severity === 'incomplete');
+    assert.deepEqual(incomplete.map((diagnostic) => [diagnostic.ruleId, diagnostic.file]), [['ULT-ANALYSIS-001', EXCEPTIONS]]);
+    const returned = report.diagnostics.filter((diagnostic) => diagnostic.severity === 'blocking');
+    assert.equal(returned.length, 9);
+    assert.ok(returned.every((diagnostic) => ['ULT-TOKEN-001', 'ULT-STYLE-001'].includes(diagnostic.ruleId)));
+    assert.equal(report.status, 'violations');
   });
 });

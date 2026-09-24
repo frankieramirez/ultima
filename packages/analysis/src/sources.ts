@@ -19,6 +19,8 @@ export type Parsed = {
   segments: Segment[];
   /** MDX only. */
   elements: MdxElement[];
+  /** MDX only: expression attributes on the page's JSX, by name, and the segment holding each value. */
+  attributes: { element: string | null; name: string; segment: number }[];
   /** MDX only: code fences and inline code, which print source rather than execute it. */
   examples: { start: number; end: number }[];
   /** Syntax the parser rejected; any one makes the run incomplete. */
@@ -51,7 +53,7 @@ export function parseSource(path: string, text: string): Parsed {
 
 function parseModule(path: string, text: string): Parsed {
   const file = parse(path.replace(/\.(m|c)?js$/, '.ts').replace(/\.jsx$/, '.tsx'), text);
-  return { path, text, segments: [{ file, shift: 0, role: 'module' }], elements: [], examples: [], problems: syntaxProblems(file, 0) };
+  return { path, text, segments: [{ file, shift: 0, role: 'module' }], elements: [], attributes: [], examples: [], problems: syntaxProblems(file, 0) };
 }
 
 type Point = { offset?: number };
@@ -67,7 +69,7 @@ type MdNode = {
 const processor = createProcessor();
 
 function parseMdx(path: string, text: string): Parsed {
-  const parsed: Parsed = { path, text, segments: [], elements: [], examples: [], problems: [] };
+  const parsed: Parsed = { path, text, segments: [], elements: [], attributes: [], examples: [], problems: [] };
   let tree: MdNode;
   try {
     tree = processor.parse(text) as unknown as MdNode;
@@ -84,13 +86,15 @@ function parseMdx(path: string, text: string): Parsed {
     parsed.problems.push(...syntaxProblems(file, shift));
   };
   /** The code between a node's braces, sliced from the original so offsets map exactly. */
-  const braced = (from: number, to: number, role: Segment['role']) => {
+  const braced = (from: number, to: number, role: Segment['role'], value = false) => {
     const open = text.indexOf('{', from);
     const close = text.lastIndexOf('}', to - 1);
     if (open < 0 || close <= open) return;
     const inner = text.slice(open + 1, close);
     // A spread attribute is not an expression on its own; an array literal holds it without moving offsets.
     if (/^\s*\.\.\./.test(inner)) segment(`[${inner}]`, open, role);
+    // An attribute value is one expression: parentheses keep `{{ … }}` an object rather than a block.
+    else if (value) segment(`(${inner})`, open, role);
     else segment(inner, open + 1, role);
   };
 
@@ -108,10 +112,13 @@ function parseMdx(path: string, text: string): Parsed {
       const from = attribute.position?.start.offset;
       const to = attribute.position?.end.offset;
       if (from === undefined || to === undefined) continue;
-      const expression =
-        attribute.type === 'mdxJsxExpressionAttribute' ||
-        (typeof attribute.value === 'object' && attribute.value !== null && (attribute.value as MdNode).type === 'mdxJsxAttributeValueExpression');
-      if (expression) braced(from, to, 'expression');
+      const valued = typeof attribute.value === 'object' && attribute.value !== null && (attribute.value as MdNode).type === 'mdxJsxAttributeValueExpression';
+      if (attribute.type !== 'mdxJsxExpressionAttribute' && !valued) continue;
+      const before = parsed.segments.length;
+      braced(from, to, 'expression', valued);
+      if (attribute.type === 'mdxJsxAttribute' && typeof attribute.name === 'string' && parsed.segments.length > before) {
+        parsed.attributes.push({ element: node.name ?? null, name: attribute.name, segment: before });
+      }
     }
     for (const child of node.children ?? []) visit(child);
   };

@@ -7,8 +7,7 @@ import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
-const chevronInset = space['--ult-space-5'];
-const chevronRoom = `calc(${chevronInset} + 1em + ${space['--ult-space-4']})`;
+const chevronRoom = `calc(${space['--ult-space-5']} + 1em + ${space['--ult-space-4']})`;
 
 const styles = stylex.create({
   root: {
@@ -47,7 +46,7 @@ const styles = stylex.create({
   chevron: {
     color: color['--ult-color-text-subtle'],
     insetBlockStart: '50%',
-    insetInlineEnd: chevronInset,
+    insetInlineEnd: space['--ult-space-5'],
     pointerEvents: 'none',
     position: 'absolute',
     transform: 'translateY(-50%)',

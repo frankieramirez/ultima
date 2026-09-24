@@ -42,9 +42,9 @@ export function run(changes: Record<string, string | null> = {}): Report {
   return check(workspaceScope(overlay(repository, changes)));
 }
 
-export type Expected = { ruleId: string; file: string; line: number; column: number; symbol?: string; target?: string };
+export type Expected = { ruleId: string; file: string; line: number; column: number; symbol?: string; target?: string; selector?: string };
 
-/** The run's diagnostics reduced to what a fixture asserts: rule, file and start, plus symbol and target when set. */
+/** The run's diagnostics reduced to what a fixture asserts: rule, file and start, plus symbol, target and selector when set. */
 export function located(report: Report, file?: string): Expected[] {
   return report.diagnostics
     .filter((diagnostic) => file === undefined || diagnostic.file === file)
@@ -55,6 +55,7 @@ export function located(report: Report, file?: string): Expected[] {
       column: diagnostic.start.column,
       ...(diagnostic.symbol !== undefined && { symbol: diagnostic.symbol }),
       ...(diagnostic.target !== undefined && { target: diagnostic.target }),
+      ...(diagnostic.selector !== undefined && { selector: diagnostic.selector }),
     }));
 }
 
@@ -62,4 +63,17 @@ export function located(report: Report, file?: string): Expected[] {
 export function afterFirstLine(text: string, line: string): string {
   const end = text.indexOf('\n');
   return `${text.slice(0, end + 1)}${line}\n${text.slice(end + 1)}`;
+}
+
+/**
+ * An exceptions fixture with the repository's own entries appended, so a test about one entry does not
+ * turn the sites the repository already excepts back into violations. The fixture's lines are unchanged.
+ */
+export function withRepositoryExceptions(text: string): string {
+  const own = source('packages/analysis/exceptions.ts');
+  const entries = own.slice(own.indexOf('export default [') + 'export default ['.length, own.lastIndexOf('] satisfies'));
+  const end = text.lastIndexOf('] satisfies');
+  const head = text.slice(0, end).trimEnd();
+  const joiner = head.endsWith('[') || head.endsWith(',') ? '' : ',';
+  return `${head}${joiner}${entries}${text.slice(end)}`;
 }

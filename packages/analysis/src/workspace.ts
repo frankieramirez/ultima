@@ -7,7 +7,7 @@ import type { Files } from '../../../scripts/catalogue/files.ts';
 import { loadCatalogue } from '../../../scripts/catalogue/model.ts';
 import { headingAnchors } from '../../../scripts/catalogue/source.ts';
 import type { Diagnostic } from './diagnostic.ts';
-import { POLICY, packageName } from './policy.ts';
+import { POLICY, STYLE_POLICY, packageName } from './policy.ts';
 import { RULES } from './rules.ts';
 import type { Classified, Resolution, Scope, SourceKind, Staged } from './scope.ts';
 
@@ -223,6 +223,16 @@ export function workspaceScope(files: Files): Scope {
     staged: (path) => staged.get(path),
     itemOf: (path) => items.get(path),
     policy: POLICY,
+    styles: STYLE_POLICY,
+    tokenSources: inventory.filter(({ path, kind }) => kind === 'token-source' && path.endsWith('.stylex.ts')).map(({ path }) => path),
+    globalStyles: [
+      {
+        // The self-hosted IBM Plex faces and the document reset, imported once by each docs entry.
+        stylesheet: 'apps/docs/src/styles.css',
+        importers: ['apps/docs/src/main.tsx', 'apps/docs/src/main-coming-soon.tsx'],
+        authority: 'docs/spec/ultima.md#typefaces',
+      },
+    ],
     testPlacement: ['packages/ui', 'packages/elements', 'packages/tokens'].map((directory) => ({
       package: `${directory}/`,
       tests: `${directory}/src/__tests__/`,

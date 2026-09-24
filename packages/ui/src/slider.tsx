@@ -8,9 +8,6 @@ import type { ComponentProps } from 'react';
 
 const VERTICAL = ':is([data-orientation="vertical"])';
 
-const thumbSize = space['--ult-space-6'];
-const trackCrossSize = space['--ult-space-2'];
-const controlCrossSize = space['--ult-space-8'];
 
 const styles = stylex.create({
   label: {
@@ -29,20 +26,20 @@ const styles = stylex.create({
     alignItems: 'center',
     boxSizing: 'border-box',
     display: 'flex',
-    height: { default: controlCrossSize, [VERTICAL]: '100%' },
+    height: { default: space['--ult-space-8'], [VERTICAL]: '100%' },
     justifyContent: 'center',
     margin: 0,
     opacity: { default: 1, ':is([data-disabled])': 0.5 },
     touchAction: 'none',
     userSelect: 'none',
-    width: { default: '100%', [VERTICAL]: controlCrossSize },
+    width: { default: '100%', [VERTICAL]: space['--ult-space-8'] },
   },
   /** Base UI gives the indicator `height: inherit`, so without a size here it has none. */
   track: {
     backgroundColor: color['--ult-color-surface-sunken'],
     borderRadius: radius['--ult-radius-full'],
-    height: { default: trackCrossSize, [VERTICAL]: '100%' },
-    width: { default: '100%', [VERTICAL]: trackCrossSize },
+    height: { default: space['--ult-space-2'], [VERTICAL]: '100%' },
+    width: { default: '100%', [VERTICAL]: space['--ult-space-2'] },
   },
   /** Base UI sets the indicator's own position and length inline, from the values. */
   indicator: {
@@ -58,8 +55,8 @@ const styles = stylex.create({
     borderWidth: border.hairline,
     boxShadow: { default: shadow['--ult-shadow-sm'], ':is([data-dragging])': shadow['--ult-shadow-md'] },
     boxSizing: 'border-box',
-    height: thumbSize,
-    width: thumbSize,
+    height: space['--ult-space-6'],
+    width: space['--ult-space-6'],
     /** The focusable element is the nested range input, so `:focus-visible` never matches here. */
     ':has(:focus-visible)': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,

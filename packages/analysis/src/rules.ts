@@ -6,16 +6,14 @@ const INFRA = 'docs/spec/agent-infrastructure.md';
 
 export const RULES = {
   'ULT-TOKEN-001': {
-    status: 'pending',
+    status: 'blocking',
     scope: 'React and element component declarations',
     link: `${INFRA}#values-and-runtime-styles`,
-    owner: 'https://github.com/frankieramirez/ultima/issues/454',
   },
   'ULT-STYLE-001': {
-    status: 'pending',
+    status: 'blocking',
     scope: 'Production components and docs styling',
     link: `${INFRA}#rule-catalogue`,
-    owner: 'https://github.com/frankieramirez/ultima/issues/454',
   },
   'ULT-PRIMITIVE-001': {
     status: 'blocking',

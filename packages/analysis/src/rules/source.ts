@@ -7,6 +7,7 @@ import { INCOMPLETE_MARKER } from '../../../../scripts/catalogue/scaffold.ts';
 import type { Diagnostic } from '../diagnostic.ts';
 import { DOCS_KINDS, PRODUCTION_KINDS, type SourceKind } from '../scope.ts';
 import type { Parsed } from '../sources.ts';
+import { styleXBindings, topLevelName } from '../stylex.ts';
 import type { Context } from './context.ts';
 
 const INFRA = 'docs/spec/agent-infrastructure.md';
@@ -90,7 +91,7 @@ function checkMarker(context: Context, path: string): void {
   const examples = path.endsWith('.mdx') ? (context.source(path)?.examples ?? []) : [];
   for (let at = text.indexOf(INCOMPLETE_MARKER); at !== -1; at = text.indexOf(INCOMPLETE_MARKER, at + 1)) {
     if (examples.some((range) => at >= range.start && at < range.end)) continue;
-    const parsed: Parsed = context.source(path) ?? { path, text, segments: [], elements: [], examples: [], problems: [] };
+    const parsed: Parsed = context.source(path) ?? { path, text, segments: [], elements: [], attributes: [], examples: [], problems: [] };
     context.report({
       ruleId: 'ULT-SOURCE-001',
       parsed,
@@ -122,17 +123,6 @@ function checkDirective(context: Context, parsed: Parsed): void {
   });
 }
 
-function topLevelName(node: ts.Node): string | undefined {
-  let current: ts.Node = node;
-  while (current.parent && !ts.isSourceFile(current.parent)) current = current.parent;
-  if ((ts.isFunctionDeclaration(current) || ts.isClassDeclaration(current)) && current.name) return current.name.text;
-  if (ts.isVariableStatement(current)) {
-    const [first] = current.declarationList.declarations;
-    if (first && ts.isIdentifier(first.name)) return first.name.text;
-  }
-  return undefined;
-}
-
 const WRAPPERS = (node: ts.Node) =>
   ts.isParenthesizedExpression(node) ||
   ts.isAsExpression(node) ||
@@ -152,49 +142,6 @@ function isModuleScopeInitializer(node: ts.Node): ts.VariableDeclaration | undef
   return ts.isVariableStatement(statement) && ts.isSourceFile(statement.parent) ? declaration : undefined;
 }
 
-/** The StyleX bindings a file holds: the namespace or default import, and `create`/`keyframes` under any local name. */
-function styleXBindings(file: ts.SourceFile): { namespaces: Set<string>; calls: Map<string, string> } {
-  const namespaces = new Set<string>();
-  /** Local name to the StyleX function it is. */
-  const calls = new Map<string, string>();
-  for (const statement of file.statements) {
-    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
-    if (statement.moduleSpecifier.text !== '@stylexjs/stylex') continue;
-    const clause = statement.importClause;
-    if (!clause || clause.isTypeOnly) continue;
-    if (clause.name) namespaces.add(clause.name.text);
-    const bindings = clause.namedBindings;
-    if (bindings && ts.isNamespaceImport(bindings)) namespaces.add(bindings.name.text);
-    if (bindings && ts.isNamedImports(bindings)) {
-      for (const element of bindings.elements) {
-        const imported = (element.propertyName ?? element.name).text;
-        if (!element.isTypeOnly && TABLE_CALLS.has(imported)) calls.set(element.name.text, imported);
-      }
-    }
-  }
-  // Module-scope aliases: `const sx = stylex`, `const make = stylex.create`, `const { create } = stylex`.
-  for (const statement of file.statements) {
-    if (!ts.isVariableStatement(statement) || !(statement.declarationList.flags & ts.NodeFlags.Const)) continue;
-    for (const declaration of statement.declarationList.declarations) {
-      const init = declaration.initializer;
-      if (!init) continue;
-      if (ts.isIdentifier(declaration.name)) {
-        if (ts.isIdentifier(init) && namespaces.has(init.text)) namespaces.add(declaration.name.text);
-        else if (ts.isIdentifier(init) && calls.has(init.text)) calls.set(declaration.name.text, calls.get(init.text) as string);
-        else if (ts.isPropertyAccessExpression(init) && ts.isIdentifier(init.expression) && namespaces.has(init.expression.text) && TABLE_CALLS.has(init.name.text)) {
-          calls.set(declaration.name.text, init.name.text);
-        }
-      } else if (ts.isObjectBindingPattern(declaration.name) && ts.isIdentifier(init) && namespaces.has(init.text)) {
-        for (const element of declaration.name.elements) {
-          const imported = element.propertyName ?? element.name;
-          if (ts.isIdentifier(imported) && TABLE_CALLS.has(imported.text) && ts.isIdentifier(element.name)) calls.set(element.name.text, imported.text);
-        }
-      }
-    }
-  }
-  return { namespaces, calls };
-}
-
 /** An identifier in a declaration or type position, which is never a use of the binding's value. */
 function isDeclarationOrType(node: ts.Identifier): boolean {
   const parent = node.parent;
@@ -210,7 +157,8 @@ function isDeclarationOrType(node: ts.Identifier): boolean {
 
 function checkTables(context: Context, parsed: Parsed): void {
   const file = (parsed.segments[0] as Parsed['segments'][number]).file;
-  const { namespaces, calls } = styleXBindings(file);
+  const { namespaces, calls: bound } = styleXBindings(file);
+  const calls = new Map([...bound].filter(([, name]) => TABLE_CALLS.has(name)));
   if (namespaces.size === 0 && calls.size === 0) return;
 
   const escape = (node: ts.Node, what: string) =>

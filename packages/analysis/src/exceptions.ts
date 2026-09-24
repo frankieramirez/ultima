@@ -22,7 +22,7 @@ export type ArchitectureException = {
   target: string;
   /** The selector or condition, when the rule reports one. */
   selector?: string;
-  /** The allowed expression shape, when the rule reports one. */
+  /** The allowed expression, exactly as the diagnostic reports it; when set, only that value matches. */
   expression?: string;
   /** How many sites the entry must match, exactly. */
   count: number;
@@ -193,7 +193,14 @@ export function applyExceptions(scope: Scope, diagnostics: Diagnostic[]): { diag
     const matches = diagnostics.filter(
       (diagnostic) =>
         diagnostic.severity !== 'incomplete' &&
-        keyOf({ rule: diagnostic.ruleId, path: diagnostic.file, symbol: diagnostic.symbol ?? '', target: diagnostic.target ?? '' }) === keyOf(entry),
+        keyOf({
+          rule: diagnostic.ruleId,
+          path: diagnostic.file,
+          symbol: diagnostic.symbol ?? '',
+          target: diagnostic.target ?? '',
+          ...(diagnostic.selector !== undefined && { selector: diagnostic.selector }),
+        }) === keyOf(entry) &&
+        (entry.expression === undefined || entry.expression === diagnostic.expression),
     );
     if (matches.length === 0) {
       at(start, end, `Exception "${entry.id}" matches no site: it is stale.`, 'Delete it; the violation it covered is gone.', entry.id);

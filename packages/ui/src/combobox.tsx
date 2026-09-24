@@ -7,8 +7,6 @@ import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
 const listHeight = `calc(5 * ${space['--ult-space-12']})`;
-const indicatorInset = space['--ult-space-4'];
-const indicatorColumn = space['--ult-space-10'];
 
 const styles = stylex.create({
   label: {
@@ -204,14 +202,14 @@ const styles = stylex.create({
     outline: 'none',
     paddingBlock: space['--ult-space-2'],
     paddingInlineEnd: space['--ult-space-4'],
-    paddingInlineStart: indicatorColumn,
+    paddingInlineStart: space['--ult-space-10'],
     position: 'relative',
   },
   itemIndicator: {
     alignItems: 'center',
     display: 'flex',
     height: '1em',
-    insetInlineStart: indicatorInset,
+    insetInlineStart: space['--ult-space-4'],
     justifyContent: 'center',
     position: 'absolute',
     width: '1em',

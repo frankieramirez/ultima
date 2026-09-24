@@ -12,7 +12,6 @@ const stackCeiling = 1000;
 const scaleStep = 0.1;
 const slideDistance = '150%';
 
-const stackGap = space['--ult-space-5'];
 const swipeX = 'var(--toast-swipe-movement-x)';
 const swipeY = 'var(--toast-swipe-movement-y)';
 const clampedHeight = 'var(--toast-frontmost-height, var(--toast-height))';
@@ -23,9 +22,9 @@ const stackShrink = `(1 - ${stackScale})`;
 
 const collapsedTransform =
   `translateX(${swipeX})` +
-  ` translateY(calc(${swipeY} - (var(--toast-index) * ${stackGap}) - (${stackShrink} * ${shrunkHeight})))` +
+  ` translateY(calc(${swipeY} - (var(--toast-index) * ${space['--ult-space-5']}) - (${stackShrink} * ${shrunkHeight})))` +
   ` scale(${stackScale})`;
-const expandedY = `calc(${swipeY} - var(--toast-offset-y) - (var(--toast-index) * ${stackGap}))`;
+const expandedY = `calc(${swipeY} - var(--toast-offset-y) - (var(--toast-index) * ${space['--ult-space-5']}))`;
 const expandedTransform = `translateX(${swipeX}) translateY(${expandedY})`;
 
 const styles = stylex.create({

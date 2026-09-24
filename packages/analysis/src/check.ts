@@ -5,6 +5,8 @@ import { ruleStatuses } from './rules.ts';
 import { createContext } from './rules/context.ts';
 import { checkImports } from './rules/imports.ts';
 import { checkSource } from './rules/source.ts';
+import { checkStyle } from './rules/style.ts';
+import { checkTokens } from './rules/tokens.ts';
 import { DOCS_KINDS, PRODUCTION_KINDS, type Scope } from './scope.ts';
 
 export function check(scope: Scope): Report {
@@ -16,6 +18,8 @@ export function check(scope: Scope): Report {
   }
   checkSource(context);
   checkImports(context);
+  checkTokens(context);
+  checkStyle(context);
 
   const { diagnostics, excepted } = applyExceptions(scope, [...scope.problems, ...context.diagnostics]);
   const unique = new Map<string, Diagnostic>();
@@ -41,7 +45,7 @@ export function check(scope: Scope): Report {
         .map((rule) => ({ step: rule.id, reason: `Not implemented in this run; ${rule.owner} delivers it. Its contract is unchecked.` })),
       {
         step: 'MDX page JSX',
-        reason: 'Parsed with locations kept, and read for imports and scaffold markers; no active rule checks its elements yet.',
+        reason: 'Parsed with locations kept, and read for imports, scaffold markers, stylesheets and inline styles; no docs control or surface rule checks its elements yet.',
       },
       ...scope.excluded.map(({ path, reason }) => ({ step: `Excluded: ${path}`, reason: `${reason}; a structural scope, never read.` })),
     ],
