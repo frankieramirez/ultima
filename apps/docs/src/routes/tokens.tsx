@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code, Separator, Table } from '@ultima/ui';
+import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
 import { APCAcontrast, sRGBtoY } from 'apca-w3';
 
 import { breakpoints } from '../breakpoints.stylex';
@@ -10,7 +11,7 @@ import RadiusSpecimen from '../demos/tokens/radius';
 import ShadowSpecimen from '../demos/tokens/shadow';
 import SpaceBar from '../demos/tokens/space';
 import TypeSample from '../demos/tokens/text';
-import { Note, Page, Section, TextLink } from '../page';
+import { Kicker, Note, Page, Section, TextLink } from '../page';
 import { Fence } from '../prose';
 import { Swatch } from '../swatch';
 import { contrast, tokenGroups, tokensByName, type Token } from '../token-data';
@@ -22,27 +23,43 @@ const styles = stylex.create({
   rows: {
     display: 'flex',
     flexDirection: 'column',
-    gap: space['--ult-space-7'],
+    gap: space['--ult-space-3'],
     marginBlockStart: space['--ult-space-6'],
   },
+  /**
+   * One grid template for every Token row and its column heads, settled on #372: name, purpose,
+   * the two value columns, and the copy button on one line at desktop; below it, the name and
+   * copy button, then the purpose, then the two values side by side. The purpose keeps a 12rem
+   * floor and the name gives way to it, since the article is only about 42rem wide at 64rem with
+   * the menu panel open.
+   */
   row: {
-    alignItems: 'start',
+    alignItems: 'center',
+    columnGap: space['--ult-space-5'],
     display: 'grid',
-    gap: space['--ult-space-6'],
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)' },
+    gridTemplateAreas: {
+      default: '"name name copy" "purpose purpose purpose" "first second ."',
+      [breakpoints.DESKTOP]: '"name purpose first second copy"',
+    },
+    gridTemplateColumns: {
+      default: 'minmax(0, 1fr) minmax(0, 1fr) 1.75rem',
+      [breakpoints.DESKTOP]: 'minmax(0, 17.5rem) minmax(12rem, 1fr) repeat(2, 7.75rem) 1.75rem',
+    },
+    rowGap: space['--ult-space-2'],
   },
-  colorRow: {
-    columnGap: space['--ult-space-9'],
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.DESKTOP]: 'minmax(16rem, 22rem) minmax(0, 1fr)', [breakpoints.INDEX]: 'minmax(18rem, 30rem) minmax(0, 1fr)' },
-    paddingBlockEnd: space['--ult-space-6'],
+  heads: {
+    gridTemplateAreas: {
+      default: '"first second ."',
+      [breakpoints.DESKTOP]: '"name purpose first second copy"',
+    },
   },
-  divider: { gridColumn: '1 / -1' },
-  identity: {
-    alignItems: 'baseline',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: space['--ult-space-3'],
+  head: {
+    display: { default: 'none', [breakpoints.DESKTOP]: 'block' },
+    textTransform: 'uppercase',
   },
+  valueHead: { display: 'block', textTransform: 'uppercase' },
+  nameArea: { gridArea: 'name' },
+  purposeArea: { gridArea: 'purpose' },
   name: {
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-mono'],
@@ -50,30 +67,25 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-snug'],
     overflowWrap: 'anywhere',
   },
-  description: {
+  purpose: {
     color: color['--ult-color-text-muted'],
-    flexBasis: '100%',
     fontSize: text['--ult-text-3'],
     lineHeight: font['--ult-font-leading-snug'],
   },
-  swatches: {
-    display: 'grid',
-    gap: space['--ult-space-5'],
-    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-  },
-  example: {
-    alignItems: 'center',
-    display: 'flex',
-    gap: space['--ult-space-6'],
-    justifyContent: 'space-between',
-    minHeight: space['--ult-space-11'],
-  },
+  first: { gridArea: 'first', minWidth: 0 },
+  second: { gridArea: 'second', minWidth: 0 },
+  /** Font and filter have no specimen, so the value takes both columns. */
+  both: { gridColumn: 'first-start / second-end', gridRow: 'first' },
+  copy: { display: 'flex', gridArea: 'copy', justifyContent: 'end' },
+  divider: { gridColumn: '1 / -1' },
   value: {
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-3'],
-    minWidth: '10rem',
+    fontSize: text['--ult-text-2'],
+    lineHeight: font['--ult-font-leading-snug'],
+    overflowWrap: 'anywhere',
   },
+  specimen: { alignItems: 'center', display: 'flex', minWidth: 0 },
   scroll: {
     marginBlockStart: space['--ult-space-6'],
   },
@@ -115,6 +127,14 @@ function capitalize(group: string): string {
   return group.charAt(0).toUpperCase() + group.slice(1);
 }
 
+/** The groups whose tokens have no drawable specimen, so their value spans both columns. */
+const NO_SPECIMEN = new Set(['font', 'filter']);
+
+function headsFor(group: string): string[] {
+  if (group === 'color') return ['Dark', 'Light'];
+  return NO_SPECIMEN.has(group) ? ['Value'] : ['Value', 'Specimen'];
+}
+
 export function TokensPage() {
   return (
     <Page
@@ -132,6 +152,7 @@ export function TokensPage() {
       {tokenGroups.map((group) => (
         <Section key={group.name} title={capitalize(group.name)}>
           <div {...stylex.props(styles.rows)}>
+            <Heads group={group.name} />
             {group.tokens.map((token) => (
               <Row key={token.name} token={token} />
             ))}
@@ -145,45 +166,62 @@ export function TokensPage() {
   );
 }
 
+/** The column heads, a micro-label line in the breadcrumb voice. Each value cell names itself to a screen reader, so this line is hidden from one. */
+function Heads({ group }: { group: string }) {
+  const [first, second] = headsFor(group);
+  return (
+    <div aria-hidden {...stylex.props(styles.row, styles.heads)}>
+      <Kicker style={[styles.head, styles.nameArea]}>Token</Kicker>
+      <Kicker style={[styles.head, styles.purposeArea]}>Purpose</Kicker>
+      <Kicker style={[styles.valueHead, second ? styles.first : styles.both]}>{first}</Kicker>
+      {second ? <Kicker style={[styles.valueHead, styles.second]}>{second}</Kicker> : null}
+    </div>
+  );
+}
+
 function Row({ token }: { token: Token }) {
   const description = describeToken(token.name);
   return (
-    <div {...stylex.props(styles.row, token.group === 'color' && styles.colorRow)}>
-      <div {...stylex.props(styles.identity)}>
-        <code {...stylex.props(styles.name)}>{token.name}</code>
-        <CopyButton text={token.name} ariaLabel={`Copy ${token.name}`} />
-        {description ? <span {...stylex.props(styles.description)}>{description}</span> : null}
-      </div>
+    <div {...stylex.props(styles.row)}>
+      <code {...stylex.props(styles.name, styles.nameArea)}>{token.name}</code>
+      {description ? <span {...stylex.props(styles.purpose, styles.purposeArea)}>{description}</span> : null}
       {token.group === 'color' ? <ModeSwatches token={token} /> : <OtherValue token={token} />}
-      {token.group === 'color' && <Separator style={styles.divider} />}
+      <div {...stylex.props(styles.copy)}>
+        <CopyButton text={token.name} ariaLabel={`Copy ${token.name}`} />
+      </div>
+      <Separator style={styles.divider} />
     </div>
   );
 }
 
 function ModeSwatches({ token }: { token: Token }) {
-  return (
-    <div {...stylex.props(styles.swatches)}>
-      {MODES.map((mode) => {
-        const { scale, step, value } = token[mode];
-        return (
-          <Swatch
-            key={mode}
-            value={value}
-            caption={value}
-            note={scale && step ? `${mode} · ${scale} ${step}` : mode}
-          />
-        );
-      })}
-    </div>
-  );
+  return MODES.map((mode, index) => {
+    const { scale, step, value } = token[mode];
+    return (
+      <div key={mode} {...stylex.props(index === 0 ? styles.first : styles.second)}>
+        <span {...stylex.props(visuallyHidden)}>{mode}</span>
+        <Swatch
+          layout="inline"
+          value={value}
+          caption={value}
+          title={scale && step ? `${scale} ${step}` : undefined}
+        />
+      </div>
+    );
+  });
 }
 
 function OtherValue({ token }: { token: Token }) {
+  if (NO_SPECIMEN.has(token.group)) {
+    return <span {...stylex.props(styles.value, styles.both)}>{token.dark.value}</span>;
+  }
   return (
-    <div {...stylex.props(styles.example)}>
-      <span {...stylex.props(styles.value)}>{token.dark.value}</span>
-      <Example token={token} />
-    </div>
+    <>
+      <span {...stylex.props(styles.value, styles.first)}>{token.dark.value}</span>
+      <div {...stylex.props(styles.specimen, styles.second)}>
+        <Example token={token} />
+      </div>
+    </>
   );
 }
 

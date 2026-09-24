@@ -91,6 +91,7 @@ export function PalettePage() {
   return (
     <Page
       title="Palette"
+      index={false}
       lede={
         <>
           Six scales, twelve steps each, a dark and a light value per step, generated in OKLCH and
