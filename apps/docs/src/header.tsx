@@ -6,6 +6,7 @@ import { Button, NavigationMenu, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
 import { breakpoints } from './breakpoints.stylex';
+import { ColorModeToggle } from './color-mode-toggle';
 import { layoutStyles } from './layout';
 import { Kicker } from './page';
 import { TextLink } from './text-link';
@@ -33,7 +34,10 @@ const styles = stylex.create({
     display: { default: 'none', [breakpoints.WIDE]: 'flex' },
     flexGrow: 1,
   },
-  status: { display: { default: 'none', [breakpoints.WIDE]: 'block' } },
+  // Gives way to the mode control between the two breakpoints, where the bar has room for one of them.
+  status: { display: { default: 'none', [breakpoints.DESKTOP]: 'block' } },
+  // The footer's copy serves narrow viewports; this one covers the Studio, which renders no footer.
+  mode: { display: { default: 'none', [breakpoints.WIDE]: 'inline-flex' }, flexShrink: 0 },
   github: {
     fontSize: text['--ult-text-4'],
     marginInlineStart: 'auto',
@@ -41,9 +45,9 @@ const styles = stylex.create({
 });
 
 const LINKS = [
+  { label: 'Install', to: '/install' },
   { label: 'Components', to: '/components' },
   { label: 'Tokens', to: '/tokens' },
-  { label: 'Documentation', to: '/install' },
   { label: 'Studio', to: '/theme-studio' },
 ] as const;
 
@@ -71,6 +75,7 @@ export function Header({ wide = false }: { wide?: boolean }) {
           </NavigationMenu.List>
         </NavigationMenu.Root>
         <Kicker style={styles.status}>v0 / IN DEVELOPMENT</Kicker>
+        <ColorModeToggle style={styles.mode} />
         <TextLink variant="muted" style={styles.github} href="https://github.com/frankieramirez/ultima">
           GitHub <ArrowUpRightIcon aria-hidden />
         </TextLink>

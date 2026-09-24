@@ -66,9 +66,12 @@ test('the header offers the workshop nav and hides the menu trigger on desktop',
 
   const site = screen.getByRole('navigation', { name: 'Site', exact: true });
   await expect.element(site.getByRole('link', { name: 'Components' })).toBeVisible();
-  await expect.element(site.getByRole('link', { name: 'Tokens' })).toBeVisible();
-  await expect.element(site.getByRole('link', { name: 'Documentation' })).toBeVisible();
-  await expect.element(site.getByRole('link', { name: 'Studio' })).toBeVisible();
+  expect([...site.element().querySelectorAll('a')].map((link) => link.textContent)).toEqual([
+    'Install',
+    'Components',
+    'Tokens',
+    'Studio',
+  ]);
   await expect.element(screen.getByRole('link', { name: 'Ultima home' })).toBeVisible();
   expect(
     getComputedStyle(screen.container.querySelector('header button[aria-label="Toggle navigation"]')!)
@@ -119,6 +122,30 @@ test('every site link shows the same focus ring', async () => {
   expect(targets.size).toBe(0);
 });
 
+for (const path of ['/', '/install', '/tokens', '/components', '/components/button', '/theme-studio', '/lost-in-the-suite']) {
+  test(`the first Tab on ${path} lands on the skip link, which hands focus to the content`, async () => {
+    const screen = await mount(path);
+    await expect.element(screen.getByRole('link', { name: 'Ultima home' })).toBeVisible();
+
+    const skip = screen.getByRole('link', { name: 'Skip to content' }).element() as HTMLElement;
+    expect(skip.getBoundingClientRect().height).toBeLessThanOrEqual(1);
+
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).toBe(skip);
+    expect(skip.getBoundingClientRect().height).toBeGreaterThan(1);
+    expect(getComputedStyle(skip).outlineStyle).toBe('solid');
+
+    await userEvent.keyboard('{Enter}');
+    const content = document.getElementById('main')!;
+    await expect.poll(() => document.activeElement).toBe(content);
+    expect(content.contains(document.querySelector('header'))).toBe(false);
+    expect(content.contains(menu().query())).toBe(false);
+
+    await userEvent.keyboard('{Tab}');
+    expect(content.contains(document.activeElement)).toBe(true);
+  });
+}
+
 test('the inline link shows the same focus ring', async () => {
   prefer('dark');
   const screen = await render(<TextLink href="/tokens">/tokens</TextLink>);
@@ -133,17 +160,67 @@ test('the inline link shows the same focus ring', async () => {
   expect(style.outlineColor).toBe('rgb(131, 148, 255)');
 });
 
-test('the footer carries the mode control and the header does not', async () => {
+test('the header link for the current page reads text and medium weight through aria-current', async () => {
+  prefer('dark');
+  const screen = await mount('/components/button');
+  const site = screen.getByRole('navigation', { name: 'Site', exact: true });
+  await expect.element(site.getByRole('link', { name: 'Components' })).toBeVisible();
+
+  const current = site.element().querySelectorAll('[aria-current="page"]');
+  expect([...current].map((link) => link.textContent)).toEqual(['Components']);
+  const text = getComputedStyle(screen.getByRole('heading', { name: 'Button', level: 1 }).element()).color;
+  expect(getComputedStyle(current[0]!).color).toBe(text);
+  expect(getComputedStyle(current[0]!).fontWeight).toBe('500');
+  expect(getComputedStyle(current[0]!).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+
+  const resting = site.getByRole('link', { name: 'Tokens' }).element();
+  expect(resting).not.toHaveAttribute('aria-current');
+  expect(getComputedStyle(resting).color).not.toBe(text);
+  expect(getComputedStyle(resting).fontWeight).toBe('400');
+});
+
+test('no chrome surface names the install page Documentation', async () => {
+  for (const path of ['/', '/install', '/tokens', '/elements', '/rationale']) {
+    const screen = await mount(path);
+    await expect.poll(() => screen.container.querySelector('h1')).not.toBeNull();
+    const installLinks = [...screen.container.querySelectorAll('a[href="/install"]')];
+    expect(installLinks.length).toBeGreaterThan(0);
+    expect(installLinks.map((link) => link.textContent?.trim())).not.toContain('Documentation');
+  }
+});
+
+test('above the breakpoint the header carries the mode control and the footer hides its own', async () => {
   const screen = await mount('/');
 
   const footer = screen.container.querySelector('footer')!;
   expect(footer.textContent).toContain('ULTIMA / A SYSTEM FOR BUILDING INTERFACES');
-  await expect.element(screen.getByRole('group', { name: 'Color mode' })).toBeVisible();
-  expect(footer.contains(screen.getByRole('group', { name: 'Color mode' }).element())).toBe(true);
-  expect(screen.container.querySelector('header [role="group"]')).toBeNull();
+  const control = screen.getByRole('group', { name: 'Color mode' });
+  await expect.element(control).toBeVisible();
+  expect(screen.container.querySelector('header')!.contains(control.element())).toBe(true);
+  expect(getComputedStyle(footer.querySelector('[aria-label="Color mode"]')!).display).toBe('none');
 });
 
-test('the footer mode control switches the theme', async () => {
+test('the Studio, which renders no footer, keeps the mode control in its header', async () => {
+  const screen = await mount('/theme-studio');
+  const control = screen.getByRole('group', { name: 'Color mode' });
+  await expect.element(control).toBeVisible();
+  expect(screen.container.querySelector('header')!.contains(control.element())).toBe(true);
+});
+
+test('below the breakpoint the footer carries the mode control and the header hides its own', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/install');
+
+  const control = screen.getByRole('group', { name: 'Color mode' });
+  await expect.element(control).toBeVisible();
+  expect(screen.container.querySelector('footer')!.contains(control.element())).toBe(true);
+  expect(getComputedStyle(screen.container.querySelector('header [aria-label="Color mode"]')!).display).toBe(
+    'none',
+  );
+});
+
+test('the mode control switches the theme', async () => {
   onTestFinished(() => localStorage.removeItem(THEME_STORAGE_KEY));
   const screen = await mount('/');
 
@@ -164,7 +241,7 @@ test('the article trail is a Breadcrumb landmark that links the section and mark
   const tokens = await mount('/tokens');
   const tokensTrail = tokens.container.querySelector('nav[aria-label="Breadcrumb"]')!;
   const docsLink = tokensTrail.querySelector('a[href="/install"]')!;
-  expect(docsLink.textContent).toBe('Documentation');
+  expect(docsLink.textContent).toBe('Install');
   expect(tokensTrail.querySelector('[aria-current="page"]')?.textContent).toBe('Tokens');
 
   const component = await mount('/components/alert-dialog');
@@ -229,7 +306,7 @@ test('the logo returns to the editorial home page, which folds the menu rail awa
   await userEvent.click(
     screen
       .getByRole('navigation', { name: 'Site', exact: true })
-      .getByRole('link', { name: 'Documentation' })
+      .getByRole('link', { name: 'Install' })
       .element(),
   );
   const trail = screen.container.querySelector('nav[aria-label="Breadcrumb"]')!;

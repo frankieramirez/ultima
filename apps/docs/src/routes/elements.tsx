@@ -5,7 +5,7 @@ export function ElementsPage() {
   return (
     <Prose
       Content={Content}
-      breadcrumb={[{ label: 'Documentation', to: '/install' }, { label: 'Elements' }]}
+      breadcrumb={[{ label: 'Install', to: '/install' }, { label: 'Elements' }]}
     />
   );
 }

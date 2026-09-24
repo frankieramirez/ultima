@@ -11,6 +11,11 @@ import { routeTree } from '../router';
 import { THEME_STORAGE_KEY } from '../theme';
 import '../styles.css';
 
+/** The Studio's pane-mode switch, apart from the site header's color-mode switch. */
+function previewMode(screen: Awaited<ReturnType<typeof mount>>, name: 'Dark' | 'Light') {
+  return screen.getByRole('group', { name: 'Preview color mode' }).getByRole('button', { name }).element();
+}
+
 function mount(path: string) {
   const history = createMemoryHistory({ initialEntries: [path] });
   return render(<RouterProvider router={createRouter({ routeTree, history })} />);
@@ -387,7 +392,7 @@ test('inspect tokens lists declared variables and resolved values per pane mode'
   const darkRaised = getComputedStyle(target!).getPropertyValue('--ult-color-surface-raised').trim();
   expect(readout.element().textContent).toContain(darkRaised);
 
-  await userEvent.click(screen.getByRole('button', { name: 'Light' }).element());
+  await userEvent.click(previewMode(screen, 'Light'));
   const lightPane = screen.getByRole('region', { name: 'Light preview' }).element();
   const lightTarget = lightPane.querySelector<HTMLElement>('[data-tokens*="--ult-color-surface-raised"]');
   expect(lightTarget).not.toBeNull();
@@ -466,7 +471,7 @@ test('the studio passes axe with inspect targets shown', async () => {
 
 test('editor chrome stays stock dark when the preview is light', async () => {
   const screen = await mount('/theme-studio');
-  await userEvent.click(screen.getByRole('button', { name: 'Light' }).element());
+  await userEvent.click(previewMode(screen, 'Light'));
 
   const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
   const pane = screen.getByRole('region', { name: 'Light preview' }).element();
@@ -751,7 +756,7 @@ test('token override rows are linked by default and a committed edit writes both
   await userEvent.type(input.element(), '#ff0000');
   expect(readAccent(pane)).toBe('#ff0000');
 
-  await userEvent.click(screen.getByRole('button', { name: 'Light' }).element());
+  await userEvent.click(previewMode(screen, 'Light'));
   const lightPane = screen.getByRole('region', { name: 'Light preview' }).element();
   expect(readAccent(lightPane)).toBe('#ff0000');
   expect(readAccent(lightPane)).not.toBe(stock.light['--ult-color-accent']);
@@ -781,7 +786,7 @@ test('unlinking splits modes per row, relinking writes dark to both, and reset c
   await userEvent.type(light.element(), '#00ff00');
   let pane = screen.getByRole('region', { name: 'Dark preview' }).element();
   expect(readAccent(pane)).toBe('#ff0000');
-  await userEvent.click(screen.getByRole('button', { name: 'Light' }).element());
+  await userEvent.click(previewMode(screen, 'Light'));
   pane = screen.getByRole('region', { name: 'Light preview' }).element();
   expect(readAccent(pane)).toBe('#00ff00');
 
@@ -791,7 +796,7 @@ test('unlinking splits modes per row, relinking writes dark to both, and reset c
 
   await userEvent.click(screen.getByRole('button', { name: 'Reset --ult-color-accent' }).element());
   expect(readAccent(pane)).toBe(stock.light['--ult-color-accent']);
-  await userEvent.click(screen.getByRole('button', { name: 'Dark' }).element());
+  await userEvent.click(previewMode(screen, 'Dark'));
   expect(readAccent(screen.getByRole('region', { name: 'Dark preview' }).element())).toBe(
     stock.dark['--ult-color-accent'],
   );
