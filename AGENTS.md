@@ -10,6 +10,7 @@ Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/a
 - `packages/ui` — one file per component in `src/`, the shared helper types in `src/lib/`, the tests in `src/__tests__/`.
 - `apps/docs` — the docs site, its MDX content, and the demos its component pages render.
 - `registry/` — build output, apart from the authored `static/` and `metadata/` (one descriptor per item) and the generated `items.config.ts`.
+- `verification/` — feature and scenario records, one JSON file each; `scripts/verification/` validates them and holds the registration helpers.
 - `scripts/catalogue/` — the catalogue model and the generator for the committed wiring: `registry/items.config.ts`, `packages/ui/src/index.ts`, `apps/docs/src/generated/` and `scripts/generated/`.
 - `skills/` — Ultima's own agent skills; [`forge`](skills/forge/SKILL.md) authors and revises a component.
 
@@ -34,8 +35,9 @@ Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/a
 | `pnpm typecheck` | Typecheck every package. |
 | `pnpm registry:build` | Regenerate `registry/`, `/r/*.json`, the token exports, and `/llms.txt`. |
 | `pnpm catalogue:generate` | Rewrite the generated wiring from `registry/metadata/` and the sources. |
-| `pnpm catalogue:check` | Fail on stale generated wiring, read-only. `dev`, `build`, `test`, `typecheck` and `registry:build` run it first. |
+| `pnpm catalogue:check` | Fail on stale generated wiring or an invalid feature map, read-only. `dev`, `build`, `test`, `typecheck` and `registry:build` run it first. |
 | `pnpm scaffold <kind> <id> --from <request.json>` | Plan a React, element or recipe item as a dry run; `--write` creates its files, never over existing ones, and regenerates the wiring. |
+| `pnpm verify list [--search <text>]` | Discover features, scenarios and catalogue items, read-only. `describe scenario <id>` and `describe feature <id>` give owners, routes, steps and commands. Execution modes report `unavailable`. |
 | `python3 packages/tokens/scripts/palette.py` | Regenerate `palette.json`; `--check` fails on a hand edit. |
 
 ## Agent skills

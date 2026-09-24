@@ -471,7 +471,7 @@ Before switching CI to required, reconcile each scenario with the current docs U
 
 ## Executable feature map
 
-Decided on [Executable feature map: scenario ownership and discovery](https://github.com/frankieramirez/ultima/issues/440). This section specifies contributor tooling to implement. Discovery and reproduction commands below are planned until their adapters and validation ship.
+Decided on [Executable feature map: scenario ownership and discovery](https://github.com/frankieramirez/ultima/issues/440). This section specifies contributor tooling to implement. Discovery and reproduction commands below are planned until their adapters and validation ship. The records, the registration helpers in `scripts/verification/` and the read-only `pnpm verify list` (with `--search`) and `pnpm verify describe` shipped with [Register scenarios and expose discovery](https://github.com/frankieramirez/ultima/issues/457), covering the `dialog` and `theme-studio` pilot. The execution modes still report `unavailable`, and the production bindings under `apps/docs/tests/production/` are authored but have not executed.
 
 ### Ownership and storage
 

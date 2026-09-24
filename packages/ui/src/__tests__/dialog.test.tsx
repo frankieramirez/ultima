@@ -12,6 +12,7 @@ import {
   type DialogViewportProps,
 } from '@ultima/ui';
 
+import { scenario } from '../../../../scripts/verification/register.ts';
 import { themeDocument, themes, violations } from './axe';
 
 function SampleDialog({
@@ -84,24 +85,27 @@ test('the popup has no outline when it holds focus and a child shows a ring', as
   expect(parseFloat(getComputedStyle(inside).outlineWidth)).toBeGreaterThan(0);
 });
 
-test('Escape closes and returns focus to the trigger, and Tab loops inside', async () => {
-  const screen = await render(
-    <SampleDialog extra={<Button data-testid="inside">Continue</Button>} />,
-  );
-  const trigger = screen.getByRole('button', { name: 'Open' }).element();
-  await userEvent.click(trigger);
-  await expect.element(screen.getByRole('dialog', { name: 'Archive run' })).toBeVisible();
+test(
+  'Escape closes and returns focus to the trigger, and Tab loops inside',
+  scenario('dialog.keyboard-dismissal', 'ui-vitest', async () => {
+    const screen = await render(
+      <SampleDialog extra={<Button data-testid="inside">Continue</Button>} />,
+    );
+    const trigger = screen.getByRole('button', { name: 'Open' }).element();
+    await userEvent.click(trigger);
+    await expect.element(screen.getByRole('dialog', { name: 'Archive run' })).toBeVisible();
 
-  const close = screen.getByRole('button', { name: 'Close' }).element();
-  const inside = screen.getByTestId('inside').element();
-  close.focus();
-  await userEvent.tab();
-  expect(document.activeElement).toBe(inside);
+    const close = screen.getByRole('button', { name: 'Close' }).element();
+    const inside = screen.getByTestId('inside').element();
+    close.focus();
+    await userEvent.tab();
+    expect(document.activeElement).toBe(inside);
 
-  await userEvent.keyboard('{Escape}');
-  await expect.poll(() => screen.getByRole('dialog').query()).toBeNull();
-  expect(document.activeElement).toBe(trigger);
-});
+    await userEvent.keyboard('{Escape}');
+    await expect.poll(() => screen.getByRole('dialog').query()).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  }),
+);
 
 test('data-open on Backdrop makes it visible and a closed dialog unmounts the popup', async () => {
   const closed = await render(<SampleDialog />);

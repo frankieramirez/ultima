@@ -6,9 +6,10 @@ import { mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { formatVerificationDiagnostics, loadVerification, repositoryFiles } from '../verification/model.ts';
 import type { OptimizerPolicy } from './browser.ts';
 import { type Files, diskFiles } from './files.ts';
-import { formatDiagnostics as format } from './model.ts';
+import { formatDiagnostics as format, loadCatalogue } from './model.ts';
 import { optimizerPolicy } from './optimizer-policy.ts';
 import { GENERATED_DIRECTORIES, HEADER_MARK, OUTPUTS, planOutputs } from './projections.ts';
 
@@ -153,11 +154,14 @@ function main(argv: string[]) {
       ...freshness.stale.map((path) => `  stale (no longer generated): ${path}`),
     ];
     if (diagnostics.length > 0) console.error(`catalogue: the inputs are invalid\n${format(diagnostics)}`);
+    const files = repositoryFiles(root);
+    const verification = loadVerification(files, loadCatalogue(files).catalogue).diagnostics;
+    if (verification.length > 0) console.error(`catalogue: the feature map is invalid\n${formatVerificationDiagnostics(verification)}`);
     if (lines.length > 0) {
       console.error(`catalogue: the generated wiring is stale; run \`pnpm catalogue:generate\` (remove a stale path by hand)\n${lines.join('\n')}`);
     }
-    if (diagnostics.length > 0 || lines.length > 0) return 1;
-    console.log(`catalogue: ${Object.keys(OUTPUTS).length} generated files are fresh`);
+    if (diagnostics.length > 0 || verification.length > 0 || lines.length > 0) return 1;
+    console.log(`catalogue: ${Object.keys(OUTPUTS).length} generated files are fresh; the feature map is valid`);
     return 0;
   }
 

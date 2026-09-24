@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "theme-studio.draft-history",
+  "title": "Reset theme is one undoable step that keeps edits, overrides and locks",
+  "intent": "A guided edit, a token override and a group lock survive as one draft: Reset theme returns the stock draft, and a single Undo restores all three, in the controls and in the painted preview.",
+  "contract": "docs/spec/theme-studio.md#shuffle-manual-overrides-and-validation",
+  "aliases": ["reset theme", "undo", "redo", "history", "override", "lock", "autosave", "draft restore", "reload"],
+  "items": [],
+  "sources": [
+    "apps/docs/src/routes/theme-studio.tsx",
+    "apps/docs/src/theme-studio-actions.tsx",
+    "apps/docs/src/theme-studio-store.ts",
+    "packages/tokens/src/theme/history.ts",
+    "packages/tokens/src/theme/autosave.ts"
+  ],
+  "demos": [],
+  "routes": [{ "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/theme-studio" }],
+  "fixtures": [
+    {
+      "name": "draft history values",
+      "path": "apps/docs/tests/fixtures/theme-studio-history.ts",
+      "reset": "fresh-context",
+      "storage": {
+        "keys": ["ultima-theme-studio-draft"],
+        "reason": "Production writes the draft through the studio's own autosave within one reload journey; the context starts with empty storage and no URL fragment and is closed afterwards."
+      }
+    }
+  ],
+  "preconditions": [
+    "Storage and the URL fragment are empty, so the studio opens on the stock draft with no history.",
+    "Below 840px the editor is a bottom sheet; pick each group from its horizontal selector before using its controls."
+  ],
+  "steps": [
+    { "action": "In Density preset, choose Roomy.", "expect": "Roomy is pressed and the preview's --ult-space-1 changes from its stock value." },
+    { "action": "Open Color token overrides and commit #ff0000 to --ult-color-accent.", "expect": "The preview's --ult-color-accent is #ff0000." },
+    { "action": "Press Lock Density.", "expect": "Lock Density is pressed and the status reads 1 locked group." },
+    { "action": "Production only: reload the page.", "expect": "The autosaved draft restores the edit, override and lock; undo history starts empty." },
+    { "action": "Press Reset theme.", "expect": "The stock draft returns: Cosy is pressed, Lock Density is not, and the preview shows stock spacing and accent." },
+    { "action": "Press Undo once.", "expect": "Roomy, the #ff0000 override and the Density lock are back, in the controls and in the preview." }
+  ],
+  "targets": [
+    { "target": "docs-vitest", "variants": "default" },
+    {
+      "target": "production",
+      "variants": { "mode": ["dark", "light"], "viewport": ["desktop", "narrow"], "motion": ["normal"] }
+    }
+  ]
+}

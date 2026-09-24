@@ -6,6 +6,8 @@ import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
+import { scenario } from '../../../../scripts/verification/register.ts';
+import { draftHistory } from '../../tests/fixtures/theme-studio-history';
 import { MENU_LABEL } from '../site-menu';
 import { routeTree } from '../router';
 import { THEME_STORAGE_KEY } from '../theme';
@@ -650,6 +652,46 @@ test('shuffle, locks, undo, redo, and reset theme walk one linear history', asyn
   await userEvent.click(redoButton());
   expect(fingerprint()).toBe(reset);
 });
+
+test(
+  'reset theme clears an edit, an override and a lock, and one undo restores all three',
+  scenario('theme-studio.draft-history', 'docs-vitest', async () => {
+    const { densityGroup, stockDensity, editedDensity, stockSpace1, overrideToken, overrideValue } = draftHistory;
+    const screen = await mount('/theme-studio');
+    const pane = () => screen.getByRole('region', { name: 'Dark preview' }).element();
+    const density = (name: string) =>
+      screen.getByRole('group', { name: `${densityGroup} preset` }).getByRole('button', { name });
+    const lock = () => screen.getByRole('button', { name: `Lock ${densityGroup}` }).element();
+    const stockAccent = resolveDraft(stockDraft()).dark[overrideToken];
+
+    await userEvent.click(density(editedDensity));
+    const editedSpace = readToken(pane(), '--ult-space-1');
+    expect(editedSpace).not.toBe(stockSpace1);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
+    const accent = screen.getByRole('textbox', { name: overrideToken });
+    await expect.element(accent).toBeVisible();
+    await userEvent.clear(accent.element());
+    await userEvent.type(accent.element(), overrideValue);
+    expect(readToken(pane(), overrideToken)).toBe(overrideValue);
+
+    await userEvent.click(lock());
+    expect(lock()).toHaveAttribute('aria-pressed', 'true');
+    await expect.element(screen.getByText(/1 locked group/)).toBeVisible();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Reset theme' }));
+    expect(density(stockDensity).element()).toHaveAttribute('aria-pressed', 'true');
+    expect(lock()).toHaveAttribute('aria-pressed', 'false');
+    expect(readToken(pane(), '--ult-space-1')).toBe(stockSpace1);
+    expect(readToken(pane(), overrideToken)).toBe(stockAccent);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    expect(density(editedDensity).element()).toHaveAttribute('aria-pressed', 'true');
+    expect(lock()).toHaveAttribute('aria-pressed', 'true');
+    expect(readToken(pane(), '--ult-space-1')).toBe(editedSpace);
+    expect(readToken(pane(), overrideToken)).toBe(overrideValue);
+  }),
+);
 
 test('the editor rail keeps a pre-mounted status region that announces a shuffle result', async () => {
   const screen = await mount('/theme-studio');

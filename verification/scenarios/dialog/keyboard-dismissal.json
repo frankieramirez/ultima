@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "dialog.keyboard-dismissal",
+  "title": "Keyboard opens, contains and dismisses a dialog",
+  "intent": "A keyboard user opens the dialog, Tab and Shift+Tab stay inside it, and Escape closes it with focus back on the trigger.",
+  "contract": "docs/spec/ultima.md#accessibility-contract",
+  "aliases": ["escape", "esc", "focus return", "focus trap", "focus containment", "tab loop", "dismiss", "close"],
+  "items": ["dialog"],
+  "sources": ["packages/ui/src/dialog.tsx"],
+  "demos": ["apps/docs/src/demos/dialog/basic.tsx"],
+  "routes": [{ "kind": "item", "item": "dialog" }],
+  "fixtures": [
+    { "name": "basic dialog demo", "path": "apps/docs/src/demos/dialog/basic.tsx", "reset": "fresh-context" },
+    { "name": "SampleDialog in the Dialog suite", "path": "packages/ui/src/__tests__/dialog.test.tsx", "reset": "unmount" }
+  ],
+  "preconditions": [
+    "The dialog starts closed.",
+    "On the docs page the demo trigger is the button \"Open dialog\" and the dialog is \"Archive report\"; the UI suite's fixture uses \"Open\" and \"Archive run\"."
+  ],
+  "steps": [
+    { "action": "Focus the trigger button and press Enter.", "expect": "The dialog opens, named by its title, and focus moves inside it." },
+    { "action": "Press Tab past the last focusable control, then Shift+Tab past the first.", "expect": "Focus loops and never leaves the dialog." },
+    { "action": "Press Escape.", "expect": "The dialog closes and focus is on the trigger that opened it." }
+  ],
+  "targets": [
+    { "target": "ui-vitest", "variants": "default" },
+    {
+      "target": "production",
+      "variants": { "mode": ["dark", "light"], "viewport": ["desktop", "narrow"], "motion": ["normal"] }
+    }
+  ]
+}
