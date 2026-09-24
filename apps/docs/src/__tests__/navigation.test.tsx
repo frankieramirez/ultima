@@ -39,6 +39,8 @@ function prefer(mode: keyof typeof modes) {
 }
 
 const menu = () => page.getByRole('navigation', { name: MENU_LABEL, exact: true });
+// Folded, the panel is `visibility: hidden` and so out of the accessibility tree a role query reads.
+const menuPanel = () => document.querySelector<HTMLElement>(`nav[aria-label="${MENU_LABEL}"]`)!;
 const menuLink = (name: string) => menu().getByRole('link', { name, exact: true });
 
 beforeEach(() => {
@@ -314,6 +316,46 @@ test('the logo returns to the editorial home page, which folds the menu rail awa
   expect(menu().element()).toHaveAttribute('data-open');
 });
 
+for (const theme of ['dark', 'light'] as const) {
+  test(`a direct load of the home page renders the menu rail folded in ${theme}`, async () => {
+    prefer(theme);
+    const screen = await mount('/');
+    await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+
+    expect(menuPanel()).toHaveAttribute('data-closed');
+    expect(menuPanel().getBoundingClientRect().width).toBe(0);
+    // Hidden rather than only narrowed, so its links leave the tab order and the page reaches the viewport.
+    expect(getComputedStyle(menuPanel()).visibility).toBe('hidden');
+  });
+}
+
+test('leaving the home page slides the menu rail open rather than snapping it', async () => {
+  const screen = await mount('/');
+  await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+  const panel = menuPanel();
+  expect(panel).toHaveAttribute('data-closed');
+
+  // Sampled on the frame the route opens the panel, before a 200ms transition can finish.
+  const opened = new Promise<{ transitions: string[]; width: number }>((resolve) => {
+    const observer = new MutationObserver(() => {
+      if (!panel.hasAttribute('data-open')) return;
+      observer.disconnect();
+      resolve({
+        transitions: panel.getAnimations().map((animation) => (animation as CSSTransition).transitionProperty),
+        width: panel.getBoundingClientRect().width,
+      });
+    });
+    observer.observe(panel, { attributes: true });
+  });
+  await userEvent.click(screen.getByRole('button', { name: 'Explore the components' }).element());
+
+  const { transitions, width } = await opened;
+  // Chromium names a logical property's transition by the physical one it resolves to.
+  expect(transitions).toContain('width');
+  expect(width).toBeLessThan(1);
+  await expect.poll(() => panel.getBoundingClientRect().width).toBeGreaterThan(200);
+});
+
 test('a legacy collapsed preference cannot hide desktop navigation', async () => {
   localStorage.setItem(NAVIGATION_STORAGE_KEY, 'closed');
   await mount('/install');
@@ -424,24 +466,26 @@ for (const theme of ['dark', 'light'] as const) {
   });
 }
 
-test('below the breakpoint the header trigger opens the menu, and a destination dismisses it', async () => {
-  await page.viewport(390, 844);
-  onTestFinished(() => page.viewport(1280, 720));
+for (const path of ['/install', '/']) {
+  test(`below the breakpoint the header trigger opens the menu on ${path}, and a destination dismisses it`, async () => {
+    await page.viewport(390, 844);
+    onTestFinished(() => page.viewport(1280, 720));
 
-  const screen = await mount('/install');
-  expect(document.querySelector(`nav[aria-label="${MENU_LABEL}"]`)).toBeNull();
+    const screen = await mount(path);
+    expect(document.querySelector(`nav[aria-label="${MENU_LABEL}"]`)).toBeNull();
 
-  await userEvent.click(screen.getByRole('button', { name: 'Toggle navigation' }).element());
-  const popup = screen.getByRole('dialog', { name: MENU_LABEL }).element();
-  await expect.poll(() => popup.contains(document.activeElement)).toBe(true);
+    await userEvent.click(screen.getByRole('button', { name: 'Toggle navigation' }).element());
+    const popup = screen.getByRole('dialog', { name: MENU_LABEL }).element();
+    await expect.poll(() => popup.contains(document.activeElement)).toBe(true);
 
-  await userEvent.click(menuLink('Palette').element());
+    await userEvent.click(menuLink('Palette').element());
 
-  await expect.poll(() => document.querySelector('[role="dialog"]')).toBeNull();
-  const heading = screen.getByRole('heading', { name: 'Palette', level: 1 });
-  await expect.element(heading).toBeVisible();
-  await expect.poll(() => document.activeElement).toBe(heading.element());
-});
+    await expect.poll(() => document.querySelector('[role="dialog"]')).toBeNull();
+    const heading = screen.getByRole('heading', { name: 'Palette', level: 1 });
+    await expect.element(heading).toBeVisible();
+    await expect.poll(() => document.activeElement).toBe(heading.element());
+  });
+}
 
 test('the close control dismisses the menu and hands focus back to the trigger', async () => {
   await page.viewport(390, 844);
