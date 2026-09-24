@@ -528,8 +528,15 @@ describe('cancellation', () => {
   test('SIGINT during a running check cancels it with exit 130', async () => {
     const controller = new AbortController();
     const pids = join(scratch, `sigint-${Date.now()}.json`);
-    setTimeout(() => controller.abort('SIGINT'), 700);
-    const report = await runIn(repository(), planOf(['architecture', 'typecheck', 'catalogue-freshness']), { architecture: controlled('hang', () => [pids]) }, { signal: controller.signal });
+    const running = runIn(repository(), planOf(['architecture', 'typecheck', 'catalogue-freshness']), { architecture: controlled('hang', () => [pids]) }, { signal: controller.signal });
+    // The pid file exists only once the hanging check has started; aborting on a fixed delay races preparation.
+    const deadline = Date.now() + 30_000;
+    while (!existsSync(pids)) {
+      if (Date.now() > deadline) throw new Error('the hanging check never started');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    controller.abort('SIGINT');
+    const report = await running;
     assert.equal(report.exit, EXIT.SIGINT);
     assert.equal(stateOf(report, 'architecture')?.status, 'cancelled');
     for (const pid of JSON.parse(readFileSync(pids, 'utf8')) as number[]) assert.equal(alive(pid), false, `pid ${pid} survived`);
