@@ -31,7 +31,9 @@ The documented commands were exercised from a disposable worktree of the tested 
 
 ## Release evidence at one revision
 
-Three full `pnpm verify release` runs against `b24e222`, each in an isolated `.scratch/verify/<run-id>/` snapshot with a frozen source manifest. None produced a passing report; all three are retained.
+A passing complete report exists: `pnpm verify release` at `f6698af` (main after #558, #559 and #560) exited 0 with all fifteen checks passed — run `20260924T212435-3a98a78e`, retained under `.scratch/verify/`. An earlier run at `b49aa4f` also passed every check; its manifest carried one unstaged assertion-message edit, so `f6698af` is the clean one to cite.
+
+Before the flake fixes landed, three full `pnpm verify release` runs against `b24e222` each failed on a different harness flake, all retained:
 
 | Check | Run 1 `20260924T170917-2a7f90c8` | Run 2 `20260924T171842-dcdc3c6d` | Run 3 `20260924T172540-162fdde4` |
 | --- | --- | --- | --- |
@@ -51,9 +53,7 @@ Three full `pnpm verify release` runs against `b24e222`, each in an isolated `.s
 | consumer-smoke | passed (39) | passed (39) | passed (39) |
 | production-scenarios | passed — all 26 cells | passed — all 26 cells | passed — all 26 cells |
 
-Every failure is an infrastructure flake, not a contract violation: the Vitest browser orchestrator loses a test file's iframe (`Cannot connect to the iframe`) or a module fetch, so the suite exits `incomplete` with zero failing assertions. The failing file moves each run, and the same signature reproduces outside the snapshot — two consecutive `pnpm --filter @ultima/ui test` runs on the clean checkout each lost one file the same way while every executed assertion passed. `@ultima/elements`' browser suite and the production matrix stayed green throughout. Filed as [#554](https://github.com/frankieramirez/ultima/issues/554).
-
-The consequence is stated plainly: a passing complete `verify release` report does not exist at this revision on this machine, and this slice does not pretend otherwise.
+Every failure was an infrastructure flake, not a contract violation: the Vitest browser orchestrator lost a test file's iframe (`Cannot connect to the iframe`) or a module fetch, the SIGINT cancellation test raced run preparation, and one production-runner cell died on a browser that never started. The failing file moved each run, and the same signature reproduced outside the snapshot. Filed as [#554](https://github.com/frankieramirez/ultima/issues/554); fixed by #557, #559 and #560, and the retained `f6698af` run above is the passing report those fixes enabled.
 
 ## CI and enforcement
 
@@ -72,7 +72,7 @@ Not confirmed — unchanged from [#464](https://github.com/frankieramirez/ultima
 
 ## Open obligations and deferrals
 
-- **Passing release report** (in scope, unresolved): blocked by the browser-harness flake surface, [#554](https://github.com/frankieramirez/ultima/issues/554).
+- **Passing release report** (resolved after this file first landed): the flake surface was fixed by #557 (Chromium garbage collection between browser test files), #559 (SIGINT test waits for the check to start) and #560 (retry a browser that never started); #554 is closed. The retained passing run is named above.
 - **CI enforcement** (in scope, unresolved): maintainer actions on billing and the `main` ruleset, per #464.
 - **#551**: its symptom no longer reproduces — `tooling-tests`, including `production-gate.test.ts`, passed in runs 1 and 3 — consistent with the snapshot Git work-tree fix in #545. Confirm and close.
 - **Optional deferrals**: Forge stays a React authoring skill — element files remain hand-authored against the Web components contract and parity gate, by spec. No Studio download/share-link scenario until that behavior is the subject of a change ([Pilot and reuse](../../spec/agent-infrastructure.md#pilot-and-reuse)).
