@@ -21,7 +21,7 @@ import { ADAPTERS, REGISTRY_OUTPUTS, registryOutputs } from './adapters.ts';
 import { type CheckId, RELEASE_PENDING, check } from './checks.ts';
 import type { Plan, PlannedCheck } from './plan.ts';
 import { type Adapters, EXIT, executeRun, judge } from './run.ts';
-import { docsBuild, registryBuild, smoke, smokeTargets } from './tool-reports.ts';
+import { docsBuild, plain, registryBuild, smoke, smokeTargets } from './tool-reports.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '../..');
@@ -92,6 +92,26 @@ describe('build and smoke logs', () => {
 
     assert.match(docsBuild(`${REGISTRY_LOG}\n${VITE_LOG.replace('production', 'development')}`, 0, FAMILIES).reason ?? '', /not production/);
     assert.equal(docsBuild(`${REGISTRY_LOG}\n`, 1, FAMILIES).verdict, 'incomplete');
+  });
+
+  test('coloured output reads as plain text: FORCE_COLOR turns picocolors on at any value, 0 included', () => {
+    const colouredVite = [
+      '\x1b[36mvite v8.2.2 \x1b[32mbuilding client environment for production...\x1b[36m\x1b[39m',
+      '\x1b[32m✓\x1b[39m 6202 modules transformed.',
+      '\x1b[2mdist/\x1b[22m\x1b[32mindex.html  \x1b[39m\x1b[1m\x1b[2m1.89 kB\x1b[22m\x1b[1m\x1b[22m',
+      '\x1b[32m✓ built in 2.24s\x1b[39m',
+    ].join('\n');
+    const colouredRegistry = REGISTRY_LOG.split('\n').map((line) => `\x1b[2m${line}\x1b[22m`).join('\n');
+    const passed = docsBuild(`${colouredRegistry}\n${colouredVite}`, 0, FAMILIES);
+    assert.equal(passed.verdict, 'passed', passed.reason ?? '');
+    assert.equal(passed.mode, 'production');
+    assert.equal(passed.builder, 'vite v8.2.2');
+    assert.deepEqual(passed.executed, docsBuild(`${REGISTRY_LOG}\n${VITE_LOG}`, 0, FAMILIES).executed);
+
+    const broken = docsBuild(`${colouredRegistry}\n${colouredVite.split('\n')[0]}\n\x1b[31merror during build:\n\x1b[31m[UNRESOLVED_IMPORT] Could not resolve './missing' in src/main.tsx\x1b[39m\n`, 1, FAMILIES);
+    assert.deepEqual(broken.failures, ["vite build: [UNRESOLVED_IMPORT] Could not resolve './missing' in src/main.tsx"]);
+    // An OSC 8 hyperlink around a path leaves only its text.
+    assert.equal(plain('\x1b]8;;file:///x/a.ts\x07a.ts\x1b]8;;\x07 and \x1b]8;;https://x\x1b\\b\x1b]8;;\x1b\\'), 'a.ts and b');
   });
 
   const URL = 'http://127.0.0.1:41234';
@@ -223,6 +243,12 @@ export default defineConfig({ test: { fileParallelism: false, include: ['${TESTS
     assert.ok(manifest.files.some((file) => file.path === 'index.html'));
     const evidence = JSON.parse(readFileSync(join(passed.context.artifacts, 'docs-build.evidence.json'), 'utf8'));
     assert.match(evidence.notes.join('\n'), /^built by vite v\d\S* for production$/m);
+
+    // A tool that colours regardless of the run's environment still gets a production verdict: here
+    // the run's NO_COLOR is lifted and the caller's FORCE_COLOR=0, which picocolors reads as on, kept.
+    const coloured = await runAdapter('docs-build', source, { argv: ['./build.sh'] }, { env: { FORCE_COLOR: '0', NO_COLOR: '' } });
+    assert.equal(coloured.judged.status, 'passed', coloured.judged.reason);
+    assert.match(readFileSync(coloured.context.log, 'utf8'), /\x1b\[/, 'the fixture must actually print escape codes');
 
     write(source, { 'apps/docs/main.js': "import './missing.js';\n" });
     const broken = await runAdapter('docs-build', source, { argv: ['./build.sh'] });

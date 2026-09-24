@@ -15,13 +15,26 @@ import type { AdapterReport } from './run.ts';
 
 export type Parsed = Omit<AdapterReport, 'process'>;
 
+/** CSI sequences (colour, cursor, erase) and OSC sequences (hyperlinks, titles) a terminal would interpret. */
+const ANSI = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g;
+
+/**
+ * What a tool printed, as a terminal would show it. `FORCE_COLOR`, set to any value, `0` included,
+ * turns picocolors on in the child, so every text parser reads through this rather than trusting the
+ * child's environment to keep escape codes out.
+ */
+export function plain(text: string): string {
+  return text.replace(ANSI, '');
+}
+
 const incomplete = (reason: string, extra: Partial<Parsed> = {}): Parsed => ({ verdict: 'incomplete', executed: [], reason, ...extra });
 
 /** The JSON document a tool printed, after any banner its package manager wrote first. */
 export function jsonDocument(text: string): unknown {
-  const start = text.search(/^\{/m);
+  const clean = plain(text);
+  const start = clean.search(/^\{/m);
   if (start < 0) throw new Error('no JSON document in the output');
-  return JSON.parse(text.slice(start));
+  return JSON.parse(clean.slice(start));
 }
 
 type ArchitectureReport = {
@@ -103,7 +116,7 @@ export function typecheck(log: string, exitCode: number | null, packages: string
   const executed = new Set<string>();
   const failures: string[] = [];
   let recursive = false;
-  for (const line of log.split('\n')) {
+  for (const line of plain(log).split('\n')) {
     if (/^Scope: /.test(line)) recursive = true;
     const finished = /^(\S+) typecheck: (Done|Failed)$/.exec(line);
     if (finished) {
@@ -134,7 +147,7 @@ export function palette(log: string, exitCode: number | null): Parsed {
   const failures: string[] = [];
   let verdict: 'pass' | 'fail' | null = null;
   let freshness: 'fresh' | 'differs' | null = null;
-  for (const line of log.split('\n')) {
+  for (const line of plain(log).split('\n')) {
     const mode = /^(dark|light) contrast tokens: /.exec(line);
     if (mode) executed.push(`contrast:${mode[1]}`);
     const row = /^\s+\('(dark|light)', '([^']+)', '([^']+)', ([\d.]+), ([\d.]+)\)$/.exec(line);
@@ -173,7 +186,7 @@ export type VitestReport = {
   }[];
 };
 
-const firstLine = (text: string) => text.split('\n').find((line) => line.trim() !== '')?.trim() ?? '';
+const firstLine = (text: string) => plain(text).split('\n').find((line) => line.trim() !== '')?.trim() ?? '';
 
 /**
  * A Vitest run. Coverage is each test file that ran tests, each test and each registered scenario
@@ -249,7 +262,7 @@ export function nodeTest(lines: string, relative: (path: string) => string): Par
     const whole = record.nesting === 0 && record.file !== null && (record.file === record.name || record.file.endsWith(`/${record.name}`));
     // Node names a file as a whole only when it failed, or ran no test at all: neither is coverage.
     if (whole) {
-      if (record.event === 'fail') unloaded.push(`${path}: ${record.message ?? 'the file failed'}`);
+      if (record.event === 'fail') unloaded.push(`${path}: ${plain(record.message ?? 'the file failed')}`);
       continue;
     }
     if (record.kind === 'suite') continue;
@@ -281,7 +294,7 @@ export function nodeTest(lines: string, relative: (path: string) => string): Par
 export function registryLog(log: string): { executed: string[]; failures: string[] } {
   const executed: string[] = [];
   const failures: string[] = [];
-  const lines = log.split('\n');
+  const lines = plain(log).split('\n');
   lines.forEach((line, index) => {
     if (/^@ultima\/tokens: wrote dist\/tokens\.css and dist\/tokens\.json /.test(line)) executed.push('build:tokens');
     const bundle = /^@ultima\/elements: wrote dist\/(\S+)\.js \(.*?(, budget [\d.]+ KB)?\)$/.exec(line);
@@ -321,7 +334,7 @@ export function docsBuild(log: string, exitCode: number | null, families: string
   const failures = [...(registry.failures ?? [])];
   let mode: string | null = null;
   let builder: string | null = null;
-  const lines = log.split('\n');
+  const lines = plain(log).split('\n');
   lines.forEach((line, index) => {
     const building = /^(vite v\S+) building (?:client environment )?for (\w+)/.exec(line);
     if (building) {
@@ -372,7 +385,7 @@ export function smokeTargets(script: string): string[] {
  */
 export function smoke(log: string, exitCode: number | null, targets: string[]): Parsed & { url: string | null; work: string | null } {
   const expected = ['smoke:local registry build', 'smoke:cli packed', 'smoke:catalogue served', ...targets.map((target) => `smoke:target:${target}`)];
-  const lines = log.split('\n');
+  const lines = plain(log).split('\n');
   const served = lines.map((line) => /^smoke-install: serving (\S+)$/.exec(line)?.[1]).filter((url): url is string => url !== undefined);
   const url = served.length === 1 ? (served[0] as string) : null;
   const work = lines.map((line) => /^smoke-install: kept (.+)$/.exec(line)?.[1]).find((path) => path !== undefined) ?? null;

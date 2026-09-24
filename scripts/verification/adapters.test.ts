@@ -70,6 +70,19 @@ describe('the adapter registry', () => {
 });
 
 describe('tool reports', () => {
+  test('a child runs with colour off, whatever FORCE_COLOR the caller exported', () => {
+    const saved = process.env.FORCE_COLOR;
+    process.env.FORCE_COLOR = '0';
+    try {
+      const env = childEnvironment('colour', '/run/source', '/run/tmp');
+      assert.equal('FORCE_COLOR' in env, false);
+      assert.equal(env.NO_COLOR, '1');
+    } finally {
+      if (saved === undefined) delete process.env.FORCE_COLOR;
+      else process.env.FORCE_COLOR = saved;
+    }
+  });
+
   const rules = [
     { id: 'ULT-TOKEN-001', status: 'blocking' },
     { id: 'ULT-DOCS-REVIEW-001', status: 'advisory' },
@@ -92,6 +105,7 @@ describe('tool reports', () => {
     assert.match(unfinished.reason ?? '', /parse failure/);
     assert.equal(architecture(architectureReport('clean'), 1).verdict, 'incomplete');
     assert.equal(architecture('Error: Cannot find module', 1).verdict, 'incomplete');
+    assert.deepEqual(architecture(`\x1b[1m${architectureReport('clean')}\x1b[22m`, 0), clean, 'a coloured banner still leaves a readable document');
   });
 
   test('freshness: every compared output is coverage; drift and invalid inputs fail validation', () => {
@@ -133,6 +147,9 @@ describe('tool reports', () => {
     assert.equal(inRoot.verdict, 'validation-failure');
     assert.deepEqual(inRoot.executed, ['tsc:.']);
 
+    const coloured = typecheck(`${banner}Scope: 2 of 3 workspace projects\n\x1b[36mpackages/tokens\x1b[39m typecheck: Done\n\x1b[36mpackages/analysis\x1b[39m typecheck: Done\n`, 0, PACKAGES);
+    assert.deepEqual(coloured.executed, clean.executed, 'escape codes around a package name hide nothing');
+
     const crashed = typecheck(`${banner}node:internal/modules/cjs/loader:1228\n  throw err;\nError: Cannot find module 'typescript'\n`, 1, PACKAGES);
     assert.equal(crashed.verdict, 'incomplete');
     assert.match(crashed.reason ?? '', /exited 1 without a compiler diagnostic/);
@@ -150,6 +167,8 @@ describe('tool reports', () => {
     assert.deepEqual(failing.failures, ['light: text-subtle on surface-hover is 4.1:1, below 4.5:1']);
     const edited = palette(paletteLog(['', 'ALL PAIRINGS PASS', 'palette.json differs from a fresh run:', '--- palette.json (committed)']), 1);
     assert.equal(edited.verdict, 'validation-failure');
+    const coloured = palette(paletteLog(['', '\x1b[32mALL PAIRINGS PASS\x1b[0m', '\x1b[2mpalette.json matches a fresh run\x1b[0m']), 0);
+    assert.deepEqual(coloured, clean);
     const traceback = palette('Traceback (most recent call last):\n  File "palette.py", line 3\nKeyError: \'mithril\'\n', 1);
     assert.equal(traceback.verdict, 'incomplete');
   });
@@ -185,6 +204,10 @@ describe('tool reports', () => {
     assert.match(judge({ ...skipped, process: null }, skipped.expected ?? []).reason, /required coverage was skipped: a\.test\.ts > later/);
 
     assert.equal(vitest(vitestReport([file('a.test.ts', [['renders', 'passed']])], false), strip).verdict, 'incomplete', 'an unhandled error names no test');
+
+    const colouredFailure = vitestReport([file('a.test.ts', [['renders', 'failed']], 'failed')], false);
+    (colouredFailure.testResults[0]?.assertionResults[0] as { failureMessages: string[] }).failureMessages = ['\x1b[31mAssertionError\x1b[39m: expected \x1b[32m1\x1b[39m to be \x1b[31m2\x1b[39m'];
+    assert.deepEqual(vitest(colouredFailure, strip).failures, ['a.test.ts > renders: AssertionError: expected 1 to be 2']);
   });
 
   test('node --test: nested names, skips and todos are recorded; a file Node names as a whole never loaded', () => {

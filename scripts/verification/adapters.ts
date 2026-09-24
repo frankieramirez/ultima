@@ -40,6 +40,7 @@ import {
   freshness,
   nodeTest,
   palette,
+  plain,
   registryBuild,
   registryLog,
   smoke,
@@ -264,7 +265,7 @@ function vitestSuite(): Adapter {
 
 /** The first error Vitest reports outside any test, such as `browserType.launch: Executable doesn't exist`. */
 function unhandled(log: string): string | null {
-  const lines = log.split('\n');
+  const lines = plain(log).split('\n');
   const at = lines.findIndex((line) => /Unhandled (Error|Rejection)/.test(line));
   return (at < 0 ? lines : lines.slice(at)).find((line) => /^\w*Error: /.test(line.trim()))?.trim() ?? null;
 }
