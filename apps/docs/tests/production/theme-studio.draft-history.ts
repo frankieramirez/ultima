@@ -9,7 +9,7 @@ import type { Page } from 'playwright';
 
 import { productionScenario } from '../../../../scripts/verification/production.ts';
 import { draftHistory } from '../fixtures/theme-studio-history.ts';
-import { assertColor, shippedColor } from '../support/production.ts';
+import { assertColor, assertFits, shippedColor } from '../support/production.ts';
 
 const { densityGroup, stockDensity, editedDensity, stockSpace1, overrideToken, overrideValue } = draftHistory;
 
@@ -56,6 +56,7 @@ export default productionScenario('theme-studio.draft-history', 'production', as
   await assertColor(page, editorSurface, await shippedColor(page, '--ult-color-surface', 'dark'), 'the editor surface');
 
   if (narrow) await page.getByRole('group', { name: 'Theme groups' }).waitFor({ state: 'visible' });
+  await assertFits(page, editor, `/theme-studio at ${variant.viewport} width`);
   await axe('stock draft');
 
   await showGroup(page, narrow, densityGroup);

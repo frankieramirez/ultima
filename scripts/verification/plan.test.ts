@@ -514,8 +514,9 @@ describe('the release plan', () => {
       [],
       'every check has an execution adapter',
     );
-    assert.deepEqual(document.outcome.pending, [...RELEASE_PENDING], 'the unregistered production cells keep release from passing');
-    assert.equal(document.outcome.canPass, false);
+    assert.equal(checkOf(document, 'production-scenarios')?.cases.length, 26, 'the whole production matrix');
+    assert.deepEqual(document.outcome.pending, [], 'no release obligation is pending once the matrix is registered');
+    assert.equal(document.outcome.canPass, true);
   });
 
   test('carries every CI workflow obligation, including the consumer-smoke workflow', () => {

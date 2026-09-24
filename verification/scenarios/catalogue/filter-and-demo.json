@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "catalogue.filter-and-demo",
+  "title": "Filtering the catalogue narrows, empties and clears, and a demo's source copies exactly",
+  "intent": "The /components filter narrows the list, shows the empty state when nothing matches and clears back to the whole catalogue; a result opens from the keyboard with a visible focus ring; and on /components/button the live demo renders while its copy control writes the displayed source to the clipboard.",
+  "contract": "docs/spec/ultima.md#page-set",
+  "aliases": ["no results", "clear filters", "keyboard", "focus ring", "clipboard", "copy example source", "live demo"],
+  "items": ["button", "card", "input-group", "empty"],
+  "sources": [
+    "apps/docs/src/routes/components.tsx",
+    "apps/docs/src/demo.tsx",
+    "apps/docs/src/copy-button.tsx"
+  ],
+  "demos": ["apps/docs/src/demos/button/variants.tsx"],
+  "routes": [
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/components" },
+    { "kind": "item", "item": "button" }
+  ],
+  "fixtures": [
+    { "name": "catalogue queries and the copied demo", "path": "apps/docs/tests/fixtures/catalogue.ts", "reset": "fresh-context" },
+    { "name": "Button variants demo", "path": "apps/docs/src/demos/button/variants.tsx", "reset": "fresh-context" }
+  ],
+  "preconditions": [
+    "The filters start empty: all releases, catalogue order, and Clear filters is disabled.",
+    "The context grants clipboard read and write to the served origin only."
+  ],
+  "steps": [
+    { "action": "On /components, type dialog into Filter components.", "expect": "The status counts fewer components than the whole catalogue, Dialog is listed, and every listed entry mentions dialog." },
+    { "action": "Replace the query with one that matches nothing.", "expect": "The status reads 0 components and the No components match these filters empty state appears." },
+    { "action": "Press the empty state's Clear filters.", "expect": "The query is empty, focus is back in Filter components and the status counts the whole catalogue." },
+    { "action": "Type button, press Tab until the Button entry has focus, then press Enter.", "expect": "The entry shows the focus ring, and /components/button opens with the heading Button." },
+    { "action": "In the first demo, press Copy example source.", "expect": "The live demo renders its buttons, the control is a 28px square, and the clipboard holds exactly the displayed source." }
+  ],
+  "targets": [
+    {
+      "target": "production",
+      "variants": { "mode": ["dark", "light"], "viewport": ["desktop", "narrow"], "motion": ["normal"] }
+    }
+  ]
+}

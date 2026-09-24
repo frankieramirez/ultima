@@ -2,12 +2,28 @@
  * Small read-only helpers the production bindings share. They read the page and the build's own
  * `/tokens.json`; they never change the app, inject styles or copy palette values into a test.
  */
-import { AssertionError } from 'node:assert';
+import assert, { AssertionError } from 'node:assert/strict';
 
 import type { Locator, Page } from 'playwright';
 
+import { LIMITS } from '../../scripts/production-runner.ts';
+
 /** A semantic color token's value for one mode, as the served build publishes it in `/tokens.json`. */
-export async function shippedColor(page: Page, token: string, mode: 'dark' | 'light'): Promise<string> {
+export function shippedColor(page: Page, token: string, mode: 'dark' | 'light'): Promise<string> {
+  return shippedValue(page, token, mode);
+}
+
+/** A length token in CSS pixels, resolved from the served `/tokens.json` against the document's root font size. */
+export async function shippedLength(page: Page, token: string, mode: 'dark' | 'light'): Promise<number> {
+  const value = await shippedValue(page, token, mode);
+  const match = /^(-?\d*\.?\d+)(rem|px)$/.exec(value);
+  if (!match) throw new AssertionError({ message: `${token} is ${value}, not a rem or px length` });
+  const root = await page.evaluate(() => Number.parseFloat(getComputedStyle(document.documentElement).fontSize));
+  return Number(match[1]) * (match[2] === 'rem' ? root : 1);
+}
+
+/** Any token's value for one mode, as the served build publishes it in `/tokens.json`. */
+export async function shippedValue(page: Page, token: string, mode: 'dark' | 'light'): Promise<string> {
   const value = await page.evaluate(
     async ([name, scheme]) => {
       const response = await fetch('/tokens.json');
@@ -69,4 +85,85 @@ export async function settles(target: Locator, property: string, expected: strin
     const actual = await target.evaluate((element, name) => getComputedStyle(element).getPropertyValue(name), property).catch(() => 'unreadable');
     throw new AssertionError({ message: `${what}: ${property} is ${actual}, not ${expected}` });
   }
+}
+
+/** The documented rounding tolerance for route-level horizontal fit, in CSS pixels. */
+export const FIT_TOLERANCE_PX = 1;
+
+/**
+ * Route-level horizontal fit: the document is no wider than the window, within one CSS pixel. An
+ * intentional scroll container may overflow inside itself, but it cannot widen the page. `target` must
+ * be visible first, so an absent control or an empty page cannot pass on its geometry.
+ */
+export async function assertFits(page: Page, target: Locator, what: string) {
+  await target.waitFor({ state: 'visible' });
+  const { scroll, client } = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
+  if (scroll > client + FIT_TOLERANCE_PX) {
+    const widest = await page.evaluate((width) => {
+      // The outermost element past the edge: its descendants overflow because it does.
+      const over = [...document.querySelectorAll('body *')].find((element) => element.getBoundingClientRect().right > width + 1);
+      return over ? `${over.localName}${over.getAttribute('part') ? `[part=${over.getAttribute('part')}]` : ''} ends at ${Math.round(over.getBoundingClientRect().right)}px` : 'no element reports it';
+    }, client);
+    throw new AssertionError({ message: `${what}: the document is ${scroll}px wide in a ${client}px window (${widest})` });
+  }
+}
+
+/** Whether `element` is the focused element, read from the page rather than assumed from an action. */
+export function isFocused(target: Locator): Promise<boolean> {
+  return target.evaluate((element) => element === document.activeElement);
+}
+
+/**
+ * Waits for every finite animation and transition on `target` and its descendants to finish, so a check
+ * reads the end state rather than a frame of an entrance. An entrance first renders a starting style and
+ * only starts its transition a frame later, so the wait also needs Base UI's `data-starting-style` and
+ * `data-ending-style` markers gone and two frames to pass. A looping animation never finishes and is not
+ * waited on; the reduced-motion scenario asserts those directly.
+ */
+export async function animationsSettle(target: Locator, what: string) {
+  const until = performance.now() + LIMITS.conditionMs;
+  let left: string[] = [];
+  do {
+    left = await target.evaluate(
+      (element) =>
+        new Promise<string[]>((resolve) =>
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              const markers = [element, ...element.querySelectorAll('[data-starting-style], [data-ending-style]')]
+                .filter((node) => node.hasAttribute('data-starting-style') || node.hasAttribute('data-ending-style'))
+                .map((node) => `${node.localName} in a starting or ending style`);
+              const running = element
+                .getAnimations({ subtree: true })
+                .filter((animation) => animation.playState === 'running' && animation.effect?.getComputedTiming().iterations !== Infinity)
+                .map((animation) => (animation instanceof CSSTransition ? animation.transitionProperty : animation instanceof CSSAnimation ? animation.animationName : 'animation'));
+              resolve([...markers, ...running]);
+            }),
+          ),
+        ),
+    );
+    if (left.length === 0) return;
+  } while (performance.now() < until);
+  throw new AssertionError({ message: `${what}: still animating ${left.join(', ')} after ${LIMITS.conditionMs}ms` });
+}
+
+/** The keyboard focus ring on `target`: a solid outline with width, in this mode's `--ult-color-border-focus`. */
+export async function assertFocusRing(page: Page, target: Locator, mode: 'dark' | 'light', what: string) {
+  const ring = await target.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { focusVisible: element.matches(':focus-visible'), style: style.outlineStyle, width: style.outlineWidth, color: style.outlineColor };
+  });
+  assert.ok(ring.focusVisible, `${what} matches :focus-visible`);
+  assert.equal(ring.style, 'solid', `${what} draws a solid ring`);
+  assert.ok(Number.parseFloat(ring.width) > 0, `${what}'s ring has width`);
+  await assertColor(page, ring.color, await shippedColor(page, '--ult-color-border-focus', mode), `${what}'s ring`);
+}
+
+/** Polls `check` until it holds, within the runner's per-condition limit; for state a component updates a frame later. */
+export async function eventually(check: () => Promise<boolean>, what: string) {
+  const until = performance.now() + LIMITS.conditionMs;
+  do {
+    if (await check()) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  } while (performance.now() < until);
+  throw new AssertionError({ message: `${what} did not hold within ${LIMITS.conditionMs}ms` });
 }

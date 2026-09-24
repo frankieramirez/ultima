@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "motion",
+  "title": "Motion and reduced motion",
+  "summary": "Looping animations honor prefers-reduced-motion in the shipped CSS: the loop stops by name, not by a strobing zero duration.",
+  "aliases": ["animation", "reduced motion", "prefers-reduced-motion", "spinner", "loop", "vestibular"],
+  "contract": "docs/spec/ultima.md#motion",
+  "items": ["spinner"],
+  "sourceRoots": [],
+  "extraDependencies": [],
+  "supporting": []
+}

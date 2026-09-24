@@ -7,8 +7,8 @@
  * token, element and registry builds those scripts run first still run; `pnpm registry:build`; the
  * production docs build, which leaves the build manifest (apps/docs/scripts/build-manifest.ts) the
  * production adapter requires; and `scripts/smoke-install.sh --keep` on its local path, under the run's
- * TMPDIR. The production scenarios run through `apps/docs/scripts/production-adapter.ts` (#462; #463
- * completes the matrix) after `docs-build`.
+ * TMPDIR. The production scenarios run through `apps/docs/scripts/production-adapter.ts` (#462, the
+ * full matrix since #463) after `docs-build`.
  *
  * Each adapter runs the check's existing command from its argument array in the snapshot, adding only
  * what makes the tool write a machine-readable report (`--format json`, `--json`, a reporter, `-v`),

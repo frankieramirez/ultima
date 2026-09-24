@@ -50,9 +50,8 @@ Discovery (available, read-only):
 Planning and execution (a run captures the checkout and runs in .scratch/verify/<run-id>/. Every check
 executes: static and type checks, the browser suites (they need the locked Playwright Chromium), the
 registry and docs builds, consumer-smoke (it needs the network and a loopback port; a missing one leaves
-the check unavailable) and the registered production scenarios. A release run stays incomplete, exit 3,
-until #463 registers the rest of the production matrix; \`pnpm --filter @ultima/docs test:production\`
-runs the registered production cases on their own):
+the check unavailable) and the registered production scenarios, the full 26-cell matrix in a release;
+\`pnpm --filter @ultima/docs test:production\` runs the registered production cases on their own):
   component <id>... [--plan]             catalogue items of any kind; the descriptor kind decides coverage
   feature <id>... [--plan]               registered features, with every scenario case and supporting suite
   changed [--base <ref>] [--plan]        merge base..HEAD plus staged, unstaged and untracked paths;

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "catalogue",
+  "title": "Component catalogue and documentation",
+  "summary": "The /components index with its filter and empty state, and each component page's live demo figure with its copyable source.",
+  "aliases": ["components page", "component index", "filter", "search", "empty state", "demo", "copy", "copy source", "code block"],
+  "contract": "docs/spec/ultima.md#page-set",
+  "items": ["button", "card", "input-group", "empty"],
+  "sourceRoots": [
+    "apps/docs/src/routes/components.tsx",
+    "apps/docs/src/components.ts",
+    "apps/docs/src/demo.tsx",
+    "apps/docs/src/copy-button.tsx",
+    "apps/docs/src/highlighted-code.tsx"
+  ],
+  "extraDependencies": [],
+  "supporting": []
+}

@@ -22,8 +22,16 @@ export type ProductionContext = {
   variant: ProductionVariant;
   /** Navigates to a pathname on the run's own served build and waits for the app to be ready. */
   open(pathname: string): Promise<void>;
+  /**
+   * Navigates to a checked-in static fixture, such as `/elements.html`, and waits for the document, the
+   * `main` landmark, `document.fonts.ready` and a definition for every `ult-*` tag the page uses. A fixture
+   * consumes the built token CSS and loads no self-hosted face, so none is required.
+   */
+  openFixture(pathname: string): Promise<void>;
   /** Reloads the current page, keeping the context's storage, and waits for the same readiness as `open`. */
   reload(): Promise<void>;
+  /** Grants clipboard read and write to the run's own origin in this cell's context only, for a copy scenario. */
+  grantClipboard(): Promise<void>;
   /**
    * Runs the installed axe with the WCAG A/AA rules and colour contrast on the whole document, and fails
    * the case on any violation. Call it at the scenario's principal ready state, and again for an open

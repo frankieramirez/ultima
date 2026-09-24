@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "motion.reduced-loop",
+  "title": "Spinner stops looping under reduced motion",
+  "intent": "With the browser's reduced-motion preference set, every Spinner on the Spinner page keeps its box but runs no animation, because the shipped CSS sets animation-name to none under the media query.",
+  "contract": "docs/spec/ultima.md#motion",
+  "aliases": ["spinner spinning", "animation stops", "motion loop", "reduce motion"],
+  "items": ["spinner"],
+  "sources": ["packages/ui/src/spinner.tsx"],
+  "demos": ["apps/docs/src/demos/spinner/inline.tsx", "apps/docs/src/demos/spinner/in-a-button.tsx"],
+  "routes": [{ "kind": "item", "item": "spinner" }],
+  "fixtures": [
+    { "name": "Spinner beside text demo", "path": "apps/docs/src/demos/spinner/inline.tsx", "reset": "fresh-context" },
+    { "name": "Spinner in a button demo", "path": "apps/docs/src/demos/spinner/in-a-button.tsx", "reset": "fresh-context" }
+  ],
+  "preconditions": [
+    "The browser context reports prefers-reduced-motion: reduce before the page loads.",
+    "The mark is decorative and aria-hidden; each demo's busy container carries aria-busy."
+  ],
+  "steps": [
+    { "action": "Load /components/spinner.", "expect": "The page reports the reduced-motion preference and both demos render a Spinner mark with a nonzero box." },
+    { "action": "Read each mark's computed animation and running animations, and its transform across two frames.", "expect": "The loop is still declared infinite, its animation-name is none, no animation runs and the transform does not change." }
+  ],
+  "targets": [
+    {
+      "target": "production",
+      "variants": { "mode": ["dark", "light"], "viewport": ["desktop", "narrow"], "motion": ["reduced"] }
+    }
+  ]
+}
