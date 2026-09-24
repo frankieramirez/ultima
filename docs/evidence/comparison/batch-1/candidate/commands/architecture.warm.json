@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "architecture",
+    "version": 1,
+    "title": "Static architecture check",
+    "phases": [
+      {
+        "id": "check-architecture",
+        "argv": [
+          "pnpm",
+          "check:architecture"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "Source layout, import boundaries, primitive sources, token values, the styling engine, the public style-slot API and registry metadata, over the whole scope"
+      ],
+      "omitted": [],
+      "unsupported": []
+    },
+    "requires": [
+      "scripts/check-architecture.ts"
+    ],
+    "comparesWith": "full-release"
+  },
+  "conditions": {
+    "workload": "architecture",
+    "workloadVersion": 1,
+    "cache": "warm",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      1.95,
+      2.72,
+      2.9
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.87,
+      2.66,
+      2.88
+    ]
+  },
+  "cachePolicy": {
+    "condition": "warm",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "one unmeasured run immediately before the batch",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "candidate"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "candidate"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "candidate"
+      }
+    ]
+  },
+  "priming": {
+    "runId": "architecture-warm-priming",
+    "order": -1,
+    "startedAt": "2026-09-24T11:57:10.786Z",
+    "elapsedMs": 3367.1150610000004,
+    "status": "valid",
+    "phases": [
+      {
+        "id": "check-architecture",
+        "elapsedMs": 3365.970478,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/architecture-warm-priming/check-architecture.log.gz"
+      }
+    ],
+    "cleared": [],
+    "loadAverage": [
+      1.95,
+      2.72,
+      2.9
+    ]
+  },
+  "samples": [
+    {
+      "runId": "architecture-warm-1",
+      "order": 0,
+      "startedAt": "2026-09-24T11:57:14.154Z",
+      "elapsedMs": 3321.735285,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "check-architecture",
+          "elapsedMs": 3321.3509940000004,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/architecture-warm-1/check-architecture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.95,
+        2.72,
+        2.9
+      ]
+    },
+    {
+      "runId": "architecture-warm-2",
+      "order": 1,
+      "startedAt": "2026-09-24T11:57:17.476Z",
+      "elapsedMs": 3348.046088,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "check-architecture",
+          "elapsedMs": 3347.5835530000004,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/architecture-warm-2/check-architecture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.95,
+        2.71,
+        2.89
+      ]
+    },
+    {
+      "runId": "architecture-warm-3",
+      "order": 2,
+      "startedAt": "2026-09-24T11:57:20.824Z",
+      "elapsedMs": 3314.325928,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "check-architecture",
+          "elapsedMs": 3313.9557449999993,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/architecture-warm-3/check-architecture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.03,
+        2.71,
+        2.9
+      ]
+    },
+    {
+      "runId": "architecture-warm-4",
+      "order": 3,
+      "startedAt": "2026-09-24T11:57:24.138Z",
+      "elapsedMs": 3323.3814969999985,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "check-architecture",
+          "elapsedMs": 3322.9786870000007,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/architecture-warm-4/check-architecture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.03,
+        2.71,
+        2.9
+      ]
+    },
+    {
+      "runId": "architecture-warm-5",
+      "order": 4,
+      "startedAt": "2026-09-24T11:57:27.462Z",
+      "elapsedMs": 3349.861639999999,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "check-architecture",
+          "elapsedMs": 3349.491145,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/architecture-warm-5/check-architecture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.95,
+        2.69,
+        2.89
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 3323.3814969999985,
+    "minMs": 3314.325928,
+    "maxMs": 3349.861639999999,
+    "madMs": 9.055568999998286
+  },
+  "budget": "report-only"
+}

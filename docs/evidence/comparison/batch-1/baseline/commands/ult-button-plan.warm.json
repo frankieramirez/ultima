@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "ult-button-plan",
+    "version": 1,
+    "title": "ult-button component plan",
+    "phases": [
+      {
+        "id": "plan",
+        "argv": [
+          "pnpm",
+          "verify",
+          "component",
+          "ult-button",
+          "--plan",
+          "--json"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "The component ult-button check plan: selection with reasons, prerequisites, locks and deadlines. It launches no check."
+      ],
+      "omitted": [
+        "Every check the plan names: a plan reports planned, never a pass"
+      ],
+      "unsupported": []
+    },
+    "requires": [
+      "scripts/verify.ts",
+      "scripts/verification/run.ts"
+    ],
+    "comparesWith": "ult-button"
+  },
+  "source": {
+    "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+    "branch": "HEAD",
+    "dirtyPatchSha256": "744ab42ca01c3ab9814d186b5cbe74cbd2222868f6e8a654056dc4e75a9fac00",
+    "untracked": [
+      "scripts/measure/compare.ts",
+      "scripts/measure/discover.ts",
+      "scripts/measure/pair.ts",
+      "scripts/measure/sampler.ts"
+    ],
+    "sourceManifestSha256": "31d4198763a3829899cfcd099b9b2d960c154c210fe4fcc4096f047963907b6e",
+    "lockfileSha256": "0d81ed7f53b3f8f339af91ba97eae74237861baec8279f9ef3f95645b6df59db",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "summary": {
+    "status": "unavailable",
+    "reason": "the command does not exist at this revision (missing scripts/verify.ts, scripts/verification/run.ts)"
+  },
+  "budget": "report-only"
+}

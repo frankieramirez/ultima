@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "dialog-escape",
+  "attempt": 3,
+  "revision": "901e286ff3539325ba485ae8bd0ecf35684a9b2e",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.281 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+  "pairing": {
+    "side": "baseline",
+    "position": "first"
+  },
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 921.157335
+  },
+  "task": {
+    "text": "You are in the Ultima repository, at its root. A user reports:\n\n\"Dialog Escape leaves focus behind\"\n\nFind the source file that owns this behavior and one shell command, run from the repository root, that runs the existing checks covering it.\nDo not modify any file. When you are done, end your reply with exactly these two lines:\nOWNER: <repository-relative path of the owning source file>\nCOMMAND: <the command>",
+    "sha256": "da27b724b92aeb09f48558faf389d9d1a19afc368d5e9fc709f941d75c28ebcd",
+    "entryPoint": "repository root, no files open"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "tools": [
+      "Bash",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "sessionId": "a2d6a93e-0c97-4007-aaa3-036693af8fa4",
+    "argv": [
+      "claude",
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--model",
+      "sonnet",
+      "--permission-mode",
+      "bypassPermissions",
+      "--strict-mcp-config",
+      "--setting-sources",
+      "project",
+      "--tools",
+      "Bash,Read,Grep,Glob"
+    ],
+    "started": "2026-09-24T14:00:33.792Z",
+    "wallMs": 86253.229714,
+    "durationMs": 85595,
+    "turns": 13,
+    "costUsd": 0.11377100000000001,
+    "exitCode": 0,
+    "trace": "dialog-escape-baseline-3.stream.jsonl.gz"
+  },
+  "observation": {
+    "toolCalls": 12,
+    "byTool": {
+      "Glob": 1,
+      "Grep": 5,
+      "Read": 3,
+      "Bash": 3
+    },
+    "searches": [
+      "Glob {\"pattern\":\"packages/ui/src/*ialog*\"}",
+      "Grep {\"pattern\":\"Escape\",\"path\":\"packages/ui/src\",\"output_mode\":\"files_with_matches\"}",
+      "Grep {\"pattern\":\"Escape|focus\",\"path\":\"packages/ui/src/__tests__/dialog.test.tsx\",\"-n\":true}",
+      "Grep {\"pattern\":\"Escape|focus|Focus\",\"path\":\"packages/ui/src/dialog.tsx\",\"-n\":true}",
+      "Grep {\"pattern\":\"Escape|focus|Focus\",\"path\":\"packages/ui/src/__tests__/dialog.test.tsx\",\"-n\":true,\"output_mode\":\"content\"}",
+      "Grep {\"pattern\":\"Escape|focus|Focus\",\"path\":\"packages/ui/src/dialog.tsx\",\"-n\":true,\"output_mode\":\"content\"}"
+    ],
+    "filesOpened": [
+      "packages/ui/src/dialog.tsx",
+      "package.json",
+      "packages/ui/package.json"
+    ],
+    "failedCommands": [],
+    "failedTools": 0,
+    "edits": [],
+    "bashCommands": [
+      "pnpm --filter @ultima/ui test -- src/__tests__/dialog.test.tsx",
+      "tail -n 40 /home/f/.claude/projects/-home-f--cache-ultima-measure-465-tmp-ultima-exercise-dialog-escape-baseline-3-UI99PK-repo/a2d6a93e-0c97-4007-aaa3-036693af8fa4/tool-results/b5xcw8yhq.txt",
+      "cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-baseline-3-UI99PK/repo/packages/ui && pnpm vitest run --reporter=verbose src/__tests__/dialog.test.tsx"
+    ],
+    "discoveryCommands": [],
+    "answer": "This scoped run confirms the test \"Escape closes and returns focus to the trigger, and Tab loops inside\" passes at baseline — all 9 dialog tests pass, all 749 in the full suite pass too.\n\nOWNER: packages/ui/src/dialog.tsx\nCOMMAND: pnpm --filter @ultima/ui exec vitest run --reporter=verbose src/__tests__/dialog.test.tsx"
+  },
+  "score": {
+    "owner": "packages/ui/src/dialog.tsx",
+    "located": true,
+    "wrongCandidate": null,
+    "commandValid": true,
+    "check": {
+      "command": "pnpm --filter @ultima/ui exec vitest run --reporter=verbose src/__tests__/dialog.test.tsx",
+      "exitCode": 0,
+      "elapsedMs": 3010.140916999997,
+      "coverageSeen": [
+        "dialog.test.tsx"
+      ],
+      "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-baseline-3-UI99PK/repo/packages/ui\n      API started at http://localhost:63315/\n\n ✓ |chromium| src/__tests__/dialog.test.tsx > mounts closed with Title, Description, and Close unmounted 22ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > mounts open with Title, Description, and Close 27ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the dialog is named by Dialog.Title 32ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the popup has no outline when it holds focus and a child shows a ring 53ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > Escape closes and returns focus to the trigger, and Tab loops inside 144ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > data-open on Backdrop makes it visible and a closed dialog unmounts the popup 22ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > public prop types drop className on styled parts 11ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the open popup has no axe violations in dark 91ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the open popup has no axe violations in light 69ms\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  10:02:00\n   Duration  2.27s (tests 48%, import 34%, setup 11%, worker 8%)\n\n"
+    },
+    "success": true,
+    "ambiguousPrompt": false,
+    "candidatesNamed": [
+      "packages/ui/src/dialog.tsx"
+    ],
+    "rule": "success: the owner matches the key and the command exits 0 while running a covering test file"
+  },
+  "corrections": []
+}

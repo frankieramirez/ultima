@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  compareInteraction,
   compareSeries,
   median,
   medianAbsoluteDeviation,
@@ -153,4 +154,29 @@ test('a missing interaction observation keeps the cell incomplete', () => {
   assert.equal(summary.status, 'incomplete');
   assert.equal(summary.missing, 5);
   assert.equal(summary.sessionMedian, null);
+});
+
+const sessions = (offsets: number[], shift = 0) =>
+  summarizeInteraction(
+    offsets.map((offset, n) => ({ sessionId: `s${n}`, events: Array.from({ length: 20 }, (_, i) => i + 1 + offset + shift) })),
+  );
+
+test('a seeded interaction regression is reported slower, session by session', () => {
+  const result = compareInteraction(sessions([0, 1, 2, 3, 4]), sessions([0, 1, 2, 3, 4], 8));
+  assert.equal(result.status, 'slower');
+  if (result.status !== 'slower') return;
+  assert.equal(result.medianPairedDifferenceMs, 8);
+  assert.equal(result.pairs, 5);
+});
+
+test('an interaction change within the session spread is inconclusive', () => {
+  assert.equal(compareInteraction(sessions([0, 1, 2, 3, 4]), sessions([0, 1, 2, 3, 4], 0.5)).status, 'inconclusive');
+});
+
+test('an incomplete or missing interaction side is unavailable', () => {
+  const complete = sessions([0, 1, 2, 3, 4]);
+  const incomplete = sessions([0, 1, 2, 3]);
+  assert.equal(incomplete.status, 'incomplete');
+  assert.deepEqual(compareInteraction(complete, incomplete), { status: 'unavailable', reason: 'candidate incomplete' });
+  assert.deepEqual(compareInteraction(undefined, complete), { status: 'unavailable', reason: 'no comparable baseline' });
 });

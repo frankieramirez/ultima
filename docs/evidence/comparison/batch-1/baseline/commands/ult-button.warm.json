@@ -1,0 +1,555 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "ult-button",
+    "version": 1,
+    "title": "Element family edit, ult-button",
+    "phases": [
+      {
+        "id": "tokens-build",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/tokens",
+          "build"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "elements-build",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/elements",
+          "build"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "test-family",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/elements",
+          "exec",
+          "vitest",
+          "run",
+          "src/__tests__/ult-button.test.ts",
+          "src/__tests__/parity.test.ts",
+          "src/__tests__/bundle.node.test.ts"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "registry-build",
+        "argv": [
+          "pnpm",
+          "registry:build"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "test-fixture",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "exec",
+          "vitest",
+          "run",
+          "src/__tests__/elements.test.ts",
+          "src/__tests__/elements.test.tsx"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "tokens and elements builds (bundle and gzip budget inputs)",
+        "ult-button proof, React/element parity and bundle budget suites",
+        "registry build staging the served bundle, then the docs fixture page suites (both modes, axe)"
+      ],
+      "omitted": [
+        "Other element families",
+        "The element item in the smoke install"
+      ],
+      "unsupported": [
+        "pnpm verify component ult-button: the planned selector does not exist at this revision"
+      ]
+    }
+  },
+  "conditions": {
+    "workload": "ult-button",
+    "workloadVersion": 1,
+    "cache": "warm",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+    "branch": "HEAD",
+    "dirtyPatchSha256": "744ab42ca01c3ab9814d186b5cbe74cbd2222868f6e8a654056dc4e75a9fac00",
+    "untracked": [
+      "scripts/measure/compare.ts",
+      "scripts/measure/discover.ts",
+      "scripts/measure/pair.ts",
+      "scripts/measure/sampler.ts"
+    ],
+    "sourceManifestSha256": "31d4198763a3829899cfcd099b9b2d960c154c210fe4fcc4096f047963907b6e",
+    "lockfileSha256": "0d81ed7f53b3f8f339af91ba97eae74237861baec8279f9ef3f95645b6df59db",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      2.08,
+      2.14,
+      2.23
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.25,
+      1.76,
+      2.07
+    ]
+  },
+  "cachePolicy": {
+    "condition": "warm",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "one unmeasured run immediately before the batch",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the candidate checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "baseline"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "baseline"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "baseline"
+      },
+      {
+        "pair": 6,
+        "first": "candidate"
+      }
+    ]
+  },
+  "priming": {
+    "runId": "ult-button-warm-priming",
+    "order": -1,
+    "startedAt": "2026-09-24T10:15:41.517Z",
+    "elapsedMs": 12292.835823,
+    "status": "valid",
+    "phases": [
+      {
+        "id": "tokens-build",
+        "elapsedMs": 607.519957,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/ult-button-warm-priming/tokens-build.log.gz"
+      },
+      {
+        "id": "elements-build",
+        "elapsedMs": 774.0975739999999,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/ult-button-warm-priming/elements-build.log.gz"
+      },
+      {
+        "id": "test-family",
+        "elapsedMs": 1877.9843159999998,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/ult-button-warm-priming/test-family.log.gz"
+      },
+      {
+        "id": "registry-build",
+        "elapsedMs": 3438.315809,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/ult-button-warm-priming/registry-build.log.gz"
+      },
+      {
+        "id": "test-fixture",
+        "elapsedMs": 5592.2236920000005,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/ult-button-warm-priming/test-fixture.log.gz"
+      }
+    ],
+    "cleared": [],
+    "loadAverage": [
+      2.08,
+      2.14,
+      2.23
+    ]
+  },
+  "samples": [
+    {
+      "runId": "ult-button-warm-1",
+      "order": 0,
+      "startedAt": "2026-09-24T10:16:07.016Z",
+      "elapsedMs": 12180.602156,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "tokens-build",
+          "elapsedMs": 575.2189010000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-1/tokens-build.log.gz"
+        },
+        {
+          "id": "elements-build",
+          "elapsedMs": 745.8728550000014,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-1/elements-build.log.gz"
+        },
+        {
+          "id": "test-family",
+          "elapsedMs": 1874.2040039999993,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-1/test-family.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3419.439298999998,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-1/registry-build.log.gz"
+        },
+        {
+          "id": "test-fixture",
+          "elapsedMs": 5564.208880999999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-1/test-fixture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.83,
+        2.08,
+        2.21
+      ]
+    },
+    {
+      "runId": "ult-button-warm-2",
+      "order": 1,
+      "startedAt": "2026-09-24T10:16:46.160Z",
+      "elapsedMs": 12249.000515,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "tokens-build",
+          "elapsedMs": 578.7579190000033,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-2/tokens-build.log.gz"
+        },
+        {
+          "id": "elements-build",
+          "elapsedMs": 734.9443739999988,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-2/elements-build.log.gz"
+        },
+        {
+          "id": "test-family",
+          "elapsedMs": 1873.0483769999992,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-2/test-family.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3435.8779480000085,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-2/registry-build.log.gz"
+        },
+        {
+          "id": "test-fixture",
+          "elapsedMs": 5624.852462999988,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-2/test-fixture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.99,
+        2.07,
+        2.2
+      ]
+    },
+    {
+      "runId": "ult-button-warm-3",
+      "order": 2,
+      "startedAt": "2026-09-24T10:16:58.414Z",
+      "elapsedMs": 12163.644822999995,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "tokens-build",
+          "elapsedMs": 577.9637249999942,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-3/tokens-build.log.gz"
+        },
+        {
+          "id": "elements-build",
+          "elapsedMs": 738.8150710000045,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-3/elements-build.log.gz"
+        },
+        {
+          "id": "test-family",
+          "elapsedMs": 1898.6762179999932,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-3/test-family.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3401.0723569999973,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-3/registry-build.log.gz"
+        },
+        {
+          "id": "test-fixture",
+          "elapsedMs": 5545.553518999994,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-3/test-fixture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.76,
+        2.02,
+        2.18
+      ]
+    },
+    {
+      "runId": "ult-button-warm-4",
+      "order": 3,
+      "startedAt": "2026-09-24T10:17:36.889Z",
+      "elapsedMs": 27118.84927800001,
+      "status": "failed",
+      "reason": "test-fixture exited 1",
+      "phases": [
+        {
+          "id": "tokens-build",
+          "elapsedMs": 575.8860679999925,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-4/tokens-build.log.gz"
+        },
+        {
+          "id": "elements-build",
+          "elapsedMs": 746.8449210000108,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-4/elements-build.log.gz"
+        },
+        {
+          "id": "test-family",
+          "elapsedMs": 1875.4795219999942,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-4/test-family.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3414.247372999991,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-4/registry-build.log.gz"
+        },
+        {
+          "id": "test-fixture",
+          "elapsedMs": 20504.794974000004,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/ult-button-warm-4/test-fixture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.43,
+        1.91,
+        2.13
+      ]
+    },
+    {
+      "runId": "ult-button-warm-5",
+      "order": 4,
+      "startedAt": "2026-09-24T10:18:04.013Z",
+      "elapsedMs": 12377.465358999994,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "tokens-build",
+          "elapsedMs": 600.0008959999832,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-5/tokens-build.log.gz"
+        },
+        {
+          "id": "elements-build",
+          "elapsedMs": 775.8387600000133,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-5/elements-build.log.gz"
+        },
+        {
+          "id": "test-family",
+          "elapsedMs": 1924.9887980000058,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-5/test-family.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3477.76152,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-5/registry-build.log.gz"
+        },
+        {
+          "id": "test-fixture",
+          "elapsedMs": 5597.157021999999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-5/test-fixture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.21,
+        1.82,
+        2.1
+      ]
+    },
+    {
+      "runId": "ult-button-warm-6",
+      "order": 5,
+      "startedAt": "2026-09-24T10:18:29.468Z",
+      "elapsedMs": 12260.316389999993,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "tokens-build",
+          "elapsedMs": 587.312649999978,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-6/tokens-build.log.gz"
+        },
+        {
+          "id": "elements-build",
+          "elapsedMs": 765.9010030000063,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-6/elements-build.log.gz"
+        },
+        {
+          "id": "test-family",
+          "elapsedMs": 1883.0948060000082,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-6/test-family.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3402.9303770000115,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-6/registry-build.log.gz"
+        },
+        {
+          "id": "test-fixture",
+          "elapsedMs": 5619.200889,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-warm-6/test-fixture.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.29,
+        1.78,
+        2.08
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 1,
+    "excluded": 0,
+    "medianMs": 12249.000515,
+    "minMs": 12163.644822999995,
+    "maxMs": 12377.465358999994,
+    "madMs": 68.39835899999889
+  },
+  "budget": "report-only"
+}

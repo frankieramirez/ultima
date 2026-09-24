@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "stepper-add-remove",
+  "attempt": 1,
+  "revision": "901e286ff3539325ba485ae8bd0ecf35684a9b2e",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.281 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+  "pairing": {
+    "side": "baseline",
+    "position": "first"
+  },
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 997.3724259999999
+  },
+  "task": {
+    "add": "Add a new catalogue component, Synthetic Stepper, registry item `synthetic-stepper`, to this repository, following its conventions for an ordinary React component.\nContract: a number input with decrement and increment buttons, built on `@base-ui/react/number-field`.\nParts: SyntheticStepper.Root, .Group, .Decrement, .Input, .Increment. One `size` axis, `sm | md`, default `md`.\nIt joins the v0.2 release, last in catalogue order. Its docs page has one live demo.\nProof: a test file that renders it, proves ArrowUp increments the value, and runs axe.\nMake the registry build, typecheck and its own test file pass.\nWhen you finish, list every file you changed.",
+    "remove": "Now remove Synthetic Stepper completely, so the repository is exactly as it was before you added it. Run the registry build and typecheck afterwards. List every file you changed.",
+    "sha256": "76fe2fa72eb961291d090c9b547bcc59f05f8805345b46c5ddf86d8df43a7557"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "sessionId": "603f5527-b227-4826-a5bc-9849e2715af7",
+    "add": {
+      "wallMs": 1003774.117591,
+      "durationMs": 1002989,
+      "turns": 99,
+      "costUsd": 4.129291400000001,
+      "exitCode": 0
+    },
+    "remove": {
+      "wallMs": 34391.15171100001,
+      "durationMs": 33538,
+      "turns": 7,
+      "costUsd": 4.5245826000000005,
+      "exitCode": 0
+    },
+    "traces": [
+      "stepper-add-remove-baseline-1.add.stream.jsonl.gz",
+      "stepper-add-remove-baseline-1.remove.stream.jsonl.gz"
+    ]
+  },
+  "observation": {
+    "addition": {
+      "changedFiles": {
+        "wiring": [
+          "apps/docs/src/components.ts",
+          "apps/docs/src/router.tsx",
+          "packages/ui/src/index.ts",
+          "registry/items.config.ts"
+        ],
+        "authored": [
+          "apps/docs/src/__tests__/catalogue-filter.test.tsx",
+          "apps/docs/src/__tests__/components.test.ts",
+          "apps/docs/src/content/components/synthetic-stepper.mdx",
+          "apps/docs/src/demos/synthetic-stepper/basic.tsx",
+          "packages/ui/src/__tests__/synthetic-stepper.test.tsx",
+          "packages/ui/src/synthetic-stepper.tsx"
+        ]
+      },
+      "manualProjectionEdits": [
+        "Edit packages/ui/src/index.ts",
+        "Edit registry/items.config.ts",
+        "Edit apps/docs/src/components.ts",
+        "Edit apps/docs/src/router.tsx",
+        "Edit apps/docs/src/router.tsx"
+      ],
+      "projectionsChangedWithoutManualEdit": [],
+      "coordinationProofEdits": 2,
+      "commandsRun": [],
+      "editOperations": {
+        "wiring": 5,
+        "authored": 10
+      },
+      "editedFiles": {
+        "wiring": [
+          "packages/ui/src/index.ts",
+          "registry/items.config.ts",
+          "apps/docs/src/components.ts",
+          "apps/docs/src/router.tsx"
+        ],
+        "authored": [
+          "packages/ui/src/synthetic-stepper.tsx",
+          "apps/docs/src/__tests__/components.test.ts",
+          "apps/docs/src/demos/synthetic-stepper/basic.tsx",
+          "apps/docs/src/content/components/synthetic-stepper.mdx",
+          "packages/ui/src/__tests__/synthetic-stepper.test.tsx",
+          "apps/docs/src/__tests__/catalogue-filter.test.tsx"
+        ]
+      },
+      "bashWrites": [
+        "find / -type d -iname \"number-field\" 2>/dev/null | grep base-ui",
+        "find . -maxdepth 4 -iname \"*base-ui*\" -not -path \"*/node_modules/*/node_modules/*\" 2>/dev/null; find . -path \"*/node_modules/@base-ui*\" -maxdepth 3 2>/dev/null",
+        "cat utils/stateAttributesMapping.js 2>/dev/null | head -60",
+        "grep -rn \"data-\" root/*.js input/*.js decrement/*.js increment/*.js group/*.js 2>/dev/null | grep -v \"//\" ",
+        "grep -n \"getStyleHookProps\\|function getStyleHook\\|camelToDash\\|toKebab\" -r internals/useRenderElement.tsx internals/ 2>/dev/null | head -20",
+        "cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo/packages/ui && pnpm typecheck 2>&1 | tail -60",
+        "pnpm test -- synthetic-stepper 2>&1 | tail -150",
+        "pnpm test -- synthetic-stepper 2>&1 | tail -60",
+        "cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo && pnpm typecheck 2>&1 | tail -100",
+        "pnpm registry:build 2>&1 | tail -100",
+        "pnpm --filter @ultima/docs test 2>&1 | tail -150",
+        "pnpm --filter @ultima/docs test 2>&1 | tail -40",
+        "pnpm test 2>&1 | tail -60",
+        "pnpm build 2>&1 | tail -80",
+        "python3 packages/tokens/scripts/palette.py --check 2>&1 | tail -30"
+      ],
+      "searches": 27,
+      "filesOpened": 21,
+      "failedCommands": [
+        "cat apps/docs/src/demos/switch/basic.tsx apps/docs/src/demos/input-otp/basic.tsx apps/docs/src/demos/input-otp/sizes.tsx"
+      ],
+      "proofs": [
+        {
+          "argv": [
+            "pnpm",
+            "typecheck"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 10957.271337000071,
+          "tail": "\n> ultima-monorepo@ typecheck /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "registry:build"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 3663.93811499991,
+          "tail": "icker...\n- Building dialog...\n- Building drawer...\n- Building dropdown-menu...\n- Building empty...\n- Building field...\n- Building fieldset...\n- Building hover-card...\n- Building input-group...\n- Building input-otp...\n- Building input...\n- Building menubar...\n- Building meter...\n- Building native-select...\n- Building navigation-menu...\n- Building pagination...\n- Building popover...\n- Building progress...\n- Building radio-group...\n- Building resizable...\n- Building scroll-area...\n- Building select...\n- Building separator...\n- Building sidebar...\n- Building skeleton...\n- Building slider...\n- Building spinner...\n- Building stat...\n- Building switch...\n- Building synthetic-stepper...\n- Building table...\n- Building tabs...\n- Building textarea...\n- Building toast...\n- Building toggle-group...\n- Building toggle...\n- Building tooltip...\n- Building setup-vite...\n- Building setup-next...\n- Building tokens-css...\n- Building ult-badge...\n- Building ult-button...\n- Building ult-card...\n- Building ult-code...\n- Building ult-meter...\n- Building ult-stat...\n- Building ult-table...\n- Building ult-tabs...\n- Building ult-tooltip...\n✔ Building registry.\nregistry: built 69 items into apps/docs/public/r\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/ui",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/synthetic-stepper.test.tsx"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 3160.6072489999933,
+          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:39:02\n   Duration  2.43s (tests 55%, import 29%, setup 10%, worker 6%)\n\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/docs",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/axe.test.tsx",
+            "src/__tests__/components.test.ts"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 7799.88214900007,
+          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  2 passed (2)\n      Tests  324 passed (324)\n   Start at  10:39:05\n   Duration  6.98s (worker 57%, tests 30%, import 13%)\n\n"
+        }
+      ],
+      "servedItem": true
+    },
+    "removal": {
+      "editOperations": 0,
+      "editedFiles": {
+        "wiring": [],
+        "authored": []
+      },
+      "failedCommands": [],
+      "rebuildExit": 0,
+      "leftoverStatus": "",
+      "staleReferences": ""
+    },
+    "wiringFiles": [
+      "packages/ui/src/index.ts",
+      "apps/docs/src/components.ts",
+      "apps/docs/src/router.tsx",
+      "apps/docs/src/navigation.ts",
+      "apps/docs/src/elements.ts",
+      "registry/items.config.ts",
+      "apps/docs/vitest.config.ts",
+      "packages/ui/vitest.config.ts",
+      "apps/docs/src/generated/catalogue.ts",
+      "apps/docs/src/generated/component-pages.ts",
+      "apps/docs/src/generated/elements.ts",
+      "scripts/generated/browser-dependencies.ts"
+    ]
+  },
+  "score": {
+    "additionComplete": true,
+    "removalClean": true,
+    "manualWiringFiles": 4,
+    "manualProjectionEdits": 5
+  }
+}

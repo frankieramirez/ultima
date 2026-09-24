@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "dialog-verify",
+    "version": 1,
+    "title": "Dialog component verification",
+    "phases": [
+      {
+        "id": "verify",
+        "argv": [
+          "pnpm",
+          "verify",
+          "component",
+          "dialog",
+          "--json"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "Full architecture, freshness and typecheck",
+        "The ui suites of Dialog and every file that imports it, the docs suites that render it, registry and docs builds, the full consumer smoke, and the Dialog production cells"
+      ],
+      "omitted": [],
+      "unsupported": [
+        "Remote CI status and branch protection: a local run cannot establish them"
+      ]
+    },
+    "requires": [
+      "scripts/verify.ts",
+      "scripts/verification/run.ts"
+    ],
+    "cacheIndependent": "pnpm verify runs in its own snapshot under .scratch/verify/<run-id>/ with its own install and outputs, so the caller checkout's retained build and Vite outputs are never read",
+    "comparesWith": "dialog-edit"
+  },
+  "conditions": {
+    "workload": "dialog-verify",
+    "workloadVersion": 1,
+    "cache": "cold",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      1.55,
+      2.34,
+      2.74
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.93,
+      1.94,
+      2.26
+    ]
+  },
+  "cachePolicy": {
+    "condition": "cold",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "none",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "candidate"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "candidate"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "candidate"
+      }
+    ]
+  },
+  "priming": null,
+  "samples": [
+    {
+      "runId": "dialog-verify-cold-1",
+      "order": 0,
+      "startedAt": "2026-09-24T11:59:00.291Z",
+      "elapsedMs": 167161.06329700002,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 167158.857396,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-verify-cold-1/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.55,
+        2.34,
+        2.74
+      ]
+    },
+    {
+      "runId": "dialog-verify-cold-2",
+      "order": 1,
+      "startedAt": "2026-09-24T12:01:47.453Z",
+      "elapsedMs": 161127.87793,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 161126.435859,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-verify-cold-2/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.93,
+        2.16,
+        2.6
+      ]
+    },
+    {
+      "runId": "dialog-verify-cold-3",
+      "order": 2,
+      "startedAt": "2026-09-24T12:04:28.581Z",
+      "elapsedMs": 165725.767582,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 165724.22939500003,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-verify-cold-3/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.51,
+        1.98,
+        2.47
+      ]
+    },
+    {
+      "runId": "dialog-verify-cold-4",
+      "order": 3,
+      "startedAt": "2026-09-24T12:07:14.307Z",
+      "elapsedMs": 162992.68663099996,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 162991.27880200004,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-verify-cold-4/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.87,
+        2.04,
+        2.42
+      ]
+    },
+    {
+      "runId": "dialog-verify-cold-5",
+      "order": 4,
+      "startedAt": "2026-09-24T12:09:57.300Z",
+      "elapsedMs": 166587.463827,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 166586.04286100005,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-verify-cold-5/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.13,
+        2.03,
+        2.35
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 165725.767582,
+    "minMs": 161127.87793,
+    "maxMs": 167161.06329700002,
+    "madMs": 1435.2957150000148
+  },
+  "budget": "report-only"
+}

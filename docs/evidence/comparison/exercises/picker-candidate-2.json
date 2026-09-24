@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "picker",
+  "attempt": 2,
+  "revision": "dabc230f5874f2cde8f3a0afa66dcdc91a2b2e9c",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.281 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+  "pairing": {
+    "side": "candidate",
+    "position": "first"
+  },
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 1044.0081019999998
+  },
+  "task": {
+    "text": "You are in the Ultima repository, at its root. A user reports:\n\n\"the picker broke\"\n\nFind the source file that owns this behavior and one shell command, run from the repository root, that runs the existing checks covering it.\nDo not modify any file. When you are done, end your reply with exactly these two lines:\nOWNER: <repository-relative path of the owning source file>\nCOMMAND: <the command>",
+    "sha256": "3cb1e3647266569ba8732983de375cc09fae10d0b4c52c6a956a20b0a8035ef1",
+    "entryPoint": "repository root, no files open"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "tools": [
+      "Bash",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "sessionId": "62384a13-7c38-4e1d-9fbb-d49f6b894b41",
+    "argv": [
+      "claude",
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--model",
+      "sonnet",
+      "--permission-mode",
+      "bypassPermissions",
+      "--strict-mcp-config",
+      "--setting-sources",
+      "project",
+      "--tools",
+      "Bash,Read,Grep,Glob"
+    ],
+    "started": "2026-09-24T14:20:12.501Z",
+    "wallMs": 15079.084938,
+    "durationMs": 13858,
+    "turns": 6,
+    "costUsd": 0.0710152,
+    "exitCode": 0,
+    "trace": "picker-candidate-2.stream.jsonl.gz"
+  },
+  "observation": {
+    "toolCalls": 5,
+    "byTool": {
+      "Glob": 1,
+      "Grep": 1,
+      "Bash": 3
+    },
+    "searches": [
+      "Glob {\"pattern\":\"**/*picker*\"}",
+      "Grep {\"pattern\":\"date-picker\",\"path\":\"verification\",\"output_mode\":\"files_with_matches\"}",
+      "grep -rl \"datePicker\\|date-picker\" verification/ 2>/dev/null; echo \"---\"; ls verification/"
+    ],
+    "filesOpened": [],
+    "failedCommands": [],
+    "failedTools": 0,
+    "edits": [],
+    "bashCommands": [
+      "grep -rl \"datePicker\\|date-picker\" verification/ 2>/dev/null; echo \"---\"; ls verification/",
+      "pnpm verify list --search picker 2>&1 | head -80",
+      "pnpm verify describe scenario date-picker 2>&1 | head -40; echo \"===\"; pnpm verify describe feature date-picker 2>&1 | head -40"
+    ],
+    "discoveryCommands": [
+      "pnpm verify list --search picker 2>&1 | head -80",
+      "pnpm verify describe scenario date-picker 2>&1 | head -40; echo \"===\"; pnpm verify describe feature date-picker 2>&1 | head -40"
+    ],
+    "answer": "Confirmed: date-picker has no registered feature/scenario, so its coverage is the existing Vitest suite the `verify list` output pointed to.\n\nOWNER: packages/ui/src/date-picker.tsx\nCOMMAND: pnpm --filter @ultima/ui exec vitest run src/__tests__/date-picker.test.tsx"
+  },
+  "score": {
+    "owner": "packages/ui/src/date-picker.tsx",
+    "located": true,
+    "wrongCandidate": null,
+    "commandValid": true,
+    "check": {
+      "command": "pnpm --filter @ultima/ui exec vitest run src/__tests__/date-picker.test.tsx",
+      "exitCode": 0,
+      "elapsedMs": 7294.465822000002,
+      "coverageSeen": [
+        "date-picker.test.tsx"
+      ],
+      "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-2-kFafXP/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:20:29\n   Duration  5.00s (worker 38%, tests 36%, import 21%, setup 5%)\n\n"
+    },
+    "success": true,
+    "ambiguousPrompt": true,
+    "candidatesNamed": [
+      "packages/ui/src/date-picker.tsx"
+    ],
+    "rule": "success: one picker owner and a passing command that runs its tests; candidatesNamed records whether the answer surfaced the ambiguity"
+  },
+  "corrections": []
+}

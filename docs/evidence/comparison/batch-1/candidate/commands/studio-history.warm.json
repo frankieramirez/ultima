@@ -1,0 +1,447 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "studio-history",
+    "version": 1,
+    "title": "Studio draft/history edit",
+    "phases": [
+      {
+        "id": "typecheck-docs",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "typecheck"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "registry-build",
+        "argv": [
+          "pnpm",
+          "registry:build"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "test-studio",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "exec",
+          "vitest",
+          "run",
+          "src/__tests__/theme-studio.test.tsx",
+          "src/__tests__/theme-studio-export.test.tsx",
+          "src/__tests__/theme-studio-parity.test.tsx"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "test-draft-model",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/tokens",
+          "exec",
+          "vitest",
+          "run",
+          "src/__tests__/history.test.ts",
+          "src/__tests__/autosave.test.ts",
+          "src/__tests__/codec.test.ts",
+          "src/__tests__/export.test.ts"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "apps/docs typecheck",
+        "pnpm registry:build (the docs test script runs it first)",
+        "apps/docs theme-studio, theme-studio-export and theme-studio-parity suites (dev server, Chromium)",
+        "packages/tokens history, autosave, codec and export suites (Node)"
+      ],
+      "omitted": [
+        "Remaining docs suites, including the axe sweep over demos",
+        "Consumer install"
+      ],
+      "unsupported": [
+        "pnpm verify feature theme-studio: the planned selector does not exist at this revision",
+        "Production Studio persistence/reset/undo cells: no production runner exists; the measurement-only observer in studio.ts times interactions but asserts no correctness"
+      ]
+    }
+  },
+  "conditions": {
+    "workload": "studio-history",
+    "workloadVersion": 1,
+    "cache": "warm",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      2.89,
+      2.43,
+      2.41
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.67,
+      1.95,
+      2.19
+    ]
+  },
+  "cachePolicy": {
+    "condition": "warm",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "one unmeasured run immediately before the batch",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "baseline"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "baseline"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "baseline"
+      }
+    ]
+  },
+  "priming": {
+    "runId": "studio-history-warm-priming",
+    "order": -1,
+    "startedAt": "2026-09-24T10:07:43.688Z",
+    "elapsedMs": 30890.874514000003,
+    "status": "valid",
+    "phases": [
+      {
+        "id": "typecheck-docs",
+        "elapsedMs": 5686.664399000005,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/studio-history-warm-priming/typecheck-docs.log.gz"
+      },
+      {
+        "id": "registry-build",
+        "elapsedMs": 4206.692125000001,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/studio-history-warm-priming/registry-build.log.gz"
+      },
+      {
+        "id": "test-studio",
+        "elapsedMs": 19741.503515999997,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/studio-history-warm-priming/test-studio.log.gz"
+      },
+      {
+        "id": "test-draft-model",
+        "elapsedMs": 1254.3720759999997,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/studio-history-warm-priming/test-draft-model.log.gz"
+      }
+    ],
+    "cleared": [],
+    "loadAverage": [
+      2.13,
+      2.29,
+      2.36
+    ]
+  },
+  "samples": [
+    {
+      "runId": "studio-history-warm-1",
+      "order": 0,
+      "startedAt": "2026-09-24T10:08:43.174Z",
+      "elapsedMs": 31871.857911999992,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-docs",
+          "elapsedMs": 5586.8930129999935,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-1/typecheck-docs.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 4198.467163000008,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-1/registry-build.log.gz"
+        },
+        {
+          "id": "test-studio",
+          "elapsedMs": 20746.204885999992,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-1/test-studio.log.gz"
+        },
+        {
+          "id": "test-draft-model",
+          "elapsedMs": 1338.9590940000053,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-1/test-draft-model.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.26,
+        2.32,
+        2.36
+      ]
+    },
+    {
+      "runId": "studio-history-warm-2",
+      "order": 1,
+      "startedAt": "2026-09-24T10:09:15.052Z",
+      "elapsedMs": 32903.31352200001,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-docs",
+          "elapsedMs": 6076.993625000003,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-2/typecheck-docs.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 4500.42813,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-2/registry-build.log.gz"
+        },
+        {
+          "id": "test-studio",
+          "elapsedMs": 21025.641197999998,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-2/test-studio.log.gz"
+        },
+        {
+          "id": "test-draft-model",
+          "elapsedMs": 1298.8354680000048,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-2/test-draft-model.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.97,
+        2.23,
+        2.33
+      ]
+    },
+    {
+      "runId": "studio-history-warm-3",
+      "order": 2,
+      "startedAt": "2026-09-24T10:10:46.957Z",
+      "elapsedMs": 32268.086416000006,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-docs",
+          "elapsedMs": 5882.83655800001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-3/typecheck-docs.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 4423.191824999987,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-3/registry-build.log.gz"
+        },
+        {
+          "id": "test-studio",
+          "elapsedMs": 20553.178921999992,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-3/test-studio.log.gz"
+        },
+        {
+          "id": "test-draft-model",
+          "elapsedMs": 1407.432026000024,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-3/test-draft-model.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.85,
+        2.1,
+        2.28
+      ]
+    },
+    {
+      "runId": "studio-history-warm-4",
+      "order": 3,
+      "startedAt": "2026-09-24T10:11:19.231Z",
+      "elapsedMs": 32212.73662499999,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-docs",
+          "elapsedMs": 5906.4506110000075,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-4/typecheck-docs.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 4337.7806890000065,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-4/registry-build.log.gz"
+        },
+        {
+          "id": "test-studio",
+          "elapsedMs": 20680.33476300002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-4/test-studio.log.gz"
+        },
+        {
+          "id": "test-draft-model",
+          "elapsedMs": 1286.8563469999935,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-4/test-draft-model.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.79,
+        2.07,
+        2.26
+      ]
+    },
+    {
+      "runId": "studio-history-warm-5",
+      "order": 4,
+      "startedAt": "2026-09-24T10:12:49.952Z",
+      "elapsedMs": 31912.14892300003,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-docs",
+          "elapsedMs": 5860.365992999985,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-5/typecheck-docs.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 4329.807231999992,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-5/registry-build.log.gz"
+        },
+        {
+          "id": "test-studio",
+          "elapsedMs": 20427.685855999996,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-5/test-studio.log.gz"
+        },
+        {
+          "id": "test-draft-model",
+          "elapsedMs": 1292.9873439999647,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-warm-5/test-draft-model.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.74,
+        1.98,
+        2.21
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 32212.73662499999,
+    "minMs": 31871.857911999992,
+    "maxMs": 32903.31352200001,
+    "madMs": 300.5877019999607
+  },
+  "budget": "report-only"
+}

@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "catalogue-check",
+    "version": 1,
+    "title": "Generated wiring freshness",
+    "phases": [
+      {
+        "id": "catalogue-check",
+        "argv": [
+          "pnpm",
+          "catalogue:check"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "Read-only freshness of the six generated projections and the feature map; dev, build, test, typecheck and registry:build run it first"
+      ],
+      "omitted": [],
+      "unsupported": []
+    },
+    "requires": [
+      "scripts/catalogue/generate.ts"
+    ],
+    "comparesWith": "full-release"
+  },
+  "conditions": {
+    "workload": "catalogue-check",
+    "workloadVersion": 1,
+    "cache": "warm",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      1.89,
+      2.65,
+      2.87
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.81,
+      2.62,
+      2.86
+    ]
+  },
+  "cachePolicy": {
+    "condition": "warm",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "one unmeasured run immediately before the batch",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "candidate"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "candidate"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "candidate"
+      }
+    ]
+  },
+  "priming": {
+    "runId": "catalogue-check-warm-priming",
+    "order": -1,
+    "startedAt": "2026-09-24T11:57:35.837Z",
+    "elapsedMs": 856.3648900000001,
+    "status": "valid",
+    "phases": [
+      {
+        "id": "catalogue-check",
+        "elapsedMs": 855.2369819999999,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/catalogue-check-warm-priming/catalogue-check.log.gz"
+      }
+    ],
+    "cleared": [],
+    "loadAverage": [
+      1.89,
+      2.65,
+      2.87
+    ]
+  },
+  "samples": [
+    {
+      "runId": "catalogue-check-warm-1",
+      "order": 0,
+      "startedAt": "2026-09-24T11:57:36.695Z",
+      "elapsedMs": 828.4464329999998,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "catalogue-check",
+          "elapsedMs": 828.0470940000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/catalogue-check-warm-1/catalogue-check.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.89,
+        2.65,
+        2.87
+      ]
+    },
+    {
+      "runId": "catalogue-check-warm-2",
+      "order": 1,
+      "startedAt": "2026-09-24T11:57:37.523Z",
+      "elapsedMs": 813.721153,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "catalogue-check",
+          "elapsedMs": 813.3492249999999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/catalogue-check-warm-2/catalogue-check.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.89,
+        2.65,
+        2.87
+      ]
+    },
+    {
+      "runId": "catalogue-check-warm-3",
+      "order": 2,
+      "startedAt": "2026-09-24T11:57:38.337Z",
+      "elapsedMs": 800.591668,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "catalogue-check",
+          "elapsedMs": 800.2211130000001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/catalogue-check-warm-3/catalogue-check.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.89,
+        2.65,
+        2.87
+      ]
+    },
+    {
+      "runId": "catalogue-check-warm-4",
+      "order": 3,
+      "startedAt": "2026-09-24T11:57:39.138Z",
+      "elapsedMs": 799.6268879999998,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "catalogue-check",
+          "elapsedMs": 799.2987590000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/catalogue-check-warm-4/catalogue-check.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.89,
+        2.65,
+        2.87
+      ]
+    },
+    {
+      "runId": "catalogue-check-warm-5",
+      "order": 4,
+      "startedAt": "2026-09-24T11:57:39.938Z",
+      "elapsedMs": 801.5763070000003,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "catalogue-check",
+          "elapsedMs": 801.2720639999998,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/catalogue-check-warm-5/catalogue-check.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.89,
+        2.65,
+        2.87
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 801.5763070000003,
+    "minMs": 799.6268879999998,
+    "maxMs": 828.4464329999998,
+    "madMs": 1.9494190000004892
+  },
+  "budget": "report-only"
+}

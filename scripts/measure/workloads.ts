@@ -2,8 +2,11 @@
  * The fixed command workloads of Workloads and comparable coverage. Every argv here is
  * a command that exists at the baseline revision; a later candidate runs the same
  * definitions, and a changed definition bumps its version so old samples stop
- * comparing.
+ * comparing. NEW_WORKLOADS holds the commands the candidate added; they carry the
+ * paths they require, and are reported as new coverage rather than compared.
  */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 export type Phase = { id: string; argv: string[]; cwd: string };
 
@@ -22,6 +25,18 @@ export type Workload = {
   /** Set when the baseline has no narrower plan than another workload's identical argv. */
   samplesFrom?: string;
   note?: string;
+  /**
+   * Paths the checkout must hold for the argv to exist. A workload with requirements is
+   * new coverage: the baseline cannot run it, so it has no same-coverage comparison.
+   */
+  requires?: string[];
+  /**
+   * Set when the command runs in its own snapshot and never reads the caller's cached
+   * outputs, so a warm series would repeat the cold one; only cold is measured.
+   */
+  cacheIndependent?: string;
+  /** The baseline workload whose coverage this candidate-only workload widens or selects from. */
+  comparesWith?: string;
 };
 
 /**
@@ -221,8 +236,127 @@ export const WORKLOADS: Workload[] = [
   },
 ];
 
+const verifyCli = ['scripts/verify.ts', 'scripts/verification/run.ts'];
+const snapshotted =
+  'pnpm verify runs in its own snapshot under .scratch/verify/<run-id>/ with its own install and outputs, so the caller checkout\'s retained build and Vite outputs are never read';
+
+const plan = (id: string, title: string, selector: string[], comparesWith: string): Workload => ({
+  id,
+  version: 1,
+  title,
+  phases: [{ id: 'plan', argv: ['pnpm', 'verify', ...selector, '--plan', '--json'], cwd: '.' }],
+  coverage: {
+    executed: [`The ${selector.join(' ')} check plan: selection with reasons, prerequisites, locks and deadlines. It launches no check.`],
+    omitted: ['Every check the plan names: a plan reports planned, never a pass'],
+    unsupported: [],
+  },
+  requires: verifyCli,
+  comparesWith,
+});
+
+const verifyRun = (id: string, title: string, selector: string[], comparesWith: string, executed: string[]): Workload => ({
+  id,
+  version: 1,
+  title,
+  phases: [{ id: 'verify', argv: ['pnpm', 'verify', ...selector, '--json'], cwd: '.' }],
+  coverage: { executed, omitted: [], unsupported: ['Remote CI status and branch protection: a local run cannot establish them'] },
+  requires: verifyCli,
+  cacheIndependent: snapshotted,
+  comparesWith,
+});
+
+/**
+ * Candidate-only workloads: the planned selectors, discovery and new checks that the
+ * contributor-tooling effort added. They are reported as new coverage and selected
+ * scope, never folded into a same-coverage comparison.
+ */
+export const NEW_WORKLOADS: Workload[] = [
+  {
+    id: 'architecture',
+    version: 1,
+    title: 'Static architecture check',
+    phases: [{ id: 'check-architecture', argv: ['pnpm', 'check:architecture'], cwd: '.' }],
+    coverage: {
+      executed: ['Source layout, import boundaries, primitive sources, token values, the styling engine, the public style-slot API and registry metadata, over the whole scope'],
+      omitted: [],
+      unsupported: [],
+    },
+    requires: ['scripts/check-architecture.ts'],
+    comparesWith: 'full-release',
+  },
+  {
+    id: 'catalogue-check',
+    version: 1,
+    title: 'Generated wiring freshness',
+    phases: [{ id: 'catalogue-check', argv: ['pnpm', 'catalogue:check'], cwd: '.' }],
+    coverage: {
+      executed: ['Read-only freshness of the six generated projections and the feature map; dev, build, test, typecheck and registry:build run it first'],
+      omitted: [],
+      unsupported: [],
+    },
+    requires: ['scripts/catalogue/generate.ts'],
+    comparesWith: 'full-release',
+  },
+  {
+    id: 'discovery',
+    version: 1,
+    title: 'Discovery through list and describe for the three fixed prompts',
+    phases: [
+      { id: 'list-dialog', argv: ['pnpm', 'verify', 'list', '--search', 'Dialog Escape leaves focus behind', '--json'], cwd: '.' },
+      { id: 'describe-dialog', argv: ['pnpm', 'verify', 'describe', 'scenario', 'dialog.keyboard-dismissal', '--json'], cwd: '.' },
+      { id: 'list-reset', argv: ['pnpm', 'verify', 'list', '--search', 'Reset theme undo lost my override', '--json'], cwd: '.' },
+      { id: 'describe-reset', argv: ['pnpm', 'verify', 'describe', 'scenario', 'theme-studio.draft-history', '--json'], cwd: '.' },
+      { id: 'list-picker', argv: ['pnpm', 'verify', 'list', '--search', 'the picker broke', '--json'], cwd: '.' },
+    ],
+    coverage: {
+      executed: ['Read-only discovery: owners, routes, bindings and scoped commands. It launches no app, browser or check.'],
+      omitted: ['Running the discovered commands: scripts/measure/discover.ts proves they execute'],
+      unsupported: [],
+    },
+    requires: verifyCli,
+    comparesWith: 'dialog-edit',
+  },
+  plan('dialog-plan', 'Dialog component plan', ['component', 'dialog'], 'dialog-edit'),
+  plan('studio-plan', 'Theme Studio feature plan', ['feature', 'theme-studio'], 'studio-history'),
+  plan('ult-button-plan', 'ult-button component plan', ['component', 'ult-button'], 'ult-button'),
+  plan('release-plan', 'Release plan', ['release'], 'full-release'),
+  verifyRun('dialog-verify', 'Dialog component verification', ['component', 'dialog'], 'dialog-edit', [
+    'Full architecture, freshness and typecheck',
+    'The ui suites of Dialog and every file that imports it, the docs suites that render it, registry and docs builds, the full consumer smoke, and the Dialog production cells',
+  ]),
+  verifyRun('studio-verify', 'Theme Studio feature verification', ['feature', 'theme-studio'], 'studio-history', [
+    'Full architecture, freshness and typecheck',
+    'The Studio and draft-model suites, registry and docs builds, and the Theme Studio production cells',
+  ]),
+  verifyRun('release-verify', 'Release verification', ['release'], 'full-release', [
+    'Full architecture, freshness and typecheck, every Vitest suite with the axe sweep, palette check, registry, token, element and docs builds',
+    'The full Vite, Next.js and element consumer smoke, and the 26-cell production matrix',
+  ]),
+  {
+    id: 'production-matrix',
+    version: 1,
+    title: 'Production scenario matrix',
+    phases: [{ id: 'test-production', argv: ['pnpm', '--filter', '@ultima/docs', 'test:production', '--json'], cwd: '.' }],
+    coverage: {
+      executed: ['Every registered production case (26 cells) against its own production docs build, in its own verification run'],
+      omitted: [],
+      unsupported: [],
+    },
+    requires: ['apps/docs/tests/production'],
+    cacheIndependent: snapshotted,
+    comparesWith: 'full-release',
+  },
+];
+
+/** Null when the checkout can run the workload, else why it cannot. */
+export function unsupportedReason(root: string, target: Workload): string | null {
+  const missing = (target.requires ?? []).filter((path) => !existsSync(join(root, path)));
+  return missing.length === 0 ? null : `the command does not exist at this revision (missing ${missing.join(', ')})`;
+}
+
 export function workload(id: string): Workload {
-  const found = WORKLOADS.find((item) => item.id === id);
-  if (!found) throw new Error(`unknown workload ${id}; known: ${WORKLOADS.map((item) => item.id).join(', ')}`);
+  const all = [...WORKLOADS, ...NEW_WORKLOADS];
+  const found = all.find((item) => item.id === id);
+  if (!found) throw new Error(`unknown workload ${id}; known: ${all.map((item) => item.id).join(', ')}`);
   return found;
 }

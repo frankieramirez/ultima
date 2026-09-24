@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "stepper-add-remove",
+  "attempt": 3,
+  "revision": "901e286ff3539325ba485ae8bd0ecf35684a9b2e",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.281 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+  "pairing": {
+    "side": "baseline",
+    "position": "first"
+  },
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 936.2725620000001
+  },
+  "task": {
+    "add": "Add a new catalogue component, Synthetic Stepper, registry item `synthetic-stepper`, to this repository, following its conventions for an ordinary React component.\nContract: a number input with decrement and increment buttons, built on `@base-ui/react/number-field`.\nParts: SyntheticStepper.Root, .Group, .Decrement, .Input, .Increment. One `size` axis, `sm | md`, default `md`.\nIt joins the v0.2 release, last in catalogue order. Its docs page has one live demo.\nProof: a test file that renders it, proves ArrowUp increments the value, and runs axe.\nMake the registry build, typecheck and its own test file pass.\nWhen you finish, list every file you changed.",
+    "remove": "Now remove Synthetic Stepper completely, so the repository is exactly as it was before you added it. Run the registry build and typecheck afterwards. List every file you changed.",
+    "sha256": "76fe2fa72eb961291d090c9b547bcc59f05f8805345b46c5ddf86d8df43a7557"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "sessionId": "b5ec3287-ac54-44c7-8c4b-defaa7d43ea8",
+    "add": {
+      "wallMs": 496771.012218,
+      "durationMs": 496167,
+      "turns": 88,
+      "costUsd": 3.037797599999998,
+      "exitCode": 1
+    },
+    "remove": {
+      "wallMs": 1208.3815409999806,
+      "durationMs": 374,
+      "turns": 1,
+      "costUsd": 3.037797599999998,
+      "exitCode": 1
+    },
+    "traces": [
+      "stepper-add-remove-baseline-3.add.stream.jsonl.gz",
+      "stepper-add-remove-baseline-3.remove.stream.jsonl.gz"
+    ]
+  },
+  "observation": {
+    "addition": {
+      "changedFiles": {
+        "wiring": [
+          "apps/docs/src/components.ts",
+          "apps/docs/src/router.tsx",
+          "apps/docs/vitest.config.ts",
+          "packages/ui/src/index.ts",
+          "packages/ui/vitest.config.ts",
+          "registry/items.config.ts"
+        ],
+        "authored": [
+          "apps/docs/src/__tests__/components.test.ts",
+          "apps/docs/src/content/components/synthetic-stepper.mdx",
+          "apps/docs/src/demos/synthetic-stepper/quantity.tsx",
+          "packages/ui/src/synthetic-stepper.tsx"
+        ]
+      },
+      "manualProjectionEdits": [
+        "Edit packages/ui/src/index.ts",
+        "Edit packages/ui/vitest.config.ts",
+        "Edit apps/docs/vitest.config.ts",
+        "Edit registry/items.config.ts",
+        "Edit apps/docs/src/components.ts",
+        "Edit apps/docs/src/router.tsx",
+        "Edit apps/docs/src/router.tsx",
+        "grep -rn \"number-field\\|otp-field\\|optimizeDeps\" apps/docs/vite.config.ts apps/docs/vitest.config.ts 2>/dev/null"
+      ],
+      "projectionsChangedWithoutManualEdit": [],
+      "coordinationProofEdits": 2,
+      "commandsRun": [],
+      "editOperations": {
+        "wiring": 7,
+        "authored": 5
+      },
+      "editedFiles": {
+        "wiring": [
+          "packages/ui/src/index.ts",
+          "packages/ui/vitest.config.ts",
+          "apps/docs/vitest.config.ts",
+          "registry/items.config.ts",
+          "apps/docs/src/components.ts",
+          "apps/docs/src/router.tsx"
+        ],
+        "authored": [
+          "packages/ui/src/synthetic-stepper.tsx",
+          "apps/docs/src/__tests__/components.test.ts",
+          "apps/docs/src/demos/synthetic-stepper/quantity.tsx",
+          "apps/docs/src/content/components/synthetic-stepper.mdx"
+        ]
+      },
+      "bashWrites": [
+        "find / -iname \"*number-field*\" -path \"*base-ui*\" 2>/dev/null | grep -v node_modules/.cache | head -50",
+        "find /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-3-rteLK8/repo -path \"*@base-ui/react*number-field*\" 2>/dev/null | head -50",
+        "grep -n \"hairline\\|focus\\b\\|focusOffset\\|export const border\" packages/tokens/src/*.ts* 2>/dev/null | head -30",
+        "grep -rn \"spinbutton\\|role=\" /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-3-rteLK8/repo/node_modules/.pnpm/@base-ui+react@1.8.0_@types+react@19.2.18_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@base-ui/react/number-field/root/*.js 2>/dev/null | head -20",
+        "grep -n \"export\\|more than one\" packages/*/scripts/build-agent-guide.ts 2>/dev/null | head -30; find . -iname \"build-agent-guide.ts\" 2>/dev/null",
+        "grep -rn \"number-field\\|otp-field\\|optimizeDeps\" apps/docs/vite.config.ts apps/docs/vitest.config.ts 2>/dev/null",
+        "ls apps/docs/src/demos/ | head -5; echo ---; mkdir -p /tmp/check && ls apps/docs/src/demos/synthetic-stepper 2>/dev/null; echo done"
+      ],
+      "searches": 35,
+      "filesOpened": 31,
+      "failedCommands": [],
+      "proofs": [
+        {
+          "argv": [
+            "pnpm",
+            "typecheck"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 10606.126197999984,
+          "tail": "\n> ultima-monorepo@ typecheck /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-3-rteLK8/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "registry:build"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 3544.1194109999924,
+          "tail": "icker...\n- Building dialog...\n- Building drawer...\n- Building dropdown-menu...\n- Building empty...\n- Building field...\n- Building fieldset...\n- Building hover-card...\n- Building input-group...\n- Building input-otp...\n- Building input...\n- Building menubar...\n- Building meter...\n- Building native-select...\n- Building navigation-menu...\n- Building pagination...\n- Building popover...\n- Building progress...\n- Building radio-group...\n- Building resizable...\n- Building scroll-area...\n- Building select...\n- Building separator...\n- Building sidebar...\n- Building skeleton...\n- Building slider...\n- Building spinner...\n- Building stat...\n- Building switch...\n- Building synthetic-stepper...\n- Building table...\n- Building tabs...\n- Building textarea...\n- Building toast...\n- Building toggle-group...\n- Building toggle...\n- Building tooltip...\n- Building setup-vite...\n- Building setup-next...\n- Building tokens-css...\n- Building ult-badge...\n- Building ult-button...\n- Building ult-card...\n- Building ult-code...\n- Building ult-meter...\n- Building ult-stat...\n- Building ult-table...\n- Building ult-tabs...\n- Building ult-tooltip...\n✔ Building registry.\nregistry: built 69 items into apps/docs/public/r\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/ui",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/synthetic-stepper.test.tsx"
+          ],
+          "exitCode": 1,
+          "elapsedMs": 1017.6121519999579,
+          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-3-rteLK8/repo/packages/ui\n      API started at http://localhost:63315/\n\nNo test files found, exiting with code 1\n\nfilter: src/__tests__/synthetic-stepper.test.tsx\n\n|chromium| \n\ninclude: src/__tests__/**/*.test.{ts,tsx}\nexclude:  **/node_modules/**, **/.git/**\n\nundefined\n/home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-3-rteLK8/repo/packages/ui:\n ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run src/__tests__/synthetic-stepper.test.tsx\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/docs",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/axe.test.tsx",
+            "src/__tests__/components.test.ts"
+          ],
+          "exitCode": 1,
+          "elapsedMs": 35412.69169999997,
+          "tail": "pts pointer events\n     - retrying hover action\n       - waiting 500ms\n\n ❯ src/__tests__/axe.test.tsx:28:37\n     27|\n     28| const styles = stylex.create({\n     29|   stage: {\n       |      ^\n     30|     padding: space['--ult-space-7'],\n     31|   },\n ❯ wrapper node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.Cigb0uSy-CiFRUUTk.js?v=9f1b0bfc:4334:28\n ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.Cigb0uSy-CiFRUUTk.js?v=9f1b0bfc:3843:11\n ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.Cigb0uSy-CiFRUUTk.js?v=9f1b0bfc:4346:5\n ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.Cigb0uSy-CiFRUUTk.js?v=9f1b0bfc:5424:20\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n\n Test Files  1 failed | 1 passed (2)\n      Tests  4 passed | 320 skipped (324)\n   Start at  12:00:32\n   Duration  34.53s (tests 85%, import 8%, worker 7%)\n\nundefined\n/home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-3-rteLK8/repo/apps/docs:\n ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run src/__tests__/axe.test.tsx src/__tests__/components.test.ts\n"
+        }
+      ],
+      "servedItem": true
+    },
+    "removal": {
+      "editOperations": 0,
+      "editedFiles": {
+        "wiring": [],
+        "authored": []
+      },
+      "failedCommands": [],
+      "rebuildExit": 0,
+      "leftoverStatus": "M apps/docs/src/__tests__/components.test.ts\n M apps/docs/src/components.ts\n M apps/docs/src/router.tsx\n M apps/docs/vitest.config.ts\n M packages/ui/src/index.ts\n M packages/ui/vitest.config.ts\n M registry/items.config.ts\n?? apps/docs/src/content/components/synthetic-stepper.mdx\n?? apps/docs/src/demos/synthetic-stepper/quantity.tsx\n?? packages/ui/src/synthetic-stepper.tsx",
+      "staleReferences": "apps/docs/src/__tests__/components.test.ts:67:    'synthetic-stepper',\napps/docs/src/__tests__/components.test.ts:132:    'synthetic-stepper',\napps/docs/src/components.ts:346:    item: 'synthetic-stepper',\napps/docs/src/router.tsx:53:import SyntheticStepperContent from './content/components/synthetic-stepper.mdx';\napps/docs/src/router.tsx:186:  'synthetic-stepper': SyntheticStepperContent,\npackages/ui/src/index.ts:490:  SyntheticStepper,\npackages/ui/src/index.ts:491:  type SyntheticStepperSize,\npackages/ui/src/index.ts:492:  type SyntheticStepperRootProps,\npackages/ui/src/index.ts:493:  type SyntheticStepperGroupProps,\npackages/ui/src/index.ts:494:  type SyntheticStepperDecrementProps,\npackages/ui/src/index.ts:495:  type SyntheticStepperInputProps,\npackages/ui/src/index.ts:496:  type SyntheticStepperIncrementProps,\npackages/ui/src/index.ts:497:} from './synthetic-stepper';\nregistry/items.config.ts:296:  'synthetic-stepper': {\nregistry/items.config.ts:299:    docs: \"import { SyntheticStepper } from '@/components/ui/synthetic-stepper';\\n\\n<label htmlFor=\\\"quantity\\\">Quantity</label>\\n<SyntheticStepper.Root id=\\\"quantity\\\" defaultValue={1} min={0}>\\n  <SyntheticStepper.Group>\\n    <SyntheticStepper.Decrement />\\n    <SyntheticStepper.Input />\\n    <SyntheticStepper.Increment />\\n  </SyntheticStepper.Group>\\n</SyntheticStepper.Root>\\n\\nsize sits on Group: sm or md, default md, reaching Decrement, Input, and Increment through context. Decrement and Increment render a default minus and plus glyph, replaced by children. The name comes from a consumer label, aria-label, or aria-labelledby on Input; Root only groups and manages state.\",\nregistry/items.config.ts\nregistry/registry.json\nregistry/ultima/ui/synthetic-stepper.tsx\napps/docs/public/r/synthetic-stepper.json\napps/docs/public/r/registry.json\napps/docs/public/llms.txt"
+    },
+    "wiringFiles": [
+      "packages/ui/src/index.ts",
+      "apps/docs/src/components.ts",
+      "apps/docs/src/router.tsx",
+      "apps/docs/src/navigation.ts",
+      "apps/docs/src/elements.ts",
+      "registry/items.config.ts",
+      "apps/docs/vitest.config.ts",
+      "packages/ui/vitest.config.ts",
+      "apps/docs/src/generated/catalogue.ts",
+      "apps/docs/src/generated/component-pages.ts",
+      "apps/docs/src/generated/elements.ts",
+      "scripts/generated/browser-dependencies.ts"
+    ]
+  },
+  "score": {
+    "additionComplete": false,
+    "removalClean": false,
+    "manualWiringFiles": 6,
+    "manualProjectionEdits": 8
+  }
+}

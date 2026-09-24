@@ -102,3 +102,13 @@ export function runnerClass(env: Environment): string {
   const model = (env.cpuModel ?? 'unknown-cpu').replace(/\(R\)|\(TM\)|CPU|@.*$/g, '').trim().replace(/\s+/g, '-');
   return `${env.ci ? 'ci' : 'local'}:${model}:${env.logicalCpus}c:${Math.round(env.memoryBytes / 2 ** 30)}g:${env.powerProfile ?? 'unknown-power'}`;
 }
+
+/**
+ * The caller's environment without colour switches. Any FORCE_COLOR value, "0" included,
+ * turns picocolors on, and colour codes break the log parsers under test; piped output
+ * is plain without it.
+ */
+export function plainEnvironment(): NodeJS.ProcessEnv {
+  const { FORCE_COLOR: _force, NO_COLOR: _no, ...rest } = process.env;
+  return rest;
+}

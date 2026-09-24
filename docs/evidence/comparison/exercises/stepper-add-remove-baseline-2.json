@@ -1,0 +1,239 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "stepper-add-remove",
+  "attempt": 2,
+  "revision": "901e286ff3539325ba485ae8bd0ecf35684a9b2e",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.281 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+  "pairing": {
+    "side": "baseline",
+    "position": "second"
+  },
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 946.4595239999999
+  },
+  "task": {
+    "add": "Add a new catalogue component, Synthetic Stepper, registry item `synthetic-stepper`, to this repository, following its conventions for an ordinary React component.\nContract: a number input with decrement and increment buttons, built on `@base-ui/react/number-field`.\nParts: SyntheticStepper.Root, .Group, .Decrement, .Input, .Increment. One `size` axis, `sm | md`, default `md`.\nIt joins the v0.2 release, last in catalogue order. Its docs page has one live demo.\nProof: a test file that renders it, proves ArrowUp increments the value, and runs axe.\nMake the registry build, typecheck and its own test file pass.\nWhen you finish, list every file you changed.",
+    "remove": "Now remove Synthetic Stepper completely, so the repository is exactly as it was before you added it. Run the registry build and typecheck afterwards. List every file you changed.",
+    "sha256": "76fe2fa72eb961291d090c9b547bcc59f05f8805345b46c5ddf86d8df43a7557"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "sessionId": "a8b4845c-9563-477e-80d0-fe3eebbfec32",
+    "add": {
+      "wallMs": 1445360.9242639998,
+      "durationMs": 1444618,
+      "turns": 147,
+      "costUsd": 5.893522599999997,
+      "exitCode": 0
+    },
+    "remove": {
+      "wallMs": 31820.185707000084,
+      "durationMs": 31128,
+      "turns": 6,
+      "costUsd": 6.218940599999997,
+      "exitCode": 0
+    },
+    "traces": [
+      "stepper-add-remove-baseline-2.add.stream.jsonl.gz",
+      "stepper-add-remove-baseline-2.remove.stream.jsonl.gz"
+    ]
+  },
+  "observation": {
+    "addition": {
+      "changedFiles": {
+        "wiring": [
+          "apps/docs/src/components.ts",
+          "apps/docs/src/router.tsx",
+          "packages/ui/src/index.ts",
+          "registry/items.config.ts"
+        ],
+        "authored": [
+          "apps/docs/src/__tests__/components.test.ts",
+          "apps/docs/src/content/components/synthetic-stepper.mdx",
+          "apps/docs/src/demos/synthetic-stepper/basic.tsx",
+          "packages/ui/src/__tests__/synthetic-stepper.test.tsx",
+          "packages/ui/src/synthetic-stepper.tsx"
+        ]
+      },
+      "manualProjectionEdits": [
+        "Edit packages/ui/src/index.ts",
+        "Edit apps/docs/src/components.ts",
+        "Edit registry/items.config.ts",
+        "Edit registry/items.config.ts",
+        "Edit apps/docs/src/components.ts",
+        "Edit registry/items.config.ts",
+        "Edit apps/docs/src/router.tsx",
+        "Edit apps/docs/src/router.tsx",
+        "grep -n -i \"stepper\\|number-field\\|NumberField\" -r docs/ apps/docs/src/components.ts 2>/dev/null | head -50"
+      ],
+      "projectionsChangedWithoutManualEdit": [],
+      "coordinationProofEdits": 2,
+      "commandsRun": [],
+      "editOperations": {
+        "wiring": 8,
+        "authored": 16
+      },
+      "editedFiles": {
+        "wiring": [
+          "packages/ui/src/index.ts",
+          "apps/docs/src/components.ts",
+          "registry/items.config.ts",
+          "apps/docs/src/router.tsx"
+        ],
+        "authored": [
+          "packages/ui/src/synthetic-stepper.tsx",
+          "apps/docs/src/demos/synthetic-stepper/basic.tsx",
+          "apps/docs/src/content/components/synthetic-stepper.mdx",
+          "packages/ui/src/__tests__/synthetic-stepper.test.tsx",
+          "apps/docs/src/__tests__/components.test.ts"
+        ]
+      },
+      "bashWrites": [
+        "ls node_modules/@base-ui/react/ 2>/dev/null | grep -i number; find / -maxdepth 6 -iname \"*base-ui*\" -path \"*node_modules*\" 2>/dev/null | head; cat packages/ui/package.json | head -30",
+        "find / -maxdepth 8 -path \"*@base-ui/react/dist*\" -iname \"*number*\" 2>/dev/null | head -20; echo \"---\"; find / -path \"*/node_modules/@base-ui/react*\" -maxdepth 10 2>/dev/null | grep -v \"/tmp/\" | head -5",
+        "ls node_modules/.pnpm 2>/dev/null | grep -i base-ui | head; find . -maxdepth 3 -iname \"node_modules\" 2>/dev/null",
+        "D=\"node_modules/.pnpm/@base-ui+react@1.8.0_@types+react@19.2.18_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@base-ui/react/number-field\"; ls $D; echo ---; cat $D/index.d.ts 2>/dev/null",
+        "grep -n -i \"stepper\\|number-field\\|NumberField\" -r docs/ apps/docs/src/components.ts 2>/dev/null | head -50",
+        "grep -rln \"sm' | 'md'\" packages/ui/src/*.tsx 2>/dev/null; grep -rl \"type.*Size = keyof typeof sizes\" packages/ui/src/*.tsx | xargs -I{} sh -c 'echo {}; grep -n \"sizes = stylex.create\" -A6 {}' | head -100",
+        "grep -n \"stage\\|glob\\|pnpm registry:build\" -r package.json registry/*.ts packages/*/package.json 2>/dev/null | grep -i registry | head -20",
+        "D=\"node_modules/.pnpm/@base-ui+react@1.8.0_@types+react@19.2.18_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@base-ui/react/number-field\"; find \"$D/root\" -iname \"*StepperButton*\"; cat \"$D/root/useNumberFieldStepperButton.mjs\" 2>/dev/null | grep -n \"disabled\\|data-\\|render(\\|state\\b\" | head -40",
+        "cat apps/docs/src/demos/aspect-ratio/basic.tsx; echo ---; cat apps/docs/src/demos/switch/basic.tsx 2>/dev/null || find apps/docs/src/demos -maxdepth 1 -iname \"switch\"",
+        "pnpm --filter @ultima/ui typecheck 2>&1 | tail -80",
+        "pnpm typecheck 2>&1 | tail -100",
+        "pnpm --filter @ultima/ui test -- src/__tests__/synthetic-stepper.test.tsx 2>&1 | tail -150",
+        "pnpm --filter @ultima/ui test -- src/__tests__/synthetic-stepper.test.tsx 2>&1 | tail -100",
+        "pnpm --filter @ultima/ui test -- src/__tests__/synthetic-stepper.test.tsx 2>&1 | grep -i \"synthetic-stepper\"",
+        "pnpm test 2>&1 | tail -80",
+        "pnpm test 2>&1 | tail -100",
+        "pnpm test 2>&1 | tee /tmp/full-test.log | grep -E \"Test Files|Tests |FAIL|passed \\(|failed\"",
+        "pnpm registry:build 2>&1 | tail -80",
+        "pnpm typecheck 2>&1 | tail -40",
+        "pnpm build 2>&1 | tail -100",
+        "(pnpm --filter @ultima/docs exec vite preview --port 4321 --strictPort > /tmp/preview.log 2>&1 &) ; sleep 3; curl -sf http://localhost:4321/ >/dev/null && echo OK",
+        "node -e \"\nconst { chromium } = require('playwright');\n(async () => {\n  const browser = await chromium.launch();\n  const page = await browser.newPage({ viewport: { width: 900, height: 700 } });\n  await page.goto('http://localhost:4321/components/synthetic-stepper', { waitUntil: 'networkidle' });\n  await page.screenshot({ path: '/tmp/synthetic-stepper-dark.png' });\n  await page.emulateMedia({ colorScheme: 'light' });\n  await page.evaluate(() => localStorage.setItem('ultima-theme', 'light'));\n  await page.reload({ waitUntil: 'networkidle' });\n  await page.screenshot({ path: '/tmp/synthetic-stepper-light.png' });\n  await browser.close();\n})();\n\" 2>&1 | tail -40",
+        "find / -maxdepth 6 -iname \"playwright-core\" -path \"*node_modules*\" 2>/dev/null | head -5",
+        "cd /tmp/docs-audit && ls node_modules/.bin | grep -i playwright; cat package.json 2>/dev/null | head -20",
+        "cd /tmp/docs-audit && node -e \"\nconst { chromium } = require('playwright');\n(async () => {\n  const browser = await chromium.launch();\n  const page = await browser.newPage({ viewport: { width: 900, height: 700 } });\n  await page.goto('http://localhost:4321/components/synthetic-stepper', { waitUntil: 'networkidle' });\n  await page.screenshot({ path: '/tmp/synthetic-stepper-dark.png' });\n  await page.evaluate(() => localStorage.setItem('ultima-theme', 'light'));\n  await page.reload({ waitUntil: 'networkidle' });\n  await page.screenshot({ path: '/tmp/synthetic-stepper-light.png' });\n  await browser.close();\n})();\n\" 2>&1 | tail -40",
+        "ls -la /tmp/synthetic-stepper-dark.png /tmp/synthetic-stepper-light.png 2>&1",
+        "grep -rn \"final spell\\|FINAL SPELL\" /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo/apps/docs/src 2>/dev/null | head -5",
+        "grep -rln \"filled by a later component-page ticket\" . --include=\"*.tsx\" --include=\"*.ts\" --include=\"*.mdx\" 2>/dev/null | grep -v node_modules",
+        "grep -rln \"component-page ticket\" . --include=\"*.tsx\" --include=\"*.ts\" 2>/dev/null | grep -v node_modules; grep -rln \"is filled by\" . --include=\"*.tsx\" 2>/dev/null | grep -v node_modules",
+        "pnpm --filter @ultima/docs typecheck 2>&1 | tail -30",
+        "pkill -f \"vite preview\" 2>/dev/null; cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo && pnpm --filter @ultima/docs build 2>&1 | tail -30",
+        "pnpm --filter @ultima/docs build 2>&1 | tail -30",
+        "(pnpm --filter @ultima/docs exec vite preview --port 4321 --strictPort > /tmp/preview.log 2>&1 &) ; sleep 3; curl -sf http://localhost:4321/ >/dev/null && echo OK",
+        "cd /tmp/docs-audit && node -e \"\nconst { chromium } = require('playwright');\n(async () => {\n  const browser = await chromium.launch();\n  const page = await browser.newPage({ viewport: { width: 900, height: 900 } });\n  await page.goto('http://localhost:4321/components/synthetic-stepper', { waitUntil: 'networkidle' });\n  await page.screenshot({ path: '/tmp/synthetic-stepper-dark2.png' });\n  await page.evaluate(() => localStorage.setItem('ultima-theme', 'light'));\n  await page.reload({ waitUntil: 'networkidle' });\n  await page.screenshot({ path: '/tmp/synthetic-stepper-light2.png' });\n  await browser.close();\n})();\n\"",
+        "cd /tmp/docs-audit && node -e \"\nconst { chromium } = require('playwright');\n(async () => {\n  const browser = await chromium.launch();\n  const page = await browser.newPage({ viewport: { width: 900, height: 900 } });\n  await page.goto('http://localhost:4321/components/synthetic-stepper', { waitUntil: 'networkidle' });\n  const increment = page.getByRole('button', { name: 'Increase' });\n  await increment.click();\n  await increment.click();\n  const input = page.getByRole('textbox');\n  await input.click();\n  await page.keyboard.press('Tab');\n  await page.screenshot({ path: '/tmp/synthetic-stepper-interact.png', clip: { x: 280, y: 90, width: 600, height: 450 } });\n  await browser.close();\n})();\n\"",
+        "cd /tmp/docs-audit && node -e \"\nconst { chromium } = require('playwright');\n(async () => {\n  const browser = await chromium.launch();\n  const page = await browser.newPage({ viewport: { width: 900, height: 1000 } });\n  await page.goto('http://localhost:4321/components/synthetic-stepper', { waitUntil: 'networkidle' });\n  const increment = page.getByRole('button', { name: 'Increase' });\n  await increment.click();\n  await increment.click();\n  const input = page.getByRole('textbox');\n  await input.focus();\n  await page.screenshot({ path: '/tmp/synthetic-stepper-interact2.png' });\n  const val = await input.inputValue();\n  console.log('VALUE', val);\n  await browser.close();\n})();\n\"",
+        "pkill -f \"vite preview\" 2>/dev/null; echo done",
+        "pkill -f \"vite preview\" 2>/dev/null; sleep 1; echo done",
+        "pnpm typecheck 2>&1 | tail -30 && echo \"===TEST===\" && pnpm test 2>&1 | grep -E \"Test Files|Tests |FAIL\"",
+        "pnpm registry:build 2>&1 | tail -5",
+        "git check-ignore -v registry/registry.json apps/docs/public/r/synthetic-stepper.json apps/docs/dist 2>&1"
+      ],
+      "searches": 47,
+      "filesOpened": 6,
+      "failedCommands": [
+        "ls apps/docs/src/demos/input; cat apps/docs/src/demos/input/basic.tsx",
+        "pkill -f \"vite preview\" 2>/dev/null; cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo && pnpm --filter @ultima/docs build 2>&1 | tail -30",
+        "pkill -f \"vite preview\" 2>/dev/null; echo done",
+        "pkill -f \"vite preview\" 2>/dev/null; sleep 1; echo done"
+      ],
+      "proofs": [
+        {
+          "argv": [
+            "pnpm",
+            "typecheck"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 10757.58360100002,
+          "tail": "\n> ultima-monorepo@ typecheck /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "registry:build"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 3598.585464999778,
+          "tail": "icker...\n- Building dialog...\n- Building drawer...\n- Building dropdown-menu...\n- Building empty...\n- Building field...\n- Building fieldset...\n- Building hover-card...\n- Building input-group...\n- Building input-otp...\n- Building input...\n- Building menubar...\n- Building meter...\n- Building native-select...\n- Building navigation-menu...\n- Building pagination...\n- Building popover...\n- Building progress...\n- Building radio-group...\n- Building resizable...\n- Building scroll-area...\n- Building select...\n- Building separator...\n- Building sidebar...\n- Building skeleton...\n- Building slider...\n- Building spinner...\n- Building stat...\n- Building switch...\n- Building synthetic-stepper...\n- Building table...\n- Building tabs...\n- Building textarea...\n- Building toast...\n- Building toggle-group...\n- Building toggle...\n- Building tooltip...\n- Building setup-vite...\n- Building setup-next...\n- Building tokens-css...\n- Building ult-badge...\n- Building ult-button...\n- Building ult-card...\n- Building ult-code...\n- Building ult-meter...\n- Building ult-stat...\n- Building ult-table...\n- Building ult-tabs...\n- Building ult-tooltip...\n✔ Building registry.\nregistry: built 69 items into apps/docs/public/r\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/ui",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/synthetic-stepper.test.tsx"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 3122.6695149999578,
+          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  13 passed (13)\n   Start at  11:51:12\n   Duration  2.39s (tests 46%, import 31%, setup 17%, worker 6%)\n\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/docs",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/axe.test.tsx",
+            "src/__tests__/components.test.ts"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 7818.803935999982,
+          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  2 passed (2)\n      Tests  324 passed (324)\n   Start at  11:51:15\n   Duration  7.00s (worker 58%, tests 30%, import 12%)\n\n"
+        }
+      ],
+      "servedItem": true
+    },
+    "removal": {
+      "editOperations": 0,
+      "editedFiles": {
+        "wiring": [],
+        "authored": []
+      },
+      "failedCommands": [],
+      "rebuildExit": 0,
+      "leftoverStatus": "",
+      "staleReferences": ""
+    },
+    "wiringFiles": [
+      "packages/ui/src/index.ts",
+      "apps/docs/src/components.ts",
+      "apps/docs/src/router.tsx",
+      "apps/docs/src/navigation.ts",
+      "apps/docs/src/elements.ts",
+      "registry/items.config.ts",
+      "apps/docs/vitest.config.ts",
+      "packages/ui/vitest.config.ts",
+      "apps/docs/src/generated/catalogue.ts",
+      "apps/docs/src/generated/component-pages.ts",
+      "apps/docs/src/generated/elements.ts",
+      "scripts/generated/browser-dependencies.ts"
+    ]
+  },
+  "score": {
+    "additionComplete": true,
+    "removalClean": true,
+    "manualWiringFiles": 4,
+    "manualProjectionEdits": 9
+  }
+}
