@@ -62,7 +62,7 @@ function Fenced({ components }: { components?: MDXComponents }) {
 }
 
 test('a prose fence carries the site copy button', async () => {
-  const screen = await render(
+  const screen = await renderWithRouter(
     <Prose Content={Fenced} breadcrumb={[{ label: 'Install' }]} />,
   );
   await expect.element(screen.getByRole('button', { name: 'Copy' })).toBeVisible();
