@@ -16,13 +16,16 @@ function exceptionFindings(report: ReturnType<typeof run>) {
     .map((diagnostic) => ({ exception: diagnostic.exception, line: diagnostic.start.line, message: diagnostic.message }));
 }
 
+/** The sites the repository's exceptions file records: 9 token and style sites, and 41 docs declarations. */
+const RECORDED = 50;
+
 describe('ULT-EXCEPTION-001', () => {
-  test('the repository excepts only token and style sites, each with its own authority', () => {
+  test('the repository excepts only token, style and docs sites, each with its own authority', () => {
     const report = run();
     const ids = [...source(EXCEPTIONS).matchAll(/\bid: '([a-z0-9-]+)'/g)].map((match) => match[1]);
     const rules = [...source(EXCEPTIONS).matchAll(/\brule: '([A-Z0-9-]+)'/g)].map((match) => match[1]);
-    assert.equal(ids.length, 9);
-    assert.deepEqual([...new Set(rules)].sort(), ['ULT-STYLE-001', 'ULT-TOKEN-001']);
+    assert.equal(ids.length, RECORDED);
+    assert.deepEqual([...new Set(rules)].sort(), ['ULT-DOCS-001', 'ULT-DOCS-002', 'ULT-STYLE-001', 'ULT-TOKEN-001']);
     assert.equal(report.counts.excepted, ids.length);
     assert.deepEqual(report.diagnostics, []);
   });
@@ -30,7 +33,7 @@ describe('ULT-EXCEPTION-001', () => {
   test('an exactly matched entry excepts its one site and nothing else', () => {
     const report = run({ [SEPARATOR]: withDialog, [EXCEPTIONS]: fixtureWithRepository('exceptions/valid.ts') });
     assert.equal(report.status, 'clean');
-    assert.equal(report.counts.excepted, 1 + 9);
+    assert.equal(report.counts.excepted, 1 + RECORDED);
     assert.deepEqual(report.diagnostics, []);
 
     const second = afterFirstLine(withDialog, "import { Popover } from './popover';");
@@ -66,7 +69,7 @@ describe('ULT-EXCEPTION-001', () => {
     assert.ok(stale.includes('Exception id "stale" is declared twice.'), stale.join('\n'));
     // A miscounted entry excepts nothing: the site it names stays a violation.
     assert.ok(report.diagnostics.some((diagnostic) => diagnostic.ruleId === 'ULT-IMPORT-001' && diagnostic.target === './dialog'));
-    assert.equal(report.counts.excepted, 9);
+    assert.equal(report.counts.excepted, RECORDED);
   });
 
   test('locates each finding at its entry in the exceptions file', () => {
@@ -89,8 +92,8 @@ describe('ULT-EXCEPTION-001', () => {
     const incomplete = report.diagnostics.filter((diagnostic) => diagnostic.severity === 'incomplete');
     assert.deepEqual(incomplete.map((diagnostic) => [diagnostic.ruleId, diagnostic.file]), [['ULT-ANALYSIS-001', EXCEPTIONS]]);
     const returned = report.diagnostics.filter((diagnostic) => diagnostic.severity === 'blocking');
-    assert.equal(returned.length, 9);
-    assert.ok(returned.every((diagnostic) => ['ULT-TOKEN-001', 'ULT-STYLE-001'].includes(diagnostic.ruleId)));
+    assert.equal(returned.length, RECORDED);
+    assert.ok(returned.every((diagnostic) => ['ULT-TOKEN-001', 'ULT-STYLE-001', 'ULT-DOCS-001', 'ULT-DOCS-002'].includes(diagnostic.ruleId)));
     assert.equal(report.status, 'violations');
   });
 });

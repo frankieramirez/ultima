@@ -497,7 +497,46 @@ export function createEvaluator(scope: Scope, path: string, file: ts.SourceFile)
         return inner === undefined ? undefined : `when.${callee.name.text}(${inner})`;
       }
     }
-    return staticText(name.expression);
+    return staticText(name.expression) ?? importedConst(name.expression);
+  };
+
+  /**
+   * A condition key read from another module's exported `defineConsts` group, `breakpoints.WIDE`: the
+   * compiler resolves these into the importing file's tables, so the checker follows them the same way.
+   */
+  const importedConst = (expression: ts.Expression): string | undefined => {
+    const node = unwrap(expression);
+    if (!ts.isPropertyAccessExpression(node) || !ts.isIdentifier(node.expression)) return undefined;
+    const found = declarationOf(node, node.expression.text);
+    if (found?.kind !== 'import' || !ts.isStringLiteral(found.declaration.moduleSpecifier)) return undefined;
+    const named = found.declaration.importClause?.namedBindings;
+    const element = named && ts.isNamedImports(named) ? named.elements.find((entry) => entry.name.text === node.expression.getText(file)) : undefined;
+    if (!element || element.isTypeOnly) return undefined;
+    const resolution = scope.resolve(found.declaration.moduleSpecifier.text, path);
+    if (resolution.kind !== 'file') return undefined;
+    const text = scope.files.read(resolution.path);
+    const other = text === undefined ? undefined : parseSource(resolution.path, text).segments[0]?.file;
+    if (!other) return undefined;
+    const exported = (element.propertyName ?? element.name).text;
+    const otherBindings = styleXBindings(other);
+    for (const statement of other.statements) {
+      if (!ts.isVariableStatement(statement) || !(statement.declarationList.flags & ts.NodeFlags.Const)) continue;
+      if (!statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue;
+      for (const declaration of statement.declarationList.declarations) {
+        if (!ts.isIdentifier(declaration.name) || declaration.name.text !== exported || !declaration.initializer) continue;
+        const init = unwrap(declaration.initializer);
+        if (!ts.isCallExpression(init) || styleXCall(init, otherBindings) !== 'defineConsts') return undefined;
+        const [argument] = init.arguments;
+        const table = argument ? unwrap(argument) : undefined;
+        if (!table || !ts.isObjectLiteralExpression(table)) return undefined;
+        for (const property of table.properties) {
+          if (!ts.isPropertyAssignment(property) || propertyName(property.name) !== node.name.text) continue;
+          const value = unwrap(property.initializer);
+          return ts.isStringLiteralLike(value) ? value.text : undefined;
+        }
+      }
+    }
+    return undefined;
   };
 
   /** An expression's one literal text, or undefined; a failed attempt is not itself a finding. */
