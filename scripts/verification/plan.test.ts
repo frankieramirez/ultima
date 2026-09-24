@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 import { memoryFiles } from '../catalogue/files.ts';
 import { execute, run } from '../verify.ts';
-import { CHECKS, CI_OBLIGATIONS } from './checks.ts';
+import { CHECKS, CI_OBLIGATIONS, check } from './checks.ts';
 import { validFixture } from './fixture.ts';
 import { type Plan, plan, snapshot } from './plan.ts';
 
@@ -94,13 +94,15 @@ function assertPlanned(document: Plan) {
   assert.equal(document.status, 'planned');
   assert.equal(document.outcome.ran, 0);
   assert.equal(document.outcome.passed, 0);
-  assert.equal(document.outcome.canPass, false);
+  const unavailable = document.checks.filter((entry) => check(entry.id).adapter.status === 'unavailable').map((entry) => entry.id);
+  assert.deepEqual(document.outcome.unavailable, unavailable);
+  assert.equal(document.outcome.canPass, unavailable.length === 0, 'a plan can lead to a pass only when every selected check has an adapter');
   for (const id of GLOBAL) assert.ok(checkIds(document).includes(id), `${id} runs in every executable plan`);
   for (const entry of document.checks) {
     assert.equal(entry.status, 'planned');
-    assert.equal(entry.adapter.status, 'unavailable');
+    assert.deepEqual(entry.adapter, check(entry.id).adapter);
     assert.ok(entry.reasons.length > 0, `${entry.id} explains its selection`);
-    for (const prerequisite of entry.prerequisites) {
+    for (const prerequisite of [...entry.prerequisites, ...entry.after]) {
       assert.ok(checkIds(document).indexOf(prerequisite) < checkIds(document).indexOf(entry.id), `${prerequisite} precedes ${entry.id}`);
     }
   }
@@ -114,6 +116,8 @@ function assertAgree(document: Plan, human: string) {
     for (const file of entry.files) assert.ok(human.includes(`file ${file.path}`), file.path);
     for (const caseId of entry.cases) assert.ok(human.includes(caseId), caseId);
     for (const reason of entry.reasons) assert.ok(human.includes(reason), reason);
+    if (entry.prerequisites.length > 0) assert.ok(human.includes(`requires passed: ${entry.prerequisites.join(', ')}`), entry.id);
+    if (entry.after.length > 0) assert.ok(human.includes(`after finished: ${entry.after.join(', ')}`), entry.id);
   }
   for (const fallback of document.fallbacks) {
     assert.ok(human.includes(fallback.reason));
@@ -477,7 +481,7 @@ describe('an unavailable base inventory', () => {
 describe('execution without --plan', () => {
   test('plans from the captured snapshot, exits 3 and never passes', async () => {
     const directory = repository();
-    const output = await execute(['component', 'button', '--output', join(mkdtempSync(join(scratch, 'run-')), 'evidence'), '--json'], directory);
+    const output = await execute(['component', 'button', '--output', join(mkdtempSync(join(scratch, 'run-')), 'evidence'), '--json'], directory, { adapters: {} });
     assert.equal(output.exit, 3);
     const document = JSON.parse(output.stdout);
     assert.equal(document.status, 'incomplete');
@@ -498,7 +502,12 @@ describe('the release plan', () => {
     for (const entry of document.checks) assert.notEqual(entry.scope, 'files');
     assert.ok(checkOf(document, 'production-scenarios')?.cases.includes('dialog.keyboard-dismissal@production[mode=light,viewport=narrow,motion=normal]'));
     assert.deepEqual(checkOf(document, 'docs-tests')?.cases, ['theme-studio.draft-history@docs-vitest[default]']);
-    assert.deepEqual(document.outcome.unavailable.sort(), [...RELEASE].sort(), 'no adapter exists, so release success is unavailable');
+    assert.deepEqual(
+      document.outcome.unavailable.sort(),
+      ['consumer-smoke', 'docs-build', 'docs-tests', 'elements-tests', 'production-scenarios', 'registry-build', 'ui-tests'],
+      'browser, build, install and production adapters have not landed, so release success is unavailable',
+    );
+    assert.equal(document.outcome.canPass, false);
   });
 
   test('carries every CI workflow obligation, including the consumer-smoke workflow', () => {

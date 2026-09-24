@@ -75,6 +75,7 @@ function planOf(ids: CheckId[], changes: Partial<Record<CheckId, Partial<Planned
       cwd: definition.cwd,
       nested: [],
       prerequisites: definition.prerequisites.filter((prerequisite) => ids.includes(prerequisite)),
+      after: (definition.after ?? []).filter((earlier) => ids.includes(earlier)),
       locks: definition.locks,
       needs: definition.needs,
       deadlineSeconds: definition.deadlineSeconds,
@@ -326,6 +327,22 @@ describe('executing the DAG', () => {
     const [archStart, archEnd] = span('architecture');
     assert.ok(docsStart >= uiEnd || uiStart >= docsEnd, 'the browser lock serialized them');
     assert.ok(archStart < Math.max(uiEnd, docsEnd) && archEnd > Math.min(uiStart, docsStart), 'the unlocked check overlapped');
+  });
+
+  test('a check that writes into the snapshot starts only after architecture and freshness finish, even when one fails', async () => {
+    const log = join(scratch, `after-${Date.now()}.log`);
+    const timed = (id: string) => controlled('timed', () => [log, id, '300']);
+    const report = await runIn(
+      repository(),
+      planOf(['architecture', 'catalogue-freshness', 'cli-tests'], { 'cli-tests': { prerequisites: [] } }),
+      { architecture: controlled('fail'), 'catalogue-freshness': timed('catalogue-freshness'), 'cli-tests': timed('cli-tests') },
+      { concurrency: 3 },
+    );
+    assert.equal(stateOf(report, 'architecture')?.failure?.kind, 'validation');
+    assert.equal(stateOf(report, 'cli-tests')?.status, 'passed', 'an ordering is not a prerequisite, so a failed architecture check blocks nothing');
+    const events = readFileSync(log, 'utf8').trim().split('\n').map((line) => line.split(' ')) as [string, string, string][];
+    const at = (id: string, event: string) => Number(events.find((e) => e[0] === id && e[1] === event)?.[2]);
+    assert.ok(at('cli-tests', 'start') >= at('catalogue-freshness', 'end'), 'cli-tests waited for freshness');
   });
 
   test('a timeout stops the whole owned tree, including a descendant that left the process group', async () => {
@@ -609,9 +626,9 @@ describe('two dirty worktrees at once', () => {
 });
 
 describe('the verify command', () => {
-  test('runs a real mode in .scratch/verify, reports every check unavailable and exits 3 with one JSON document', async () => {
+  test('runs a real mode in .scratch/verify; with no adapter registered it reports every check unavailable and exits 3 with one JSON document', async () => {
     const root = repository({ 'README.md': '# Fixture\n', '.gitignore': '.scratch/\n' });
-    const output = await execute(['release', '--json'], root, { runner: { preparation: NO_PREPARATION } });
+    const output = await execute(['release', '--json'], root, { adapters: {}, runner: { preparation: NO_PREPARATION } });
     assert.equal(output.exit, EXIT.incomplete);
     const document = JSON.parse(output.stdout) as Report;
     assert.equal(document.kind, 'verification-run');
@@ -638,7 +655,7 @@ describe('the verify command', () => {
   test('writes a run to a new --output directory, with human output summarizing the same report', async () => {
     const root = repository();
     const directory = join(mkdtempSync(join(scratch, 'evidence-')), 'new');
-    const output = await execute(['release', '--output', directory], root, { runner: { preparation: NO_PREPARATION } });
+    const output = await execute(['release', '--output', directory], root, { adapters: {}, runner: { preparation: NO_PREPARATION } });
     assert.equal(output.exit, EXIT.incomplete);
     assert.equal(output.report?.directory.run, directory);
     assert.match(output.stdout, /^verify release: incomplete \(exit 3\)/);

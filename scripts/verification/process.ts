@@ -37,6 +37,8 @@ export type LaunchOptions = {
   cwd: string;
   env: NodeJS.ProcessEnv;
   log: string;
+  /** A file for standard output alone, when the tool writes its report there; the log keeps standard error. */
+  stdout?: string;
   /** Milliseconds before the child is stopped as timed out. */
   deadlineMs: number;
   signal?: AbortSignal;
@@ -133,20 +135,23 @@ export async function launch(options: LaunchOptions & { token: string }): Promis
     return { ...base, pid: null, status: 'cancelled', exitCode: null, signal: null, durationMs: 0 };
   }
   const log = openSync(options.log, 'a');
+  const out = options.stdout === undefined ? log : openSync(options.stdout, 'w');
   let child;
   try {
     child = spawn(argv[0] as string, argv.slice(1), {
       cwd,
       env: { ...options.env, [OWNER_VARIABLE]: token },
       detached: true,
-      stdio: ['ignore', log, log],
+      stdio: ['ignore', out, log],
       shell: false,
     });
   } catch (error) {
     closeSync(log);
+    if (out !== log) closeSync(out);
     return { ...base, pid: null, status: 'launch-failed', exitCode: null, signal: null, durationMs: performance.now() - started, error: String(error) };
   }
   closeSync(log);
+  if (out !== log) closeSync(out);
   const pgid = child.pid ?? null;
   if (pgid !== null) options.onSpawn?.(pgid);
 

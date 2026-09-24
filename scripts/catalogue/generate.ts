@@ -147,7 +147,28 @@ function main(argv: string[]) {
   const [command] = argv;
 
   if (command === 'check') {
+    if (argv.length > 2 || (argv[1] !== undefined && argv[1] !== '--json')) throw new GenerationError('usage: generate.ts check [--json]');
     const { diagnostics, freshness } = check(root);
+    if (argv[1] === '--json') {
+      // One document for verification adapters: every output compared, and each finding by kind.
+      const files = repositoryFiles(root);
+      const verification = loadVerification(files, loadCatalogue(files).catalogue).diagnostics;
+      const drift = new Map([...freshness.added.map((path) => [path, 'added'] as const), ...freshness.changed.map((path) => [path, 'changed'] as const)]);
+      const stale = freshness.added.length + freshness.changed.length + freshness.stale.length > 0;
+      const document = {
+        schemaVersion: 1,
+        command: 'catalogue:check',
+        status: diagnostics.length > 0 || verification.length > 0 ? 'invalid' : stale ? 'stale' : 'fresh',
+        outputs: Object.values(OUTPUTS)
+          .sort()
+          .map((path) => ({ path, state: drift.get(path) ?? 'fresh' })),
+        stale: freshness.stale,
+        catalogue: diagnostics.map((diagnostic) => format([diagnostic])),
+        featureMap: verification.map((diagnostic) => formatVerificationDiagnostics([diagnostic])),
+      };
+      console.log(JSON.stringify(document, null, 2));
+      return document.status === 'fresh' ? 0 : 1;
+    }
     const lines = [
       ...freshness.added.map((path) => `  added (missing on disk): ${path}`),
       ...freshness.changed.map((path) => `  changed: ${path}`),
@@ -190,7 +211,7 @@ function main(argv: string[]) {
 
   const adopt = argv.flatMap((arg, index) => (argv[index - 1] === '--adopt' ? [arg] : []));
   if (argv.some((arg, index) => arg !== '--adopt' && argv[index - 1] !== '--adopt')) {
-    throw new GenerationError('usage: generate.ts [check | provenance | --out <dir> | --adopt <path>...]');
+    throw new GenerationError('usage: generate.ts [check [--json] | provenance | --out <dir> | --adopt <path>...]');
   }
   const { written, stale } = generate(root, { adopt });
   console.log(written.length > 0 ? `catalogue: wrote ${written.join(', ')}` : 'catalogue: every generated file is current');
