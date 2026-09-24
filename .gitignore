@@ -20,3 +20,6 @@ apps/docs/public/elements/
 .catalogue-generate.lock
 # Manifests and the lock `pnpm scaffold --write` leaves for recovery.
 .scaffold/
+
+# Verification runs: `pnpm verify` snapshots, logs and reports.
+.scratch/

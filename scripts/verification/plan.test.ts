@@ -12,7 +12,7 @@ import { after, describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { memoryFiles } from '../catalogue/files.ts';
-import { run } from '../verify.ts';
+import { execute, run } from '../verify.ts';
 import { CHECKS, CI_OBLIGATIONS } from './checks.ts';
 import { validFixture } from './fixture.ts';
 import { type Plan, plan, snapshot } from './plan.ts';
@@ -475,14 +475,15 @@ describe('an unavailable base inventory', () => {
 });
 
 describe('execution without --plan', () => {
-  test('embeds the plan, exits 3 and never passes', () => {
+  test('plans from the captured snapshot, exits 3 and never passes', async () => {
     const directory = repository();
-    const output = run(['component', 'button', '--json'], directory);
+    const output = await execute(['component', 'button', '--output', join(mkdtempSync(join(scratch, 'run-')), 'evidence'), '--json'], directory);
     assert.equal(output.exit, 3);
     const document = JSON.parse(output.stdout);
-    assert.equal(document.status, 'unavailable');
+    assert.equal(document.status, 'incomplete');
     assert.equal(document.plan.status, 'planned');
     assert.equal(document.plan.outcome.canPass, false);
+    assert.deepEqual(document.plan.checks.map((entry: { id: string }) => entry.id), planOf(['component', 'button'], directory).document.checks.map((entry) => entry.id));
   });
 });
 

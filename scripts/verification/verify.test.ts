@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { after, describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { run } from '../verify.ts';
+import { execute, run } from '../verify.ts';
 import { SCENARIO, scenario, validFixture } from './fixture.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -147,11 +147,16 @@ describe('pnpm verify describe', () => {
 });
 
 describe('execution modes', () => {
-  test('without --plan are unavailable, exit 3 and never pass', () => {
+  test('without --plan run in an isolated snapshot, report every check unavailable, exit 3 and never pass', async () => {
     for (const argv of [['feature', 'dialog'], ['component', 'date-picker'], ['release'], ['changed', '--base', 'origin/main']]) {
-      const { exit, document } = json(argv);
+      const output = join(mkdtempSync(join(scratch, 'run-')), 'evidence');
+      const { exit, stdout } = await execute([...argv, '--output', output, '--json'], root);
+      const document = JSON.parse(stdout);
       assert.equal(exit, 3, argv.join(' '));
-      assert.equal(document.status, 'unavailable');
+      assert.equal(document.status, 'incomplete');
+      assert.equal(document.source.capture.status, 'captured');
+      assert.ok(document.checks.every((entry: { status: string }) => entry.status === 'unavailable' || entry.status === 'skipped'));
+      assert.equal(document.plan.command, argv[0]);
     }
   });
 
