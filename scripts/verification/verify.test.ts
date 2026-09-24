@@ -10,6 +10,8 @@ import { execute, run } from '../verify.ts';
 import { SCENARIO, scenario, validFixture } from './fixture.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
+/** False when this suite runs inside a verification snapshot, which carries no `.git`. */
+const inGit = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd: root, encoding: 'utf8' }).stdout.trim() === root.replace(/\/$/, '');
 const scratch = mkdtempSync(join(tmpdir(), 'ultima-verify-'));
 after(() => rmSync(scratch, { recursive: true, force: true }));
 
@@ -154,6 +156,12 @@ describe('execution modes', () => {
       const document = JSON.parse(stdout);
       assert.equal(exit, 3, argv.join(' '));
       assert.equal(document.status, 'incomplete');
+      if (!inGit) {
+        // Inside a verification run's own snapshot the root is not a Git work tree of its own, so neither
+        // capture nor planning describes it; the run must still end incomplete with nothing passed.
+        assert.ok(document.checks.every((entry: { status: string }) => entry.status !== 'passed'));
+        continue;
+      }
       assert.equal(document.source.capture.status, 'captured');
       assert.ok(document.checks.every((entry: { status: string }) => entry.status === 'unavailable' || entry.status === 'skipped'));
       assert.equal(document.plan.command, argv[0]);
