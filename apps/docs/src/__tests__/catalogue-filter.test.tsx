@@ -22,7 +22,7 @@ function mount() {
 test('text filtering matches names and descriptions without changing site navigation', async () => {
   const screen = await mount();
   const main = screen.getByRole('main');
-  const input = main.getByRole('textbox', { name: 'Filter components' });
+  const input = main.getByRole('searchbox', { name: 'Filter components' });
   await userEvent.fill(input, '  bUtToN  ');
   const buttonMatches = components.filter((component) =>
     `${component.name} ${component.description}`.toLowerCase().includes('button'),
@@ -53,7 +53,7 @@ test('release and text filters combine, empty results recover, and clear restore
   await expect.element(release).toHaveTextContent('v0.2');
   await expect.element(main.getByRole('status')).toHaveTextContent(`${components.filter((component) => component.release === 'v0.2').length} components`);
   expect(main.getByRole('heading', { name: 'The v0 set' }).query()).toBeNull();
-  const input = main.getByRole('textbox', { name: 'Filter components' });
+  const input = main.getByRole('searchbox', { name: 'Filter components' });
   await userEvent.fill(input, 'button');
   await expect.element(main.getByRole('status')).toHaveTextContent('2 components');
   await expect.element(main.getByRole('link', { name: /^Toggle / })).toBeVisible();
@@ -82,7 +82,7 @@ for (const theme of ['dark', 'light']) {
     onTestFinished(() => page.viewport(1280, 720));
     const screen = await mount();
     const main = screen.getByRole('main');
-    const input = main.getByRole('textbox', { name: 'Filter components' });
+    const input = main.getByRole('searchbox', { name: 'Filter components' });
     await expect.element(input).toBeVisible();
     expect(input.element().getBoundingClientRect().right).toBeLessThanOrEqual(390);
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(390);
@@ -125,7 +125,7 @@ test('sort labels render immediately, keyboard sorting stays within groups, and 
   await expect.element(sort).toHaveTextContent('Name Z–A');
   expect(groups()).toEqual(original.map((group) => [...group].sort().reverse()));
   await expect.element(main.getByRole('button', { name: 'Clear filters' })).not.toBeDisabled();
-  const input = main.getByRole('textbox', { name: 'Filter components' });
+  const input = main.getByRole('searchbox', { name: 'Filter components' });
   await userEvent.fill(input, 'no-such-component');
   await userEvent.click(main.getByRole('button', { name: 'Clear filters' }).first());
   await expect.element(input).toHaveFocus();
@@ -148,3 +148,54 @@ test('sort labels render immediately, keyboard sorting stays within groups, and 
   await expect.element(sort).toHaveTextContent('Catalogue order');
   expect(groups()).toEqual(original);
 });
+
+function resolved(property: 'backgroundColor' | 'color', token: string) {
+  const probe = document.createElement('span');
+  probe.style[property] = `var(${token})`;
+  document.body.append(probe);
+  const value = getComputedStyle(probe)[property];
+  probe.remove();
+  return value;
+}
+
+for (const theme of ['dark', 'light']) {
+  test(`the filter reads as a search at rest and cards fill on hover in ${theme}`, async () => {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+    const screen = await mount();
+    const main = screen.getByRole('main');
+    const input = main.getByRole('searchbox', { name: 'Filter components' });
+    await expect.element(input).toHaveAttribute('type', 'search');
+    await expect.element(input).toHaveAttribute('placeholder', 'Filter by name or description');
+    const addon = input.element().parentElement?.querySelector('svg');
+    expect(addon?.getAttribute('aria-hidden')).toBe('true');
+    expect(addon?.getBoundingClientRect().right).toBeLessThanOrEqual(input.element().getBoundingClientRect().left);
+
+    const card = main.getByRole('link', { name: /^Button A / });
+    const title = card.element().querySelector('span')!;
+    const description = title.nextElementSibling!;
+    const raised = resolved('backgroundColor', '--ult-color-surface-raised');
+    const text = resolved('color', '--ult-color-text');
+    const muted = resolved('color', '--ult-color-text-muted');
+    await expect.poll(() => getComputedStyle(card.element()).backgroundColor).toBe(raised);
+
+    await userEvent.hover(card);
+    await expect.poll(() => getComputedStyle(card.element()).backgroundColor)
+      .toBe(resolved('backgroundColor', '--ult-color-surface-hover'));
+    expect(getComputedStyle(title).color).toBe(text);
+    expect(getComputedStyle(description).color).toBe(muted);
+    await userEvent.unhover(card);
+    await expect.poll(() => getComputedStyle(card.element()).backgroundColor).toBe(raised);
+
+    await userEvent.keyboard('{Shift}');
+    (card.element() as HTMLElement).focus();
+    await expect.element(card).toHaveFocus();
+    expect(card.element().matches(':focus-visible')).toBe(true);
+    await userEvent.hover(card);
+    const focused = getComputedStyle(card.element());
+    expect(focused.outlineStyle).toBe('solid');
+    expect(focused.outlineColor).toBe(resolved('color', '--ult-color-border-focus'));
+    expect(focused.backgroundColor).toBe(raised);
+    expect(getComputedStyle(title).color).toBe(text);
+    await userEvent.unhover(card);
+  });
+}
