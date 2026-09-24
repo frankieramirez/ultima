@@ -27,6 +27,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Catalogue freshness
+        run: pnpm catalogue:check
+
       - name: Typecheck
         run: pnpm typecheck
 

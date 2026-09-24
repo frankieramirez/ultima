@@ -168,5 +168,5 @@ function CheckboxItemIndicator({ style, children, ...props }: DropdownMenuCheckb
 Not rules, just facts that cost a red run each.
 
 - **A native attribute can collide with an axis.** `<input size>` is a number, so `InputProps` has to `Omit` `size` from the Base UI props before adding the `sm | md | lg` union, or the intersection resolves to `never`. See `input.tsx`.
-- **A missing `optimizeDeps` line looks like a broken component.** A Base UI entry point absent from `packages/ui/vitest.config.ts` is pre-bundled against a second React copy, and every test in that file fails with `Cannot read properties of null (reading 'useContext')`.
-- **A missing `registry/items.config.ts` entry passes tests and fails the build.** The registry build discovers component files by glob and throws `registry/items.config.ts has no entry for "<name>"` during `pnpm build` only.
+- **A stale optimizer list looks like a broken component.** A Base UI entry point missing from the generated `scripts/generated/browser-dependencies.ts` is pre-bundled against a second React copy, and every test in that file fails with `Cannot read properties of null (reading 'useContext')`. `pnpm catalogue:generate` adds it from the component's imports; `pnpm catalogue:check` catches a forgotten run.
+- **A component file without a descriptor fails every entry point.** The catalogue model reports `source-without-metadata` for `packages/ui/src/<name>.tsx` until `registry/metadata/react/<name>.ts` exists, and `pnpm catalogue:generate` writes nothing until it does.

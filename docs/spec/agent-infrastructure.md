@@ -143,7 +143,7 @@ Before the implementation effort completes, run all architectural checks and the
 
 ## Component metadata and scaffolding
 
-Decided on [Component metadata: ownership, generated wiring, and scaffolding](https://github.com/frankieramirez/ultima/issues/437). This section specifies a migration; the current handwritten files remain in use until it lands.
+Decided on [Component metadata: ownership, generated wiring, and scaffolding](https://github.com/frankieramirez/ultima/issues/437). This section specifies a migration. The descriptors, generated wiring and freshness checks have landed ([#450](https://github.com/frankieramirez/ultima/issues/450), [#451](https://github.com/frankieramirez/ultima/issues/451)); the scaffold has not.
 
 ### Ownership
 

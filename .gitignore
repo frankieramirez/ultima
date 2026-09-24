@@ -7,7 +7,8 @@ dist/
 
 .wrangler/
 
-# Registry build output: only registry/static/ and registry/items.config.ts are authored.
+# Registry build output. registry/static/ and registry/metadata/ are authored; registry/items.config.ts
+# is committed wiring that `pnpm catalogue:generate` writes.
 registry/ultima/
 registry/registry.json
 apps/docs/public/r/*.json
@@ -15,3 +16,5 @@ apps/docs/public/tokens.css
 apps/docs/public/tokens.json
 apps/docs/public/llms.txt
 apps/docs/public/elements/
+
+.catalogue-generate.lock

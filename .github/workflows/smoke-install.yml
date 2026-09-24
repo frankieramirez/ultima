@@ -8,6 +8,8 @@ on:
     paths:
       - 'registry/static/**'
       - 'registry/items.config.ts'
+      - 'registry/metadata/**'
+      - 'scripts/catalogue/**'
       - 'scripts/build-registry.ts'
       - 'scripts/build-agent-guide.ts'
       - 'scripts/smoke-install.sh'

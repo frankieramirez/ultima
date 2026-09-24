@@ -5,11 +5,11 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "pnpm -w run registry:build && vite build",
+    "dev": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"vite\"",
+    "build": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"pnpm -w run registry:build && vite build\"",
     "preview": "vite preview",
-    "test": "pnpm -w run registry:build && vitest run --reporter=verbose",
-    "typecheck": "tsc -p tsconfig.json"
+    "test": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"pnpm -w run registry:build && vitest run --reporter=verbose\"",
+    "typecheck": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"tsc -p tsconfig.json\""
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
