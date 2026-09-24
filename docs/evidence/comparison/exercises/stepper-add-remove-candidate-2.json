@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "stepper-add-remove",
+  "attempt": 2,
+  "revision": "dabc230f5874f2cde8f3a0afa66dcdc91a2b2e9c",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.281 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+  "pairing": {
+    "side": "candidate",
+    "position": "first"
+  },
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 925.384708
+  },
+  "task": {
+    "add": "Add a new catalogue component, Synthetic Stepper, registry item `synthetic-stepper`, to this repository, following its conventions for an ordinary React component.\nContract: a number input with decrement and increment buttons, built on `@base-ui/react/number-field`.\nParts: SyntheticStepper.Root, .Group, .Decrement, .Input, .Increment. One `size` axis, `sm | md`, default `md`.\nIt joins the v0.2 release, last in catalogue order. Its docs page has one live demo.\nProof: a test file that renders it, proves ArrowUp increments the value, and runs axe.\nMake the registry build, typecheck and its own test file pass.\nWhen you finish, list every file you changed.",
+    "remove": "Now remove Synthetic Stepper completely, so the repository is exactly as it was before you added it. Run the registry build and typecheck afterwards. List every file you changed.",
+    "sha256": "76fe2fa72eb961291d090c9b547bcc59f05f8805345b46c5ddf86d8df43a7557"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "sessionId": "16c51d38-5abb-495b-92d6-0971d36e905a",
+    "add": {
+      "wallMs": 1306324.469043,
+      "durationMs": 1305489,
+      "turns": 124,
+      "costUsd": 5.167316800000002,
+      "exitCode": 0
+    },
+    "remove": {
+      "wallMs": 47116.48484400008,
+      "durationMs": 46301,
+      "turns": 7,
+      "costUsd": 5.532309600000001,
+      "exitCode": 0
+    },
+    "traces": [
+      "stepper-add-remove-candidate-2.add.stream.jsonl.gz",
+      "stepper-add-remove-candidate-2.remove.stream.jsonl.gz"
+    ]
+  },
+  "observation": {
+    "addition": {
+      "changedFiles": {
+        "wiring": [
+          "apps/docs/src/generated/catalogue.ts",
+          "apps/docs/src/generated/component-pages.ts",
+          "packages/ui/src/index.ts",
+          "registry/items.config.ts",
+          "scripts/generated/browser-dependencies.ts"
+        ],
+        "authored": [
+          "docs/spec/ultima.md",
+          "apps/docs/src/content/components/synthetic-stepper.mdx",
+          "apps/docs/src/demos/synthetic-stepper/basic.tsx",
+          "packages/ui/src/__tests__/synthetic-stepper.test.tsx",
+          "packages/ui/src/synthetic-stepper.tsx",
+          "registry/metadata/react/synthetic-stepper.ts"
+        ]
+      },
+      "manualProjectionEdits": [],
+      "projectionsChangedWithoutManualEdit": [
+        "apps/docs/src/generated/catalogue.ts",
+        "apps/docs/src/generated/component-pages.ts",
+        "packages/ui/src/index.ts",
+        "registry/items.config.ts",
+        "scripts/generated/browser-dependencies.ts"
+      ],
+      "coordinationProofEdits": 0,
+      "commandsRun": [
+        "pnpm scaffold react synthetic-stepper --from /tmp/scaffold/synthetic-stepper.json 2>&1 | tail -80",
+        "pnpm scaffold react synthetic-stepper --from /tmp/scaffold/synthetic-stepper.json --write 2>&1 | tail -60",
+        "pnpm catalogue:generate 2>&1 | tail -40",
+        "pnpm catalogue:generate 2>&1 | tail -20",
+        "pnpm check:architecture 2>&1 | tail -100",
+        "pnpm catalogue:check 2>&1 | tail -30",
+        "pnpm catalogue:generate 2>&1 | tail -10 && pnpm registry:build 2>&1 | tail -5"
+      ],
+      "editOperations": {
+        "wiring": 0,
+        "authored": 14
+      },
+      "editedFiles": {
+        "wiring": [],
+        "authored": [
+          "docs/spec/ultima.md",
+          "packages/ui/src/synthetic-stepper.tsx",
+          "packages/ui/src/__tests__/synthetic-stepper.test.tsx",
+          "apps/docs/src/demos/synthetic-stepper/basic.tsx",
+          "apps/docs/src/content/components/synthetic-stepper.mdx",
+          "registry/metadata/react/synthetic-stepper.ts"
+        ]
+      },
+      "bashWrites": [
+        "ls node_modules/@base-ui/react/number-field 2>/dev/null || find node_modules/@base-ui -maxdepth 1 -iname \"*number*\"",
+        "find / -maxdepth 6 -iname \"*base-ui*\" -type d 2>/dev/null | grep -v \"/.cache/\" | head -20",
+        "ls node_modules | grep -i base; echo ---; find . -path ./node_modules -prune -o -iname \"*base-ui*\" -print 2>/dev/null | grep -v .git | head; echo ---; cat packages/ui/package.json | grep -A3 base-ui",
+        "grep -n \"violations\\|themeDocument\\|<main\" packages/ui/src/__tests__/switch.test.tsx packages/ui/src/__tests__/input.test.tsx 2>/dev/null",
+        "cat packages/ui/node_modules/@base-ui/react/number-field/root/NumberFieldRoot.js 2>/dev/null | head -80",
+        "cat packages/ui/node_modules/@base-ui/react/number-field/root/useNumberFieldStepperButton.js 2>/dev/null | grep -n \"data-\\|aria-\\|tabIndex\\|disabled\" ",
+        "cat packages/ui/node_modules/@base-ui/react/number-field/utils/stateAttributesMapping.js 2>/dev/null",
+        "cat packages/ui/node_modules/@base-ui/react/internals/field-constants/constants.js 2>/dev/null",
+        "grep -rln \"number-field\\|NumberField\" docs/ 2>/dev/null",
+        "mkdir -p /tmp/scaffold && cat > /tmp/scaffold/synthetic-stepper.json << 'EOF'\n{\n  \"descriptor\": {\n    \"title\": \"Synthetic Stepper\",\n    \"description\": \"A number input with decrement and increment buttons, on Base UI.\",\n    \"contract\": \"docs/spec/ultima.md#synthetic-stepper\",\n    \"installDocs\": \"import { SyntheticStepper } from '@/components/ui/synthetic-stepper';\\n\\n<label htmlFor=\\\"seats\\\">Seats</label>\\n<SyntheticStepper.Root id=\\\"seats\\\" defaultValue={1} min={1} max={10}>\\n  <SyntheticStepper.Group>\\n    <SyntheticStepper.Decrement />\\n    <SyntheticStepper.Input />\\n    <SyntheticStepper.Increment />\\n  </SyntheticStepper.Group>\\n</SyntheticStepper.Root>\",\n    \"primaryExport\": \"SyntheticStepper\",\n    \"release\": \"v0.2\",\n    \"order\": 23\n  },\n  \"brief\": {\n    \"primitive\": { \"kind\": \"base-ui\", \"module\": \"@base-ui/react/number-field\", \"export\": \"NumberField\" },\n    \"shape\": \"compound\",\n    \"parts\": [\n      { \"name\": \"Root\", \"styled\": true },\n      { \"name\": \"Group\", \"styled\": true },\n      { \"name\": \"Decrement\", \"styled\": true },\n      { \"name\": \"Input\", \"styled\": true },\n      { \"name\": \"Increment\", \"styled\": true }\n    ],\n    \"axes\": {\n      \"size\": { \"values\": [\"sm\", \"md\"], \"default\": \"md\", \"part\": \"Root\" }\n    },\n    \"proofBar\": [\n      \"sm and md, each with no props and with every documented prop passed, and the style slot reaching every part\",\n      \"role textbox on Input, named by a wrapping label, aria-label, or Field.Label, same as Input\",\n      \"on Input, via :focus-visible; Root, Group, Decrement, and Increment render none\",\n      \"ArrowUp and ArrowDown step, Home and End are not part of this primitive, the increment and decrement buttons commit the same step, and both disable at min or max\",\n      \"data-disabled dims the group, and the buttons carry the boundary-driven native disabled the primitive already sets\",\n      \"className is rejected on every part, and size only reaches Root\",\n      \"none, because every interaction is the primitive's, which is item 4, or a style reacting to a data-* attribute, which is item 5\",\n      \"none beyond the tokens every part already reads\"\n    ]\n  }\n}\nEOF\ncat /tmp/scaffold/synthetic-stepper.json | python3 -m json.tool > /dev/null && echo OK",
+        "pnpm scaffold react synthetic-stepper --from /tmp/scaffold/synthetic-stepper.json 2>&1 | tail -80",
+        "pnpm scaffold react synthetic-stepper --from /tmp/scaffold/synthetic-stepper.json --write 2>&1 | tail -60",
+        "find packages/ui/node_modules/@base-ui/react/internals -iname \"useRenderElement*\" && cat packages/ui/node_modules/@base-ui/react/internals/useRenderElement/useRenderElement.js 2>/dev/null | grep -n \"disabled\\|getStateAttributesProps\\|defaultMapping\\|BooleanMapping\\|mapping\" | head -60",
+        "find / -iname \"useFocusableWhenDisabled*\" 2>/dev/null | head -3",
+        "grep -rn \"aspectRatio\" packages/ui/src/*.tsx packages/analysis/src 2>/dev/null | head -20",
+        "pnpm --filter @ultima/ui exec vitest run src/__tests__/synthetic-stepper.test.tsx 2>&1 | tail -150",
+        "cat packages/ui/node_modules/@base-ui/react/internals/labelable-provider/useLabel.js 2>/dev/null; echo ---; cat packages/ui/node_modules/@base-ui/react/internals/labelable-provider/useAriaLabelledBy.js 2>/dev/null",
+        "pnpm --filter @ultima/ui exec vitest run src/__tests__/synthetic-stepper.test.tsx 2>&1 | tail -180",
+        "pnpm --filter @ultima/ui typecheck 2>&1 | tail -60",
+        "pnpm catalogue:generate 2>&1 | tail -40",
+        "grep -rl \"ultima-scaffold-incomplete\" packages/ui/src/synthetic-stepper.tsx packages/ui/src/__tests__/synthetic-stepper.test.tsx apps/docs/src/demos/synthetic-stepper/basic.tsx apps/docs/src/content/components/synthetic-stepper.mdx 2>/dev/null; echo done",
+        "pnpm catalogue:generate 2>&1 | tail -20",
+        "pnpm typecheck 2>&1 | tail -80",
+        "pnpm registry:build 2>&1 | tail -40",
+        "pnpm check:architecture 2>&1 | tail -100",
+        "pnpm catalogue:check 2>&1 | tail -30",
+        "pnpm --filter @ultima/ui test 2>&1 | tail -40",
+        "pnpm --filter @ultima/docs test 2>&1 | tail -60",
+        "pnpm catalogue:generate 2>&1 | tail -10 && pnpm registry:build 2>&1 | tail -5",
+        "pnpm --filter @ultima/docs exec vitest run src/__tests__/catalogue-filter.test.tsx 2>&1 | tail -40",
+        "pnpm --filter @ultima/docs test 2>&1 | tail -30",
+        "pnpm test 2>&1 | tail -40",
+        "sleep 5; tail -100 \"/home/f/.cache/ultima-measure/465/tmp/claude-1000/-home-f--cache-ultima-measure-465-tmp-ultima-exercise-stepper-add-remove-candidate-2-WLScPQ-repo/16c51d38-5abb-495b-92d6-0971d36e905a/tasks/bvu3ib877.output\" 2>/dev/null | tail -100",
+        "pnpm build 2>&1 | tail -80",
+        "git check-ignore -v apps/docs/public/r/synthetic-stepper.json 2>&1; git status --porcelain apps/docs/public 2>&1 | head"
+      ],
+      "searches": 43,
+      "filesOpened": 15,
+      "failedCommands": [],
+      "proofs": [
+        {
+          "argv": [
+            "pnpm",
+            "typecheck"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 13647.02136699995,
+          "tail": "\n> ultima-monorepo@ typecheck /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-candidate-2-WLScPQ/repo\n> node --experimental-strip-types scripts/catalogue/preflight.ts \"tsc -p tsconfig.json && pnpm -r typecheck\"\n\nScope: 6 of 7 workspace projects\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/analysis typecheck$ tsc -p tsconfig.json\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"tsc -p tsconfig.json\"\npackages/analysis typecheck: Done\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"tsc -p tsconfig.json\"\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/cli typecheck: Done\napps/docs typecheck: Done\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "registry:build"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 4526.139751000097,
+          "tail": "icker...\n- Building dialog...\n- Building drawer...\n- Building dropdown-menu...\n- Building empty...\n- Building field...\n- Building fieldset...\n- Building hover-card...\n- Building input-group...\n- Building input-otp...\n- Building input...\n- Building menubar...\n- Building meter...\n- Building native-select...\n- Building navigation-menu...\n- Building pagination...\n- Building popover...\n- Building progress...\n- Building radio-group...\n- Building resizable...\n- Building scroll-area...\n- Building select...\n- Building separator...\n- Building sidebar...\n- Building skeleton...\n- Building slider...\n- Building spinner...\n- Building stat...\n- Building switch...\n- Building synthetic-stepper...\n- Building table...\n- Building tabs...\n- Building textarea...\n- Building toast...\n- Building toggle-group...\n- Building toggle...\n- Building tooltip...\n- Building setup-vite...\n- Building setup-next...\n- Building tokens-css...\n- Building ult-badge...\n- Building ult-button...\n- Building ult-card...\n- Building ult-code...\n- Building ult-meter...\n- Building ult-stat...\n- Building ult-table...\n- Building ult-tabs...\n- Building ult-tooltip...\n✔ Building registry.\nregistry: built 69 items into apps/docs/public/r\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/ui",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/synthetic-stepper.test.tsx"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 3032.862614999991,
+          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-candidate-2-WLScPQ/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  14 passed (14)\n   Start at  11:25:47\n   Duration  2.28s (tests 44%, import 32%, setup 16%, worker 7%)\n\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/docs",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/axe.test.tsx",
+            "src/__tests__/components.test.ts"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 8197.796427000081,
+          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-candidate-2-WLScPQ/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  2 passed (2)\n      Tests  323 passed (323)\n   Start at  11:25:50\n   Duration  7.38s (worker 57%, tests 29%, import 13%)\n\n"
+        }
+      ],
+      "servedItem": true
+    },
+    "removal": {
+      "editOperations": 0,
+      "editedFiles": {
+        "wiring": [],
+        "authored": []
+      },
+      "failedCommands": [],
+      "rebuildExit": 0,
+      "leftoverStatus": "",
+      "staleReferences": "docs/evidence/baseline/exercise-plans.md:58:| Contract | Synthetic Stepper, item `synthetic-stepper`, on `@base-ui/react/number-field`. Parts Root, Group, Decrement, Input, Increment. One `size` axis, `sm \\| md`, default `md`. Joins v0.2, last in catalogue order. One live demo on its page. Proof: renders, ArrowUp increments, axe. |\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:24:    \"add\": \"Add a new catalogue component, Synthetic Stepper, registry item `synthetic-stepper`, to this repository, following its conventions for an ordinary React component.\\nContract: a number input with decrement and increment buttons, built on `@base-ui/react/number-field`.\\nParts: SyntheticStepper.Root, .Group, .Decrement, .Input, .Increment. One `size` axis, `sm | md`, default `md`.\\nIt joins the v0.2 release, last in catalogue order. Its docs page has one live demo.\\nProof: a test file that renders it, proves ArrowUp increments the value, and runs axe.\\nMake the registry build, typecheck and its own test file pass.\\nWhen you finish, list every file you changed.\",\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:60:          \"apps/docs/src/content/components/synthetic-stepper.mdx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:61:          \"apps/docs/src/demos/synthetic-stepper/basic.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:62:          \"packages/ui/src/__tests__/synthetic-stepper.test.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:63:          \"packages/ui/src/synthetic-stepper.tsx\"\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:77:          \"packages/ui/src/synthetic-stepper.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:79:          \"apps/docs/src/demos/synthetic-stepper/basic.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:80:          \"apps/docs/src/content/components/synthetic-stepper.mdx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:81:          \"packages/ui/src/__tests__/synthetic-stepper.test.tsx\"\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:99:        \"pnpm --filter @ultima/ui exec vitest run synthetic-stepper --reporter=verbose 2>&1 | tail -150\",\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:130:          \"tail\": \"icker...\\n- Building dialog...\\n- Building drawer...\\n- Building dropdown-menu...\\n- Building empty...\\n- Building field...\\n- Building fieldset...\\n- Building hover-card...\\n- Building input-group...\\n- Building input-otp...\\n- Building input...\\n- Building menubar...\\n- Building meter...\\n- Building native-select...\\n- Building navigation-menu...\\n- Building pagination...\\n- Building popover...\\n- Building progress...\\n- Building radio-group...\\n- Building resizable...\\n- Building scroll-area...\\n- Building select...\\n- Building separator...\\n- Building sidebar...\\n- Building skeleton...\\n- Building slider...\\n- Building spinner...\\n- Building stat...\\n- Building switch...\\n- Building synthetic-stepper...\\n- Building table...\\n- Building tabs...\\n- Building textarea...\\n- Building toast...\\n- Building toggle-group...\\n- Building toggle...\\n- Building tooltip...\\n- Building setup-vite...\\n- Building setup-next...\\n- Building tokens-css...\\n- Building ult-badge...\\n- Building ult-button...\\n- Building ult-card...\\n- Building ult-code...\\n- Building ult-meter...\\n- Building ult-stat...\\n- Building ult-table...\\n- Building ult-tabs...\\n- Building ult-tooltip...\\n✔ Building registry.\\nregistry: built 69 items into apps/docs/public/r\\n\"\ndocs/evidence/baseline/exercises/stepper-add-remove-1.json:140:            \"src/__tests__/synthetic-stepper.test.tsx\"\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:24:    \"add\": \"Add a new catalogue component, Synthetic Stepper, registry item `synthetic-stepper`, to this repository, following its conventions for an ordinary React component.\\nContract: a number input with decrement and increment buttons, built on `@base-ui/react/number-field`.\\nParts: SyntheticStepper.Root, .Group, .Decrement, .Input, .Increment. One `size` axis, `sm | md`, default `md`.\\nIt joins the v0.2 release, last in catalogue order. Its docs page has one live demo.\\nProof: a test file that renders it, proves ArrowUp increments the value, and runs axe.\\nMake the registry build, typecheck and its own test file pass.\\nWhen you finish, list every file you changed.\",\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:61:          \"apps/docs/src/content/components/synthetic-stepper.mdx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:62:          \"apps/docs/src/demos/synthetic-stepper/basic.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:63:          \"packages/ui/src/__tests__/synthetic-stepper.test.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:64:          \"packages/ui/src/synthetic-stepper.tsx\"\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:79:          \"packages/ui/src/synthetic-stepper.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:81:          \"apps/docs/src/demos/synthetic-stepper/basic.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:82:          \"apps/docs/src/content/components/synthetic-stepper.mdx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:83:          \"packages/ui/src/__tests__/synthetic-stepper.test.tsx\"\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:101:        \"ls apps/docs/src/demos/synthetic-stepper 2>/dev/null; mkdir -p apps/docs/src/demos/synthetic-stepper\",\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:107:        \"pnpm --filter @ultima/ui exec vitest run src/__tests__/synthetic-stepper.test.tsx 2>&1 | tail -150\",\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:108:        \"pnpm --filter @ultima/ui exec vitest run src/__tests__/synthetic-stepper.test.tsx 2>&1 | tail -150\",\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:143:          \"tail\": \"icker...\\n- Building dialog...\\n- Building drawer...\\n- Building dropdown-menu...\\n- Building empty...\\n- Building field...\\n- Building fieldset...\\n- Building hover-card...\\n- Building input-group...\\n- Building input-otp...\\n- Building input...\\n- Building menubar...\\n- Building meter...\\n- Building native-select...\\n- Building navigation-menu...\\n- Building pagination...\\n- Building popover...\\n- Building progress...\\n- Building radio-group...\\n- Building resizable...\\n- Building scroll-area...\\n- Building select...\\n- Building separator...\\n- Building sidebar...\\n- Building skeleton...\\n- Building slider...\\n- Building spinner...\\n- Building stat...\\n- Building switch...\\n- Building synthetic-stepper...\\n- Building table...\\n- Building tabs...\\n- Building textarea...\\n- Building toast...\\n- Building toggle-group...\\n- Building toggle...\\n- Building tooltip...\\n- Building setup-vite...\\n- Building setup-next...\\n- Building tokens-css...\\n- Building ult-badge...\\n- Building ult-button...\\n- Building ult-card...\\n- Building ult-code...\\n- Building ult-meter...\\n- Building ult-stat...\\n- Building ult-table...\\n- Building ult-tabs...\\n- Building ult-tooltip...\\n✔ Building registry.\\nregistry: built 69 items into apps/docs/public/r\\n\"\ndocs/evidence/baseline/exercises/stepper-add-remove-2.json:153:            \"src/__tests__/synthetic-stepper.test.tsx\"\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:24:    \"add\": \"Add a new catalogue component, Synthetic Stepper, registry item `synthetic-stepper`, to this repository, following its conventions for an ordinary React component.\\nContract: a number input with decrement and increment buttons, built on `@base-ui/react/number-field`.\\nParts: SyntheticStepper.Root, .Group, .Decrement, .Input, .Increment. One `size` axis, `sm | md`, default `md`.\\nIt joins the v0.2 release, last in catalogue order. Its docs page has one live demo.\\nProof: a test file that renders it, proves ArrowUp increments the value, and runs axe.\\nMake the registry build, typecheck and its own test file pass.\\nWhen you finish, list every file you changed.\",\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:63:          \"apps/docs/src/content/components/synthetic-stepper.mdx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:64:          \"apps/docs/src/demos/synthetic-stepper/quantity.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:65:          \"packages/ui/src/__tests__/synthetic-stepper.test.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:66:          \"packages/ui/src/synthetic-stepper.tsx\"\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:83:          \"packages/ui/src/synthetic-stepper.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:85:          \"apps/docs/src/demos/synthetic-stepper/quantity.tsx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:86:          \"apps/docs/src/content/components/synthetic-stepper.mdx\",\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:87:          \"packages/ui/src/__tests__/synthetic-stepper.test.tsx\"\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:101:        \"grep -rn \\\"jest-dom\\\\|toBeDisabled\\\\|toHaveValue\\\" /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-3-k1Bywr/repo/packages/ui/package.json /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-3-k1Bywr/repo/packages/ui/src/__tests__/*.tsx 2>/dev/null | grep -v synthetic-stepper\",\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:104:        \"pnpm --filter @ultima/ui exec vitest run src/__tests__/synthetic-stepper.test.tsx 2>&1 | tail -150\",\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:105:        \"pnpm --filter @ultima/ui exec vitest run src/__tests__/synthetic-stepper.test.tsx 2>&1 | tail -100\",\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:140:          \"tail\": \"icker...\\n- Building dialog...\\n- Building drawer...\\n- Building dropdown-menu...\\n- Building empty...\\n- Building field...\\n- Building fieldset...\\n- Building hover-card...\\n- Building input-group...\\n- Building input-otp...\\n- Building input...\\n- Building menubar...\\n- Building meter...\\n- Building native-select...\\n- Building navigation-menu...\\n- Building pagination...\\n- Building popover...\\n- Building progress...\\n- Building radio-group...\\n- Building resizable...\\n- Building scroll-area...\\n- Building select...\\n- Building separator...\\n- Building sidebar...\\n- Building skeleton...\\n- Building slider...\\n- Building spinner...\\n- Building stat...\\n- Building switch...\\n- Building synthetic-stepper...\\n- Building table...\\n- Building tabs...\\n- Building textarea...\\n- Building toast...\\n- Building toggle-group...\\n- Building toggle...\\n- Building tooltip...\\n- Building setup-vite...\\n- Building setup-next...\\n- Building tokens-css...\\n- Building ult-badge...\\n- Building ult-button...\\n- Building ult-card...\\n- Building ult-code...\\n- Building ult-meter...\\n- Building ult-stat...\\n- Building ult-table...\\n- Building ult-tabs...\\n- Building ult-tooltip...\\n✔ Building registry.\\nregistry: built 69 items into apps/docs/public/r\\n\"\ndocs/evidence/baseline/exercises/stepper-add-remove-3.json:150:            \"src/__tests__/synthetic-stepper.test.tsx\"\nscripts/measure/exercise.ts:48:  'Add a new catalogue component, Synthetic Stepper, registry item `synthetic-stepper`, to this repository, following its conventions for an ordinary React component.',\nscripts/measure/exercise.ts:50:  'Parts: SyntheticStepper.Root, .Group, .Decrement, .Input, .Increment. One `size` axis, `sm | md`, default `md`.',\nscripts/measure/exercise.ts:291:      ['pnpm', '--filter', '@ultima/ui', 'exec', 'vitest', 'run', 'src/__tests__/synthetic-stepper.test.tsx'],\nscripts/measure/exercise.ts:299:        return JSON.parse(readFileSync(join(checkout, 'registry/registry.json'), 'utf8')).items.some((item: { name: string }) => item.name === 'synthetic-stepper');\nscripts/measure/exercise.ts:309:    const stale = await run(checkout, ['bash', '-c', 'git grep -n -i -e synthetic-stepper -e SyntheticStepper -- . ; grep -rl -i synthetic-stepper registry apps/docs/public 2>/dev/null'], 60_000);"
+    },
+    "wiringFiles": [
+      "packages/ui/src/index.ts",
+      "apps/docs/src/components.ts",
+      "apps/docs/src/router.tsx",
+      "apps/docs/src/navigation.ts",
+      "apps/docs/src/elements.ts",
+      "registry/items.config.ts",
+      "apps/docs/vitest.config.ts",
+      "packages/ui/vitest.config.ts",
+      "apps/docs/src/generated/catalogue.ts",
+      "apps/docs/src/generated/component-pages.ts",
+      "apps/docs/src/generated/elements.ts",
+      "scripts/generated/browser-dependencies.ts"
+    ]
+  },
+  "score": {
+    "additionComplete": true,
+    "removalClean": false,
+    "manualWiringFiles": 5,
+    "manualProjectionEdits": 0
+  }
+}

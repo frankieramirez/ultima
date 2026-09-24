@@ -8,6 +8,7 @@
  * Layout read from <dir>:
  *   batch-<n>/{baseline,candidate}/commands/<workload>.<cache>.json   (pair.ts)
  *   studio/{baseline,candidate}/<cell>/studio.json[.gz]               (studio.ts, one cell each)
+ *   studio-repeat/...                                                 (the screen's one repeat batch)
  *   exercises/<exercise>-<side>-<attempt>.json                        (exercise.ts)
  *   discovery.json                                                    (discover.ts)
  */
@@ -91,7 +92,7 @@ for (const workload of WORKLOADS) {
 }
 
 /** The screen's verdict over batches: a first inconclusive batch is repeated once, and the repeat decides only if it agrees. */
-function screened(rows: Row[]): { status: string; reason: string } {
+function screened(rows: { batch: string; comparison: Comparison }[]): { status: string; reason: string } {
   const [first, repeat] = rows;
   if (!first) return { status: 'unavailable', reason: 'no batch' };
   if (first.comparison.status !== 'inconclusive') return { status: first.comparison.status, reason: `${first.batch}: ${first.comparison.reason}` };
@@ -140,38 +141,55 @@ function phaseMedians(file: CommandFile) {
 
 type StudioFile = {
   conditions: { runnerClass: string; harnessHash: string; fixtureHash: string };
+  fixtures: Record<string, { sha256: string }>;
   source: { commit: string };
   build: { distSha256: string; setupMs: number | null };
   cells: {
     cell: { id: string };
-    sessions: { sessionId: string; firstNavigationMs: number; priming: { durationMs: number | null }[] }[];
+    sessions: { sessionId: string; firstNavigationMs: number; priming: { interaction: string; fixture: string; durationMs: number | null }[] }[];
     summaries: Record<string, InteractionSummary>;
   }[];
 };
-function readStudio(side: string, cell: string): StudioFile | undefined {
-  const base = join(dir, 'studio', side, cell);
+function readStudio(batch: string, side: string, cell: string): StudioFile | undefined {
+  const base = join(dir, batch, side, cell);
   const file = ['studio.json', 'studio.json.gz'].map((name) => join(base, name)).find(existsSync);
   return file ? (readMaybeGzip(file) as StudioFile) : undefined;
 }
 const CELLS = ['dark-desktop', 'light-desktop', 'dark-narrow', 'light-narrow'];
-const studio = CELLS.map((cellId) => {
-  const baseline = readStudio('baseline', cellId);
-  const candidate = readStudio('candidate', cellId);
+/** `studio` is the first batch; `studio-repeat` is the one complete repeat the noise screen asks for. */
+const STUDIO_BATCHES = ['studio', 'studio-repeat'].filter((name) => existsSync(join(dir, name)));
+const studio = STUDIO_BATCHES.flatMap((batch) => CELLS.map((cellId) => studioCell(batch, cellId)));
+function studioCell(batch: string, cellId: string) {
+  const baseline = readStudio(batch, 'baseline', cellId);
+  const candidate = readStudio(batch, 'candidate', cellId);
   const b = baseline?.cells.find((c) => c.cell.id === cellId);
   const c = candidate?.cells.find((x) => x.cell.id === cellId);
+  // The fixture set may differ as a whole (the largest override set follows the schema), so each
+  // interaction compares only when the one fixture it runs on is byte-identical on both sides.
   const mismatch =
     baseline && candidate
-      ? (['runnerClass', 'harnessHash', 'fixtureHash'] as const).filter((key) => baseline.conditions[key] !== candidate.conditions[key])
+      ? (['runnerClass', 'harnessHash'] as const).filter((key) => baseline.conditions[key] !== candidate.conditions[key])
       : [];
-  const interactions = Object.keys(c?.summaries ?? b?.summaries ?? {}).map((id) => ({
-    interaction: id,
-    baseline: b?.summaries[id] ? pick(b.summaries[id]!) : null,
-    candidate: c?.summaries[id] ? pick(c.summaries[id]!) : null,
-    comparison: mismatch.length
-      ? ({ status: 'unavailable', reason: `conditions differ: ${mismatch.join(', ')}` } as Comparison)
-      : compareInteraction(b?.summaries[id], c?.summaries[id]),
-  }));
+  const fixtureOf = (id: string) => (c ?? b)?.sessions[0]?.priming.find((event) => event.interaction === id)?.fixture ?? null;
+  const interactions = Object.keys(c?.summaries ?? b?.summaries ?? {}).map((id) => {
+    const fixture = fixtureOf(id);
+    const hashes = fixture ? [baseline?.fixtures[fixture]?.sha256, candidate?.fixtures[fixture]?.sha256] : [];
+    const reason = mismatch.length
+      ? `conditions differ: ${mismatch.join(', ')}`
+      : !fixture || !hashes[0] || hashes[0] !== hashes[1]
+        ? `fixture ${fixture} differs between revisions (${hashes.map((h) => h?.slice(0, 12) ?? 'absent').join(' vs ')})`
+        : null;
+    return {
+      interaction: id,
+      fixture,
+      fixtureSha256: reason ? null : hashes[0],
+      baseline: b?.summaries[id] ? pick(b.summaries[id]!) : null,
+      candidate: c?.summaries[id] ? pick(c.summaries[id]!) : null,
+      comparison: reason ? ({ status: 'unavailable', reason } as Comparison) : compareInteraction(b?.summaries[id], c?.summaries[id]),
+    };
+  });
   return {
+    batch,
     cell: cellId,
     baseline: baseline ? { commit: baseline.source.commit, distSha256: baseline.build.distSha256, buildMs: baseline.build.setupMs } : null,
     candidate: candidate ? { commit: candidate.source.commit, distSha256: candidate.build.distSha256, buildMs: candidate.build.setupMs } : null,
@@ -182,7 +200,21 @@ const studio = CELLS.map((cellId) => {
     },
     interactions,
   };
-});
+}
+const studioVerdicts = CELLS.flatMap((cellId) =>
+  (studio.find((cell) => cell.cell === cellId)?.interactions ?? []).map(({ interaction }) => ({
+    cell: cellId,
+    interaction,
+    ...screened(
+      studio
+        .filter((cell) => cell.cell === cellId)
+        .map((cell) => ({
+          batch: cell.batch,
+          comparison: cell.interactions.find((row) => row.interaction === interaction)?.comparison ?? ({ status: 'unavailable', reason: 'no observation in this batch' } as Comparison),
+        })),
+    ),
+  })),
+);
 function pick(summary: InteractionSummary) {
   return { status: summary.status, missing: summary.missing, sessionMedian: summary.sessionMedian, sessionP95: summary.sessionP95, sessions: summary.sessions };
 }
@@ -207,13 +239,17 @@ const discovery = existsSync(join(dir, 'discovery.json')) ? readMaybeGzip(join(d
 
 /* ---------- write ---------- */
 
-const anyCandidate = batches.map((batch) => readdirSync(join(dir, batch, 'candidate', 'commands')).find((n) => n.endsWith('.json'))).find(Boolean);
-const anyBaseline = batches.map((batch) => readdirSync(join(dir, batch, 'baseline', 'commands')).find((n) => n.endsWith('.json'))).find(Boolean);
-const identity = (side: 'baseline' | 'candidate', name: string | undefined) => {
-  if (!name) return null;
-  const batch = batches.find((b) => existsSync(join(dir, b, side, 'commands', name)))!;
-  const file = readMaybeGzip(join(dir, batch, side, 'commands', name)) as CommandFile;
-  return { source: file.source, environment: file.environment ?? null, runnerClass: file.conditions?.runnerClass ?? null };
+/** Identity from the first real series of a side; a candidate-only stub carries no conditions. */
+const identity = (side: 'baseline' | 'candidate') => {
+  for (const batch of batches) {
+    const commandsDir = join(dir, batch, side, 'commands');
+    if (!existsSync(commandsDir)) continue;
+    for (const name of readdirSync(commandsDir).filter((n) => n.endsWith('.json')).sort()) {
+      const file = readMaybeGzip(join(dir, batch, side, 'commands', name)) as CommandFile;
+      if (file.conditions) return { series: `${batch}/${side}/commands/${name}`, source: file.source, environment: file.environment ?? null, runnerClass: file.conditions.runnerClass };
+    }
+  }
+  return null;
 };
 
 writeFileSync(
@@ -224,13 +260,14 @@ writeFileSync(
       kind: 'performance-comparison',
       comparator: 'paired alternating batches; the median of paired differences screened against the larger MAD, repeated once when inconclusive',
       budget: 'report-only: timing is advisory and gates nothing',
-      baseline: identity('baseline', anyBaseline),
-      candidate: identity('candidate', anyCandidate),
+      baseline: identity('baseline'),
+      candidate: identity('candidate'),
       batches,
       sameCommand,
       verdicts,
       newCoverage,
       studio,
+      studioVerdicts,
       exercises: exercises.map(({ file, exercise, attempt, pairing, failure, score }) => ({ file, exercise, attempt, pairing, failure: failure ?? null, score: score ?? null })),
       discovery: discovery ? { file: 'discovery.json', met: discovery.met } : { status: 'unavailable' },
     },
@@ -301,24 +338,30 @@ const lines = [
   '',
   'Application-observed update latency in ms, per cell: the median and range of the five session medians, and the median of the five session p95s. The change pairs sessions by index.',
   '',
-  '| Cell | Interaction | Baseline median (range) | Baseline p95 | Candidate median (range) | Candidate p95 | Change ms |',
-  '| --- | --- | --- | --- | --- | --- | --- |',
+  '| Batch | Cell | Interaction | Fixture | Baseline median (range) | Baseline p95 | Candidate median (range) | Candidate p95 | Change ms |',
+  '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   ...studio.flatMap((cell) =>
     cell.interactions.map((row) => {
       const fmt = (s: ReturnType<typeof pick> | null) =>
         !s ? 'unavailable' : s.status !== 'measured' ? `${s.status} (${s.missing} missing)` : `${millis(s.sessionMedian!.medianMs)} (${millis(s.sessionMedian!.minMs)}–${millis(s.sessionMedian!.maxMs)})`;
       const p95 = (s: ReturnType<typeof pick> | null) => (s?.sessionP95 ? millis(s.sessionP95.medianMs) : '–');
-      return `| ${cell.cell} | ${row.interaction} | ${fmt(row.baseline)} | ${p95(row.baseline)} | ${fmt(row.candidate)} | ${p95(row.candidate)} | ${comparisonCell(row.comparison, millis)} |`;
+      return `| ${cell.batch} | ${cell.cell} | ${row.interaction} | ${row.fixture ?? '–'} | ${fmt(row.baseline)} | ${p95(row.baseline)} | ${fmt(row.candidate)} | ${p95(row.candidate)} | ${comparisonCell(row.comparison, millis)} |`;
     }),
   ),
   '',
+  '### Studio verdicts after the noise screen',
+  '',
+  '| Cell | Interaction | Verdict | Why |',
+  '| --- | --- | --- | --- |',
+  ...studioVerdicts.map((v) => `| ${v.cell} | ${v.interaction} | ${v.status} | ${v.reason} |`),
+  '',
   '### First navigation and first interaction',
   '',
-  '| Cell | Baseline first navigation ms | Candidate first navigation ms | Baseline first interaction ms | Candidate first interaction ms |',
-  '| --- | --- | --- | --- | --- |',
+  '| Batch | Cell | Baseline first navigation ms | Candidate first navigation ms | Baseline first interaction ms | Candidate first interaction ms |',
+  '| --- | --- | --- | --- | --- | --- |',
   ...studio.map(
     (cell) =>
-      `| ${cell.cell} | ${cell.firstNavigationMs.baseline?.map(millis).join(', ') ?? '–'} | ${cell.firstNavigationMs.candidate?.map(millis).join(', ') ?? '–'} | ${cell.firstInteractionMs.baseline?.map(millis).join(', ') ?? '–'} | ${cell.firstInteractionMs.candidate?.map(millis).join(', ') ?? '–'} |`,
+      `| ${cell.batch} | ${cell.cell} | ${cell.firstNavigationMs.baseline?.map(millis).join(', ') ?? '–'} | ${cell.firstNavigationMs.candidate?.map(millis).join(', ') ?? '–'} | ${cell.firstInteractionMs.baseline?.map(millis).join(', ') ?? '–'} | ${cell.firstInteractionMs.candidate?.map(millis).join(', ') ?? '–'} |`,
   ),
   '',
   '## Discovery exercises',

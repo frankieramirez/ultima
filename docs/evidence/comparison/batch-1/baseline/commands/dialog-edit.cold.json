@@ -1,0 +1,406 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "dialog-edit",
+    "version": 1,
+    "title": "Single React edit, Dialog pilot",
+    "phases": [
+      {
+        "id": "typecheck-ui",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/ui",
+          "typecheck"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "test-dialog",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/ui",
+          "exec",
+          "vitest",
+          "run",
+          "src/__tests__/dialog.test.tsx"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "packages/ui typecheck",
+        "packages/ui/src/__tests__/dialog.test.tsx (proof bar, open-state axe)"
+      ],
+      "omitted": [
+        "Components that import dialog.tsx (see inventory dependents) and their test files",
+        "Docs demo axe sweep and the command-dialog recipe test in apps/docs",
+        "Registry build and consumer install of the dialog item"
+      ],
+      "unsupported": [
+        "pnpm verify component dialog: the planned selector does not exist at this revision",
+        "Production Dialog keyboard-dismissal cells: no production runner exists"
+      ]
+    }
+  },
+  "conditions": {
+    "workload": "dialog-edit",
+    "workloadVersion": 1,
+    "cache": "cold",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+    "branch": "HEAD",
+    "dirtyPatchSha256": "744ab42ca01c3ab9814d186b5cbe74cbd2222868f6e8a654056dc4e75a9fac00",
+    "untracked": [
+      "scripts/measure/compare.ts",
+      "scripts/measure/discover.ts",
+      "scripts/measure/pair.ts",
+      "scripts/measure/sampler.ts"
+    ],
+    "sourceManifestSha256": "31d4198763a3829899cfcd099b9b2d960c154c210fe4fcc4096f047963907b6e",
+    "lockfileSha256": "0d81ed7f53b3f8f339af91ba97eae74237861baec8279f9ef3f95645b6df59db",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      3.5,
+      2.77,
+      2.53
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      3.5,
+      2.79,
+      2.54
+    ]
+  },
+  "cachePolicy": {
+    "condition": "cold",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "none",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the candidate checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "baseline"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "baseline"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "baseline"
+      }
+    ]
+  },
+  "priming": null,
+  "samples": [
+    {
+      "runId": "dialog-edit-cold-1",
+      "order": 0,
+      "startedAt": "2026-09-24T09:59:34.746Z",
+      "elapsedMs": 7020.443897,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-ui",
+          "elapsedMs": 3853.221379,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-cold-1/typecheck-ui.log.gz"
+        },
+        {
+          "id": "test-dialog",
+          "elapsedMs": 3165.8991400000004,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-cold-1/test-dialog.log.gz"
+        }
+      ],
+      "cleared": [
+        "apps/docs/node_modules/.vite",
+        "packages/ui/node_modules/.vite",
+        "packages/elements/node_modules/.vite",
+        "packages/tokens/node_modules/.vite",
+        "packages/cli/node_modules/.vite",
+        "apps/docs/dist",
+        "packages/tokens/dist",
+        "packages/elements/dist",
+        "packages/cli/dist",
+        "registry/ultima",
+        "registry/registry.json",
+        "apps/docs/public/r/accordion.json",
+        "apps/docs/public/r/alert-dialog.json",
+        "apps/docs/public/r/alert.json",
+        "apps/docs/public/r/aspect-ratio.json",
+        "apps/docs/public/r/avatar.json",
+        "apps/docs/public/r/badge.json",
+        "apps/docs/public/r/breadcrumb.json",
+        "apps/docs/public/r/button-group.json",
+        "apps/docs/public/r/button.json",
+        "apps/docs/public/r/calendar.json",
+        "apps/docs/public/r/card.json",
+        "apps/docs/public/r/checkbox.json",
+        "apps/docs/public/r/code.json",
+        "apps/docs/public/r/collapsible.json",
+        "apps/docs/public/r/color-field.json",
+        "apps/docs/public/r/combobox.json",
+        "apps/docs/public/r/command.json",
+        "apps/docs/public/r/context-menu.json",
+        "apps/docs/public/r/date-picker.json",
+        "apps/docs/public/r/dialog.json",
+        "apps/docs/public/r/drawer.json",
+        "apps/docs/public/r/dropdown-menu.json",
+        "apps/docs/public/r/empty.json",
+        "apps/docs/public/r/field.json",
+        "apps/docs/public/r/fieldset.json",
+        "apps/docs/public/r/hover-card.json",
+        "apps/docs/public/r/input-group.json",
+        "apps/docs/public/r/input-otp.json",
+        "apps/docs/public/r/input.json",
+        "apps/docs/public/r/lib.json",
+        "apps/docs/public/r/menubar.json",
+        "apps/docs/public/r/meter.json",
+        "apps/docs/public/r/native-select.json",
+        "apps/docs/public/r/navigation-menu.json",
+        "apps/docs/public/r/pagination.json",
+        "apps/docs/public/r/popover.json",
+        "apps/docs/public/r/progress.json",
+        "apps/docs/public/r/radio-group.json",
+        "apps/docs/public/r/registry.json",
+        "apps/docs/public/r/resizable.json",
+        "apps/docs/public/r/scroll-area.json",
+        "apps/docs/public/r/select.json",
+        "apps/docs/public/r/separator.json",
+        "apps/docs/public/r/setup-next.json",
+        "apps/docs/public/r/setup-vite.json",
+        "apps/docs/public/r/sidebar.json",
+        "apps/docs/public/r/skeleton.json",
+        "apps/docs/public/r/slider.json",
+        "apps/docs/public/r/spinner.json",
+        "apps/docs/public/r/stat.json",
+        "apps/docs/public/r/switch.json",
+        "apps/docs/public/r/table.json",
+        "apps/docs/public/r/tabs.json",
+        "apps/docs/public/r/textarea.json",
+        "apps/docs/public/r/toast.json",
+        "apps/docs/public/r/toggle-group.json",
+        "apps/docs/public/r/toggle.json",
+        "apps/docs/public/r/tokens-css.json",
+        "apps/docs/public/r/tokens.json",
+        "apps/docs/public/r/tooltip.json",
+        "apps/docs/public/r/ult-badge.json",
+        "apps/docs/public/r/ult-button.json",
+        "apps/docs/public/r/ult-card.json",
+        "apps/docs/public/r/ult-code.json",
+        "apps/docs/public/r/ult-meter.json",
+        "apps/docs/public/r/ult-stat.json",
+        "apps/docs/public/r/ult-table.json",
+        "apps/docs/public/r/ult-tabs.json",
+        "apps/docs/public/r/ult-tooltip.json",
+        "apps/docs/public/tokens.css",
+        "apps/docs/public/tokens.json",
+        "apps/docs/public/llms.txt",
+        "apps/docs/public/elements"
+      ],
+      "loadAverage": [
+        3.5,
+        2.77,
+        2.53
+      ]
+    },
+    {
+      "runId": "dialog-edit-cold-2",
+      "order": 1,
+      "startedAt": "2026-09-24T09:59:56.700Z",
+      "elapsedMs": 6727.4242269999995,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-ui",
+          "elapsedMs": 3673.8974240000025,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-cold-2/typecheck-ui.log.gz"
+        },
+        {
+          "id": "test-dialog",
+          "elapsedMs": 3052.8317449999995,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-cold-2/test-dialog.log.gz"
+        }
+      ],
+      "cleared": [
+        "packages/ui/node_modules/.vite"
+      ],
+      "loadAverage": [
+        2.99,
+        2.71,
+        2.51
+      ]
+    },
+    {
+      "runId": "dialog-edit-cold-3",
+      "order": 2,
+      "startedAt": "2026-09-24T10:00:03.434Z",
+      "elapsedMs": 6756.867779,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-ui",
+          "elapsedMs": 3705.8951750000015,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-cold-3/typecheck-ui.log.gz"
+        },
+        {
+          "id": "test-dialog",
+          "elapsedMs": 3050.2060740000015,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-cold-3/test-dialog.log.gz"
+        }
+      ],
+      "cleared": [
+        "packages/ui/node_modules/.vite"
+      ],
+      "loadAverage": [
+        2.83,
+        2.68,
+        2.5
+      ]
+    },
+    {
+      "runId": "dialog-edit-cold-4",
+      "order": 3,
+      "startedAt": "2026-09-24T10:00:24.902Z",
+      "elapsedMs": 6742.546646999996,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-ui",
+          "elapsedMs": 3662.4721260000006,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-cold-4/typecheck-ui.log.gz"
+        },
+        {
+          "id": "test-dialog",
+          "elapsedMs": 3079.485698999997,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-cold-4/test-dialog.log.gz"
+        }
+      ],
+      "cleared": [
+        "packages/ui/node_modules/.vite"
+      ],
+      "loadAverage": [
+        2.36,
+        2.57,
+        2.47
+      ]
+    },
+    {
+      "runId": "dialog-edit-cold-5",
+      "order": 4,
+      "startedAt": "2026-09-24T10:00:31.652Z",
+      "elapsedMs": 6690.310236000005,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-ui",
+          "elapsedMs": 3670.9318490000005,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-cold-5/typecheck-ui.log.gz"
+        },
+        {
+          "id": "test-dialog",
+          "elapsedMs": 3018.780386999999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-cold-5/test-dialog.log.gz"
+        }
+      ],
+      "cleared": [
+        "packages/ui/node_modules/.vite"
+      ],
+      "loadAverage": [
+        2.25,
+        2.55,
+        2.46
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 6742.546646999996,
+    "minMs": 6690.310236000005,
+    "maxMs": 7020.443897,
+    "madMs": 15.122419999996055
+  },
+  "budget": "report-only"
+}

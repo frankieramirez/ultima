@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "reset-undo",
+  "attempt": 2,
+  "revision": "dabc230f5874f2cde8f3a0afa66dcdc91a2b2e9c",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.281 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+  "pairing": {
+    "side": "candidate",
+    "position": "first"
+  },
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 978.416358
+  },
+  "task": {
+    "text": "You are in the Ultima repository, at its root. A user reports:\n\n\"Reset theme undo lost my override\"\n\nFind the source file that owns this behavior and one shell command, run from the repository root, that runs the existing checks covering it.\nDo not modify any file. When you are done, end your reply with exactly these two lines:\nOWNER: <repository-relative path of the owning source file>\nCOMMAND: <the command>",
+    "sha256": "752ec519302f29074d96e55162cc4608d6501c1d12967e5f336fbbc490f4b01f",
+    "entryPoint": "repository root, no files open"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "tools": [
+      "Bash",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "sessionId": "93d294ff-5b63-4ba8-94f3-af7694c30a57",
+    "argv": [
+      "claude",
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--model",
+      "sonnet",
+      "--permission-mode",
+      "bypassPermissions",
+      "--strict-mcp-config",
+      "--setting-sources",
+      "project",
+      "--tools",
+      "Bash,Read,Grep,Glob"
+    ],
+    "started": "2026-09-24T14:07:30.267Z",
+    "wallMs": 185333.68291300003,
+    "durationMs": 184724,
+    "turns": 25,
+    "costUsd": 0.41503500000000004,
+    "exitCode": 0,
+    "trace": "reset-undo-candidate-2.stream.jsonl.gz"
+  },
+  "observation": {
+    "toolCalls": 24,
+    "byTool": {
+      "Grep": 4,
+      "Read": 5,
+      "Bash": 15
+    },
+    "searches": [
+      "Grep {\"pattern\":\"reset.*theme|resetTheme\",\"output_mode\":\"files_with_matches\",\"-i\":true}",
+      "Grep {\"pattern\":\"reset|undo\",\"path\":\"apps/docs/src/theme-studio-draft.ts\",\"-n\":true,\"-i\":true}",
+      "Grep {\"pattern\":\"undo|history\",\"path\":\"apps/docs/src/routes/theme-studio.tsx\",\"-n\":true,\"-i\":true}",
+      "Grep {\"pattern\":\"undo|history|Undo|History\",\"path\":\"apps/docs/src/routes/theme-studio.tsx\",\"-n\":true,\"-C\":3}",
+      "grep -ni \"undo\\|history\" apps/docs/src/routes/theme-studio.tsx",
+      "grep -n \"store\\s*=\\|import.*store\\|useThemeStudio\\|from '\\.\\./\" apps/docs/src/routes/theme-studio.tsx | head -30",
+      "grep -n \"undo\\|Undo\\|history\\|History\\|reset\\|Reset\" apps/docs/src/theme-studio-actions.ts 2>/dev/null || find apps/docs/src -iname \"theme-studio-actions*\"",
+      "find apps/docs/src -iname \"theme-studio-store*\"",
+      "grep -n \"reset\\|Reset\\|update(\\|commit(\" apps/docs/src/theme-studio-editor.tsx | head -60",
+      "grep -rn \"Reset theme\\|resetTheme\\|Reset all\\|stockDraft()\" apps/docs/src | grep -v test",
+      "grep -rln \"createHistory\\|commitHistory\\|function commit\\|function undo\\|DraftHistory\" packages/tokens/src | head -20",
+      "grep -n \"reset\\|Reset\\|undo\\|override\" apps/docs/src/__tests__/theme-studio.test.tsx | head -60",
+      "grep -n \"\" packages/tokens/src/theme/autosave.ts | head -80",
+      "grep -n '\"test\"\\|\"pretest\"\\|\"test:' apps/docs/package.json"
+    ],
+    "filesOpened": [
+      "apps/docs/src/theme-studio-draft.ts",
+      "apps/docs/src/theme-studio-actions.tsx",
+      "apps/docs/src/theme-studio-store.ts",
+      "packages/tokens/src/theme/history.ts",
+      "apps/docs/src/__tests__/theme-studio.test.tsx"
+    ],
+    "failedCommands": [],
+    "failedTools": 0,
+    "edits": [],
+    "bashCommands": [
+      "grep -ni \"undo\\|history\" apps/docs/src/routes/theme-studio.tsx",
+      "grep -n \"store\\s*=\\|import.*store\\|useThemeStudio\\|from '\\.\\./\" apps/docs/src/routes/theme-studio.tsx | head -30",
+      "grep -n \"undo\\|Undo\\|history\\|History\\|reset\\|Reset\" apps/docs/src/theme-studio-actions.ts 2>/dev/null || find apps/docs/src -iname \"theme-studio-actions*\"",
+      "find apps/docs/src -iname \"theme-studio-store*\"",
+      "grep -n \"reset\\|Reset\\|update(\\|commit(\" apps/docs/src/theme-studio-editor.tsx | head -60",
+      "grep -rn \"Reset theme\\|resetTheme\\|Reset all\\|stockDraft()\" apps/docs/src | grep -v test",
+      "grep -rln \"createHistory\\|commitHistory\\|function commit\\|function undo\\|DraftHistory\" packages/tokens/src | head -20",
+      "grep -n \"reset\\|Reset\\|undo\\|override\" apps/docs/src/__tests__/theme-studio.test.tsx | head -60",
+      "cat verification/scenarios/theme-studio/draft-history.json",
+      "grep -n \"\" packages/tokens/src/theme/autosave.ts | head -80",
+      "pnpm --filter @ultima/docs test -- -t \"reset theme clears an edit\" 2>&1 | tail -80",
+      "pnpm verify list --search \"theme-studio\" 2>&1 | tail -60",
+      "pnpm verify describe scenario theme-studio.draft-history 2>&1 | tail -40",
+      "grep -n '\"test\"\\|\"pretest\"\\|\"test:' apps/docs/package.json",
+      "pnpm registry:build > /tmp/reg.log 2>&1 && pnpm --filter @ultima/docs exec vitest run src/__tests__/theme-studio.test.tsx 2>&1 | tail -30"
+    ],
+    "discoveryCommands": [
+      "pnpm verify list --search \"theme-studio\" 2>&1 | tail -60",
+      "pnpm verify describe scenario theme-studio.draft-history 2>&1 | tail -40"
+    ],
+    "answer": "Confirmed: all 43 tests in `theme-studio.test.tsx` pass, including the reset/undo scenario at line 688.\n\n**Investigation summary:** The reported behavior — \"Reset theme\" pushing the current draft (edit + override + lock) onto history, then \"Undo\" restoring all of it — is exercised end-to-end by `theme-studio.draft-history` (verification/scenarios/theme-studio/draft-history.json), bound to the test at `apps/docs/src/__tests__/theme-studio.test.tsx:688`. The behavior is orchestrated by the studio's draft/history hook, which wires the \"Reset theme\" commit and the \"Undo\" action together against the shared history primitives in `packages/tokens/src/theme/history.ts`.\n\nOWNER: apps/docs/src/theme-studio-store.ts\nCOMMAND: pnpm registry:build && pnpm --filter @ultima/docs exec vitest run src/__tests__/theme-studio.test.tsx"
+  },
+  "score": {
+    "owner": "apps/docs/src/theme-studio-store.ts",
+    "located": true,
+    "wrongCandidate": null,
+    "commandValid": true,
+    "check": {
+      "command": "pnpm registry:build && pnpm --filter @ultima/docs exec vitest run src/__tests__/theme-studio.test.tsx",
+      "exitCode": 0,
+      "elapsedMs": 20242.855399000022,
+      "coverageSeen": [
+        "theme-studio.test.tsx"
+      ],
+      "tail": "ilding context-menu...\n- Building date-picker...\n- Building dialog...\n- Building drawer...\n- Building dropdown-menu...\n- Building empty...\n- Building field...\n- Building fieldset...\n- Building hover-card...\n- Building input-group...\n- Building input-otp...\n- Building input...\n- Building menubar...\n- Building meter...\n- Building native-select...\n- Building navigation-menu...\n- Building pagination...\n- Building popover...\n- Building progress...\n- Building radio-group...\n- Building resizable...\n- Building scroll-area...\n- Building select...\n- Building separator...\n- Building sidebar...\n- Building skeleton...\n- Building slider...\n- Building spinner...\n- Building stat...\n- Building switch...\n- Building table...\n- Building tabs...\n- Building textarea...\n- Building toast...\n- Building toggle-group...\n- Building toggle...\n- Building tooltip...\n- Building setup-vite...\n- Building setup-next...\n- Building tokens-css...\n- Building ult-badge...\n- Building ult-button...\n- Building ult-card...\n- Building ult-code...\n- Building ult-meter...\n- Building ult-stat...\n- Building ult-table...\n- Building ult-tabs...\n- Building ult-tooltip...\n✔ Building registry.\nregistry: built 68 items into apps/docs/public/r\n\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-2-G45lhS/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  43 passed (43)\n   Start at  10:10:40\n   Duration  14.96s (tests 83%, import 17%, worker 1%)\n\n"
+    },
+    "success": true,
+    "ambiguousPrompt": false,
+    "candidatesNamed": [
+      "apps/docs/src/theme-studio-store.ts",
+      "apps/docs/src/routes/theme-studio.tsx",
+      "packages/tokens/src/theme/history.ts"
+    ],
+    "rule": "success: the owner matches the key and the command exits 0 while running a covering test file"
+  },
+  "corrections": []
+}

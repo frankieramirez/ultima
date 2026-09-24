@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "release-plan",
+    "version": 1,
+    "title": "Release plan",
+    "phases": [
+      {
+        "id": "plan",
+        "argv": [
+          "pnpm",
+          "verify",
+          "release",
+          "--plan",
+          "--json"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "The release check plan: selection with reasons, prerequisites, locks and deadlines. It launches no check."
+      ],
+      "omitted": [
+        "Every check the plan names: a plan reports planned, never a pass"
+      ],
+      "unsupported": []
+    },
+    "requires": [
+      "scripts/verify.ts",
+      "scripts/verification/run.ts"
+    ],
+    "comparesWith": "full-release"
+  },
+  "conditions": {
+    "workload": "release-plan",
+    "workloadVersion": 1,
+    "cache": "warm",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      1.56,
+      2.37,
+      2.75
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.6,
+      2.36,
+      2.75
+    ]
+  },
+  "cachePolicy": {
+    "condition": "warm",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "one unmeasured run immediately before the batch",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "candidate"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "candidate"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "candidate"
+      }
+    ]
+  },
+  "priming": {
+    "runId": "release-plan-warm-priming",
+    "order": -1,
+    "startedAt": "2026-09-24T11:58:53.761Z",
+    "elapsedMs": 1020.4084489999999,
+    "status": "valid",
+    "phases": [
+      {
+        "id": "plan",
+        "elapsedMs": 1019.2030460000001,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/release-plan-warm-priming/plan.log.gz"
+      }
+    ],
+    "cleared": [],
+    "loadAverage": [
+      1.56,
+      2.37,
+      2.75
+    ]
+  },
+  "samples": [
+    {
+      "runId": "release-plan-warm-1",
+      "order": 0,
+      "startedAt": "2026-09-24T11:58:54.782Z",
+      "elapsedMs": 1007.386225,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1006.7204640000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/release-plan-warm-1/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.56,
+        2.37,
+        2.75
+      ]
+    },
+    {
+      "runId": "release-plan-warm-2",
+      "order": 1,
+      "startedAt": "2026-09-24T11:58:55.790Z",
+      "elapsedMs": 1009.5213979999999,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1009.0155359999999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/release-plan-warm-2/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.6,
+        2.36,
+        2.75
+      ]
+    },
+    {
+      "runId": "release-plan-warm-3",
+      "order": 2,
+      "startedAt": "2026-09-24T11:58:56.800Z",
+      "elapsedMs": 1011.1673700000001,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1010.6679379999996,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/release-plan-warm-3/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.6,
+        2.36,
+        2.75
+      ]
+    },
+    {
+      "runId": "release-plan-warm-4",
+      "order": 3,
+      "startedAt": "2026-09-24T11:58:57.811Z",
+      "elapsedMs": 1019.6938609999997,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1019.2276060000004,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/release-plan-warm-4/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.6,
+        2.36,
+        2.75
+      ]
+    },
+    {
+      "runId": "release-plan-warm-5",
+      "order": 4,
+      "startedAt": "2026-09-24T11:58:58.831Z",
+      "elapsedMs": 1023.0695979999991,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1022.6238140000005,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/release-plan-warm-5/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.6,
+        2.36,
+        2.75
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 1011.1673700000001,
+    "minMs": 1007.386225,
+    "maxMs": 1023.0695979999991,
+    "madMs": 3.7811450000001514
+  },
+  "budget": "report-only"
+}

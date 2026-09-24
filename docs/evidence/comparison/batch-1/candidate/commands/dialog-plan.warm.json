@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "dialog-plan",
+    "version": 1,
+    "title": "Dialog component plan",
+    "phases": [
+      {
+        "id": "plan",
+        "argv": [
+          "pnpm",
+          "verify",
+          "component",
+          "dialog",
+          "--plan",
+          "--json"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "The component dialog check plan: selection with reasons, prerequisites, locks and deadlines. It launches no check."
+      ],
+      "omitted": [
+        "Every check the plan names: a plan reports planned, never a pass"
+      ],
+      "unsupported": []
+    },
+    "requires": [
+      "scripts/verify.ts",
+      "scripts/verification/run.ts"
+    ],
+    "comparesWith": "dialog-edit"
+  },
+  "conditions": {
+    "workload": "dialog-plan",
+    "workloadVersion": 1,
+    "cache": "warm",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      1.65,
+      2.49,
+      2.81
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.6,
+      2.46,
+      2.8
+    ]
+  },
+  "cachePolicy": {
+    "condition": "warm",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "one unmeasured run immediately before the batch",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "candidate"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "candidate"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "candidate"
+      }
+    ]
+  },
+  "priming": {
+    "runId": "dialog-plan-warm-priming",
+    "order": -1,
+    "startedAt": "2026-09-24T11:58:16.921Z",
+    "elapsedMs": 1046.384073,
+    "status": "valid",
+    "phases": [
+      {
+        "id": "plan",
+        "elapsedMs": 1045.074093,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/dialog-plan-warm-priming/plan.log.gz"
+      }
+    ],
+    "cleared": [],
+    "loadAverage": [
+      1.65,
+      2.49,
+      2.81
+    ]
+  },
+  "samples": [
+    {
+      "runId": "dialog-plan-warm-1",
+      "order": 0,
+      "startedAt": "2026-09-24T11:58:17.968Z",
+      "elapsedMs": 1034.0478870000002,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1033.4875760000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-plan-warm-1/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.65,
+        2.49,
+        2.81
+      ]
+    },
+    {
+      "runId": "dialog-plan-warm-2",
+      "order": 1,
+      "startedAt": "2026-09-24T11:58:19.002Z",
+      "elapsedMs": 1021.9493190000003,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1021.3992760000001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-plan-warm-2/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.65,
+        2.49,
+        2.81
+      ]
+    },
+    {
+      "runId": "dialog-plan-warm-3",
+      "order": 2,
+      "startedAt": "2026-09-24T11:58:20.024Z",
+      "elapsedMs": 1028.6106449999997,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1028.0537669999999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-plan-warm-3/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.6,
+        2.46,
+        2.8
+      ]
+    },
+    {
+      "runId": "dialog-plan-warm-4",
+      "order": 3,
+      "startedAt": "2026-09-24T11:58:21.053Z",
+      "elapsedMs": 1035.5733890000001,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1035.0559920000005,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-plan-warm-4/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.6,
+        2.46,
+        2.8
+      ]
+    },
+    {
+      "runId": "dialog-plan-warm-5",
+      "order": 4,
+      "startedAt": "2026-09-24T11:58:22.089Z",
+      "elapsedMs": 1036.9069559999998,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1036.3893979999993,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-plan-warm-5/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.6,
+        2.46,
+        2.8
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 1034.0478870000002,
+    "minMs": 1021.9493190000003,
+    "maxMs": 1036.9069559999998,
+    "madMs": 2.8590689999996357
+  },
+  "budget": "report-only"
+}

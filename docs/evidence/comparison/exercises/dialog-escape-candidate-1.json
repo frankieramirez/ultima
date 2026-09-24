@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "dialog-escape",
+  "attempt": 1,
+  "revision": "dabc230f5874f2cde8f3a0afa66dcdc91a2b2e9c",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.281 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+  "pairing": {
+    "side": "candidate",
+    "position": "second"
+  },
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 971.6988079999999
+  },
+  "task": {
+    "text": "You are in the Ultima repository, at its root. A user reports:\n\n\"Dialog Escape leaves focus behind\"\n\nFind the source file that owns this behavior and one shell command, run from the repository root, that runs the existing checks covering it.\nDo not modify any file. When you are done, end your reply with exactly these two lines:\nOWNER: <repository-relative path of the owning source file>\nCOMMAND: <the command>",
+    "sha256": "da27b724b92aeb09f48558faf389d9d1a19afc368d5e9fc709f941d75c28ebcd",
+    "entryPoint": "repository root, no files open"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "tools": [
+      "Bash",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "sessionId": "45904d83-7369-4c40-8372-cb9fe2e2debb",
+    "argv": [
+      "claude",
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--model",
+      "sonnet",
+      "--permission-mode",
+      "bypassPermissions",
+      "--strict-mcp-config",
+      "--setting-sources",
+      "project",
+      "--tools",
+      "Bash,Read,Grep,Glob"
+    ],
+    "started": "2026-09-24T13:58:03.448Z",
+    "wallMs": 20554.479646,
+    "durationMs": 19815,
+    "turns": 10,
+    "costUsd": 0.095017,
+    "exitCode": 0,
+    "trace": "dialog-escape-candidate-1.stream.jsonl.gz"
+  },
+  "observation": {
+    "toolCalls": 9,
+    "byTool": {
+      "Glob": 2,
+      "Grep": 3,
+      "Read": 2,
+      "Bash": 2
+    },
+    "searches": [
+      "Glob {\"pattern\":\"packages/ui/src/*ialog*\"}",
+      "Glob {\"pattern\":\"packages/ui/src/__tests__/*ialog*\"}",
+      "Grep {\"pattern\":\"Escape|focus\",\"path\":\"packages/ui/src/dialog.tsx\",\"output_mode\":\"content\",\"-n\":true}",
+      "Grep {\"pattern\":\"Escape|focus\",\"path\":\"packages/ui/src/__tests__/dialog.test.tsx\",\"output_mode\":\"content\",\"-n\":true}",
+      "Grep {\"pattern\":\"dialog.keyboard-dismissal\",\"output_mode\":\"files_with_matches\"}"
+    ],
+    "filesOpened": [
+      "packages/ui/src/dialog.tsx",
+      "verification/scenarios/dialog/keyboard-dismissal.json"
+    ],
+    "failedCommands": [],
+    "failedTools": 0,
+    "edits": [],
+    "bashCommands": [
+      "sed -n '1,140p' packages/ui/src/__tests__/dialog.test.tsx",
+      "pnpm verify describe scenario dialog.keyboard-dismissal 2>&1 | head -60"
+    ],
+    "discoveryCommands": [
+      "pnpm verify describe scenario dialog.keyboard-dismissal 2>&1 | head -60"
+    ],
+    "answer": "This confirms the exact existing command: `pnpm --filter @ultima/ui exec vitest run src/__tests__/dialog.test.tsx`.\n\nOWNER: packages/ui/src/dialog.tsx\nCOMMAND: pnpm --filter @ultima/ui exec vitest run src/__tests__/dialog.test.tsx"
+  },
+  "score": {
+    "owner": "packages/ui/src/dialog.tsx",
+    "located": true,
+    "wrongCandidate": null,
+    "commandValid": true,
+    "check": {
+      "command": "pnpm --filter @ultima/ui exec vitest run src/__tests__/dialog.test.tsx",
+      "exitCode": 0,
+      "elapsedMs": 3379.392036000001,
+      "coverageSeen": [
+        "dialog.test.tsx"
+      ],
+      "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-candidate-1-j4IIwa/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  09:58:24\n   Duration  2.54s (tests 39%, worker 29%, import 27%, setup 5%)\n\n"
+    },
+    "success": true,
+    "ambiguousPrompt": false,
+    "candidatesNamed": [
+      "packages/ui/src/dialog.tsx"
+    ],
+    "rule": "success: the owner matches the key and the command exits 0 while running a covering test file"
+  },
+  "corrections": []
+}

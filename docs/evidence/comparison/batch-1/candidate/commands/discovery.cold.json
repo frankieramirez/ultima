@@ -1,0 +1,449 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "discovery",
+    "version": 1,
+    "title": "Discovery through list and describe for the three fixed prompts",
+    "phases": [
+      {
+        "id": "list-dialog",
+        "argv": [
+          "pnpm",
+          "verify",
+          "list",
+          "--search",
+          "Dialog Escape leaves focus behind",
+          "--json"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "describe-dialog",
+        "argv": [
+          "pnpm",
+          "verify",
+          "describe",
+          "scenario",
+          "dialog.keyboard-dismissal",
+          "--json"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "list-reset",
+        "argv": [
+          "pnpm",
+          "verify",
+          "list",
+          "--search",
+          "Reset theme undo lost my override",
+          "--json"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "describe-reset",
+        "argv": [
+          "pnpm",
+          "verify",
+          "describe",
+          "scenario",
+          "theme-studio.draft-history",
+          "--json"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "list-picker",
+        "argv": [
+          "pnpm",
+          "verify",
+          "list",
+          "--search",
+          "the picker broke",
+          "--json"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "Read-only discovery: owners, routes, bindings and scoped commands. It launches no app, browser or check."
+      ],
+      "omitted": [
+        "Running the discovered commands: scripts/measure/discover.ts proves they execute"
+      ],
+      "unsupported": []
+    },
+    "requires": [
+      "scripts/verify.ts",
+      "scripts/verification/run.ts"
+    ],
+    "comparesWith": "dialog-edit"
+  },
+  "conditions": {
+    "workload": "discovery",
+    "workloadVersion": 1,
+    "cache": "cold",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      1.81,
+      2.62,
+      2.86
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.69,
+      2.56,
+      2.84
+    ]
+  },
+  "cachePolicy": {
+    "condition": "cold",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "none",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "candidate"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "candidate"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "candidate"
+      }
+    ]
+  },
+  "priming": null,
+  "samples": [
+    {
+      "runId": "discovery-cold-1",
+      "order": 0,
+      "startedAt": "2026-09-24T11:57:41.183Z",
+      "elapsedMs": 2728.227846,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "list-dialog",
+          "elapsedMs": 600.73142,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-1/list-dialog.log.gz"
+        },
+        {
+          "id": "describe-dialog",
+          "elapsedMs": 526.362144,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-1/describe-dialog.log.gz"
+        },
+        {
+          "id": "list-reset",
+          "elapsedMs": 528.0966489999998,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-1/list-reset.log.gz"
+        },
+        {
+          "id": "describe-reset",
+          "elapsedMs": 535.2895930000004,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-1/describe-reset.log.gz"
+        },
+        {
+          "id": "list-picker",
+          "elapsedMs": 534.0926489999997,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-1/list-picker.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.81,
+        2.62,
+        2.86
+      ]
+    },
+    {
+      "runId": "discovery-cold-2",
+      "order": 1,
+      "startedAt": "2026-09-24T11:57:43.912Z",
+      "elapsedMs": 2711.060348,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "list-dialog",
+          "elapsedMs": 590.1229739999999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-2/list-dialog.log.gz"
+        },
+        {
+          "id": "describe-dialog",
+          "elapsedMs": 531.339806,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-2/describe-dialog.log.gz"
+        },
+        {
+          "id": "list-reset",
+          "elapsedMs": 530.90157,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-2/list-reset.log.gz"
+        },
+        {
+          "id": "describe-reset",
+          "elapsedMs": 525.6542580000005,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-2/describe-reset.log.gz"
+        },
+        {
+          "id": "list-picker",
+          "elapsedMs": 530.6796139999997,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-2/list-picker.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.81,
+        2.62,
+        2.86
+      ]
+    },
+    {
+      "runId": "discovery-cold-3",
+      "order": 2,
+      "startedAt": "2026-09-24T11:57:46.623Z",
+      "elapsedMs": 2715.7787210000006,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "list-dialog",
+          "elapsedMs": 606.3343459999996,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-3/list-dialog.log.gz"
+        },
+        {
+          "id": "describe-dialog",
+          "elapsedMs": 530.7970089999999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-3/describe-dialog.log.gz"
+        },
+        {
+          "id": "list-reset",
+          "elapsedMs": 534.6696350000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-3/list-reset.log.gz"
+        },
+        {
+          "id": "describe-reset",
+          "elapsedMs": 524.4375550000004,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-3/describe-reset.log.gz"
+        },
+        {
+          "id": "list-picker",
+          "elapsedMs": 517.5011850000001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-3/list-picker.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.75,
+        2.59,
+        2.85
+      ]
+    },
+    {
+      "runId": "discovery-cold-4",
+      "order": 3,
+      "startedAt": "2026-09-24T11:57:49.339Z",
+      "elapsedMs": 2619.1293050000004,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "list-dialog",
+          "elapsedMs": 572.5309940000006,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-4/list-dialog.log.gz"
+        },
+        {
+          "id": "describe-dialog",
+          "elapsedMs": 510.18027299999994,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-4/describe-dialog.log.gz"
+        },
+        {
+          "id": "list-reset",
+          "elapsedMs": 510.84179100000074,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-4/list-reset.log.gz"
+        },
+        {
+          "id": "describe-reset",
+          "elapsedMs": 510.25720700000056,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-4/describe-reset.log.gz"
+        },
+        {
+          "id": "list-picker",
+          "elapsedMs": 513.2297440000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-4/list-picker.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.75,
+        2.59,
+        2.85
+      ]
+    },
+    {
+      "runId": "discovery-cold-5",
+      "order": 4,
+      "startedAt": "2026-09-24T11:57:51.958Z",
+      "elapsedMs": 2633.725456,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "list-dialog",
+          "elapsedMs": 578.7998659999994,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-5/list-dialog.log.gz"
+        },
+        {
+          "id": "describe-dialog",
+          "elapsedMs": 510.5819250000004,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-5/describe-dialog.log.gz"
+        },
+        {
+          "id": "list-reset",
+          "elapsedMs": 512.8005499999999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-5/list-reset.log.gz"
+        },
+        {
+          "id": "describe-reset",
+          "elapsedMs": 513.8463630000006,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-5/describe-reset.log.gz"
+        },
+        {
+          "id": "list-picker",
+          "elapsedMs": 515.7605099999982,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/discovery-cold-5/list-picker.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.69,
+        2.56,
+        2.84
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 2711.060348,
+    "minMs": 2619.1293050000004,
+    "maxMs": 2728.227846,
+    "madMs": 17.16749800000025
+  },
+  "budget": "report-only"
+}

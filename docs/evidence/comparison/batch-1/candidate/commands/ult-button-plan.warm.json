@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "ult-button-plan",
+    "version": 1,
+    "title": "ult-button component plan",
+    "phases": [
+      {
+        "id": "plan",
+        "argv": [
+          "pnpm",
+          "verify",
+          "component",
+          "ult-button",
+          "--plan",
+          "--json"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "The component ult-button check plan: selection with reasons, prerequisites, locks and deadlines. It launches no check."
+      ],
+      "omitted": [
+        "Every check the plan names: a plan reports planned, never a pass"
+      ],
+      "unsupported": []
+    },
+    "requires": [
+      "scripts/verify.ts",
+      "scripts/verification/run.ts"
+    ],
+    "comparesWith": "ult-button"
+  },
+  "conditions": {
+    "workload": "ult-button-plan",
+    "workloadVersion": 1,
+    "cache": "warm",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      1.57,
+      2.4,
+      2.77
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.61,
+      2.39,
+      2.76
+    ]
+  },
+  "cachePolicy": {
+    "condition": "warm",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "one unmeasured run immediately before the batch",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "candidate"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "candidate"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "candidate"
+      }
+    ]
+  },
+  "priming": {
+    "runId": "ult-button-plan-warm-priming",
+    "order": -1,
+    "startedAt": "2026-09-24T11:58:41.628Z",
+    "elapsedMs": 1032.283705,
+    "status": "valid",
+    "phases": [
+      {
+        "id": "plan",
+        "elapsedMs": 1031.0616539999999,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/ult-button-plan-warm-priming/plan.log.gz"
+      }
+    ],
+    "cleared": [],
+    "loadAverage": [
+      1.57,
+      2.4,
+      2.77
+    ]
+  },
+  "samples": [
+    {
+      "runId": "ult-button-plan-warm-1",
+      "order": 0,
+      "startedAt": "2026-09-24T11:58:42.662Z",
+      "elapsedMs": 1032.163,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1031.6585610000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-plan-warm-1/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.57,
+        2.4,
+        2.77
+      ]
+    },
+    {
+      "runId": "ult-button-plan-warm-2",
+      "order": 1,
+      "startedAt": "2026-09-24T11:58:43.694Z",
+      "elapsedMs": 1023.5557989999998,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1023.0553530000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-plan-warm-2/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.57,
+        2.4,
+        2.77
+      ]
+    },
+    {
+      "runId": "ult-button-plan-warm-3",
+      "order": 2,
+      "startedAt": "2026-09-24T11:58:44.718Z",
+      "elapsedMs": 1042.6663749999998,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1042.1967189999996,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-plan-warm-3/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.57,
+        2.4,
+        2.77
+      ]
+    },
+    {
+      "runId": "ult-button-plan-warm-4",
+      "order": 3,
+      "startedAt": "2026-09-24T11:58:45.760Z",
+      "elapsedMs": 1028.6174950000004,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1028.1712939999998,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-plan-warm-4/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.61,
+        2.39,
+        2.76
+      ]
+    },
+    {
+      "runId": "ult-button-plan-warm-5",
+      "order": 4,
+      "startedAt": "2026-09-24T11:58:46.789Z",
+      "elapsedMs": 1040.3106380000008,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "plan",
+          "elapsedMs": 1039.8636050000005,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/ult-button-plan-warm-5/plan.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.61,
+        2.39,
+        2.76
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 1032.163,
+    "minMs": 1023.5557989999998,
+    "maxMs": 1042.6663749999998,
+    "madMs": 8.147638000000825
+  },
+  "budget": "report-only"
+}

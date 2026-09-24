@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "kind": "discovery-proof",
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "target": "owner, route and a runnable scoped command for each registered pilot scenario within list plus describe; the catalogue-only limit stated for an unregistered prompt",
+  "results": [
+    {
+      "prompt": "Dialog Escape leaves focus behind",
+      "invocations": [
+        [
+          "pnpm",
+          "verify",
+          "list",
+          "--search",
+          "Dialog Escape leaves focus behind",
+          "--json"
+        ],
+        [
+          "pnpm",
+          "verify",
+          "describe",
+          "scenario",
+          "dialog.keyboard-dismissal",
+          "--json"
+        ]
+      ],
+      "discoveryMs": 1467.6174839999999,
+      "topCandidate": "scenario dialog.keyboard-dismissal",
+      "owners": [
+        "packages/ui/src/dialog.tsx"
+      ],
+      "routes": [
+        "/components/dialog"
+      ],
+      "commands": [
+        {
+          "display": "pnpm --filter @ultima/ui exec vitest run src/__tests__/dialog.test.tsx",
+          "status": "available",
+          "note": "every test in packages/ui/src/__tests__/dialog.test.tsx, not this scenario alone"
+        },
+        {
+          "display": "pnpm verify feature dialog",
+          "status": "planned",
+          "note": "the production runner lands with #462; this binding has not executed"
+        }
+      ],
+      "executed": [
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/ui",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/dialog.test.tsx"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 4359.542442999999,
+          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/candidate/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  09:54:41\n   Duration  3.36s (tests 40%, import 29%, worker 26%, setup 5%)\n\n"
+        }
+      ],
+      "checks": {
+        "topCandidateIsScenario": true,
+        "ownerFound": true,
+        "routeFound": true,
+        "scopedCommandPasses": true
+      },
+      "met": true
+    },
+    {
+      "prompt": "Reset theme undo lost my override",
+      "invocations": [
+        [
+          "pnpm",
+          "verify",
+          "list",
+          "--search",
+          "Reset theme undo lost my override",
+          "--json"
+        ],
+        [
+          "pnpm",
+          "verify",
+          "describe",
+          "scenario",
+          "theme-studio.draft-history",
+          "--json"
+        ]
+      ],
+      "discoveryMs": 1263.1786219999995,
+      "topCandidate": "scenario theme-studio.draft-history",
+      "owners": [
+        "apps/docs/src/routes/theme-studio.tsx",
+        "apps/docs/src/theme-studio-actions.tsx",
+        "apps/docs/src/theme-studio-store.ts",
+        "packages/tokens/src/theme/history.ts",
+        "packages/tokens/src/theme/autosave.ts"
+      ],
+      "routes": [
+        "/theme-studio"
+      ],
+      "commands": [
+        {
+          "display": "pnpm registry:build",
+          "status": "available",
+          "note": "the docs suites read the built registry"
+        },
+        {
+          "display": "pnpm --filter @ultima/docs exec vitest run src/__tests__/theme-studio.test.tsx",
+          "status": "available",
+          "note": "every test in apps/docs/src/__tests__/theme-studio.test.tsx, not this scenario alone"
+        },
+        {
+          "display": "pnpm verify feature theme-studio",
+          "status": "planned",
+          "note": "the production runner lands with #462; this binding has not executed"
+        }
+      ],
+      "executed": [
+        {
+          "argv": [
+            "pnpm",
+            "registry:build"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 4912.446012,
+          "tail": "avigation-menu...\n- Building pagination...\n- Building popover...\n- Building progress...\n- Building radio-group...\n- Building resizable...\n- Building scroll-area...\n- Building select...\n- Building separator...\n- Building sidebar...\n- Building skeleton...\n- Building slider...\n- Building spinner...\n- Building stat...\n- Building switch...\n- Building table...\n- Building tabs...\n- Building textarea...\n- Building toast...\n- Building toggle-group...\n- Building toggle...\n- Building tooltip...\n- Building setup-vite...\n- Building setup-next...\n- Building tokens-css...\n- Building ult-badge...\n- Building ult-button...\n- Building ult-card...\n- Building ult-code...\n- Building ult-meter...\n- Building ult-stat...\n- Building ult-table...\n- Building ult-tabs...\n- Building ult-tooltip...\n✔ Building registry.\n"
+        },
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/docs",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/theme-studio.test.tsx"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 21329.906898,
+          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/candidate/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  43 passed (43)\n   Start at  09:54:51\n   Duration  20.45s (tests 76%, import 18%, worker 6%)\n\nFailed to resolve dependency: @zag-js/date-picker, present in client 'optimizeDeps.include'\nFailed to resolve dependency: @zag-js/react, present in client 'optimizeDeps.include'\nFailed to resolve dependency: @zag-js/splitter, present in client 'optimizeDeps.include'\n"
+        }
+      ],
+      "checks": {
+        "topCandidateIsScenario": true,
+        "ownerFound": true,
+        "routeFound": true,
+        "scopedCommandPasses": true
+      },
+      "met": true
+    },
+    {
+      "prompt": "the picker broke",
+      "invocations": [
+        [
+          "pnpm",
+          "verify",
+          "list",
+          "--search",
+          "the picker broke",
+          "--json"
+        ]
+      ],
+      "discoveryMs": 565.796703,
+      "topCandidate": "item date-picker",
+      "pickers": [
+        {
+          "id": "date-picker",
+          "route": "/components/date-picker",
+          "registration": {
+            "status": "catalogue-only",
+            "scenarios": [],
+            "note": "no executable feature scenario is registered for this item yet; its existing component proof still applies"
+          }
+        },
+        {
+          "id": "color-field",
+          "route": "/components/color-field",
+          "registration": {
+            "status": "catalogue-only",
+            "scenarios": [],
+            "note": "no executable feature scenario is registered for this item yet; its existing component proof still applies"
+          }
+        }
+      ],
+      "executed": [
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/ui",
+            "exec",
+            "vitest",
+            "run",
+            "src/__tests__/date-picker.test.tsx"
+          ],
+          "exitCode": 0,
+          "elapsedMs": 3486.954196000006,
+          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/candidate/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  09:55:13\n   Duration  2.72s (tests 62%, import 26%, setup 6%, worker 6%)\n\n"
+        }
+      ],
+      "checks": {
+        "noScenarioInvented": true,
+        "everyPickerStatesItsLimit": true,
+        "moreThanOnePickerSurfaced": true,
+        "scopedCommandPasses": true
+      },
+      "met": true
+    }
+  ],
+  "met": true
+}

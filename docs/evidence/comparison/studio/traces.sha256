@@ -1,0 +1,8 @@
+ee7b7af4ef6f91261b58a26dde1c877cf8c1ec471635e48ff19698a5dd58c0f7   baseline/dark-desktop/traces/dark-desktop.trace.json.gz
+12ca1227331ad8103769c7e1d1b36b9b52ad5acfddde8edbc99e250cb3bf14c4   baseline/light-desktop/traces/light-desktop.trace.json.gz
+e8bb63b7cead07be0297e74fe0b24cba0e323c9ade03e9c27ae7c62d6d0d6e27   baseline/dark-narrow/traces/dark-narrow.trace.json.gz
+53a2728018ecc3027f9ce7447a38654399111193b108b4132d51ba7e88483fbd   baseline/light-narrow/traces/light-narrow.trace.json.gz
+131253b136726e6fb791e219619400a12b8cd1f4eeaf79678b29d36412f24ed2   candidate/dark-desktop/traces/dark-desktop.trace.json.gz
+1c39e27bd011b7fc64c7d1205709c9f7e3f5e735a7f7dc0ce528e31eb84e360b   candidate/light-desktop/traces/light-desktop.trace.json.gz
+ad1fca2be9d04f534169e475bd508bce809c39dabb683540953744ee55a0f026   candidate/dark-narrow/traces/dark-narrow.trace.json.gz
+3f2628e320b01efda452b56dc54644b4c0dcd7ed8bace7439ba2f77196434063   candidate/light-narrow/traces/light-narrow.trace.json.gz

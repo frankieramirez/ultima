@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "production-matrix",
+    "version": 1,
+    "title": "Production scenario matrix",
+    "phases": [
+      {
+        "id": "test-production",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "test:production",
+          "--json"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "Every registered production case (26 cells) against its own production docs build, in its own verification run"
+      ],
+      "omitted": [],
+      "unsupported": []
+    },
+    "requires": [
+      "apps/docs/tests/production"
+    ],
+    "cacheIndependent": "pnpm verify runs in its own snapshot under .scratch/verify/<run-id>/ with its own install and outputs, so the caller checkout's retained build and Vite outputs are never read",
+    "comparesWith": "full-release"
+  },
+  "conditions": {
+    "workload": "production-matrix",
+    "workloadVersion": 1,
+    "cache": "cold",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      1.75,
+      2.98,
+      3.16
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      4.04,
+      3.2,
+      3.19
+    ]
+  },
+  "cachePolicy": {
+    "condition": "cold",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "none",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "candidate"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "candidate"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "candidate"
+      }
+    ]
+  },
+  "priming": null,
+  "samples": [
+    {
+      "runId": "production-matrix-cold-1",
+      "order": 0,
+      "startedAt": "2026-09-24T13:06:36.618Z",
+      "elapsedMs": 51999.654203,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "test-production",
+          "elapsedMs": 51998.282741,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/production-matrix-cold-1/test-production.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.75,
+        2.98,
+        3.16
+      ]
+    },
+    {
+      "runId": "production-matrix-cold-2",
+      "order": 1,
+      "startedAt": "2026-09-24T13:07:28.619Z",
+      "elapsedMs": 52357.244424,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "test-production",
+          "elapsedMs": 52356.555964,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/production-matrix-cold-2/test-production.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.8,
+        3.08,
+        3.18
+      ]
+    },
+    {
+      "runId": "production-matrix-cold-3",
+      "order": 2,
+      "startedAt": "2026-09-24T13:08:20.976Z",
+      "elapsedMs": 52971.735134999995,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "test-production",
+          "elapsedMs": 52970.995660000015,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/production-matrix-cold-3/test-production.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.83,
+        3.07,
+        3.17
+      ]
+    },
+    {
+      "runId": "production-matrix-cold-4",
+      "order": 3,
+      "startedAt": "2026-09-24T13:09:13.948Z",
+      "elapsedMs": 53964.712894999975,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "test-production",
+          "elapsedMs": 53964.00854500002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/production-matrix-cold-4/test-production.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        3.56,
+        3.19,
+        3.21
+      ]
+    },
+    {
+      "runId": "production-matrix-cold-5",
+      "order": 4,
+      "startedAt": "2026-09-24T13:10:07.913Z",
+      "elapsedMs": 54021.778299,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "test-production",
+          "elapsedMs": 54021.09689299998,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/production-matrix-cold-5/test-production.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.92,
+        3.03,
+        3.15
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 52971.735134999995,
+    "minMs": 51999.654203,
+    "maxMs": 54021.778299,
+    "madMs": 972.0809319999971
+  },
+  "budget": "report-only"
+}

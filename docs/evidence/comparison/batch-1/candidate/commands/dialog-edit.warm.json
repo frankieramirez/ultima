@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "dialog-edit",
+    "version": 1,
+    "title": "Single React edit, Dialog pilot",
+    "phases": [
+      {
+        "id": "typecheck-ui",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/ui",
+          "typecheck"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "test-dialog",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/ui",
+          "exec",
+          "vitest",
+          "run",
+          "src/__tests__/dialog.test.tsx"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "packages/ui typecheck",
+        "packages/ui/src/__tests__/dialog.test.tsx (proof bar, open-state axe)"
+      ],
+      "omitted": [
+        "Components that import dialog.tsx (see inventory dependents) and their test files",
+        "Docs demo axe sweep and the command-dialog recipe test in apps/docs",
+        "Registry build and consumer install of the dialog item"
+      ],
+      "unsupported": [
+        "pnpm verify component dialog: the planned selector does not exist at this revision",
+        "Production Dialog keyboard-dismissal cells: no production runner exists"
+      ]
+    }
+  },
+  "conditions": {
+    "workload": "dialog-edit",
+    "workloadVersion": 1,
+    "cache": "warm",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      3.5,
+      2.79,
+      2.54
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      2.36,
+      2.56,
+      2.48
+    ]
+  },
+  "cachePolicy": {
+    "condition": "warm",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "one unmeasured run immediately before the batch",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "baseline"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "baseline"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "baseline"
+      }
+    ]
+  },
+  "priming": {
+    "runId": "dialog-edit-warm-priming",
+    "order": -1,
+    "startedAt": "2026-09-24T10:00:52.578Z",
+    "elapsedMs": 7049.862192999999,
+    "status": "valid",
+    "phases": [
+      {
+        "id": "typecheck-ui",
+        "elapsedMs": 4300.0770680000005,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/dialog-edit-warm-priming/typecheck-ui.log.gz"
+      },
+      {
+        "id": "test-dialog",
+        "elapsedMs": 2749.0275199999996,
+        "exitCode": 0,
+        "signal": null,
+        "log": "logs/dialog-edit-warm-priming/test-dialog.log.gz"
+      }
+    ],
+    "cleared": [],
+    "loadAverage": [
+      3.3,
+      2.76,
+      2.53
+    ]
+  },
+  "samples": [
+    {
+      "runId": "dialog-edit-warm-1",
+      "order": 0,
+      "startedAt": "2026-09-24T10:01:06.082Z",
+      "elapsedMs": 7099.817304999997,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-ui",
+          "elapsedMs": 4320.185826000001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-warm-1/typecheck-ui.log.gz"
+        },
+        {
+          "id": "test-dialog",
+          "elapsedMs": 2778.932997,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-warm-1/test-dialog.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.86,
+        2.69,
+        2.51
+      ]
+    },
+    {
+      "runId": "dialog-edit-warm-2",
+      "order": 1,
+      "startedAt": "2026-09-24T10:01:13.182Z",
+      "elapsedMs": 7013.327522000003,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-ui",
+          "elapsedMs": 4289.883997000001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-warm-2/typecheck-ui.log.gz"
+        },
+        {
+          "id": "test-dialog",
+          "elapsedMs": 2722.6800999999978,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-warm-2/test-dialog.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.79,
+        2.67,
+        2.51
+      ]
+    },
+    {
+      "runId": "dialog-edit-warm-3",
+      "order": 2,
+      "startedAt": "2026-09-24T10:01:33.044Z",
+      "elapsedMs": 7064.843892000004,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-ui",
+          "elapsedMs": 4300.862475000002,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-warm-3/typecheck-ui.log.gz"
+        },
+        {
+          "id": "test-dialog",
+          "elapsedMs": 2763.365159000001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-warm-3/test-dialog.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.56,
+        2.63,
+        2.5
+      ]
+    },
+    {
+      "runId": "dialog-edit-warm-4",
+      "order": 3,
+      "startedAt": "2026-09-24T10:01:40.109Z",
+      "elapsedMs": 7053.360651999996,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-ui",
+          "elapsedMs": 4299.567630000005,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-warm-4/typecheck-ui.log.gz"
+        },
+        {
+          "id": "test-dialog",
+          "elapsedMs": 2753.1953529999955,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-warm-4/test-dialog.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.32,
+        2.58,
+        2.48
+      ]
+    },
+    {
+      "runId": "dialog-edit-warm-5",
+      "order": 4,
+      "startedAt": "2026-09-24T10:01:59.974Z",
+      "elapsedMs": 7014.005900000004,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-ui",
+          "elapsedMs": 4313.759574999989,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-warm-5/typecheck-ui.log.gz"
+        },
+        {
+          "id": "test-dialog",
+          "elapsedMs": 2699.6399290000118,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/dialog-edit-warm-5/test-dialog.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.13,
+        2.52,
+        2.47
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 7053.360651999996,
+    "minMs": 7013.327522000003,
+    "maxMs": 7099.817304999997,
+    "madMs": 39.354751999992004
+  },
+  "budget": "report-only"
+}

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "kind": "agent-exercise",
+  "exercise": "picker",
+  "attempt": 1,
+  "revision": "dabc230f5874f2cde8f3a0afa66dcdc91a2b2e9c",
+  "checkout": "a new git worktree at a fresh temporary path, removed afterwards",
+  "learning": "naive: new session and new worktree path, so no project memory; project setting source only, no MCP servers, file and shell tools only",
+  "operator": {
+    "host": "pc1",
+    "claude": "2.1.281 (Claude Code)"
+  },
+  "requestedModel": "sonnet",
+  "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+  "pairing": {
+    "side": "candidate",
+    "position": "second"
+  },
+  "setup": {
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 978.5007190000001
+  },
+  "task": {
+    "text": "You are in the Ultima repository, at its root. A user reports:\n\n\"the picker broke\"\n\nFind the source file that owns this behavior and one shell command, run from the repository root, that runs the existing checks covering it.\nDo not modify any file. When you are done, end your reply with exactly these two lines:\nOWNER: <repository-relative path of the owning source file>\nCOMMAND: <the command>",
+    "sha256": "3cb1e3647266569ba8732983de375cc09fae10d0b4c52c6a956a20b0a8035ef1",
+    "entryPoint": "repository root, no files open"
+  },
+  "session": {
+    "model": "claude-sonnet-5",
+    "tools": [
+      "Bash",
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "sessionId": "70096426-f590-47d4-ae8d-74bd6e3e08f8",
+    "argv": [
+      "claude",
+      "-p",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--model",
+      "sonnet",
+      "--permission-mode",
+      "bypassPermissions",
+      "--strict-mcp-config",
+      "--setting-sources",
+      "project",
+      "--tools",
+      "Bash,Read,Grep,Glob"
+    ],
+    "started": "2026-09-24T14:19:59.791Z",
+    "wallMs": 7109.442686,
+    "durationMs": 6268,
+    "turns": 3,
+    "costUsd": 0.050830600000000004,
+    "exitCode": 0,
+    "trace": "picker-candidate-1.stream.jsonl.gz"
+  },
+  "observation": {
+    "toolCalls": 2,
+    "byTool": {
+      "Glob": 1,
+      "Bash": 1
+    },
+    "searches": [
+      "Glob {\"pattern\":\"**/*[Pp]icker*\"}"
+    ],
+    "filesOpened": [],
+    "failedCommands": [],
+    "failedTools": 0,
+    "edits": [],
+    "bashCommands": [
+      "pnpm verify list --search date-picker 2>&1 | head -50"
+    ],
+    "discoveryCommands": [
+      "pnpm verify list --search date-picker 2>&1 | head -50"
+    ],
+    "answer": "The item named literally \"date-picker\" (component id `date-picker`, named \"Date Picker\") is the clear match for \"the picker.\" Its owning source is `packages/ui/src/date-picker.tsx`, and the existing checks covering it are the vitest suite at `packages/ui/src/__tests__/date-picker.test.tsx`.\n\nOWNER: packages/ui/src/date-picker.tsx\nCOMMAND: pnpm --filter @ultima/ui exec vitest run src/__tests__/date-picker.test.tsx"
+  },
+  "score": {
+    "owner": "packages/ui/src/date-picker.tsx",
+    "located": true,
+    "wrongCandidate": null,
+    "commandValid": true,
+    "check": {
+      "command": "pnpm --filter @ultima/ui exec vitest run src/__tests__/date-picker.test.tsx",
+      "exitCode": 0,
+      "elapsedMs": 3868.8921819999996,
+      "coverageSeen": [
+        "date-picker.test.tsx"
+      ],
+      "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-1-kkmTvi/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:20:07\n   Duration  3.01s (tests 49%, import 23%, worker 22%, setup 6%)\n\n"
+    },
+    "success": true,
+    "ambiguousPrompt": true,
+    "candidatesNamed": [
+      "packages/ui/src/date-picker.tsx"
+    ],
+    "rule": "success: one picker owner and a passing command that runs its tests; candidatesNamed records whether the answer surfaced the ambiguity"
+  },
+  "corrections": []
+}

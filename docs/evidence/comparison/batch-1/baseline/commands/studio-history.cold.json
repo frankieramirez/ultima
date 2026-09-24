@@ -1,0 +1,732 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "studio-history",
+    "version": 1,
+    "title": "Studio draft/history edit",
+    "phases": [
+      {
+        "id": "typecheck-docs",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "typecheck"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "registry-build",
+        "argv": [
+          "pnpm",
+          "registry:build"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "test-studio",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "exec",
+          "vitest",
+          "run",
+          "src/__tests__/theme-studio.test.tsx",
+          "src/__tests__/theme-studio-export.test.tsx",
+          "src/__tests__/theme-studio-parity.test.tsx"
+        ],
+        "cwd": "."
+      },
+      {
+        "id": "test-draft-model",
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/tokens",
+          "exec",
+          "vitest",
+          "run",
+          "src/__tests__/history.test.ts",
+          "src/__tests__/autosave.test.ts",
+          "src/__tests__/codec.test.ts",
+          "src/__tests__/export.test.ts"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "apps/docs typecheck",
+        "pnpm registry:build (the docs test script runs it first)",
+        "apps/docs theme-studio, theme-studio-export and theme-studio-parity suites (dev server, Chromium)",
+        "packages/tokens history, autosave, codec and export suites (Node)"
+      ],
+      "omitted": [
+        "Remaining docs suites, including the axe sweep over demos",
+        "Consumer install"
+      ],
+      "unsupported": [
+        "pnpm verify feature theme-studio: the planned selector does not exist at this revision",
+        "Production Studio persistence/reset/undo cells: no production runner exists; the measurement-only observer in studio.ts times interactions but asserts no correctness"
+      ]
+    }
+  },
+  "conditions": {
+    "workload": "studio-history",
+    "workloadVersion": 1,
+    "cache": "cold",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "d552fd1e518a4ea4d3615ff23d45b29d6bc6342a",
+    "branch": "HEAD",
+    "dirtyPatchSha256": "744ab42ca01c3ab9814d186b5cbe74cbd2222868f6e8a654056dc4e75a9fac00",
+    "untracked": [
+      "scripts/measure/compare.ts",
+      "scripts/measure/discover.ts",
+      "scripts/measure/pair.ts",
+      "scripts/measure/sampler.ts"
+    ],
+    "sourceManifestSha256": "31d4198763a3829899cfcd099b9b2d960c154c210fe4fcc4096f047963907b6e",
+    "lockfileSha256": "0d81ed7f53b3f8f339af91ba97eae74237861baec8279f9ef3f95645b6df59db",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      2.36,
+      2.56,
+      2.48
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      2.89,
+      2.43,
+      2.41
+    ]
+  },
+  "cachePolicy": {
+    "condition": "cold",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "none",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the candidate checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "baseline"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "baseline"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "baseline"
+      }
+    ]
+  },
+  "priming": null,
+  "samples": [
+    {
+      "runId": "studio-history-cold-1",
+      "order": 0,
+      "startedAt": "2026-09-24T10:02:07.443Z",
+      "elapsedMs": 29301.718622,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-docs",
+          "elapsedMs": 4974.865135,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-1/typecheck-docs.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3412.770615999999,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-1/registry-build.log.gz"
+        },
+        {
+          "id": "test-studio",
+          "elapsedMs": 19647.042439,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-1/test-studio.log.gz"
+        },
+        {
+          "id": "test-draft-model",
+          "elapsedMs": 1264.9315730000017,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-1/test-draft-model.log.gz"
+        }
+      ],
+      "cleared": [
+        "packages/ui/node_modules/.vite"
+      ],
+      "loadAverage": [
+        2.36,
+        2.56,
+        2.48
+      ]
+    },
+    {
+      "runId": "studio-history-cold-2",
+      "order": 1,
+      "startedAt": "2026-09-24T10:03:40.701Z",
+      "elapsedMs": 29492.708455999993,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-docs",
+          "elapsedMs": 4975.855110999997,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-2/typecheck-docs.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3412.5004279999994,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-2/registry-build.log.gz"
+        },
+        {
+          "id": "test-studio",
+          "elapsedMs": 19840.486746999988,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-2/test-studio.log.gz"
+        },
+        {
+          "id": "test-draft-model",
+          "elapsedMs": 1262.613136,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-2/test-draft-model.log.gz"
+        }
+      ],
+      "cleared": [
+        "apps/docs/node_modules/.vite",
+        "packages/tokens/node_modules/.vite",
+        "packages/tokens/dist",
+        "packages/elements/dist",
+        "registry/ultima",
+        "registry/registry.json",
+        "apps/docs/public/r/accordion.json",
+        "apps/docs/public/r/alert-dialog.json",
+        "apps/docs/public/r/alert.json",
+        "apps/docs/public/r/aspect-ratio.json",
+        "apps/docs/public/r/avatar.json",
+        "apps/docs/public/r/badge.json",
+        "apps/docs/public/r/breadcrumb.json",
+        "apps/docs/public/r/button-group.json",
+        "apps/docs/public/r/button.json",
+        "apps/docs/public/r/calendar.json",
+        "apps/docs/public/r/card.json",
+        "apps/docs/public/r/checkbox.json",
+        "apps/docs/public/r/code.json",
+        "apps/docs/public/r/collapsible.json",
+        "apps/docs/public/r/color-field.json",
+        "apps/docs/public/r/combobox.json",
+        "apps/docs/public/r/command.json",
+        "apps/docs/public/r/context-menu.json",
+        "apps/docs/public/r/date-picker.json",
+        "apps/docs/public/r/dialog.json",
+        "apps/docs/public/r/drawer.json",
+        "apps/docs/public/r/dropdown-menu.json",
+        "apps/docs/public/r/empty.json",
+        "apps/docs/public/r/field.json",
+        "apps/docs/public/r/fieldset.json",
+        "apps/docs/public/r/hover-card.json",
+        "apps/docs/public/r/input-group.json",
+        "apps/docs/public/r/input-otp.json",
+        "apps/docs/public/r/input.json",
+        "apps/docs/public/r/lib.json",
+        "apps/docs/public/r/menubar.json",
+        "apps/docs/public/r/meter.json",
+        "apps/docs/public/r/native-select.json",
+        "apps/docs/public/r/navigation-menu.json",
+        "apps/docs/public/r/pagination.json",
+        "apps/docs/public/r/popover.json",
+        "apps/docs/public/r/progress.json",
+        "apps/docs/public/r/radio-group.json",
+        "apps/docs/public/r/registry.json",
+        "apps/docs/public/r/resizable.json",
+        "apps/docs/public/r/scroll-area.json",
+        "apps/docs/public/r/select.json",
+        "apps/docs/public/r/separator.json",
+        "apps/docs/public/r/setup-next.json",
+        "apps/docs/public/r/setup-vite.json",
+        "apps/docs/public/r/sidebar.json",
+        "apps/docs/public/r/skeleton.json",
+        "apps/docs/public/r/slider.json",
+        "apps/docs/public/r/spinner.json",
+        "apps/docs/public/r/stat.json",
+        "apps/docs/public/r/switch.json",
+        "apps/docs/public/r/table.json",
+        "apps/docs/public/r/tabs.json",
+        "apps/docs/public/r/textarea.json",
+        "apps/docs/public/r/toast.json",
+        "apps/docs/public/r/toggle-group.json",
+        "apps/docs/public/r/toggle.json",
+        "apps/docs/public/r/tokens-css.json",
+        "apps/docs/public/r/tokens.json",
+        "apps/docs/public/r/tooltip.json",
+        "apps/docs/public/r/ult-badge.json",
+        "apps/docs/public/r/ult-button.json",
+        "apps/docs/public/r/ult-card.json",
+        "apps/docs/public/r/ult-code.json",
+        "apps/docs/public/r/ult-meter.json",
+        "apps/docs/public/r/ult-stat.json",
+        "apps/docs/public/r/ult-table.json",
+        "apps/docs/public/r/ult-tabs.json",
+        "apps/docs/public/r/ult-tooltip.json",
+        "apps/docs/public/tokens.css",
+        "apps/docs/public/tokens.json",
+        "apps/docs/public/llms.txt",
+        "apps/docs/public/elements"
+      ],
+      "loadAverage": [
+        1.4,
+        2.17,
+        2.35
+      ]
+    },
+    {
+      "runId": "studio-history-cold-3",
+      "order": 2,
+      "startedAt": "2026-09-24T10:04:10.381Z",
+      "elapsedMs": 29111.48350600002,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-docs",
+          "elapsedMs": 4984.869512999998,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-3/typecheck-docs.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3386.329134000014,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-3/registry-build.log.gz"
+        },
+        {
+          "id": "test-studio",
+          "elapsedMs": 19481.879186999984,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-3/test-studio.log.gz"
+        },
+        {
+          "id": "test-draft-model",
+          "elapsedMs": 1257.150128999987,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-3/test-draft-model.log.gz"
+        }
+      ],
+      "cleared": [
+        "apps/docs/node_modules/.vite",
+        "packages/tokens/node_modules/.vite",
+        "packages/tokens/dist",
+        "packages/elements/dist",
+        "registry/ultima",
+        "registry/registry.json",
+        "apps/docs/public/r/accordion.json",
+        "apps/docs/public/r/alert-dialog.json",
+        "apps/docs/public/r/alert.json",
+        "apps/docs/public/r/aspect-ratio.json",
+        "apps/docs/public/r/avatar.json",
+        "apps/docs/public/r/badge.json",
+        "apps/docs/public/r/breadcrumb.json",
+        "apps/docs/public/r/button-group.json",
+        "apps/docs/public/r/button.json",
+        "apps/docs/public/r/calendar.json",
+        "apps/docs/public/r/card.json",
+        "apps/docs/public/r/checkbox.json",
+        "apps/docs/public/r/code.json",
+        "apps/docs/public/r/collapsible.json",
+        "apps/docs/public/r/color-field.json",
+        "apps/docs/public/r/combobox.json",
+        "apps/docs/public/r/command.json",
+        "apps/docs/public/r/context-menu.json",
+        "apps/docs/public/r/date-picker.json",
+        "apps/docs/public/r/dialog.json",
+        "apps/docs/public/r/drawer.json",
+        "apps/docs/public/r/dropdown-menu.json",
+        "apps/docs/public/r/empty.json",
+        "apps/docs/public/r/field.json",
+        "apps/docs/public/r/fieldset.json",
+        "apps/docs/public/r/hover-card.json",
+        "apps/docs/public/r/input-group.json",
+        "apps/docs/public/r/input-otp.json",
+        "apps/docs/public/r/input.json",
+        "apps/docs/public/r/lib.json",
+        "apps/docs/public/r/menubar.json",
+        "apps/docs/public/r/meter.json",
+        "apps/docs/public/r/native-select.json",
+        "apps/docs/public/r/navigation-menu.json",
+        "apps/docs/public/r/pagination.json",
+        "apps/docs/public/r/popover.json",
+        "apps/docs/public/r/progress.json",
+        "apps/docs/public/r/radio-group.json",
+        "apps/docs/public/r/registry.json",
+        "apps/docs/public/r/resizable.json",
+        "apps/docs/public/r/scroll-area.json",
+        "apps/docs/public/r/select.json",
+        "apps/docs/public/r/separator.json",
+        "apps/docs/public/r/setup-next.json",
+        "apps/docs/public/r/setup-vite.json",
+        "apps/docs/public/r/sidebar.json",
+        "apps/docs/public/r/skeleton.json",
+        "apps/docs/public/r/slider.json",
+        "apps/docs/public/r/spinner.json",
+        "apps/docs/public/r/stat.json",
+        "apps/docs/public/r/switch.json",
+        "apps/docs/public/r/table.json",
+        "apps/docs/public/r/tabs.json",
+        "apps/docs/public/r/textarea.json",
+        "apps/docs/public/r/toast.json",
+        "apps/docs/public/r/toggle-group.json",
+        "apps/docs/public/r/toggle.json",
+        "apps/docs/public/r/tokens-css.json",
+        "apps/docs/public/r/tokens.json",
+        "apps/docs/public/r/tooltip.json",
+        "apps/docs/public/r/ult-badge.json",
+        "apps/docs/public/r/ult-button.json",
+        "apps/docs/public/r/ult-card.json",
+        "apps/docs/public/r/ult-code.json",
+        "apps/docs/public/r/ult-meter.json",
+        "apps/docs/public/r/ult-stat.json",
+        "apps/docs/public/r/ult-table.json",
+        "apps/docs/public/r/ult-tabs.json",
+        "apps/docs/public/r/ult-tooltip.json",
+        "apps/docs/public/tokens.css",
+        "apps/docs/public/tokens.json",
+        "apps/docs/public/llms.txt",
+        "apps/docs/public/elements"
+      ],
+      "loadAverage": [
+        1.71,
+        2.17,
+        2.34
+      ]
+    },
+    {
+      "runId": "studio-history-cold-4",
+      "order": 3,
+      "startedAt": "2026-09-24T10:05:43.903Z",
+      "elapsedMs": 29324.194567999977,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-docs",
+          "elapsedMs": 4907.744326000015,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-4/typecheck-docs.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3379.9668489999895,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-4/registry-build.log.gz"
+        },
+        {
+          "id": "test-studio",
+          "elapsedMs": 19777.862167999992,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-4/test-studio.log.gz"
+        },
+        {
+          "id": "test-draft-model",
+          "elapsedMs": 1257.345564999996,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-4/test-draft-model.log.gz"
+        }
+      ],
+      "cleared": [
+        "apps/docs/node_modules/.vite",
+        "packages/tokens/node_modules/.vite",
+        "packages/tokens/dist",
+        "packages/elements/dist",
+        "registry/ultima",
+        "registry/registry.json",
+        "apps/docs/public/r/accordion.json",
+        "apps/docs/public/r/alert-dialog.json",
+        "apps/docs/public/r/alert.json",
+        "apps/docs/public/r/aspect-ratio.json",
+        "apps/docs/public/r/avatar.json",
+        "apps/docs/public/r/badge.json",
+        "apps/docs/public/r/breadcrumb.json",
+        "apps/docs/public/r/button-group.json",
+        "apps/docs/public/r/button.json",
+        "apps/docs/public/r/calendar.json",
+        "apps/docs/public/r/card.json",
+        "apps/docs/public/r/checkbox.json",
+        "apps/docs/public/r/code.json",
+        "apps/docs/public/r/collapsible.json",
+        "apps/docs/public/r/color-field.json",
+        "apps/docs/public/r/combobox.json",
+        "apps/docs/public/r/command.json",
+        "apps/docs/public/r/context-menu.json",
+        "apps/docs/public/r/date-picker.json",
+        "apps/docs/public/r/dialog.json",
+        "apps/docs/public/r/drawer.json",
+        "apps/docs/public/r/dropdown-menu.json",
+        "apps/docs/public/r/empty.json",
+        "apps/docs/public/r/field.json",
+        "apps/docs/public/r/fieldset.json",
+        "apps/docs/public/r/hover-card.json",
+        "apps/docs/public/r/input-group.json",
+        "apps/docs/public/r/input-otp.json",
+        "apps/docs/public/r/input.json",
+        "apps/docs/public/r/lib.json",
+        "apps/docs/public/r/menubar.json",
+        "apps/docs/public/r/meter.json",
+        "apps/docs/public/r/native-select.json",
+        "apps/docs/public/r/navigation-menu.json",
+        "apps/docs/public/r/pagination.json",
+        "apps/docs/public/r/popover.json",
+        "apps/docs/public/r/progress.json",
+        "apps/docs/public/r/radio-group.json",
+        "apps/docs/public/r/registry.json",
+        "apps/docs/public/r/resizable.json",
+        "apps/docs/public/r/scroll-area.json",
+        "apps/docs/public/r/select.json",
+        "apps/docs/public/r/separator.json",
+        "apps/docs/public/r/setup-next.json",
+        "apps/docs/public/r/setup-vite.json",
+        "apps/docs/public/r/sidebar.json",
+        "apps/docs/public/r/skeleton.json",
+        "apps/docs/public/r/slider.json",
+        "apps/docs/public/r/spinner.json",
+        "apps/docs/public/r/stat.json",
+        "apps/docs/public/r/switch.json",
+        "apps/docs/public/r/table.json",
+        "apps/docs/public/r/tabs.json",
+        "apps/docs/public/r/textarea.json",
+        "apps/docs/public/r/toast.json",
+        "apps/docs/public/r/toggle-group.json",
+        "apps/docs/public/r/toggle.json",
+        "apps/docs/public/r/tokens-css.json",
+        "apps/docs/public/r/tokens.json",
+        "apps/docs/public/r/tooltip.json",
+        "apps/docs/public/r/ult-badge.json",
+        "apps/docs/public/r/ult-button.json",
+        "apps/docs/public/r/ult-card.json",
+        "apps/docs/public/r/ult-code.json",
+        "apps/docs/public/r/ult-meter.json",
+        "apps/docs/public/r/ult-stat.json",
+        "apps/docs/public/r/ult-table.json",
+        "apps/docs/public/r/ult-tabs.json",
+        "apps/docs/public/r/ult-tooltip.json",
+        "apps/docs/public/tokens.css",
+        "apps/docs/public/tokens.json",
+        "apps/docs/public/llms.txt",
+        "apps/docs/public/elements"
+      ],
+      "loadAverage": [
+        2.45,
+        2.31,
+        2.37
+      ]
+    },
+    {
+      "runId": "studio-history-cold-5",
+      "order": 4,
+      "startedAt": "2026-09-24T10:06:13.413Z",
+      "elapsedMs": 29296.124764000007,
+      "status": "valid",
+      "phases": [
+        {
+          "id": "typecheck-docs",
+          "elapsedMs": 4919.661870000011,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-5/typecheck-docs.log.gz"
+        },
+        {
+          "id": "registry-build",
+          "elapsedMs": 3410.358718000003,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-5/registry-build.log.gz"
+        },
+        {
+          "id": "test-studio",
+          "elapsedMs": 19710.179072999978,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-5/test-studio.log.gz"
+        },
+        {
+          "id": "test-draft-model",
+          "elapsedMs": 1254.629495000001,
+          "exitCode": 0,
+          "signal": null,
+          "log": "logs/studio-history-cold-5/test-draft-model.log.gz"
+        }
+      ],
+      "cleared": [
+        "apps/docs/node_modules/.vite",
+        "packages/tokens/node_modules/.vite",
+        "packages/tokens/dist",
+        "packages/elements/dist",
+        "registry/ultima",
+        "registry/registry.json",
+        "apps/docs/public/r/accordion.json",
+        "apps/docs/public/r/alert-dialog.json",
+        "apps/docs/public/r/alert.json",
+        "apps/docs/public/r/aspect-ratio.json",
+        "apps/docs/public/r/avatar.json",
+        "apps/docs/public/r/badge.json",
+        "apps/docs/public/r/breadcrumb.json",
+        "apps/docs/public/r/button-group.json",
+        "apps/docs/public/r/button.json",
+        "apps/docs/public/r/calendar.json",
+        "apps/docs/public/r/card.json",
+        "apps/docs/public/r/checkbox.json",
+        "apps/docs/public/r/code.json",
+        "apps/docs/public/r/collapsible.json",
+        "apps/docs/public/r/color-field.json",
+        "apps/docs/public/r/combobox.json",
+        "apps/docs/public/r/command.json",
+        "apps/docs/public/r/context-menu.json",
+        "apps/docs/public/r/date-picker.json",
+        "apps/docs/public/r/dialog.json",
+        "apps/docs/public/r/drawer.json",
+        "apps/docs/public/r/dropdown-menu.json",
+        "apps/docs/public/r/empty.json",
+        "apps/docs/public/r/field.json",
+        "apps/docs/public/r/fieldset.json",
+        "apps/docs/public/r/hover-card.json",
+        "apps/docs/public/r/input-group.json",
+        "apps/docs/public/r/input-otp.json",
+        "apps/docs/public/r/input.json",
+        "apps/docs/public/r/lib.json",
+        "apps/docs/public/r/menubar.json",
+        "apps/docs/public/r/meter.json",
+        "apps/docs/public/r/native-select.json",
+        "apps/docs/public/r/navigation-menu.json",
+        "apps/docs/public/r/pagination.json",
+        "apps/docs/public/r/popover.json",
+        "apps/docs/public/r/progress.json",
+        "apps/docs/public/r/radio-group.json",
+        "apps/docs/public/r/registry.json",
+        "apps/docs/public/r/resizable.json",
+        "apps/docs/public/r/scroll-area.json",
+        "apps/docs/public/r/select.json",
+        "apps/docs/public/r/separator.json",
+        "apps/docs/public/r/setup-next.json",
+        "apps/docs/public/r/setup-vite.json",
+        "apps/docs/public/r/sidebar.json",
+        "apps/docs/public/r/skeleton.json",
+        "apps/docs/public/r/slider.json",
+        "apps/docs/public/r/spinner.json",
+        "apps/docs/public/r/stat.json",
+        "apps/docs/public/r/switch.json",
+        "apps/docs/public/r/table.json",
+        "apps/docs/public/r/tabs.json",
+        "apps/docs/public/r/textarea.json",
+        "apps/docs/public/r/toast.json",
+        "apps/docs/public/r/toggle-group.json",
+        "apps/docs/public/r/toggle.json",
+        "apps/docs/public/r/tokens-css.json",
+        "apps/docs/public/r/tokens.json",
+        "apps/docs/public/r/tooltip.json",
+        "apps/docs/public/r/ult-badge.json",
+        "apps/docs/public/r/ult-button.json",
+        "apps/docs/public/r/ult-card.json",
+        "apps/docs/public/r/ult-code.json",
+        "apps/docs/public/r/ult-meter.json",
+        "apps/docs/public/r/ult-stat.json",
+        "apps/docs/public/r/ult-table.json",
+        "apps/docs/public/r/ult-tabs.json",
+        "apps/docs/public/r/ult-tooltip.json",
+        "apps/docs/public/tokens.css",
+        "apps/docs/public/tokens.json",
+        "apps/docs/public/llms.txt",
+        "apps/docs/public/elements"
+      ],
+      "loadAverage": [
+        2.27,
+        2.28,
+        2.36
+      ]
+    }
+  ],
+  "summary": {
+    "status": "measured",
+    "required": 5,
+    "valid": 5,
+    "failed": 0,
+    "excluded": 0,
+    "medianMs": 29301.718622,
+    "minMs": 29111.48350600002,
+    "maxMs": 29492.708455999993,
+    "madMs": 22.47594599997683
+  },
+  "budget": "report-only"
+}

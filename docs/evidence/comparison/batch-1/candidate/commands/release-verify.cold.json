@@ -1,0 +1,401 @@
+{
+  "schemaVersion": 1,
+  "kind": "command-series",
+  "workload": {
+    "id": "release-verify",
+    "version": 1,
+    "title": "Release verification",
+    "phases": [
+      {
+        "id": "verify",
+        "argv": [
+          "pnpm",
+          "verify",
+          "release",
+          "--json"
+        ],
+        "cwd": "."
+      }
+    ],
+    "coverage": {
+      "executed": [
+        "Full architecture, freshness and typecheck, every Vitest suite with the axe sweep, palette check, registry, token, element and docs builds",
+        "The full Vite, Next.js and element consumer smoke, and the 26-cell production matrix"
+      ],
+      "omitted": [],
+      "unsupported": [
+        "Remote CI status and branch protection: a local run cannot establish them"
+      ]
+    },
+    "requires": [
+      "scripts/verify.ts",
+      "scripts/verification/run.ts"
+    ],
+    "cacheIndependent": "pnpm verify runs in its own snapshot under .scratch/verify/<run-id>/ with its own install and outputs, so the caller checkout's retained build and Vite outputs are never read",
+    "comparesWith": "full-release"
+  },
+  "conditions": {
+    "workload": "release-verify",
+    "workloadVersion": 1,
+    "cache": "cold",
+    "runnerClass": "local:12th-Gen-Intel-Core-i7-12700F:20c:47g:unknown-power",
+    "harnessHash": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5",
+    "fixtureHash": null
+  },
+  "source": {
+    "commit": "580bf440b86c2d27353463caccf7057c6972994b",
+    "branch": "HEAD",
+    "dirtyPatchSha256": null,
+    "untracked": [],
+    "sourceManifestSha256": "535a9218044e87d8566b807c9d912203672d70650c473d26be007bb2850da673",
+    "lockfileSha256": "6a6d4c2202ad90a65dfdf35bdbaddae5411adbfb240a6e8366e6c3d3cee843a1",
+    "harnessSha256": "8536826d97b13d376267f4d383a26797e9b234b894e9ca0f6ae3a897f9aab5f5"
+  },
+  "sourceChanged": false,
+  "environment": {
+    "os": "Linux 7.2.5-3-omarchy",
+    "distribution": "Omarchy",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700F",
+    "logicalCpus": 20,
+    "memoryBytes": 50328055808,
+    "powerProfile": null,
+    "loadAverageAtStart": [
+      1.33,
+      1.78,
+      2.05
+    ],
+    "host": "pc1",
+    "node": "v26.8.1",
+    "pnpm": "10.33.0",
+    "python": "Python 3.14.7",
+    "playwright": "1.63.0",
+    "ci": null,
+    "loadAverageAtEnd": [
+      1.75,
+      2.98,
+      3.16
+    ]
+  },
+  "cachePolicy": {
+    "condition": "cold",
+    "coldPaths": [
+      "node_modules/.vite",
+      "apps/docs/node_modules/.vite",
+      "packages/ui/node_modules/.vite",
+      "packages/elements/node_modules/.vite",
+      "packages/tokens/node_modules/.vite",
+      "packages/cli/node_modules/.vite",
+      "apps/docs/dist",
+      "packages/tokens/dist",
+      "packages/elements/dist",
+      "packages/cli/dist",
+      "registry/ultima",
+      "registry/registry.json",
+      "apps/docs/public/r/*.json",
+      "apps/docs/public/tokens.css",
+      "apps/docs/public/tokens.json",
+      "apps/docs/public/llms.txt",
+      "apps/docs/public/elements"
+    ],
+    "retained": [
+      "node_modules/ and every workspace node_modules/ (installed dependencies)",
+      "~/.cache/ms-playwright (browser binaries)",
+      "~/.npm and the pnpm store (package caches the smoke install and pnpm read)",
+      "OS page cache (uncontrolled)"
+    ],
+    "priming": "none",
+    "tmpdir": "a run-owned TMPDIR per sample, removed afterwards"
+  },
+  "concurrency": "paired with the baseline checkout, one sample at a time; phases run serially; the host is a shared workstation",
+  "pairing": {
+    "batch": 1,
+    "rule": "pair 1 runs the baseline first, pair 2 the candidate first, alternating; a side with enough valid runs sits out later pairs",
+    "sequence": [
+      {
+        "pair": 1,
+        "first": "candidate"
+      },
+      {
+        "pair": 2,
+        "first": "candidate"
+      },
+      {
+        "pair": 3,
+        "first": "candidate"
+      },
+      {
+        "pair": 4,
+        "first": "candidate"
+      },
+      {
+        "pair": 5,
+        "first": "candidate"
+      },
+      {
+        "pair": 6,
+        "first": "candidate"
+      },
+      {
+        "pair": 7,
+        "first": "candidate"
+      },
+      {
+        "pair": 8,
+        "first": "candidate"
+      },
+      {
+        "pair": 9,
+        "first": "candidate"
+      },
+      {
+        "pair": 10,
+        "first": "candidate"
+      }
+    ]
+  },
+  "priming": null,
+  "samples": [
+    {
+      "runId": "release-verify-cold-1",
+      "order": 0,
+      "startedAt": "2026-09-24T12:23:56.712Z",
+      "elapsedMs": 257899.959127,
+      "status": "failed",
+      "reason": "verify exited 1",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 257895.3873,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/release-verify-cold-1/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.33,
+        1.78,
+        2.05
+      ]
+    },
+    {
+      "runId": "release-verify-cold-2",
+      "order": 1,
+      "startedAt": "2026-09-24T12:28:14.613Z",
+      "elapsedMs": 259711.78521399997,
+      "status": "failed",
+      "reason": "verify exited 1",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 259707.905593,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/release-verify-cold-2/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.56,
+        2.31,
+        2.29
+      ]
+    },
+    {
+      "runId": "release-verify-cold-3",
+      "order": 2,
+      "startedAt": "2026-09-24T12:32:34.325Z",
+      "elapsedMs": 254555.808931,
+      "status": "failed",
+      "reason": "verify exited 1",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 254551.93069399998,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/release-verify-cold-3/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.97,
+        2.69,
+        2.54
+      ]
+    },
+    {
+      "runId": "release-verify-cold-4",
+      "order": 3,
+      "startedAt": "2026-09-24T12:36:48.881Z",
+      "elapsedMs": 256852.209502,
+      "status": "failed",
+      "reason": "verify exited 1",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 256847.16287200002,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/release-verify-cold-4/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.97,
+        2.98,
+        2.8
+      ]
+    },
+    {
+      "runId": "release-verify-cold-5",
+      "order": 4,
+      "startedAt": "2026-09-24T12:41:05.734Z",
+      "elapsedMs": 255049.28457799996,
+      "status": "failed",
+      "reason": "verify exited 1",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 255045.50760700007,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/release-verify-cold-5/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.42,
+        3.37,
+        3.1
+      ]
+    },
+    {
+      "runId": "release-verify-cold-6",
+      "order": 5,
+      "startedAt": "2026-09-24T12:45:20.783Z",
+      "elapsedMs": 255984.16651999997,
+      "status": "failed",
+      "reason": "verify exited 1",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 255980.34822899988,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/release-verify-cold-6/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.08,
+        2.58,
+        2.9
+      ]
+    },
+    {
+      "runId": "release-verify-cold-7",
+      "order": 6,
+      "startedAt": "2026-09-24T12:49:36.768Z",
+      "elapsedMs": 253617.96600699984,
+      "status": "failed",
+      "reason": "verify exited 1",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 253614.2098679999,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/release-verify-cold-7/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.82,
+        2.77,
+        2.98
+      ]
+    },
+    {
+      "runId": "release-verify-cold-8",
+      "order": 7,
+      "startedAt": "2026-09-24T12:53:50.386Z",
+      "elapsedMs": 254786.6190320002,
+      "status": "failed",
+      "reason": "verify exited 1",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 254782.894109,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/release-verify-cold-8/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2,
+        2.82,
+        3.02
+      ]
+    },
+    {
+      "runId": "release-verify-cold-9",
+      "order": 8,
+      "startedAt": "2026-09-24T12:58:05.173Z",
+      "elapsedMs": 254742.23194700014,
+      "status": "failed",
+      "reason": "verify exited 1",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 254738.44739600015,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/release-verify-cold-9/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        1.49,
+        2.55,
+        2.93
+      ]
+    },
+    {
+      "runId": "release-verify-cold-10",
+      "order": 9,
+      "startedAt": "2026-09-24T13:02:19.915Z",
+      "elapsedMs": 256243.2368069999,
+      "status": "failed",
+      "reason": "verify exited 1",
+      "phases": [
+        {
+          "id": "verify",
+          "elapsedMs": 256239.488593,
+          "exitCode": 1,
+          "signal": null,
+          "log": "logs/release-verify-cold-10/verify.log.gz"
+        }
+      ],
+      "cleared": [],
+      "loadAverage": [
+        2.13,
+        2.83,
+        3.03
+      ]
+    }
+  ],
+  "summary": {
+    "status": "incomplete",
+    "required": 5,
+    "valid": 0,
+    "failed": 10,
+    "excluded": 0,
+    "medianMs": null,
+    "minMs": null,
+    "maxMs": null,
+    "madMs": null
+  },
+  "budget": "report-only"
+}
