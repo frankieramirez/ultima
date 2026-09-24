@@ -19,6 +19,9 @@ export type Variant = { [A in Axis]?: (typeof AXES)[A][number] };
 
 export const RESETS = ['unmount', 'fresh-context'] as const;
 
+/** Who settled a feature's intent: drafted from code, agreed by a person, or an open question. */
+export const KNOWLEDGE = ['proposed', 'confirmed', 'unresolved'] as const;
+
 export type FeatureRecord = {
   schemaVersion: 1;
   id: string;
@@ -35,6 +38,7 @@ export type FeatureRecord = {
   extraDependencies: { reason: string; item?: string; path?: string }[];
   /** Existing suites that prove this feature without a scenario registration. */
   supporting: { path: string; reason: string }[];
+  knowledge?: (typeof KNOWLEDGE)[number];
 };
 
 export type RouteReference =
@@ -148,7 +152,7 @@ const featureShape = shape({
   sourceRoots: list(text),
   extraDependencies: list(shape({ reason: text }, { item: text, path: text })),
   supporting: list(shape({ path: text, reason: text })),
-});
+}, { knowledge: oneOf(KNOWLEDGE) });
 
 const scenarioShape = shape({
   schemaVersion: literal(SCHEMA_VERSION),

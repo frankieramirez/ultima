@@ -3,6 +3,7 @@
   "id": "elements",
   "title": "Shipped elements",
   "summary": "The vendored ult-* custom elements as a consumer loads them: the built aggregate bundle and token CSS on the /elements.html fixture, in both color-mode sections.",
+  "knowledge": "proposed",
   "aliases": [
     "web components",
     "custom elements",

@@ -161,6 +161,8 @@ export type AbandonedRun = { runId: string; directory: string; startedAt: string
 
 export type Report = {
   schemaVersion: typeof RUN_VERSION;
+  /** The shared control contract this report keeps; see Control in AGENTS.md. */
+  contract: 'control/0';
   kind: 'verification-run';
   runId: string;
   command: string;
@@ -408,6 +410,7 @@ export async function executeRun(options: RunOptions): Promise<Report> {
 
   const report: Report = {
     schemaVersion: RUN_VERSION,
+    contract: 'control/0',
     kind: 'verification-run',
     runId,
     command: options.command,

@@ -1,0 +1,13 @@
+diff --git a/packages/ui/src/dialog.tsx b/packages/ui/src/dialog.tsx
+index 16ecfd5..7dc733a 100644
+--- a/packages/ui/src/dialog.tsx
++++ b/packages/ui/src/dialog.tsx
+@@ -91,7 +91,7 @@ function Backdrop({ style, ...props }: DialogBackdropProps) {
+ }
+ 
+ function Popup({ style, ...props }: DialogPopupProps) {
+-  return <BaseDialog.Popup {...props} {...stylex.props(styles.popup, style)} />;
++  return <BaseDialog.Popup {...props} {...stylex.props(styles.popup, style)} hidden />;
+ }
+ 
+ function Title({ style, ...props }: DialogTitleProps) {

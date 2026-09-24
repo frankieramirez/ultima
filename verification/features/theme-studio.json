@@ -3,6 +3,7 @@
   "id": "theme-studio",
   "title": "Theme studio",
   "summary": "The /theme-studio workbench: guided controls, overrides and locks on one draft, with history, autosave, preview and export.",
+  "knowledge": "proposed",
   "aliases": ["studio", "theme editor", "theme draft", "palette editor"],
   "contract": "docs/spec/theme-studio.md#contracts",
   "items": [],

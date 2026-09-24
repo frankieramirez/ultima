@@ -7,6 +7,15 @@ description: How to run and end-to-end test the Ultima docs site (apps/docs) whe
 
 Two kinds of work happen here, and they are not interchangeable. **Exploratory** runs — the dev server, hand-driven browser checks — answer "does this look right" during development. **Production proof** — registered scenarios executed against a production build — is the only run that counts as evidence. Label which environment a result came from when you report it.
 
+## Control
+
+Command: `node --experimental-strip-types scripts/verify.ts`
+Prepare: `pnpm install --frozen-lockfile --offline`
+Features: verification/features
+Scenarios: verification/scenarios
+Bindings: packages, apps
+Breaks: verification/breaks
+
 ## Start from the records
 
 Before driving the site by hand, find the registered obligation for the behavior. These commands run in the installed workspace — on a checkout without `pnpm install` they fail at module resolution, which is a missing prerequisite, not a result:
