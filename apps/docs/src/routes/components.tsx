@@ -1,7 +1,8 @@
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, motion, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Card, Empty, Field, Input, Select } from '@ultima/ui';
+import { Button, Card, Empty, Field, InputGroup, Select } from '@ultima/ui';
 import { useRef, useState } from 'react';
 
 import { RELEASE_LABELS, RELEASES, components } from '../components';
@@ -39,14 +40,19 @@ const styles = stylex.create({
     marginBlock: space['--ult-space-4'],
   },
   // Card ships no interaction states and the spec asks these entries to gain both, so the ring and
-  // the hover are written here. The anchor's element, role, and keyboard reach are still the browser's.
+  // the hover are written here (#375). The hover restates Card's own surface at surface-hover and leaves
+  // the title and description their colors; the ring is the keyboard signal, so the fill stays off under
+  // focus-visible. The anchor's element, role, and keyboard reach are still the browser's.
   link: {
+    backgroundColor: {
+      default: color['--ult-color-surface-raised'],
+      ':hover:not(:focus-visible)': color['--ult-color-surface-hover'],
+    },
     blockSize: '100%',
-    color: { default: color['--ult-color-text'], ':hover': color['--ult-color-highlight-text'] },
     display: 'block',
     textDecoration: 'none',
     transitionDuration: motion['--ult-motion-fast'],
-    transitionProperty: 'color',
+    transitionProperty: 'background-color',
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
@@ -77,11 +83,18 @@ export function ComponentsPage() {
       <div {...stylex.props(styles.filters)}>
         <Field.Root name="filter" style={styles.grow}>
           <Field.Label>Filter components</Field.Label>
-          <Input
-            onChange={(event) => setQuery(event.currentTarget.value)}
-            ref={inputRef}
-            value={query}
-          />
+          <InputGroup.Root>
+            <InputGroup.Addon>
+              <MagnifyingGlassIcon aria-hidden />
+            </InputGroup.Addon>
+            <InputGroup.Input
+              onChange={(event) => setQuery(event.currentTarget.value)}
+              placeholder="Filter by name or description"
+              ref={inputRef}
+              type="search"
+              value={query}
+            />
+          </InputGroup.Root>
         </Field.Root>
         <Select.Root
           items={releases}
