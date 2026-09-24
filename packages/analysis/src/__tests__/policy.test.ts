@@ -57,6 +57,7 @@ describe('the workspace classification', () => {
       ['packages/analysis/fixtures/source/no-directive.tsx', 'fixture'],
       ['packages/ui/src/__tests__/button.test.tsx', 'test'],
       ['packages/ui/src/button.test.tsx', 'test'],
+      ['apps/docs/tests/production/dialog.keyboard-dismissal.ts', 'test'],
       ['packages/ui/src/raw.d.ts', 'declarations'],
       ['packages/ui/src/index.ts', 'generated'],
       ['packages/ui/src/button.tsx', 'react-component'],

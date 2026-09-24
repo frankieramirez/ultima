@@ -29,6 +29,8 @@ const CLASSES: readonly [RegExp, SourceKind][] = [
   [/^packages\/analysis\/fixtures\//, 'fixture'],
   [/(^|\/)__tests__\//, 'test'],
   [/\.(test|spec)\.[cm]?[jt]sx?$/, 'test'],
+  // Scenario bindings and their fixtures for the docs site's browser and production runners.
+  [/^apps\/[^/]+\/tests\//, 'test'],
   [/\.d\.ts$/, 'declarations'],
   [/^packages\/ui\/src\/index\.ts$/, 'generated'],
   [/^apps\/docs\/src\/generated\/[^/]+\.ts$/, 'generated'],
