@@ -10,4 +10,5 @@ export default {
   primaryExport: 'RadioGroup',
   release: 'v0.1',
   order: 4,
+  replaces: { elements: ['input[type=radio]'], roles: ['radio', 'radiogroup'] },
 } satisfies ReactDescriptor;

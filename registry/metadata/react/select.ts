@@ -11,4 +11,5 @@ export default {
   primaryExport: 'Select',
   release: 'v0',
   order: 12,
+  replaces: { elements: ['select'], roles: ['listbox'] },
 } satisfies ReactDescriptor;

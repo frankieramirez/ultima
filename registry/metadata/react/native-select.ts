@@ -10,4 +10,5 @@ export default {
   primaryExport: 'NativeSelect',
   release: 'v0.2',
   order: 21,
+  replaces: { elements: ['select'] },
 } satisfies ReactDescriptor;

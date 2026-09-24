@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Dialog',
   release: 'v0',
   order: 10,
+  replaces: { elements: ['dialog'], roles: ['dialog'] },
 } satisfies ReactDescriptor;

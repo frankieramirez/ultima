@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Combobox',
   release: 'v0.1',
   order: 6,
+  replaces: { roles: ['combobox'] },
 } satisfies ReactDescriptor;

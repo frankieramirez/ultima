@@ -10,4 +10,5 @@ export default {
   primaryExport: 'AlertDialog',
   release: 'v0.1',
   order: 9,
+  replaces: { roles: ['alertdialog'] },
 } satisfies ReactDescriptor;

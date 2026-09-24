@@ -22,6 +22,12 @@ export type ReactDescriptor = Common & {
   release: string;
   /** Unique within `release`; gaps are allowed. */
   order: number;
+  /**
+   * The native controls and interactive roles the component stands in for, which `check` reads as
+   * ULT-APP-CONTROL-001. An element is a tag, or `input[type=<type>]` for one input type; an input
+   * with no `type` is `text`. The Base UI primitive it wraps is derived from its own imports.
+   */
+  replaces?: { elements?: string[]; roles?: string[] };
 };
 
 export type ElementAttribute = {

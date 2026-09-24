@@ -94,8 +94,62 @@ describe('check', () => {
     expect(at(full, 'src/fixtures/unsupported.tsx')).toEqual([]);
   });
 
+  it('advises on a Base UI import an installed item wraps, by subpath or from the barrel, and passes types and hooks', () => {
+    expect(lines(at(full, 'src/fixtures/primitive.tsx'))).toEqual(['2 ULT-APP-PRIMITIVE-001', '3 ULT-APP-PRIMITIVE-001']);
+    expect(at(full, 'src/fixtures/primitive.tsx')[0]).toMatchObject({
+      severity: 'advisory',
+      target: '@base-ui/react/select',
+      link: 'https://ultima.systems/components/select',
+    });
+  });
+
+  it('exempts the installed item’s own import of the primitive it wraps', () => {
+    expect(at(full, 'src/components/ui/select.tsx')).toEqual([]);
+    expect(full.diagnostics.filter(({ file }) => file.startsWith('src/components/ui/'))).toEqual([]);
+  });
+
+  it('advises on a native control or a widget role an installed item provides, and passes one handed to an Ultima render', () => {
+    // 14 <button>, 15 role="button", 18 a <button> handed to a render prop that is not Ultima's, 19 and 20
+    // the email and checkbox inputs, 22 a computed input type, 24 createElement('textarea'). <Button render={<a />}>,
+    // <Tabs.Tab render={<button />}>, the file input and role="region" pass.
+    expect(lines(at(full, 'src/fixtures/controls.tsx'))).toEqual([
+      '14 ULT-APP-CONTROL-001',
+      '15 ULT-APP-CONTROL-001',
+      '18 ULT-APP-CONTROL-001',
+      '19 ULT-APP-CONTROL-001',
+      '20 ULT-APP-CONTROL-001',
+      '22 ULT-ANALYSIS-001',
+      '24 ULT-APP-CONTROL-001',
+    ]);
+    const [button, role] = at(full, 'src/fixtures/controls.tsx');
+    expect(button).toMatchObject({ severity: 'advisory', symbol: 'Controls', link: 'https://ultima.systems/components/button' });
+    expect(role).toMatchObject({ target: 'A <div> with role="button"', link: 'https://ultima.systems/components/button' });
+    expect(at(full, 'src/fixtures/controls.tsx')[5]).toMatchObject({ severity: 'advisory' });
+  });
+
+  it('counts only the items this project installed', async () => {
+    const root = installCatalogue(smoke('vite'), VITE, ['select']);
+    write(root, 'src/fixtures/controls.tsx', analysisFixture('app/controls.tsx').replace(/^import \{ (Button|Tabs) \}.*\n/gm, ''));
+    write(root, 'src/fixtures/primitive.tsx', analysisFixture('app/primitive.tsx'));
+    const { code, report } = await check(root);
+    // Without button, input, checkbox, textarea or dialog installed, only the select import is left.
+    expect(lines(report.diagnostics)).toEqual(['2 ULT-APP-PRIMITIVE-001']);
+    expect(code).toBe(0);
+    expect((await check(root, '--strict')).code).toBe(1);
+  });
+
+  it('blocks on a primitive import and a native control under --strict', async () => {
+    const root = installCatalogue(smoke('vite'), VITE, ['button', 'select']);
+    write(root, 'src/Form.tsx', "import { Select } from '@base-ui/react/select';\nexport const Form = () => <Select.Root><button /></Select.Root>;\n");
+    expect((await check(root)).code).toBe(0);
+    const strict = await check(root, '--strict');
+    expect(lines(strict.report.diagnostics)).toEqual(['1 ULT-APP-PRIMITIVE-001', '2 ULT-APP-CONTROL-001']);
+    expect(strict.report.counts).toMatchObject({ errors: 2, advisories: 2 });
+    expect(strict.code).toBe(1);
+  });
+
   it('adds counts of errors, advisories and suppressions to JSON', () => {
-    expect(full.counts).toEqual({ errors: 1, advisories: 5, incomplete: 0, suppressions: 1 });
+    expect(full.counts).toEqual({ errors: 1, advisories: 14, incomplete: 0, suppressions: 1 });
   });
 
   it('lists and skips a --files path outside the scope or missing', async () => {
@@ -144,5 +198,6 @@ describe('the built binary', () => {
     const bundle = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../dist/cli.js'), 'utf8');
     expect(bundle).not.toMatch(/(from|import\()\s*["']@ultima\//);
     expect(bundle).toContain('ULT-APP-PAINT-001');
+    expect(bundle).toContain('ULT-APP-CONTROL-001');
   });
 });

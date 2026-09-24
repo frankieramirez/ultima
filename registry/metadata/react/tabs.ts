@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Tabs',
   release: 'v0',
   order: 5,
+  replaces: { roles: ['tab', 'tablist', 'tabpanel'] },
 } satisfies ReactDescriptor;

@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Meter',
   release: 'v0',
   order: 6,
+  replaces: { elements: ['meter'], roles: ['meter'] },
 } satisfies ReactDescriptor;

@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Slider',
   release: 'v0.1',
   order: 7,
+  replaces: { elements: ['input[type=range]'], roles: ['slider'] },
 } satisfies ReactDescriptor;
