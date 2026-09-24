@@ -2,8 +2,10 @@
 import { type Diagnostic, type Report, SCHEMA_VERSION, compareDiagnostics, exitCode } from './diagnostic.ts';
 import { applyExceptions } from './exceptions.ts';
 import { ruleStatuses } from './rules.ts';
+import { checkApi } from './rules/api.ts';
 import { createContext } from './rules/context.ts';
 import { checkImports } from './rules/imports.ts';
+import { checkRegistry } from './rules/registry.ts';
 import { checkSource } from './rules/source.ts';
 import { checkStyle } from './rules/style.ts';
 import { checkTokens } from './rules/tokens.ts';
@@ -20,6 +22,8 @@ export function check(scope: Scope): Report {
   checkImports(context);
   checkTokens(context);
   checkStyle(context);
+  checkApi(context, scope.inventory.filter(({ kind }) => kind === 'react-component').map(({ path }) => path));
+  checkRegistry(context);
 
   const { diagnostics, excepted } = applyExceptions(scope, [...scope.problems, ...context.diagnostics]);
   const unique = new Map<string, Diagnostic>();

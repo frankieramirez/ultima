@@ -21,16 +21,14 @@ export const RULES = {
     link: `${INFRA}#target-and-api-distinctions`,
   },
   'ULT-API-001': {
-    status: 'pending',
+    status: 'blocking',
     scope: 'Public React wrappers and styled parts',
     link: `${INFRA}#target-and-api-distinctions`,
-    owner: 'https://github.com/frankieramirez/ultima/issues/456',
   },
   'ULT-API-002': {
-    status: 'pending',
+    status: 'blocking',
     scope: "Code consuming the caller's StyleX slot",
     link: `${INFRA}#target-and-api-distinctions`,
-    owner: 'https://github.com/frankieramirez/ultima/issues/456',
   },
   'ULT-DOCS-001': {
     status: 'pending',
@@ -56,10 +54,9 @@ export const RULES = {
     link: `${INFRA}#import-and-registry-boundaries`,
   },
   'ULT-REGISTRY-001': {
-    status: 'pending',
+    status: 'blocking',
     scope: 'Authored source and registry metadata',
     link: `${INFRA}#import-and-registry-boundaries`,
-    owner: 'https://github.com/frankieramirez/ultima/issues/456',
   },
   'ULT-SOURCE-001': {
     status: 'blocking',

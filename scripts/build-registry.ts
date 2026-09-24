@@ -23,6 +23,7 @@ import { agentGuide, type GuideComponent } from './build-agent-guide.ts';
 import { diskFiles } from './catalogue/files.ts';
 import { formatDiagnostics, loadCatalogue } from './catalogue/model.ts';
 import { registryUrl } from './catalogue/projections.ts';
+import { type StagedSource, registryPlan, stagedSources, stagedSpecifier } from './catalogue/staging.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -40,8 +41,6 @@ const ELEMENTS_PUBLIC = join(PUBLIC_DIR, 'elements');
 
 const HOMEPAGE = 'https://ultima.systems';
 const SHADCN = 'shadcn@4.21.0';
-
-const NEVER_STAGE = new Set(['index.ts', 'prototype', '__tests__']);
 
 type RegistryFile = { path: string; type: string; target?: string };
 
@@ -64,16 +63,10 @@ type RegistryItem = {
 
 type Staged = { name: string; file: HashedFile; source: string };
 
-/** Checks every segment, so the exclusion holds even if the listing is widened to walk subdirectories. */
-function isExcluded(relativePath: string): boolean {
-  return relativePath
-    .split('/')
-    .some((segment) => NEVER_STAGE.has(segment) || /\.test\.tsx?$/.test(segment));
-}
-
 const revision = catalogueRevision(root);
 
-const { catalogue, diagnostics } = loadCatalogue(diskFiles(root));
+const files = diskFiles(root);
+const { catalogue, diagnostics } = loadCatalogue(files);
 if (diagnostics.length > 0) throw new Error(`the catalogue under registry/metadata/ is invalid:\n${formatDiagnostics(diagnostics)}`);
 
 type Description = { title: string; description: string; docs: string; dependencies: string[]; registryDependencies: string[] };
@@ -102,24 +95,14 @@ function meta(files: { path: string; hash: string }[]): Meta {
   return { ultima: { revision, files: Object.fromEntries(files.map(({ path, hash }) => [basename(path), hash])) } };
 }
 
-async function stage(
-  sourceDir: string,
-  extension: string,
-  destination: 'ui' | 'lib',
-  type: string,
-  item?: string,
-): Promise<Staged[]> {
+async function stage(sources: StagedSource[]): Promise<Staged[]> {
   const staged: Staged[] = [];
-  for (const entry of readdirSync(sourceDir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    if (!entry.isFile() || !entry.name.endsWith(extension) || isExcluded(entry.name)) continue;
-    const from = join(sourceDir, entry.name);
-    const to = join(STAGE_DIR, destination, entry.name);
-    if (existsSync(to)) throw new Error(`two sources stage to registry/ultima/${destination}/${entry.name}`);
-    const source = readFileSync(from, 'utf8');
-    const name = entry.name.replace(/\.tsx?$/, '');
-    const { hash, text } = await stamped(item ?? name, rewriteImports(source, from), 'c1');
-    writeFileSync(to, text);
-    staged.push({ name, file: { path: `ultima/${destination}/${entry.name}`, type, hash }, source });
+  for (const { source: path, item, staged: to, type } of sources) {
+    const source = readFileSync(join(root, path), 'utf8');
+    const name = basename(path).replace(/\.tsx?$/, '');
+    const { hash, text } = await stamped(item, rewriteImports(source, path), 'c1');
+    writeFileSync(join(REGISTRY_DIR, to), text);
+    staged.push({ name, file: { path: to, type, hash }, source });
   }
   return staged;
 }
@@ -129,16 +112,9 @@ async function stage(
  * shadcn rewrites to the consumer's aliases on install.
  */
 function rewriteSpecifier(specifier: string, file: string): string {
-  if (specifier.startsWith('@ultima/tokens/')) {
-    return `@/registry/ultima/lib/${specifier.slice('@ultima/tokens/'.length)}`;
-  }
-  if (specifier.startsWith('@ultima/ui/lib/')) {
-    return `@/registry/ultima/lib/${specifier.slice('@ultima/ui/lib/'.length)}`;
-  }
-  if (specifier.startsWith('@ultima/ui/')) {
-    return `@/registry/ultima/ui/${specifier.slice('@ultima/ui/'.length)}`;
-  }
-  throw new Error(`${file} imports "${specifier}", a barrel that is never staged; import the module directly`);
+  const rewritten = stagedSpecifier(specifier);
+  if (rewritten === undefined) throw new Error(`${file} imports "${specifier}", a barrel that is never staged; import the module directly`);
+  return rewritten;
 }
 
 function rewriteImports(source: string, file: string): string {
@@ -251,10 +227,17 @@ async function stageSources() {
   for (const name of elements) {
     copyFileSync(join(ELEMENTS_DIST, `${name}.js`), join(STAGE_DIR, 'elements', `${name}.js`));
   }
+  const { sources, collisions } = stagedSources(files);
+  for (const collision of collisions) {
+    throw new Error(`${collision.source} and ${collision.with} both stage to registry/${collision.staged}`);
+  }
+  const all = await stage(sources);
+  const of = (item: string) => all.filter((_, index) => (sources[index] as StagedSource).item === item);
   return {
-    components: await stage(join(root, 'packages/ui/src'), '.tsx', 'ui', 'registry:ui'),
-    tokens: await stage(join(root, 'packages/tokens/src'), '.ts', 'lib', 'registry:lib', 'tokens'),
-    lib: await stage(join(root, 'packages/ui/src/lib'), '.ts', 'lib', 'registry:lib', 'lib'),
+    sources,
+    components: all.filter((_, index) => !['tokens', 'lib'].includes((sources[index] as StagedSource).item)),
+    tokens: of('tokens'),
+    lib: of('lib'),
     elements,
     tokensCss,
   };
@@ -262,7 +245,10 @@ async function stageSources() {
 
 type Sources = Awaited<ReturnType<typeof stageSources>>;
 
-function describeRegistry({ components, tokens, lib, elements, tokensCss }: Sources) {
+function describeRegistry({ sources, components, tokens, lib, elements, tokensCss }: Sources) {
+  const staged = new Map([...components.map((entry): [string, HashedFile[]] => [entry.name, [entry.file]])]);
+  staged.set('tokens', tokens.map((entry) => entry.file));
+  staged.set('lib', lib.map((entry) => entry.file));
   const registry = {
     $schema: 'https://ui.shadcn.com/schema/registry.json',
     name: 'ultima',
@@ -270,19 +256,16 @@ function describeRegistry({ components, tokens, lib, elements, tokensCss }: Sour
     // Top-level `meta` is outside shadcn's registry schema, which tolerates it, and
     // `shadcn build` copies registry.json through verbatim when it has no `include`.
     meta: { ultima: { format: REGISTRY_FORMAT } },
-    items: [
-      item('tokens', 'registry:lib', tokens.map((staged) => staged.file)),
-      item('lib', 'registry:lib', lib.map((staged) => staged.file)),
-      ...components.map((staged) => item(staged.name, 'registry:ui', [staged.file])),
-      setupItem('setup-vite'),
-      setupItem('setup-next'),
-      item(
-        'tokens-css',
-        'registry:item',
-        [{ path: 'ultima/tokens.css', type: 'registry:file', target: '~/ultima-tokens.css', hash: tokensCss.hash }],
-      ),
-      ...elements.map(vendoredElementItem),
-    ],
+    items: registryPlan(sources, elements).map(({ name, from }) => {
+      if (from === 'setup') return setupItem(name);
+      if (from === 'element') return vendoredElementItem(name);
+      if (from === 'artifact') {
+        return item(name, 'registry:item', [
+          { path: 'ultima/tokens.css', type: 'registry:file', target: '~/ultima-tokens.css', hash: tokensCss.hash },
+        ]);
+      }
+      return item(name, name === 'tokens' || name === 'lib' ? 'registry:lib' : 'registry:ui', staged.get(name) ?? []);
+    }),
   };
   for (const name of catalogue.registryItems) {
     if (!described.has(name)) throw new Error(`registry/metadata/ item "${name}" has no file`);

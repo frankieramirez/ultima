@@ -23,8 +23,8 @@ const styles = stylex.create({
   },
 });
 
-function Separator() {
-  return <hr {...stylex.props(styles.root)} />;
+function Separator({ style, ...rest }: import('@ultima/ui/lib/component').PlainProps<'hr'>) {
+  return <hr {...rest} {...stylex.props(styles.root, style)} />;
 }
 
 export { Separator };

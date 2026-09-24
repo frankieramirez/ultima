@@ -3,15 +3,22 @@
 // needs is named here and nowhere else. docs/spec/agent-infrastructure.md, Authority and source scopes.
 import { posix } from 'node:path';
 
+import ts from 'typescript';
+
 import type { Files } from '../../../scripts/catalogue/files.ts';
 import { loadCatalogue } from '../../../scripts/catalogue/model.ts';
 import { headingAnchors } from '../../../scripts/catalogue/source.ts';
+import { registryPlan, stagedSources } from '../../../scripts/catalogue/staging.ts';
 import type { Diagnostic } from './diagnostic.ts';
 import { POLICY, STYLE_POLICY, packageName } from './policy.ts';
+import { createTypeProgram } from './program.ts';
 import { RULES } from './rules.ts';
-import type { Classified, Resolution, Scope, SourceKind, Staged } from './scope.ts';
+import type { Classified, RegistryInputs, Resolution, Scope, SourceKind, Staged } from './scope.ts';
 
 export const EXCEPTIONS = 'packages/analysis/exceptions.ts';
+
+/** Catalogue codes that mean the metadata itself cannot be read, so no membership can be established. */
+const UNREADABLE = ['not-data', 'invalid-descriptor', 'unexpected-descriptor', 'duplicate-id'];
 
 const SOURCE = /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs|mdx)$/;
 
@@ -112,7 +119,7 @@ export function workspaceScope(files: Files): Scope {
   const kinds = new Map(inventory.map(({ path, kind }) => [path, kind]));
 
   const { catalogue, diagnostics } = loadCatalogue(files);
-  const broken = diagnostics.filter((diagnostic) => ['not-data', 'invalid-descriptor', 'unexpected-descriptor', 'duplicate-id', 'missing-file'].includes(diagnostic.code));
+  const broken = diagnostics.filter((diagnostic) => UNREADABLE.includes(diagnostic.code));
   // With unreadable metadata, a component that looks unclaimed may only have lost its descriptor.
   const unclaimed = broken.length > 0 ? [] : diagnostics
     .filter((diagnostic) => diagnostic.code === 'source-without-metadata')
@@ -130,6 +137,37 @@ export function workspaceScope(files: Files): Scope {
       link: RULES['ULT-ANALYSIS-001'].link,
     });
   }
+
+  const located = (path: string) => {
+    const match = /^(.*):(\d+)$/.exec(path);
+    return match ? { file: match[1] as string, line: Number(match[2]) } : { file: path };
+  };
+  const unclaimedPaths = new Set(unclaimed.map((entry) => entry.path));
+  const { sources, collisions } = stagedSources(files);
+  const descriptors = new Map<string, { kind: string; path: string }>();
+  for (const [kind, ids] of [
+    ['react', catalogue.react.map((entry) => entry.id)],
+    ['element', catalogue.elements.map((entry) => entry.id)],
+    ['setup', catalogue.setup.map((entry) => entry.id)],
+    ['source-bundle', catalogue.sourceBundles.map((entry) => entry.id)],
+    ['artifact', catalogue.artifacts.map((entry) => entry.id)],
+  ] as const) {
+    for (const id of ids) descriptors.set(id, { kind, path: `registry/metadata/${kind}/${id}.ts` });
+  }
+  // Unreadable metadata is incomplete analysis, reported above; a component source no descriptor
+  // claims is ULT-SOURCE-001. Every other catalogue finding is about registry membership.
+  const registry: RegistryInputs | undefined =
+    broken.length > 0
+      ? undefined
+      : {
+          findings: diagnostics
+            .filter((diagnostic) => !(diagnostic.code === 'source-without-metadata' && unclaimedPaths.has(diagnostic.path)))
+            .map((diagnostic) => ({ code: diagnostic.code, ...located(diagnostic.path), message: diagnostic.message })),
+          sources,
+          collisions,
+          plan: registryPlan(sources, catalogue.elements.map((entry) => entry.id)),
+          descriptors,
+        };
 
   const packages = workspacePackages(files);
 
@@ -212,6 +250,12 @@ export function workspaceScope(files: Files): Scope {
 
   const anchorCache = new Map<string, Set<string> | undefined>();
 
+  const compilerOptions = (): ts.CompilerOptions => {
+    const text = files.read('tsconfig.base.json') ?? '{}';
+    const { config } = ts.parseConfigFileTextToJson('tsconfig.base.json', text);
+    return ts.convertCompilerOptionsFromJson((config as { compilerOptions?: object } | undefined)?.compilerOptions ?? {}, '/').options;
+  };
+
   return {
     name: 'workspace',
     files,
@@ -244,6 +288,15 @@ export function workspaceScope(files: Files): Scope {
         anchorCache.set(document, text === undefined ? undefined : headingAnchors(text));
       }
       return anchorCache.get(document);
+    },
+    ...(registry && { registry }),
+    types: {
+      // Production sources only: an import of docs or tooling is ULT-IMPORT-001's finding, not something to type.
+      program: (roots) =>
+        createTypeProgram(files, resolve, compilerOptions(), roots, (path) =>
+          ['react-component', 'react-helper', 'token-source', 'declarations'].includes(kinds.get(path) as string),
+        ),
+      styleSlot: { path: 'packages/ui/src/lib/component.ts', name: 'StyleProp' },
     },
     exceptions: { path: EXCEPTIONS, text: files.read(EXCEPTIONS) },
     problems,

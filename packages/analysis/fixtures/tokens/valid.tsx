@@ -53,9 +53,9 @@ const styles = stylex.create({
   icon: { blockSize: '1em' },
 });
 
-function Separator({ x }: { x: number }) {
+function Separator({ x, style }: import('@ultima/ui/lib/component').PlainProps<'div'> & { x: number }) {
   return (
-    <div {...stylex.props(styles.root, styles.thumb(x))}>
+    <div {...stylex.props(styles.root, styles.thumb(x), style)}>
       <svg viewBox="0 0 24 24" {...stylex.props(styles.icon)} />
       <span {...stylex.props(styles.glyph)} />
       <span {...stylex.props(styles.hidden)} />

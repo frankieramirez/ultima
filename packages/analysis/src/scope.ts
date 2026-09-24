@@ -2,8 +2,10 @@
 // resolves, and the dependency policy. Rules never name a workspace path or alias; the workspace
 // scope and a consumer scope supply them. docs/spec/ultima.md, Package and engine.
 import type { Files } from '../../../scripts/catalogue/files.ts';
+import type { PlannedItem, StagedSource } from '../../../scripts/catalogue/staging.ts';
 import type { Diagnostic } from './diagnostic.ts';
 import type { DependencyPolicy, StylePolicy } from './policy.ts';
+import type { TypeProgram } from './program.ts';
 
 export type SourceKind =
   // Production render targets and the token sources they read.
@@ -33,6 +35,24 @@ export type Resolution =
   | { kind: 'file'; path: string; via: 'relative' | 'package' }
   | { kind: 'external'; package: string }
   | { kind: 'unresolved'; via: 'relative' | 'package'; reason: string };
+
+/** What the registry build would stage and describe, and what the catalogue found about its metadata. */
+export type RegistryInputs = {
+  /** Catalogue findings about item membership, references and shapes, located at a file and, when known, a line. */
+  findings: { code: string; file: string; line?: number; message: string }[];
+  sources: StagedSource[];
+  collisions: { source: string; staged: string; with: string }[];
+  plan: PlannedItem[];
+  /** Installable descriptors by item ID. */
+  descriptors: Map<string, { kind: string; path: string }>;
+};
+
+/** The resolved types a public API rule reads. */
+export type TypeInputs = {
+  program(roots: string[]): TypeProgram;
+  /** The one styling slot every public part accepts: the module that declares it and its exported type name. */
+  styleSlot: { path: string; name: string };
+};
 
 /** A staged module a production file may import through its package specifier, and the item that stages it. */
 export type Staged = { item: string; kind: 'token-source' | 'react-helper' | 'react-component'; specifier: string };
@@ -64,6 +84,10 @@ export type Scope = {
   unclaimed: { path: string; message: string }[];
   /** Headings of a repository document, for authority links; undefined when it does not exist. */
   anchors(document: string): Set<string> | undefined;
+  /** Registry staging and metadata, when the scope builds a registry. Only the workspace scope does. */
+  registry?: RegistryInputs;
+  /** Resolved types for the public API rule, when the scope can build a program. */
+  types?: TypeInputs;
   /** The typed exceptions file, when this scope reads one. Only the workspace scope does. */
   exceptions?: { path: string; text: string | undefined };
   /** Failures that keep the scope itself from being complete. */

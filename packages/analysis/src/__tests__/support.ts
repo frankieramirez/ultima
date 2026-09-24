@@ -21,6 +21,7 @@ export function source(path: string): string {
 /** The repository with some files replaced, added (a string) or removed (null). */
 export function overlay(base: Files, changes: Record<string, string | null>): Files {
   return {
+    ...(base.realpath && { realpath: (path: string) => (path in changes ? path : (base.realpath as (path: string) => string)(path)) }),
     read: (path) => (path in changes ? (changes[path] ?? undefined) : base.read(path)),
     list(directory) {
       const entries = new Map((base.list(directory) ?? []).map((entry) => [entry.name, entry.directory]));
