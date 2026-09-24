@@ -30,6 +30,7 @@ export default defineConfig({
     // One browser: a file that clicks and resizes the viewport does it to the page every other
     // file is rendering in, and a demo left under the moving pointer opens the Tooltip being swept.
     fileParallelism: false,
+    setupFiles: ['./src/__tests__/setup.ts'],
     include: ['src/__tests__/**/*.test.{ts,tsx}'],
     browser: {
       enabled: true,

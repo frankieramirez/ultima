@@ -1,4 +1,4 @@
-import { beforeEach } from 'vitest';
+import { afterAll, beforeEach } from 'vitest';
 import { cdp, page } from 'vitest/browser';
 
 /**
@@ -23,4 +23,14 @@ beforeEach(async () => {
   if (active instanceof HTMLElement && active !== document.body) {
     active.blur();
   }
+});
+
+/**
+ * Chromium holds each finished file's shared memory in TMPDIR (Playwright launches it with
+ * --disable-dev-shm-usage) until the renderer collects garbage, gigabytes over this suite. A full
+ * TMPDIR fails the next file's iframe load, which Vitest reports as "Cannot connect to the iframe".
+ * Vitest collects only once TMPDIR has under 4 GB free, so every file collects on its way out.
+ */
+afterAll(async () => {
+  await cdp().send('HeapProfiler.collectGarbage');
 });
