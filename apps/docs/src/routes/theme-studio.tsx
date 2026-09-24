@@ -59,12 +59,17 @@ const styles = stylex.create({
     marginInlineStart: 'auto',
   },
   actions: { display: 'flex', gap: space['--ult-space-4'] },
+  // Below the rail the body is the sheet's scroll region: the preview keeps its floor on top and
+  // the editor drawer scrolls up under it, so neither squeezes the other to nothing. It also holds
+  // the hidden status region, which would otherwise hang below the document and scroll it.
   body: {
     display: 'flex',
     flexDirection: { default: 'column', [breakpoints.RAIL]: 'row' },
     flexGrow: 1,
     minBlockSize: 0,
     minInlineSize: 0,
+    overflow: { default: 'auto', [breakpoints.RAIL]: 'visible' },
+    position: 'relative',
   },
   editor: {
     borderInlineEndColor: color['--ult-color-border'],
