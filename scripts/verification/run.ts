@@ -304,16 +304,18 @@ function writeReport(directory: string, report: Report) {
 
 /**
  * A child's environment: the caller's, minus what points package scripts back at the caller's checkout,
- * and minus NODE_TEST_CONTEXT, which would make a `node --test` check report to a test runner that
- * started this run instead of to its own reporters.
+ * minus NODE_TEST_CONTEXT, which would make a `node --test` check report to a test runner that
+ * started this run instead of to its own reporters, and with colour off. `FORCE_COLOR` turns
+ * picocolors on at any value, `0` included, so it goes and `NO_COLOR` comes in; the parsers in
+ * tool-reports.ts strip escape codes as well, for a tool that colours regardless.
  */
 export function childEnvironment(runId: string, source: string, tmp: string): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {};
   for (const [key, value] of Object.entries(process.env)) {
-    if (/^(npm_|PNPM_SCRIPT_SRC_DIR$|INIT_CWD$|OLDPWD$|NODE_TEST_CONTEXT$)/.test(key)) continue;
+    if (/^(npm_|PNPM_SCRIPT_SRC_DIR$|INIT_CWD$|OLDPWD$|NODE_TEST_CONTEXT$|FORCE_COLOR$)/.test(key)) continue;
     env[key] = value;
   }
-  return { ...env, PWD: source, TMPDIR: tmp, ULTIMA_VERIFY_RUN: runId, ULTIMA_VERIFY_SOURCE: source };
+  return { ...env, NO_COLOR: '1', PWD: source, TMPDIR: tmp, ULTIMA_VERIFY_RUN: runId, ULTIMA_VERIFY_SOURCE: source };
 }
 
 const emptyCounts = (): Record<CheckState, number> => ({ passed: 0, failed: 0, unavailable: 0, timed_out: 0, cancelled: 0, blocked: 0, skipped: 0, not_run: 0 });
