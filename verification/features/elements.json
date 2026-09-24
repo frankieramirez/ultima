@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "elements",
+  "title": "Shipped elements",
+  "summary": "The vendored ult-* custom elements as a consumer loads them: the built aggregate bundle and token CSS on the /elements.html fixture, in both color-mode sections.",
+  "aliases": [
+    "web components",
+    "custom elements",
+    "ult-",
+    "vanilla",
+    "no react",
+    "elements fixture"
+  ],
+  "contract": "docs/spec/ultima.md#the-fixture-page-and-the-first-consumer",
+  "items": [
+    "ult-button",
+    "ult-badge",
+    "ult-card",
+    "ult-code",
+    "ult-stat",
+    "ult-tabs",
+    "ult-tooltip",
+    "ult-table",
+    "ult-meter"
+  ],
+  "sourceRoots": [
+    "packages/elements/scripts"
+  ],
+  "extraDependencies": [
+    {
+      "path": "apps/docs/public/elements.html",
+      "reason": "The fixture page loads the built /elements/ultima.js bundle and /tokens.css by URL, which no import shows."
+    }
+  ],
+  "supporting": [
+    {
+      "path": "apps/docs/src/__tests__/elements.test.ts",
+      "reason": "Every element renders its proof part in both sections of the fixture, over HTTP, with axe."
+    }
+  ]
+}

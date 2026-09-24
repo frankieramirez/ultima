@@ -7,7 +7,7 @@
  *
  * Every check has an adapter in scripts/verification/adapters.ts: the static, type, palette and
  * non-browser suites (#460), the browser suites, builds and consumer install (#461), and the production
- * scenarios (#462; #463 completes the matrix), which wait on `docs-build`.
+ * scenarios (#462, the full matrix since #463), which wait on `docs-build`.
  */
 
 export type CheckId =
@@ -72,7 +72,7 @@ export type CheckDefinition = {
 
 const STATIC = { status: 'available', since: '#460 (static, type and unit checks)' } as const;
 const BROWSER = { status: 'available', since: '#461 (browser, build and install checks)' } as const;
-const PRODUCTION = { status: 'available', since: '#462 (Dialog and Studio pilot); #463 completes the matrix' } as const;
+const PRODUCTION = { status: 'available', since: '#462 (Dialog and Studio pilot); #463 (the full 26-cell matrix)' } as const;
 
 const FRESHNESS: CheckId[] = ['catalogue-freshness'];
 /** The read-only checks every writer waits for. */
@@ -322,12 +322,10 @@ export const CHECKS: readonly CheckDefinition[] = [
 
 /**
  * Release obligations no check can satisfy yet. While any remain, a release plan cannot pass and a release
- * run ends incomplete whatever its checks report, because a run only proves the scenarios registered so
- * far. #463 empties it when the full production matrix is registered.
+ * run ends incomplete whatever its checks report. #463 emptied it when the 26 required production cells
+ * were registered; `obligations.test.ts` (in `tooling-tests`) fails a release that loses one of them.
  */
-export const RELEASE_PENDING: readonly string[] = [
-  'the production matrix: only the Dialog and Studio pilot cells are registered, and #463 (Complete the production scenario matrix) registers the rest of the 26 required cells',
-];
+export const RELEASE_PENDING: readonly string[] = [];
 
 export const CHECK_BY_ID = new Map(CHECKS.map((check) => [check.id, check]));
 

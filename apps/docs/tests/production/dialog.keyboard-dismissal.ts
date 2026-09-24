@@ -7,7 +7,7 @@
 import assert from 'node:assert/strict';
 
 import { productionScenario } from '../../../../scripts/verification/production.ts';
-import { assertColor, focusSettlesInside, settles, shippedColor } from '../support/production.ts';
+import { assertColor, assertFits, focusSettlesInside, settles, shippedColor } from '../support/production.ts';
 
 export default productionScenario('dialog.keyboard-dismissal', 'production', async ({ page, variant, open, axe }) => {
   await open('/components/dialog');
@@ -16,6 +16,7 @@ export default productionScenario('dialog.keyboard-dismissal', 'production', asy
 
   assert.equal(await trigger.count(), 1, 'the page has one basic demo trigger');
   assert.equal(await dialog.count(), 0, 'the dialog starts closed');
+  await assertFits(page, trigger, `/components/dialog at ${variant.viewport} width`);
   await axe('page with the dialog closed');
 
   await trigger.focus();

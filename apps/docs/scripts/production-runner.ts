@@ -73,6 +73,8 @@ export type CellResult = {
   pageErrors: string[];
   consoleErrors: string[];
   failedRequests: string[];
+  /** Browser permissions the binding granted to this cell's context, beyond the default of none. */
+  permissions: string[];
   /** Run-relative evidence: a settled screenshot for a pass; trace, screenshot, DOM and ARIA snapshot for a failure. */
   artifacts: { kind: 'screenshot' | 'trace' | 'dom' | 'aria'; path: string; label: string }[];
   missingArtifacts: { kind: string; reason: string }[];
@@ -103,6 +105,8 @@ export type RunnerResult = {
 };
 
 class Readiness extends Error {}
+/** What a page must reach before a binding may use it: the docs application, or a static element fixture. */
+type ReadyKind = 'application' | 'fixture';
 class Deadline extends Error {}
 
 /** The installed axe-core, which the page runs; never a second copy. */
@@ -129,6 +133,7 @@ function blank(cell: Cell): CellResult {
     pageErrors: [],
     consoleErrors: [],
     failedRequests: [],
+    permissions: [],
     artifacts: [],
     missingArtifacts: [],
   };
@@ -273,8 +278,11 @@ async function runCell(browser: Browser, cell: Cell, record: CellResult, options
 
     const assetProblems = () => [...record.failedRequests, ...record.pageErrors.map((error) => `page error: ${error}`)];
 
-    /** The document, the main landmark, the self-hosted face and a clean load; a 200 alone is not ready. */
-    const ready = async (response: Response | null, what: string) => {
+    /**
+     * The document, the main landmark, the fonts and a clean load; a 200 alone is not ready. The application
+     * also needs its self-hosted face; a static fixture needs every `ult-*` tag it uses to be defined.
+     */
+    const ready = async (response: Response | null, what: string, kind: ReadyKind) => {
       if (!response || response.status() !== 200) throw new AssertionError({ message: `${what} answered ${response?.status() ?? 'nothing'}, not 200` });
       try {
         await poll(() => live.getByRole('main').first().isVisible(), limits.conditionMs * 2, 'the main landmark');
@@ -283,15 +291,24 @@ async function runCell(browser: Browser, cell: Cell, record: CellResult, options
           limits.conditionMs,
           () => new Readiness('document.fonts.ready did not settle'),
         );
-        await poll(
-          () =>
-            live.evaluate(
-              (family) => [...document.fonts].some((face) => face.family.replace(/["']/g, '') === family && face.status === 'loaded'),
-              REQUIRED_FACE,
-            ),
-          limits.conditionMs,
-          `the self-hosted ${REQUIRED_FACE} face`,
-        );
+        if (kind === 'application') {
+          await poll(
+            () =>
+              live.evaluate(
+                (family) => [...document.fonts].some((face) => face.family.replace(/["']/g, '') === family && face.status === 'loaded'),
+                REQUIRED_FACE,
+              ),
+            limits.conditionMs,
+            `the self-hosted ${REQUIRED_FACE} face`,
+          );
+        } else {
+          const tags = await live.evaluate(() => [...new Set([...document.querySelectorAll('*')].map((element) => element.localName).filter((name) => name.startsWith('ult-')))].sort());
+          if (tags.length === 0) throw new AssertionError({ message: `${what} uses no ult-* element, so it is not an element fixture` });
+          const undefinedTags = () => live.evaluate((names) => names.filter((name) => !customElements.get(name)), tags);
+          await poll(async () => (await undefinedTags()).length === 0, limits.conditionMs, 'every ult-* element definition').catch(async (error) => {
+            throw new Readiness(`${(error as Error).message}: ${(await undefinedTags().catch(() => tags)).join(', ')} never defined`);
+          });
+        }
       } catch (error) {
         // A broken build shows up as a failed asset or page error before readiness gives up: that is a defect, not a hang.
         const problems = assetProblems();
@@ -314,10 +331,12 @@ async function runCell(browser: Browser, cell: Cell, record: CellResult, options
       }
     };
 
-    const open = async (pathname: string) => {
+    let lastKind: ReadyKind = 'application';
+    const visit = async (pathname: string, kind: ReadyKind) => {
       const url = new URL(pathname, options.baseUrl).href;
       record.url = url;
-      await ready(await navigate(() => live.goto(url, { waitUntil: 'load' }), pathname), pathname);
+      lastKind = kind;
+      await ready(await navigate(() => live.goto(url, { waitUntil: 'load' }), pathname), pathname, kind);
       if (!checkedStorage) {
         checkedStorage = true;
         record.initialStorage = (await live.evaluate(() => (window as unknown as { __ultimaInitialStorage?: { local: number; session: number } }).__ultimaInitialStorage)) ?? null;
@@ -326,11 +345,18 @@ async function runCell(browser: Browser, cell: Cell, record: CellResult, options
         }
       }
     };
+    const open = (pathname: string) => visit(pathname, 'application');
+    const openFixture = (pathname: string) => visit(pathname, 'fixture');
 
     const reload = async () => {
       if (!checkedStorage) throw new AssertionError({ message: 'reload before open: the cell has no page to reload' });
       const what = `reloading ${new URL(live.url()).pathname}`;
-      await ready(await navigate(() => live.reload({ waitUntil: 'load' }), what), what);
+      await ready(await navigate(() => live.reload({ waitUntil: 'load' }), what), what, lastKind);
+    };
+
+    const grantClipboard = async () => {
+      await context?.grantPermissions(['clipboard-read', 'clipboard-write'], { origin });
+      record.permissions.push(`clipboard-read, clipboard-write for ${origin}`);
     };
 
     const axe = async (state: string) => {
@@ -346,7 +372,7 @@ async function runCell(browser: Browser, cell: Cell, record: CellResult, options
       }
     };
 
-    const productionContext: ProductionContext = { page: live, variant: cell.variant, open, reload, axe };
+    const productionContext: ProductionContext = { page: live, variant: cell.variant, open, openFixture, reload, grantClipboard, axe };
     const cancelled = new Promise<never>((_, reject) => stop.signal.addEventListener('abort', () => reject(new Deadline('cancelled')), { once: true }));
     await within(Promise.race([cell.run(productionContext), cancelled]), options.cellMs - (performance.now() - begun), () => new Deadline(`the cell exceeded its ${options.cellMs}ms deadline`));
     if (record.axe.length === 0) throw new Readiness('the binding ran no axe check, so accessibility is unproven');

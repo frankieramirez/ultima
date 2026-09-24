@@ -355,7 +355,11 @@ exit 1`);
 });
 
 describe('a release run with every check passed', () => {
-  test('still ends incomplete while release obligations are pending: a build proves no interaction', async () => {
+  test('nothing is pending once the production matrix is registered', () => {
+    assert.deepEqual(RELEASE_PENDING, []);
+  });
+
+  test('still ends incomplete while a release obligation is pending: a build proves no interaction', async () => {
     const fixture = mkdtempSync(join(scratch, 'repository-'));
     write(fixture, {
       '.gitignore': '.scratch/\n',
@@ -375,7 +379,7 @@ console.log(${JSON.stringify(`${REGISTRY_LOG}\n${VITE_LOG}`)});
       selectors: [],
       scope: 'release',
       checks: [planned('docs-build', { argv: [process.execPath, 'build.mjs'], prerequisites: [], after: [] })],
-      outcome: { pending: [...RELEASE_PENDING] },
+      outcome: { pending: ['the production matrix: a required scenario is not registered yet'] },
     } as unknown as Plan;
     const report = await executeRun({
       root: fixture,
@@ -393,7 +397,6 @@ console.log(${JSON.stringify(`${REGISTRY_LOG}\n${VITE_LOG}`)});
     const docs = report.checks.find((entry) => entry.id === 'docs-build');
     assert.equal(docs?.status, 'passed', docs?.reason ?? '');
     assert.ok(docs?.evidence.includes(`artifacts/${BUILD_MANIFEST}`));
-    assert.ok(RELEASE_PENDING.length > 0, 'until #463 registers the full matrix');
     assert.equal(report.exit, EXIT.incomplete);
     assert.match(report.summary, /every check passed, but a release cannot pass while obligations are pending/);
     assert.match(report.scope.note, /Pending, so it cannot pass: the production matrix/);

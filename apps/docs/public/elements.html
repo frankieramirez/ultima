@@ -13,8 +13,10 @@
         background: var(--ult-color-surface);
         color: var(--ult-color-text);
       }
+      /* One shrinkable track, so a wide specimen scrolls inside its own container instead of widening the page. */
       main {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
         gap: var(--ult-space-6);
         max-width: 60rem;
         margin-inline: auto;
@@ -22,6 +24,7 @@
       }
       section {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
         gap: var(--ult-space-4);
         padding: var(--ult-space-6);
         background: var(--ult-color-surface);

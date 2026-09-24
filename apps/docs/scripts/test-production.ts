@@ -7,9 +7,8 @@
  *
  * It narrows the release plan to those two checks and runs `docs-build` through the package's own
  * `build` script, which carries the catalogue preflight and `registry:build` that the release DAG models
- * as separate prerequisites. A pass here covers the registered production cases for the captured
- * snapshot only; it is not a release result, and the production gate stays incomplete until every
- * required production group is registered (#463).
+ * as separate prerequisites. A pass here covers the registered production cases, the full matrix since
+ * #463, for the captured snapshot only; it is not a release result, which also needs every other check.
  */
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -35,8 +34,8 @@ Needs pnpm, the npm store or network for the snapshot's install, Chromium and a 
 
 Exits 0 when every registered case passed, 1 on a proven failure, 2 on usage, 3 incomplete, 130/143
 cancelled. The report is <run>/report.json; per-case images, traces and the server log are under
-<run>/artifacts/production/. This is not a release result: only the pilot's production scenarios are
-registered so far.`;
+<run>/artifacts/production/. This is not a release result: a release also runs every other check,
+consumer installation included (\`pnpm verify release\`).`;
 
 /** The release plan, narrowed to the production build and its scenarios. */
 export function productionPlan(source: string): Plan | { failure: string } {
@@ -127,7 +126,7 @@ export async function runStandalone(argv: string[], extra: StandaloneOptions = {
     graceMs: extra.graceMs,
   });
   const production = report.checks.find((entry) => entry.id === 'production-scenarios');
-  const gate = `production gate: ${production?.executed.length ?? 0} of ${production?.expected.length ?? 0} registered case(s) reached a verdict; the full gate stays incomplete until every required production group is registered (#463).`;
+  const gate = `production gate: ${production?.executed.length ?? 0} of ${production?.expected.length ?? 0} registered case(s) reached a verdict; a release result also needs every other check (pnpm verify release).`;
   return { exit: report.exit ?? EXIT.incomplete, stdout: `${parsed.json ? JSON.stringify(report, null, 2) : `${formatReport(report)}\n${gate}`}\n`, stderr: '', report };
 }
 

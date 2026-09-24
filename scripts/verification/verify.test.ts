@@ -35,8 +35,16 @@ describe('pnpm verify list', () => {
     assert.equal(exit, 0);
     assert.equal(document.schemaVersion, 1);
     assert.equal(document.status, 'discovered');
-    assert.deepEqual(document.features.map((f: { id: string }) => f.id), ['dialog', 'theme-studio']);
-    assert.deepEqual(document.scenarios.map((s: { id: string }) => s.id), ['dialog.keyboard-dismissal', 'theme-studio.draft-history']);
+    assert.deepEqual(document.features.map((f: { id: string }) => f.id), ['catalogue', 'dialog', 'elements', 'motion', 'site-navigation', 'theme-studio']);
+    assert.deepEqual(document.scenarios.map((s: { id: string }) => s.id), [
+      'catalogue.filter-and-demo',
+      'dialog.keyboard-dismissal',
+      'elements.fixture-interactions',
+      'motion.reduced-loop',
+      'site-navigation.route-and-mode',
+      'theme-studio.draft-history',
+      'theme-studio.pane-boundaries',
+    ]);
     assert.match(document.sourceManifest.digest, /^[0-9a-f]{64}$/);
     assert.deepEqual(
       document.modes.filter((m: { status: string }) => m.status === 'available').map((m: { mode: string }) => m.mode),
@@ -127,7 +135,7 @@ describe('pnpm verify describe', () => {
 
   test('a feature: contract, sources, scenarios and supporting suites', () => {
     const { document } = json(['describe', 'feature', 'theme-studio']);
-    assert.deepEqual(document.feature.scenarios.map((s: { id: string }) => s.id), ['theme-studio.draft-history']);
+    assert.deepEqual(document.feature.scenarios.map((s: { id: string }) => s.id), ['theme-studio.draft-history', 'theme-studio.pane-boundaries']);
     assert.deepEqual(
       document.feature.supporting.map((s: { path: string }) => s.path),
       [
@@ -142,7 +150,7 @@ describe('pnpm verify describe', () => {
     const { exit, document } = json(['describe', 'scenario', 'dialog.escape']);
     assert.equal(exit, 2);
     assert.equal(document.status, 'usage-error');
-    assert.match(document.message, /available: dialog\.keyboard-dismissal, theme-studio\.draft-history/);
+    assert.match(document.message, /available: catalogue\.filter-and-demo, dialog\.keyboard-dismissal, .*, theme-studio\.pane-boundaries$/);
     assert.equal(json(['describe', 'feature', 'studio']).exit, 2);
     assert.equal(json(['describe', 'item', 'dialog']).exit, 2);
   });
