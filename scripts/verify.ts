@@ -5,10 +5,9 @@
  * application or test module. The execution modes resolve a verification plan; `--plan` prints it and
  * exits 0 with status `planned`. Only Git runs, to read the change set, and no check process starts.
  * Without `--plan` a mode executes: it captures the checkout into its own run directory, plans from
- * those bytes and runs the check DAG there (scripts/verification/run.ts). The static, type, palette,
- * browser suite, build and consumer install checks execute (scripts/verification/adapters.ts); a
- * production scenario check has no adapter yet, is `unavailable`, and keeps any run that selects it at
- * exit 3.
+ * those bytes and runs the check DAG there (scripts/verification/run.ts). Every check has an adapter
+ * (scripts/verification/adapters.ts): static, type, palette, browser suite, build, consumer install and
+ * the registered production scenarios. Discovery reports these modes as available, with what they run.
  *
  * Exits: 0 discovery, a plan or a passed run; 1 malformed records or a proven validation failure; 2 usage
  * or an unknown ID; 3 incomplete; 130 and 143 cancelled by SIGINT and SIGTERM.
@@ -73,11 +72,15 @@ Exits: 0 discovered, planned or passed; 1 malformed records or a proven validati
 unknown ID; 3 incomplete (unavailable adapter or prerequisite, timeout, crash, capture failure or a
 changed source); 130 and 143 cancelled by SIGINT and SIGTERM.`;
 
-const UNAVAILABLE: Record<string, string> = {
-  component: 'runs in an isolated snapshot; static, type, browser, build and install checks execute, and production scenarios land with #462',
-  feature: 'runs in an isolated snapshot; static, type, browser, build and install checks execute, and production scenarios land with #462',
-  changed: 'runs in an isolated snapshot; static, type, browser, build and install checks execute, and production scenarios land with #462',
-  release: 'runs in an isolated snapshot; the full release gate needs every adapter through #464',
+/** The execution modes and what a run covers; `--plan` names the exact checks for a scope. */
+const MODES: Record<Mode, string> = {
+  component:
+    'an isolated run: architecture, freshness and typecheck, then the proof-bar suites, builds, consumer smoke and production cases the plan selects for the item and what depends on it',
+  feature:
+    'an isolated run: every registered case of the feature, production included, its supporting suites, and the architecture, type, build and install checks the plan selects',
+  changed:
+    'an isolated run of the checks the change set selects against the merge base; an unknown base or mapping broadens it to release',
+  release: 'an isolated run of every check and whole suite, consumer smoke and the full 26-cell production matrix',
 };
 
 class UsageError extends Error {}
@@ -95,7 +98,9 @@ const PACKAGES: Record<Exclude<Target, 'production'>, { name: string; directory:
 /** The existing runner commands that execute a suite file today; they run every test in it. */
 function suiteCommands(target: Target, path: string, feature: string): Command[] {
   if (target === 'production') {
-    return [command(['pnpm', 'verify', 'feature', feature], 'planned', 'the production runner lands with #462; this binding has not executed')];
+    return [
+      command(['pnpm', 'verify', 'feature', feature], 'available', `runs this binding's production cases with every other case of ${feature} against a production build`),
+    ];
   }
   const { name, directory } = PACKAGES[target];
   const file = path.slice(directory.length + 1);
@@ -148,10 +153,10 @@ function registrationOf(model: VerificationModel, item: ItemSummary) {
 }
 
 function itemCommands(item: ItemSummary): Command[] {
-  const planned = command(['pnpm', 'verify', 'component', item.id], 'planned', UNAVAILABLE.component as string);
-  if (item.kind === 'react' && item.test) return [planned, ...suiteCommands('ui-vitest', item.test, '')];
-  if (item.kind === 'element' && item.test) return [planned, ...suiteCommands('elements-vitest', item.test, '')];
-  return [planned];
+  const scoped = command(['pnpm', 'verify', 'component', item.id], 'available', MODES.component);
+  if (item.kind === 'react' && item.test) return [scoped, ...suiteCommands('ui-vitest', item.test, '')];
+  if (item.kind === 'element' && item.test) return [scoped, ...suiteCommands('elements-vitest', item.test, '')];
+  return [scoped];
 }
 
 type ItemDetail = { kind: string; sources: string[]; route: string | null; registration: ReturnType<typeof registrationOf>; commands: Command[] };
@@ -208,7 +213,7 @@ function scenarioDocument(model: VerificationModel, scenario: JoinedScenario) {
       commands: slot.binding ? suiteCommands(slot.target, slot.binding.path, feature.id) : [],
     })),
     scope: {
-      command: command(['pnpm', 'verify', 'feature', feature.id], 'planned', UNAVAILABLE.feature as string),
+      command: command(['pnpm', 'verify', 'feature', feature.id], 'available', MODES.feature),
       note: `There is no single-scenario mode. The feature command runs every required case of ${feature.id} (${feature.scenarios.join(', ')}) plus its dependency checks, so its result is never a single-case pass.`,
     },
   };
@@ -239,8 +244,8 @@ function featureDocument(model: VerificationModel, feature: JoinedFeature) {
       commands: suiteCommands((Object.entries(TARGET_DIRECTORIES).find(([, d]) => suite.path.startsWith(`${d}/`))?.[0] ?? 'docs-vitest') as Target, suite.path, feature.id),
     })),
     scope: {
-      command: command(['pnpm', 'verify', 'feature', feature.id], 'planned', UNAVAILABLE.feature as string),
-      note: 'Runs every registered scenario case of this feature plus its item proof-bar, supporting suites and build/install checks once available.',
+      command: command(['pnpm', 'verify', 'feature', feature.id], 'available', MODES.feature),
+      note: 'Runs every registered scenario case of this feature plus its item proof-bar, supporting suites and build/install checks.',
     },
   };
 }
@@ -249,7 +254,7 @@ function modes() {
   return [
     { mode: 'list', status: 'available' },
     { mode: 'describe', status: 'available' },
-    ...Object.entries(UNAVAILABLE).map(([mode, note]) => ({ mode, status: 'adapters-partial', note })),
+    ...Object.entries(MODES).map(([mode, note]) => ({ mode, status: 'available', note })),
   ];
 }
 
@@ -411,7 +416,7 @@ function dispatch(argv: string[], root: string): Output | Execution {
     return out({ command: 'help', status: 'help', modes: modes() }, USAGE);
   }
 
-  if (mode in UNAVAILABLE) return planMode(mode as Mode, rest, root, out);
+  if (mode in MODES) return planMode(mode as Mode, rest, root, out);
 
   const { model, catalogueDiagnostics, diagnostics, sourceManifest } = discover(root);
   const invalid: (VerificationDiagnostic | { code: string; path: string; message: string })[] = [...catalogueDiagnostics, ...diagnostics];

@@ -48,7 +48,7 @@ describe('pnpm verify list', () => {
     assert.match(document.sourceManifest.digest, /^[0-9a-f]{64}$/);
     assert.deepEqual(
       document.modes.filter((m: { status: string }) => m.status === 'available').map((m: { mode: string }) => m.mode),
-      ['list', 'describe'],
+      ['list', 'describe', 'component', 'feature', 'changed', 'release'],
     );
     assert.ok(document.checks.some((c: { id: string; adapter: { status: string } }) => c.id === 'production-scenarios' && c.adapter.status === 'available'));
   });
@@ -83,7 +83,7 @@ describe('pnpm verify list', () => {
     assert.deepEqual(
       top.commands.map((c: { display: string; status: string }) => [c.display, c.status]),
       [
-        ['pnpm verify component date-picker', 'planned'],
+        ['pnpm verify component date-picker', 'available'],
         ['pnpm --filter @ultima/ui exec vitest run src/__tests__/date-picker.test.tsx', 'available'],
       ],
     );
@@ -117,7 +117,12 @@ describe('pnpm verify describe', () => {
     assert.equal(described.targets[1].cases.length, 4);
     assert.ok(described.targets.every((t: { executed: boolean }) => t.executed === false));
     assert.equal(described.scope.command.display, 'pnpm verify feature dialog');
-    assert.equal(described.scope.command.status, 'planned');
+    assert.equal(described.scope.command.status, 'available');
+    const production = described.targets.find((t: { target: string }) => t.target === 'production');
+    assert.deepEqual(
+      production.commands.map((c: { display: string; status: string }) => [c.display, c.status]),
+      [['pnpm verify feature dialog', 'available']],
+    );
     assert.match(described.scope.note, /no single-scenario mode/);
   });
 
@@ -144,6 +149,22 @@ describe('pnpm verify describe', () => {
         'apps/docs/src/__tests__/theme-studio-parity.test.tsx',
       ],
     );
+  });
+
+  test('reports no shipped execution mode as planned, in JSON or plain text', () => {
+    const { document: listed } = json(['list']);
+    const documents = [
+      listed,
+      ...listed.features.map((f: { id: string }) => json(['describe', 'feature', f.id]).document),
+      ...listed.scenarios.map((s: { id: string }) => json(['describe', 'scenario', s.id]).document),
+      json(['list', '--search', 'the picker broke']).document,
+    ];
+    const text = JSON.stringify(documents);
+    assert.doesNotMatch(text, /"status":"planned"/);
+    assert.doesNotMatch(text, /lands with #|once available/);
+    for (const argv of [['describe', 'feature', 'dialog'], ['describe', 'scenario', 'dialog.keyboard-dismissal'], ['list', '--search', 'dialog']]) {
+      assert.doesNotMatch(run(argv, root).stdout, /\(planned\)/, argv.join(' '));
+    }
   });
 
   test('an unknown ID exits 2 with the available choices', () => {
