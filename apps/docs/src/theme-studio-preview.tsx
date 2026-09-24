@@ -66,6 +66,7 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     flexGrow: 1,
+    flexShrink: { default: 0, [breakpoints.RAIL]: 1 },
     gap: space['--ult-space-6'],
     minBlockSize: 0,
     minInlineSize: 0,
@@ -101,12 +102,13 @@ const styles = stylex.create({
     minBlockSize: 0,
     minInlineSize: 0,
   },
+  // Below the rail each pane keeps a floor, so the sheet scrolls rather than collapsing the canvas.
   pane: {
     display: 'flex',
     flexBasis: 0,
     flexDirection: 'column',
     flexGrow: 1,
-    minBlockSize: 0,
+    minBlockSize: { default: '16rem', [breakpoints.RAIL]: 0 },
     minInlineSize: 0,
     position: 'relative',
   },

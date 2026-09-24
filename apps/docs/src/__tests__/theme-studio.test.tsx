@@ -502,6 +502,31 @@ test('below 840px the editor becomes a bottom sheet with a horizontal group sele
   expect(dark.getBoundingClientRect().bottom).toBeLessThanOrEqual(light.getBoundingClientRect().top + 1);
 });
 
+test('below 840px the preview canvas keeps its height and the sheet scrolls to the editor', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  const dark = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const pane = dark.getBoundingClientRect();
+  expect(pane.height).toBeGreaterThanOrEqual(192);
+  expect(pane.top).toBeGreaterThanOrEqual(0);
+  expect(pane.bottom).toBeLessThanOrEqual(window.innerHeight);
+  expect(pane.bottom).toBeLessThanOrEqual(editor.getBoundingClientRect().top + 1);
+
+  const sheet = editor.parentElement!;
+  expect(sheet.scrollHeight).toBeGreaterThan(sheet.clientHeight);
+  editor.scrollIntoView({ block: 'end' });
+  expect(editor.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight + 1);
+  expect(document.documentElement.scrollHeight).toBeLessThanOrEqual(window.innerHeight);
+
+  await userEvent.click(screen.getByRole('button', { name: 'Compare' }).element());
+  for (const name of ['Dark preview', 'Light preview']) {
+    expect(screen.getByRole('region', { name }).element().getBoundingClientRect().height).toBeGreaterThanOrEqual(192);
+  }
+});
+
 test('below 840px the rail keeps the group header fully visible in a usable scroll region', async () => {
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
