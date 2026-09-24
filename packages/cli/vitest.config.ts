@@ -3,11 +3,17 @@ import { fileURLToPath } from 'node:url';
 
 import { defineConfig } from 'vitest/config';
 
+import { bundledAuthorized, bundledCatalogue, bundledTokens } from './scripts/bundled.ts';
 import { supportedRanges } from './scripts/supported-ranges.ts';
+
+const repository = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
 export default defineConfig({
   define: {
-    __ULTIMA_SUPPORTED_RANGES__: JSON.stringify(supportedRanges(join(dirname(fileURLToPath(import.meta.url)), '../..'))),
+    __ULTIMA_SUPPORTED_RANGES__: JSON.stringify(supportedRanges(repository)),
+    __ULTIMA_CATALOGUE__: JSON.stringify(bundledCatalogue(repository)),
+    __ULTIMA_TOKENS__: JSON.stringify(bundledTokens(repository)),
+    __ULTIMA_AUTHORIZED__: JSON.stringify(bundledAuthorized()),
   },
   test: {
     include: ['src/__tests__/**/*.test.ts'],

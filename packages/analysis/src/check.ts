@@ -1,6 +1,7 @@
 // One full static run over a scope. docs/spec/agent-infrastructure.md, Engine and command.
 import { type Diagnostic, type Report, SCHEMA_VERSION, compareDiagnostics, exitCode } from './diagnostic.ts';
 import { applyExceptions } from './exceptions.ts';
+import './mdx.ts';
 import { ruleStatuses } from './rules.ts';
 import { checkApi } from './rules/api.ts';
 import { createContext } from './rules/context.ts';

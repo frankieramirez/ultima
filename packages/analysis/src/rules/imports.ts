@@ -29,6 +29,8 @@ const LABEL: Record<SourceKind, string> = {
   declarations: 'a declaration file',
   generated: 'generated output',
   fixture: 'a checker fixture',
+  app: 'consumer code',
+  stylesheet: 'a consumer stylesheet',
 };
 
 /** What production code may never reach, whatever the spelling. */

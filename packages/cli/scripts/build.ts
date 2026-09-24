@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 
 import { setupItems } from '../../../registry/items.config.ts';
+import { bundledAuthorized, bundledCatalogue, bundledTokens } from './bundled.ts';
 import { supportedRanges } from './supported-ranges.ts';
 
 const packageDir = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -45,6 +46,9 @@ await build({
     __ULTIMA_COMMIT__: JSON.stringify(commit),
     __ULTIMA_SPEC_LINES__: JSON.stringify(specLines()),
     __ULTIMA_SUPPORTED_RANGES__: JSON.stringify(supportedRanges(join(packageDir, '../..'))),
+    __ULTIMA_CATALOGUE__: JSON.stringify(bundledCatalogue(join(packageDir, '../..'))),
+    __ULTIMA_TOKENS__: JSON.stringify(bundledTokens(join(packageDir, '../..'))),
+    __ULTIMA_AUTHORIZED__: JSON.stringify(bundledAuthorized()),
   },
   logLevel: 'warning',
 });

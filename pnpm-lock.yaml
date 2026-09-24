@@ -161,6 +161,9 @@ importers:
       '@types/node':
         specifier: ^26.5.0
         version: 26.5.0
+      '@ultima/analysis':
+        specifier: workspace:*
+        version: link:../analysis
       esbuild:
         specifier: 0.28.2
         version: 0.28.2

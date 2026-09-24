@@ -210,6 +210,12 @@ assert_doctor_passes() {
   node "$ROOT/packages/cli/dist/cli.js" doctor --cwd "$1"
 }
 
+# docs/spec/ultima.md, Check: the installed catalogue has no blocking finding, from the bundled
+# catalogue alone.
+assert_check_passes() {
+  node "$ROOT/packages/cli/dist/cli.js" check --cwd "$1"
+}
+
 # docs/spec/ultima.md, Versioning and drift, Proof: a fresh install reports every item current.
 assert_status_current() {
   node "$ROOT/packages/cli/dist/cli.js" status --json --cwd "$1" >"$WORK/status.json"
@@ -393,6 +399,9 @@ import { ultimaStylex } from './ultima.vite.ts'"
   step "vite: ultima status"
   assert_status_current "$app"
 
+  step "vite: ultima check"
+  assert_check_passes "$app"
+
   step "vite: ultima diff"
   assert_diff_shows_only_the_edit "$app/src" "$app"
 }
@@ -435,6 +444,9 @@ import "./ultima.css";'
 
   step "next: ultima status"
   assert_status_current "$app"
+
+  step "next: ultima check"
+  assert_check_passes "$app"
 
   step "next: ultima diff"
   assert_diff_shows_only_the_edit "$app" "$app"

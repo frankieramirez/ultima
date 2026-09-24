@@ -76,7 +76,10 @@ export function Section({
   return (
     <section>
       <Separator style={headings.rule} />
-      <h2 {...stylex.props(headings.h2)}>{title}</h2>
+      {/* The id is the anchor `ultima check` links a finding to, such as /tokens#color. */}
+      <h2 id={title.toLowerCase().replace(/[^a-z0-9]+/g, "-")} {...stylex.props(headings.h2)}>
+        {title}
+      </h2>
       {children}
     </section>
   );

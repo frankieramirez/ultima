@@ -1,5 +1,5 @@
 import type { Diagnostic } from '../diagnostic.ts';
-import { RULES } from '../rules.ts';
+import { APP_RULES, RULES } from '../rules.ts';
 import type { Scope } from '../scope.ts';
 import { type Parsed, parseSource, positionAt } from '../sources.ts';
 
@@ -15,6 +15,8 @@ export type Finding = {
   message: string;
   repair: string;
   link: string;
+  /** Overrides the rule's own severity: `ULT-ANALYSIS-001` against an advisory rule is itself advisory. */
+  severity?: Diagnostic['severity'];
 };
 
 export type Context = {
@@ -29,17 +31,18 @@ export type Context = {
 
 export function severityOf(ruleId: string): Diagnostic['severity'] {
   if (ruleId === 'ULT-ANALYSIS-001') return 'incomplete';
-  return (RULES as Record<string, { status: string }>)[ruleId]?.status === 'advisory' ? 'advisory' : 'blocking';
+  const rule = (RULES as Record<string, { status: string }>)[ruleId] ?? (APP_RULES as Record<string, { status: string }>)[ruleId];
+  return rule?.status === 'advisory' ? 'advisory' : 'blocking';
 }
 
 export function createContext(scope: Scope): Context {
   const diagnostics: Diagnostic[] = [];
   const parsedFiles = new Map<string, Parsed | undefined>();
 
-  const report = ({ parsed, start, end, ...rest }: Finding) => {
+  const report = ({ parsed, start, end, severity, ...rest }: Finding) => {
     diagnostics.push({
       ruleId: rest.ruleId,
-      severity: severityOf(rest.ruleId),
+      severity: severity ?? severityOf(rest.ruleId),
       file: parsed.path,
       start: positionAt(parsed.text, start),
       end: positionAt(parsed.text, end),
