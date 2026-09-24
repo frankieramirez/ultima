@@ -3,6 +3,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { diskFiles } from '../../../../scripts/catalogue/files.ts';
+import { stagedSources } from '../../../../scripts/catalogue/staging.ts';
 import { supportedRanges } from '../../scripts/supported-ranges.ts';
 
 const setupItems = join(dirname(fileURLToPath(import.meta.url)), '../../../../registry/static');
@@ -150,4 +152,26 @@ export function editComponents(root: string, edit: (json: Record<string, unknown
   const json = JSON.parse(readFileSync(file, 'utf8'));
   edit(json);
   writeFileSync(file, `${JSON.stringify(json, null, 2)}\n`);
+}
+
+const REPOSITORY = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
+
+/**
+ * Every staged source written where shadcn installs it, its imports rewritten to the default aliases
+ * as the registry build and shadcn do together: the whole catalogue, as a consumer owns it.
+ */
+export function installCatalogue(root: string, directories: { ui: string; lib: string }): string {
+  for (const { source, staged } of stagedSources(diskFiles(REPOSITORY)).sources) {
+    const text = readFileSync(join(REPOSITORY, source), 'utf8')
+      .replace(/(['"])@ultima\/(tokens|ui\/lib)\//g, '$1@/lib/')
+      .replace(/(['"])@ultima\/ui\//g, '$1@/components/ui/');
+    const [, folder, name] = staged.split('/') as [string, 'ui' | 'lib', string];
+    write(root, `${directories[folder]}/${name}`, text);
+  }
+  return root;
+}
+
+/** A checker fixture from packages/analysis/fixtures, by its path there. */
+export function analysisFixture(path: string): string {
+  return readFileSync(join(REPOSITORY, 'packages/analysis/fixtures', path), 'utf8');
 }

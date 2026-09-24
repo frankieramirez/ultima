@@ -21,7 +21,7 @@ describe('consumerScope', () => {
     if ('incomplete' in scope) throw new Error(scope.incomplete.message);
     expect(scope.aliases).toEqual({ ui: '@/components/ui', lib: '@/lib' });
     expect(scope.directories).toEqual({ ui: join(root, 'src/components/ui'), lib: join(root, 'src/lib') });
-    expect(scope.resolve('@/components/ui/button', join(root, 'src/App.tsx'))).toBe(join(root, 'src/components/ui/button.tsx'));
+    expect(scope.resolveFile('@/components/ui/button', join(root, 'src/App.tsx'))).toBe(join(root, 'src/components/ui/button.tsx'));
   });
 
   it('takes --project over tsconfig.json', () => {

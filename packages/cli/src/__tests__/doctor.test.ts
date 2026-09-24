@@ -603,9 +603,9 @@ describe('invocation', () => {
     expect(result.stderr).toContain('package.json');
   });
 
-  it.each(['check'])('says %s is not available in this build', async (command) => {
-    const result = await run([command]);
+  it('refuses a flag check does not take', async () => {
+    const result = await run(['check', '--target', 'vite']);
     expect(result.code).toBe(2);
-    expect(result.stderr).toContain('not available in this build');
+    expect(result.stderr).toContain('check takes no --target');
   });
 });

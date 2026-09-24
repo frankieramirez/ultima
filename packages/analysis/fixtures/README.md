@@ -8,3 +8,7 @@ typecheck excludes it.
 `consumer/` holds two consumer programs the API tests compile against the real public types: `valid.tsx`
 must compile clean, and every line of `invalid.tsx` marked `expect TS<code>` must receive that diagnostic
 and no other.
+
+`app/` holds consumer code for `ultima check`. The CLI's tests install the whole catalogue into a smoke
+project, copy these files under `src/fixtures/`, and assert what the consumer rules report for each one,
+and that `check --files <file>` returns exactly what the full run returns for that file.

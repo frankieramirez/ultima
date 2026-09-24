@@ -74,6 +74,32 @@ export const RULES = {
 
 export type RuleId = keyof typeof RULES;
 
+const SITE = 'https://ultima.systems';
+/** The consumer contract's owning section. Consumer output links outside the repository, so it is absolute. */
+export const CHECK_SPEC = 'https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md#check';
+
+// The consumer rule family: docs/spec/ultima.md, Consumer CLI, Check. `check` enables these and
+// `ULT-ANALYSIS-001`, never a contributor family, and links each to the docs-site page stating its contract.
+export const APP_RULES = {
+  'ULT-APP-PALETTE-001': {
+    status: 'blocking',
+    scope: 'Consumer code reading a palette scale',
+    link: `${SITE}/tokens#color`,
+  },
+  'ULT-APP-PAINT-001': {
+    status: 'advisory',
+    scope: 'Paint in consumer stylex.create and stylex.keyframes tables and literal JSX style objects',
+    link: `${SITE}/tokens`,
+  },
+  'ULT-APP-SUPPRESSION-001': {
+    status: 'advisory',
+    scope: 'ultima-check-ignore comments in consumer code',
+    link: CHECK_SPEC,
+  },
+} as const satisfies Record<string, Omit<RuleStatus, 'id'>>;
+
+export type AppRuleId = keyof typeof APP_RULES;
+
 export function ruleStatuses(): RuleStatus[] {
   return Object.entries(RULES).map(([id, rule]) => ({ id, ...rule }));
 }

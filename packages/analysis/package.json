@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./consumer": "./src/consumer.ts"
   },
   "scripts": {
     "build": "echo \"@ultima/analysis: source-only, run through Node's type stripping\"",

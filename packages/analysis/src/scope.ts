@@ -24,7 +24,10 @@ export type SourceKind =
   | 'setup-template'
   | 'declarations'
   | 'generated'
-  | 'fixture';
+  | 'fixture'
+  // A consumer's own program, installed Ultima items included, and the CSS it imports statically.
+  | 'app'
+  | 'stylesheet';
 
 export const PRODUCTION_KINDS: readonly SourceKind[] = ['token-source', 'react-component', 'react-helper', 'element'];
 export const DOCS_KINDS: readonly SourceKind[] = ['docs', 'demo', 'content'];
@@ -90,6 +93,13 @@ export type Scope = {
   types?: TypeInputs;
   /** The typed exceptions file, when this scope reads one. Only the workspace scope does. */
   exceptions?: { path: string; text: string | undefined };
+  /** The rule IDs this scope enables; a consumer scope names only `ULT-APP-*` and `ULT-ANALYSIS-001`. */
+  rules?: readonly string[];
+  /**
+   * Sites in installed items that Ultima's own typed exceptions authorize, by item rather than path,
+   * because the consumer chose where the item lives. Only the consumer scope sets them.
+   */
+  authorized?: readonly { item: string; ruleId: string; symbol: string; target: string; selector?: string; expression?: string }[];
   /** Failures that keep the scope itself from being complete. */
   problems: Diagnostic[];
 };
