@@ -329,6 +329,22 @@ describe('executing the DAG', () => {
     assert.ok(archStart < Math.max(uiEnd, docsEnd) && archEnd > Math.min(uiStart, docsStart), 'the unlocked check overlapped');
   });
 
+  test('a check that writes into the snapshot starts only after architecture and freshness finish, even when one fails', async () => {
+    const log = join(scratch, `after-${Date.now()}.log`);
+    const timed = (id: string) => controlled('timed', () => [log, id, '300']);
+    const report = await runIn(
+      repository(),
+      planOf(['architecture', 'catalogue-freshness', 'cli-tests'], { 'cli-tests': { prerequisites: [] } }),
+      { architecture: controlled('fail'), 'catalogue-freshness': timed('catalogue-freshness'), 'cli-tests': timed('cli-tests') },
+      { concurrency: 3 },
+    );
+    assert.equal(stateOf(report, 'architecture')?.failure?.kind, 'validation');
+    assert.equal(stateOf(report, 'cli-tests')?.status, 'passed', 'an ordering is not a prerequisite, so a failed architecture check blocks nothing');
+    const events = readFileSync(log, 'utf8').trim().split('\n').map((line) => line.split(' ')) as [string, string, string][];
+    const at = (id: string, event: string) => Number(events.find((e) => e[0] === id && e[1] === event)?.[2]);
+    assert.ok(at('cli-tests', 'start') >= at('catalogue-freshness', 'end'), 'cli-tests waited for freshness');
+  });
+
   test('a timeout stops the whole owned tree, including a descendant that left the process group', async () => {
     const pids = join(scratch, `hang-${Date.now()}.json`);
     const report = await runIn(repository(), planOf(['architecture'], { architecture: { deadlineSeconds: 1 } }), { architecture: controlled('hang', () => [pids]) });

@@ -2,8 +2,9 @@
  * An executed verification run, per Isolation and cancellation and Evidence and exits under
  * Verification CLI in docs/spec/agent-infrastructure.md. A run owns one directory, by default
  * `.scratch/verify/<run-id>/`, holding `source/`, `artifacts/`, `logs/` and `report.json`, plus a private
- * TMPDIR under the system temporary directory, outside any checkout. It captures the checkout into `source/`, plans from those bytes, prepares dependencies there from the
- * matching lockfile when an adapter needs them, and executes the plan's check DAG with owned processes,
+ * TMPDIR under the system temporary directory, outside any checkout. It captures the checkout into
+ * `source/`, plans from those bytes, prepares dependencies there from the matching lockfile when an
+ * adapter needs them, and executes the plan's check DAG with owned processes,
  * resource locks and deadlines. It hashes the checkout again at the end, writes one versioned report and
  * returns the exit the contract assigns.
  *
