@@ -5,7 +5,7 @@ export function RationalePage() {
   return (
     <Prose
       Content={Content}
-      breadcrumb={[{ label: 'Documentation', to: '/install' }, { label: 'Rationale' }]}
+      breadcrumb={[{ label: 'Install', to: '/install' }, { label: 'Rationale' }]}
     />
   );
 }

@@ -43,7 +43,7 @@ export function Page({
   title,
   lede,
   breadcrumb = [
-    { label: "Documentation", to: "/install" },
+    { label: "Install", to: "/install" },
     { label: title },
   ],
   index = title !== "Tokens" && title !== "Palette",
