@@ -1,7 +1,9 @@
 /**
  * Generates the shadcn registry from the workspace, per the Registry and install
- * section of docs/spec/ultima.md. Everything under `registry/` except
- * `registry/static/` and `registry/items.config.ts` is output of this script.
+ * section of docs/spec/ultima.md. Items, prose and dependencies come from the
+ * catalogue model over `registry/metadata/`. Everything under `registry/` except
+ * `registry/static/`, `registry/metadata/` and the generated `registry/items.config.ts`
+ * is output of this script.
  */
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -16,9 +18,11 @@ import {
   stampLine,
   withStamp,
 } from '../packages/cli/src/stamp.ts';
-import { type SetupItemDescription, items, setupItems } from '../registry/items.config.ts';
-import { validateHandSteps } from '../packages/cli/src/hand-steps.ts';
+import type { SetupDescriptor } from '../registry/metadata/schema.ts';
 import { agentGuide, type GuideComponent } from './build-agent-guide.ts';
+import { diskFiles } from './catalogue/files.ts';
+import { formatDiagnostics, loadCatalogue } from './catalogue/model.ts';
+import { registryUrl } from './catalogue/projections.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -38,8 +42,6 @@ const HOMEPAGE = 'https://ultima.systems';
 const SHADCN = 'shadcn@4.21.0';
 
 const NEVER_STAGE = new Set(['index.ts', 'prototype', '__tests__']);
-
-const PROVIDED_BY_CONSUMER = new Set(['react', 'react-dom']);
 
 type RegistryFile = { path: string; type: string; target?: string };
 
@@ -70,6 +72,26 @@ function isExcluded(relativePath: string): boolean {
 }
 
 const revision = catalogueRevision(root);
+
+const { catalogue, diagnostics } = loadCatalogue(diskFiles(root));
+if (diagnostics.length > 0) throw new Error(`the catalogue under registry/metadata/ is invalid:\n${formatDiagnostics(diagnostics)}`);
+
+type Description = { title: string; description: string; docs: string; dependencies: string[]; registryDependencies: string[] };
+
+const descriptions = new Map<string, Description>([
+  ...[...catalogue.sourceBundles, ...catalogue.react].map((entry): [string, Description] => [
+    entry.id,
+    { ...entry, docs: entry.installDocs, registryDependencies: entry.registryDependencies.map((id) => `@ultima/${id}`) },
+  ]),
+  ...catalogue.artifacts.map((entry): [string, Description] => [
+    entry.id,
+    { ...entry, docs: entry.installDocs, dependencies: [], registryDependencies: [] },
+  ]),
+  ...catalogue.elements.map((entry): [string, Description] => [
+    entry.id,
+    { ...entry, docs: entry.installDocs, dependencies: [], registryDependencies: entry.registryDependencies.map(registryUrl) },
+  ]),
+]);
 
 async function stamped(item: string, text: string, scheme: 'c1' | 'b1') {
   const hash = await contentHash(text, scheme);
@@ -126,62 +148,17 @@ function rewriteImports(source: string, file: string): string {
   );
 }
 
-const IMPORT = /\bfrom\s*['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)|\bimport\s+['"]([^'"]+)['"]/g;
-
-function specifiersIn(source: string): string[] {
-  return [...source.matchAll(IMPORT)].map((match) => (match[1] ?? match[2] ?? match[3]) as string);
-}
-
-function packageName(specifier: string): string {
-  const segments = specifier.split('/');
-  return specifier.startsWith('@') ? segments.slice(0, 2).join('/') : (segments[0] as string);
-}
-
-function dependenciesOf(staged: Staged[]): string[] {
-  const found = new Set<string>();
-  for (const { source } of staged) {
-    for (const specifier of specifiersIn(source)) {
-      if (specifier.startsWith('.') || specifier.startsWith('@ultima/')) continue;
-      const name = packageName(specifier);
-      if (!PROVIDED_BY_CONSUMER.has(name)) found.add(name);
-    }
-  }
-  return [...found].sort();
-}
-
-function registryDependencyFor(specifier: string): string {
-  if (specifier.startsWith('@ultima/tokens/')) return '@ultima/tokens';
-  if (specifier.startsWith('@ultima/ui/lib/')) return '@ultima/lib';
-  return `@ultima/${specifier.slice('@ultima/ui/'.length)}`;
-}
-
-const DEPENDENCY_ORDER = ['@ultima/tokens', '@ultima/lib'];
-
-function registryDependenciesOf(staged: Staged[]): string[] {
-  const found = new Set<string>();
-  for (const { source } of staged) {
-    for (const specifier of specifiersIn(source)) {
-      if (specifier.startsWith('@ultima/')) found.add(registryDependencyFor(specifier));
-    }
-  }
-  const rank = (name: string) =>
-    DEPENDENCY_ORDER.includes(name) ? DEPENDENCY_ORDER.indexOf(name) : DEPENDENCY_ORDER.length;
-  return [...found].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
-}
-
 const described = new Set<string>();
 
-function describe(name: string) {
-  const entry = items[name];
-  if (!entry) throw new Error(`registry/items.config.ts has no entry for "${name}"`);
+function describe(name: string): Description {
+  const entry = descriptions.get(name);
+  if (!entry) throw new Error(`registry/metadata/ has no installable descriptor for "${name}"`);
   described.add(name);
   return entry;
 }
 
-function item(name: string, type: string, files: HashedFile[], staged: Staged[]): RegistryItem {
-  const { title, description, docs } = describe(name);
-  const dependencies = dependenciesOf(staged);
-  const registryDependencies = registryDependenciesOf(staged);
+function item(name: string, type: string, files: HashedFile[]): RegistryItem {
+  const { title, description, docs, dependencies, registryDependencies } = describe(name);
   return {
     name,
     type,
@@ -202,7 +179,7 @@ function vendoredElementItem(name: string): RegistryItem {
     type: 'registry:item',
     title,
     description,
-    ...(registryDependencies && registryDependencies.length > 0 && { registryDependencies }),
+    ...(registryDependencies.length > 0 && { registryDependencies }),
     files: [{ path: `ultima/elements/${name}.js`, type: 'registry:file', target: `~/${name}.js` }],
     docs,
     meta: meta([{ path: `${name}.js`, hash: stampOf(join(ELEMENTS_DIST, `${name}.js`)) }]),
@@ -215,25 +192,16 @@ function stampOf(file: string): string {
   return `${stamp.scheme}:${stamp.hash}`;
 }
 
-function filesUnder(dir: string, prefix = ''): string[] {
-  const found: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    const path = prefix ? `${prefix}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) found.push(...filesUnder(join(dir, entry.name), path));
-    else found.push(path);
-  }
-  return found;
-}
-
-function handStepDocs(handSteps: SetupItemDescription['handSteps']): string {
+function handStepDocs(handSteps: SetupDescriptor['handSteps']): string {
   const steps = handSteps.map(({ prose }, index) => `${index + 1}. ${prose}`);
   return ['Steps you still do by hand:', ...steps, '', 'Then: npx shadcn add @ultima/button'].join('\n');
 }
 
-/** Where a file sits under `registry/static/<name>/` is where it installs in the consumer. */
-function setupItem(name: keyof typeof setupItems): RegistryItem {
-  const { title, description, dependencies, devDependencies, handSteps, checks } = setupItems[name];
-  validateHandSteps(name, [...handSteps, ...checks]);
+function setupItem(name: string): RegistryItem {
+  const setup = catalogue.setup.find((entry) => entry.id === name);
+  if (!setup) throw new Error(`registry/metadata/setup/ has no "${name}" descriptor`);
+  described.add(name);
+  const { title, description, dependencies, devDependencies, handSteps } = setup;
   return {
     name,
     type: 'registry:item',
@@ -241,11 +209,7 @@ function setupItem(name: keyof typeof setupItems): RegistryItem {
     description,
     dependencies,
     devDependencies,
-    files: filesUnder(join(STATIC_DIR, name)).map((path) => ({
-      path: `static/${name}/${path}`,
-      type: 'registry:file',
-      target: `~/${path}`,
-    })),
+    files: setup.files.map(({ path, type, target }) => ({ path: `static/${name}/${path}`, type, target })),
     docs: handStepDocs(handSteps),
   };
 }
@@ -267,10 +231,13 @@ function requireElementExports() {
 }
 
 function elementNames(): string[] {
-  return readdirSync(ELEMENTS_DIST)
-    .filter((name) => name.startsWith('ult-') && name.endsWith('.js') && name !== 'ultima.js')
-    .sort((a, b) => a.localeCompare(b))
-    .map((name) => name.replace(/\.js$/, ''));
+  const names = catalogue.elements.map((entry) => entry.id).sort((a, b) => a.localeCompare(b));
+  for (const name of names) {
+    if (!existsSync(join(ELEMENTS_DIST, `${name}.js`))) {
+      throw new Error(`packages/elements/dist/${name}.js is missing; run pnpm --filter @ultima/elements build first`);
+    }
+  }
+  return names;
 }
 
 async function stageSources() {
@@ -304,22 +271,21 @@ function describeRegistry({ components, tokens, lib, elements, tokensCss }: Sour
     // `shadcn build` copies registry.json through verbatim when it has no `include`.
     meta: { ultima: { format: REGISTRY_FORMAT } },
     items: [
-      item('tokens', 'registry:lib', tokens.map((staged) => staged.file), tokens),
-      item('lib', 'registry:lib', lib.map((staged) => staged.file), lib),
-      ...components.map((staged) => item(staged.name, 'registry:ui', [staged.file], [staged])),
+      item('tokens', 'registry:lib', tokens.map((staged) => staged.file)),
+      item('lib', 'registry:lib', lib.map((staged) => staged.file)),
+      ...components.map((staged) => item(staged.name, 'registry:ui', [staged.file])),
       setupItem('setup-vite'),
       setupItem('setup-next'),
       item(
         'tokens-css',
         'registry:item',
         [{ path: 'ultima/tokens.css', type: 'registry:file', target: '~/ultima-tokens.css', hash: tokensCss.hash }],
-        [],
       ),
       ...elements.map(vendoredElementItem),
     ],
   };
-  for (const name of Object.keys(items)) {
-    if (!described.has(name)) throw new Error(`registry/items.config.ts entry "${name}" has no file`);
+  for (const name of catalogue.registryItems) {
+    if (!described.has(name)) throw new Error(`registry/metadata/ item "${name}" has no file`);
   }
   return registry;
 }

@@ -9,7 +9,8 @@ Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/a
 - `packages/tokens` — the token sources and themes, the palette generator, and the generated `dist/tokens.css` and `dist/tokens.json`.
 - `packages/ui` — one file per component in `src/`, the shared helper types in `src/lib/`, the tests in `src/__tests__/`.
 - `apps/docs` — the docs site, its MDX content, and the demos its component pages render.
-- `registry/` — build output, apart from `static/` and `items.config.ts`.
+- `registry/` — build output, apart from the authored `static/` and `metadata/` (one descriptor per item) and the generated `items.config.ts`.
+- `scripts/catalogue/` — the catalogue model and the generator for the committed wiring: `registry/items.config.ts`, `packages/ui/src/index.ts`, `apps/docs/src/generated/` and `scripts/generated/`.
 - `skills/` — Ultima's own agent skills; [`forge`](skills/forge/SKILL.md) authors and revises a component.
 
 ## Rules that are easy to break
@@ -19,6 +20,7 @@ Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/a
 - [No raw values in component code](docs/spec/ultima.md#tokens-in-component-code); a new need becomes a new token.
 - [Palette values come from the generator](docs/spec/ultima.md#generation-recipe) and are never hand-edited.
 - [`registry/` is regenerated](docs/spec/ultima.md#generation) by `pnpm registry:build`.
+- [Generated wiring is never hand-edited](docs/spec/agent-infrastructure.md#generated-wiring): change a descriptor or the source, then `pnpm catalogue:generate`.
 - [Tests live in `packages/ui/src/__tests__/`](docs/spec/ultima.md#what-a-build-ticket-proves), never beside the component.
 
 ## Commands
@@ -31,6 +33,8 @@ Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/a
 | `pnpm test` | The Vitest suites, including the axe sweep. |
 | `pnpm typecheck` | Typecheck every package. |
 | `pnpm registry:build` | Regenerate `registry/`, `/r/*.json`, the token exports, and `/llms.txt`. |
+| `pnpm catalogue:generate` | Rewrite the generated wiring from `registry/metadata/` and the sources. |
+| `pnpm catalogue:check` | Fail on stale generated wiring, read-only. `dev`, `build`, `test`, `typecheck` and `registry:build` run it first. |
 | `python3 packages/tokens/scripts/palette.py` | Regenerate `palette.json`; `--check` fails on a hand edit. |
 
 ## Agent skills

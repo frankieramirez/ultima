@@ -9,11 +9,11 @@ description: How to run and end-to-end test the Ultima docs site (apps/docs) whe
 
 - Node is not on PATH by default: `export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"` (node v24, pnpm via corepack).
 - From the repo root: `pnpm dev` serves the docs site at http://localhost:5173. Log to a file (e.g. /tmp/docs-dev.log) when backgrounding.
-- Component pages live at `/components/<item>` where `<item>` is the kebab-case `item` field in `apps/docs/src/components.ts` (e.g. `/components/toggle`).
+- Component pages live at `/components/<item>` where `<item>` is the kebab-case `item` field of the catalogue that `apps/docs/src/components.ts` re-exports from `apps/docs/src/generated/catalogue.ts` (e.g. `/components/toggle`).
 
 ## Page structure
 
-- Sidebar nav (`apps/docs/src/navigation.ts`) renders `@components` group with labels `--<item>` for every catalogue entry; `::root` holds top pages. New components appear automatically once added to `components.ts` and `router.tsx`.
+- Sidebar nav (`apps/docs/src/navigation.ts`) renders `@components` group with labels `--<item>` for every catalogue entry; `::root` holds top pages. New components appear once their descriptor under `registry/metadata/react/` exists and `pnpm catalogue:generate` has rewritten `apps/docs/src/generated/`.
 - `/components` is the catalogue index, grouped by release set (v0, v0.1, v0.2); the newest component is the last card of the last set.
 - Theme switcher is a `ToggleGroup` in the header with Dark / Light / System buttons (`apps/docs/src/header.tsx`); preference persists in localStorage key `ultima-theme`.
 - Each component MDX page embeds live demos from `apps/docs/src/demos/<item>/` inside `<figure>` elements, each followed by its source code and a Copy button.

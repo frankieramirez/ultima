@@ -80,11 +80,11 @@ A step a consumer performs after installing a setup item, because the setup item
 
 ## Registry build
 
-The step that turns the monorepo into the served registry: it stages component and token sources with their imports rewritten, derives each item's dependencies from those imports, takes the prose from one manifest, and runs `shadcn build`. Its current authored inputs under `registry/` are the setup files and `items.config.ts`. The planned item-metadata migration adds authored descriptors and turns that manifest into a generated projection.
+The step that turns the monorepo into the served registry: it stages component and token sources with their imports rewritten, takes each item's prose and dependencies from the catalogue model over the item metadata, and runs `shadcn build`. Its authored inputs under `registry/` are the setup files and the descriptors under `metadata/`; `items.config.ts` is a generated compatibility projection of them.
 
 ## Item metadata
 
-An authored description of an item's identity, presentation and place in the catalogue, with a reference to its owning contract. Its kind distinguishes a React component, element family, recipe, setup item, source bundle or generated artifact. Source code owns exports and inferred dependencies; the specification owns behavior. Per-item descriptors and their generated projections are planned in [Agent infrastructure](docs/spec/agent-infrastructure.md#component-metadata-and-scaffolding).
+An authored description of an item's identity, presentation and place in the catalogue, with a reference to its owning contract. Its kind distinguishes a React component, element family, recipe, setup item, source bundle or generated artifact. Source code owns exports and inferred dependencies; the specification owns behavior. One descriptor per item lives under `registry/metadata/`, and `pnpm catalogue:generate` writes the wiring projected from them, as [Agent infrastructure](docs/spec/agent-infrastructure.md#component-metadata-and-scaffolding) specifies.
 
 ## Consumer
 

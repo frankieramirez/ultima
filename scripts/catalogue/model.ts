@@ -44,9 +44,15 @@ export type DiagnosticCode =
   | 'dependency-cycle'
   | 'tag-mismatch'
   | 'invalid-enum-reference'
-  | 'demo-not-on-page';
+  | 'demo-not-on-page'
+  | 'unresolved-dependency'
+  | 'stale-policy';
 
 export type Diagnostic = { code: DiagnosticCode; path: string; message: string };
+
+export function formatDiagnostics(diagnostics: Diagnostic[]): string {
+  return diagnostics.map((d) => `  ${d.code} ${d.path}: ${d.message}`).join('\n');
+}
 
 export type Dependencies = {
   /** npm packages, sorted. */

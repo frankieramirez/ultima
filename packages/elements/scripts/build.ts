@@ -1,5 +1,5 @@
 // Bundle shape (self-contained classic script, injected sheet): docs/spec/ultima.md, Web components.
-import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
@@ -9,6 +9,8 @@ import styleXPlugin, { type Rule as StyleXRule } from '@stylexjs/babel-plugin';
 
 import { stylexOptions } from '../../../stylex.options.ts';
 import { catalogueRevision, contentHash, stampLine, withStamp } from '../../cli/src/stamp.ts';
+import { diskFiles } from '../../../scripts/catalogue/files.ts';
+import { formatDiagnostics, loadCatalogue } from '../../../scripts/catalogue/model.ts';
 import { bundleArtifact } from './bundle.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -39,11 +41,14 @@ const COMPILE_TIME_IMPORT = new RegExp(
   'gm',
 );
 
-const elementFiles = readdirSync(srcDir)
-  .filter((name) => name.endsWith('.element.ts'))
-  .sort((a, b) => a.localeCompare(b));
+const { catalogue, diagnostics } = loadCatalogue(diskFiles(join(packageDir, '../..')));
+if (diagnostics.length > 0) {
+  console.error(`@ultima/elements build: the catalogue under registry/metadata/ is invalid\n${formatDiagnostics(diagnostics)}`);
+  process.exit(1);
+}
+const elementFiles = catalogue.elements.map((entry) => `${entry.id}.element.ts`).sort((a, b) => a.localeCompare(b));
 if (elementFiles.length === 0) {
-  console.error('@ultima/elements build: no src/*.element.ts sources');
+  console.error('@ultima/elements build: registry/metadata/element/ describes no family');
   process.exit(1);
 }
 
