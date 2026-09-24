@@ -1,16 +1,36 @@
 {
   "name": "@ultima-systems/cli",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Check, diagnose and keep current a project built on the Ultima registry.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frankieramirez/ultima.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://ultima.systems",
+  "bugs": "https://github.com/frankieramirez/ultima/issues",
   "type": "module",
   "bin": {
     "ultima": "./dist/cli.js"
   },
   "files": [
-    "dist",
+    "dist/cli.js",
     "skill"
   ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "ultima": {
+    "registryFormats": {
+      "min": 1,
+      "max": 1
+    }
+  },
   "scripts": {
     "build": "node --experimental-strip-types scripts/build.ts",
     "test": "pnpm build && vitest run --reporter=verbose",

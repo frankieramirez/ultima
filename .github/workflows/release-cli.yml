@@ -1,0 +1,112 @@
+# Publishes @ultima-systems/cli: docs/spec/ultima.md, Consumer CLI, Package and engine, Release.
+#
+# Hand-bump `version` in packages/cli/package.json, merge it, then push the tag
+# `cli-v<version>` on that commit. The tag must match the version or nothing runs
+# past the first step. There are no changesets: this is the one published package.
+#
+# The first publish uses a token. npm can only configure a trusted publisher for a
+# package that already exists, so for 0.1.0 the maintainer adds a granular npm
+# token as the NPM_TOKEN repository secret, scoped to publish @ultima-systems/cli.
+# Once that version is on npm:
+#   1. On npmjs.com, under the package's Settings, add a trusted publisher:
+#      GitHub Actions, repository frankieramirez/ultima, workflow release-cli.yml,
+#      environment npm.
+#   2. Delete the NPM_TOKEN secret and revoke the token.
+# From then on npm authenticates this workflow through its OIDC token, so no
+# secret is involved. Provenance is attested either way, from the id-token grant.
+
+name: Release CLI
+
+on:
+  push:
+    tags:
+      - 'cli-v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-cli
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Tag matches package.json
+        run: node --experimental-strip-types packages/cli/scripts/release-tag.ts "$GITHUB_REF_NAME"
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: |
+          pnpm --filter @ultima/ui exec playwright install --with-deps chromium
+          pnpm test
+
+      - name: Build the CLI
+        run: pnpm --filter @ultima-systems/cli build
+
+      # Builds and serves the registry from this commit, installs it into fresh
+      # consumer projects, and runs the packed tarball's doctor in the Vite one.
+      - name: Smoke install
+        run: |
+          mkdir -p "$RUNNER_TEMP/smoke"
+          TMPDIR="$RUNNER_TEMP/smoke" ./scripts/smoke-install.sh
+
+      # pnpm pack rewrites workspace: ranges, which npm publish would ship verbatim.
+      - name: Pack
+        run: |
+          mkdir -p "$RUNNER_TEMP/pack"
+          cd packages/cli
+          pnpm pack --pack-destination "$RUNNER_TEMP/pack"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-tarball
+          path: ${{ runner.temp }}/pack/*.tgz
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: cli-tarball
+          path: ${{ runner.temp }}/pack
+
+      # Trusted publishing needs npm 11.5.1 or later.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: npm 11
+        run: npm install -g npm@11
+
+      # NODE_AUTH_TOKEN is empty once the NPM_TOKEN secret is deleted, and npm
+      # then uses the trusted publisher.
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish "$RUNNER_TEMP"/pack/ultima-systems-cli-*.tgz --provenance --access public
