@@ -224,7 +224,7 @@ export function ComingSoon() {
       <Separator />
       <footer {...stylex.props(styles.footer)}>
         <p {...stylex.props(styles.kicker, styles.subtle)}>ULTIMA / A SYSTEM FOR BUILDING INTERFACES</p>
-        <p {...stylex.props(styles.kicker, styles.subtle)}>© 2026</p>
+        <p {...stylex.props(styles.kicker, styles.subtle)}>© 2026 Frankie Ramirez</p>
       </footer>
     </div>
   );
