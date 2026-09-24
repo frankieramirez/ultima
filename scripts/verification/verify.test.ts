@@ -40,6 +40,7 @@ describe('pnpm verify list', () => {
       document.modes.filter((m: { status: string }) => m.status === 'available').map((m: { mode: string }) => m.mode),
       ['list', 'describe'],
     );
+    assert.ok(document.checks.some((c: { id: string; adapter: { status: string } }) => c.id === 'production-scenarios' && c.adapter.status === 'unavailable'));
   });
 
   test('derives the same model twice', () => assert.deepEqual(json(['list']).document, json(['list']).document));
@@ -146,7 +147,7 @@ describe('pnpm verify describe', () => {
 });
 
 describe('execution modes', () => {
-  test('are unavailable, exit 3 and never pass', () => {
+  test('without --plan are unavailable, exit 3 and never pass', () => {
     for (const argv of [['feature', 'dialog'], ['component', 'date-picker'], ['release'], ['changed', '--base', 'origin/main']]) {
       const { exit, document } = json(argv);
       assert.equal(exit, 3, argv.join(' '));
