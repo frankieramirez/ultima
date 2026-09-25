@@ -35,12 +35,13 @@ describe('pnpm verify list', () => {
     assert.equal(exit, 0);
     assert.equal(document.schemaVersion, 1);
     assert.equal(document.status, 'discovered');
-    assert.deepEqual(document.features.map((f: { id: string }) => f.id), ['catalogue', 'dialog', 'elements', 'motion', 'site-navigation', 'theme-studio']);
+    assert.deepEqual(document.features.map((f: { id: string }) => f.id), ['catalogue', 'dialog', 'elements', 'motion', 'site-discovery', 'site-navigation', 'theme-studio']);
     assert.deepEqual(document.scenarios.map((s: { id: string }) => s.id), [
       'catalogue.filter-and-demo',
       'dialog.keyboard-dismissal',
       'elements.fixture-interactions',
       'motion.reduced-loop',
+      'site-discovery.discovery-surface',
       'site-navigation.route-and-mode',
       'theme-studio.draft-history',
       'theme-studio.pane-boundaries',

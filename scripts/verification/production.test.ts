@@ -411,7 +411,7 @@ describe('the adapter and the standalone command', () => {
     const files = repositoryFiles(ROOT);
     const { model } = loadVerification(files, loadCatalogue(files).catalogue);
     assert.deepEqual(plan.checks[1]?.cases, casesFor(model, 'production'), 'the plan runs exactly what the joined model registers');
-    assert.equal(plan.checks[1]?.cases.length, 26);
+    assert.equal(plan.checks[1]?.cases.length, 28);
   });
 
   test('the standalone command takes only its own options and prints help', async () => {
