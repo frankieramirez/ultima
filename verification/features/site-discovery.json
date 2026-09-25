@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "site-discovery",
+  "title": "Search discovery surface",
+  "summary": "What a crawler or a stranger's tab meets: a per-route document.title, a robots.txt that allows the site and names the sitemap, and a sitemap.xml listing exactly the routes the router serves.",
+  "knowledge": "proposed",
+  "aliases": ["seo", "sitemap", "robots", "robots.txt", "document.title", "page title", "tab title", "search", "crawler", "discovery"],
+  "contract": "docs/spec/ultima.md#launch",
+  "items": [],
+  "sourceRoots": [
+    "apps/docs/src/router.tsx",
+    "apps/docs/src/document-title.ts",
+    "apps/docs/src/routes/root.tsx"
+  ],
+  "extraDependencies": [
+    {
+      "path": "apps/docs/public/robots.txt",
+      "reason": "Served as-is from the build output; no import references it."
+    },
+    {
+      "path": "apps/docs/public/sitemap.xml",
+      "reason": "Served as-is from the build output; no import references it."
+    }
+  ],
+  "supporting": [
+    {
+      "path": "apps/docs/src/__tests__/document-title.test.tsx",
+      "reason": "Mounts the real route tree in a browser and asserts document.title on every route shape, both not-found cases, and a navigation."
+    },
+    {
+      "path": "apps/docs/src/__tests__/sitemap.test.ts",
+      "reason": "Pins the committed sitemap's URL set to the routes the router serves, and the robots.txt contents."
+    }
+  ]
+}

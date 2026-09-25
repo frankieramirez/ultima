@@ -6,6 +6,7 @@ import { Separator, Sidebar } from '@ultima/ui';
 import { useEffect, useRef } from 'react';
 
 import { breakpoints } from '../breakpoints.stylex';
+import { documentTitle } from '../document-title';
 import { Header } from '../header';
 import { SiteFooter } from '../site-footer';
 import { SiteMenu } from '../site-menu';
@@ -66,7 +67,12 @@ function Shell() {
   const pathname = useRouterState({
     select: (state) => state.resolvedLocation?.pathname ?? state.location.pathname,
   });
+  const title = useRouterState({ select: (state) => documentTitle(state.matches) });
   const focused = useRef(pathname);
+
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
 
   useEffect(() => {
     if (focused.current === pathname) return;

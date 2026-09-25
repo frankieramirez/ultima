@@ -1,6 +1,7 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 
 import { components } from './components';
+import { componentTitle } from './document-title';
 import { componentPages } from './generated/component-pages';
 import { Prose } from './prose';
 import { ComponentsPage } from './routes/components';
@@ -23,42 +24,49 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: Home,
+  staticData: { title: 'Good interfaces start with good parts' },
 });
 
 const installRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/install',
   component: InstallPage,
+  staticData: { title: 'Install' },
 });
 
 const elementsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/elements',
   component: ElementsPage,
+  staticData: { title: 'Elements' },
 });
 
 const tokensRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/tokens',
   component: TokensPage,
+  staticData: { title: 'Tokens' },
 });
 
 const paletteRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/palette',
   component: PalettePage,
+  staticData: { title: 'Palette' },
 });
 
 const componentsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/components',
   component: ComponentsPage,
+  staticData: { title: 'Components' },
 });
 
 const componentNameRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/components/$name',
   component: ComponentNamePage,
+  staticData: { title: componentTitle },
 });
 
 function ComponentNamePage() {
@@ -80,12 +88,14 @@ const rationaleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/rationale',
   component: RationalePage,
+  staticData: { title: 'Rationale' },
 });
 
 const themeStudioRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/theme-studio',
   component: ThemeStudio,
+  staticData: { title: 'Theme Studio' },
 });
 
 export const routeTree = rootRoute.addChildren([

@@ -508,13 +508,13 @@ describe('the release plan', () => {
     assert.deepEqual(checkIds(document).sort(), [...RELEASE].sort());
     for (const entry of document.checks) assert.notEqual(entry.scope, 'files');
     assert.ok(checkOf(document, 'production-scenarios')?.cases.includes('dialog.keyboard-dismissal@production[mode=light,viewport=narrow,motion=normal]'));
-    assert.deepEqual(checkOf(document, 'docs-tests')?.cases, ['theme-studio.draft-history@docs-vitest[default]']);
+    assert.deepEqual(checkOf(document, 'docs-tests')?.cases, ['site-discovery.discovery-surface@docs-vitest[default]', 'theme-studio.draft-history@docs-vitest[default]']);
     assert.deepEqual(
       document.outcome.unavailable.sort(),
       [],
       'every check has an execution adapter',
     );
-    assert.equal(checkOf(document, 'production-scenarios')?.cases.length, 26, 'the whole production matrix');
+    assert.equal(checkOf(document, 'production-scenarios')?.cases.length, 28, 'the whole production matrix');
     assert.deepEqual(document.outcome.pending, [], 'no release obligation is pending once the matrix is registered');
     assert.equal(document.outcome.canPass, true);
   });

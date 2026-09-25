@@ -1,6 +1,6 @@
 /**
  * The required production obligations, written out independently of the records they protect: the
- * 26-cell matrix under Validation and coverage in docs/spec/agent-infrastructure.md. A contract test,
+ * 28-cell matrix under Validation and coverage in docs/spec/agent-infrastructure.md. A contract test,
  * never a discovery source. Removing a target, a light/narrow variant or a binding, repeating a variant,
  * or skipping or doubling a cell fails here; a new required scenario joins the cases on its own.
  */
@@ -24,6 +24,7 @@ const MATRIX: [scenario: string, viewports: string[], motion: string][] = [
   ['theme-studio.pane-boundaries', ['desktop'], 'normal'],
   ['elements.fixture-interactions', ['desktop', 'narrow'], 'normal'],
   ['motion.reduced-loop', ['desktop', 'narrow'], 'reduced'],
+  ['site-discovery.discovery-surface', ['desktop'], 'normal'],
 ];
 
 const REQUIRED = MATRIX.flatMap(([scenario, viewports, motion]) =>
@@ -96,9 +97,9 @@ const complete = (): Declared =>
   Object.fromEntries(MATRIX.map(([id, viewports, motion]) => [id, { mode: [...BOTH], viewport: [...viewports], motion: [motion] }]));
 
 describe('the production obligations', () => {
-  test('are 26 cells across seven scenarios', () => {
-    assert.equal(REQUIRED.length, 26);
-    assert.equal(new Set(REQUIRED).size, 26);
+  test('are 28 cells across eight scenarios', () => {
+    assert.equal(REQUIRED.length, 28);
+    assert.equal(new Set(REQUIRED).size, 28);
   });
 
   test('a model registering the whole matrix covers exactly those cells', () => {
@@ -192,7 +193,7 @@ describe('the repository', () => {
   const files = repositoryFiles(root);
   const { model, diagnostics } = loadVerification(files, loadCatalogue(diskFiles(root)).catalogue);
 
-  test('registers exactly the 26 required production cells', () => {
+  test('registers exactly the 28 required production cells', () => {
     assert.deepEqual(diagnostics, []);
     assert.deepEqual(coverage(casesFor(model, 'production')), { missing: [], unexpected: [] });
   });
@@ -213,6 +214,10 @@ describe('the repository', () => {
     assert.deepEqual(where('theme-studio.draft-history'), [
       ['docs-vitest', 'apps/docs/src/__tests__/theme-studio.test.tsx'],
       ['production', 'apps/docs/tests/production/theme-studio.draft-history.ts'],
+    ]);
+    assert.deepEqual(where('site-discovery.discovery-surface'), [
+      ['docs-vitest', 'apps/docs/src/__tests__/document-title.test.tsx'],
+      ['production', 'apps/docs/tests/production/site-discovery.discovery-surface.ts'],
     ]);
   });
 });

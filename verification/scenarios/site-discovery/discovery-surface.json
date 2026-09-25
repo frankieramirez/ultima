@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "site-discovery.discovery-surface",
+  "title": "Routes serve their own document.title, and robots.txt and the sitemap are served",
+  "intent": "A crawler meets a titled page on every route, a robots.txt that allows the site and names the sitemap, and a sitemap covering exactly the routes the router serves.",
+  "contract": "docs/spec/ultima.md#launch",
+  "aliases": ["seo", "sitemap", "robots", "document.title", "tab title"],
+  "items": [],
+  "sources": [
+    "apps/docs/src/router.tsx",
+    "apps/docs/src/document-title.ts",
+    "apps/docs/src/routes/root.tsx"
+  ],
+  "demos": [],
+  "routes": [
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/install" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/elements" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/tokens" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/palette" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/rationale" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/theme-studio" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/components" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/components/$name" },
+    { "kind": "static", "file": "apps/docs/public/robots.txt", "pathname": "/robots.txt" },
+    { "kind": "static", "file": "apps/docs/public/sitemap.xml", "pathname": "/sitemap.xml" }
+  ],
+  "fixtures": [
+    {
+      "name": "route titles and crawler entrypoints",
+      "path": "apps/docs/tests/fixtures/site-discovery.ts",
+      "reset": "fresh-context"
+    }
+  ],
+  "preconditions": [
+    "The served build is the site, not the coming-soon gate: verification runs build with ULTIMA_COMING_SOON off."
+  ],
+  "steps": [
+    { "action": "Load each route directly.", "expect": "document.title is that page's own name joined to Ultima." },
+    { "action": "Load an unknown path and an unknown component name.", "expect": "Both serve the not-found title." },
+    { "action": "Fetch /robots.txt.", "expect": "200; it allows the site and names the sitemap URL." },
+    { "action": "Fetch /sitemap.xml.", "expect": "200; every loc is on https://ultima.systems and every route is listed." }
+  ],
+  "targets": [
+    { "target": "docs-vitest", "variants": "default" },
+    { "target": "production", "variants": { "mode": ["dark", "light"], "viewport": ["desktop"], "motion": ["normal"] } }
+  ]
+}
