@@ -32,11 +32,11 @@ The cost lands on the docs. A recipe entry carries no installable unit, so its c
 
 The policy decides Calendar and Chart before they are specified, and they may yet produce an engine that is not headless, which this ADR rules out rather than leaving open.
 
-Recorded on [What Data Table is built on, and what that dependency costs a consumer](https://linear.app/frankie-ramirez/issue/ULT-72).
+Recorded on What Data Table is built on, and what that dependency costs a consumer (ULT-72).
 
 ## Amendment (2026-09-11)
 
-Recorded on [What Ultima documents as its form integration](https://linear.app/frankie-ramirez/issue/ULT-78). A form library is an engine by this ADR's own test, so the ADR decides its shape and needs no companion. React Hook Form, TanStack Form, and Formisch were each checked against their published builds: none renders styles, the DOM any of them can render is a single optional `<form>` element, and none emits a single `aria-*` attribute. The gate rules none of them out and ADR 0002's scope is again untouched.
+Recorded on What Ultima documents as its form integration (ULT-78). A form library is an engine by this ADR's own test, so the ADR decides its shape and needs no companion. React Hook Form, TanStack Form, and Formisch were each checked against their published builds: none renders styles, the DOM any of them can render is a single optional `<form>` element, and none emits a single `aria-*` attribute. The gate rules none of them out and ADR 0002's scope is again untouched.
 
 What generalises is the scope. The decision above is written for a composition whose behavior *needs* an engine, and no v0.1 entry needs one. Field is complete on Base UI and the platform's constraint validation, and a form library is a capability a consumer may add on top of it. The policy covers both cases: an optional engine is still the consumer's dependency, still ships as a recipe, and still has to be headless.
 
