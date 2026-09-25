@@ -42,6 +42,10 @@ The generated companion to the tokens CSS export: every semantic token with its 
 
 The generated Markdown at `/llms.txt`: Ultima's principles, conventions, component list, and token names at one fetchable URL. It is how a consumer's agent learns the system, because Ultima installs no documentation into a consumer's repository.
 
+## Agent surface
+
+The agent-facing files this repository commits for its own contributors: `AGENTS.md`, the vendored skills under `.agents/skills/` pinned by `skills-lock.json`, and the per-tool shims `.claude/`, `.grok/`, `.pi/` and `.cursor/` that point each agent tool at the same set. It ships in the public repository because the contributor workflow is agent-first ([What the public repository carries](https://github.com/frankieramirez/ultima/issues/567)). It is not installed into consumer repositories, where the Consumer skill and the Agent guide fill that role.
+
 ## Forge
 
 Ultima's own component-authoring skill. It knows Base UI composition, StyleX variant tables, and the part-naming rules, so it lives in this repo rather than in mana, whose skills stay general. Its scope is the React catalogue only: element files are authored by hand against the spec's Web components section, with the parity gate as the check, and whether any skill learns element authoring is revisited once the report set has shipped elements to pattern-match against.
