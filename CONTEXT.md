@@ -445,3 +445,7 @@ The versioned serialization of a theme draft, downloaded as `ultima-theme.json` 
 ## Feature scenario
 
 A named user behavior with an owning contract, reproducible steps, required variants and observable results, linked to executable checks by a stable ID. A feature groups related scenarios across components or application code. The planned [executable feature map](docs/spec/agent-infrastructure.md#executable-feature-map) connects those scenarios to their owners and verification commands. A discovered scenario is not evidence that its checks ran.
+
+## ULT-n
+
+A citation naming a decision ticket on the private pre-GitHub Linear workspace the project was planned on, written as `Title (ULT-n)` or bare `ULT-n` with no URL. The number is a stable key for anyone with workspace access; every other reader gets the title.
