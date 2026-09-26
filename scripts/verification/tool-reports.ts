@@ -407,7 +407,7 @@ export function smoke(log: string, exitCode: number | null, targets: string[]): 
         started.push(target);
       }
     }
-    if (/^smoke-install: packed ultima-systems-cli-.+\.tgz$/.test(line)) executed.push('smoke:cli packed');
+    if (/^smoke-install: packed ultima-design-.+\.tgz$/.test(line)) executed.push('smoke:cli packed');
     if (/^smoke-install: the catalogue is \d+ components$/.test(line)) executed.push('smoke:catalogue served');
   }
   if (passedAgainst !== null && exitCode === 0) {

@@ -77,7 +77,7 @@ export function consumerScope(
         'ULT-SCOPE-003',
         'components.json',
         `aliases.${key} is ${alias}, and no "paths" entry in ${relativeName(root, tsconfig)} or its references maps it.`,
-        `Add a "paths" entry for ${alias} under compilerOptions, or run \`npx @ultima-systems/cli doctor\` to check the setup.`,
+        `Add a "paths" entry for ${alias} under compilerOptions, or run \`npx ultima-design doctor\` to check the setup.`,
       );
     }
     aliases[key] = alias;
@@ -268,7 +268,7 @@ function inventoryOf(
 }
 
 function readComponents(root: string): { components: Record<string, unknown> } | { incomplete: Diagnostic } {
-  const repair = 'Run the setup item for your target; `npx @ultima-systems/cli doctor` names it.';
+  const repair = 'Run the setup item for your target; `npx ultima-design doctor` names it.';
   const path = join(root, 'components.json');
   if (!existsSync(path)) return incomplete('ULT-SCOPE-001', 'components.json', 'components.json is missing.', repair);
   try {

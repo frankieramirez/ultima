@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { items } from '../../../../registry/items.config.ts';
 
-const SKILL = readFileSync(new URL('../../skill/ultima-systems/SKILL.md', import.meta.url), 'utf8');
+const SKILL = readFileSync(new URL('../../skill/ultima-design/SKILL.md', import.meta.url), 'utf8');
 const ITEM = new RegExp(`(?<![\\w-])(?:${Object.keys(items).join('|')})(?![\\w-])`, 'i');
 
 /** The constructs docs/spec/ultima.md, Consumer CLI, Skill, What may be prose, bans. Link targets are URLs, not prose. */
@@ -24,9 +24,9 @@ describe('the consumer skill', () => {
     expect(lint(SKILL)).toEqual([]);
   });
 
-  it('spells every command npx @ultima-systems/cli', () => {
-    expect(SKILL).not.toMatch(/npx ultima\b/);
-    expect(SKILL).toMatch(/npx @ultima-systems\/cli status/);
+  it('spells every command npx ultima-design', () => {
+    expect(SKILL).not.toMatch(/npx ultima(?!-design)/);
+    expect(SKILL).toMatch(/npx ultima-design status/);
   });
 
   it.each([

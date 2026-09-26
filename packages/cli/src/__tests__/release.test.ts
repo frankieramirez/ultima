@@ -17,7 +17,7 @@ const INSTALLED = ['dependencies', 'peerDependencies', 'optionalDependencies', '
 describe('the published package', () => {
   it('packs only the bundle, the skill and the manifest', () => {
     const [pack] = JSON.parse(execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], { cwd: packageDir, encoding: 'utf8' }));
-    expect(pack.files.map(({ path }: { path: string }) => path).sort()).toEqual(['dist/cli.js', 'package.json', 'skill/ultima-systems/SKILL.md']);
+    expect(pack.files.map(({ path }: { path: string }) => path).sort()).toEqual(['dist/cli.js', 'package.json', 'skill/ultima-design/SKILL.md']);
   });
 
   // The workflow publishes the tarball `pnpm pack` writes, which rewrites workspace: ranges.
@@ -37,7 +37,7 @@ describe('the published package', () => {
   });
 
   it('declares what npm needs to publish it with provenance', () => {
-    expect(manifest.name).toBe('@ultima-systems/cli');
+    expect(manifest.name).toBe('ultima-design');
     expect(manifest.version).toMatch(/^0\.\d+\.\d+$/);
     expect(manifest.engines.node).toBeDefined();
     expect(manifest.repository).toEqual({ type: 'git', url: 'git+https://github.com/frankieramirez/ultima.git', directory: 'packages/cli' });
@@ -54,7 +54,7 @@ describe('the published package', () => {
     const manifests = ['packages', 'apps'].flatMap((folder) =>
       readdirSync(join(repository, folder)).map((name) => JSON.parse(readFileSync(join(repository, folder, name, 'package.json'), 'utf8'))),
     );
-    expect(manifests.filter((json) => json.private !== true).map((json) => json.name)).toEqual(['@ultima-systems/cli']);
+    expect(manifests.filter((json) => json.private !== true).map((json) => json.name)).toEqual(['ultima-design']);
   });
 
   it.each([

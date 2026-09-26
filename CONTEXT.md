@@ -100,11 +100,11 @@ The planned command a consumer runs with `npx` in their own repository: `doctor`
 
 ## Managed file
 
-A file the consumer CLI writes into a consumer's repository and refreshes on every `install`: the consumer skill, stamped with the CLI version that wrote it, and Ultima's hook entries, marked `ultima-systems` and the same in every release. It points at hosted guidance and never restates a convention. It is the one exception to hosted-only guidance, and it is not a registry item, which the consumer owns outright.
+A file the consumer CLI writes into a consumer's repository and refreshes on every `install`: the consumer skill, stamped with the CLI version that wrote it, and Ultima's hook entries, marked `ultima-design` and the same in every release. It points at hosted guidance and never restates a convention. It is the one exception to hosted-only guidance, and it is not a registry item, which the consumer owns outright.
 
 ## Consumer skill
 
-The skill `install` writes into a consumer's repository, named `ultima-systems`. It is a managed file that versions with the CLI. It says when to fetch `/llms.txt` and which CLI command to run at each step, and each imperative in it is one that `check` enforces. It is not `forge`, the contributor skill, and it is not mana's `ultima` audit skill.
+The skill `install` writes into a consumer's repository, named `ultima-design`. It is a managed file that versions with the CLI. It says when to fetch `/llms.txt` and which CLI command to run at each step, and each imperative in it is one that `check` enforces. It is not `forge`, the contributor skill, and it is not mana's `ultima` audit skill.
 
 ## Consumer scope
 

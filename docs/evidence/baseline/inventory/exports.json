@@ -17,7 +17,7 @@
         "./*": "./src/*.tsx"
       },
       "@ultima/elements": null,
-      "@ultima-systems/cli": null,
+      "ultima-design": null,
       "@ultima/docs": null
     },
     "symbols": {

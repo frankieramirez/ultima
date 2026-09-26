@@ -7,9 +7,9 @@ import { CLI_VERSION, detectHarnesses, readSkillStamp, skillStamp } from '../ins
 import { run } from '../run.ts';
 import { edit, project, snapshot } from './fixtures.ts';
 
-const CLAUDE = '.claude/skills/ultima-systems/SKILL.md';
-const AGENTS = '.agents/skills/ultima-systems/SKILL.md';
-const SOURCE = readFileSync(new URL('../../skill/ultima-systems/SKILL.md', import.meta.url), 'utf8');
+const CLAUDE = '.claude/skills/ultima-design/SKILL.md';
+const AGENTS = '.agents/skills/ultima-design/SKILL.md';
+const SOURCE = readFileSync(new URL('../../skill/ultima-design/SKILL.md', import.meta.url), 'utf8');
 
 function withDirectories(...directories: string[]): string {
   const root = project();
@@ -23,7 +23,7 @@ describe('the skill stamp', () => {
   it('is a frontmatter metadata entry whose hash covers the file without it', () => {
     const stamped = skillStamp(SOURCE, '1.2.3');
     const frontmatter = stamped.slice(0, stamped.indexOf('\n---\n', 3));
-    expect(frontmatter).toMatch(/\nmetadata:\n {2}ultima-systems: 1\.2\.3 sha256:[0-9a-f]{64}$/);
+    expect(frontmatter).toMatch(/\nmetadata:\n {2}ultima-design: 1\.2\.3 sha256:[0-9a-f]{64}$/);
     expect(readSkillStamp(stamped)).toMatchObject({ version: '1.2.3', content: SOURCE });
   });
 
@@ -56,7 +56,7 @@ describe('install', () => {
     const before = snapshot(root);
     const second = await run(['install', '--cwd', root]);
     expect(second.code).toBe(0);
-    expect(second.stdout).toMatch(/unchanged {4}\.claude\/skills\/ultima-systems\/SKILL\.md/);
+    expect(second.stdout).toMatch(/unchanged {4}\.claude\/skills\/ultima-design\/SKILL\.md/);
     expect(snapshot(root)).toEqual(before);
     expect([CLAUDE, AGENTS].map((file) => statSync(join(root, file)).mtimeMs)).toEqual(mtimes);
   });
@@ -77,10 +77,10 @@ describe('install', () => {
   });
 
   it('replaces a skill another CLI version wrote, and the directory whole', async () => {
-    const root = project({ [CLAUDE]: skillStamp(SOURCE, '0.0.0-old'), '.claude/skills/ultima-systems/notes.md': 'stray\n' });
+    const root = project({ [CLAUDE]: skillStamp(SOURCE, '0.0.0-old'), '.claude/skills/ultima-design/notes.md': 'stray\n' });
     await run(['install', '--cwd', root]);
     expect(read(root, CLAUDE)).toBe(skillStamp(SOURCE, CLI_VERSION));
-    expect(existsSync(join(root, '.claude/skills/ultima-systems/notes.md'))).toBe(false);
+    expect(existsSync(join(root, '.claude/skills/ultima-design/notes.md'))).toBe(false);
   });
 
   it('writes nothing and names --harness when no harness is detected', async () => {
@@ -120,10 +120,10 @@ describe('install', () => {
   it('prints the one command that adds the CLI when it is not a devDependency, and edits no package.json', async () => {
     const root = withDirectories('.claude');
     const bare = await run(['install', '--cwd', root]);
-    expect(bare.stdout).toContain('npm install -D @ultima-systems/cli');
+    expect(bare.stdout).toContain('npm install -D ultima-design');
     expect(read(root, 'package.json')).toBe('{}');
 
-    const pinned = project({ 'package.json': JSON.stringify({ devDependencies: { '@ultima-systems/cli': '0.1.0' } }) });
+    const pinned = project({ 'package.json': JSON.stringify({ devDependencies: { 'ultima-design': '0.1.0' } }) });
     mkdirSync(join(pinned, '.claude'));
     expect((await run(['install', '--cwd', pinned])).stdout).not.toContain('npm install');
   });
@@ -143,7 +143,7 @@ describe('uninstall', () => {
 
     const result = await run(['uninstall', '--cwd', root]);
     expect(result.code).toBe(0);
-    expect(existsSync(join(root, '.claude/skills/ultima-systems'))).toBe(false);
+    expect(existsSync(join(root, '.claude/skills/ultima-design'))).toBe(false);
     expect(existsSync(join(root, AGENTS))).toBe(true);
     expect(result.stdout).toContain(`removed      ${CLAUDE}`);
     expect(result.stdout).toContain(`skipped      ${AGENTS}  edited since install; left in place`);

@@ -22,5 +22,5 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.error(`release-tag: ${mismatch}. Bump the version or retag.`);
     process.exit(1);
   }
-  console.log(`release-tag: ${tag} matches @ultima-systems/cli ${version}`);
+  console.log(`release-tag: ${tag} matches ultima-design ${version}`);
 }

@@ -214,11 +214,11 @@ describe('the installed Claude Code hook', () => {
   it('returns the finding for a recorded payload piped into its command', async () => {
     const app = consumer();
     expect((await run(['install', '--cwd', app, '--harness', 'claude'])).code).toBe(0);
-    // What `npm install @ultima-systems/cli` leaves behind, so `npx --no-install` resolves the build.
-    mkdirSync(join(app, 'node_modules/@ultima-systems'), { recursive: true });
-    symlinkSync(join(here, '../..'), join(app, 'node_modules/@ultima-systems/cli'), 'dir');
+    // What `npm install ultima-design` leaves behind, so `npx --no-install` resolves the build.
+    mkdirSync(join(app, 'node_modules'), { recursive: true });
+    symlinkSync(join(here, '../..'), join(app, 'node_modules/ultima-design'), 'dir');
     mkdirSync(join(app, 'node_modules/.bin'));
-    symlinkSync('../@ultima-systems/cli/dist/cli.js', join(app, 'node_modules/.bin/ultima'));
+    symlinkSync('../ultima-design/dist/cli.js', join(app, 'node_modules/.bin/ultima'));
     const settings = JSON.parse(readFileSync(join(app, '.claude/settings.json'), 'utf8'));
     const [{ command }] = settings.hooks.PostToolUse.find((entry: { matcher: string }) => entry.matcher === 'Edit|Write').hooks;
     const result = spawnSync('sh', ['-c', command], {

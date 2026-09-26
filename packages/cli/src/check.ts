@@ -16,7 +16,7 @@ export function check(
     const { incomplete } = scope;
     // A missing or unreadable components.json is a setup failure, which doctor checks and explains.
     if (incomplete.ruleId !== 'ULT-SCOPE-001') return { diagnostics: [incomplete] };
-    return { diagnostics: [{ ...incomplete, repair: 'Run `npx @ultima-systems/cli doctor`; it names the setup step that writes components.json.' }] };
+    return { diagnostics: [{ ...incomplete, repair: 'Run `npx ultima-design doctor`; it names the setup step that writes components.json.' }] };
   }
   const report = checkConsumer(scope, { strict: options.strict ?? false });
   const skipped = scope.skipped.map(({ path, reason }) => ({ step: `Skipped: ${path}`, reason: `Named by --files, and ${reason}.` }));

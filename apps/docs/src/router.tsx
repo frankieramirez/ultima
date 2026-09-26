@@ -4,6 +4,7 @@ import { components } from './components';
 import { componentTitle } from './document-title';
 import { componentPages } from './generated/component-pages';
 import { Prose } from './prose';
+import { CliPage } from './routes/cli';
 import { ComponentsPage } from './routes/components';
 import { Home } from './routes/home';
 import { ElementsPage } from './routes/elements';
@@ -32,6 +33,13 @@ const installRoute = createRoute({
   path: '/install',
   component: InstallPage,
   staticData: { title: 'Install' },
+});
+
+const cliRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/cli',
+  component: CliPage,
+  staticData: { title: 'CLI' },
 });
 
 const elementsRoute = createRoute({
@@ -101,6 +109,7 @@ const themeStudioRoute = createRoute({
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   installRoute,
+  cliRoute,
   elementsRoute,
   tokensRoute,
   paletteRoute,

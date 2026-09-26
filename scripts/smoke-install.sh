@@ -256,7 +256,7 @@ assert_diff_shows_only_the_edit() {
 assert_hook_returns_the_finding() {
   local app="$1"
   # The hook command runs `npx --no-install`, which resolves the tarball assert_tarball_doctor_passes installed.
-  (cd "$app" && npx --no-install @ultima-systems/cli install --harness claude) >/dev/null
+  (cd "$app" && npx --no-install ultima-design install --harness claude) >/dev/null
   cp "$ROOT/packages/analysis/fixtures/app/palette.tsx" "$app/src/SmokePalette.tsx"
   local command
   command="$(node -e 'const s = require(process.argv[1]); console.log(s.hooks.PostToolUse.find((e) => e.matcher === "Edit|Write").hooks[0].command)' "$app/.claude/settings.json")"
@@ -279,12 +279,12 @@ process.stdout.write(JSON.stringify(payload));
 pack_cli() {
   mkdir -p "$WORK/pack"
   (cd "$ROOT/packages/cli" && pnpm pack --pack-destination "$WORK/pack" >/dev/null)
-  TARBALL="$(ls "$WORK"/pack/ultima-systems-cli-*.tgz)"
+  TARBALL="$(ls "$WORK"/pack/ultima-design-*.tgz)"
   echo "smoke-install: packed $(basename "$TARBALL")"
 }
 
 assert_tarball_doctor_passes() {
-  (cd "$1" && npm install -D "$TARBALL" && npx --no-install @ultima-systems/cli doctor)
+  (cd "$1" && npm install -D "$TARBALL" && npx --no-install ultima-design doctor)
 }
 
 assert_installed() {
@@ -442,7 +442,7 @@ import { ultimaStylex } from './ultima.vite.ts'"
   step "vite: ultima diff"
   assert_diff_shows_only_the_edit "$app/src" "$app"
 
-  step "vite: npx --no-install @ultima-systems/cli doctor, from the packed tarball"
+  step "vite: npx --no-install ultima-design doctor, from the packed tarball"
   assert_tarball_doctor_passes "$app"
 
   step "vite: ultima hook"
@@ -594,7 +594,7 @@ HOST="${HOST%/}"
 curl -fsS "$HOST/r/registry.json" >/dev/null
 
 step "building the CLI"
-(cd "$ROOT" && pnpm --filter @ultima-systems/cli build)
+(cd "$ROOT" && pnpm --filter ultima-design build)
 pack_cli
 
 CATALOGUE="$(catalogue)"
