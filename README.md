@@ -75,10 +75,15 @@ The [rationale](https://ultima.systems/rationale) page and the [ADRs](docs/adr) 
 
 ```text
 apps/docs          The docs site, its MDX content, and the component demos.
+packages/analysis  The architecture checker's engine: scopes, rules, and the dependency policy.
+packages/cli       The ultima-design consumer CLI: install, doctor, check, status, diff.
+packages/elements  The custom-element re-implementations and the bundle the registry serves.
 packages/tokens    Token sources, themes, the palette generator, and the generated tokens.css and tokens.json.
 packages/ui        One file per component in src/, shared helper types in src/lib/, tests in src/__tests__/.
-registry/          Build output, apart from static/ and items.config.ts.
+registry/          Build output, apart from the authored static/ and metadata/ descriptors.
+scripts/           The catalogue generator, the registry build, verification helpers, and smoke-install.
 skills/            Ultima's own agent skills. forge authors and revises a component.
+verification/      Feature and scenario records, one JSON file each.
 docs/              The specification, ADRs, and research notes.
 ```
 
