@@ -71,7 +71,7 @@
       "Glob {\"pattern\":\"packages/ui/src/Dialog*\"}",
       "Glob {\"pattern\":\"packages/ui/src/__tests__/*ialog*\"}",
       "Glob {\"pattern\":\"packages/ui/src/*ialog*\"}",
-      "Grep {\"pattern\":\"\\\"test\\\"\",\"path\":\"/home/f/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-2-i659EL/repo/packages/ui/package.json\"}"
+      "Grep {\"pattern\":\"\\\"test\\\"\",\"path\":\"~/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-2-i659EL/repo/packages/ui/package.json\"}"
     ],
     "filesOpened": [
       "packages/ui/src/__tests__/dialog.test.tsx"
@@ -83,7 +83,7 @@
       "cat package.json | head -40",
       "cat packages/ui/package.json",
       "cd packages/ui && npx vitest run --reporter=verbose src/__tests__/dialog.test.tsx 2>&1 | tail -40",
-      "cd /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-2-i659EL/repo && pnpm --filter @ultima/ui test -- dialog.test.tsx 2>&1 | tail -30",
+      "cd ~/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-2-i659EL/repo && pnpm --filter @ultima/ui test -- dialog.test.tsx 2>&1 | tail -30",
       "pnpm --filter @ultima/ui exec vitest run --reporter=verbose src/__tests__/dialog.test.tsx 2>&1 | tail -20"
     ],
     "answer": "This scoped command works correctly from the repo root, running exactly the 9 tests in `dialog.test.tsx`, including the Escape/focus-return test.\n\nOWNER: packages/ui/src/dialog.tsx\nCOMMAND: pnpm --filter @ultima/ui exec vitest run --reporter=verbose src/__tests__/dialog.test.tsx"
@@ -100,7 +100,7 @@
       "coverageSeen": [
         "dialog.test.tsx"
       ],
-      "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-2-i659EL/repo/packages/ui\n      API started at http://localhost:63315/\n\n ✓  chromium  src/__tests__/dialog.test.tsx > mounts closed with Title, Description, and Close unmounted 20ms\n ✓  chromium  src/__tests__/dialog.test.tsx > mounts open with Title, Description, and Close 36ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the dialog is named by Dialog.Title 34ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the popup has no outline when it holds focus and a child shows a ring 34ms\n ✓  chromium  src/__tests__/dialog.test.tsx > Escape closes and returns focus to the trigger, and Tab loops inside 129ms\n ✓  chromium  src/__tests__/dialog.test.tsx > data-open on Backdrop makes it visible and a closed dialog unmounts the popup 21ms\n ✓  chromium  src/__tests__/dialog.test.tsx > public prop types drop className on styled parts 12ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the open popup has no axe violations in dark 91ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the open popup has no axe violations in light 68ms\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  16:21:54\n   Duration  2.15s (tests 48%, import 34%, setup 11%, worker 7%)\n\n"
+      "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-2-i659EL/repo/packages/ui\n      API started at http://localhost:63315/\n\n ✓  chromium  src/__tests__/dialog.test.tsx > mounts closed with Title, Description, and Close unmounted 20ms\n ✓  chromium  src/__tests__/dialog.test.tsx > mounts open with Title, Description, and Close 36ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the dialog is named by Dialog.Title 34ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the popup has no outline when it holds focus and a child shows a ring 34ms\n ✓  chromium  src/__tests__/dialog.test.tsx > Escape closes and returns focus to the trigger, and Tab loops inside 129ms\n ✓  chromium  src/__tests__/dialog.test.tsx > data-open on Backdrop makes it visible and a closed dialog unmounts the popup 21ms\n ✓  chromium  src/__tests__/dialog.test.tsx > public prop types drop className on styled parts 12ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the open popup has no axe violations in dark 91ms\n ✓  chromium  src/__tests__/dialog.test.tsx > the open popup has no axe violations in light 68ms\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  16:21:54\n   Duration  2.15s (tests 48%, import 34%, setup 11%, worker 7%)\n\n"
     },
     "success": true,
     "ambiguousPrompt": false,

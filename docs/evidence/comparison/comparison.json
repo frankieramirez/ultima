@@ -20117,7 +20117,7 @@
           "coverageSeen": [
             "dialog.test.tsx"
           ],
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-baseline-3-UI99PK/repo/packages/ui\n      API started at http://localhost:63315/\n\n ✓ |chromium| src/__tests__/dialog.test.tsx > mounts closed with Title, Description, and Close unmounted 22ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > mounts open with Title, Description, and Close 27ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the dialog is named by Dialog.Title 32ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the popup has no outline when it holds focus and a child shows a ring 53ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > Escape closes and returns focus to the trigger, and Tab loops inside 144ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > data-open on Backdrop makes it visible and a closed dialog unmounts the popup 22ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > public prop types drop className on styled parts 11ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the open popup has no axe violations in dark 91ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the open popup has no axe violations in light 69ms\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  10:02:00\n   Duration  2.27s (tests 48%, import 34%, setup 11%, worker 8%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-baseline-3-UI99PK/repo/packages/ui\n      API started at http://localhost:63315/\n\n ✓ |chromium| src/__tests__/dialog.test.tsx > mounts closed with Title, Description, and Close unmounted 22ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > mounts open with Title, Description, and Close 27ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the dialog is named by Dialog.Title 32ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the popup has no outline when it holds focus and a child shows a ring 53ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > Escape closes and returns focus to the trigger, and Tab loops inside 144ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > data-open on Backdrop makes it visible and a closed dialog unmounts the popup 22ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > public prop types drop className on styled parts 11ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the open popup has no axe violations in dark 91ms\n ✓ |chromium| src/__tests__/dialog.test.tsx > the open popup has no axe violations in light 69ms\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  10:02:00\n   Duration  2.27s (tests 48%, import 34%, setup 11%, worker 8%)\n\n"
         },
         "success": true,
         "ambiguousPrompt": false,
@@ -20148,7 +20148,7 @@
           "coverageSeen": [
             "dialog.test.tsx"
           ],
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-candidate-1-j4IIwa/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  09:58:24\n   Duration  2.54s (tests 39%, worker 29%, import 27%, setup 5%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-candidate-1-j4IIwa/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  09:58:24\n   Duration  2.54s (tests 39%, worker 29%, import 27%, setup 5%)\n\n"
         },
         "success": true,
         "ambiguousPrompt": false,
@@ -20274,7 +20274,7 @@
           "coverageSeen": [
             "date-picker.test.tsx"
           ],
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-picker-baseline-2-XaIlaX/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:20:49\n   Duration  2.62s (tests 61%, import 26%, worker 6%, setup 6%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-picker-baseline-2-XaIlaX/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:20:49\n   Duration  2.62s (tests 61%, import 26%, worker 6%, setup 6%)\n\n"
         },
         "success": true,
         "ambiguousPrompt": true,
@@ -20338,7 +20338,7 @@
           "coverageSeen": [
             "date-picker.test.tsx"
           ],
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-1-kkmTvi/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:20:07\n   Duration  3.01s (tests 49%, import 23%, worker 22%, setup 6%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-1-kkmTvi/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:20:07\n   Duration  3.01s (tests 49%, import 23%, worker 22%, setup 6%)\n\n"
         },
         "success": true,
         "ambiguousPrompt": true,
@@ -20369,7 +20369,7 @@
           "coverageSeen": [
             "date-picker.test.tsx"
           ],
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-2-kFafXP/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:20:29\n   Duration  5.00s (worker 38%, tests 36%, import 21%, setup 5%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-2-kFafXP/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:20:29\n   Duration  5.00s (worker 38%, tests 36%, import 21%, setup 5%)\n\n"
         },
         "success": true,
         "ambiguousPrompt": true,
@@ -20400,7 +20400,7 @@
           "coverageSeen": [
             "date-picker.test.tsx"
           ],
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-3-jNNqlL/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:21:58\n   Duration  3.05s (tests 48%, worker 23%, import 20%, setup 8%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-3-jNNqlL/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:21:58\n   Duration  3.05s (tests 48%, worker 23%, import 20%, setup 8%)\n\n"
         },
         "success": true,
         "ambiguousPrompt": true,
@@ -20463,7 +20463,7 @@
           "coverageSeen": [
             "history.test.ts"
           ],
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-2-78hddT/repo/packages/tokens\n\n\n Test Files  1 passed (1)\n      Tests  6 passed (6)\n   Start at  10:13:02\n   Duration  140ms (transform 71%, import 18%, tests 8%, worker 3%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-2-78hddT/repo/packages/tokens\n\n\n Test Files  1 passed (1)\n      Tests  6 passed (6)\n   Start at  10:13:02\n   Duration  140ms (transform 71%, import 18%, tests 8%, worker 3%)\n\n"
         },
         "success": true,
         "ambiguousPrompt": false,
@@ -20525,7 +20525,7 @@
           "coverageSeen": [
             "theme-studio.test.tsx"
           ],
-          "tail": "ate-1-BGXt1f/repo/node_modules/.pnpm/vite@8.2.2_@types+node@26.5.0_esbuild@0.28.2/node_modules/vite/dist/node/chunks/node.js:25205:20)\n ❯ |chromium| src/__tests__/theme-studio.test.tsx (0 test)\n\n⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |chromium| src/__tests__/theme-studio.test.tsx [ src/__tests__/theme-studio.test.tsx ]\nError: Failed to import test file /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-1-BGXt1f/repo/apps/docs/src/__tests__/theme-studio.test.tsx\n ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.Cigb0uSy-CiFRUUTk.js?v=9da12d3f:5562:5\n ❯ collectTests node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.Cigb0uSy-CiFRUUTk.js?v=9da12d3f:5538:3\n ❯ startTests node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.Cigb0uSy-CiFRUUTk.js?v=9da12d3f:6213:17\n\nCaused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-1-BGXt1f/repo/apps/docs/src/__tests__/theme-studio.test.tsx?import&browserv=1790258847193\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n\n Test Files  1 failed (1)\n      Tests  no tests\n   Start at  10:07:24\n   Duration  4.10s (worker 100%)\n\nundefined\n/home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-1-BGXt1f/repo/apps/docs:\n ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run src/__tests__/theme-studio.test.tsx\n"
+          "tail": "ate-1-BGXt1f/repo/node_modules/.pnpm/vite@8.2.2_@types+node@26.5.0_esbuild@0.28.2/node_modules/vite/dist/node/chunks/node.js:25205:20)\n ❯ |chromium| src/__tests__/theme-studio.test.tsx (0 test)\n\n⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |chromium| src/__tests__/theme-studio.test.tsx [ src/__tests__/theme-studio.test.tsx ]\nError: Failed to import test file ~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-1-BGXt1f/repo/apps/docs/src/__tests__/theme-studio.test.tsx\n ❯ node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.Cigb0uSy-CiFRUUTk.js?v=9da12d3f:5562:5\n ❯ collectTests node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.Cigb0uSy-CiFRUUTk.js?v=9da12d3f:5538:3\n ❯ startTests node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/deps/plugins.Cigb0uSy-CiFRUUTk.js?v=9da12d3f:6213:17\n\nCaused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-1-BGXt1f/repo/apps/docs/src/__tests__/theme-studio.test.tsx?import&browserv=1790258847193\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n\n Test Files  1 failed (1)\n      Tests  no tests\n   Start at  10:07:24\n   Duration  4.10s (worker 100%)\n\nundefined\n~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-1-BGXt1f/repo/apps/docs:\n ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run src/__tests__/theme-studio.test.tsx\n"
         },
         "success": false,
         "ambiguousPrompt": false,
@@ -20557,7 +20557,7 @@
           "coverageSeen": [
             "theme-studio.test.tsx"
           ],
-          "tail": "ilding context-menu...\n- Building date-picker...\n- Building dialog...\n- Building drawer...\n- Building dropdown-menu...\n- Building empty...\n- Building field...\n- Building fieldset...\n- Building hover-card...\n- Building input-group...\n- Building input-otp...\n- Building input...\n- Building menubar...\n- Building meter...\n- Building native-select...\n- Building navigation-menu...\n- Building pagination...\n- Building popover...\n- Building progress...\n- Building radio-group...\n- Building resizable...\n- Building scroll-area...\n- Building select...\n- Building separator...\n- Building sidebar...\n- Building skeleton...\n- Building slider...\n- Building spinner...\n- Building stat...\n- Building switch...\n- Building table...\n- Building tabs...\n- Building textarea...\n- Building toast...\n- Building toggle-group...\n- Building toggle...\n- Building tooltip...\n- Building setup-vite...\n- Building setup-next...\n- Building tokens-css...\n- Building ult-badge...\n- Building ult-button...\n- Building ult-card...\n- Building ult-code...\n- Building ult-meter...\n- Building ult-stat...\n- Building ult-table...\n- Building ult-tabs...\n- Building ult-tooltip...\n✔ Building registry.\nregistry: built 68 items into apps/docs/public/r\n\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-2-G45lhS/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  43 passed (43)\n   Start at  10:10:40\n   Duration  14.96s (tests 83%, import 17%, worker 1%)\n\n"
+          "tail": "ilding context-menu...\n- Building date-picker...\n- Building dialog...\n- Building drawer...\n- Building dropdown-menu...\n- Building empty...\n- Building field...\n- Building fieldset...\n- Building hover-card...\n- Building input-group...\n- Building input-otp...\n- Building input...\n- Building menubar...\n- Building meter...\n- Building native-select...\n- Building navigation-menu...\n- Building pagination...\n- Building popover...\n- Building progress...\n- Building radio-group...\n- Building resizable...\n- Building scroll-area...\n- Building select...\n- Building separator...\n- Building sidebar...\n- Building skeleton...\n- Building slider...\n- Building spinner...\n- Building stat...\n- Building switch...\n- Building table...\n- Building tabs...\n- Building textarea...\n- Building toast...\n- Building toggle-group...\n- Building toggle...\n- Building tooltip...\n- Building setup-vite...\n- Building setup-next...\n- Building tokens-css...\n- Building ult-badge...\n- Building ult-button...\n- Building ult-card...\n- Building ult-code...\n- Building ult-meter...\n- Building ult-stat...\n- Building ult-table...\n- Building ult-tabs...\n- Building ult-tooltip...\n✔ Building registry.\nregistry: built 68 items into apps/docs/public/r\n\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-2-G45lhS/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  43 passed (43)\n   Start at  10:10:40\n   Duration  14.96s (tests 83%, import 17%, worker 1%)\n\n"
         },
         "success": true,
         "ambiguousPrompt": false,

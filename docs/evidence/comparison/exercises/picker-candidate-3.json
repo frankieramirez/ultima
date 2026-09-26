@@ -69,14 +69,14 @@
       "Bash": 2
     },
     "searches": [
-      "find /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-3-jNNqlL/repo/packages/ui/src -iname \"*picker*\""
+      "find ~/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-3-jNNqlL/repo/packages/ui/src -iname \"*picker*\""
     ],
     "filesOpened": [],
     "failedCommands": [],
     "failedTools": 0,
     "edits": [],
     "bashCommands": [
-      "find /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-3-jNNqlL/repo/packages/ui/src -iname \"*picker*\"",
+      "find ~/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-3-jNNqlL/repo/packages/ui/src -iname \"*picker*\"",
       "pnpm verify list --search date-picker 2>&1 | head -60"
     ],
     "discoveryCommands": [
@@ -96,7 +96,7 @@
       "coverageSeen": [
         "date-picker.test.tsx"
       ],
-      "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-3-jNNqlL/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:21:58\n   Duration  3.05s (tests 48%, worker 23%, import 20%, setup 8%)\n\n"
+      "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-3-jNNqlL/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:21:58\n   Duration  3.05s (tests 48%, worker 23%, import 20%, setup 8%)\n\n"
     },
     "success": true,
     "ambiguousPrompt": true,

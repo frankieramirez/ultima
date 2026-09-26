@@ -68,7 +68,7 @@
     },
     "searches": [
       "Glob {\"pattern\":\"**/*icker*\"}",
-      "grep -n \"\\\"test\\\"\\|testMatch\\|include\" /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-picker-2-5fPoTa/repo/package.json /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-picker-2-5fPoTa/repo/packages/ui/vitest.config.* 2>/dev/null"
+      "grep -n \"\\\"test\\\"\\|testMatch\\|include\" ~/.cache/ultima-measure/449/tmp/ultima-exercise-picker-2-5fPoTa/repo/package.json ~/.cache/ultima-measure/449/tmp/ultima-exercise-picker-2-5fPoTa/repo/packages/ui/vitest.config.* 2>/dev/null"
     ],
     "filesOpened": [
       "packages/ui/src/__tests__/date-picker.test.tsx"
@@ -77,8 +77,8 @@
     "failedTools": 0,
     "edits": [],
     "bashCommands": [
-      "cat /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-picker-2-5fPoTa/repo/packages/ui/package.json | head -40",
-      "grep -n \"\\\"test\\\"\\|testMatch\\|include\" /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-picker-2-5fPoTa/repo/package.json /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-picker-2-5fPoTa/repo/packages/ui/vitest.config.* 2>/dev/null"
+      "cat ~/.cache/ultima-measure/449/tmp/ultima-exercise-picker-2-5fPoTa/repo/packages/ui/package.json | head -40",
+      "grep -n \"\\\"test\\\"\\|testMatch\\|include\" ~/.cache/ultima-measure/449/tmp/ultima-exercise-picker-2-5fPoTa/repo/package.json ~/.cache/ultima-measure/449/tmp/ultima-exercise-picker-2-5fPoTa/repo/packages/ui/vitest.config.* 2>/dev/null"
     ],
     "answer": "I can target just the `packages/ui` package's Vitest run and filter to the date-picker test file.\n\nOWNER: packages/ui/src/date-picker.tsx\nCOMMAND: pnpm --filter @ultima/ui test -- date-picker.test.tsx"
   },

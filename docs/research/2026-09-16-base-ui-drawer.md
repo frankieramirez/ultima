@@ -268,7 +268,7 @@ One published-documentation gap to carry forward: the Backdrop's data-attribute 
 
 ## Sources
 
-Paths below are relative to `/home/f/orca/workspaces/ultima/dagon/node_modules/.pnpm/@base-ui+react@1.8.0_@types+react@19.2.18_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@base-ui/react/`.
+Paths below are relative to `~/orca/workspaces/ultima/dagon/node_modules/.pnpm/@base-ui+react@1.8.0_@types+react@19.2.18_react-dom@19.2.8_react@19.2.8__react@19.2.8/node_modules/@base-ui/react/`.
 
 - `docs/react/components/drawer.md` — the package ships the published Drawer documentation verbatim, 5,874 lines, headed "treat this documentation as authoritative". Source for: the anatomy tree (l. 286–320); "Drawer extends Dialog: It adds gesture support, snap points, and indent effects" (l. 284); "Positioning is handled by your styles" (l. 365); the Indent-effect prose and its "notifies it when it mounts" wording (l. 2330); the Indent CSS Modules demo (l. 2394–2450); the virtual-keyboard guidance including "Always include the `0px` fallback" (l. 1697–1704); the snap-point offset rule (l. 1292–1312); "Stacking and animations" with `--nested-drawers`, `--drawer-height`/`--drawer-frontmost-height`, the directional exit rule and the `--drawer-swipe-strength` release rule (l. 5032–5130); the API reference part descriptions, props, data attributes and CSS-variable tables (l. 5131–5770); the hero, snap-point and swipe-area demo CSS.
 - `drawer/index.parts.d.ts` — the fifteen part exports plus `createHandle`/`Handle`; no `Positioner`.

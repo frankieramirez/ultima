@@ -81,8 +81,8 @@
     "bashCommands": [
       "cat package.json | grep -A5 '\"test\"'; echo ---; cat packages/ui/package.json | grep -A5 '\"test\"'",
       "cd packages/ui && pnpm test -- dialog.test.tsx 2>&1 | tail -60",
-      "cd /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-1-mB2M5s/repo && pnpm --filter @ultima/ui test -- src/__tests__/dialog.test.tsx 2>&1 | tail -40",
-      "cd /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-1-mB2M5s/repo/packages/ui && npx vitest run --reporter=verbose dialog 2>&1 | tail -40"
+      "cd ~/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-1-mB2M5s/repo && pnpm --filter @ultima/ui test -- src/__tests__/dialog.test.tsx 2>&1 | tail -40",
+      "cd ~/.cache/ultima-measure/449/tmp/ultima-exercise-dialog-escape-1-mB2M5s/repo/packages/ui && npx vitest run --reporter=verbose dialog 2>&1 | tail -40"
     ],
     "answer": "This filtered correctly (matched both `dialog.test.tsx` and `alert-dialog.test.tsx`, both containing \"Escape closes and returns focus to the trigger\" tests). The `dialog.tsx` component owns the reported Escape-focus behavior.\n\nOWNER: packages/ui/src/dialog.tsx\nCOMMAND: cd packages/ui && npx vitest run --reporter=verbose dialog"
   },

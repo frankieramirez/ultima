@@ -91,7 +91,7 @@
         "cat packages/ui/node_modules/@base-ui/react/number-field/root/useNumberFieldStepperButton.js 2>/dev/null",
         "cat packages/ui/node_modules/@base-ui/react/number-field/utils/stateAttributesMapping.js 2>/dev/null",
         "find . -path ./node_modules -prune -o -iname \"*registry*build*\" -print 2>/dev/null | grep -v node_modules",
-        "cd /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-1-65yeBS/repo/packages/ui/node_modules/@base-ui/react/internals && grep -n \"disabled\\|readOnly\\|defaultMap\\|function getStyleHookProps\\|export\" getStyleHookProps.js 2>/dev/null | head -40",
+        "cd ~/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-1-65yeBS/repo/packages/ui/node_modules/@base-ui/react/internals && grep -n \"disabled\\|readOnly\\|defaultMap\\|function getStyleHookProps\\|export\" getStyleHookProps.js 2>/dev/null | head -40",
         "cat getStateAttributesProps.js 2>/dev/null",
         "cat apps/docs/src/demos/native-select/*.tsx 2>/dev/null | head -40",
         "ls apps/docs/src/demos/input && cat apps/docs/src/demos/input/basic.tsx 2>/dev/null",
@@ -118,7 +118,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 10878.254195000045,
-          "tail": "\n> ultima-monorepo@ typecheck /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-1-65yeBS/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
+          "tail": "\n> ultima-monorepo@ typecheck ~/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-1-65yeBS/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
         },
         {
           "argv": [
@@ -141,7 +141,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 3026.232304000063,
-          "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m/home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-1-65yeBS/repo/packages/ui\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:37:18\n\u001b[2m   Duration \u001b[22m 2.28s\u001b[2m (tests 50%, import 32%, setup 10%, worker 8%)\u001b[22m\n\n"
+          "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m~/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-1-65yeBS/repo/packages/ui\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:37:18\n\u001b[2m   Duration \u001b[22m 2.28s\u001b[2m (tests 50%, import 32%, setup 10%, worker 8%)\u001b[22m\n\n"
         },
         {
           "argv": [
@@ -156,7 +156,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 7782.071446000016,
-          "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m/home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-1-65yeBS/repo/apps/docs\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m324 passed\u001b[39m\u001b[22m\u001b[90m (324)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:37:22\n\u001b[2m   Duration \u001b[22m 6.97s\u001b[2m (worker 58%, tests 31%, import 12%)\u001b[22m\n\n"
+          "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m~/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-1-65yeBS/repo/apps/docs\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m324 passed\u001b[39m\u001b[22m\u001b[90m (324)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:37:22\n\u001b[2m   Duration \u001b[22m 6.97s\u001b[2m (worker 58%, tests 31%, import 12%)\u001b[22m\n\n"
         }
       ],
       "servedItem": true

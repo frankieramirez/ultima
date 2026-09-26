@@ -96,7 +96,7 @@
       "coverageSeen": [
         "date-picker.test.tsx"
       ],
-      "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-1-kkmTvi/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:20:07\n   Duration  3.01s (tests 49%, import 23%, worker 22%, setup 6%)\n\n"
+      "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-picker-candidate-1-kkmTvi/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:20:07\n   Duration  3.01s (tests 49%, import 23%, worker 22%, setup 6%)\n\n"
     },
     "success": true,
     "ambiguousPrompt": true,

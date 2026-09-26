@@ -119,7 +119,7 @@
       "exitCode": 0,
       "elapsedMs": 13874.91425999999,
       "coverageSeen": [],
-      "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m/home/f/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-43hEJN/repo/apps/docs\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m37 passed\u001b[39m\u001b[22m\u001b[90m (37)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:15:43\n\u001b[2m   Duration \u001b[22m 13.08s\u001b[2m (tests 84%, import 16%, worker 1%)\u001b[22m\n\n"
+      "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m~/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-43hEJN/repo/apps/docs\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m37 passed\u001b[39m\u001b[22m\u001b[90m (37)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:15:43\n\u001b[2m   Duration \u001b[22m 13.08s\u001b[2m (tests 84%, import 16%, worker 1%)\u001b[22m\n\n"
     },
     "success": false,
     "ambiguousPrompt": false,

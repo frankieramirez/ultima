@@ -72,9 +72,9 @@
     },
     "searches": [
       "Grep {\"pattern\":\"undo\",\"output_mode\":\"files_with_matches\",\"-i\":true}",
-      "Grep {\"pattern\":\"replace\\\\(|reset\",\"path\":\"/home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-3-oOtEm7/repo/apps/docs/src/routes/theme-studio.tsx\",\"-n\":true}",
-      "Grep {\"pattern\":\"reset|replace\",\"path\":\"/home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-3-oOtEm7/repo/apps/docs/src/routes/theme-studio.tsx\",\"-n\":true,\"-i\":true}",
-      "Grep {\"pattern\":\"update\\\\(|commit\\\\(|onBlur|onChange\\\" \",\"path\":\"/home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-3-oOtEm7/repo/apps/docs/src\",\"-n\":true,\"glob\":\"**/theme-studio*.tsx\"}",
+      "Grep {\"pattern\":\"replace\\\\(|reset\",\"path\":\"~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-3-oOtEm7/repo/apps/docs/src/routes/theme-studio.tsx\",\"-n\":true}",
+      "Grep {\"pattern\":\"reset|replace\",\"path\":\"~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-3-oOtEm7/repo/apps/docs/src/routes/theme-studio.tsx\",\"-n\":true,\"-i\":true}",
+      "Grep {\"pattern\":\"update\\\\(|commit\\\\(|onBlur|onChange\\\" \",\"path\":\"~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-3-oOtEm7/repo/apps/docs/src\",\"-n\":true,\"glob\":\"**/theme-studio*.tsx\"}",
       "Grep {\"pattern\":\"override\",\"output_mode\":\"files_with_matches\",\"-i\":true}",
       "grep -n -i \"reset\\|undo\" apps/docs/src/theme-studio-store.ts | head -80",
       "grep -n -i \"reset\\|replace\" apps/docs/src/routes/theme-studio.tsx",
@@ -107,8 +107,8 @@
       "cat package.json | grep -A3 '\"test\"'",
       "cat apps/docs/package.json | grep -A3 '\"test\"'",
       "pnpm --filter @ultima/docs exec vitest run apps/docs/src/__tests__/theme-studio.test.tsx -t \"shuffle, locks, undo, redo, and reset theme walk one linear history\" --reporter=verbose 2>&1 | tail -60",
-      "cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-3-oOtEm7/repo/apps/docs && pnpm exec vitest run src/__tests__/theme-studio.test.tsx -t \"shuffle, locks, undo, redo, and reset theme walk one linear history\" --reporter=verbose 2>&1 | tail -80",
-      "cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-3-oOtEm7/repo && git status --short | head -30 && git check-ignore -v registry/dist 2>&1 | head -5",
+      "cd ~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-3-oOtEm7/repo/apps/docs && pnpm exec vitest run src/__tests__/theme-studio.test.tsx -t \"shuffle, locks, undo, redo, and reset theme walk one linear history\" --reporter=verbose 2>&1 | tail -80",
+      "cd ~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-3-oOtEm7/repo && git status --short | head -30 && git check-ignore -v registry/dist 2>&1 | head -5",
       "pnpm --filter @ultima/docs test -- -t \"shuffle, locks, undo, redo, and reset theme walk one linear history\" 2>&1 | tail -60",
       "cat packages/tokens/package.json | grep -A3 '\"test\"' && echo --- && sed -n '1,60p' packages/tokens/src/__tests__/history.test.ts",
       "pnpm --filter @ultima/tokens test 2>&1 | tail -40"

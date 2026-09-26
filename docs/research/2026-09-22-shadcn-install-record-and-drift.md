@@ -44,8 +44,8 @@ So a hash of the installed file never equals a hash of `registry/ultima/ui/butto
 
 ## Sources
 
-- `/home/f/orca/workspaces/ultima/murre/scripts/build-registry.ts` line 29: `const SHADCN = 'shadcn@4.21.0'`.
-- `/home/f/orca/workspaces/ultima/murre/docs/spec/ultima.md` "Registry and install", steps 1 and 5 of Generation: staged specifiers `@/registry/ultima/lib/*` and `.../ui/*`, and the setup items' `components.json` with `registries["@ultima"]` and `rsc` false for Vite.
+- `~/orca/workspaces/ultima/murre/scripts/build-registry.ts` line 29: `const SHADCN = 'shadcn@4.21.0'`.
+- `~/orca/workspaces/ultima/murre/docs/spec/ultima.md` "Registry and install", steps 1 and 5 of Generation: staged specifiers `@/registry/ultima/lib/*` and `.../ui/*`, and the setup items' `components.json` with `registries["@ultima"]` and `rsc` false for Vite.
 - https://github.com/shadcn-ui/ui/blob/shadcn@4.21.0/packages/shadcn/src/utils/updaters/update-files.ts (read via the published `dist/` of 4.21.0): create/overwrite/skip classification, `Kn` strict comparison, the overwrite prompt, `--overwrite` gating, `.env` merge, raw copy for `registry:file`/`registry:item`, transformer order.
 - https://github.com/shadcn-ui/ui/blob/shadcn@4.21.0/packages/shadcn/src/utils/transformers/transform-import.ts: the alias rewrite table quoted above.
 - https://github.com/shadcn-ui/ui/blob/shadcn@4.21.0/packages/shadcn/src/utils/add-components.ts: `docs` printed, not written; `ensureRegistriesInConfig` is the only `components.json` write for a `registry:ui` add.

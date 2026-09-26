@@ -65,7 +65,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 4359.542442999999,
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/candidate/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  09:54:41\n   Duration  3.36s (tests 40%, import 29%, worker 26%, setup 5%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/candidate/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  09:54:41\n   Duration  3.36s (tests 40%, import 29%, worker 26%, setup 5%)\n\n"
         }
       ],
       "checks": {
@@ -147,7 +147,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 21329.906898,
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/candidate/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  43 passed (43)\n   Start at  09:54:51\n   Duration  20.45s (tests 76%, import 18%, worker 6%)\n\nFailed to resolve dependency: @zag-js/date-picker, present in client 'optimizeDeps.include'\nFailed to resolve dependency: @zag-js/react, present in client 'optimizeDeps.include'\nFailed to resolve dependency: @zag-js/splitter, present in client 'optimizeDeps.include'\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/candidate/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  43 passed (43)\n   Start at  09:54:51\n   Duration  20.45s (tests 76%, import 18%, worker 6%)\n\nFailed to resolve dependency: @zag-js/date-picker, present in client 'optimizeDeps.include'\nFailed to resolve dependency: @zag-js/react, present in client 'optimizeDeps.include'\nFailed to resolve dependency: @zag-js/splitter, present in client 'optimizeDeps.include'\n"
         }
       ],
       "checks": {
@@ -205,7 +205,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 3486.954196000006,
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/candidate/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  09:55:13\n   Duration  2.72s (tests 62%, import 26%, setup 6%, worker 6%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/candidate/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  09:55:13\n   Duration  2.72s (tests 62%, import 26%, setup 6%, worker 6%)\n\n"
         }
       ],
       "checks": {

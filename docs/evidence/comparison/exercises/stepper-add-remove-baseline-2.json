@@ -129,11 +129,11 @@
         "cd /tmp/docs-audit && ls node_modules/.bin | grep -i playwright; cat package.json 2>/dev/null | head -20",
         "cd /tmp/docs-audit && node -e \"\nconst { chromium } = require('playwright');\n(async () => {\n  const browser = await chromium.launch();\n  const page = await browser.newPage({ viewport: { width: 900, height: 700 } });\n  await page.goto('http://localhost:4321/components/synthetic-stepper', { waitUntil: 'networkidle' });\n  await page.screenshot({ path: '/tmp/synthetic-stepper-dark.png' });\n  await page.evaluate(() => localStorage.setItem('ultima-theme', 'light'));\n  await page.reload({ waitUntil: 'networkidle' });\n  await page.screenshot({ path: '/tmp/synthetic-stepper-light.png' });\n  await browser.close();\n})();\n\" 2>&1 | tail -40",
         "ls -la /tmp/synthetic-stepper-dark.png /tmp/synthetic-stepper-light.png 2>&1",
-        "grep -rn \"final spell\\|FINAL SPELL\" /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo/apps/docs/src 2>/dev/null | head -5",
+        "grep -rn \"final spell\\|FINAL SPELL\" ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo/apps/docs/src 2>/dev/null | head -5",
         "grep -rln \"filled by a later component-page ticket\" . --include=\"*.tsx\" --include=\"*.ts\" --include=\"*.mdx\" 2>/dev/null | grep -v node_modules",
         "grep -rln \"component-page ticket\" . --include=\"*.tsx\" --include=\"*.ts\" 2>/dev/null | grep -v node_modules; grep -rln \"is filled by\" . --include=\"*.tsx\" 2>/dev/null | grep -v node_modules",
         "pnpm --filter @ultima/docs typecheck 2>&1 | tail -30",
-        "pkill -f \"vite preview\" 2>/dev/null; cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo && pnpm --filter @ultima/docs build 2>&1 | tail -30",
+        "pkill -f \"vite preview\" 2>/dev/null; cd ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo && pnpm --filter @ultima/docs build 2>&1 | tail -30",
         "pnpm --filter @ultima/docs build 2>&1 | tail -30",
         "(pnpm --filter @ultima/docs exec vite preview --port 4321 --strictPort > /tmp/preview.log 2>&1 &) ; sleep 3; curl -sf http://localhost:4321/ >/dev/null && echo OK",
         "cd /tmp/docs-audit && node -e \"\nconst { chromium } = require('playwright');\n(async () => {\n  const browser = await chromium.launch();\n  const page = await browser.newPage({ viewport: { width: 900, height: 900 } });\n  await page.goto('http://localhost:4321/components/synthetic-stepper', { waitUntil: 'networkidle' });\n  await page.screenshot({ path: '/tmp/synthetic-stepper-dark2.png' });\n  await page.evaluate(() => localStorage.setItem('ultima-theme', 'light'));\n  await page.reload({ waitUntil: 'networkidle' });\n  await page.screenshot({ path: '/tmp/synthetic-stepper-light2.png' });\n  await browser.close();\n})();\n\"",
@@ -149,7 +149,7 @@
       "filesOpened": 6,
       "failedCommands": [
         "ls apps/docs/src/demos/input; cat apps/docs/src/demos/input/basic.tsx",
-        "pkill -f \"vite preview\" 2>/dev/null; cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo && pnpm --filter @ultima/docs build 2>&1 | tail -30",
+        "pkill -f \"vite preview\" 2>/dev/null; cd ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo && pnpm --filter @ultima/docs build 2>&1 | tail -30",
         "pkill -f \"vite preview\" 2>/dev/null; echo done",
         "pkill -f \"vite preview\" 2>/dev/null; sleep 1; echo done"
       ],
@@ -161,7 +161,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 10757.58360100002,
-          "tail": "\n> ultima-monorepo@ typecheck /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
+          "tail": "\n> ultima-monorepo@ typecheck ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
         },
         {
           "argv": [
@@ -184,7 +184,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 3122.6695149999578,
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  13 passed (13)\n   Start at  11:51:12\n   Duration  2.39s (tests 46%, import 31%, setup 17%, worker 6%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  13 passed (13)\n   Start at  11:51:12\n   Duration  2.39s (tests 46%, import 31%, setup 17%, worker 6%)\n\n"
         },
         {
           "argv": [
@@ -199,7 +199,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 7818.803935999982,
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  2 passed (2)\n      Tests  324 passed (324)\n   Start at  11:51:15\n   Duration  7.00s (worker 58%, tests 30%, import 12%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-2-Q12b3P/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  2 passed (2)\n      Tests  324 passed (324)\n   Start at  11:51:15\n   Duration  7.00s (worker 58%, tests 30%, import 12%)\n\n"
         }
       ],
       "servedItem": true
