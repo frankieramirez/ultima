@@ -1,5 +1,7 @@
 import {
   THEME_DRAFT_VERSION,
+  resolveDraft,
+  stockDraft,
   type DensityFactor,
   type GuidedGroup,
   type MeasurePreset,
@@ -8,7 +10,7 @@ import {
   type TokenTable,
   type TypeScale,
 } from './draft.ts';
-import { SCALE_NAMES, type ScaleSeed, type ScaleSeeds } from './recipe.ts';
+import { RECIPE_VERSION, SCALE_NAMES, type ScaleSeed, type ScaleSeeds } from './recipe.ts';
 
 export type DraftParseReason = 'malformed' | 'unknown-version';
 
@@ -39,18 +41,39 @@ function isOneOf<T>(value: unknown, allowed: readonly T[]): value is T {
   return (allowed as readonly unknown[]).includes(value);
 }
 
-function parseTokenTable(value: unknown): Partial<TokenTable> | null {
-  if (!isRecord(value)) return null;
+const OVERRIDE_TOKENS = new Set(Object.keys(resolveDraft(stockDraft()).dark).filter(
+  (name) => !['--ult-color-surface-overlay', '--ult-radius-full', '--ult-filter-backdrop'].includes(name),
+));
+
+function inRange(value: unknown, min: number, max: number): value is number {
+  return isFiniteNumber(value) && value >= min && value <= max;
+}
+
+function parseTokenTable(value: unknown): Partial<TokenTable> | string {
+  if (!isRecord(value)) return 'Overrides must contain dark and light token tables.';
   const table: Partial<TokenTable> = {};
   for (const [name, token] of Object.entries(value)) {
-    if (typeof token !== 'string') return null;
-    table[name] = token;
+    if (!OVERRIDE_TOKENS.has(name)) return `Override ${name} is unknown, fixed, or derived and cannot be edited.`;
+    if (typeof token !== 'string' || !token.trim()) return `Override ${name} must be a non-empty value.`;
+    if (name.startsWith('--ult-color-')) {
+      const hex = token.trim().toLowerCase();
+      if (!/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/.test(hex)) {
+        return `Override ${name} must use opaque sRGB hex: #rgb or #rrggbb. Convert other color formats to hex.`;
+      }
+      table[name] = hex.length === 4 ? `#${[...hex.slice(1)].map((c) => c + c).join('')}` : hex;
+    } else {
+      if (name.startsWith('--ult-radius-') &&
+          (!/^(?:\d+(?:\.\d+)?|\.\d+)px$/.test(token.trim()) || !inRange(Number.parseFloat(token), 0, 96))) {
+        return `Override ${name} must be a radius from 0 to 96px.`;
+      }
+      table[name] = token.trim();
+    }
   }
   return table;
 }
 
 function parseSeed(value: unknown): ScaleSeed | null {
-  if (!isRecord(value) || !isFiniteNumber(value.hue) || !isFiniteNumber(value.saturation)) return null;
+  if (!isRecord(value) || !inRange(value.hue, 0, 360) || value.hue === 360 || !inRange(value.saturation, 0, 1.5)) return null;
   return { hue: value.hue, saturation: value.saturation };
 }
 
@@ -70,7 +93,7 @@ function parseColor(value: unknown): ScaleSeeds | null {
 function parseTypography(value: unknown): ThemeDraft['typography'] | null {
   if (!isRecord(value)) return null;
   if (typeof value.sans !== 'string' || typeof value.mono !== 'string') return null;
-  if (!isFiniteNumber(value.baseSizePx) || !isOneOf(value.scale, TYPE_SCALES)) return null;
+  if (!inRange(value.baseSizePx, 14, 18) || !isOneOf(value.scale, TYPE_SCALES)) return null;
   if (!isOneOf(value.leading, MEASURES) || !isOneOf(value.tracking, MEASURES)) return null;
   return {
     sans: value.sans,
@@ -82,11 +105,12 @@ function parseTypography(value: unknown): ThemeDraft['typography'] | null {
   };
 }
 
-function parseOverrides(value: unknown): ThemeDraft['overrides'] | null {
-  if (!isRecord(value)) return null;
+function parseOverrides(value: unknown): ThemeDraft['overrides'] | string {
+  if (!isRecord(value)) return 'Draft must contain overrides for dark and light modes.';
   const dark = parseTokenTable(value.dark);
   const light = parseTokenTable(value.light);
-  if (!dark || !light) return null;
+  if (typeof dark === 'string') return `Dark: ${dark}`;
+  if (typeof light === 'string') return `Light: ${light}`;
   return { dark, light };
 }
 
@@ -209,19 +233,26 @@ export function parseDraft(input: string): DraftParseResult {
   }
   if (!isFiniteNumber(raw.recipeVersion)) return fail('malformed', 'Draft is missing a recipe version.');
 
+  if (raw.recipeVersion !== RECIPE_VERSION) {
+    return fail('unknown-version', `Recipe version ${raw.recipeVersion} is not supported; use ${RECIPE_VERSION}.`);
+  }
+
   const color = parseColor(raw.color);
   const typography = parseTypography(raw.typography);
   const overrides = parseOverrides(raw.overrides);
   const locks = parseLocks(raw.locks);
   const shuffleSeeds = parseShuffleSeeds(raw.shuffleSeeds);
-  if (!color || !typography || !overrides || !locks || !shuffleSeeds) {
+  if (!color) return fail('malformed', 'Color seeds need a hue from 0 up to 360 (exclusive) and saturation from 0 to 1.5.');
+  if (!typography) return fail('malformed', 'Typography needs font stacks, a base size from 14 to 18px, and supported scale, leading, and tracking presets.');
+  if (typeof overrides === 'string') return fail('malformed', overrides);
+  if (!locks || !shuffleSeeds) {
     return fail('malformed', 'Draft is missing required fields.');
   }
   if (!isOneOf(raw.density, DENSITIES) || !isOneOf(raw.shape, SHAPES)) {
     return fail('malformed', 'Draft density or shape is not a known preset.');
   }
-  if (!isFiniteNumber(raw.elevation) || !isFiniteNumber(raw.motion)) {
-    return fail('malformed', 'Draft elevation or motion is not a number.');
+  if (!inRange(raw.elevation, 0, 2) || !inRange(raw.motion, 0.5, 2)) {
+    return fail('malformed', 'Draft elevation must be from 0 to 2 and motion from 0.5 to 2.');
   }
 
   return {
