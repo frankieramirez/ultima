@@ -2,6 +2,10 @@
 
 Status: implemented. [Map: Ultima theme studio](https://github.com/frankieramirez/ultima/issues/204) resolved every decision; [Build: Ship the Ultima theme studio](https://github.com/frankieramirez/ultima/issues/220) owns implementation. Contracts were amended on [#234](https://github.com/frankieramirez/ultima/issues/234) where the `ultima.pen` Final design diverged from them. This document is the specification: agreed scope, contracts, and the first-release acceptance criteria, each verified by the checked-in suite.
 
+## Consumer default amendment
+
+[The consumer default contract](ultima.md#consumer-default-theme), accepted on [Decide the consumer default theme and separation from Ultima branding](https://github.com/frankieramirez/ultima/issues/614), specifies a future Neutral starting draft and an explicit Ultima preset. It also requires versioned resolution that preserves existing saved drafts before changing defaults. The implementation below still uses the original stock palette. References to stock and its brand pins describe that implementation; the amendment governs the upcoming default change. Preset selection and Reset behavior remain owned by [the complete preset decision](https://github.com/frankieramirez/ultima/issues/615).
+
 ## Destination
 
 An agreed visual prototype and implementation-ready specification for editing Ultima design variables, previewing live components, exploring coordinated random themes, and exporting or installing the result in an existing application.
