@@ -465,3 +465,7 @@ The complete theme a new project gets before choosing its own. The accepted next
 ## Theme adoption
 
 The consumer workflow for choosing a complete theme in Studio, installing its generated files, applying its mode and scope, and checking the rendered result. The [adoption contract](docs/spec/ultima.md#theme-adoption) owns the steps; the draft remains the editable source.
+
+## Complete theme preset
+
+A named, versioned definition of an entire Theme Studio draft: color seeds, typography, density, shape, elevation, motion, and clean override, lock, and shuffle state. Selecting one replaces the working draft in one undoable step. Its stable ID and revision let an edited or saved draft reset to the same definition later. The [preset contract](docs/spec/theme-studio.md#complete-theme-preset-amendment) defines the initial catalogue and release bar.
