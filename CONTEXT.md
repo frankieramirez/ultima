@@ -457,3 +457,7 @@ A named user behavior with an owning contract, reproducible steps, required vari
 ## ULT-n
 
 A citation naming a decision ticket on the private pre-GitHub Linear workspace the project was planned on, written as `Title (ULT-n)` or bare `ULT-n` with no URL. The number is a stable key for anyone with workspace access; every other reader gets the title.
+
+## Consumer default theme
+
+The complete theme a new project gets before choosing its own. The accepted next default is Neutral, with achromatic interactive colors and distinct status colors. Ultima names the explicit preset that preserves the original indigo/cyan appearance. The [default-theme contract](docs/spec/ultima.md#consumer-default-theme) records the pending implementation and compatibility requirements.

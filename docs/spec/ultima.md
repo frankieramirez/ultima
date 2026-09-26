@@ -241,6 +241,46 @@ One entry per semantic token, carrying its group, the scale and step it resolves
 `packages/tokens/scripts/palette.json` is generator state and stays private: it holds raw scales with no role attached, and its shape is free to change. `tokens.json` is the published contract and carries only what a consumer may rely on. Written to `packages/tokens/dist/tokens.json` and served at `/tokens.json`.
 
 The scale and step per token cannot be read back out of compiled CSS, so the export build reads them from the token sources' step assignments and the scales from `palette.json`, and runs the contrast gate over the same pairings the Palette section lists. One command, `pnpm --filter @ultima/tokens build`, produces both files; the docs site's build depends on it through the workspace.
+
+## Consumer default theme
+
+Decided on [Decide the consumer default theme and separation from Ultima branding](https://github.com/frankieramirez/ultima/issues/614). Status: accepted for implementation. The current generated palette and `stockDraft()` still use the indigo/cyan defaults; this section specifies their replacement. The palette tables below document the existing Ultima palette until that work lands.
+
+### Fresh installs and brand boundaries
+
+A fresh consumer gets **Neutral**, a complete usable theme with achromatic surfaces, text, borders and interactive colors. Installation does not require a theme-selection step. Neutral retains the current non-color defaults, including font stacks, spacing, shape, shadows and reduced-motion behavior. It loads no fonts. The palette generator produces its values; neither component source nor generated files receive hand-authored color patches.
+
+The existing complete appearance remains available as **Ultima**, an explicit opt-in preset preserving the current indigo accent, cyan action/highlight and non-color defaults. Its current brand pins belong to that preset. Neutral disables those pins and uses zero chroma for mithril, arcane and mana; status scales retain their current seeds. Recipe lightness adjustments needed for contrast belong in the generator and must preserve the compatibility rules below.
+
+Components keep their semantic token names and existing APIs. Button continues to default to `tone="accent"`. Accent supplies the default interactive emphasis, with focus following accent; action remains available for prominent actions, and highlight retains its existing semantic use. Action and highlight continue to share the mana scale. Neutral makes these roles achromatic while retaining their separate ramps and state tokens, so their values need not be identical. A custom theme may color them independently through the existing guided scale controls and semantic overrides. Changing a product accent does not implicitly recolor success, warning or danger.
+
+Success, warning and danger keep the current green, amber and red role assignments and generated defaults. Neutral is not a monochrome status theme. Custom status edits remain possible under Studio's existing validation rules; status meaning still needs text or an icon where color alone cannot convey it.
+
+Both Neutral and Ultima must pass every declared token pairing in dark and light before shipping. Dark remains the default design target, with the existing system preference and explicit `data-theme` behavior. Neutral changes palette choice, not mode selection. Focus visibility, interaction states and reduced motion remain required in both modes.
+
+Ultima's docs and Studio editor chrome explicitly apply their own theme. They cannot obtain their brand by making consumer token exports branded. Studio preview boundaries and their portal containers follow the active draft. New consumer-facing base tokens, CSS/JSON exports, registry token dependencies and element defaults must agree on Neutral when the change ships. Demos that choose another theme identify it explicitly.
+
+### Existing consumers and saved drafts
+
+Installed sources and generated theme files remain consumer-owned. This change does not rewrite them. A consumer that explicitly updates base tokens receives a visible palette change unless its own theme supplies the values. Update guidance must describe that change and offer the Ultima preset to retain the prior appearance. A live, unpinned `/tokens.css` URL follows the latest build and can change when deployed; guidance must call out that case and explain vendoring or applying an explicit theme before rollout.
+
+Valid existing draft files, autosaves and shared fragments must reopen with the same resolved values in both modes. Their stored parameters alone do not establish compatibility: v1 resolution also reads implicit semantic mappings and base token defaults. Freeze the legacy resolver inputs and dispatch supported draft/recipe versions explicitly before changing defaults. Preserve v1 generation, brand-pin conditions, semantic mapping and fallback values, including values omitted from drafts. Unsupported versions fail with a named error; malformed input retains the existing refusal/quarantine behavior and never becomes a fresh Neutral draft silently.
+
+New Neutral drafts use an explicit new supported recipe identity. Keep document version 1 only if its shape remains unchanged; a later preset-metadata schema change requires its own supported version and lossless migration. A migration may change representation only after proving equality of all resolved tokens in both modes and reduced-motion exports. Never interpret an old recipe identity using new defaults. Existing downloaded CSS and StyleX files keep their values until the consumer chooses to regenerate them.
+
+An empty Studio session starts with Neutral. Opening a valid saved draft takes precedence. The complete-preset decision owns preset IDs and selection/reset behavior; it must preserve whole-draft undo and the saved-draft guarantees above. Until that decision lands, this section does not redefine Reset for a selected preset.
+
+### Examples and implementation acceptance
+
+- A new Vite or Next consumer installs Button without choosing a theme. Its accent button and focus ring are neutral, and a danger action keeps the danger role.
+- A product with an existing green identity adopts that identity through a custom theme. An agent preserves the supplied brand and uses Neutral only when no project theme has been chosen; selecting Ultima requires an explicit choice.
+- A user opens a pre-change indigo/cyan draft or a customized v1 share link. Preview and regenerated exports retain the old resolved values. A separate fresh session begins with Neutral.
+- Ultima's docs use the Ultima preset while a Studio preview shows Neutral. A portalled control in the preview receives Neutral from that preview's theme boundary.
+
+Implementation must capture pre-change stock and customized v1 fixtures, including per-mode overrides and omitted values that use resolver defaults. Compare every resolved token before and after import, autosave restore, shared-link restore and export. Reject unknown recipe identities. Verify Neutral through both the Python reference generator and runtime recipe, then prove the pairing gate, compiled StyleX/CSS parity and rendered focus/interaction behavior in both modes. These are required future checks, not evidence produced by this decision.
+
+[The complete preset catalogue](https://github.com/frankieramirez/ultima/issues/615) owns the remaining preset collection and interaction rules. [The theme adoption path](https://github.com/frankieramirez/ultima/issues/616) owns README, install-page, setup guidance and generated agent guidance, including update instructions. [Rendered consumer proof](https://github.com/frankieramirez/ultima/issues/617) owns the external-consumer acceptance matrix. This decision changes the specification only.
+
 ## Palette
 
 Decided on The palette (ULT-10). Six scales, twelve steps each, a dark and a light value per step, generated in OKLCH and committed as hex. The reference generator is `packages/tokens/scripts/palette.py`; the v0 build ports it into the tokens package and must reproduce these values exactly.
