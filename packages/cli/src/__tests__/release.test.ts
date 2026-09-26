@@ -15,6 +15,18 @@ const manifest = JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf8
 const INSTALLED = ['dependencies', 'peerDependencies', 'optionalDependencies', 'bundleDependencies'];
 
 describe('the published package', () => {
+  it('distributes the bundled consumer skill through the marketplace at the CLI version', () => {
+    const marketplace = JSON.parse(readFileSync(join(repository, '.claude-plugin/marketplace.json'), 'utf8'));
+    expect(marketplace.plugins).toHaveLength(1);
+    const [plugin] = marketplace.plugins;
+    expect(plugin.name).toBe(manifest.name);
+    expect(plugin.version).toBe(manifest.version);
+    expect(plugin.skills).toHaveLength(1);
+    const distributed = join(repository, plugin.source, plugin.skills[0], 'SKILL.md');
+    expect(distributed).toBe(join(packageDir, 'skill/ultima-design/SKILL.md'));
+    expect(readFileSync(distributed, 'utf8')).toContain('name: ultima-design');
+  });
+
   it('packs only the bundle, the skill and the manifest', () => {
     const [pack] = JSON.parse(execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], { cwd: packageDir, encoding: 'utf8' }));
     expect(pack.files.map(({ path }: { path: string }) => path).sort()).toEqual(['dist/cli.js', 'package.json', 'skill/ultima-design/SKILL.md']);
