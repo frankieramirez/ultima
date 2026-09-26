@@ -1,0 +1,23 @@
+name: Feature request
+description: Ask for a new component, token, or capability
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: request
+    attributes:
+      label: What do you want?
+      description: The component, token, or capability you are asking for, and the problem it solves for you.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What you are building, what you have tried, and any prior art worth looking at.
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        Asks go through issues, never pull requests — see [CONTRIBUTING.md](https://github.com/frankieramirez/ultima/blob/main/CONTRIBUTING.md).

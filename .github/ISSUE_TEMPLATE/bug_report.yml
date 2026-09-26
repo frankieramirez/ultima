@@ -1,0 +1,33 @@
+name: Bug report
+description: Report something that is broken or behaves incorrectly
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Steps to reproduce, a minimal code sample, or a link to a repository that shows the problem.
+    validations:
+      required: true
+  - type: input
+    id: component
+    attributes:
+      label: Component or package
+      description: Which component, registry item, or package this concerns (for example `@ultima/button` or `tokens.css`).
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser and version, operating system, framework (Vite, Next.js, and so on), and how you installed Ultima.
+    validations:
+      required: false
