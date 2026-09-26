@@ -24,7 +24,7 @@ One primitive vocabulary. v0's component list is bounded by what Base UI ships. 
 
 The other options were an npm package, a copy-source registry, or both. An npm package would have given an upgrade path and a version number. It would also have kept the source behind a dependency, which fights the point of handing code to a coding agent to edit.
 
-There is no upgrade path beyond re-installing an item. Versioning policy for a copy-source registry is still open. Hosting the registry is why the docs site is a v0 deliverable.
+There is no upgrade path beyond re-installing an item. The registry serves a moving latest with no versioned URLs: every served file carries an item stamp, and possession is the pin. Hosting the registry is why the docs site is a v0 deliverable.
 
 `npx shadcn init` is not the entry. `init` refuses a project without Tailwind on disk. The command is `npx shadcn add` of a per-target setup item. The decision in the ADR stands; only the command changed.
 

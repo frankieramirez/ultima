@@ -17,7 +17,7 @@
 
 Ultima is a design system for React projects that compile StyleX. The shadcn CLI copies each component's source into your project, and you own it from there. Dark is the default color mode. Light is a full peer: every semantic token, contrast check, and demo exists in both.
 
-Ultima is v0 and in development.
+Ultima has no version number. The registry serves the latest build, and every installed file carries a stamp the `ultima-design` CLI reads for drift.
 
 ## Install
 
@@ -45,12 +45,12 @@ import { Button } from '@/components/ui/button';
 
 ## What ships
 
-- **Forty components**, one file each, from Button and Field to Combobox, Sidebar, and Toast. See the [catalogue](https://ultima.systems/components).
+- **Fifty-four components**, one file each, from Button and Field to Combobox, Sidebar, and Toast. See the [catalogue](https://ultima.systems/components).
 - **Tokens** for color, space, radius, type, and motion, as StyleX variables. Six twelve-step palette scales with a dark and a light value per step. See [tokens](https://ultima.systems/tokens) and the [palette](https://ultima.systems/palette).
 - **Tokens as CSS** at [`/tokens.css`](https://ultima.systems/tokens.css), for consumers that cannot run StyleX.
 - **An agent guide** at [`/llms.txt`](https://ultima.systems/llms.txt): principles, conventions, component list, and token names in one plain Markdown file. Ultima installs no documentation into your repository, so this is how a consumer's agent learns the system.
 - **The registry** at [`/r/registry.json`](https://ultima.systems/r/registry.json), one item per component.
-- **Elements** at [`/elements/ultima.js`](https://ultima.systems/elements/ultima.js): the report set as custom elements for hosts that cannot run React. Each element also ships as a registry item: `ult-badge`, `ult-button`, `ult-code`, and `ult-stat` so far.
+- **Elements** at [`/elements/ultima.js`](https://ultima.systems/elements/ultima.js): the report set as custom elements for hosts that cannot run React. Each element also ships as a registry item: `ult-badge`, `ult-button`, `ult-card`, `ult-code`, `ult-meter`, `ult-stat`, `ult-table`, `ult-tabs`, and `ult-tooltip`.
 - **The `ultima-design` CLI**, which verifies your setup, checks your edits against the consumer rules, and reports installed items' drift. See the [CLI page](https://ultima.systems/cli).
 
 ## How it is built

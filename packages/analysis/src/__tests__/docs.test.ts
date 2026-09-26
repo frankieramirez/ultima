@@ -111,7 +111,7 @@ describe('ULT-DOCS-001', () => {
     const header = 'apps/docs/src/header.tsx';
     const text = source(header).replace("    position: 'sticky',", "    position: 'sticky',\n    boxShadow: shadow['--ult-shadow-md'],");
     const report = run({ [header]: text });
-    assert.deepEqual(docs('ULT-DOCS-001', report, header), [[19, 16, 'styles.chrome', 'boxShadow']]);
+    assert.deepEqual(docs('ULT-DOCS-001', report, header), [[18, 16, 'styles.chrome', 'boxShadow']]);
   });
 });
 
