@@ -8,7 +8,6 @@ import { BrandLogo } from './brand-logo';
 import { breakpoints } from './breakpoints.stylex';
 import { ColorModeToggle } from './color-mode-toggle';
 import { layoutStyles } from './layout';
-import { Kicker } from './page';
 import { TextLink } from './text-link';
 
 const styles = stylex.create({
@@ -34,8 +33,6 @@ const styles = stylex.create({
     display: { default: 'none', [breakpoints.WIDE]: 'flex' },
     flexGrow: 1,
   },
-  // Gives way to the mode control between the two breakpoints, where the bar has room for one of them.
-  status: { display: { default: 'none', [breakpoints.DESKTOP]: 'block' } },
   // The footer's copy serves narrow viewports; this one covers the Studio, which renders no footer.
   mode: { display: { default: 'none', [breakpoints.WIDE]: 'inline-flex' }, flexShrink: 0 },
   github: {
@@ -74,7 +71,6 @@ export function Header({ wide = false }: { wide?: boolean }) {
             ))}
           </NavigationMenu.List>
         </NavigationMenu.Root>
-        <Kicker style={styles.status}>v0 / IN DEVELOPMENT</Kicker>
         <ColorModeToggle style={styles.mode} />
         <TextLink variant="muted" style={styles.github} href="https://github.com/frankieramirez/ultima">
           GitHub <ArrowUpRightIcon aria-hidden />
