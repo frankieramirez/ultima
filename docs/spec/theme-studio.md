@@ -6,6 +6,41 @@ Status: implemented. [Map: Ultima theme studio](https://github.com/frankieramire
 
 [The consumer default contract](ultima.md#consumer-default-theme), accepted on [Decide the consumer default theme and separation from Ultima branding](https://github.com/frankieramirez/ultima/issues/614), specifies a future Neutral starting draft and an explicit Ultima preset. It also requires versioned resolution that preserves existing saved drafts before changing defaults. The implementation below still uses the original stock palette. References to stock and its brand pins describe that implementation; the amendment governs the upcoming default change. Preset selection and Reset behavior remain owned by [the complete preset decision](https://github.com/frankieramirez/ultima/issues/615).
 
+## Complete theme preset amendment
+
+Decided on [Decide the complete theme preset catalogue and its quality bar](https://github.com/frankieramirez/ultima/issues/615). Status: accepted for implementation. The current Studio has per-group presets but no complete-theme catalogue. This amendment specifies the catalogue and supersedes the stock Reset behavior below when complete presets ship. It does not change the existing guided controls, custom theme generation, Shuffle, or the export acknowledgment for a user-owned failing draft.
+
+### Initial catalogue
+
+Ship four complete presets. Their IDs are stable and lowercase; names are display labels. Each definition supplies every guided field in `ThemeDraft`, both color modes through shared scale seeds, empty overrides and shuffle seeds, and six unlocked groups. The status scale seeds remain the existing verdant, ember, and ruin seeds unless a later separately validated revision changes them. Values below are the first definitions, each with immutable preset revision 1. A recipe revision is a separate identity.
+
+| ID and label | Neutral, accent, action scale seeds as `(hue, saturation)` | Typography | Density, shape, elevation, motion |
+| --- | --- | --- | --- |
+| `neutral` · Neutral | Achromatic mithril, arcane, and mana (`saturation: 0`); generator chooses contrast-safe lightness | Existing Ultima font stacks, 16px base, stock scale, default leading/tracking | `1`, `default`, `1`, `1` |
+| `ultima` · Ultima | Existing stock mithril `(276, 1)`, arcane `(275, 1)`, mana `(204, 1)`, including its legacy brand pins | Existing Ultima font stacks, 16px base, stock scale, default leading/tracking | `1`, `default`, `1`, `1` |
+| `grove` · Grove | Mithril `(145, 0.15)`, arcane `(140, 0.8)`, mana `(75, 0.75)` | `Georgia, 'Times New Roman', Times, serif`; system mono stack; 16px base, `1.2` scale, loose leading, default tracking | `1.25`, `round`, `0.5`, `1.5` |
+| `cinder` · Cinder | Mithril `(32, 0.15)`, arcane `(28, 0.85)`, mana `(45, 0.75)` | `'Segoe UI', 'Helvetica Neue', Arial, sans-serif`; system mono stack; 16px base, `1.125` scale, compact leading/tracking | `0.75`, `sharp`, `1.5`, `0.6` |
+
+The system mono stack is `ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`. Neutral is the fresh consumer and empty-session default; Ultima remains an explicit choice for the original indigo/cyan appearance. Grove and Cinder provide green/earthy and warm/copper directions with different typography, density, shape, elevation, and motion. Action and highlight continue to share mana, and status colors keep their semantic meaning. These are full themes, not color swatches or suggested combinations. The current recipe passes all declared token pairings for Grove and Cinder with these seeds; Neutral needs its new recipe and gate proof before release.
+
+### Identity, selection, and recovery
+
+Preset identity is `{ id, revision }`, separate from document and recipe versions. Adding that metadata to a draft requires a new supported document version; it must not reinterpret v1 fields. Keep each shipped preset revision resolvable so a saved draft can reset to the same definition after the catalogue grows. Editing a field retains its preset origin and shows it as edited; the draft itself holds the exact current values. A user can still build a custom theme without selecting a preset.
+
+Selecting a preset copies its entire definition into the working draft, replacing all guided values, per-mode overrides, locks, and shuffle seeds. It is one committed whole-draft history entry, so Undo restores the former draft and Redo restores the selection. Do not let a lock or override from the old draft survive selection. Autosave writes the selected draft on commit; the existing warning for opening a different external draft remains separate.
+
+Whole-draft **Reset theme** returns to the active preset's exact revision in one undoable entry, clearing edits, overrides, locks, and shuffle seeds. Group Reset returns only that group to the same preset definition and clears its group overrides while keeping other groups and history intact. For a custom draft with no preset origin, Reset returns to Neutral. Legacy v1 drafts retain their old resolved output and their original Ultima reset baseline until the user explicitly selects a new preset. An imported v1 draft must not be silently assigned a different recipe or preset.
+
+Autosave, downloaded JSON, the registry item's JSON, and fragment share links carry both the preset identity and the full draft. Reopening any of them restores exact values in both modes, including an edited preset and legacy v1 drafts. Unknown preset revisions fail with a named unsupported-version result; they never fall back to the current revision. A preset catalogue update is opt-in for existing drafts and generated files. Selecting a newer revision is an explicit new history entry.
+
+### Release bar and consumer guidance
+
+Every shipped revision must pass all 49 declared token pairings in **each** mode at full precision, including focus, action, and status pairs. The palette values come from the generator; no hand edits to emitted palettes or tokens can make a failing preset pass. Verify reduced-motion collapse and rendered focus and interaction states in both modes. The current recipe's Grove and Cinder seeds passed the token gate during this decision, but that local check is only candidate evidence; it does not establish installed-consumer or new-recipe behavior.
+
+For every preset, compare the preview's computed values with the full CSS, compiled StyleX, and registry-installed output in both modes, including portal content and post-hydration rendering in a real consumer fixture. Assert that the downloaded and shared drafts reopen to the same values, that undo/reset/locks follow the rules above, and that legacy v1 drafts keep every resolved token. A failing preset revision blocks release. The existing explicit acknowledgment remains available only for user-owned failing drafts; it cannot waive a shipped preset failure.
+
+Each preset's docs and export dialog state its exact sans and mono stacks, preferred face, fallbacks, and that Ultima does not load fonts. Neutral and Ultima prefer IBM Plex but work through their system fallbacks; Grove and Cinder use installed/system faces. Consumer instructions show how to load a preferred face when desired and how to apply the chosen theme through CSS, StyleX, or the registry item. The theme-adoption guidance belongs to [Decide a complete theme adoption path for people and agents](https://github.com/frankieramirez/ultima/issues/616).
+
 ## Destination
 
 An agreed visual prototype and implementation-ready specification for editing Ultima design variables, previewing live components, exploring coordinated random themes, and exporting or installing the result in an existing application.
