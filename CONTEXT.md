@@ -461,3 +461,7 @@ A citation naming a decision ticket on the private pre-GitHub Linear workspace t
 ## Consumer default theme
 
 The complete theme a new project gets before choosing its own. The accepted next default is Neutral, with achromatic interactive colors and distinct status colors. Ultima names the explicit preset that preserves the original indigo/cyan appearance. The [default-theme contract](docs/spec/ultima.md#consumer-default-theme) records the pending implementation and compatibility requirements.
+
+## Complete theme preset
+
+A named, versioned definition of an entire Theme Studio draft: color seeds, typography, density, shape, elevation, motion, and clean override, lock, and shuffle state. Selecting one replaces the working draft in one undoable step. Its stable ID and revision let an edited or saved draft reset to the same definition later. The [preset contract](docs/spec/theme-studio.md#complete-theme-preset-amendment) defines the initial catalogue and release bar.
