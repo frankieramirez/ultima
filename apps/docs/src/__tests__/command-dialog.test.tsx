@@ -73,5 +73,5 @@ test('Tab loops the input, the close that reveals on focus, and the scroll regio
   expect(viewport!.getAttribute('role')).toBe('presentation');
 
   await userEvent.tab();
-  expect(document.activeElement).toBe(input);
+  await expect.poll(() => document.activeElement).toBe(input);
 });

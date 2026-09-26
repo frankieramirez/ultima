@@ -661,6 +661,50 @@ For discovery, use the same named checkout and scripted prompts before and after
 
 Finally enumerate and execute the full 26-cell production contract through the same discovery model, then run release validation. Evidence must show that the production runner has no separate hand-maintained scenario list and that scenario edits propagate to selection and reports. This decision claims no shipped registry, measured discovery speedup or runtime pass.
 
+## Public engineering evidence
+
+Decided on [Decide the engineering evidence a portfolio reviewer should see first](https://github.com/frankieramirez/ultima/issues/619), part of [Map: Production and portfolio readiness for independent Ultima consumers](https://github.com/frankieramirez/ultima/issues/613). This is a content and evidence delivery contract. Measurements and consumer adoption remain pending until their linked records substantiate them.
+
+### Reading path and content outline
+
+Add a short engineering introduction to README linking to `docs/engineering-case-study.md`. Keep the case study between 600 and 900 words, excluding its evidence table and diagram. A reviewer should find the engineering choices and their costs in one document, with links into the specification and ADRs for detail. The README screenshot remains owned by [README carries no screenshot though the spec describes one](https://github.com/frankieramirez/ultima/issues/606); reuse its artifact.
+
+Write the case study in this order:
+
+1. Problem and responsibility: source-owned components for StyleX applications, independent branding, the author's actual role and the scope shipped at the cited revision. Describe agent assistance and human decisions factually; generated lines and PR counts cannot establish productivity.
+2. Consequential tradeoffs: source ownership and update responsibility; StyleX compilation and the constrained styling API; stable semantic tokens and contrast obligations; generated catalogue wiring and the cost of verification. Each choice gets its rejected alternative, cost and an ADR or contract link. Respect documented exceptions to the preferred component library.
+3. Architecture: one source-grounded diagram connecting token generation, component sources, metadata, registry outputs, consumer installation and verification. Distinguish workspace docs from installed consumers and distinguish generated outputs from authored inputs.
+4. Outcomes and limits: a compact evidence table, an independently themed consumer example and the remaining support gaps. Separate implemented behavior, observed results at a named revision and future commitments. Link retained reports beside each factual result.
+
+Each evidence row records the claim, status (verified at the cited revision, historical, pending, or unavailable), source and fixture identity, reproduction command, result, limitations and durable evidence link. A screenshot illustrates appearance; the corresponding report establishes tested behavior. Token-pair contrast, automated axe results and manual keyboard or assistive-technology observations keep separate scopes. Accessibility conformance and production readiness require the evidence promised by their own contracts.
+
+### Measurements to collect
+
+The verification owner collects command cost using the existing [run protocol](#run-protocol-and-evidence): five valid runs per workload and cache condition, exact argv, environment and source identity, raw samples, failures, median, range and MAD. Include full release verification and a Dialog-scoped command, with selected and executed case identities. Account for setup/downloads separately and include snapshot preparation and install costs where the command incurs them. A smaller selected scope cannot establish a faster full suite. Reuse `docs/evidence/comparison/` as historical evidence only after checking its identities, coverage and caveats; retain regressions and inconclusive outcomes when selecting results.
+
+The consumer-fixture owner measures production JS and CSS for an empty scaffold, the same scaffold with an installed Button, and the same scaffold with an installed Dialog composition. Use the same locked Vite fixture and production build settings, registry revision, theme, imports, minifier and compression settings. Record absolute emitted and initial-route loaded bytes, raw and gzip, plus incremental differences from the empty scaffold. Inventory shared chunks, lazy chunks, dependencies and token CSS; do not sum overlapping component deltas into an application total. Retain the bundle manifest and measurement script with their hashes. Verify a second clean build reproduces the bytes or disclose the difference. These results describe those compositions under that toolchain. Framework-wide and competitor comparisons need separately matched fixtures. No new performance budget or CI gate follows from these measurements.
+
+Store the new evidence index and small durable summaries under `docs/evidence/portfolio/`, with raw records or stable archived artifacts reachable from the index. A temporary CI artifact URL alone cannot support a lasting public claim. Report unavailable results explicitly instead of estimating them.
+
+### Independent consumer and delivery ownership
+
+An authentic example is a separately maintained application with a real use case that installs Ultima source and chooses its own theme. Document the application revision, installed catalogue revision, integration changes, rendered production behavior and observed limitations. Scriptura is a candidate only after inspection produces that evidence and its branding decision is made independently. An unavailable or private example stays pending or has its disclosure limits stated; a synthetic fixture must be labelled as such. The docs application remains workspace integration evidence. Mana's tokens-only use supports only the tokens-consumer claim it demonstrates.
+
+| Delivery owner | Output | Acceptance criteria |
+| --- | --- | --- |
+| Case-study author, with maintainer review | README introduction and `docs/engineering-case-study.md` | Meets the outline and length; every result links to evidence; explains tradeoff costs and the author's role; reuses the existing screenshot issue. |
+| Verification owner | `docs/evidence/portfolio/` timing index | Reproduction commands and raw samples support each summary; historical and current runs are distinct; missing coverage and slower outcomes remain visible. |
+| Consumer-fixture owner | Bundle measurements and authentic-consumer record | Matched build inputs and manifest support bytes; real adoption is separately evidenced; fixture proof follows the rendered-consumer decision. |
+| Documentation maintainer | Public-source consistency pass | Checks current claims against commands, registered cases and retained reports; validates links and generated guidance through their authored sources. |
+
+These are accountable delivery roles for the later build effort, not new issue assignments. The maintainer assigns each role when filing that effort. [Decide the rendered consumer proof required for a production recommendation](https://github.com/frankieramirez/ultima/issues/617) owns the integration proof; [Decide the browser and integration support promise](https://github.com/frankieramirez/ultima/issues/618) owns the support matrix. The case study can be drafted while those decisions remain open; production/support claims wait for their required proof. [Build: Public launch of Ultima](https://github.com/frankieramirez/ultima/issues/587) retains publication and live-domain gates.
+
+### Documentation consistency acceptance
+
+Inventory README, `CONTEXT.md`, current specification/status prose, install and CLI guidance, generated `/llms.txt` inputs, command help, and the roadmap's current naming/progress text. Record each claim's authority and classify it as current, historical or planned before editing. Check catalogue counts against the catalogue model and production counts against registered case identities. The known review seeds include planned-verifier prose in this specification and `ultima.md`, 26-versus-28 current matrix descriptions, planned CLI/Studio glossary entries, Theme Studio's remaining prototype/open-export status prose and the roadmap's older naming. Historical decisions and retained evidence preserve the counts valid at their recorded revisions; any correction explains the later change. Regenerate derived files through their owners.
+
+Accept the pass when every inventoried current claim matches its authority, local links resolve, documented commands exist, generated guidance is fresh, and unresolved evidence has a named owner and visible status. Updating prose does not certify a runtime pass. Website navigation, visual redesign, announcement copy and publishing remain outside this decision.
+
 ## Efficiency and performance
 
 Decided on [Efficiency and performance: baselines, budgets, and optimization triggers](https://github.com/frankieramirez/ultima/issues/441). This contract specifies the evidence the build effort must collect before changing implementation. It establishes no measured speedup or new timing gate.

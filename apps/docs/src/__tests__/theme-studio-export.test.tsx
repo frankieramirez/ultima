@@ -199,7 +199,7 @@ test('share produces a fragment link that reopens the draft', async () => {
 
 test('the share dialog announces busy while the link encodes', async () => {
   vi.spyOn(globalThis, 'CompressionStream').mockImplementation(function pendingEncode() {
-    return new TransformStream({ transform() {} });
+    return new TransformStream({ transform: () => new Promise<void>(() => {}) });
   });
   onTestFinished(() => {
     vi.restoreAllMocks();
