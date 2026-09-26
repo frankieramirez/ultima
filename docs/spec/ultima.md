@@ -20,6 +20,10 @@ A principle earns a line here only if it already settled a decision on the map, 
 - **Ultima is the default kit for our StyleX React projects.** Core application components and common compositions belong on the roadmap, including the ones we otherwise reach for shadcn/ui to provide. This is a product scope commitment; public positioning can stay focused on Ultima.
 - **The docs site is the first complete application.** It uses production Ultima components for every reusable UI pattern, including navigation and responsive controls. A missing reusable component is added to Ultima and consumed from the workspace. Page layout, prose typography, and branding may use site-specific StyleX, within the line drawn on Where the line falls between an Ultima component and docs-local page layout (ULT-56): a docs file may arrange and set type and flow spacing, and may neither build a control from plain elements nor paint a surface.
 
+## Consumer support
+
+The [browser and integration support plan](consumer-support.md) records the accepted target matrix, localization boundaries and evidence required before publishing a production support promise. Its cross-engine and device coverage is pending implementation.
+
 ## Tokens
 
 Decided on Token architecture (ULT-9), with the scales and typefaces behind the non-color groups on Non-color token values (ULT-17). The palette and the semantic color values are in the Palette section below.
