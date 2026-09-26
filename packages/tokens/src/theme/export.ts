@@ -73,7 +73,7 @@ export function toCss(draft: ThemeDraft): string {
 }
 
 function jsString(value: string): string {
-  return `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
+  return JSON.stringify(value);
 }
 
 function themeObject(table: TokenTable, group: Group): string {
