@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+<title id="title">Ultima</title>
+<rect width="64" height="64" fill="#171717"/><g fill="#FAFAF9" transform="translate(12 19.862068965517242) scale(0.04597701149425287)"><path transform="translate(-70 516) scale(1 -1)" d="M397 91H392Q375 49 339.5 18.5Q304 -12 241 -12Q165 -12 117.5 38.5Q70 89 70 183V516H198V201Q198 89 295 89Q314 89 332.5 94.0Q351 99 365.5 109.5Q380 120 388.5 135.0Q397 150 397 171V516H525V0H397Z"/><path transform="translate(530 516) scale(1 -1)" d="M200 0H340V140H200Z M200 360H340V500H200Z"/></g>
+</svg>
