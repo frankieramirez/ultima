@@ -13,10 +13,10 @@ export default {
     { path: 'postcss.config.js', type: 'registry:file', target: '~/postcss.config.js' },
   ],
   dependencies: ['@stylexjs/stylex'],
-  devDependencies: ['@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'],
+  devDependencies: ['@stylexjs/babel-plugin', '@stylexjs/postcss-plugin', 'typescript'],
   handSteps: [
     {
-      prose: "Import './ultima.css' from app/layout.tsx.",
+      prose: "Import './ultima.css' from app/layout.tsx. For src/app, move app/ultima.css into src/app/ first and import it from src/app/layout.tsx. The compiler reads aliases from tsconfig.json.",
       spec: 'Next.js.',
       assertion: {
         kind: 'import-present',

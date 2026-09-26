@@ -5,11 +5,9 @@ const babelConfig = require('./babel.config.js');
 module.exports = {
   plugins: {
     '@stylexjs/postcss-plugin': {
-      include: [
-        'app/**/*.{js,jsx,ts,tsx}',
-        'components/**/*.{js,jsx,ts,tsx}',
-        'lib/**/*.{js,jsx,ts,tsx}',
-      ],
+      cwd: __dirname,
+      include: ['**/*.{js,jsx,ts,tsx}'],
+      exclude: ['**/node_modules/**', '**/.next/**', '**/.git/**'],
       useCSSLayers: true,
       babelConfig: {
         babelrc: false,

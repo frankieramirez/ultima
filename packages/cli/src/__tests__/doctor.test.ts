@@ -382,6 +382,14 @@ describe('the Next.js hand steps', () => {
     const { diagnostic } = await onlyFinding(root);
     expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-015', file: 'src/app/ultima.css' });
     expect(diagnostic.repair).toBe('Move ultima.css into src/app/.');
+    renameSync(join(root, 'app/ultima.css'), join(root, 'src/app/ultima.css'));
+    renameSync(join(root, 'app/globals.css'), join(root, 'src/app/globals.css'));
+    editJson(root, 'tsconfig.json', (json) => { json.compilerOptions.paths = { '@/*': ['./src/*'] }; });
+    const before = snapshot(root);
+    const repaired = await doctorJson(root);
+    expect(repaired.report.diagnostics).toEqual([]);
+    expect(repaired.code).toBe(0);
+    expect(snapshot(root)).toEqual(before);
   });
 
   it('finds tsconfig.json without the @/ paths alias', async () => {

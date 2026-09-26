@@ -289,11 +289,11 @@ export const CHECKS: readonly CheckDefinition[] = [
     argv: ['scripts/smoke-install.sh', '--keep'],
     cwd: '.',
     // Its local path builds tokens, the registry and the docs, then serves apps/docs/dist itself.
-    nested: ['pnpm --filter @ultima/tokens build', 'pnpm registry:build', 'pnpm --filter @ultima/docs build', 'loopback server on port 0', 'Vite consumer', 'Next.js consumer', 'sidebar consumer', 'element consumer'],
+    nested: ['pnpm --filter @ultima/tokens build', 'pnpm registry:build', 'pnpm --filter @ultima/docs build', 'loopback server on port 0', 'Vite consumer', 'Next.js root and src consumers with production browser styles', 'sidebar consumer', 'element consumer'],
     prerequisites: ['registry-build'],
     after: READ_FIRST,
     locks: ['writes:tokens-dist', 'writes:elements-dist', 'writes:registry', 'writes:docs-dist'],
-    needs: ['network', 'loopback-port'],
+    needs: ['network', 'loopback-port', 'chromium'],
     deadlineSeconds: 2700,
     scope: 'scoped',
     // Scoped runs use the full smoke until a validated selector exists.
@@ -371,6 +371,7 @@ export const CI_OBLIGATIONS: readonly { workflow: string; command: string; check
     checks: ['production-scenarios'],
   },
   { workflow: 'smoke-install.yml', command: 'pnpm install --frozen-lockfile', preparation: 'dependency installation from the lockfile' },
+  { workflow: 'smoke-install.yml', command: 'pnpm exec playwright install --with-deps chromium', preparation: 'Chromium for production consumer styles' },
   { workflow: 'smoke-install.yml', command: 'mkdir -p "$RUNNER_TEMP/smoke"', preparation: 'the TMPDIR the consumer apps land in' },
   { workflow: 'smoke-install.yml', command: 'TMPDIR="$RUNNER_TEMP/smoke" ./scripts/smoke-install.sh --keep', checks: ['consumer-smoke'] },
 ];
