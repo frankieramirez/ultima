@@ -4,8 +4,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { expect, test } from 'vitest';
+import ts from 'typescript';
 
-import { draftFingerprint, serializeDraft } from '../theme/codec.ts';
+import { draftFingerprint, parseDraft, serializeDraft } from '../theme/codec.ts';
 import { resolveDraft, stockDraft } from '../theme/draft.ts';
 import { toCss, toRegistryItem, toStylex } from '../theme/export.ts';
 
@@ -70,12 +71,12 @@ test('toStylex emits full per-group per-mode themes', () => {
   expect(source).toContain('ultimaTheme');
   expect(source).toContain("colorScheme: 'dark'");
   expect(source).toContain("colorScheme: 'light'");
-  expect(source).toContain("'--ult-color-accent': '#ff00aa'");
-  expect(source).toContain("'--ult-color-surface'");
-  expect(source).toContain("'--ult-space-12'");
-  expect(source).toContain("'--ult-motion-fast': {");
-  expect(source).toContain("'@media (prefers-reduced-motion: reduce)': '1ms'");
-  expect(source).toContain("'@media (prefers-reduced-motion: reduce)': '0s'");
+  expect(source).toContain('"--ult-color-accent": "#ff00aa"');
+  expect(source).toContain('"--ult-color-surface"');
+  expect(source).toContain('"--ult-space-12"');
+  expect(source).toContain('"--ult-motion-fast": {');
+  expect(source).toContain(`'@media (prefers-reduced-motion: reduce)': "1ms"`);
+  expect(source).toContain(`'@media (prefers-reduced-motion: reduce)': "0s"`);
   const tables = resolveDraft(draft);
   const colorThemes = [...source.matchAll(/createTheme\(color, \{([\s\S]*?)\n\}\);/g)];
   expect(colorThemes).toHaveLength(2);
@@ -84,6 +85,39 @@ test('toStylex emits full per-group per-mode themes', () => {
       expect(block[1]).toContain(name);
     }
   }
+});
+
+test.each([
+  ['stock', stockDraft().typography.sans],
+  ['newline', "'Example',\n sans-serif"],
+  ['carriage return', "'Example',\r sans-serif"],
+  ['CRLF', "'Example',\r\n sans-serif"],
+  ['quotes', `'Example', "Another", sans-serif`],
+  ['backslashes', String.raw`'Example\20 Font', sans-serif`],
+  ['Unicode separators', "'Example\u2028Font\u2029Family', sans-serif"],
+])('toStylex preserves accepted %s font stacks in valid TypeScript', (_, value) => {
+  const draft = stockDraft();
+  draft.typography.sans = value;
+  draft.typography.mono = value;
+  draft.overrides.dark['--ult-font-sans'] = value;
+  const parsed = parseDraft(JSON.stringify(draft));
+  expect(parsed.ok).toBe(true);
+  if (!parsed.ok) throw new Error('Font stack was rejected');
+  const source = toStylex(parsed.draft);
+  const compiled = ts.transpileModule(source, { reportDiagnostics: true });
+  expect(compiled.diagnostics).toEqual([]);
+  const module = ts.createSourceFile('theme.ts', source, ts.ScriptTarget.Latest, true);
+  const values: string[] = [];
+  function visit(node: ts.Node) {
+    if (ts.isPropertyAssignment(node) && ts.isStringLiteral(node.name)
+      && ['--ult-font-sans', '--ult-font-mono'].includes(node.name.text)
+      && ts.isStringLiteral(node.initializer)) {
+      values.push(node.initializer.text);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(module);
+  expect(values).toEqual([value, value, value, value]);
 });
 
 test('toRegistryItem is a universal item carrying the stylesheet and draft', () => {
