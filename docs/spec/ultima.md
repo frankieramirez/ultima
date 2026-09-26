@@ -281,6 +281,58 @@ Implementation must capture pre-change stock and customized v1 fixtures, includi
 
 [The complete preset catalogue](https://github.com/frankieramirez/ultima/issues/615) owns the remaining preset collection and interaction rules. [The theme adoption path](https://github.com/frankieramirez/ultima/issues/616) owns README, install-page, setup guidance and generated agent guidance, including update instructions. [Rendered consumer proof](https://github.com/frankieramirez/ultima/issues/617) owns the external-consumer acceptance matrix. This decision changes the specification only.
 
+## Theme adoption
+
+Decided on [Decide a complete theme adoption path for people and agents](https://github.com/frankieramirez/ultima/issues/616). Status: accepted for implementation. The paths below are the contract for consumer guidance; the current README, install page, setup-item prose, generated guide, and consumer skill do not yet teach the full path. The [Theme Studio export contract](theme-studio.md#theme-export-installation-and-recovery) owns artifact formats and draft recovery.
+
+### Choose and export
+
+A fresh project can use Neutral immediately. Before changing a project with an existing brand, a person or agent records its accent and action roles, status colors, font stacks and loaded faces, spacing and shape choices, and dark and light behavior. Preserve those choices in a custom Studio draft. Neutral is a temporary baseline when the project has not chosen its own theme. Selecting Ultima, Grove, or Cinder requires an explicit project choice. A changed accent does not change the meaning of success, warning, or danger.
+
+Use Theme Studio to select a complete preset or edit a custom draft. Check the declared pairings in both modes and acknowledge any failing user-owned draft before export. Keep `ultima-theme.json` as the editable source. Download `ultima-theme.registry.json` with its CSS and draft, then run `npx shadcn add ./ultima-theme.registry.json` in the consumer. The item writes `ultima-theme.css` and `ultima-theme.json` at the project root. Re-export and reinstall when the draft changes; the installer's overwrite prompt protects local edits, and reinstall replaces generated files as a unit. Review the diff before accepting it.
+
+### Apply to Vite and Next.js
+
+Finish the target's setup-item hand steps first. Keep `@/` aliases resolving to the installed token and component files, and keep the StyleX compiler enabled. Put the generated `ultima-theme.css` after the extracted StyleX rules in the production cascade. The file is unlayered and supplies full values for all themeable groups. Keep global resets in `@layer reset`. The consumer should inspect the production stylesheet order; source import order alone does not prove the final cascade.
+
+For a Vite app with `src/main.tsx`, keep the installed file at the project root and import it after the app's base CSS:
+
+```tsx
+import './index.css';
+import '../ultima-theme.css';
+```
+
+For a Next.js App Router app with `app/layout.tsx`, import the StyleX marker once, then the generated theme at the project root:
+
+```tsx
+import './ultima.css';
+import '../ultima-theme.css';
+```
+
+A `src/app/layout.tsx` app moves the setup item's `app/ultima.css` into `src/app/` as its hand step and imports the generated root file with `../../ultima-theme.css`. Both examples assume the registry item's root target. A project may move the CSS into its own source tree and update the import, provided the production cascade still puts the theme after StyleX.
+
+With no `data-theme` attribute on `<html>`, the CSS uses the system preference and defaults to dark when no light preference applies. Set `data-theme="dark"` or `data-theme="light"` on `<html>` for an explicit mode; remove the attribute to return to system mode. Set it before hydration when the initial mode is stored, so the first rendered frame and native controls use the chosen mode. The generated file also sets `color-scheme` for each mode. Do not add a separate mode switch for the theme artifact.
+
+The root CSS theme reaches the document and Base UI's default portals under `<body>`. A scoped React theme instead uses the downloaded `ultima-theme.stylex.ts` in a compiler-included path such as `src/lib/` or `lib/`, applies every themeable group for the chosen mode plus its `colorScheme` style to the subtree root, and gives portalled controls a container inside that root. A portal sent to `<body>` leaves the subtree and reads the document theme. Use the full group exports: same-group StyleX themes replace the group's values as a unit. Do not use root CSS and a subtree StyleX theme as if their values merged token by token.
+
+The export carries font stacks but loads no font files. Load each chosen face in the application or accept the documented fallback. The exported CSS includes the fixed `prefers-reduced-motion` collapse values; preserve that block when moving or bundling the file. The StyleX path must retain the equivalent reduced-motion values in the compiled output.
+
+### Check the installed result
+
+Run `npx ultima-design doctor` after the setup hand steps, then `npx ultima-design check` after applying the theme. A zero exit proves the checks those commands perform. It does not prove that a browser used the generated theme. In a production build of the consumer, inspect computed `--ult-*` values and `color-scheme` on the app root, an Ultima control, and a portalled control in dark, light, and system mode. Compare representative values with the exported CSS and the Studio preview, then exercise focus, hover, active, and reduced-motion states. Check loaded font faces when the draft names external fonts. The rendered-consumer matrix belongs to [Decide the rendered consumer proof required for a production recommendation](https://github.com/frankieramirez/ultima/issues/617).
+
+If the theme is missing, stop calling adoption complete. Confirm that the registry item wrote both files and that the app imports the CSS. Run `doctor` to find broken aliases, compiler setup, missing imports, or unlayered resets. Inspect the production cascade for an override or a theme file loaded before StyleX. If only a popup differs, move its portal container inside the scoped theme or apply the theme at the document root. If only one mode differs, inspect `data-theme`, the system preference, and the exported mode block. Rebuild and repeat the computed-value check after repair.
+
+Updating an existing consumer requires a visible review of its base token and theme-file changes. Installing a new Neutral base can change a consumer that used the old indigo/cyan defaults; choose the Ultima preset to retain that appearance. A project that reads the live `/tokens.css` URL can receive changed values on deploy, so vendor the file or apply an explicit theme before rollout. Saved v1 drafts keep their resolved appearance under the compatibility contract above.
+
+### Guidance ownership
+
+- This section owns the adoption contract. The Theme Studio spec owns the draft and export format, and the install page owns the long consumer walkthrough.
+- README links directly to Theme Studio and the install walkthrough, with a short choose, install, apply, check path.
+- `registry/metadata/setup/setup-vite.ts` and `setup-next.ts` add short theme hand steps that the registry item prints; their assertions cover only what `doctor` can prove. The install page carries the Vite and Next examples above and the production check.
+- `scripts/build-agent-guide.ts` adds a compact adoption section to `/llms.txt` from this contract, alongside the existing conventions and token names. The generated guide points agents to the install page for the full walkthrough.
+- `packages/cli/skill/ultima-design/SKILL.md` stays a workflow pointer: it tells agents to fetch `/llms.txt`, preserve an existing product brand, use Studio for a custom theme, and run the CLI and rendered checks. It does not copy token values or the full contract.
+
 ## Palette
 
 Decided on The palette (ULT-10). Six scales, twelve steps each, a dark and a light value per step, generated in OKLCH and committed as hex. The reference generator is `packages/tokens/scripts/palette.py`; the v0 build ports it into the tokens package and must reproduce these values exactly.
