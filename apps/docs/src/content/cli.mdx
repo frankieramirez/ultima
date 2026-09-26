@@ -11,6 +11,27 @@ npx ultima-design install
 
 `install` writes into your repository, not a global harness directory: the `ultima-design` skill your agent reads, and one post-edit hook per detected harness. Everything it writes is a managed file it owns, rewrites on the next run, and removes with `uninstall`. The hooks run `check` on each file your agent edits and hand the findings back in the same turn.
 
+## Other skill installers
+
+You can install the consumer skill through [skills.sh](https://skills.sh/docs):
+
+```bash
+npx skills add frankieramirez/ultima --skill ultima-design
+```
+
+Or add the Ultima marketplace in Claude Code:
+
+```text
+/plugin marketplace add frankieramirez/ultima
+/plugin install ultima-design@ultima
+```
+
+These routes require access to the GitHub repository until it becomes public. The Claude plugin exposes `/ultima-design:ultima-design`.
+
+Both install the same skill shipped with the CLI. They install no hooks or CLI dependency; add `ultima-design` to your project's dev dependencies with `npm i -D ultima-design` to run its checks. Use the CLI installation above when you want a managed project skill and post-edit hooks together.
+
+Update or remove an externally installed skill through its installer. The CLI preserves unstamped skill files, so rerunning `ultima-design install` does not refresh a skills.sh copy. Avoid installing the skill through multiple routes in the same project.
+
 ## Commands
 
 - `npx ultima-design install` — writes the managed skill and hook entries. Idempotent, and `--dry-run` prints the plan first.

@@ -1,0 +1,21 @@
+{
+  "name": "ultima",
+  "owner": {
+    "name": "Frankie Ramirez"
+  },
+  "plugins": [
+    {
+      "name": "ultima-design",
+      "description": "Use Ultima components and tokens with current guidance and CLI checks.",
+      "version": "0.1.0",
+      "source": "./packages/cli/skill",
+      "strict": false,
+      "skills": [
+        "./ultima-design"
+      ]
+    }
+  ],
+  "metadata": {
+    "description": "Agent skills for building with the Ultima design system."
+  }
+}

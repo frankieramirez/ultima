@@ -48,10 +48,37 @@ import { Button } from '@/components/ui/button';
 - **Fifty-four components**, one file each, from Button and Field to Combobox, Sidebar, and Toast. See the [catalogue](https://ultima.systems/components).
 - **Tokens** for color, space, radius, type, and motion, as StyleX variables. Six twelve-step palette scales with a dark and a light value per step. See [tokens](https://ultima.systems/tokens) and the [palette](https://ultima.systems/palette).
 - **Tokens as CSS** at [`/tokens.css`](https://ultima.systems/tokens.css), for consumers that cannot run StyleX.
-- **An agent guide** at [`/llms.txt`](https://ultima.systems/llms.txt): principles, conventions, component list, and token names in one plain Markdown file. Ultima installs no documentation into your repository, so this is how a consumer's agent learns the system.
+- **An agent guide** at [`/llms.txt`](https://ultima.systems/llms.txt): principles, conventions, component list, and token names in one plain Markdown file. The installable `ultima-design` skill directs your agent to this current guidance and the CLI checks.
 - **The registry** at [`/r/registry.json`](https://ultima.systems/r/registry.json), one item per component.
 - **Elements** at [`/elements/ultima.js`](https://ultima.systems/elements/ultima.js): the report set as custom elements for hosts that cannot run React. Each element also ships as a registry item: `ult-badge`, `ult-button`, `ult-card`, `ult-code`, `ult-meter`, `ult-stat`, `ult-table`, `ult-tabs`, and `ult-tooltip`.
 - **The `ultima-design` CLI**, which verifies your setup, checks your edits against the consumer rules, and reports installed items' drift. See the [CLI page](https://ultima.systems/cli).
+
+## Install the agent skill
+
+These GitHub installation routes become publicly available when this repository is public. Until then, they require repository access.
+
+Through [skills.sh](https://skills.sh/docs), choose `ultima-design` for projects using Ultima:
+
+```bash
+npx skills add frankieramirez/ultima --skill ultima-design
+```
+
+Or use the Ultima marketplace in Claude Code:
+
+```text
+/plugin marketplace add frankieramirez/ultima
+/plugin install ultima-design@ultima
+```
+
+The Claude plugin exposes `/ultima-design:ultima-design`. Both routes install the same consumer skill. `forge` is for contributors working inside the Ultima repository.
+
+Install the CLI in your project to run the skill's checks:
+
+```bash
+npm i -D ultima-design
+```
+
+For a CLI-managed skill with post-edit hooks, use `npx ultima-design install` as an alternative to the skill installers. Skills installed through skills.sh or Claude remain owned by that installer; update or remove them there. The CLI preserves unstamped skill files and does not refresh them.
 
 ## How it is built
 
