@@ -182,7 +182,7 @@ writeFileSync(
     `const catalogue = [${names.map(identifier).join(", ")}];`,
     "",
     `export default function ${process.env.COMPONENT}() {`,
-    "  return <p>{catalogue.length} Ultima components</p>;",
+    "  return <main><p>{catalogue.length} Ultima components</p><Button.Button>StyleX smoke</Button.Button></main>;",
     "}",
     "",
   ].join("\n"),
@@ -449,13 +449,22 @@ import { ultimaStylex } from './ultima.vite.ts'"
   assert_hook_returns_the_finding "$app"
 }
 
-next_target() {
+next_layout() {
+  local layout="${1:-root}"
   TARGET="next"
-  local app="$WORK/next-app"
+  local name="next-app"
+  if [ "$layout" = src ]; then name="next-src-app"; fi
+  local app="$WORK/$name"
+  local source="$app"
+  local src_flag="--no-src-dir"
+  if [ "$layout" = src ]; then
+    source="$app/src"
+    src_flag="--src-dir"
+  fi
 
   step "next: scaffolding"
-  (cd "$WORK" && npx -y create-next-app@latest next-app \
-    --ts --app --no-tailwind --no-src-dir --no-eslint --turbopack \
+  (cd "$WORK" && npx -y create-next-app@latest "$name" \
+    --ts --app --no-tailwind "$src_flag" --no-eslint --turbopack \
     --import-alias "@/*" --use-npm --yes)
 
   step "next: npx shadcn add $HOST/r/setup-next.json"
@@ -466,21 +475,28 @@ next_target() {
   point_namespace_at_host "$app/components.json"
 
   step "next: the hand steps setup-next prints"
-  replace_in_file "$app/app/layout.tsx" 'import "./globals.css";' \
+  if [ "$layout" = src ]; then
+    mv "$app/app/ultima.css" "$source/app/ultima.css"
+    rmdir "$app/app"
+  fi
+  replace_in_file "$source/app/layout.tsx" 'import "./globals.css";' \
     'import "./globals.css";
 import "./ultima.css";'
-  layer_reset "$app/app/globals.css"
+  layer_reset "$source/app/globals.css"
 
   step "next: npx shadcn add the catalogue"
-  add_catalogue "$app" "$app"
-  assert_stamped "$app"
+  add_catalogue "$app" "$source"
+  assert_stamped "$source"
 
   # The page is a server component and stays one: `rsc: true` does not insert a
   # "use client" directive, and each component's own boundary covers it.
-  write_catalogue_module "$app/app/page.tsx" Page
+  write_catalogue_module "$source/app/page.tsx" Page
 
   step "next: npm run build"
   (cd "$app" && npm run build)
+
+  step "next: production component styles"
+  node "$ROOT/scripts/smoke-next-styles.ts" "$app"
 
   step "next: ultima doctor"
   assert_doctor_passes "$app"
@@ -492,7 +508,12 @@ import "./ultima.css";'
   assert_check_passes "$app"
 
   step "next: ultima diff"
-  assert_diff_shows_only_the_edit "$app" "$app"
+  assert_diff_shows_only_the_edit "$source" "$app"
+}
+
+next_target() {
+  next_layout root
+  next_layout src
 }
 
 sidebar_target() {

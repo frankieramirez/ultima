@@ -447,7 +447,7 @@ const docsBuildAdapter: Adapter = {
 const SMOKE_TOOLS = ['shadcn', 'create-vite', 'create-next-app'];
 
 /** The consumer projects the smoke script scaffolds under its work directory. */
-const SMOKE_APPS = ['vite-app', 'next-app', 'sidebar-app', 'element-app'];
+const SMOKE_APPS = ['vite-app', 'next-app', 'next-src-app', 'sidebar-app', 'element-app'];
 
 /**
  * The full consumer smoke on its local path: it builds tokens, the registry and the docs in the
