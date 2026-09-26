@@ -19,6 +19,8 @@ Ultima is a design system for React projects that compile StyleX. The shadcn CLI
 
 Ultima has no version number. The registry serves the latest build, and every installed file carries a stamp the `ultima-design` CLI reads for drift.
 
+![Ultima docs homepage with a live project settings example](docs/assets/docs-home.png)
+
 ## Install
 
 Vite:
