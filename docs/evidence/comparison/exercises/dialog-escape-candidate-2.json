@@ -79,7 +79,7 @@
       "Grep {\"pattern\":\"Escape|focus\",\"path\":\"packages/ui/src/dialog.tsx\",\"output_mode\":\"content\",\"-n\":true}",
       "Grep {\"pattern\":\"Escape|focus\",\"path\":\"packages/ui/src/__tests__/dialog.test.tsx\",\"output_mode\":\"content\",\"-n\":true}",
       "cd packages/ui && cat package.json | grep -A3 '\"test\"'",
-      "cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-candidate-2-fRm0Lt/repo && grep '\"name\"' packages/ui/package.json"
+      "cd ~/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-candidate-2-fRm0Lt/repo && grep '\"name\"' packages/ui/package.json"
     ],
     "filesOpened": [
       "packages/ui/src/dialog.tsx"
@@ -89,7 +89,7 @@
     "edits": [],
     "bashCommands": [
       "cd packages/ui && cat package.json | grep -A3 '\"test\"'",
-      "cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-candidate-2-fRm0Lt/repo && grep '\"name\"' packages/ui/package.json"
+      "cd ~/.cache/ultima-measure/465/tmp/ultima-exercise-dialog-escape-candidate-2-fRm0Lt/repo && grep '\"name\"' packages/ui/package.json"
     ],
     "discoveryCommands": [],
     "answer": "OWNER: packages/ui/src/dialog.tsx\nCOMMAND: pnpm --filter @ultima/ui test -- run src/__tests__/dialog.test.tsx"

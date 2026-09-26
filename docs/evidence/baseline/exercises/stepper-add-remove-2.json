@@ -131,7 +131,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 10947.678206000011,
-          "tail": "\n> ultima-monorepo@ typecheck /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-2-WRGxqq/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
+          "tail": "\n> ultima-monorepo@ typecheck ~/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-2-WRGxqq/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
         },
         {
           "argv": [
@@ -154,7 +154,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 3088.3551149999257,
-          "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m/home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-2-WRGxqq/repo/packages/ui\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:57:02\n\u001b[2m   Duration \u001b[22m 2.30s\u001b[2m (tests 45%, import 35%, setup 12%, worker 8%)\u001b[22m\n\n"
+          "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m~/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-2-WRGxqq/repo/packages/ui\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:57:02\n\u001b[2m   Duration \u001b[22m 2.30s\u001b[2m (tests 45%, import 35%, setup 12%, worker 8%)\u001b[22m\n\n"
         },
         {
           "argv": [
@@ -169,7 +169,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 8042.3451489999425,
-          "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m/home/f/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-2-WRGxqq/repo/apps/docs\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m324 passed\u001b[39m\u001b[22m\u001b[90m (324)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:57:05\n\u001b[2m   Duration \u001b[22m 7.22s\u001b[2m (worker 57%, tests 30%, import 13%)\u001b[22m\n\n"
+          "tail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv5.0.0 \u001b[39m\u001b[90m~/.cache/ultima-measure/449/tmp/ultima-exercise-stepper-add-remove-2-WRGxqq/repo/apps/docs\u001b[39m\n      \u001b[2m\u001b[32mAPI started at http://localhost:63315/\u001b[39m\u001b[22m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m324 passed\u001b[39m\u001b[22m\u001b[90m (324)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:57:05\n\u001b[2m   Duration \u001b[22m 7.22s\u001b[2m (worker 57%, tests 30%, import 13%)\u001b[22m\n\n"
         }
       ],
       "servedItem": true

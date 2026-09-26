@@ -79,8 +79,8 @@
       "Grep {\"pattern\":\"theme-studio-store|theme-studio-draft|resetGroup|stockDraft\\\\(\\\\)\\\\)\",\"output_mode\":\"files_with_matches\",\"path\":\"apps/docs\"}",
       "Grep {\"pattern\":\"Reset theme|reset theme|Reset theme.*undo|undo.*override|override.*undo\",\"output_mode\":\"content\",\"path\":\"apps/docs/src/__tests__\",\"-n\":true,\"-i\":true}",
       "Grep {\"pattern\":\"override\",\"output_mode\":\"content\",\"path\":\"apps/docs/src/__tests__/theme-studio.test.tsx\",\"-n\":true,\"-i\":true}",
-      "grep -n \"setDraft\\|commit\\|update\" /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-4LNc3q/repo/apps/docs/src/theme-studio-editor.tsx | head -60",
-      "grep -rln \"theme-studio-store\" /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-4LNc3q/repo/apps/docs/src/__tests__",
+      "grep -n \"setDraft\\|commit\\|update\" ~/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-4LNc3q/repo/apps/docs/src/theme-studio-editor.tsx | head -60",
+      "grep -rln \"theme-studio-store\" ~/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-4LNc3q/repo/apps/docs/src/__tests__",
       "cat package.json | grep -A3 '\"test\"'; echo ---; cat apps/docs/package.json | grep -A3 '\"test\"'; echo ---; find . -maxdepth 2 -iname \"vitest.config*\" -o -iname \"vitest.workspace*\" | grep -v node_modules",
       "grep -m1 '\"name\"' apps/docs/package.json; ls apps/docs"
     ],
@@ -98,8 +98,8 @@
     "failedTools": 0,
     "edits": [],
     "bashCommands": [
-      "grep -n \"setDraft\\|commit\\|update\" /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-4LNc3q/repo/apps/docs/src/theme-studio-editor.tsx | head -60",
-      "grep -rln \"theme-studio-store\" /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-4LNc3q/repo/apps/docs/src/__tests__",
+      "grep -n \"setDraft\\|commit\\|update\" ~/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-4LNc3q/repo/apps/docs/src/theme-studio-editor.tsx | head -60",
+      "grep -rln \"theme-studio-store\" ~/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-4LNc3q/repo/apps/docs/src/__tests__",
       "cat package.json | grep -A3 '\"test\"'; echo ---; cat apps/docs/package.json | grep -A3 '\"test\"'; echo ---; find . -maxdepth 2 -iname \"vitest.config*\" -o -iname \"vitest.workspace*\" | grep -v node_modules",
       "grep -m1 '\"name\"' apps/docs/package.json; ls apps/docs",
       "timeout 180 pnpm --filter @ultima/docs test -- src/__tests__/theme-studio.test.tsx 2>&1 | tail -60",
@@ -117,7 +117,7 @@
       "exitCode": 0,
       "elapsedMs": 13392.397425999981,
       "coverageSeen": [],
-      "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-4LNc3q/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  37 passed (37)\n   Start at  16:24:56\n   Duration  12.61s (tests 84%, import 15%, worker 1%)\n\n"
+      "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/449/tmp/ultima-exercise-reset-undo-2-4LNc3q/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  37 passed (37)\n   Start at  16:24:56\n   Duration  12.61s (tests 84%, import 15%, worker 1%)\n\n"
     },
     "success": false,
     "ambiguousPrompt": false,

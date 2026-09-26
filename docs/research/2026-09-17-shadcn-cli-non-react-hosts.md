@@ -217,9 +217,9 @@ The same `content` string can feed both surfaces: `shadcn build` embeds `files[]
 - https://ui.shadcn.com/docs/registry/registry-item-json (`registry-item-json.mdx`): `registry:item` "Use for universal registry items" (119), `dependencies` are npm packages (133-160), `registryDependencies` address forms including URL and `./local.json` (162-170), `~` is project root (238), alias placeholders (240-244).
 - https://ui.shadcn.com/docs/cli (`(root)/cli.mdx` lines 59-87): `add` accepts "name, url or local path", `-p, --path`, `--dry-run`, `--yes`.
 - https://ultima.systems/r/registry.json, https://ultima.systems/r/setup-vite.json, https://ultima.systems/tokens.css (fetched 2026-09-17): item types and dependencies, response headers.
-- /home/f/Projects/private/ultima/apps/docs/public/_headers: CORS and cache stanzas for `/r/*`, `/tokens.css`, `/tokens.json`, `/llms.txt`.
-- /home/f/Projects/private/ultima/scripts/build-registry.ts (lines 23, 206, 226-228, 246): token export copy, synthesised `tokens-css` item, `shadcn build` invocation.
-- /home/f/Projects/private/ultima/docs/spec/ultima.md "Registry and install": catalogue, entry point, tokens CSS export, generation steps.
-- /home/f/Projects/private/ultima/docs/research/2026-09-08-shadcn-registry-non-tailwind.md: `init` Tailwind preflight, transformer chain, placement rules.
+- ~/Projects/private/ultima/apps/docs/public/_headers: CORS and cache stanzas for `/r/*`, `/tokens.css`, `/tokens.json`, `/llms.txt`.
+- ~/Projects/private/ultima/scripts/build-registry.ts (lines 23, 206, 226-228, 246): token export copy, synthesised `tokens-css` item, `shadcn build` invocation.
+- ~/Projects/private/ultima/docs/spec/ultima.md "Registry and install": catalogue, entry point, tokens CSS export, generation steps.
+- ~/Projects/private/ultima/docs/research/2026-09-08-shadcn-registry-non-tailwind.md: `init` Tailwind preflight, transformer chain, placement rules.
 - `npm view shadcn version time.modified` on 2026-09-17: `4.21.0`, `2026-09-04T05:34:07.315Z`.
 - Runs T1-T7 under `/tmp/claude-1000/-home-f-Projects-private-ultima/8cf8d4fc-2bb2-4122-8188-1e91f873bf8e/scratchpad/t*` with `npx -y shadcn@4.21.0`, `CI=1`, stdin closed.

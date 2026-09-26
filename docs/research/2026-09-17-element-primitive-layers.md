@@ -79,10 +79,10 @@ Priced against APG and against what Base UI does today. "Platform" marks what th
 
 ## Sources
 
-- /home/f/Projects/private/ultima/docs/adr/0002-base-ui-primitives.md: the four things a primitive layer must supply and the "unstyled" requirement.
-- /home/f/Projects/private/ultima/docs/adr/0001-stylex-only-styling.md (StyleX is the only styling engine; tokens emitted as CSS custom properties).
-- /home/f/Projects/private/ultima/packages/ui/src/tooltip.tsx lines 64 and 78: Ultima requires `aria-label` on Trigger and sets `role="tooltip"` on Popup itself.
-- /home/f/Projects/private/ultima/packages/ui/src/tabs.tsx: Ultima wraps Base UI Root, List, Tab, Indicator, Panel.
+- ~/Projects/private/ultima/docs/adr/0002-base-ui-primitives.md: the four things a primitive layer must supply and the "unstyled" requirement.
+- ~/Projects/private/ultima/docs/adr/0001-stylex-only-styling.md (StyleX is the only styling engine; tokens emitted as CSS custom properties).
+- ~/Projects/private/ultima/packages/ui/src/tooltip.tsx lines 64 and 78: Ultima requires `aria-label` on Trigger and sets `role="tooltip"` on Popup itself.
+- ~/Projects/private/ultima/packages/ui/src/tabs.tsx: Ultima wraps Base UI Root, List, Tab, Indicator, Panel.
 - node_modules `@base-ui/react@1.8.0` `tabs/list/TabsList.js` (role tablist, aria-orientation, `loopFocus` default true, `activateOnFocus` default false), `tabs/tab/TabsTab.js` (role tab, aria-controls, aria-selected, tabIndex note), `tabs/panel/TabsPanel.js` (role tabpanel, aria-labelledby, hidden), `internals/composite/composite.js` (ArrowLeft, Home, End constants), `tooltip/trigger/TooltipTrigger.js` (useHoverReferenceInteraction, useFocus), `tooltip/popup/TooltipPopup.js` and `utils/popups/popupStoreUtils.js` (`FOCUSABLE_POPUP_PROPS = { tabIndex: -1, ... }`; no role, no aria-describedby in the tooltip directory).
 - https://base-ui.com/react/components/tabs: parts, keyboard, data attributes, `--active-tab-*` variables.
 - https://base-ui.com/react/components/tooltip: "Tooltips alone are not accessible to touch or screen reader users", trigger must have `aria-label`, delay 600 ms, Provider timeout 400 ms, positioning props and data attributes.

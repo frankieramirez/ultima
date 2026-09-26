@@ -139,7 +139,7 @@
       "coverageSeen": [
         "history.test.ts"
       ],
-      "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-2-78hddT/repo/packages/tokens\n\n\n Test Files  1 passed (1)\n      Tests  6 passed (6)\n   Start at  10:13:02\n   Duration  140ms (transform 71%, import 18%, tests 8%, worker 3%)\n\n"
+      "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-baseline-2-78hddT/repo/packages/tokens\n\n\n Test Files  1 passed (1)\n      Tests  6 passed (6)\n   Start at  10:13:02\n   Duration  140ms (transform 71%, import 18%, tests 8%, worker 3%)\n\n"
     },
     "success": true,
     "ambiguousPrompt": false,

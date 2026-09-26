@@ -106,10 +106,10 @@
         "cat utils/stateAttributesMapping.js 2>/dev/null | head -60",
         "grep -rn \"data-\" root/*.js input/*.js decrement/*.js increment/*.js group/*.js 2>/dev/null | grep -v \"//\" ",
         "grep -n \"getStyleHookProps\\|function getStyleHook\\|camelToDash\\|toKebab\" -r internals/useRenderElement.tsx internals/ 2>/dev/null | head -20",
-        "cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo/packages/ui && pnpm typecheck 2>&1 | tail -60",
+        "cd ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo/packages/ui && pnpm typecheck 2>&1 | tail -60",
         "pnpm test -- synthetic-stepper 2>&1 | tail -150",
         "pnpm test -- synthetic-stepper 2>&1 | tail -60",
-        "cd /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo && pnpm typecheck 2>&1 | tail -100",
+        "cd ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo && pnpm typecheck 2>&1 | tail -100",
         "pnpm registry:build 2>&1 | tail -100",
         "pnpm --filter @ultima/docs test 2>&1 | tail -150",
         "pnpm --filter @ultima/docs test 2>&1 | tail -40",
@@ -130,7 +130,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 10957.271337000071,
-          "tail": "\n> ultima-monorepo@ typecheck /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
+          "tail": "\n> ultima-monorepo@ typecheck ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo\n> tsc -p tsconfig.json && pnpm -r typecheck\n\nScope: 5 of 6 workspace projects\npackages/cli typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck$ tsc -p tsconfig.json\npackages/tokens typecheck: Done\npackages/cli typecheck: Done\npackages/elements typecheck$ tsc -p tsconfig.json\npackages/ui typecheck$ tsc -p tsconfig.json\npackages/elements typecheck: Done\npackages/ui typecheck: Done\napps/docs typecheck$ tsc -p tsconfig.json\napps/docs typecheck: Done\n"
         },
         {
           "argv": [
@@ -153,7 +153,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 3160.6072489999933,
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:39:02\n   Duration  2.43s (tests 55%, import 29%, setup 10%, worker 6%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo/packages/ui\n      API started at http://localhost:63315/\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  10:39:02\n   Duration  2.43s (tests 55%, import 29%, setup 10%, worker 6%)\n\n"
         },
         {
           "argv": [
@@ -168,7 +168,7 @@
           ],
           "exitCode": 0,
           "elapsedMs": 7799.88214900007,
-          "tail": "\n RUN  v5.0.0 /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  2 passed (2)\n      Tests  324 passed (324)\n   Start at  10:39:05\n   Duration  6.98s (worker 57%, tests 30%, import 13%)\n\n"
+          "tail": "\n RUN  v5.0.0 ~/.cache/ultima-measure/465/tmp/ultima-exercise-stepper-add-remove-baseline-1-EOeFWb/repo/apps/docs\n      API started at http://localhost:63315/\n\n\n Test Files  2 passed (2)\n      Tests  324 passed (324)\n   Start at  10:39:05\n   Duration  6.98s (worker 57%, tests 30%, import 13%)\n\n"
         }
       ],
       "servedItem": true

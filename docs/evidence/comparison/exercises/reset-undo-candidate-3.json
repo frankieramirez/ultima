@@ -75,8 +75,8 @@
       "Grep {\"pattern\":\"reset\",\"path\":\"apps/docs/src/theme-studio-store.ts\",\"-n\":true,\"-i\":true}",
       "Grep {\"pattern\":\"reset\",\"path\":\"apps/docs/src/routes/theme-studio.tsx\",\"-n\":true,\"-i\":true}",
       "Grep {\"pattern\":\"reset\",\"path\":\"apps/docs/src/routes/theme-studio.tsx\",\"-n\":true,\"-i\":true,\"output_mode\":\"content\"}",
-      "grep -rn \"commit(\" /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-3-AnWrHF/repo/apps/docs/src --include=*.tsx | grep -v test",
-      "grep -n \"Reset theme\\|undo\\|Undo\" /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-3-AnWrHF/repo/apps/docs/src/__tests__/theme-studio.test.tsx | head -60",
+      "grep -rn \"commit(\" ~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-3-AnWrHF/repo/apps/docs/src --include=*.tsx | grep -v test",
+      "grep -n \"Reset theme\\|undo\\|Undo\" ~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-3-AnWrHF/repo/apps/docs/src/__tests__/theme-studio.test.tsx | head -60",
       "grep -n '\"test\"' packages/tokens/package.json"
     ],
     "filesOpened": [
@@ -91,8 +91,8 @@
     "failedTools": 0,
     "edits": [],
     "bashCommands": [
-      "grep -rn \"commit(\" /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-3-AnWrHF/repo/apps/docs/src --include=*.tsx | grep -v test",
-      "grep -n \"Reset theme\\|undo\\|Undo\" /home/f/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-3-AnWrHF/repo/apps/docs/src/__tests__/theme-studio.test.tsx | head -60",
+      "grep -rn \"commit(\" ~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-3-AnWrHF/repo/apps/docs/src --include=*.tsx | grep -v test",
+      "grep -n \"Reset theme\\|undo\\|Undo\" ~/.cache/ultima-measure/465/tmp/ultima-exercise-reset-undo-candidate-3-AnWrHF/repo/apps/docs/src/__tests__/theme-studio.test.tsx | head -60",
       "pnpm --filter @ultima/docs test -- -t \"reset theme clears an edit\" 2>&1 | tail -100",
       "pnpm --filter @ultima/docs exec vitest run src/__tests__/theme-studio.test.tsx -t \"reset theme clears\" 2>&1 | tail -40",
       "git log --oneline -5 -- packages/tokens/src/theme/history.ts apps/docs/src/theme-studio-store.ts apps/docs/src/routes/theme-studio.tsx apps/docs/src/theme-studio-actions.tsx packages/tokens/src/theme/autosave.ts",
