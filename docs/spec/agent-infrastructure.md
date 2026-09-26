@@ -470,6 +470,8 @@ Prove the selector with fixture repositories and exercise execution adapters wit
 
 ## Production browser verification
 
+The later [consumer support decision](consumer-support.md) adds a bounded cross-engine consumer matrix under the production-readiness map. It preserves this document's existing release obligations; the cross-browser deferral below applies to the original infrastructure effort. The additional matrix remains planned until its implementation and evidence land.
+
 Decided on [Production browser verification: scenarios, isolation, and CI gates](https://github.com/frankieramirez/ultima/issues/439). These requirements describe planned tooling. The current CI builds production docs after development-transformed Vitest tests; this decision adds browser execution against those built files.
 
 [Rendered consumer proof](consumer-proof.md) is a separate installed-application obligation using the browser-support matrix decided on [Decide the browser and integration support promise](https://github.com/frankieramirez/ultima/issues/618). It reuses the verifier's source identity, complete/incomplete result distinction and retained failure evidence, but its Vite and Next fixtures must install registry output and run their own production builds. The docs site's production matrix cannot substitute for those consumers.
