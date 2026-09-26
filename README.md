@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/frankieramirez/ultima/actions/workflows/ci.yml"><img src="https://github.com/frankieramirez/ultima/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/frankieramirez/ultima/actions/workflows/smoke-install.yml"><img src="https://github.com/frankieramirez/ultima/actions/workflows/smoke-install.yml/badge.svg" alt="Smoke install"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-126BFA.svg" alt="MIT license"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-171717.svg" alt="MIT license"></a>
 </p>
 
 Ultima is a design system for React projects that compile StyleX. The shadcn CLI copies each component's source into your project, and you own it from there. Dark is the default color mode. Light is a full peer: every semantic token, contrast check, and demo exists in both.
@@ -106,7 +106,7 @@ Read the [principles](docs/spec/ultima.md#principles) before changing anything. 
 
 ## Brand
 
-The wordmark is `--ultima:` set in IBM Plex Mono SemiBold, with the dashes and colon in Ultima blue `#126BFA` on ink `#0B1020`. The logo ships in four variants under [`apps/docs/public/brand`](apps/docs/public/brand): dark, light, monochrome white, and monochrome ink, plus a compact mark. `scripts/build-brand.py` regenerates all of them along with the favicons and the Open Graph image.
+The wordmark is `--ultima:` in IBM Plex Mono SemiBold, with a compact `u:` mark for icons. The identity uses neutral ink and paper; color belongs to the components and themes. [Brand guidelines](docs/brand.md) cover the SVG and PNG exports, social image, avatar, and regeneration command.
 
 ## Related
 
