@@ -248,6 +248,10 @@ export function agentGuide({
     'Names are stable across releases; values are not. Both modes\' values are at `/tokens.json`, and the same tokens as CSS custom properties are at `/tokens.css`.',
     '',
     describeTokens(tokens),
+    '',
+    '## CLI',
+    '',
+    section(spec, 'Agent guide'),
   ].join('\n')}\n`;
 
   const tags = htmlTagsIn(guide);

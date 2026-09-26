@@ -16,6 +16,7 @@ export type NavGroup = {
 export const pages = [
   { label: 'Home', to: '/' },
   { label: 'Install', to: '/install' },
+  { label: 'CLI', to: '/cli' },
   { label: 'Elements', to: '/elements' },
   { label: 'Tokens', to: '/tokens' },
   { label: 'Palette', to: '/palette' },

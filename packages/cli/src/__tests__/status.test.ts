@@ -206,7 +206,7 @@ describe('status', () => {
         `sidebar   src/components/ui/sidebar.tsx  diverged  ${OLD}`,
         '',
         'behind    npx shadcn add @ultima/dialog --overwrite',
-        'diverged  npx @ultima-systems/cli diff sidebar  (reinstalling discards your edits)',
+        'diverged  npx ultima-design diff sidebar  (reinstalling discards your edits)',
         '',
       ].join('\n'),
     );
@@ -221,40 +221,40 @@ describe('status', () => {
     const lines = (await status(root)).stdout.trimEnd().split('\n');
     expect(lines.slice(-2)).toEqual([
       'retired         the registry no longer serves tabs; those files are yours alone now',
-      'unknown-scheme  toast carries a hash scheme this CLI does not know; upgrade it: npm install -D @ultima-systems/cli@latest',
+      'unknown-scheme  toast carries a hash scheme this CLI does not know; upgrade it: npm install -D ultima-design@latest',
     ]);
   });
 
   it('adds a row per managed skill, current, stale, or edited, and never changes the exit code', async () => {
-    const skill = readFileSync(new URL('../../skill/ultima-systems/SKILL.md', import.meta.url), 'utf8');
+    const skill = readFileSync(new URL('../../skill/ultima-design/SKILL.md', import.meta.url), 'utf8');
     const registry = await serve([{ name: 'button', files: { 'button.tsx': await contentHash(staged('Button', 'two'), 'c1') } }]);
     const files = {
       'src/components/ui/button.tsx': await stamped('button', staged('Button', 'two'), NEW),
-      '.claude/skills/ultima-systems/SKILL.md': skillStamp(skill, '0.0.0-old'),
-      '.agents/skills/ultima-systems/SKILL.md': `${skillStamp(skill, CLI_VERSION)}Our own line.\n`,
+      '.claude/skills/ultima-design/SKILL.md': skillStamp(skill, '0.0.0-old'),
+      '.agents/skills/ultima-design/SKILL.md': `${skillStamp(skill, CLI_VERSION)}Our own line.\n`,
     };
     const root = consumer(registry, files);
     const { code, stdout } = await status(root);
     expect(code).toBe(0);
     expect(stdout.trimEnd().split('\n').slice(-5)).toEqual([
-      `button  src/components/ui/button.tsx            current  ${NEW}`,
-      'skill   .claude/skills/ultima-systems/SKILL.md  stale    0.0.0-old',
-      `skill   .agents/skills/ultima-systems/SKILL.md  edited   ${CLI_VERSION}`,
+      `button  src/components/ui/button.tsx           current  ${NEW}`,
+      'skill   .claude/skills/ultima-design/SKILL.md  stale    0.0.0-old',
+      `skill   .agents/skills/ultima-design/SKILL.md  edited   ${CLI_VERSION}`,
       '',
-      'stale   npx @ultima-systems/cli install',
+      'stale   npx ultima-design install',
     ]);
 
-    const { report } = await statusJson(consumer(registry, { ...files, '.claude/skills/ultima-systems/SKILL.md': skillStamp(skill, CLI_VERSION) }));
+    const { report } = await statusJson(consumer(registry, { ...files, '.claude/skills/ultima-design/SKILL.md': skillStamp(skill, CLI_VERSION) }));
     expect((report as unknown as { managed: unknown[] }).managed).toEqual([
-      { file: '.claude/skills/ultima-systems/SKILL.md', state: 'current', version: CLI_VERSION },
-      { file: '.agents/skills/ultima-systems/SKILL.md', state: 'edited', version: CLI_VERSION },
+      { file: '.claude/skills/ultima-design/SKILL.md', state: 'current', version: CLI_VERSION },
+      { file: '.agents/skills/ultima-design/SKILL.md', state: 'edited', version: CLI_VERSION },
     ]);
   });
 
   it.each([
     ['an unreachable registry', async () => consumer('http://127.0.0.1:9/r/{name}.json'), 'ULT-STATUS-002', /registry\.json/],
     ['a missing components.json', async () => project({ 'tsconfig.json': '{}' }), 'ULT-SCOPE-001', /doctor/],
-    ['a registry format out of range', async () => consumer(await serve([], 2)), 'ULT-STATUS-003', /npm install -D @ultima-systems\/cli@latest/],
+    ['a registry format out of range', async () => consumer(await serve([], 2)), 'ULT-STATUS-003', /npm install -D ultima-design@latest/],
     ['no @ultima registry', async () => consumer(''), 'ULT-STATUS-001', /"@ultima"/],
   ])('exits 3 on %s, naming the cause and its repair', async (_, root, ruleId, repair) => {
     const result = await status(await root(), '--json');

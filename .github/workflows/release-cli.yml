@@ -1,4 +1,4 @@
-# Publishes @ultima-systems/cli: docs/spec/ultima.md, Consumer CLI, Package and engine, Release.
+# Publishes ultima-design: docs/spec/ultima.md, Consumer CLI, Package and engine, Release.
 #
 # Hand-bump `version` in packages/cli/package.json, merge it, then push the tag
 # `cli-v<version>` on that commit. The tag must match the version or nothing runs
@@ -6,7 +6,7 @@
 #
 # The first publish uses a token. npm can only configure a trusted publisher for a
 # package that already exists, so for 0.1.0 the maintainer adds a granular npm
-# token as the NPM_TOKEN repository secret, scoped to publish @ultima-systems/cli.
+# token as the NPM_TOKEN repository secret, scoped to publish ultima-design.
 # Once that version is on npm:
 #   1. On npmjs.com, under the package's Settings, add a trusted publisher:
 #      GitHub Actions, repository frankieramirez/ultima, workflow release-cli.yml,
@@ -58,7 +58,7 @@ jobs:
           pnpm test
 
       - name: Build the CLI
-        run: pnpm --filter @ultima-systems/cli build
+        run: pnpm --filter ultima-design build
 
       # Builds and serves the registry from this commit, installs it into fresh
       # consumer projects, and runs the packed tarball's doctor in the Vite one.
@@ -109,4 +109,4 @@ jobs:
       - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish "$RUNNER_TEMP"/pack/ultima-systems-cli-*.tgz --provenance --access public
+        run: npm publish "$RUNNER_TEMP"/pack/ultima-design-*.tgz --provenance --access public

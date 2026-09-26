@@ -30,13 +30,13 @@ const FOREIGN: Record<Harness, object> = {
 
 const serialize = (json: unknown) => `${JSON.stringify(json, null, 2)}\n`;
 const readJson = (root: string, file: string) => JSON.parse(readFileSync(join(root, file), 'utf8'));
-const markedIn = (entries: unknown[]) => entries.filter((entry) => JSON.stringify(entry).includes('ultima-systems'));
+const markedIn = (entries: unknown[]) => entries.filter((entry) => JSON.stringify(entry).includes('ultima-design'));
 
 describe('hookEntry', () => {
   it('runs the pinned CLI, guarded, with a 30-second timeout in each harness field', () => {
     for (const harness of HARNESSES) {
       const text = JSON.stringify(hookEntry(harness));
-      expect(text).toContain(`npx --no-install @ultima-systems/cli hook ${harness} 2>/dev/null || true`);
+      expect(text).toContain(`npx --no-install ultima-design hook ${harness} 2>/dev/null || true`);
       expect(text).toMatch(/"(timeout|timeoutSec)":30/);
     }
     expect(hookEntry('codex').hooks).toEqual([expect.objectContaining({ commandWindows: expect.stringContaining('hook codex') })]);
@@ -93,7 +93,7 @@ describe('install hooks', () => {
   });
 
   it('replaces an older marked entry rather than adding a second', async () => {
-    const stale = { hooks: { PostToolUse: [{ matcher: 'Edit', hooks: [{ type: 'command', command: 'npx @ultima-systems/cli hook claude' }] }] } };
+    const stale = { hooks: { PostToolUse: [{ matcher: 'Edit', hooks: [{ type: 'command', command: 'npx ultima-design hook claude' }] }] } };
     const root = project({ [FILES.claude]: serialize(stale) });
     await run(['install', '--cwd', root, '--harness', 'claude']);
     expect(readJson(root, FILES.claude)).toEqual({ hooks: { PostToolUse: [hookEntry('claude')] } });

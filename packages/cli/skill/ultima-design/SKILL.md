@@ -1,9 +1,9 @@
 ---
-name: ultima-systems
+name: ultima-design
 description: Use for UI work in a repository whose components.json has an @ultima registry, when adding or editing a component, styling, theming, or replacing a native control.
 ---
 
-# Ultima Systems
+# ultima-design
 
 ## 1. When it applies
 
@@ -18,7 +18,7 @@ Before the first UI edit of a task, fetch `/llms.txt` from the host that `regist
 Before adding an item or editing an installed one, run:
 
 ```sh
-npx @ultima-systems/cli status
+npx ultima-design status
 ```
 
 ## 4. Reach for the kit
@@ -34,19 +34,19 @@ Read a semantic token for every color, shadow, radius, border width, and type va
 After editing, run:
 
 ```sh
-npx @ultima-systems/cli check --files <changed files>
+npx ultima-design check --files <changed files>
 ```
 
 Before handing work back, run:
 
 ```sh
-npx @ultima-systems/cli check
+npx ultima-design check
 ```
 
 When styles do not apply at all, run:
 
 ```sh
-npx @ultima-systems/cli doctor
+npx ultima-design doctor
 ```
 
 ## 7. Reading results

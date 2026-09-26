@@ -26,7 +26,7 @@
         "test": "pnpm --filter @ultima/tokens build && pnpm build && vitest run --reporter=verbose",
         "typecheck": "tsc -p tsconfig.json"
       },
-      "@ultima-systems/cli": {
+      "ultima-design": {
         "build": "node --experimental-strip-types scripts/build.ts",
         "test": "pnpm build && vitest run --reporter=verbose",
         "typecheck": "tsc -p tsconfig.json"

@@ -13,10 +13,10 @@ const MARKERS: Record<Harness, string[]> = {
   copilot: ['.github/copilot-instructions.md', '.github/skills', '.github/hooks'],
 };
 const DESTINATIONS: Record<Harness, string> = {
-  claude: '.claude/skills/ultima-systems',
-  codex: '.agents/skills/ultima-systems',
-  cursor: '.agents/skills/ultima-systems',
-  copilot: '.agents/skills/ultima-systems',
+  claude: '.claude/skills/ultima-design',
+  codex: '.agents/skills/ultima-design',
+  cursor: '.agents/skills/ultima-design',
+  copilot: '.agents/skills/ultima-design',
 };
 
 const HOOK_FILES: Record<Harness, string> = {
@@ -26,20 +26,20 @@ const HOOK_FILES: Record<Harness, string> = {
   copilot: '.github/hooks/ultima.json',
 };
 const HOOK_EVENTS: Record<Harness, string> = { claude: 'PostToolUse', codex: 'PostToolUse', cursor: 'postToolUse', copilot: 'postToolUse' };
-const HOOK_MARKER = 'ultima-systems';
+const HOOK_MARKER = 'ultima-design';
 
 const packageRootFile = (path: string) => new URL(`../${path}`, import.meta.url);
-const SKILL_SOURCE = packageRootFile('skill/ultima-systems/SKILL.md');
+const SKILL_SOURCE = packageRootFile('skill/ultima-design/SKILL.md');
 export const CLI_VERSION: string = JSON.parse(readFileSync(packageRootFile('package.json'), 'utf8')).version;
 
-const STAMP = /^metadata:\n {2}ultima-systems: (\S+) sha256:([0-9a-f]{64})\n/m;
+const STAMP = /^metadata:\n {2}ultima-design: (\S+) sha256:([0-9a-f]{64})\n/m;
 
 const sha256 = (text: string) => createHash('sha256').update(text).digest('hex');
 
 /** The skill with its stamp: a frontmatter `metadata` entry whose hash covers the file without it. */
 export function skillStamp(content: string, version: string): string {
   const end = content.indexOf('\n---\n', 3) + 1;
-  return `${content.slice(0, end)}metadata:\n  ultima-systems: ${version} sha256:${sha256(content)}\n${content.slice(end)}`;
+  return `${content.slice(0, end)}metadata:\n  ultima-design: ${version} sha256:${sha256(content)}\n${content.slice(end)}`;
 }
 
 export function readSkillStamp(text: string): { version: string; hash: string; content: string } | null {
@@ -77,7 +77,7 @@ type Json = Record<string, unknown>;
 type HookFile = Json & { hooks?: Record<string, unknown[]> };
 
 export function hookEntry(harness: Harness): Json {
-  const command = `npx --no-install @ultima-systems/cli hook ${harness}`;
+  const command = `npx --no-install ultima-design hook ${harness}`;
   const guarded = `${command} 2>/dev/null || true`;
   switch (harness) {
     case 'claude':
@@ -204,7 +204,7 @@ export function install(root: string, options: { harnesses?: Harness[]; dryRun: 
   });
   files.push(...harnesses.map((harness) => installHook(root, harness, options.dryRun)));
   const { devDependencies = {} } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-  return { harnesses, dryRun: options.dryRun, files, devDependency: '@ultima-systems/cli' in devDependencies };
+  return { harnesses, dryRun: options.dryRun, files, devDependency: 'ultima-design' in devDependencies };
 }
 
 export function uninstall(root: string) {
@@ -264,7 +264,7 @@ export function printPlan(
   }
   if (command === 'uninstall' && files.length === 0) lines.push('', 'No managed skill or hook found.');
   if (extra.devDependency === false) {
-    lines.push('', '@ultima-systems/cli is not in devDependencies. Add it: npm install -D @ultima-systems/cli');
+    lines.push('', 'ultima-design is not in devDependencies. Add it: npm install -D ultima-design');
   }
   return `${lines.join('\n')}\n`;
 }

@@ -240,7 +240,7 @@ export const CHECKS: readonly CheckDefinition[] = [
   {
     id: 'cli-tests',
     title: 'Consumer CLI suite',
-    argv: ['pnpm', '--filter', '@ultima-systems/cli', 'test'],
+    argv: ['pnpm', '--filter', 'ultima-design', 'test'],
     cwd: '.',
     nested: ['pnpm build (cli)', 'vitest run'],
     prerequisites: FRESHNESS,
@@ -250,7 +250,7 @@ export const CHECKS: readonly CheckDefinition[] = [
     deadlineSeconds: 600,
     scope: 'scoped',
     selector: 'none',
-    package: '@ultima-systems/cli',
+    package: 'ultima-design',
     adapter: STATIC,
   },
   {

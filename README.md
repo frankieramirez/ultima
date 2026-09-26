@@ -51,6 +51,7 @@ import { Button } from '@/components/ui/button';
 - **An agent guide** at [`/llms.txt`](https://ultima.systems/llms.txt): principles, conventions, component list, and token names in one plain Markdown file. Ultima installs no documentation into your repository, so this is how a consumer's agent learns the system.
 - **The registry** at [`/r/registry.json`](https://ultima.systems/r/registry.json), one item per component.
 - **Elements** at [`/elements/ultima.js`](https://ultima.systems/elements/ultima.js): the report set as custom elements for hosts that cannot run React. Each element also ships as a registry item: `ult-badge`, `ult-button`, `ult-code`, and `ult-stat` so far.
+- **The `ultima-design` CLI**, which verifies your setup, checks your edits against the consumer rules, and reports installed items' drift. See the [CLI page](https://ultima.systems/cli).
 
 ## How it is built
 

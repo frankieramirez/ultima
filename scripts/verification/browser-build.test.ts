@@ -119,7 +119,7 @@ describe('build and smoke logs', () => {
     '── building the registry',
     `smoke-install: serving ${URL}`,
     '── building the CLI',
-    'smoke-install: packed ultima-systems-cli-0.1.0.tgz',
+    'smoke-install: packed ultima-design-0.1.0.tgz',
     'smoke-install: the catalogue is 52 components',
     '── vite: scaffolding',
     `── vite: npx shadcn add ${URL}/r/setup-vite.json`,
@@ -336,7 +336,7 @@ element_target
   }
   const passing = `echo "── building the registry"
 echo "smoke-install: serving http://127.0.0.1:40001"
-echo "smoke-install: packed ultima-systems-cli-0.1.0.tgz"
+echo "smoke-install: packed ultima-design-0.1.0.tgz"
 echo "smoke-install: the catalogue is 52 components"
 mkdir -p "$WORK/vite-app/node_modules/vite"
 echo '{"devDependencies":{"vite":"^8"}}' > "$WORK/vite-app/package.json"

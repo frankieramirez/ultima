@@ -14,7 +14,7 @@ const READABLE_FORMATS: { min: number; max: number } = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
 ).ultima.registryFormats;
 const SCHEMES: string[] = ['c1', 'b1'] satisfies Scheme[];
-const UPGRADE = 'npm install -D @ultima-systems/cli@latest';
+const UPGRADE = 'npm install -D ultima-design@latest';
 
 export type Row = {
   item: string;
@@ -189,7 +189,7 @@ function incomplete(ruleId: string, file: string, message: string, repair: strin
 
 const CLOSING: Partial<Record<Row['state'], (items: string[]) => string>> = {
   behind: (items) => `npx shadcn add ${items.map((item) => `@ultima/${item}`).join(' ')} --overwrite`,
-  diverged: (items) => `npx @ultima-systems/cli diff ${items.join(' ')}  (reinstalling discards your edits)`,
+  diverged: (items) => `npx ultima-design diff ${items.join(' ')}  (reinstalling discards your edits)`,
   retired: (items) => `the registry no longer serves ${items.join(', ')}; those files are yours alone now`,
   'unknown-scheme': (items) =>
     `${items.join(', ')} ${items.length === 1 ? 'carries' : 'carry'} a hash scheme this CLI does not know; upgrade it: ${UPGRADE}`,
@@ -200,7 +200,7 @@ export function printStatus({ registry, revision, files, managed }: StatusReport
     const items = [...new Set(files.filter((row) => row.state === state).map(({ item }) => item))];
     return items.length > 0 ? [[state, (line as (items: string[]) => string)(items)]] : [];
   });
-  if (managed.some(({ state }) => state === 'stale')) closing.push(['stale', 'npx @ultima-systems/cli install']);
+  if (managed.some(({ state }) => state === 'stale')) closing.push(['stale', 'npx ultima-design install']);
   const skills = managed.map(({ file, state, version }) => ['skill', file, state, version]);
   const table = [['item', 'file', 'state', 'installed'], ...files.map((row) => [row.item, row.file, row.state, row.installed?.revision ?? '-']), ...skills];
   const width = (column: string[]) => Math.max(...column.map((cell) => cell.length)) + 2;

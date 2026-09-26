@@ -69,7 +69,7 @@ describe('the built binary', () => {
     const root = project();
     expect(ultima('install', '--cwd', root, '--harness', 'claude').status).toBe(0);
     const { version } = JSON.parse(readFileSync(join(dirname(cli), '../package.json'), 'utf8'));
-    expect(readFileSync(join(root, '.claude/skills/ultima-systems/SKILL.md'), 'utf8')).toContain(`ultima-systems: ${version} sha256:`);
+    expect(readFileSync(join(root, '.claude/skills/ultima-design/SKILL.md'), 'utf8')).toContain(`ultima-design: ${version} sha256:`);
   });
 
   it('exits 2 on an unknown flag', () => {
