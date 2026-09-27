@@ -57,11 +57,9 @@ Every failure was an infrastructure flake, not a contract violation: the Vitest 
 
 ## CI and enforcement
 
-Explicitly deferred by maintainer decision. On 2026-09-24 @frankieramirez decided that Actions billing will not be fixed, so no required-status enforcement exists or will exist on `main` until that changes. Re-verified read-only the same day: `branches/main/protection` returns 404, `rules/branches/main` is `[]`, and Actions jobs cannot start.
+The maintainer restored remote enforcement after the repository became public. On 2026-09-27 UTC, [CI attempt 2](https://github.com/frankieramirez/ultima/actions/runs/36275262315/attempts/2) passed both `check` and `production` on `main` at `5636cc5e2f2a5791ae86b4805318f2382acd68f4`. A [dispatched Smoke install](https://github.com/frankieramirez/ultima/actions/runs/36281278498) passed on the same commit. The first CI attempt failed before either job started because GitHub reported an account billing or spending-limit restriction; the rerun started and passed both jobs.
 
-- **Scope of the reduction:** no remote gate; the local `pnpm verify release` run is the release check, and reviewers must not merge on a red or absent local report.
-- **Owner:** @frankieramirez.
-- **Restoration condition:** when Actions billing is fixed, add a `main` ruleset requiring the `CI` workflow's `check` and `production` jobs, confirm with `gh api repos/frankieramirez/ultima/rules/branches/main`, and record a clean remote run. The deferred acceptance on [#464](https://github.com/frankieramirez/ultima/issues/464) describes the same actions.
+The active repository ruleset `main` (ID `24056269`) targets the default branch. `gh api repos/frankieramirez/ultima/rules/branches/main` returns `required_status_checks` for `check` and `production`, both from GitHub Actions. It also blocks deletion and non-fast-forward pushes. Deleting the ruleset rolls back this enforcement. This replaces the 2026-09-24 deferral recorded on [#464](https://github.com/frankieramirez/ultima/issues/464).
 
 ## Disposition by area
 
@@ -70,14 +68,14 @@ Explicitly deferred by maintainer decision. On 2026-09-24 @frankieramirez decide
 | Architectural enforcement | `architecture` green in all three runs at `b24e222`; per-family slice evidence in #453, #454, #455, #456 |
 | Metadata and authoring | `catalogue-freshness` green in all three runs; scaffold and generation evidence in `../catalogue/` |
 | Repeatable verification | The run lifecycle, isolation, locks and honest failure states all exercised by these runs — including `incomplete` classification doing its job on the flakes |
-| Production and scenarios | 26/26 production cells green in all three runs; consumer smoke green (Vite, Next.js, sidebar, element). CI enforcement deferred by maintainer decision, above |
+| Production and scenarios | 26/26 production cells green in all three runs; consumer smoke green (Vite, Next.js, sidebar, element). Remote CI and Smoke install passed on public `main`; the required-check ruleset is active, above |
 | Efficiency and responsiveness | Measured in #465 (`../comparison/`): every same-command workload slower beyond the noise, priced as the cost of the added gates |
 | Maintained conventions | This slice: the index, the skill updates, the exercised commands, the filed flake ticket |
 
 ## Open obligations and deferrals
 
 - **Passing release report** (resolved after this file first landed): the flake surface was fixed by #557 (Chromium garbage collection between browser test files), #559 (SIGINT test waits for the check to start) and #560 (retry a browser that never started); #554 is closed. The retained passing run is named above.
-- **CI enforcement** (deferred by maintainer decision, recorded above): remote required checks until billing is restored.
+- **CI enforcement** (resolved on 2026-09-27 UTC): the clean remote runs and active required-check ruleset are recorded above.
 - **#551**: its symptom no longer reproduces — `tooling-tests`, including `production-gate.test.ts`, passed in runs 1 and 3 — consistent with the snapshot Git work-tree fix in #545. Confirm and close.
 - **Optional deferrals**: Forge stays a React authoring skill — element files remain hand-authored against the Web components contract and parity gate, by spec. No Studio download/share-link scenario until that behavior is the subject of a change ([Pilot and reuse](../../spec/agent-infrastructure.md#pilot-and-reuse)).
 - **Correction-to-proof ownership**: recurring mistakes file a maintenance ticket naming the smallest reproduction and violated contract; the fix is a type constraint, a precise rule, a scenario or a repaired example — not duplicated prose. `canonical-examples.md` owns exemplar drift and is revisited when a listed contract changes.
