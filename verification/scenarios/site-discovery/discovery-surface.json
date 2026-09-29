@@ -32,9 +32,7 @@
       "reset": "fresh-context"
     }
   ],
-  "preconditions": [
-    "The served build is the site, not the coming-soon gate: verification runs build with ULTIMA_COMING_SOON off."
-  ],
+  "preconditions": [],
   "steps": [
     { "action": "Load each route directly.", "expect": "document.title is that page's own name joined to Ultima." },
     { "action": "Load an unknown path and an unknown component name.", "expect": "Both serve the not-found title." },

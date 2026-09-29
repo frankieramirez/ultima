@@ -1,9 +1,10 @@
 import * as stylex from '@stylexjs/stylex';
-import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Card, Tabs } from '@ultima/ui';
 import { useState } from 'react';
 
 import { CopyButton } from '../../copy-button';
+import { HighlightedCode } from '../../highlighted-code';
 import { INSTALL_TARGETS } from '../../install-commands';
 
 type Target = (typeof INSTALL_TARGETS)[number]['value'];
@@ -29,27 +30,16 @@ const styles = stylex.create({
     padding: space['--ult-space-8'],
   },
   command: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    padding: 0,
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-3'],
     lineHeight: font['--ult-font-leading-relaxed'],
     margin: 0,
     overflowWrap: 'anywhere',
   },
-  setup: { color: color['--ult-color-text-muted'] },
-  component: { color: color['--ult-color-text'] },
 });
-
-/** Breaks the setup command before its URL so the pair reads as two short lines at any width. */
-function SetupCommand({ command }: { command: string }) {
-  const url = command.lastIndexOf(' ');
-  return (
-    <p {...stylex.props(styles.command, styles.setup)}>
-      {command.slice(0, url)}
-      <br />
-      {command.slice(url + 1)}
-    </p>
-  );
-}
 
 export default function Workbench() {
   const [target, setTarget] = useState<Target>(INSTALL_TARGETS[0].value);
@@ -73,8 +63,9 @@ export default function Workbench() {
         </div>
         {INSTALL_TARGETS.map((entry) => (
           <Tabs.Panel key={entry.value} value={entry.value} style={styles.body}>
-            <SetupCommand command={entry.commands[0]} />
-            <p {...stylex.props(styles.command, styles.component)}>{entry.commands[1]}</p>
+            {entry.commands.map((command) => (
+              <HighlightedCode key={command} code={command} lang="bash" style={styles.command} />
+            ))}
           </Tabs.Panel>
         ))}
       </Tabs.Root>

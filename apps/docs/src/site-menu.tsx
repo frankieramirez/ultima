@@ -57,9 +57,6 @@ export function SiteMenu() {
             ))}
           </ScrollArea.Content>
         </ScrollArea.Viewport>
-        <ScrollArea.Scrollbar>
-          <ScrollArea.Thumb />
-        </ScrollArea.Scrollbar>
       </ScrollArea.Root>
     </Sidebar.Panel>
   );

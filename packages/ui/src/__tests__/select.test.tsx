@@ -209,6 +209,7 @@ for (const mode of themes) {
     await userEvent.click(screen.getByRole('combobox', { name: 'Fruit' }).element());
     await expect.element(screen.getByRole('listbox')).toBeVisible();
 
+    await expect.poll(() => getComputedStyle(screen.getByTestId('popup').element()).opacity).toBe('1');
     expect(await violations(screen.getByTestId('popup').element())).toEqual([]);
   });
 }

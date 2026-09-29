@@ -638,9 +638,6 @@ export function ThemeStudioEditor({
             <ThemeStudioValidation results={results} />
           </ScrollArea.Content>
         </ScrollArea.Viewport>
-        <ScrollArea.Scrollbar>
-          <ScrollArea.Thumb />
-        </ScrollArea.Scrollbar>
       </ScrollArea.Root>
     </>
   );

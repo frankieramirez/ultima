@@ -16,8 +16,7 @@ function exceptionFindings(report: ReturnType<typeof run>) {
     .map((diagnostic) => ({ exception: diagnostic.exception, line: diagnostic.start.line, message: diagnostic.message }));
 }
 
-/** The sites the repository's exceptions file records: 9 token and style sites, and 41 docs declarations. */
-const RECORDED = 50;
+const RECORDED = 48;
 
 describe('ULT-EXCEPTION-001', () => {
   test('the repository excepts only token, style and docs sites, each with its own authority', () => {

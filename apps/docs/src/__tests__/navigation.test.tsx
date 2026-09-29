@@ -532,7 +532,7 @@ function describe(violation: axe.Result) {
   return `${violation.id}: ${violation.nodes.map((node) => node.html).join(', ')}`;
 }
 
-test('the index rides a sticky grid column right of the article and the menu paints a styled bar', async () => {
+test('the index stays right of the article and the menu scrolls without a visible bar', async () => {
   await page.viewport(2304, 720);
   onTestFinished(() => page.viewport(1280, 720));
   await mount('/install');
@@ -544,9 +544,23 @@ test('the index rides a sticky grid column right of the article and the menu pai
   expect(article.right).toBeLessThanOrEqual(index.getBoundingClientRect().left);
 
   const navigation = menu().element();
-  expect(getComputedStyle(navigation).scrollbarWidth).not.toBe('none');
-  await expect.poll(() => navigation.querySelector('[data-orientation="vertical"]')).not.toBeNull();
+  expect(navigation.querySelector('[data-orientation="vertical"]')).toBeNull();
   const viewport = navigation.querySelector<HTMLElement>('[role="presentation"][tabindex]')!;
-  viewport.scrollTop = 100;
-  expect(viewport.scrollTop).toBeGreaterThan(0);
+  expect(getComputedStyle(viewport).scrollbarWidth).toBe('none');
+  viewport.focus();
+  await userEvent.keyboard('{End}');
+  await expect.poll(() => viewport.scrollTop).toBeGreaterThan(0);
 });
+
+for (const width of [390, 1024, 1440]) {
+  test(`the header logo stays aligned from home to the catalogue at ${width}px`, async () => {
+    await page.viewport(width, 844);
+    onTestFinished(() => page.viewport(1280, 720));
+    const screen = await mount('/');
+    const logo = () => screen.getByRole('link', { name: 'Ultima home' }).element().getBoundingClientRect().left;
+    const before = logo();
+    await userEvent.click(screen.getByRole('button', { name: 'Explore the components' }).element());
+    await expect.element(screen.getByRole('heading', { name: 'Components', level: 1 })).toBeVisible();
+    expect(logo()).toBe(before);
+  });
+}
