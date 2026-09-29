@@ -2,7 +2,7 @@ import { docsStyles } from './docs-style';
 import { ArrowUpRightIcon, ListIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { color, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, NavigationMenu, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
@@ -36,6 +36,17 @@ const styles = stylex.create({
     display: { default: 'none', [breakpoints.WIDE]: 'flex' },
     flexGrow: 1,
   },
+  link: {
+    color: {
+      default: color['--ult-color-text-muted'],
+      ':is([data-active], [aria-current="page"])': color['--ult-color-accent-text'],
+      ':is([data-active], [aria-current="page"]):hover': color['--ult-color-accent-text'],
+    },
+    fontWeight: { default: font['--ult-font-weight-regular'], ':is([data-active], [aria-current="page"])': font['--ult-font-weight-semibold'] },
+    textDecorationLine: { default: 'none', ':is([data-active], [aria-current="page"])': 'underline' },
+    textDecorationThickness: border.focus,
+    textUnderlineOffset: space['--ult-space-3'],
+  },
   // The footer's copy serves narrow viewports; this one covers the Studio, which renders no footer.
   mode: { display: { default: 'none', [breakpoints.WIDE]: 'inline-flex' }, flexShrink: 0 },
   github: {
@@ -67,7 +78,7 @@ export function Header() {
           <NavigationMenu.List>
             {LINKS.map((link) => (
               <NavigationMenu.Item key={link.to}>
-                <NavigationMenu.Link render={<Link to={link.to} />}>
+                <NavigationMenu.Link render={<Link to={link.to} />} style={styles.link}>
                   {link.label}
                 </NavigationMenu.Link>
               </NavigationMenu.Item>

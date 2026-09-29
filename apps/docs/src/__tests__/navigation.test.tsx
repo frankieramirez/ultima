@@ -158,23 +158,27 @@ test('the inline link shows the same focus ring', async () => {
   expect(style.outlineColor).toBe('rgb(131, 148, 255)');
 });
 
-test('the header link for the current page reads the text color through aria-current', async () => {
-  prefer('dark');
+test.each(['dark', 'light'] as const)('the current header link has a clear underline and weight in %s mode', async (mode) => {
+  prefer(mode);
   const screen = await mount('/components/button');
   const site = screen.getByRole('navigation', { name: 'Site', exact: true });
   await expect.element(site.getByRole('link', { name: 'Components' })).toBeVisible();
 
   const current = site.element().querySelectorAll('[aria-current="page"]');
   expect([...current].map((link) => link.textContent)).toEqual(['Components']);
-  const text = getComputedStyle(screen.getByRole('heading', { name: 'Button', level: 1 }).element()).color;
-  expect(getComputedStyle(current[0]!).color).toBe(text);
-  expect(getComputedStyle(current[0]!).fontWeight).toBe('400');
+  expect(getComputedStyle(current[0]!).fontWeight).toBe('600');
+  expect(getComputedStyle(current[0]!).textDecorationLine).toBe('underline');
+  expect(getComputedStyle(current[0]!).textDecorationThickness).toBe('2px');
   expect(getComputedStyle(current[0]!).backgroundColor).toBe('rgba(0, 0, 0, 0)');
 
   const resting = site.getByRole('link', { name: 'Tokens' }).element();
   expect(resting).not.toHaveAttribute('aria-current');
-  expect(getComputedStyle(resting).color).not.toBe(text);
+  expect(getComputedStyle(resting).color).not.toBe(getComputedStyle(current[0]!).color);
   expect(getComputedStyle(resting).fontWeight).toBe('400');
+  expect(getComputedStyle(resting).textDecorationLine).toBe('none');
+  const activeColor = getComputedStyle(current[0]!).color;
+  await userEvent.hover(current[0]!);
+  expect(getComputedStyle(current[0]!).color).toBe(activeColor);
 });
 
 test('Documentation links to installation while the sidebar uses the CSS variable label', async () => {
