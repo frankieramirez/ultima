@@ -11,7 +11,9 @@ import {
   serializeDraft,
   stockDraft,
   toRegistryItem,
+  toDesignMd,
   type ThemeDraft,
+  type TokensJson,
 } from '@ultima/tokens';
 import { beforeEach, expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -86,7 +88,7 @@ test('export separates installation from files and font details', async () => {
   await expect.element(dialog.getByText(/data-theme/)).toBeVisible();
   expect(dialog.element().textContent).not.toContain('Declared font faces');
   await userEvent.click(dialog.getByRole('tab', { name: 'Files & fonts', exact: true }));
-  for (const name of ['ultima-theme.json', 'ultima-theme.css', 'ultima-theme.stylex.ts']) {
+  for (const name of ['ultima-theme.json', 'DESIGN.md', 'ultima-theme.css', 'ultima-theme.stylex.ts']) {
     await expect.element(dialog.getByRole('button', { name: new RegExp(name.replaceAll('.', '\\.')) })).toBeVisible();
   }
   await expect.element(dialog.getByText(/reinstall/i)).toBeVisible();
@@ -196,6 +198,9 @@ test('each download produces a valid artifact', async () => {
   expect(css).toContain('[data-theme="light"]');
   expect(css).toContain('prefers-reduced-motion');
 
+  await userEvent.click(dialog.getByRole('button', { name: 'DESIGN.md', exact: true }));
+  expect(await downloads.take('DESIGN.md')).toBe(toDesignMd(presetDraft('neutral')));
+
   await userEvent.click(dialog.getByRole('button', { name: /ultima-theme\.stylex\.ts/ }));
   const stylex = await downloads.take('ultima-theme.stylex.ts');
   expect(stylex).toContain('createTheme');
@@ -210,7 +215,32 @@ test('each download produces a valid artifact', async () => {
   expect(registry.files.map((file) => file.target)).toEqual([
     '~/ultima-theme.css',
     '~/ultima-theme.json',
+    '~/DESIGN.md',
   ]);
+});
+
+test('the default design registry item carries every compiled token in both modes', async () => {
+  const [itemResponse, tokensResponse] = await Promise.all([
+    fetch('/r/design-md.json'),
+    fetch('/tokens.json'),
+  ]);
+  expect(itemResponse.status).toBe(200);
+  expect(tokensResponse.status).toBe(200);
+  const item = await itemResponse.json();
+  const tokens: TokensJson = await tokensResponse.json();
+  expect(item.type).toBe('registry:item');
+  expect(item.files).toHaveLength(1);
+  expect(item.files[0].type).toBe('registry:file');
+  expect(item.files[0].target).toBe('~/DESIGN.md');
+  expect(item.dependencies ?? []).toEqual([]);
+  expect(item.registryDependencies ?? []).toEqual([]);
+  const document: string = item.files[0].content;
+  expect(document).toContain('Generated from the compiled StyleX token values');
+  expect(document).not.toContain('failed token-contrast pairings');
+  expect(document.split('\n').filter((line) => line.startsWith('| `--ult-'))).toHaveLength(Object.keys(tokens.tokens).length);
+  for (const [name, token] of Object.entries(tokens.tokens)) {
+    expect(document).toContain(`| \`${name}\` | ${token.dark.value} | ${token.light.value} |`);
+  }
 });
 
 test('an invalid draft lists failing pairings and gates URL installs and downloads on acknowledgment', async () => {
@@ -231,10 +261,13 @@ test('an invalid draft lists failing pairings and gates URL installs and downloa
 
   await userEvent.click(dialog.getByRole('tab', { name: 'Files & fonts', exact: true }));
   const download = dialog.getByRole('button', { name: /ultima-theme\.json/ });
+  const designDownload = dialog.getByRole('button', { name: 'DESIGN.md', exact: true });
   expect(download.element()).toBeDisabled();
+  expect(designDownload.element()).toBeDisabled();
 
   await userEvent.click(dialog.getByRole('checkbox', { name: /Export anyway/ }));
   expect(download.element()).not.toBeDisabled();
+  expect(designDownload.element()).not.toBeDisabled();
 
   await userEvent.click(download);
   const text = await downloads.take('ultima-theme.json');
@@ -243,6 +276,8 @@ test('an invalid draft lists failing pairings and gates URL installs and downloa
   await userEvent.click(dialog.getByRole('button', { name: /ultima-theme\.css/ }));
   const css = await downloads.take('ultima-theme.css');
   expect(css).toContain('failed token-contrast pairings');
+  await userEvent.click(designDownload);
+  expect(await downloads.take('DESIGN.md')).toContain('failed token-contrast pairings');
 });
 
 test('the share dialog announces encoding and copy in a pre-mounted status region', async () => {

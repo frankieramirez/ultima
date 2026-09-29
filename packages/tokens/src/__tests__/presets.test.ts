@@ -43,7 +43,9 @@ test('saved v1 drafts preserve every resolved token and all exported artifacts',
     expect(drafts.resolveDraft(parsed.draft)).toEqual(fixture.resolved);
     expect(toCss(parsed.draft)).toBe(fixture.css);
     expect(toStylex(parsed.draft)).toBe(fixture.stylex);
-    expect(toRegistryItem(parsed.draft)).toBe(fixture.registry);
+    const registry = JSON.parse(toRegistryItem(parsed.draft));
+    expect({ ...registry, files: registry.files.slice(0, 2) }).toEqual(JSON.parse(fixture.registry));
+    expect(registry.files[2]?.target).toBe('~/DESIGN.md');
     expect(drafts.resetDraft(parsed.draft)).toEqual(drafts.stockDraft());
   }
 });

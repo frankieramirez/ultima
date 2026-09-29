@@ -19,7 +19,7 @@ describe('the repository catalogue', () => {
     assert.ok(catalogue.react.length > 0 && catalogue.elements.length > 0 && catalogue.recipes.length > 0);
     assert.deepEqual(catalogue.setup.map((entry) => entry.id), ['setup-next', 'setup-vite']);
     assert.deepEqual(catalogue.sourceBundles.map((entry) => entry.id).sort(), ['lib', 'tokens']);
-    assert.deepEqual(catalogue.artifacts.map((entry) => entry.id), ['tokens-css']);
+    assert.deepEqual(catalogue.artifacts.map((entry) => entry.id), ['design-md', 'tokens-css']);
   });
 
   test('matches the committed generated wiring byte for byte', () => {

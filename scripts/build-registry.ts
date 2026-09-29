@@ -34,7 +34,7 @@ const PUBLIC_DIR = join(root, 'apps/docs/public');
 const OUTPUT_DIR = join(PUBLIC_DIR, 'r');
 const SPEC = join(root, 'docs/spec/ultima.md');
 const TOKENS_DIST = join(root, 'packages/tokens/dist');
-const TOKEN_EXPORTS = ['tokens.css', 'tokens.json'];
+const TOKEN_EXPORTS = ['tokens.css', 'tokens.json', 'DESIGN.md'];
 const ELEMENTS_DIST = join(root, 'packages/elements/dist');
 const ELEMENTS_SRC = join(root, 'packages/elements/src');
 const ELEMENTS_PUBLIC = join(PUBLIC_DIR, 'elements');
@@ -223,6 +223,7 @@ async function stageSources() {
   mkdirSync(join(STAGE_DIR, 'elements'), { recursive: true });
   const tokensCss = await stamped('tokens-css', readFileSync(join(TOKENS_DIST, 'tokens.css'), 'utf8'), 'b1');
   writeFileSync(join(STAGE_DIR, 'tokens.css'), tokensCss.text);
+  copyFileSync(join(TOKENS_DIST, 'DESIGN.md'), join(STAGE_DIR, 'DESIGN.md'));
   const elements = elementNames();
   for (const name of elements) {
     copyFileSync(join(ELEMENTS_DIST, `${name}.js`), join(STAGE_DIR, 'elements', `${name}.js`));
@@ -260,6 +261,17 @@ function describeRegistry({ sources, components, tokens, lib, elements, tokensCs
       if (from === 'setup') return setupItem(name);
       if (from === 'element') return vendoredElementItem(name);
       if (from === 'artifact') {
+        if (name === 'design-md') {
+          const { title, description, docs } = describe(name);
+          return {
+            name,
+            type: 'registry:item',
+            title,
+            description,
+            docs,
+            files: [{ path: 'ultima/DESIGN.md', type: 'registry:file', target: '~/DESIGN.md' }],
+          };
+        }
         return item(name, 'registry:item', [
           { path: 'ultima/tokens.css', type: 'registry:file', target: '~/ultima-tokens.css', hash: tokensCss.hash },
         ]);

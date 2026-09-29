@@ -1,7 +1,6 @@
 /**
- * Writes the two published token contracts, dist/tokens.css and dist/tokens.json.
- * Neither file is ever hand-edited; see docs/spec/ultima.md, Tokens CSS export
- * and Tokens JSON export.
+ * Writes the published token contracts in dist: tokens.css, tokens.json, and DESIGN.md.
+ * None is hand-edited; see docs/spec/ultima.md and docs/spec/theme-studio.md.
  *
  * The values come from compiling the `.stylex.ts` sources, so the export and the
  * StyleX build can never disagree. The scale and step behind each color token
@@ -17,6 +16,7 @@ import styleXPlugin from '@stylexjs/babel-plugin';
 import ts from 'typescript';
 
 import { stylexOptions } from '../../../stylex.options.ts';
+import { toDefaultDesignMd } from '../src/theme/export.ts';
 import type { ContrastResult, TokenEntry, TokensJson } from '../src/tokens-json.ts';
 
 const scriptsDir = dirname(fileURLToPath(import.meta.url));
@@ -478,8 +478,10 @@ async function main(): Promise<void> {
   mkdirSync(dist, { recursive: true });
   writeFileSync(join(dist, 'tokens.css'), css);
   writeFileSync(join(dist, 'tokens.json'), buildJson(tokens, values, contrast));
+  const table = (mode: Mode) => Object.fromEntries([...values].map(([name, value]) => [name, value[mode]]));
+  writeFileSync(join(dist, 'DESIGN.md'), toDefaultDesignMd({ dark: table('dark'), light: table('light') }));
   console.log(
-    `@ultima/tokens: wrote dist/tokens.css and dist/tokens.json (${tokens.length} tokens, ${contrast.length} pairings pass)`,
+    `@ultima/tokens: wrote dist/tokens.css, dist/tokens.json, and dist/DESIGN.md (${tokens.length} tokens, ${contrast.length} pairings pass)`,
   );
 }
 

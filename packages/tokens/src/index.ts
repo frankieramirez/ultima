@@ -62,7 +62,7 @@ export {
   serializeDraft,
 } from './theme/codec';
 export type { DraftParseReason, DraftParseResult, FragmentEncodeResult } from './theme/codec';
-export { toCss, toRegistryItem, toStylex, STUDIO_VERSION } from './theme/export';
+export { toCss, toDesignMd, toRegistryItem, toStylex, STUDIO_VERSION } from './theme/export';
 export { createRegistryUrl, REGISTRY_URL_MAX_LENGTH, THEME_REGISTRY_PATH } from './theme/registry-url';
 export {
   AUTOSAVE_BACKUP_KEY,
