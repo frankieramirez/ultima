@@ -55,10 +55,12 @@ export function HighlightedCode({
   code,
   lang,
   style,
+  tabIndex,
 }: {
   code: string;
   lang?: string;
   style?: CodeProps['style'];
+  tabIndex?: CodeProps['tabIndex'];
 }) {
   const tokens = useMemo(
     () => highlighter.tokenize(code, { lang }).tokens,
@@ -66,7 +68,7 @@ export function HighlightedCode({
   );
 
   return (
-    <Code variant="block" style={style}>
+    <Code variant="block" style={style} tabIndex={tabIndex}>
       {tokens.map((token, index) =>
         token.className ? (
           <span key={index} {...stylex.props(TOKEN_STYLES[token.className])}>

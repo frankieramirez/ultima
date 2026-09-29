@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"vite\"",
-    "build": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"pnpm -w run registry:build && vite build\"",
+    "build": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"pnpm -w run registry:build && vite build && node --experimental-strip-types scripts/build-worker.ts\"",
     "preview": "vite preview",
     "test": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"pnpm -w run registry:build && vitest run --reporter=verbose\"",
     "typecheck": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"tsc -p tsconfig.json\"",

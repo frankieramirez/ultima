@@ -10,6 +10,7 @@ import {
   resolveDraft,
   serializeDraft,
   stockDraft,
+  toRegistryItem,
   type ThemeDraft,
 } from '@ultima/tokens';
 import { beforeEach, expect, onTestFinished, test, vi } from 'vitest';
@@ -59,7 +60,7 @@ test('installation uses highlighted code and exact framework imports', async () 
   const screen = await mount();
   await userEvent.click(screen.getByRole('button', { name: 'Export theme', exact: true }));
   const dialog = screen.getByRole('dialog', { name: 'Export theme' });
-  await expect.element(dialog.getByRole('button', { name: 'Download registry file', exact: true })).toBeVisible();
+  await expect.element(dialog.getByRole('button', { name: 'Copy install command', exact: true })).toBeVisible();
   const imports = () => Array.from(dialog.element().querySelectorAll('pre')).find((code) => code.textContent?.includes('import '))!;
   expect(imports().textContent).toContain("import '../ultima-theme.css';");
   expect(imports().querySelectorAll('span').length).toBeGreaterThan(0);
@@ -78,7 +79,9 @@ test('export separates installation from files and font details', async () => {
   await userEvent.click(screen.getByRole('button', { name: /Export/ }));
   const dialog = screen.getByRole('dialog');
   await expect.element(dialog.getByRole('heading', { name: 'Export theme' })).toBeVisible();
-  expect(dialog.element().textContent).toContain('npx shadcn add ./ultima-theme.registry.json');
+  await expect.element(dialog.getByRole('button', { name: 'Copy install command', exact: true })).toBeVisible();
+  expect(dialog.element().textContent).toContain('npx shadcn@latest add');
+  expect(dialog.element().textContent).toContain('/r/theme.json?theme=');
   await expect.element(dialog.getByText(/after the application.*StyleX output/i)).toBeVisible();
   await expect.element(dialog.getByText(/data-theme/)).toBeVisible();
   expect(dialog.element().textContent).not.toContain('Declared font faces');
@@ -113,6 +116,55 @@ function spyOnDownloads() {
     },
   };
 }
+
+test('the copied install URL serves the complete edited draft, including overrides and locks', async () => {
+  const writeText = vi.fn(async (_text: string) => {});
+  vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeText);
+  const draft = presetDraft('neutral');
+  draft.typography.sans = 'Roboto, sans-serif';
+  draft.locks.typography = true;
+  draft.overrides.light['--ult-color-surface'] = '#ffffff';
+  const screen = await mount();
+  await uploadDraft(screen, draft);
+  await userEvent.click(screen.getByRole('button', { name: 'Export theme', exact: true }));
+  const dialog = screen.getByRole('dialog', { name: 'Export theme' });
+  const copy = dialog.getByRole('button', { name: 'Copy install command', exact: true });
+  await expect.element(copy).toBeVisible();
+  await userEvent.click(copy);
+  await expect.poll(() => writeText.mock.calls.length).toBe(1);
+  const command = writeText.mock.calls[0]![0];
+  const url = new URL(/^npx shadcn@latest add "(.+)"$/.exec(command)![1]!);
+  expect(url.origin).toBe(window.location.origin);
+  expect(url.pathname).toBe('/r/theme.json');
+  expect(url.hash).toBe('');
+  const commandBlock = Array.from(dialog.element().querySelectorAll('pre')).find((element) => element.textContent === command)!;
+  expect(commandBlock.scrollWidth).toBeGreaterThan(commandBlock.clientWidth);
+  expect(commandBlock.getBoundingClientRect().height).toBeLessThan(100);
+  expect(commandBlock).toHaveAttribute('tabindex', '0');
+  const response = await fetch(url);
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe(toRegistryItem(draft));
+});
+
+test.each(['encoding unavailable', 'URL too long', 'decoded draft too large'])('%s offers a working registry download', async (reason) => {
+  const draft = presetDraft('neutral');
+  if (reason === 'encoding unavailable') {
+    vi.stubGlobal('CompressionStream', class { constructor() { throw new Error('Unavailable'); } });
+    onTestFinished(() => { vi.unstubAllGlobals(); });
+  } else {
+    draft.typography.sans = reason === 'decoded draft too large' ? 'a'.repeat(70_000) : Array.from({ length: 1200 }, (_, i) => Math.imul(i, 2654435761).toString(36)).join('');
+  }
+  const downloads = spyOnDownloads();
+  const screen = await mount();
+  await uploadDraft(screen, draft);
+  await userEvent.click(screen.getByRole('button', { name: 'Export theme', exact: true }));
+  const dialog = screen.getByRole('dialog', { name: 'Export theme' });
+  const download = dialog.getByRole('button', { name: 'Download registry file', exact: true });
+  await expect.element(download).toBeVisible();
+  expect(dialog.element().textContent).toContain('npx shadcn add ./ultima-theme.registry.json');
+  await userEvent.click(download);
+  expect(await downloads.take('ultima-theme.registry.json')).toBe(toRegistryItem(draft));
+});
 
 test('a failed share encoder offers the exact draft file instead of staying busy', async () => {
   vi.stubGlobal('CompressionStream', class { constructor() { throw new Error('Unavailable'); } });
@@ -149,8 +201,7 @@ test('each download produces a valid artifact', async () => {
   expect(stylex).toContain('createTheme');
   expect(stylex).toContain('ultimaTheme');
 
-  await userEvent.click(dialog.getByRole('tab', { name: 'Install', exact: true }));
-  await userEvent.click(dialog.getByRole('button', { name: 'Download registry file', exact: true }));
+  await userEvent.click(dialog.getByRole('button', { name: 'ultima-theme.registry.json', exact: true }));
   const registry = JSON.parse(await downloads.take('ultima-theme.registry.json')) as {
     type: string;
     files: { target: string }[];
@@ -162,7 +213,7 @@ test('each download produces a valid artifact', async () => {
   ]);
 });
 
-test('an invalid draft lists failing pairings and gates downloads on acknowledgment', async () => {
+test('an invalid draft lists failing pairings and gates URL installs and downloads on acknowledgment', async () => {
   const downloads = spyOnDownloads();
   const screen = await mount();
   await uploadDraft(screen, failingDraft());
@@ -171,6 +222,12 @@ test('an invalid draft lists failing pairings and gates downloads on acknowledgm
   const dialog = screen.getByRole('dialog');
   await expect.element(dialog.getByRole('heading', { name: /token-contrast pairings/i })).toBeVisible();
   await expect.element(dialog.getByText(/--ult-color-text on --ult-color-surface:/)).toBeVisible();
+  expect(dialog.getByRole('button', { name: 'Copy install command', exact: true }).element()).toBeDisabled();
+  expect(dialog.element().textContent).not.toContain('/r/theme.json?theme=');
+  await userEvent.click(dialog.getByRole('checkbox', { name: /Export anyway/ }));
+  await expect.element(dialog.getByRole('button', { name: 'Copy install command', exact: true })).toBeEnabled();
+  expect(dialog.element().textContent).toContain('/r/theme.json?theme=');
+  await userEvent.click(dialog.getByRole('checkbox', { name: /Export anyway/ }));
 
   await userEvent.click(dialog.getByRole('tab', { name: 'Files & fonts', exact: true }));
   const download = dialog.getByRole('button', { name: /ultima-theme\.json/ });

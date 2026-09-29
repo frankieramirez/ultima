@@ -6,6 +6,7 @@ import * as stylex from '@stylexjs/stylex';
 import {
   AUTOSAVE_KEY,
   decodeFragment,
+  createRegistryUrl,
   draftFingerprint,
   encodeFragment,
   gate,
@@ -411,11 +412,25 @@ function ExportDialog({
   const failures = gate(resolveDraft(draft)).filter((row) => !row.dark.pass || !row.light.pass);
   const shippedFailure = failures.length > 0 && draft.preset != null && !isPresetEdited(draft);
   const gated = failures.length > 0 && (shippedFailure || !acknowledged);
+  const [installUrl, setInstallUrl] = useState<{ draft: string; url: string | null; reason: 'too-long' | 'encoding-failed' | null } | null>(null);
+  const currentInstall = installUrl?.draft === acknowledgementKey ? installUrl : null;
+  const installCommand = !gated && currentInstall?.url ? `npx shadcn@latest add "${currentInstall.url}"` : null;
+  useEffect(() => {
+    if (!open || gated) return;
+    let cancelled = false;
+    void createRegistryUrl(draft, window.location.origin).then((result) => {
+      if (!cancelled) setInstallUrl({ draft: acknowledgementKey, url: result.tooLong ? null : result.url, reason: result.tooLong ? 'too-long' : null });
+    }).catch(() => {
+      if (!cancelled) setInstallUrl({ draft: acknowledgementKey, url: null, reason: 'encoding-failed' });
+    });
+    return () => { cancelled = true; };
+  }, [open, draft, gated, acknowledgementKey]);
   const faces = [
     ...new Set([...declaredFaces(draft.typography.sans), ...declaredFaces(draft.typography.mono)]),
   ];
   const registryDownload = () => download('ultima-theme.registry.json', toRegistryItem(draft), 'application/json');
   const downloads = [
+    { name: 'ultima-theme.registry.json', detail: 'Registry item', save: registryDownload },
     { name: 'ultima-theme.json', detail: 'Draft document', save: () => downloadDraft(draft) },
     {
       name: 'ultima-theme.css',
@@ -492,9 +507,15 @@ function ExportDialog({
                 <Tabs.Panel value="install" style={styles.exportPanel}>
                   <section {...stylex.props(styles.stack)}>
                     <h3 {...stylex.props(headings.h3, styles.heading)}>1. Install the theme</h3>
-                    <p {...stylex.props(styles.note, styles.exportCopy)}>Download the registry file, then run this command in your project.</p>
-                    <Button disabled={gated} onClick={registryDownload} style={[docsStyles.square, styles.touch, styles.action]}><DownloadSimpleIcon aria-hidden /> Download registry file</Button>
-                    <Fence code="npx shadcn add ./ultima-theme.registry.json" lang="shell" />
+                    {installCommand ? <>
+                      <p {...stylex.props(styles.note, styles.exportCopy)}>Run this command in your project. It installs the stylesheet and editable draft.</p>
+                      <CopyButton ariaLabel="Copy install command" text={installCommand} variant="solid" style={[styles.touch, styles.action, styles.exportCopy]}>{(status) => status || 'Copy install command'}</CopyButton>
+                      <Fence code={installCommand} lang="shell" wrap={false} />
+                    </> : gated ? <Button disabled style={[docsStyles.square, styles.touch, styles.action]}>Copy install command</Button> : currentInstall?.reason ? <>
+                      <p {...stylex.props(styles.note, styles.exportCopy)}>{currentInstall.reason === 'too-long' ? 'This theme is too large for an install URL.' : 'An install URL could not be created.'} Download the registry file, then run this command.</p>
+                      <Button onClick={registryDownload} style={[docsStyles.square, styles.touch, styles.action]}><DownloadSimpleIcon aria-hidden /> Download registry file</Button>
+                      <Fence code="npx shadcn add ./ultima-theme.registry.json" lang="shell" />
+                    </> : <p role="status" {...stylex.props(styles.note, styles.exportCopy)}>Creating install command…</p>}
                   </section>
                   <section {...stylex.props(styles.stack)}>
                     <h3 {...stylex.props(headings.h3, styles.heading)}>2. Apply the stylesheet</h3>

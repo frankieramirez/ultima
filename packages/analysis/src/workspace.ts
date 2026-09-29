@@ -50,6 +50,7 @@ const CLASSES: readonly [RegExp, SourceKind][] = [
   [/^apps\/docs\/src\/demos\/[^/]+\/[^/]+\.tsx?$/, 'demo'],
   [/^apps\/docs\/src\/content\/.+\.mdx$/, 'content'],
   [/^apps\/docs\/src\/[^/]+(\/[^/]+)?\.tsx?$/, 'docs'],
+  [/^apps\/docs\/server\/.+\.ts$/, 'docs'],
   [/^registry\/metadata\/.+\.ts$/, 'metadata'],
   [/^registry\/static\//, 'setup-template'],
   [/^scripts\/.+\.ts$/, 'tooling'],

@@ -150,12 +150,29 @@ export type FragmentEncodeResult = {
 async function pipeThrough(
   bytes: Uint8Array,
   stream: CompressionStream | DecompressionStream,
+  maxBytes = Infinity,
 ): Promise<Uint8Array> {
-  const pending = new Response(stream.readable).arrayBuffer();
-  const writer = stream.writable.getWriter();
-  await writer.write(new Uint8Array(bytes));
-  await writer.close();
-  return new Uint8Array(await pending);
+  const reader = new Blob([new Uint8Array(bytes)]).stream().pipeThrough(stream).getReader();
+  const chunks: Uint8Array[] = [];
+  let length = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      length += value.byteLength;
+      if (length > maxBytes) {
+        await reader.cancel();
+        throw new Error('Theme draft exceeds the decoded size limit.');
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const result = new Uint8Array(length);
+  let offset = 0;
+  for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.byteLength; }
+  return result;
 }
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -200,7 +217,7 @@ export async function encodeFragment(draft: ThemeDraft): Promise<FragmentEncodeR
   return { fragment, tooLong: fragment.length > FRAGMENT_SAFE_LENGTH };
 }
 
-export async function decodeFragment(hash: string): Promise<DraftParseResult> {
+export async function decodeFragment(hash: string, options: { maxBytes?: number } = {}): Promise<DraftParseResult> {
   if (!hash.startsWith(FRAGMENT_PREFIX)) {
     return fail('malformed', 'Theme fragment is missing the #theme= prefix.');
   }
@@ -208,7 +225,7 @@ export async function decodeFragment(hash: string): Promise<DraftParseResult> {
   if (!bytes) return fail('malformed', 'Theme fragment is not valid base64url.');
   try {
     const json = new TextDecoder().decode(
-      await pipeThrough(bytes, new DecompressionStream('deflate')),
+      await pipeThrough(bytes, new DecompressionStream('deflate'), options.maxBytes),
     );
     return parseDraft(json);
   } catch {

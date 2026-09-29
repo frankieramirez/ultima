@@ -22,6 +22,8 @@ Changed-file selection and aggregate verification results belong to the [Verific
 
 Maintain an explicit inventory of production React components and helpers, element sources, token sources, docs application code, demos/content, and build tooling. Derive membership from existing file conventions and metadata until the component-metadata decision supplies its adapter. Do not create a competing component catalogue here. Fail on an unclassified new production source file rather than silently omitting it.
 
+The docs application scope includes `apps/docs/server/*.ts`, the Cloudflare Pages worker and its theme registry handler. These are shipped application code and obey the docs dependency rules.
+
 Test fixtures, generated output and vendored dependencies are separate scopes. Deliberately invalid checker fixtures must never enter production discovery or ordinary package typechecking. Test-only raw values and parity tests reading another target's source do not violate production rules. Such scope exclusions are structural and documented; they are not exceptions for a production file.
 
 Check executable JSX in MDX using the existing MDX parser pipeline, retaining locations in the original document. Markdown fences and printed source are examples, not executed controls. Demos keep their distinct role: native form elements and layout may be necessary to demonstrate composition. They still obey applicable dependency and API rules. The docs-chrome control rule does not blanket-ban native elements in demos.

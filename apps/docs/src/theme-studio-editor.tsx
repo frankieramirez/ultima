@@ -68,6 +68,7 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-8'],
+    paddingBlockEnd: space['--ult-space-8'],
   },
   swatches: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: space['--ult-space-3'] },
   swatchItem: {
