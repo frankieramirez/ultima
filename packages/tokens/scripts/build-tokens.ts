@@ -481,8 +481,9 @@ async function main(): Promise<void> {
   const table = (mode: Mode) => Object.fromEntries([...values].map(([name, value]) => [name, value[mode]]));
   writeFileSync(join(dist, 'DESIGN.md'), toDefaultDesignMd({ dark: table('dark'), light: table('light') }));
   console.log(
-    `@ultima/tokens: wrote dist/tokens.css, dist/tokens.json, and dist/DESIGN.md (${tokens.length} tokens, ${contrast.length} pairings pass)`,
+    `@ultima/tokens: wrote dist/tokens.css and dist/tokens.json (${tokens.length} tokens, ${contrast.length} pairings pass)`,
   );
+  console.log('@ultima/tokens: wrote dist/DESIGN.md');
 }
 
 await main();
