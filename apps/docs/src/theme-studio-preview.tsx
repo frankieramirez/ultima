@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, type ResolvedDraft, type TokenTable } from '@ultima/tokens';
+import { colorScheme, presetDraft, resolveDraft, type ThemePresetId, type ResolvedDraft, type TokenTable } from '@ultima/tokens';
 import { border, color, font, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 import {
   Alert,
@@ -35,10 +35,12 @@ import {
 } from 'react';
 
 import { breakpoints } from './breakpoints.stylex';
-import { Kicker } from './page';
 import { previewVars } from './theme-studio-draft';
+import { ThemeStudioGallery } from './theme-studio-gallery';
+import { SwatchChip } from './swatch';
 
 const SCENES = [
+  { id: 'gallery', label: 'All examples' },
   { id: 'workspace', label: 'Workspace' },
   { id: 'typography', label: 'Typography' },
   { id: 'controls', label: 'Controls' },
@@ -66,7 +68,8 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     flexGrow: 1,
-    flexShrink: { default: 0, [breakpoints.RAIL]: 1 },
+    flexShrink: 1,
+    flexBasis: 0,
     gap: space['--ult-space-6'],
     minBlockSize: 0,
     minInlineSize: 0,
@@ -102,13 +105,12 @@ const styles = stylex.create({
     minBlockSize: 0,
     minInlineSize: 0,
   },
-  // Below the rail each pane keeps a floor, so the sheet scrolls rather than collapsing the canvas.
   pane: {
     display: 'flex',
     flexBasis: 0,
     flexDirection: 'column',
     flexGrow: 1,
-    minBlockSize: { default: '16rem', [breakpoints.RAIL]: 0 },
+    minBlockSize: 0,
     minInlineSize: 0,
     position: 'relative',
   },
@@ -127,7 +129,7 @@ const styles = stylex.create({
     minBlockSize: 0,
     overflow: 'hidden',
   },
-  // The scene box owns the canvas height above the strip and is the only part that scrolls.
+
   sheet: {
     display: 'flex',
     flexDirection: 'column',
@@ -246,6 +248,8 @@ const styles = stylex.create({
   inviteIcon: { color: color['--ult-color-accent-text'], fontSize: text['--ult-text-9'] },
   fill: { inlineSize: '100%' },
   row: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
+  miniChip: { inlineSize: space['--ult-space-7'], blockSize: space['--ult-space-7'] },
+  mini: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-1'], inlineSize: space['--ult-space-11'], flexShrink: 0 },
   display: {
     fontSize: text['--ult-text-9'],
     fontWeight: font['--ult-font-weight-semibold'],
@@ -290,45 +294,6 @@ const styles = stylex.create({
   },
   inspectBlock: { display: 'block' },
   inspectInline: { display: 'inline-flex' },
-  specimen: {
-    backgroundColor: color['--ult-color-surface-raised'],
-    color: color['--ult-color-text'],
-    display: 'grid',
-    flexShrink: { default: 1, [breakpoints.RAIL]: 0 },
-    fontFamily: font['--ult-font-sans'],
-    minBlockSize: 0,
-    overflow: { default: 'auto', [breakpoints.RAIL]: 'hidden' },
-    gridTemplateColumns: {
-      default: 'minmax(0, 1fr)',
-      [breakpoints.RAIL]: 'minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)',
-    },
-  },
-  specimenGroup: {
-    borderInlineStartColor: color['--ult-color-border'],
-    borderInlineStartStyle: 'solid',
-    borderInlineStartWidth: { default: 0, [breakpoints.RAIL]: border.hairline },
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space['--ult-space-4'],
-    justifyContent: 'space-between',
-    minInlineSize: 0,
-    padding: space['--ult-space-7'],
-  },
-  specimenLead: { backgroundColor: color['--ult-color-surface'], borderInlineStartWidth: 0 },
-  typeMark: {
-    fontSize: text['--ult-text-8'],
-    fontWeight: font['--ult-font-weight-medium'],
-    letterSpacing: font['--ult-font-tracking-tight'],
-    lineHeight: font['--ult-font-leading-tight'],
-    margin: 0,
-  },
-  specimenNote: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-2'], margin: 0 },
-  tokenName: {
-    color: color['--ult-color-text'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-3'],
-    margin: 0,
-  },
   readout: {
     alignSelf: 'flex-start',
     color: color['--ult-color-text-muted'],
@@ -355,7 +320,7 @@ export function ThemeStudioPreview({
   onModeChange: (mode: PreviewMode) => void;
   tables: ResolvedDraft;
 }) {
-  const [scene, setScene] = useState<Scene>('workspace');
+  const [scene, setScene] = useState<Scene>('gallery');
   const [inspect, setInspect] = useState(false);
   const [readout, setReadout] = useState<TokenReadout | null>(null);
   const panes = mode === 'compare' ? (['dark', 'light'] as const) : [mode];
@@ -491,12 +456,10 @@ function PreviewPane({
     >
       <div data-preview-canvas {...stylex.props(styles.canvas)}>
         <div data-preview-scene={scene} {...stylex.props(styles.sheet)}>
-          <div {...stylex.props(scene === 'workspace' ? styles.app : styles.scene, styles.centred)}>
+          <div {...stylex.props(scene === 'workspace' ? styles.app : styles.scene, scene !== 'gallery' && styles.centred)}>
             <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />
           </div>
         </div>
-        <Separator />
-        <SpecimenStrip inspect={inspect} mode={mode} />
       </div>
     </div>
   );
@@ -514,6 +477,8 @@ function SceneBody({
   scene: Scene;
 }) {
   switch (scene) {
+    case 'gallery':
+      return <ThemeStudioGallery container={container} inspect={inspect} mode={mode} />;
     case 'workspace':
       return <WorkspaceScene inspect={inspect} mode={mode} />;
     case 'typography':
@@ -529,6 +494,17 @@ function SceneBody({
     case 'motion':
       return <MotionScene inspect={inspect} />;
   }
+}
+
+export function PresetPreview({ id }: { id: ThemePresetId }) {
+  const table = resolveDraft(presetDraft(id)).dark;
+  return (
+    <span aria-hidden="true" {...stylex.props(styles.mini)}>
+      <SwatchChip style={styles.miniChip} value={table['--ult-color-text']!} />
+      <SwatchChip style={styles.miniChip} value={table['--ult-color-action']!} />
+      <SwatchChip style={styles.miniChip} value={table['--ult-color-accent']!} />
+    </span>
+  );
 }
 
 const PROJECTS = [
@@ -822,38 +798,6 @@ function MotionScene({ inspect }: { inspect: boolean }) {
           <Progress.Indicator />
         </Progress.Track>
       </Progress.Root>
-    </div>
-  );
-}
-
-function SpecimenStrip({ inspect, mode }: { inspect: boolean; mode: PaneMode }) {
-  return (
-    <div data-preview-specimen {...stylex.props(styles.specimen)}>
-      <div {...stylex.props(styles.specimenGroup, styles.specimenLead)}>
-        <Kicker>01 / TYPE</Kicker>
-        <p {...stylex.props(styles.typeMark)}>Aa / Built to be yours.</p>
-        <p {...stylex.props(styles.specimenNote)}>Sans for reading, mono for the record.</p>
-      </div>
-      <div {...stylex.props(styles.specimenGroup)}>
-        <Kicker>02 / INTERACTION</Kicker>
-        <div {...stylex.props(styles.row)}>
-          <Button size="sm">Rest</Button>
-          <Button size="sm" style={styles.hover}>
-            Hover
-          </Button>
-          <Button size="sm" style={styles.active}>
-            Active
-          </Button>
-        </div>
-        <p {...stylex.props(styles.specimenNote)}>Accent / {mode === 'dark' ? 'Dark' : 'Light'} mode</p>
-      </div>
-      <div {...stylex.props(styles.specimenGroup)}>
-        <Kicker>03 / INSPECT</Kicker>
-        <Inspectable inspect={inspect} tokens={['--ult-color-accent']}>
-          <Code>--ult-color-accent</Code>
-        </Inspectable>
-        <p {...stylex.props(styles.specimenNote)}>Hover a part with inspect on to read its tokens.</p>
-      </div>
     </div>
   );
 }

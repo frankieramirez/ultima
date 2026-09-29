@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import {
   STOCK_MONO,
   STOCK_SANS,
-  stockDraft,
+  resetDraft,
   type ColorMode,
   type GuidedGroup,
   type ThemeDraft,
@@ -73,7 +73,7 @@ export function presetValue(stack: string, presets: readonly { label: string; va
 }
 
 export function resetGroup(draft: ThemeDraft, group: GuidedGroup): ThemeDraft {
-  const stock = stockDraft();
+  const stock = resetDraft(draft);
   const next: ThemeDraft = {
     ...draft,
     color: { ...draft.color },

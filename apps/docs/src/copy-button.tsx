@@ -53,6 +53,7 @@ export function CopyButton({
   variant = 'ghost',
   floating = false,
   children,
+  style,
 }: {
   text: string;
   ariaLabel?: string;
@@ -60,6 +61,7 @@ export function CopyButton({
   /** Pin the icon button to the top and inline-end corner of a `position: relative` code block. */
   floating?: boolean;
   children?: (status: CopyStatus) => ReactNode;
+  style?: stylex.StyleXStyles;
 }) {
   const [status, setStatus] = useState('');
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -86,7 +88,7 @@ export function CopyButton({
         aria-label={label === 'Copy failed' ? 'Copy failed' : (ariaLabel ?? (children ? undefined : 'Copy'))}
         onClick={copy}
         size="sm"
-        style={[docsStyles.square, !children && styles.icon, !children && floating && styles.floating]}
+        style={[docsStyles.square, !children && styles.icon, !children && floating && styles.floating, style]}
         variant={variant}
       >
         {children ? children(label) : glyph(label)}

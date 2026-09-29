@@ -1,6 +1,8 @@
 import * as stylex from '@stylexjs/stylex';
 import {
   resolveDraft,
+  presetDraft,
+  THEME_PRESETS,
   shuffleDraft,
   stockDraft,
   toCss,
@@ -88,6 +90,7 @@ function failingDraft(): ThemeDraft {
 }
 
 const CORPUS: { name: string; draft: ThemeDraft }[] = [
+  ...THEME_PRESETS.map(({ id, label }) => ({ name: `the ${label} preset revision 1`, draft: presetDraft(id) })),
   { name: 'the stock draft', draft: stockDraft() },
   { name: 'a seeded broad shuffle', draft: shuffledDraft() },
   { name: 'guided parameters at their edges', draft: guidedDraft() },

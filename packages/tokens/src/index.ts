@@ -35,6 +35,11 @@ export {
   THEME_DRAFT_VERSION,
   STOCK_SANS,
   STOCK_MONO,
+  THEME_PRESETS,
+  presetDraft,
+  resetDraft,
+  presetLabel,
+  isPresetEdited,
 } from './theme/draft';
 export type {
   DensityFactor,
@@ -45,6 +50,8 @@ export type {
   ThemeDraft,
   TokenTable,
   TypeScale,
+  ThemePresetId,
+  ThemePresetOrigin,
 } from './theme/draft';
 export {
   decodeFragment,

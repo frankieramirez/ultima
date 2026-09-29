@@ -13,6 +13,8 @@
     "apps/docs/src/theme-studio-draft.ts",
     "apps/docs/src/theme-studio-editor.tsx",
     "apps/docs/src/theme-studio-group.tsx",
+    "apps/docs/src/theme-studio-gallery.tsx",
+    "apps/docs/src/theme-studio-context.ts",
     "apps/docs/src/theme-studio-preview.tsx",
     "apps/docs/src/theme-studio-shuffle.tsx",
     "apps/docs/src/theme-studio-store.ts",

@@ -29,7 +29,7 @@ test('parseDraft refuses malformed documents with a named reason', () => {
 
 test('parseDraft refuses an unknown version without loading fields', () => {
   const payload = JSON.parse(serializeDraft(stockDraft())) as { version: number };
-  payload.version = 2;
+  payload.version = 999;
   const parsed = parseDraft(JSON.stringify(payload));
   expect(parsed).toEqual({
     ok: false,

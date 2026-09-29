@@ -89,6 +89,7 @@ export default productionScenario('theme-studio.pane-boundaries', 'production', 
     }
   }
 
+  await editor.getByRole('button', { name: `Edit ${densityGroup}`, exact: true }).click();
   await editor.getByRole('group', { name: `${densityGroup} preset` }).getByRole('button', { name: editedDensity, exact: true }).click();
   await page.waitForFunction(
     ([name, value]) => getComputedStyle(document.querySelector(`[role="region"][aria-label="${name}"]`) as Element).getPropertyValue('--ult-space-1').trim() !== value,

@@ -1,5 +1,6 @@
 import {
   THEME_DRAFT_VERSION,
+  THEME_PRESETS,
   resolveDraft,
   stockDraft,
   type DensityFactor,
@@ -9,6 +10,7 @@ import {
   type ThemeDraft,
   type TokenTable,
   type TypeScale,
+  type ThemePresetOrigin,
 } from './draft.ts';
 import { RECIPE_VERSION, SCALE_NAMES, type ScaleSeed, type ScaleSeeds } from './recipe.ts';
 
@@ -228,13 +230,24 @@ export function parseDraft(input: string): DraftParseResult {
 
   if (!isRecord(raw)) return fail('malformed', 'Draft must be an object.');
   if (!isFiniteNumber(raw.version)) return fail('malformed', 'Draft is missing a version.');
-  if (raw.version !== THEME_DRAFT_VERSION) {
+  if (raw.version !== 1 && raw.version !== THEME_DRAFT_VERSION) {
     return fail('unknown-version', `Draft version ${raw.version} is not supported.`);
   }
   if (!isFiniteNumber(raw.recipeVersion)) return fail('malformed', 'Draft is missing a recipe version.');
 
-  if (raw.recipeVersion !== RECIPE_VERSION) {
-    return fail('unknown-version', `Recipe version ${raw.recipeVersion} is not supported; use ${RECIPE_VERSION}.`);
+  if (raw.recipeVersion !== (raw.version === 1 ? RECIPE_VERSION : 2)) {
+    return fail('unknown-version', `Recipe version ${raw.recipeVersion} is not supported for draft version ${raw.version}.`);
+  }
+
+  let preset: ThemePresetOrigin | null = null;
+  if (raw.version === THEME_DRAFT_VERSION && raw.preset !== null) {
+    if (!isRecord(raw.preset)) return fail('malformed', 'Draft must declare a preset origin or null.');
+    const id = raw.preset.id;
+    const definition = THEME_PRESETS.find((item) => item.id === id);
+    if (!definition || raw.preset.revision !== 1) {
+      return fail('unknown-version', `Preset ${String(raw.preset.id)} revision ${String(raw.preset.revision)} is not supported.`);
+    }
+    preset = { id: definition.id, revision: 1 };
   }
 
   const color = parseColor(raw.color);
@@ -258,7 +271,7 @@ export function parseDraft(input: string): DraftParseResult {
   return {
     ok: true,
     draft: {
-      version: THEME_DRAFT_VERSION,
+      version: raw.version,
       recipeVersion: raw.recipeVersion,
       color,
       typography,
@@ -269,6 +282,7 @@ export function parseDraft(input: string): DraftParseResult {
       overrides,
       locks,
       shuffleSeeds,
+      ...(raw.version === THEME_DRAFT_VERSION ? { preset } : {}),
     },
   };
 }

@@ -13,9 +13,14 @@ import { assertColor, assertFits, shippedColor } from '../support/production.ts'
 
 const { densityGroup, stockDensity, editedDensity, stockSpace1, overrideToken, overrideValue } = draftHistory;
 
-/** Below 840px the editor is a bottom sheet whose groups are chosen from a horizontal selector. */
 async function showGroup(page: Page, narrow: boolean, group: string) {
-  if (narrow) await page.getByRole('group', { name: 'Theme groups' }).getByRole('button', { name: group, exact: true }).click();
+  if (narrow) {
+    if (!(await page.getByRole('dialog', { name: 'Edit theme', exact: true }).isVisible())) await page.getByRole('button', { name: 'Edit theme', exact: true }).click();
+    await page.getByRole('group', { name: 'Theme groups' }).getByRole('button', { name: group, exact: true }).click();
+  } else {
+    const edit = page.getByRole('button', { name: `Edit ${group}`, exact: true });
+    if ((await edit.getAttribute('aria-expanded')) === 'false') await edit.click();
+  }
 }
 
 function readToken(page: Page, token: string) {
@@ -51,6 +56,7 @@ export default productionScenario('theme-studio.draft-history', 'production', as
   // The site header follows the chosen mode; the editor around the preview stays stock dark.
   const header = await page.getByRole('banner').evaluate((element) => getComputedStyle(element).backgroundColor);
   await assertColor(page, header, await shippedColor(page, '--ult-color-surface', variant.mode), `the site header in ${variant.mode} mode`);
+  await showGroup(page, narrow, 'Color');
   const editor = page.getByRole('complementary', { name: 'Theme editor' });
   const editorSurface = await editor.evaluate((element) => getComputedStyle(element).getPropertyValue('--ult-color-surface').trim());
   await assertColor(page, editorSurface, await shippedColor(page, '--ult-color-surface', 'dark'), 'the editor surface');
@@ -78,6 +84,7 @@ export default productionScenario('theme-studio.draft-history', 'production', as
   assert.notEqual(edited.space, stockSpace1, 'the density edit changes the painted spacing');
 
   await reload();
+  await showGroup(page, narrow, densityGroup);
   await page.getByRole('button', { name: 'Reset theme' }).waitFor();
   assert.deepEqual(await snapshot(page, narrow), edited, 'autosave restores the edit, the override and the lock');
   assert.ok(await page.getByRole('button', { name: 'Undo' }).isDisabled(), 'reload restores the draft but starts undo history empty');
@@ -90,14 +97,11 @@ export default productionScenario('theme-studio.draft-history', 'production', as
   await page.getByRole('button', { name: 'Undo' }).click();
   assert.deepEqual(await snapshot(page, narrow), edited, 'one undo restores the draft from before the reset');
 
-  // Narrow: the preview sits on top and the editor sheet under it, and both stay reachable. Checked last
-  // so the draft journey above is proven at this width whatever the layout does.
   if (narrow) {
-    const pane = page.getByRole('region', { name: /^(Dark|Light) preview$/ }).first();
-    await pane.scrollIntoViewIfNeeded();
-    const box = await pane.boundingBox();
-    assert.ok(box && box.height > 0, `the preview pane is reachable above the editor sheet (it is ${box ? `${box.width}×${box.height}` : 'not rendered'})`);
-    await editor.scrollIntoViewIfNeeded();
-    assert.ok(await editor.isVisible(), 'the editor sheet is reachable');
+    await page.keyboard.press('Escape');
+    await page.getByRole('dialog', { name: 'Edit theme', exact: true }).waitFor({ state: 'hidden' });
+    assert.ok(await page.getByRole('button', { name: 'Edit theme', exact: true }).evaluate((element) => element === document.activeElement), 'Escape restores focus to Edit theme');
+    await assertFits(page, page.getByRole('region', { name: 'Dark preview' }), 'mobile gallery after closing the drawer');
+    await axe('mobile gallery');
   }
 });

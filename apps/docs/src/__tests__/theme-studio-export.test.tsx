@@ -6,21 +6,24 @@ import {
   draftFingerprint,
   encodeFragment,
   parseDraft,
+  presetDraft,
   resolveDraft,
   serializeDraft,
   stockDraft,
   type ThemeDraft,
 } from '@ultima/tokens';
 import { beforeEach, expect, onTestFinished, test, vi } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import { routeTree } from '../router';
 import '../styles.css';
 
-function mount(path = '/theme-studio') {
+async function mount(path = '/theme-studio') {
   const history = createMemoryHistory({ initialEntries: [path] });
-  return render(<RouterProvider router={createRouter({ routeTree, history })} />);
+  const screen = await render(<RouterProvider router={createRouter({ routeTree, history })} />);
+  await userEvent.click(screen.getByRole('button', { name: 'Edit Density', exact: true }));
+  return screen;
 }
 
 beforeEach(() => {
@@ -42,12 +45,29 @@ function failingDraft(): ThemeDraft {
   });
 }
 
-async function uploadDraft(screen: { container: HTMLElement }, draft: ThemeDraft | string) {
+async function uploadDraft(screen: { container: HTMLElement }, draft: ThemeDraft | string, confirm = true) {
   const input = screen.container.ownerDocument.querySelector<HTMLInputElement>('input[type="file"]');
   expect(input).not.toBeNull();
   const content = typeof draft === 'string' ? draft : serializeDraft(draft);
+  const saved = parseDraft(localStorage.getItem(AUTOSAVE_KEY) ?? '');
+  const incoming = parseDraft(content);
   await userEvent.upload(input!, new File([content], 'ultima-theme.json', { type: 'application/json' }));
+  if (confirm && saved.ok && incoming.ok && draftFingerprint(saved.draft) !== draftFingerprint(incoming.draft)) await userEvent.click(page.getByRole('button', { name: 'Replace draft', exact: true }));
 }
+
+test('installation gives one registry path and exact framework imports', async () => {
+  const screen = await mount();
+  await userEvent.click(screen.getByRole('button', { name: 'Export theme', exact: true }));
+  const dialog = screen.getByRole('dialog', { name: 'Export theme' });
+  await expect.element(dialog.getByRole('button', { name: 'Download registry file', exact: true })).toBeVisible();
+  await expect.element(dialog.getByText("import '../ultima-theme.css';", { exact: false })).toBeVisible();
+  const code = dialog.getByText("import '../ultima-theme.css';", { exact: false }).element();
+  expect(code.getBoundingClientRect().height).toBeGreaterThan(30);
+  await userEvent.click(dialog.getByRole('group', { name: 'Installation framework' }).getByRole('button', { name: 'Next src/app', exact: true }));
+  await expect.element(dialog.getByText("import '../../ultima-theme.css';", { exact: false })).toBeVisible();
+  await expect.element(dialog.getByText(/remove data-theme from html/i)).toBeVisible();
+  await expect.element(dialog.getByText(/npx ultima-design doctor/)).toBeVisible();
+});
 
 test('the export dialog lists four downloads, the install flow, font faces, and the fingerprint', async () => {
   const screen = await mount();
@@ -60,7 +80,6 @@ test('the export dialog lists four downloads, the install flow, font faces, and 
     'ultima-theme.json',
     'ultima-theme.css',
     'ultima-theme.stylex.ts',
-    'ultima-theme.registry.json',
   ]) {
     await expect.element(dialog.getByRole('button', { name: new RegExp(name.replaceAll('.', '\\.')) })).toBeVisible();
   }
@@ -70,10 +89,11 @@ test('the export dialog lists four downloads, the install flow, font faces, and 
   await expect.element(dialog.getByText(/data-theme/)).toBeVisible();
   await expect.element(dialog.getByText(/reinstall/i)).toBeVisible();
   await expect.element(dialog.getByText(/editable source/i)).toBeVisible();
-  await expect.element(dialog.getByText(/Figtree/)).toBeVisible();
-  await expect.element(dialog.getByText(/IBM Plex Mono/)).toBeVisible();
+  await expect.element(dialog.getByText(/^Declared font faces:.*Figtree/)).toBeVisible();
+  await expect.element(dialog.getByText(`Sans stack: ${presetDraft('neutral').typography.sans}`, { exact: true })).toBeVisible();
+  await expect.element(dialog.getByText(`Mono stack: ${presetDraft('neutral').typography.mono}`, { exact: true })).toBeVisible();
   await expect.element(dialog.getByText(/consumer/i)).toBeVisible();
-  await expect.element(dialog.getByText(new RegExp(draftFingerprint(stockDraft())))).toBeVisible();
+  await expect.element(dialog.getByText(new RegExp(draftFingerprint(presetDraft('neutral'))))).toBeVisible();
 });
 
 function spyOnDownloads() {
@@ -94,6 +114,18 @@ function spyOnDownloads() {
     },
   };
 }
+
+test('a failed share encoder offers the exact draft file instead of staying busy', async () => {
+  vi.stubGlobal('CompressionStream', class { constructor() { throw new Error('Unavailable'); } });
+  onTestFinished(() => { vi.unstubAllGlobals(); });
+  const downloads = spyOnDownloads();
+  const screen = await mount();
+  await userEvent.click(screen.getByRole('button', { name: 'Share', exact: true }));
+  const dialog = screen.getByRole('dialog', { name: 'Share theme' });
+  await expect.element(dialog.getByText('A share link could not be created. Share the draft file instead.')).toBeVisible();
+  await userEvent.click(dialog.getByRole('button', { name: 'ultima-theme.json', exact: true }));
+  expect(await downloads.take('ultima-theme.json')).toBe(serializeDraft(presetDraft('neutral')));
+});
 
 test('each download produces a valid artifact', async () => {
   const downloads = spyOnDownloads();
@@ -117,7 +149,7 @@ test('each download produces a valid artifact', async () => {
   expect(stylex).toContain('createTheme');
   expect(stylex).toContain('ultimaTheme');
 
-  await userEvent.click(dialog.getByRole('button', { name: /ultima-theme\.registry\.json/ }));
+  await userEvent.click(dialog.getByRole('button', { name: 'Download registry file', exact: true }));
   const registry = JSON.parse(await downloads.take('ultima-theme.registry.json')) as {
     type: string;
     files: { target: string }[];
@@ -271,6 +303,7 @@ test('the draft autosaves on change and restores across sessions', async () => {
   const saved = localStorage.getItem(AUTOSAVE_KEY);
   expect(saved && parseDraft(saved).ok).toBe(true);
 
+  await first.unmount();
   const second = await mount();
   const pane = second.container.querySelector<HTMLElement>('[aria-label="Dark preview"]');
   expect(pane).not.toBeNull();
@@ -284,6 +317,19 @@ test('the draft autosaves on change and restores across sessions', async () => {
   expect(compact).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('unavailable storage is visible and offers a recoverable draft download', async () => {
+  const downloads = spyOnDownloads();
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Storage blocked'); });
+  onTestFinished(() => { vi.restoreAllMocks(); });
+  const screen = await mount();
+  await userEvent.click(screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Roomy' }));
+  await expect.element(screen.getByText('Local save unavailable', { exact: true })).toBeVisible();
+  await expect.element(screen.getByText('Saved on this device', { exact: true })).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Download draft', exact: true }));
+  const parsed = parseDraft(await downloads.take('ultima-theme.json'));
+  expect(parsed.ok && parsed.draft.density).toBe(1.25);
+});
+
 test('a corrupt autosave is quarantined with a notice', async () => {
   localStorage.setItem(AUTOSAVE_KEY, '{not a draft');
   const screen = await mount();
@@ -291,11 +337,11 @@ test('a corrupt autosave is quarantined with a notice', async () => {
   const alert = screen.getByText('Autosave notice').element().parentElement!;
   expect(alert.textContent).toMatch(/quarantined/i);
   const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
-  await expect.poll(() => editor.querySelector('[role="status"]')?.textContent).toMatch(
+  await expect.poll(() => document.querySelector('[role="status"][aria-label="Draft status"]')?.textContent).toMatch(
     /quarantined/i,
   );
   expect(localStorage.getItem(AUTOSAVE_BACKUP_KEY)).toBe('{not a draft');
-  expect(localStorage.getItem(AUTOSAVE_KEY)).toBeNull();
+  expect(parseDraft(localStorage.getItem(AUTOSAVE_KEY)!).ok).toBe(true);
 
   await userEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
   await expect.poll(() => editor.textContent).not.toMatch(/quarantined/i);
@@ -324,7 +370,7 @@ test('loading a draft warns first when a differing autosave exists', async () =>
   const incoming = stockDraft();
   incoming.density = 0.75;
 
-  await uploadDraft(screen, incoming);
+  await uploadDraft(screen, incoming, false);
   const confirm = screen.getByRole('alertdialog');
   await expect.element(confirm.getByText(/Replace the autosaved draft/i)).toBeVisible();
 
@@ -332,11 +378,30 @@ test('loading a draft warns first when a differing autosave exists', async () =>
   const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
   expect(getComputedStyle(pane).getPropertyValue('--ult-space-1').trim()).toBe('0.125rem');
 
-  await uploadDraft(screen, incoming);
+  await uploadDraft(screen, incoming, false);
   await userEvent.click(screen.getByRole('button', { name: 'Replace draft' }));
   await vi.waitFor(() => {
     expect(getComputedStyle(pane).getPropertyValue('--ult-space-1').trim()).toBe('0.09375rem');
   });
+});
+
+test('cancelling an import keeps the existing undo history', async () => {
+  const screen = await mount();
+  await userEvent.click(screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Roomy', exact: true }));
+  await uploadDraft(screen, presetDraft('cinder'), false);
+  await userEvent.click(screen.getByRole('alertdialog').getByRole('button', { name: 'Cancel', exact: true }));
+  await expect.element(screen.getByRole('button', { name: 'Undo', exact: true })).not.toBeDisabled();
+  await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
+  expect(getComputedStyle(screen.getByRole('region', { name: 'Dark preview' }).element()).getPropertyValue('--ult-space-1').trim()).toBe('0.125rem');
+});
+
+test('export stays inside the stable Studio theme when the site is light', async () => {
+  localStorage.setItem('ultima-theme', 'light');
+  const screen = await mount();
+  await userEvent.click(screen.getByRole('button', { name: 'Export theme', exact: true }));
+  const dialog = screen.getByRole('dialog', { name: 'Export theme' }).element();
+  expect(dialog.closest('main')).not.toBeNull();
+  expect(getComputedStyle(dialog).colorScheme).toBe('dark');
 });
 
 test('an upload matching the autosave loads without a warning', async () => {

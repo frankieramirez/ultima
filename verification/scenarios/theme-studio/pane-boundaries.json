@@ -47,7 +47,7 @@
     }
   ],
   "preconditions": [
-    "Storage and the URL fragment are empty, so the studio opens on the stock draft.",
+    "Storage and the URL fragment are empty, so the studio opens on the Neutral preset.",
     "Desktop width only: at 1280x720 the editor rail and both Compare panes sit side by side."
   ],
   "steps": [
@@ -60,7 +60,7 @@
       "expect": "Each popup mounts inside the pane that opened it, none appears in the other pane, it paints that pane's raised surface, and Escape closes it with focus back on its trigger."
     },
     {
-      "action": "In Density preset, choose Roomy.",
+      "action": "Expand Edit Density, then choose Roomy in Density preset.",
       "expect": "Both panes' --ult-space-1 change to the same new value, their surfaces stay distinct, and the editor's own tokens and the site header are unchanged."
     }
   ],

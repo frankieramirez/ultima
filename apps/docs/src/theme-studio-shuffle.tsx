@@ -1,4 +1,5 @@
 import { docsStyles } from './docs-style';
+import { breakpoints } from './breakpoints.stylex';
 import { ArrowUUpLeftIcon, ArrowUUpRightIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import type { ShuffleVariation } from '@ultima/tokens';
@@ -9,6 +10,7 @@ import { Kicker } from './page';
 import { keepOne } from './theme-studio-draft';
 
 const styles = stylex.create({
+  touch: { minBlockSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null }, minInlineSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null } },
   bar: { display: 'flex', flexDirection: 'column', flexShrink: 0, gap: space['--ult-space-5'] },
   row: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
   history: { display: 'flex', gap: space['--ult-space-2'] },
@@ -38,14 +40,14 @@ export function ThemeStudioShuffleBar({
   return (
     <div {...stylex.props(styles.bar)}>
       <div {...stylex.props(styles.row)}>
-        <Button onClick={onShuffle} variant="outline" style={docsStyles.square}>
+        <Button onClick={onShuffle} variant="outline" style={[docsStyles.square, styles.touch]}>
           Shuffle
         </Button>
         <div {...stylex.props(styles.history)}>
-          <Button aria-label="Undo" disabled={!canUndo} onClick={onUndo} style={[docsStyles.square, styles.icon]} variant="ghost">
+          <Button aria-label="Undo" disabled={!canUndo} onClick={onUndo} style={[docsStyles.square, styles.icon, styles.touch]} variant="ghost">
             <ArrowUUpLeftIcon aria-hidden />
           </Button>
-          <Button aria-label="Redo" disabled={!canRedo} onClick={onRedo} style={[docsStyles.square, styles.icon]} variant="ghost">
+          <Button aria-label="Redo" disabled={!canRedo} onClick={onRedo} style={[docsStyles.square, styles.icon, styles.touch]} variant="ghost">
             <ArrowUUpRightIcon aria-hidden />
           </Button>
         </div>
@@ -59,8 +61,8 @@ export function ThemeStudioShuffleBar({
           }}
           value={[variation]}
         >
-          <ToggleGroup.Item value="subtle" style={docsStyles.square}>Subtle</ToggleGroup.Item>
-          <ToggleGroup.Item value="broad" style={docsStyles.square}>Broad</ToggleGroup.Item>
+          <ToggleGroup.Item value="subtle" style={[docsStyles.square, styles.touch]}>Subtle</ToggleGroup.Item>
+          <ToggleGroup.Item value="broad" style={[docsStyles.square, styles.touch]}>Broad</ToggleGroup.Item>
         </ToggleGroup.Root>
         <Kicker title="Theme state fingerprint" style={styles.fingerprint}>
           seed {fingerprint}

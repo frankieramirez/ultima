@@ -1,4 +1,6 @@
 import { docsStyles } from './docs-style';
+import { StudioPortalContext } from './theme-studio-context';
+import { breakpoints } from './breakpoints.stylex';
 import { CheckIcon, CopyIcon, DownloadSimpleIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import {
@@ -8,6 +10,8 @@ import {
   encodeFragment,
   gate,
   parseDraft,
+  presetLabel,
+  isPresetEdited,
   resolveDraft,
   restoreAutosave,
   saveAutosave,
@@ -20,18 +24,18 @@ import {
   type ThemeDraft,
 } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Field, Input, Separator, Spinner } from '@ultima/ui';
-import { useEffect, useRef, useState } from 'react';
+import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Field, Input, Separator, Spinner, ToggleGroup } from '@ultima/ui';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 import { CopyButton } from './copy-button';
-import { readStored, removeStored, writeStored } from './storage';
+import { readStored } from './storage';
 import { useStudioDraft as useStoreDraft } from './theme-studio-store';
 import { headings } from './typography';
 
 const STORAGE: StorageLike = {
-  getItem: readStored,
-  setItem: (key, value) => writeStored(key, value),
-  removeItem: removeStored,
+  getItem: (key) => localStorage.getItem(key),
+  setItem: (key, value) => localStorage.setItem(key, value),
+  removeItem: (key) => localStorage.removeItem(key),
 };
 
 const FRAGMENT_PREFIX = '#theme=';
@@ -56,10 +60,10 @@ const GENERIC_FAMILIES = new Set([
 
 type PendingLoad = {
   draft: ThemeDraft;
-  fallback: ThemeDraft | null;
 };
 
 const styles = stylex.create({
+  touch: { minBlockSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null }, minInlineSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null } },
   stack: {
     display: 'flex',
     flexDirection: 'column',
@@ -139,6 +143,11 @@ const styles = stylex.create({
     whiteSpace: 'nowrap',
     width: '1px',
   },
+  exportPopup: { inlineSize: '100%', maxInlineSize: '52rem', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' },
+  exportHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space['--ult-space-5'], padding: space['--ult-space-6'], flexShrink: 0 },
+  exportBody: { overflow: 'auto', minBlockSize: 0, padding: space['--ult-space-6'] },
+  code: { flexShrink: 0, whiteSpace: 'pre', overflow: 'auto', margin: 0, fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'] },
+  framework: { display: 'flex', flexWrap: 'wrap' },
   popup: {
     inlineSize: '100%',
     maxInlineSize: '30rem',
@@ -154,7 +163,7 @@ function download(name: string, content: string, type: string): void {
   URL.revokeObjectURL(url);
 }
 
-function downloadDraft(draft: ThemeDraft): void {
+export function downloadDraft(draft: ThemeDraft): void {
   download('ultima-theme.json', serializeDraft(draft), 'application/json');
 }
 
@@ -181,19 +190,21 @@ export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
   refusal: string | null;
   dismissRefusal: () => void;
   openFile: (file: File) => Promise<void>;
+  saveStatus: 'saved' | 'unavailable' | 'loading';
 } {
   const store = useStoreDraft();
-  const { draft } = store;
+  const { committedDraft } = store;
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingLoad | null>(null);
   const [refusal, setRefusal] = useState<string | null>(null);
-  const mounted = useRef(false);
+  const [ready, setReady] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'unavailable' | 'loading'>('loading');
 
   const load = (next: ThemeDraft) => store.commit(() => next);
 
   function offer(incoming: ThemeDraft, saved: ThemeDraft | null) {
     if (saved && draftFingerprint(saved) !== draftFingerprint(incoming)) {
-      setPending({ draft: incoming, fallback: saved });
+      setPending({ draft: incoming });
     } else {
       load(incoming);
     }
@@ -205,22 +216,28 @@ export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
   }
 
   function cancelPending() {
-    if (pending?.fallback) store.replace(pending.fallback);
     setPending(null);
   }
 
   useEffect(() => {
     let cancelled = false;
-    const saved = restoreAutosave(STORAGE);
+    let saved: ReturnType<typeof restoreAutosave>;
+    try {
+      saved = restoreAutosave(STORAGE);
+    } catch {
+      saved = { status: 'empty' };
+      setSaveStatus('unavailable');
+    }
     if (saved.status === 'quarantined') {
       const text = 'The autosaved draft was corrupt; it was quarantined to a backup key.';
       setNotice(text);
       store.announce(text);
     }
     const restored = saved.status === 'restored' ? saved.draft : null;
+    if (restored) store.replace(restored);
     const hash = window.location.hash;
     if (!hash.startsWith(FRAGMENT_PREFIX)) {
-      if (restored) store.replace(restored);
+      setReady(true);
       return;
     }
     void decodeFragment(hash).then((result) => {
@@ -229,8 +246,8 @@ export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
         offer(result.draft, restored);
       } else {
         setRefusal(result.message);
-        if (restored) store.replace(restored);
       }
+      setReady(true);
     });
     return () => {
       cancelled = true;
@@ -238,15 +255,21 @@ export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
   }, []);
 
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
+    if (!ready || pending !== null) return;
+    try {
+      saveAutosave(committedDraft, STORAGE);
+      setSaveStatus('saved');
+    } catch {
+      setSaveStatus('unavailable');
+      store.announce('Local save unavailable. Download your draft to keep your changes.');
     }
-    saveAutosave(draft, STORAGE);
-  }, [draft]);
+  }, [committedDraft, ready, pending]);
 
   async function openFile(file: File) {
-    const result = parseDraft(await file.text());
+    let content: string;
+    try { content = await file.text(); }
+    catch { setRefusal('The draft file could not be read. Choose it again or open another JSON file.'); return; }
+    const result = parseDraft(content);
     if (!result.ok) {
       setRefusal(result.message);
       return;
@@ -256,6 +279,7 @@ export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
 
   return {
     ...store,
+    saveStatus,
     notice,
     dismissNotice: () => {
       setNotice(null);
@@ -287,12 +311,13 @@ export function StudioActions({
   refusal: string | null;
   onDismissRefusal: () => void;
 }) {
+  const container = useContext(StudioPortalContext);
   const [dialog, setDialog] = useState<'export' | 'share' | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
     <>
-      <Button onClick={() => fileRef.current?.click()} size="sm" variant="outline" style={docsStyles.square}>
+      <Button onClick={() => fileRef.current?.click()} size="sm" variant="outline" style={[docsStyles.square, styles.touch]}>
         Open
       </Button>
       <input
@@ -308,10 +333,10 @@ export function StudioActions({
         tabIndex={-1}
         type="file"
       />
-      <Button onClick={() => setDialog('share')} size="sm" variant="outline" style={docsStyles.square}>
+      <Button onClick={() => setDialog('share')} size="sm" variant="outline" style={[docsStyles.square, styles.touch]}>
         Share
       </Button>
-      <Button onClick={() => setDialog('export')} size="sm" style={docsStyles.square}>
+      <Button onClick={() => setDialog('export')} size="sm" style={[docsStyles.square, styles.touch]}>
         Export theme
       </Button>
       <ExportDialog draft={draft} onClose={() => setDialog(null)} open={dialog === 'export'} />
@@ -322,7 +347,7 @@ export function StudioActions({
         }}
         open={pending !== null}
       >
-        <AlertDialog.Portal>
+        <AlertDialog.Portal container={container}>
           <AlertDialog.Backdrop />
           <AlertDialog.Viewport>
             <AlertDialog.Popup style={styles.popup}>
@@ -332,8 +357,8 @@ export function StudioActions({
                 single history entry.
               </AlertDialog.Description>
               <div {...stylex.props(styles.footer)}>
-                <AlertDialog.Close render={<Button variant="ghost" style={docsStyles.square} />}>Cancel</AlertDialog.Close>
-                <Button onClick={onConfirmPending} style={docsStyles.square}>Replace draft</Button>
+                <AlertDialog.Close render={<Button variant="ghost" style={[docsStyles.square, styles.touch]} />}>Cancel</AlertDialog.Close>
+                <Button onClick={onConfirmPending} style={[docsStyles.square, styles.touch]}>Replace draft</Button>
               </div>
             </AlertDialog.Popup>
           </AlertDialog.Viewport>
@@ -345,14 +370,14 @@ export function StudioActions({
         }}
         open={refusal !== null}
       >
-        <AlertDialog.Portal>
+        <AlertDialog.Portal container={container}>
           <AlertDialog.Backdrop />
           <AlertDialog.Viewport>
             <AlertDialog.Popup style={styles.popup}>
               <AlertDialog.Title>Draft refused</AlertDialog.Title>
               <AlertDialog.Description>{refusal}</AlertDialog.Description>
               <div {...stylex.props(styles.footer)}>
-                <AlertDialog.Close render={<Button variant="ghost" style={docsStyles.square} />}>Close</AlertDialog.Close>
+                <AlertDialog.Close render={<Button variant="ghost" style={[docsStyles.square, styles.touch]} />}>Close</AlertDialog.Close>
               </div>
             </AlertDialog.Popup>
           </AlertDialog.Viewport>
@@ -371,12 +396,20 @@ function ExportDialog({
   open: boolean;
   onClose: () => void;
 }) {
-  const [acknowledged, setAcknowledged] = useState(false);
+  const container = useContext(StudioPortalContext);
+  const [acknowledgedDraft, setAcknowledgedDraft] = useState<string | null>(null);
+  const fingerprint = draftFingerprint(draft);
+  const acknowledgementKey = serializeDraft(draft);
+  const acknowledged = acknowledgedDraft === acknowledgementKey;
+  const [framework, setFramework] = useState('Vite');
+  const importExample = framework === 'Vite' ? "// src/main.tsx\nimport './index.css';\nimport '../ultima-theme.css';" : framework === 'Next app' ? "// app/layout.tsx\nimport './ultima.css';\nimport '../ultima-theme.css';" : "// src/app/layout.tsx\nimport './ultima.css';\nimport '../../ultima-theme.css';";
   const failures = gate(resolveDraft(draft)).filter((row) => !row.dark.pass || !row.light.pass);
-  const gated = failures.length > 0 && !acknowledged;
+  const shippedFailure = failures.length > 0 && draft.preset != null && !isPresetEdited(draft);
+  const gated = failures.length > 0 && (shippedFailure || !acknowledged);
   const faces = [
     ...new Set([...declaredFaces(draft.typography.sans), ...declaredFaces(draft.typography.mono)]),
   ];
+  const registryDownload = () => download('ultima-theme.registry.json', toRegistryItem(draft), 'application/json');
   const downloads = [
     { name: 'ultima-theme.json', detail: 'Draft document', save: () => downloadDraft(draft) },
     {
@@ -389,34 +422,30 @@ function ExportDialog({
       detail: 'StyleX themes',
       save: () => download('ultima-theme.stylex.ts', toStylex(draft), 'text/plain'),
     },
-    {
-      name: 'ultima-theme.registry.json',
-      detail: 'Registry item',
-      save: () => download('ultima-theme.registry.json', toRegistryItem(draft), 'application/json'),
-    },
+
   ];
 
   return (
     <Dialog.Root
       onOpenChange={(next) => {
         if (!next) {
-          setAcknowledged(false);
+          setAcknowledgedDraft(null);
           onClose();
         }
       }}
       open={open}
     >
-      <Dialog.Portal>
+      <Dialog.Portal container={container}>
         <Dialog.Backdrop />
         <Dialog.Viewport>
-          <Dialog.Popup style={styles.popup}>
-            <div {...stylex.props(styles.stack)}>
-              <div>
-                <Dialog.Title>Export theme</Dialog.Title>
-                <Dialog.Description>
-                  Four downloads carry this draft into an existing Ultima application.
-                </Dialog.Description>
-              </div>
+          <Dialog.Popup style={styles.exportPopup}>
+            <div {...stylex.props(styles.exportHeader)}>
+              <Dialog.Title>Export theme</Dialog.Title>
+              <Dialog.Close render={<Button variant="ghost" style={[docsStyles.square, styles.touch]} />}>Close</Dialog.Close>
+            </div>
+            <div {...stylex.props(styles.exportBody, styles.stack)}>
+              <Dialog.Description>Install {presetLabel(draft)}{isPresetEdited(draft) ? ' · Edited' : ''} in your application. Keep the JSON draft so you can edit it again.</Dialog.Description>
+              {failures.length === 0 ? <Alert.Root tone="success"><Alert.Title>All {gate(resolveDraft(draft)).length * 2} token checks pass</Alert.Title><Alert.Description>These are declared pairings. Verify rendered controls, focus and popups in your application.</Alert.Description></Alert.Root> : null}
               {failures.length > 0 ? (
                 <>
                   <Alert.Root tone="warning">
@@ -434,11 +463,11 @@ function ExportDialog({
                       </li>
                     ))}
                   </ul>
-                  <Field.Root name="acknowledge">
+                  {shippedFailure ? <p {...stylex.props(styles.note)}>This preset failed validation. Export is blocked; choose another preset or make a custom edit.</p> : <Field.Root name="acknowledge">
                     <Field.Item>
                       <Checkbox.Root
                         checked={acknowledged}
-                        onCheckedChange={(next) => setAcknowledged(next === true)}
+                        onCheckedChange={(next) => setAcknowledgedDraft(next === true ? acknowledgementKey : null)}
                       >
                         <Checkbox.Indicator />
                       </Checkbox.Root>
@@ -446,30 +475,28 @@ function ExportDialog({
                         Export anyway: the artifacts still record the failed pairings.
                       </Field.Label>
                     </Field.Item>
-                  </Field.Root>
+                  </Field.Root>}
                 </>
               ) : null}
-              <h3 {...stylex.props(headings.h3, styles.heading)}>Install</h3>
-              <ol {...stylex.props(styles.steps)}>
-                <li>
-                  Download <Code>ultima-theme.registry.json</Code>.
-                </li>
-                <li>
-                  Run <Code>npx shadcn add ./ultima-theme.registry.json</Code>.
-                </li>
-                <li>
-                  Import <Code>ultima-theme.css</Code> after the application's StyleX output.
-                </li>
-                <li>
-                  Set <Code>data-theme</Code> on the app root to <Code>dark</Code> or{' '}
-                  <Code>light</Code>.
-                </li>
-              </ol>
-              <p {...stylex.props(styles.note)}>
-                Reinstalling regenerates and replaces the generated files. Keep{' '}
-                <Code>ultima-theme.json</Code>: the draft is the editable source.
-              </p>
-              <h3 {...stylex.props(headings.h3, styles.heading)}>Downloads</h3>
+              <h3 {...stylex.props(headings.h3, styles.heading)}>1. Install the theme</h3>
+              <p {...stylex.props(styles.note)}>Recommended · The registry file installs the generated stylesheet and editable draft at your project root.</p>
+              <Button disabled={gated} onClick={registryDownload} style={[docsStyles.square, styles.touch]}><DownloadSimpleIcon aria-hidden /> Download registry file</Button>
+              <Code>npx shadcn add ./ultima-theme.registry.json</Code>
+              <CopyButton text="npx shadcn add ./ultima-theme.registry.json" variant="outline" style={styles.touch}>{(status) => status || 'Copy install command'}</CopyButton>
+              <p {...stylex.props(styles.note)}>Reinstalling regenerates and replaces the generated files. Keep <Code>ultima-theme.json</Code>: the draft is the editable source.</p>
+              <h3 {...stylex.props(headings.h3, styles.heading)}>2. Apply the stylesheet</h3>
+              <ToggleGroup.Root aria-label="Installation framework" value={[framework]} onValueChange={(next, details) => { if (next[0]) setFramework(next[0]); else details.cancel(); }} style={styles.framework}>
+                {['Vite', 'Next app', 'Next src/app'].map((name) => <ToggleGroup.Item key={name} value={name} style={[docsStyles.square, styles.touch]}>{name}</ToggleGroup.Item>)}
+              </ToggleGroup.Root>
+              <pre {...stylex.props(styles.code)}><code>{importExample}</code></pre>
+              <CopyButton text={importExample} variant="outline" style={styles.touch}>{(status) => status || 'Copy imports'}</CopyButton>
+              <p {...stylex.props(styles.note)}>Load the theme after the application's StyleX output in the production cascade.</p>
+              <p {...stylex.props(styles.note)}>Dark or light: set data-theme on html to "dark" or "light". System: remove data-theme from html. The stylesheet handles color-scheme and system preference.</p>
+              <p {...stylex.props(styles.note)}>For scoped StyleX themes, apply every token group and keep popups inside the themed boundary. <a href="/install#theme-adoption">Read the adoption guide</a>.</p>
+              <h3 {...stylex.props(headings.h3, styles.heading)}>3. Check your application</h3>
+              <pre {...stylex.props(styles.code)}><code>{'npx ultima-design doctor\nnpx ultima-design check'}</code></pre>
+              <p {...stylex.props(styles.note)}>Compare the root, an Ultima control and an open popup in a production build. Test dark, light and system mode, focus and other interaction states, and reduced motion. Command success alone does not prove browser parity.</p>
+              <h3 {...stylex.props(headings.h3, styles.heading)}>Individual files</h3>
               <ul {...stylex.props(styles.downloads)}>
                 {downloads.map((item) => (
                   <li key={item.name} {...stylex.props(styles.download)}>
@@ -478,23 +505,24 @@ function ExportDialog({
                       onClick={item.save}
                       size="sm"
                       variant="outline"
-                     style={docsStyles.square}>
+                     style={[docsStyles.square, styles.touch]}>
                       <DownloadSimpleIcon aria-hidden /> {item.name}
                     </Button>
                     <span {...stylex.props(styles.detail)}>{item.detail}</span>
                   </li>
                 ))}
               </ul>
+              <p {...stylex.props(styles.note)}>Sans stack: {draft.typography.sans}</p>
+              <p {...stylex.props(styles.note)}>Mono stack: {draft.typography.mono}</p>
               <p {...stylex.props(styles.note)}>
                 Declared font faces: {faces.length > 0 ? faces.join(', ') : 'none'}; loading them is
-                the consumer's.
+                the consumer's responsibility. Provide the preferred faces with @font-face or your font loader. The export includes stacks and fallbacks, but no font files.
               </p>
               <Separator />
               <div {...stylex.props(styles.footer)}>
                 <p {...stylex.props(styles.fingerprint)}>
                   Fingerprint <Code>{draftFingerprint(draft)}</Code>
                 </p>
-                <Dialog.Close render={<Button variant="ghost" style={docsStyles.square} />}>Close</Dialog.Close>
               </div>
             </div>
           </Dialog.Popup>
@@ -513,7 +541,9 @@ function ShareDialog({
   open: boolean;
   onClose: () => void;
 }) {
+  const container = useContext(StudioPortalContext);
   const [result, setResult] = useState<FragmentEncodeResult | null>(null);
+  const [failed, setFailed] = useState(false);
   const [status, setStatus] = useState('');
   const url = result
     ? `${window.location.origin}${window.location.pathname}${result.fragment}`
@@ -521,6 +551,7 @@ function ShareDialog({
 
   useEffect(() => {
     setResult(null);
+    setFailed(false);
     setStatus('');
     if (!open) return;
     let live = true;
@@ -528,6 +559,10 @@ function ShareDialog({
       if (!live) return;
       setResult(next);
       setStatus(next.tooLong ? 'Draft too large for a share link' : 'Draft encoded');
+    }).catch(() => {
+      if (!live) return;
+      setFailed(true);
+      setStatus('Share link unavailable. Download the draft instead.');
     });
     return () => {
       live = false;
@@ -541,7 +576,7 @@ function ShareDialog({
       }}
       open={open}
     >
-      <Dialog.Portal>
+      <Dialog.Portal container={container}>
         <Dialog.Backdrop />
         <Dialog.Viewport>
           <Dialog.Popup style={styles.popup}>
@@ -552,7 +587,14 @@ function ShareDialog({
                   The link encodes this draft and reopens it.
                 </Dialog.Description>
               </div>
-              {result === null ? (
+              {failed ? (
+                <>
+                  <p {...stylex.props(styles.note)}>A share link could not be created. Share the draft file instead.</p>
+                  <Button onClick={() => downloadDraft(draft)} size="sm" variant="outline" style={[docsStyles.square, styles.touch]}>
+                    <DownloadSimpleIcon aria-hidden /> ultima-theme.json
+                  </Button>
+                </>
+              ) : result === null ? (
                 <div aria-busy="true" {...stylex.props(styles.busy)}>
                   <Spinner />
                   <p {...stylex.props(styles.note)}>Encoding the draft…</p>
@@ -562,7 +604,7 @@ function ShareDialog({
                   <p {...stylex.props(styles.note)}>
                     This draft is too large for a share link. Share the draft file instead.
                   </p>
-                  <Button onClick={() => downloadDraft(draft)} size="sm" variant="outline" style={docsStyles.square}>
+                  <Button onClick={() => downloadDraft(draft)} size="sm" variant="outline" style={[docsStyles.square, styles.touch]}>
                     <DownloadSimpleIcon aria-hidden /> ultima-theme.json
                   </Button>
                 </>
@@ -576,7 +618,7 @@ function ShareDialog({
                     style={[docsStyles.square, styles.shareUrl]}
                     value={url ?? ''}
                   />
-                  <CopyButton text={url ?? ''} variant="outline">
+                  <CopyButton text={url ?? ''} variant="outline" style={styles.touch}>
                     {(status) => (
                       <>
                         {status === 'Copied' ? (
@@ -599,7 +641,7 @@ function ShareDialog({
                 {status}
               </span>
               <div {...stylex.props(styles.footer)}>
-                <Dialog.Close render={<Button variant="ghost" style={docsStyles.square} />}>Close</Dialog.Close>
+                <Dialog.Close render={<Button variant="ghost" style={[docsStyles.square, styles.touch]} />}>Close</Dialog.Close>
               </div>
             </div>
           </Dialog.Popup>
