@@ -18,14 +18,14 @@ const { broadQuery, broadMatch, emptyQuery, emptyHeading, openQuery, open: resul
 async function count(page: Page): Promise<number> {
   const status = page.getByRole('main').getByRole('status');
   const text = (await status.textContent())?.trim() ?? '';
-  const match = /^(\d+) components?$/.exec(text);
+  const match = /^(\d+) components? · A–Z$/.exec(text);
   assert.ok(match, `the status reads "${text}", not a component count`);
   return Number(match[1]);
 }
 
 async function counted(page: Page, expected: (n: number) => boolean, what: string): Promise<number> {
   await page.waitForFunction(
-    () => /^\d+ components?$/.test(document.querySelector('main [role="status"]')?.textContent?.trim() ?? ''),
+    () => /^\d+ components? · A–Z$/.test(document.querySelector('main [role="status"]')?.textContent?.trim() ?? ''),
   );
   const n = await count(page);
   assert.ok(expected(n), `${what}: the status counts ${n}`);
@@ -46,8 +46,9 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   // The entries are the list links into a component page; the breadcrumb and the on-this-page rail also hold lists of links.
   const entries = main.getByRole('listitem').getByRole('link').and(main.locator('a[href^="/components/"]'));
   const whole = await counted(page, (n) => n > 1, 'the whole catalogue');
-  assert.equal(await entries.count(), whole, 'every counted component is listed');
-  assert.ok(await main.getByRole('button', { name: 'Clear filters' }).isDisabled(), 'Clear filters starts disabled');
+  assert.equal(await entries.count(), whole, 'the complete catalogue appears in one list');
+  assert.equal(await main.getByRole('button', { name: /Next components|Previous components/ }).count(), 0, 'the directory has no pagination');
+  assert.equal(await main.getByRole('button', { name: 'Clear filters' }).count(), 0, 'no filters need clearing initially');
   await assertFits(page, filter, `/components at ${variant.viewport} width`);
   await axe('whole catalogue');
 
@@ -85,6 +86,7 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   // The first demo figure: its live preview, its displayed source and its copy control.
   const figure = main.getByRole('figure').first();
   assert.ok(await figure.getByRole('button', { name: demo.control, exact: true }).isVisible(), `the live demo renders its ${demo.control} button`);
+  await figure.getByRole('tab', { name: 'Code', exact: true }).click();
   const displayed = await figure.locator('pre').first().textContent();
   const source = readFileSync(new URL(`../../${demo.source}`, import.meta.url), 'utf8');
   assert.equal(displayed, source, `the figure displays ${demo.source} as written`);
@@ -99,4 +101,9 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   await figure.getByRole('status').filter({ hasText: 'Copied' }).waitFor();
   assert.equal(await page.evaluate(() => navigator.clipboard.readText()), displayed, 'the clipboard holds exactly the displayed source');
   assert.ok(await copy.isVisible(), 'the copy control keeps its place after copying');
+  await figure.getByRole('tab', { name: 'Preview', exact: true }).click();
+  const liveButton = figure.getByRole('button', { name: demo.control, exact: true });
+  await liveButton.waitFor({ state: 'visible' });
+  const previewRadius = await liveButton.evaluate((element) => parseFloat(getComputedStyle(element).borderTopLeftRadius));
+  assert.equal(previewRadius, await shippedLength(page, '--ult-radius-md', variant.mode), 'the live demo retains the default Ultima radius');
 });

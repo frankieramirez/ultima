@@ -1,207 +1,240 @@
-import { MagnifyingGlassIcon } from '@phosphor-icons/react';
+import { ArrowUpRightIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, motion, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Card, Empty, Field, InputGroup, Select } from '@ultima/ui';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { Button, Empty, Field, InputGroup, Separator } from '@ultima/ui';
 import { useRef, useState } from 'react';
 
-import { RELEASE_LABELS, RELEASES, components } from '../components';
-import { Page, Section } from '../page';
+import { breakpoints } from '../breakpoints.stylex';
+import { CataloguePreview } from '../catalogue-preview';
+import { components } from '../components';
+import { docsStyles } from '../docs-style';
+import { DocumentLayout } from '../document-layout';
+import { TextLink } from '../text-link';
+import { headings } from '../typography';
 
-const sortOrders = [
-  { value: 'catalogue', label: 'Catalogue order' },
-  { value: 'name-asc', label: 'Name A–Z' },
-  { value: 'name-desc', label: 'Name Z–A' },
-];
+const summaries: Record<string, string> = {
+  accordion: 'Reveal supporting content, one section at a time.',
+  alert: 'Bring an in-page message to someone’s attention.',
+  'alert-dialog': 'Ask for confirmation before an action continues.',
+  'aspect-ratio': 'Keep media at a consistent width-to-height ratio.',
+  avatar: 'Represent a person with an image or fallback.',
+  badge: 'Give a status or category a compact label.',
+  breadcrumb: 'Show where a page sits in the navigation.',
+  button: 'Trigger an action with solid, outline, or ghost styling.',
+};
 
 const styles = stylex.create({
-  filters: {
+  introduction: {
     display: 'flex',
-    alignItems: 'end',
+    flexDirection: 'column',
+    gap: space['--ult-space-6'],
+    marginBlockEnd: space['--ult-space-9'],
+  },
+  lede: {
+    color: color['--ult-color-text-muted'],
+    fontSize: text['--ult-text-6'],
+    margin: 0,
+    lineHeight: font['--ult-font-leading-normal'],
+  },
+  search: {
+    borderRadius: 0,
+    borderWidth: 0,
+    paddingBlock: space['--ult-space-5'],
+    blockSize: 'auto',
+    backgroundColor: 'transparent',
+  },
+  input: { fontSize: text['--ult-text-6'], paddingInline: 0 },
+  toolbar: {
+    display: 'flex',
+    alignItems: 'center',
     flexWrap: 'wrap',
     gap: space['--ult-space-5'],
-    marginBlockStart: space['--ult-space-7'],
+    marginBlock: space['--ult-space-8'],
   },
-  grow: {
+  count: {
+    color: color['--ult-color-text-muted'],
+    fontSize: text['--ult-text-3'],
+    margin: 0,
+  },
+  list: { listStyle: 'none', padding: 0, margin: 0 },
+  row: {
+    display: 'grid',
+    alignItems: 'center',
+    gridTemplateColumns: {
+      default: 'minmax(0, 1fr)',
+      [breakpoints.WIDE]: '15rem minmax(0, 1fr)',
+    },
+    gap: space['--ult-space-9'],
+    paddingBlock: space['--ult-space-8'],
+  },
+  link: {
+    backgroundColor: 'transparent',
+    borderRadius: 0,
+    borderWidth: 0,
+    display: 'flex',
+    alignItems: 'center',
+    gap: space['--ult-space-5'],
+    textDecoration: 'none',
+    minInlineSize: 0,
+  },
+  copy: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space['--ult-space-4'],
     flexGrow: 1,
     minInlineSize: 0,
   },
-  list: {
-    display: 'grid',
-    gap: space['--ult-space-4'],
-    gridTemplateColumns: 'repeat(auto-fit, minmax(min(18rem, 100%), 1fr))',
-    listStyle: 'none',
-    margin: 0,
-    padding: 0,
+  title: {
+    color: color['--ult-color-text'],
+    fontFamily: 'Space Grotesk, Figtree, sans-serif',
+    fontSize: text['--ult-text-7'],
+    fontWeight: font['--ult-font-weight-medium'],
   },
-  empty: {
+  description: {
     color: color['--ult-color-text-muted'],
-    fontSize: text['--ult-text-3'],
-    marginBlock: space['--ult-space-4'],
+    fontSize: text['--ult-text-4'],
+    lineHeight: font['--ult-font-leading-normal'],
   },
-  // Card ships no interaction states and the spec asks these entries to gain both, so the ring and
-  // the hover are written here (#375). The hover restates Card's own surface at surface-hover and leaves
-  // the title and description their colors; the ring is the keyboard signal, so the fill stays off under
-  // focus-visible. The anchor's element, role, and keyboard reach are still the browser's.
-  link: {
-    backgroundColor: {
-      default: color['--ult-color-surface-raised'],
-      ':hover:not(:focus-visible)': color['--ult-color-surface-hover'],
-    },
-    blockSize: '100%',
-    display: 'block',
-    textDecoration: 'none',
-    transitionDuration: motion['--ult-motion-fast'],
-    transitionProperty: 'background-color',
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
-    },
+  arrow: { flexShrink: 0 },
+  resource: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space['--ult-space-4'],
+    marginBlockStart: space['--ult-space-8'],
+    fontSize: text['--ult-text-4'],
   },
 });
 
 export function ComponentsPage() {
   const [query, setQuery] = useState('');
-  const [release, setRelease] = useState('all');
-  const [sortOrder, setSortOrder] = useState('catalogue');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const releases = [{ label: 'All releases', value: 'all' }, ...RELEASES.map((value) => ({ label: value, value }))];
+  const input = useRef<HTMLInputElement>(null);
   const term = query.trim().toLowerCase();
-  const matches = components.filter((component) =>
-    (release === 'all' || component.release === release) &&
-    `${component.name} ${component.description}`.toLowerCase().includes(term),
+  const matches = components.filter((entry) =>
+    `${entry.name} ${summaries[entry.item] ?? entry.description} ${summaries[entry.item] ?? ''}`
+      .toLowerCase()
+      .includes(term),
   );
-  const clearFilters = () => {
+  matches.sort((a, b) => a.name.localeCompare(b.name));
+  const filtered = query !== '';
+  const clear = () => {
     setQuery('');
-    setRelease('all');
-    setSortOrder('catalogue');
-    inputRef.current?.focus();
+    input.current?.focus();
   };
-
+  const resources = (
+    <>
+      <h2 {...stylex.props(headings.h3)}>Start building</h2>
+      {[
+        {
+          title: 'Installation',
+          to: '/install',
+          description: 'Add your first component.',
+        },
+        {
+          title: 'Theme Studio',
+          to: '/theme-studio',
+          description: 'Make the components your own.',
+        },
+        {
+          title: 'Tokens',
+          to: '/tokens',
+          description: 'Explore the values behind the UI.',
+        },
+      ].map((resource) => (
+        <div key={resource.to} {...stylex.props(styles.resource)}>
+          <TextLink variant="muted" render={<Link to={resource.to} />}>
+            {resource.title}
+            <ArrowUpRightIcon aria-hidden />
+          </TextLink>
+          <span {...stylex.props(styles.description)}>
+            {resource.description}
+          </span>
+        </div>
+      ))}
+    </>
+  );
   return (
-    <Page title="Components" lede="The catalogue, sectioned by release, oldest set first." breadcrumb={[{ label: 'Components' }]}>
-      <div {...stylex.props(styles.filters)}>
-        <Field.Root name="filter" style={styles.grow}>
-          <Field.Label>Filter components</Field.Label>
-          <InputGroup.Root>
-            <InputGroup.Addon>
-              <MagnifyingGlassIcon aria-hidden />
-            </InputGroup.Addon>
-            <InputGroup.Input
-              onChange={(event) => setQuery(event.currentTarget.value)}
-              placeholder="Filter by name or description"
-              ref={inputRef}
-              type="search"
-              value={query}
-            />
-          </InputGroup.Root>
-        </Field.Root>
-        <Select.Root
-          items={releases}
-          onValueChange={(value) => {
-            if (value !== null) setRelease(value);
-          }}
-          value={release}
-        >
-          <Field.Root name="release" style={styles.grow}>
-            <Select.Label>Release</Select.Label>
-            <Select.Trigger>
-              <Select.Value />
-              <Select.Icon />
-            </Select.Trigger>
-          </Field.Root>
-          <Select.Portal>
-            <Select.Positioner>
-              <Select.Popup>
-                <Select.List>
-                  {releases.map((item) => (
-                    <Select.Item key={item.value} value={item.value}>
-                      <Select.ItemIndicator />
-                      <Select.ItemText>{item.label}</Select.ItemText>
-                    </Select.Item>
-                  ))}
-                </Select.List>
-              </Select.Popup>
-            </Select.Positioner>
-          </Select.Portal>
-        </Select.Root>
-        <Select.Root
-          items={sortOrders}
-          onValueChange={(value) => {
-            if (value !== null) setSortOrder(value);
-          }}
-          value={sortOrder}
-        >
-          <Field.Root name="sort-order" style={styles.grow}>
-            <Select.Label>Sort order</Select.Label>
-            <Select.Trigger>
-              <Select.Value />
-              <Select.Icon />
-            </Select.Trigger>
-          </Field.Root>
-          <Select.Portal>
-            <Select.Positioner>
-              <Select.Popup>
-                <Select.List>
-                  {sortOrders.map((item) => (
-                    <Select.Item key={item.value} value={item.value}>
-                      <Select.ItemIndicator />
-                      <Select.ItemText>{item.label}</Select.ItemText>
-                    </Select.Item>
-                  ))}
-                </Select.List>
-              </Select.Popup>
-            </Select.Positioner>
-          </Select.Portal>
-        </Select.Root>
-        <Button
-          disabled={query === '' && release === 'all' && sortOrder === 'catalogue'}
-          onClick={clearFilters}
-          variant="outline"
-        >
-          Clear filters
-        </Button>
+    <DocumentLayout breadcrumb={[]} rail={resources}>
+      <div {...stylex.props(styles.introduction)}>
+        <h1 {...stylex.props(headings.h1)}>Components</h1>
+        <p {...stylex.props(styles.lede)}>
+          Find a part. See how it works. Make it yours.
+        </p>
       </div>
-      <p role="status" {...stylex.props(styles.empty)}>
-        {matches.length} {matches.length === 1 ? 'component' : 'components'}
-      </p>
-      {matches.length === 0 ? (
+      <Field.Root name="filter">
+        <InputGroup.Root style={styles.search}>
+          <InputGroup.Addon>
+            <MagnifyingGlassIcon aria-hidden />
+          </InputGroup.Addon>
+          <InputGroup.Input
+            aria-label="Filter components"
+            type="search"
+            ref={input}
+            value={query}
+            placeholder="Search components by name or description"
+            style={styles.input}
+            onChange={(event) => {
+              setQuery(event.currentTarget.value);
+            }}
+          />
+        </InputGroup.Root>
+      </Field.Root>
+      <Separator />
+      <div {...stylex.props(styles.toolbar)}>
+        <p role="status" {...stylex.props(styles.count)}>
+          {matches.length} {matches.length === 1 ? 'component' : 'components'} ·
+          A–Z
+        </p>
+        {filtered && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clear}
+            style={docsStyles.square}
+          >
+            Clear filters
+          </Button>
+        )}
+      </div>
+      {matches.length === 0 && (
         <Empty.Root>
-          <Empty.Title render={<h2 />}>No components match these filters</Empty.Title>
+          <Empty.Title render={<h2 />}>
+            No components match these filters
+          </Empty.Title>
           <Empty.Description>
-            Try a different search or release, or clear the filters to browse the catalogue.
+            Try a different search, or clear the filters to browse the
+            catalogue.
           </Empty.Description>
-          <Button onClick={clearFilters}>Clear filters</Button>
+          <Button onClick={clear} style={docsStyles.square}>
+            Clear filters
+          </Button>
         </Empty.Root>
-      ) : null}
-      {RELEASES.map((release) => {
-        const entries = matches.filter((component) => component.release === release);
-        if (sortOrder !== 'catalogue') {
-          entries.sort((a, b) => sortOrder === 'name-asc'
-            ? a.name.localeCompare(b.name)
-            : b.name.localeCompare(a.name));
-        }
-        if (entries.length === 0) return null;
-        return (
-          <Section key={release} title={RELEASE_LABELS[release]}>
-            <ul {...stylex.props(styles.list)}>
-              {entries.map((component) => (
-                <li key={component.item}>
-                  <Card.Root
-                    render={<Link to="/components/$name" params={{ name: component.item }} />}
-                    style={styles.link}
-                  >
-                    <Card.Header>
-                      <Card.Title render={<span />}>{component.name}</Card.Title>
-                      <Card.Description>{component.description}</Card.Description>
-                    </Card.Header>
-                  </Card.Root>
-                </li>
-              ))}
-            </ul>
-          </Section>
-        );
-      })}
-    </Page>
+      )}
+      <ul {...stylex.props(styles.list)}>
+        {matches.map((entry) => (
+          <li key={entry.item}>
+            <Separator />
+            <div {...stylex.props(styles.row)}>
+              <CataloguePreview item={entry.item} />
+              <TextLink
+                variant="muted"
+                render={
+                  <Link to="/components/$name" params={{ name: entry.item }} />
+                }
+                style={styles.link}
+              >
+                <div {...stylex.props(styles.copy)}>
+                  <span {...stylex.props(styles.title)}>{entry.name}</span>
+                  <span {...stylex.props(styles.description)}>
+                    {summaries[entry.item] ?? entry.description}
+                  </span>
+                </div>
+                <ArrowUpRightIcon aria-hidden {...stylex.props(styles.arrow)} />
+              </TextLink>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </DocumentLayout>
   );
 }

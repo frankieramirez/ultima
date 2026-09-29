@@ -38,7 +38,7 @@ export type Limits = typeof LIMITS;
 export const VIEWPORTS = { desktop: { width: 1280, height: 720 }, narrow: { width: 390, height: 844 } } as const;
 
 /** The self-hosted face the shell sets its text in; a fallback font is not a ready page. */
-export const REQUIRED_FACE = 'IBM Plex Sans';
+export const REQUIRED_FACE = 'Figtree';
 
 /** The WCAG A/AA rule tags the production axe checks run, colour contrast included. */
 export const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];

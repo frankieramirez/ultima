@@ -265,7 +265,7 @@ export const text = stylex.defineVars({
 
 export const font = stylex.defineVars({
   '--ult-font-sans':
-    "'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif",
+    "'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif",
   '--ult-font-mono': "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
   '--ult-font-weight-regular': 400,
   '--ult-font-weight-medium': 500,

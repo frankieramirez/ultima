@@ -25,7 +25,7 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: Home,
-  staticData: { title: 'Good interfaces start with good parts' },
+  staticData: { title: 'React components. Built with StyleX. Yours to change.' },
 });
 
 const installRoute = createRoute({
@@ -87,7 +87,7 @@ function ComponentNamePage() {
   return (
     <Prose
       Content={Content}
-      breadcrumb={[{ label: 'Components', to: '/components' }, { label: component.name }]}
+      breadcrumb={[]}
     />
   );
 }

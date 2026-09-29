@@ -105,7 +105,7 @@ export function findForbiddenDeclarations(source: string): string[] {
 const SPEC_NAMED = ['src/copy-button.tsx', 'src/swatch.tsx'];
 const STUDIO_CHROME = ['src/routes/theme-studio.tsx', 'src/theme-studio-preview.tsx'];
 const SITE_CHROME = ['src/header.tsx'];
-const SPECIMEN_PAPER = ['src/demo.tsx'];
+const SPECIMEN_PAPER: string[] = [];
 // The catalogue cards restate Card's own surface at surface-hover through the style slot (#375).
-const CARD_HOVER = ['src/routes/components.tsx'];
+const CARD_HOVER: string[] = [];
 export const STATED_EXCEPTIONS = [...SPEC_NAMED, ...STUDIO_CHROME, ...SITE_CHROME, ...SPECIMEN_PAPER, ...CARD_HOVER];

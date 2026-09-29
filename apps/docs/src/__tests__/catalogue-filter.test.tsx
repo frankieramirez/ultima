@@ -1,9 +1,12 @@
-import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
+import {
+  RouterProvider,
+  createMemoryHistory,
+  createRouter,
+} from '@tanstack/react-router';
 import axe from 'axe-core';
 import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
-
 import { components } from '../components';
 import { routeTree } from '../router';
 import { THEME_STORAGE_KEY } from '../theme';
@@ -13,189 +16,115 @@ beforeEach(() => {
   localStorage.removeItem(THEME_STORAGE_KEY);
   document.documentElement.removeAttribute('class');
 });
-
 function mount() {
-  const history = createMemoryHistory({ initialEntries: ['/components'] });
-  return render(<RouterProvider router={createRouter({ routeTree, history })} />);
+  return render(
+    <RouterProvider
+      router={createRouter({
+        routeTree,
+        history: createMemoryHistory({ initialEntries: ['/components'] }),
+      })}
+    />,
+  );
 }
+const alphabetic = [...components].sort((a, b) => a.name.localeCompare(b.name));
+const entries = (main: Element) =>
+  Array.from(main.querySelectorAll('ul > li a[href^="/components/"]')).map(
+    (link) => link.getAttribute('href'),
+  );
 
-test('text filtering matches names and descriptions without changing site navigation', async () => {
+test('the directory is one complete alphabetical list without release distinctions or pagination', async () => {
+  const screen = await mount();
+  const main = screen.getByRole('main');
+  expect(entries(main.element())).toEqual(
+    alphabetic.map((entry) => `/components/${entry.item}`),
+  );
+  await expect
+    .element(main.getByRole('status'))
+    .toHaveTextContent(`${components.length} components · A–Z`);
+  expect(main.getByRole('group', { name: 'Release' }).query()).toBeNull();
+  expect(main.element().textContent).not.toMatch(/All releases|The v0 set/);
+  expect(
+    main
+      .getByRole('button', { name: /Next components|Previous components/ })
+      .query(),
+  ).toBeNull();
+  expect(main.getByRole('combobox', { name: 'Sort order' }).query()).toBeNull();
+});
+
+test('search combines names and descriptions, empty results clear with focus, and a result opens', async () => {
   const screen = await mount();
   const main = screen.getByRole('main');
   const input = main.getByRole('searchbox', { name: 'Filter components' });
   await userEvent.fill(input, '  bUtToN  ');
-  const buttonMatches = components.filter((component) =>
-    `${component.name} ${component.description}`.toLowerCase().includes('button'),
+  const matches = components.filter((entry) =>
+    `${entry.name} ${entry.description}`.toLowerCase().includes('button'),
   );
-  await expect.element(main.getByRole('status')).toHaveTextContent(
-    `${buttonMatches.length} component${buttonMatches.length === 1 ? '' : 's'}`,
-  );
-  await expect.element(main.getByRole('link', { name: /^Button A / })).toBeVisible();
-  expect(main.getByRole('link', { name: /^Badge / }).query()).toBeNull();
-  await expect.element(screen.getByRole('navigation', { name: 'Ultima' }).getByRole('link', { name: 'Badge', exact: true })).toBeVisible();
+  await expect
+    .element(main.getByRole('status'))
+    .toHaveTextContent(`${matches.length} components · A–Z`);
+  await expect
+    .element(main.getByRole('link', { name: /^Button Trigger / }))
+    .toBeVisible();
+  await expect
+    .element(
+      screen
+        .getByRole('navigation', { name: 'Ultima' })
+        .getByRole('link', { name: 'Badge', exact: true }),
+    )
+    .toBeVisible();
   await userEvent.fill(input, 'bounded measurement');
-  await expect.element(main.getByRole('link', { name: /^Meter / })).toBeVisible();
-  await expect.element(main.getByRole('status')).toHaveTextContent('1 component');
-});
-
-test('release and text filters combine, empty results recover, and clear restores focus', async () => {
-  const screen = await mount();
-  const main = screen.getByRole('main');
-  const clear = main.getByRole('button', { name: 'Clear filters' });
-  await expect.element(clear).toBeDisabled();
-  const release = main.getByRole('combobox', { name: 'Release' });
-  release.element().focus();
-  await userEvent.keyboard('{ArrowDown}');
-  await expect.element(screen.getByRole('listbox')).toBeVisible();
-  await userEvent.keyboard('{End}');
-  await expect.element(screen.getByRole('option', { name: 'v0.2', exact: true })).toHaveAttribute('data-highlighted');
-  await userEvent.keyboard('{Enter}');
-  await expect.element(release).toHaveTextContent('v0.2');
-  await expect.element(main.getByRole('status')).toHaveTextContent(`${components.filter((component) => component.release === 'v0.2').length} components`);
-  expect(main.getByRole('heading', { name: 'The v0 set' }).query()).toBeNull();
-  const input = main.getByRole('searchbox', { name: 'Filter components' });
-  await userEvent.fill(input, 'button');
-  await expect.element(main.getByRole('status')).toHaveTextContent('2 components');
-  await expect.element(main.getByRole('link', { name: /^Toggle / })).toBeVisible();
+  await expect
+    .element(main.getByRole('status'))
+    .toHaveTextContent('1 component · A–Z');
   await userEvent.fill(input, 'no-such-component');
-  await expect.element(main.getByRole('status')).toHaveTextContent('0 components');
-  await expect.element(
-    main.getByRole('heading', { name: 'No components match these filters' }),
-  ).toBeVisible();
-  await expect.element(
-    main.getByText('Try a different search or release, or clear the filters to browse the catalogue.'),
-  ).toBeVisible();
-  await userEvent.click(main.getByRole('button', { name: 'Clear filters' }).nth(1));
+  await expect
+    .element(
+      main.getByRole('heading', { name: 'No components match these filters' }),
+    )
+    .toBeVisible();
+  await userEvent.click(
+    main.getByRole('button', { name: 'Clear filters' }).last(),
+  );
   await expect.element(input).toHaveValue('');
   await expect.element(input).toHaveFocus();
-  await expect.element(release).toHaveTextContent('All releases');
-  await expect.element(main.getByRole('status')).toHaveTextContent(`${components.length} components`);
-  await expect.element(clear).toBeDisabled();
-  await userEvent.click(main.getByRole('link', { name: /^Button A / }));
-  await expect.element(main.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
+  await userEvent.fill(input, 'button');
+  await userEvent.click(main.getByRole('link', { name: /^Button Trigger / }));
+  await expect
+    .element(main.getByRole('heading', { name: 'Button', level: 1 }))
+    .toBeVisible();
 });
 
-for (const theme of ['dark', 'light']) {
-  test(`filter controls and empty results remain accessible on a narrow screen in ${theme}`, async () => {
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
+test('search finds an entry near the end of the complete catalogue', async () => {
+  const screen = await mount();
+  const main = screen.getByRole('main');
+  const last = alphabetic.at(-1)!;
+  await userEvent.fill(
+    main.getByRole('searchbox', { name: 'Filter components' }),
+    last.name,
+  );
+  expect(entries(main.element())).toContain(`/components/${last.item}`);
+  await userEvent.click(main.getByRole('button', { name: 'Clear filters' }));
+  expect(entries(main.element())).toEqual(
+    alphabetic.map((entry) => `/components/${entry.item}`),
+  );
+});
+
+for (const mode of ['dark', 'light'])
+  test(`directory search and empty state fit and remain accessible in ${mode} on mobile`, async () => {
+    localStorage.setItem(THEME_STORAGE_KEY, mode);
     await page.viewport(390, 844);
     onTestFinished(() => page.viewport(1280, 720));
     const screen = await mount();
     const main = screen.getByRole('main');
-    const input = main.getByRole('searchbox', { name: 'Filter components' });
-    await expect.element(input).toBeVisible();
-    expect(input.element().getBoundingClientRect().right).toBeLessThanOrEqual(390);
+    await userEvent.fill(
+      main.getByRole('searchbox', { name: 'Filter components' }),
+      'no-such-component',
+    );
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(390);
-    await userEvent.fill(input, 'no-such-component');
-    await Promise.all(document.getAnimations().map((animation) => animation.finished));
-    const empty = await axe.run(document.body);
-    expect(empty.violations.map(({ id, nodes }) => ({ id, targets: nodes.map(({ target }) => target) }))).toEqual([]);
-    await userEvent.click(main.getByRole('combobox', { name: 'Release' }));
-    await expect.element(screen.getByRole('option', { name: 'v0.1', exact: true })).toBeVisible();
-    await Promise.all(document.getAnimations().map((animation) => animation.finished));
-    const opened = await axe.run(screen.getByRole('listbox').element());
-    expect(opened.violations.map(({ id, nodes }) => ({ id, targets: nodes.map(({ target }) => target) }))).toEqual([]);
-    await userEvent.keyboard('{Escape}');
-    await expect.element(main.getByRole('combobox', { name: 'Release' })).toHaveFocus();
-    const sort = main.getByRole('combobox', { name: 'Sort order' });
-    await userEvent.click(sort);
-    await expect.element(screen.getByRole('option', { name: 'Name A–Z', exact: true })).toBeVisible();
-    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(390);
-    await Promise.all(document.getAnimations().map((animation) => animation.finished));
-    expect((await axe.run(screen.getByRole('listbox').element())).violations).toEqual([]);
-    await userEvent.keyboard('{Escape}');
-    await expect.element(sort).toHaveFocus();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(
+      (await axe.run(document.body)).violations.map(
+        ({ id, nodes }) => `${id}: ${nodes.map(({ html }) => html).join(', ')}`,
+      ),
+    ).toEqual([]);
   });
-}
-
-test('sort labels render immediately, keyboard sorting stays within groups, and clear resets order', async () => {
-  const screen = await mount();
-  const main = screen.getByRole('main');
-  const sort = main.getByRole('combobox', { name: 'Sort order' });
-  await expect.element(sort).toHaveTextContent('Catalogue order');
-  const groups = () => Array.from(main.element().querySelectorAll('ul')).map((list) =>
-    Array.from(list.querySelectorAll('a[href^="/components/"]')).map((link) => link.getAttribute('href'))).filter((group) => group.length > 0);
-  const original = groups();
-  sort.element().focus();
-  await userEvent.keyboard('{ArrowDown}');
-  await expect.element(screen.getByRole('listbox')).toBeVisible();
-  await userEvent.keyboard('{End}');
-  await expect.element(screen.getByRole('option', { name: 'Name Z–A', exact: true })).toHaveAttribute('data-highlighted');
-  await userEvent.keyboard('{Enter}');
-  await expect.element(sort).toHaveTextContent('Name Z–A');
-  expect(groups()).toEqual(original.map((group) => [...group].sort().reverse()));
-  await expect.element(main.getByRole('button', { name: 'Clear filters' })).not.toBeDisabled();
-  const input = main.getByRole('searchbox', { name: 'Filter components' });
-  await userEvent.fill(input, 'no-such-component');
-  await userEvent.click(main.getByRole('button', { name: 'Clear filters' }).first());
-  await expect.element(input).toHaveFocus();
-  await expect.element(sort).toHaveTextContent('Catalogue order');
-  expect(groups()).toEqual(original);
-  sort.element().focus();
-  await userEvent.keyboard('{ArrowDown}');
-  await expect.element(screen.getByRole('listbox')).toBeVisible();
-  await userEvent.keyboard('{Home}{ArrowDown}');
-  await expect.element(screen.getByRole('option', { name: 'Name A–Z', exact: true })).toHaveAttribute('data-highlighted');
-  await userEvent.keyboard('{Enter}');
-  await expect.element(sort).toHaveTextContent('Name A–Z');
-  expect(groups()).toEqual(original.map((group) => [...group].sort()));
-  sort.element().focus();
-  await userEvent.keyboard('{ArrowDown}');
-  await expect.element(screen.getByRole('listbox')).toBeVisible();
-  await userEvent.keyboard('{Home}');
-  await expect.element(screen.getByRole('option', { name: 'Catalogue order', exact: true })).toHaveAttribute('data-highlighted');
-  await userEvent.keyboard('{Enter}');
-  await expect.element(sort).toHaveTextContent('Catalogue order');
-  expect(groups()).toEqual(original);
-});
-
-function resolved(property: 'backgroundColor' | 'color', token: string) {
-  const probe = document.createElement('span');
-  probe.style[property] = `var(${token})`;
-  document.body.append(probe);
-  const value = getComputedStyle(probe)[property];
-  probe.remove();
-  return value;
-}
-
-for (const theme of ['dark', 'light']) {
-  test(`the filter reads as a search at rest and cards fill on hover in ${theme}`, async () => {
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-    const screen = await mount();
-    const main = screen.getByRole('main');
-    const input = main.getByRole('searchbox', { name: 'Filter components' });
-    await expect.element(input).toHaveAttribute('type', 'search');
-    await expect.element(input).toHaveAttribute('placeholder', 'Filter by name or description');
-    const addon = input.element().parentElement?.querySelector('svg');
-    expect(addon?.getAttribute('aria-hidden')).toBe('true');
-    expect(addon?.getBoundingClientRect().right).toBeLessThanOrEqual(input.element().getBoundingClientRect().left);
-
-    const card = main.getByRole('link', { name: /^Button A / });
-    const title = card.element().querySelector('span')!;
-    const description = title.nextElementSibling!;
-    const raised = resolved('backgroundColor', '--ult-color-surface-raised');
-    const text = resolved('color', '--ult-color-text');
-    const muted = resolved('color', '--ult-color-text-muted');
-    await expect.poll(() => getComputedStyle(card.element()).backgroundColor).toBe(raised);
-
-    await userEvent.hover(card);
-    await expect.poll(() => getComputedStyle(card.element()).backgroundColor)
-      .toBe(resolved('backgroundColor', '--ult-color-surface-hover'));
-    expect(getComputedStyle(title).color).toBe(text);
-    expect(getComputedStyle(description).color).toBe(muted);
-    await userEvent.unhover(card);
-    await expect.poll(() => getComputedStyle(card.element()).backgroundColor).toBe(raised);
-
-    await userEvent.keyboard('{Shift}');
-    (card.element() as HTMLElement).focus();
-    await expect.element(card).toHaveFocus();
-    expect(card.element().matches(':focus-visible')).toBe(true);
-    await userEvent.hover(card);
-    const focused = getComputedStyle(card.element());
-    expect(focused.outlineStyle).toBe('solid');
-    expect(focused.outlineColor).toBe(resolved('color', '--ult-color-border-focus'));
-    expect(focused.backgroundColor).toBe(raised);
-    expect(getComputedStyle(title).color).toBe(text);
-    await userEvent.unhover(card);
-  });
-}

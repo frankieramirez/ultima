@@ -1,3 +1,4 @@
+import { docsStyles } from './docs-style';
 import { XIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { Link } from '@tanstack/react-router';
@@ -12,6 +13,7 @@ export const MENU_LABEL = 'Ultima';
 
 const styles = stylex.create({
   panel: {
+    borderInlineEndWidth: 0,
     alignSelf: 'flex-start',
     blockSize: '100%',
     flexShrink: 0,
@@ -40,7 +42,7 @@ export function SiteMenu() {
           <ScrollArea.Content style={styles.content}>
             <div {...stylex.props(styles.dismiss)}>
               <Sidebar.Close
-                render={<Button variant="ghost" aria-label="Close navigation" style={styles.close} />}
+                render={<Button variant="ghost" aria-label="Close navigation" style={[docsStyles.square, styles.close]} />}
               >
                 <XIcon />
               </Sidebar.Close>
@@ -65,7 +67,9 @@ export function SiteMenu() {
 function MenuLink({ link: { label, ...destination } }: { link: NavLink }) {
   return (
     <Sidebar.Item>
-      <Sidebar.Link render={<Link {...destination} activeOptions={{ exact: true }} />}>{label}</Sidebar.Link>
+      <Sidebar.Link aria-label={label} render={<Link {...destination} activeOptions={{ exact: true }} />}>
+        --{label.toLowerCase().replace(/\s+/g, '-')}
+      </Sidebar.Link>
     </Sidebar.Item>
   );
 }

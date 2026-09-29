@@ -1,3 +1,4 @@
+import { docsStyles } from './docs-style';
 import { CheckIcon, CopyIcon, DownloadSimpleIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import {
@@ -291,7 +292,7 @@ export function StudioActions({
 
   return (
     <>
-      <Button onClick={() => fileRef.current?.click()} size="sm" variant="outline">
+      <Button onClick={() => fileRef.current?.click()} size="sm" variant="outline" style={docsStyles.square}>
         Open
       </Button>
       <input
@@ -307,10 +308,10 @@ export function StudioActions({
         tabIndex={-1}
         type="file"
       />
-      <Button onClick={() => setDialog('share')} size="sm" variant="outline">
+      <Button onClick={() => setDialog('share')} size="sm" variant="outline" style={docsStyles.square}>
         Share
       </Button>
-      <Button onClick={() => setDialog('export')} size="sm">
+      <Button onClick={() => setDialog('export')} size="sm" style={docsStyles.square}>
         Export theme
       </Button>
       <ExportDialog draft={draft} onClose={() => setDialog(null)} open={dialog === 'export'} />
@@ -331,8 +332,8 @@ export function StudioActions({
                 single history entry.
               </AlertDialog.Description>
               <div {...stylex.props(styles.footer)}>
-                <AlertDialog.Close render={<Button variant="ghost" />}>Cancel</AlertDialog.Close>
-                <Button onClick={onConfirmPending}>Replace draft</Button>
+                <AlertDialog.Close render={<Button variant="ghost" style={docsStyles.square} />}>Cancel</AlertDialog.Close>
+                <Button onClick={onConfirmPending} style={docsStyles.square}>Replace draft</Button>
               </div>
             </AlertDialog.Popup>
           </AlertDialog.Viewport>
@@ -351,7 +352,7 @@ export function StudioActions({
               <AlertDialog.Title>Draft refused</AlertDialog.Title>
               <AlertDialog.Description>{refusal}</AlertDialog.Description>
               <div {...stylex.props(styles.footer)}>
-                <AlertDialog.Close render={<Button variant="ghost" />}>Close</AlertDialog.Close>
+                <AlertDialog.Close render={<Button variant="ghost" style={docsStyles.square} />}>Close</AlertDialog.Close>
               </div>
             </AlertDialog.Popup>
           </AlertDialog.Viewport>
@@ -477,7 +478,7 @@ function ExportDialog({
                       onClick={item.save}
                       size="sm"
                       variant="outline"
-                    >
+                     style={docsStyles.square}>
                       <DownloadSimpleIcon aria-hidden /> {item.name}
                     </Button>
                     <span {...stylex.props(styles.detail)}>{item.detail}</span>
@@ -493,7 +494,7 @@ function ExportDialog({
                 <p {...stylex.props(styles.fingerprint)}>
                   Fingerprint <Code>{draftFingerprint(draft)}</Code>
                 </p>
-                <Dialog.Close render={<Button variant="ghost" />}>Close</Dialog.Close>
+                <Dialog.Close render={<Button variant="ghost" style={docsStyles.square} />}>Close</Dialog.Close>
               </div>
             </div>
           </Dialog.Popup>
@@ -561,7 +562,7 @@ function ShareDialog({
                   <p {...stylex.props(styles.note)}>
                     This draft is too large for a share link. Share the draft file instead.
                   </p>
-                  <Button onClick={() => downloadDraft(draft)} size="sm" variant="outline">
+                  <Button onClick={() => downloadDraft(draft)} size="sm" variant="outline" style={docsStyles.square}>
                     <DownloadSimpleIcon aria-hidden /> ultima-theme.json
                   </Button>
                 </>
@@ -572,7 +573,7 @@ function ShareDialog({
                     onFocus={(event) => event.currentTarget.select()}
                     readOnly
                     size="sm"
-                    style={styles.shareUrl}
+                    style={[docsStyles.square, styles.shareUrl]}
                     value={url ?? ''}
                   />
                   <CopyButton text={url ?? ''} variant="outline">
@@ -598,7 +599,7 @@ function ShareDialog({
                 {status}
               </span>
               <div {...stylex.props(styles.footer)}>
-                <Dialog.Close render={<Button variant="ghost" />}>Close</Dialog.Close>
+                <Dialog.Close render={<Button variant="ghost" style={docsStyles.square} />}>Close</Dialog.Close>
               </div>
             </div>
           </Dialog.Popup>

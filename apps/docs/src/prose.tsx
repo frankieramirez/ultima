@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
+import { Code as UltimaCode, ScrollArea, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import {
   createContext,
@@ -21,11 +21,18 @@ import { headings } from './typography';
 const styles = stylex.create({
   root: { minInlineSize: 0 },
   h1: {
+    fontSize: '3.5rem',
     marginBottom: space['--ult-space-6'],
   },
   p: {
-    color: color['--ult-color-text'],
-    fontSize: text['--ult-text-5'],
+    color: {
+      default: color['--ult-color-text'],
+      ':is(h1 + p)': color['--ult-color-text-muted'],
+    },
+    fontSize: {
+      default: text['--ult-text-5'],
+      ':is(h1 + p)': text['--ult-text-6'],
+    },
     lineHeight: font['--ult-font-leading-normal'],
     marginBlock: space['--ult-space-5'],
   },
@@ -59,12 +66,7 @@ function H1(props: ComponentProps<'h1'>) {
   return <h1 {...props} {...stylex.props(headings.h1, styles.h1)} />;
 }
 function H2(props: ComponentProps<'h2'>) {
-  return (
-    <>
-      <Separator style={headings.rule} />
-      <h2 {...props} {...stylex.props(headings.h2)} />
-    </>
-  );
+  return <h2 {...props} {...stylex.props(headings.h2)} />;
 }
 function H3(props: ComponentProps<'h3'>) {
   return <h3 {...props} {...stylex.props(headings.h3)} />;
@@ -94,7 +96,12 @@ const ScrollableTableContext = createContext(false);
 function Code({ children }: ComponentProps<'code'>) {
   const inScrollableTable = useContext(ScrollableTableContext);
   return (
-    <UltimaCode style={[styles.inlineCode, inScrollableTable && styles.inlineCodeInScrollableTable]}>
+    <UltimaCode
+      style={[
+        styles.inlineCode,
+        inScrollableTable && styles.inlineCodeInScrollableTable,
+      ]}
+    >
       {children}
     </UltimaCode>
   );
@@ -109,7 +116,9 @@ export function Fence({ code, lang }: { code: string; lang?: string }) {
   );
 }
 function Pre({ children }: ComponentProps<'pre'>) {
-  const nested = isValidElement<{ children?: ReactNode; className?: string }>(children)
+  const nested = isValidElement<{ children?: ReactNode; className?: string }>(
+    children,
+  )
     ? children
     : undefined;
   return (
@@ -123,7 +132,10 @@ function Blockquote(props: ComponentProps<'blockquote'>) {
   return <blockquote {...props} {...stylex.props(styles.blockquote)} />;
 }
 /** MDX writes no `style` on these, and an Ultima part's slot takes StyleX styles rather than a DOM one. */
-type MdxTableProps<E extends 'table' | 'th' | 'td'> = Omit<ComponentProps<E>, 'style'>;
+type MdxTableProps<E extends 'table' | 'th' | 'td'> = Omit<
+  ComponentProps<E>,
+  'style'
+>;
 
 /** A GFM table has no caption to name a `Table.Scroll` region from, so it takes a Scroll Area. */
 function UncaptionedTable(props: MdxTableProps<'table'>) {

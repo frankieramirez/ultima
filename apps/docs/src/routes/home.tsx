@@ -1,15 +1,17 @@
+import { docsStyles } from '../docs-style';
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Separator } from '@ultima/ui';
+import { Button } from '@ultima/ui';
 
 import { breakpoints } from '../breakpoints.stylex';
 import { contrastStyles } from '../demos/home/contrast';
-import Specimen from '../demos/home/specimen';
+import Specimen from '../home-showcase';
 import Workbench from '../demos/home/workbench';
 import { layoutStyles } from '../layout';
 import { Kicker } from '../page';
+import { headings } from '../typography';
 import { TextLink } from '../text-link';
 
 const styles = stylex.create({
@@ -40,7 +42,8 @@ const styles = stylex.create({
     color: color['--ult-color-text'],
     display: 'flex',
     flexDirection: 'column',
-    fontSize: display.hero,
+    fontFamily: 'Space Grotesk, Figtree, ui-sans-serif, system-ui, sans-serif',
+    fontSize: { default: text['--ult-text-10'], [breakpoints.WIDE]: '3.875rem' },
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tightest'],
     lineHeight: font['--ult-font-leading-none'],
@@ -67,16 +70,10 @@ const styles = stylex.create({
   specimen: {
     display: 'flex',
     flexDirection: 'column',
+    gap: space['--ult-space-8'],
     paddingBlockEnd: space['--ult-space-11'],
   },
-  metadata: {
-    alignItems: 'center',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: space['--ult-space-6'],
-    justifyContent: 'space-between',
-    paddingBlock: space['--ult-space-6'],
-  },
+  showcaseHeading: { fontSize: text['--ult-text-10'] },
   workbench: {
     alignItems: 'center',
     display: 'flex',
@@ -95,6 +92,7 @@ const styles = stylex.create({
   },
   installHeadline: {
     color: color['--ult-color-text'],
+    fontFamily: 'Space Grotesk, Figtree, ui-sans-serif, system-ui, sans-serif',
     fontSize: display.headline,
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],
@@ -115,24 +113,23 @@ export function Home() {
     <main {...stylex.props(styles.page)}>
       <section {...stylex.props(layoutStyles.gutterWide, styles.hero)}>
         <div {...stylex.props(styles.editorial)}>
-          <Kicker tone="muted">01 / A SYSTEM FOR BUILDING</Kicker>
+          <Kicker tone="muted">REACT + STYLEX</Kicker>
           <h1 {...stylex.props(styles.pitch)}>
             <span>
-              Good interfaces
+              React components.
               <br />
-              start with
+              Built with StyleX.
             </span>
-            <span {...stylex.props(contrastStyles.mark)}>good parts.</span>
+            <span {...stylex.props(contrastStyles.mark)}>Yours to change.</span>
           </h1>
         </div>
         <div {...stylex.props(styles.intro)}>
           <p {...stylex.props(styles.proposition)}>
-            React components with a common language. Precise tokens, Base UI behavior, and StyleX styling.
-            Ready to become your code.
+            Build on Base UI behavior and a shared system of semantic tokens. Install component source into your project and adapt it there.
           </p>
           <Button
             size="lg"
-            style={[contrastStyles.root, styles.heroAction]}
+            style={[docsStyles.square, contrastStyles.root, styles.heroAction]}
             render={<Link to="/components" />}
             nativeButton={false}
           >
@@ -145,11 +142,8 @@ export function Home() {
       </section>
 
       <section aria-labelledby="specimen-index" {...stylex.props(layoutStyles.gutterWide, styles.specimen)}>
-        <Separator />
-        <div {...stylex.props(styles.metadata)}>
-          <Kicker id="specimen-index" tone="muted">02 / ANATOMY OF AN INTERFACE</Kicker>
-          <Kicker>TOKENS → COMPONENTS → YOUR PRODUCT</Kicker>
-        </div>
+        <h2 id="specimen-index" {...stylex.props(headings.h1, styles.showcaseHeading)}>Meet the components.</h2>
+        <p {...stylex.props(styles.installDescription)}>Explore the parts you can bring into your React project.</p>
         <Specimen />
       </section>
 
@@ -157,13 +151,12 @@ export function Home() {
         <div {...stylex.props(styles.installIntro)}>
           <Kicker tone="muted">03 / MAKE IT YOURS</Kicker>
           <h2 id="install-headline" {...stylex.props(styles.installHeadline)}>
-            From our system
+            Start with one
             <br />
-            to your source.
+            component.
           </h2>
           <p {...stylex.props(styles.installDescription)}>
-            Set up StyleX, add a component, and take it from there. No hidden styling layer. No locked-in
-            theme.
+            Set up StyleX for your React project, then add your first component with the shadcn CLI.
           </p>
         </div>
         <div {...stylex.props(styles.commands)}>

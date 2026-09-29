@@ -67,7 +67,7 @@ test('the studio route joins the site shell with the rail collapsed and no foote
   const screen = await mount('/theme-studio');
 
   const site = screen.getByRole('navigation', { name: 'Site', exact: true });
-  await expect.element(site.getByRole('link', { name: 'Studio' })).toBeVisible();
+  await expect.element(site.getByRole('link', { name: 'Tokens' })).toBeVisible();
   expect(document.querySelectorAll('[aria-label="Ultima home"]').length).toBe(1);
 
   const menu = screen.container.querySelector(`nav[aria-label="${MENU_LABEL}"]`);

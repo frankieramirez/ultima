@@ -4,9 +4,9 @@
  * when a value changes so a report names the fixture it ran.
  */
 export const siteNavigation = {
-  version: 1,
+  version: 2,
   directLoads: [
-    { pathname: '/', heading: 'Good interfaces start with good parts.' },
+    { pathname: '/', heading: 'React components. Built with StyleX. Yours to change.' },
     { pathname: '/install', heading: 'Install' },
     { pathname: '/components/button', heading: 'Button' },
   ],

@@ -55,12 +55,8 @@ test('every destination in the menu is a route the router serves', () => {
   expect(destinations.filter((to) => !served.has(to))).toEqual([]);
 });
 
-test('the menu derives its component entries from the catalogue release field', () => {
-  expect(componentPages.map(({ params }) => params?.name)).toEqual(components.map(({ item }) => item));
-  expect(componentPages.map(({ label }) => label)).toEqual(components.map(({ name }) => name));
-  expect(componentPages.map(({ params }) => params?.name)).toEqual(
-    RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item)),
-  );
+test('the menu derives its alphabetical entries from the catalogue', () => {
+  expect(componentPages.map(({ params }) => params?.name)).toEqual([...components].sort((a,b) => a.name.localeCompare(b.name)).map(({ item }) => item));
 });
 
 test('the header offers the workshop nav and hides the menu trigger on desktop', async () => {
@@ -69,10 +65,9 @@ test('the header offers the workshop nav and hides the menu trigger on desktop',
   const site = screen.getByRole('navigation', { name: 'Site', exact: true });
   await expect.element(site.getByRole('link', { name: 'Components' })).toBeVisible();
   expect([...site.element().querySelectorAll('a')].map((link) => link.textContent)).toEqual([
-    'Install',
     'Components',
     'Tokens',
-    'Studio',
+    'Documentation',
   ]);
   await expect.element(screen.getByRole('link', { name: 'Ultima home' })).toBeVisible();
   expect(
@@ -162,7 +157,7 @@ test('the inline link shows the same focus ring', async () => {
   expect(style.outlineColor).toBe('rgb(131, 148, 255)');
 });
 
-test('the header link for the current page reads text and medium weight through aria-current', async () => {
+test('the header link for the current page reads the text color through aria-current', async () => {
   prefer('dark');
   const screen = await mount('/components/button');
   const site = screen.getByRole('navigation', { name: 'Site', exact: true });
@@ -172,7 +167,7 @@ test('the header link for the current page reads text and medium weight through 
   expect([...current].map((link) => link.textContent)).toEqual(['Components']);
   const text = getComputedStyle(screen.getByRole('heading', { name: 'Button', level: 1 }).element()).color;
   expect(getComputedStyle(current[0]!).color).toBe(text);
-  expect(getComputedStyle(current[0]!).fontWeight).toBe('500');
+  expect(getComputedStyle(current[0]!).fontWeight).toBe('400');
   expect(getComputedStyle(current[0]!).backgroundColor).toBe('rgba(0, 0, 0, 0)');
 
   const resting = site.getByRole('link', { name: 'Tokens' }).element();
@@ -181,14 +176,10 @@ test('the header link for the current page reads text and medium weight through 
   expect(getComputedStyle(resting).fontWeight).toBe('400');
 });
 
-test('no chrome surface names the install page Documentation', async () => {
-  for (const path of ['/', '/install', '/tokens', '/elements', '/rationale']) {
-    const screen = await mount(path);
-    await expect.poll(() => screen.container.querySelector('h1')).not.toBeNull();
-    const installLinks = [...screen.container.querySelectorAll('a[href="/install"]')];
-    expect(installLinks.length).toBeGreaterThan(0);
-    expect(installLinks.map((link) => link.textContent?.trim())).not.toContain('Documentation');
-  }
+test('Documentation links to installation while the sidebar uses the CSS variable label', async () => {
+  const screen = await mount('/install');
+  await expect.element(screen.getByRole('navigation', { name: 'Site', exact: true }).getByRole('link', { name: 'Documentation' })).toHaveAttribute('href', '/install');
+  expect(menuLink('Install').element().textContent).toBe('--install');
 });
 
 test('above the breakpoint the header carries the mode control and the footer hides its own', async () => {
@@ -237,23 +228,19 @@ test('the mode control switches the theme', async () => {
 test('the article trail is a Breadcrumb landmark that links the section and marks the page current', async () => {
   const install = await mount('/install');
   const installTrail = install.container.querySelector('nav[aria-label="Breadcrumb"]')!;
-  expect(installTrail.textContent).toBe('Install');
-  expect(installTrail.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+  expect(installTrail.querySelector('[aria-current="page"]')?.textContent).toBe('Install');
+  await install.unmount();
 
   const tokens = await mount('/tokens');
   const tokensTrail = tokens.container.querySelector('nav[aria-label="Breadcrumb"]')!;
   const docsLink = tokensTrail.querySelector('a[href="/install"]')!;
-  expect(docsLink.textContent).toBe('Install');
+  expect(docsLink.textContent).toBe('Documentation');
   expect(tokensTrail.querySelector('[aria-current="page"]')?.textContent).toBe('Tokens');
+  await tokens.unmount();
 
   const component = await mount('/components/alert-dialog');
-  const componentTrail = component.container.querySelector('nav[aria-label="Breadcrumb"]')!;
-  const sectionLink = componentTrail.querySelector('a[href="/components"]')!;
-  expect(sectionLink.textContent).toBe('Components');
-  const currentCrumb = componentTrail.querySelector('[aria-current="page"]')!;
-  expect(currentCrumb.textContent).toBe('Alert Dialog');
-  expect(currentCrumb).toHaveAttribute('href', '/components/alert-dialog');
-  expect(componentTrail.querySelector('[role="presentation"]')?.textContent).toBe('/');
+  expect(component.container.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
+  await expect.element(component.getByRole('heading', { name: 'Alert Dialog', level: 1 })).toBeVisible();
 });
 
 test('a direct load of a component page marks that link current in the flat catalogue', async () => {
@@ -295,25 +282,24 @@ test('a direct load leaves focus alone', async () => {
 test('the flat catalogue follows the page links in keyboard order', async () => {
   await mount('/install');
   await expect.element(menuLink('Install')).toBeVisible();
-  (menuLink('Studio').element() as HTMLElement).focus();
+  (menuLink('Tokens').element() as HTMLElement).focus();
   await userEvent.keyboard('{Tab}');
-  expect(document.activeElement).toBe(menuLink('Button').element());
+  expect(document.activeElement).toBe(menuLink('Accordion').element());
 });
 
 test('the logo returns to the editorial home page, which folds the menu rail away', async () => {
   const screen = await mount('/install');
   expect(menu().element()).toHaveAttribute('data-open');
   await userEvent.click(screen.getByRole('link', { name: 'Ultima home' }).element());
-  await expect.element(screen.getByRole('heading', { level: 1, name: /Good interfaces/ })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { level: 1, name: /React components/ })).toBeVisible();
   expect(menu().element()).toHaveAttribute('data-closed');
   await userEvent.click(
     screen
       .getByRole('navigation', { name: 'Site', exact: true })
-      .getByRole('link', { name: 'Install' })
+      .getByRole('link', { name: 'Documentation' })
       .element(),
   );
-  const trail = screen.container.querySelector('nav[aria-label="Breadcrumb"]')!;
-  expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Install');
+  await expect.element(screen.getByRole('main').getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
   expect(menu().element()).toHaveAttribute('data-open');
 });
 

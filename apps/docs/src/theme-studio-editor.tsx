@@ -1,3 +1,4 @@
+import { docsStyles } from './docs-style';
 import * as stylex from '@stylexjs/stylex';
 import {
   generateScales,
@@ -157,7 +158,7 @@ function FamilySelect({
       >
         <Field.Root name={name}>
           <Select.Label>{label}</Select.Label>
-          <Select.Trigger size="sm">
+          <Select.Trigger size="sm" style={docsStyles.square}>
             <Select.Value />
             <Select.Icon />
           </Select.Trigger>
@@ -182,7 +183,7 @@ function FamilySelect({
         onValueChange={onStack}
         size="sm"
         value={stack}
-      />
+      style={docsStyles.square} />
     </>
   );
 }
@@ -211,7 +212,7 @@ function PresetGroup({
         value={[value]}
       >
         {options.map((option) => (
-          <ToggleGroup.Item key={option.value} value={option.value}>
+          <ToggleGroup.Item key={option.value} value={option.value} style={docsStyles.square}>
             {option.label}
           </ToggleGroup.Item>
         ))}
@@ -558,7 +559,7 @@ export function ThemeStudioEditor({
         value={[group]}
       >
         {GROUPS.map((item) => (
-          <ToggleGroup.Item key={item.id} value={item.label}>
+          <ToggleGroup.Item key={item.id} value={item.label} style={docsStyles.square}>
             {item.label}
           </ToggleGroup.Item>
         ))}

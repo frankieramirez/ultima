@@ -15,9 +15,7 @@ export default productionScenario('motion.reduced-loop', 'production', async ({ 
   await main.getByRole('heading', { level: 1, name: 'Spinner', exact: true }).waitFor();
   assert.ok(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), 'the page sees the reduced-motion preference');
 
-  // The mark is aria-hidden, so it has no role or name: it is the hidden element in each figure's live
-  // preview, the figure's first part. The code half below holds the copy icon and the teaser fade.
-  const marks = main.getByRole('figure').locator(':scope > :first-child [aria-hidden="true"]');
+  const marks = main.getByRole('figure').locator('[data-component-preview] [aria-hidden="true"]');
   const count = await marks.count();
   assert.ok(count >= 2, `both Spinner demos render a mark (found ${count})`);
   for (let index = 0; index < count; index += 1) {

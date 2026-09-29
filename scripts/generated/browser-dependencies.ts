@@ -110,6 +110,7 @@ export const docsOptimizerInclude = [
   "d3-format",
   "d3-scale",
   "embla-carousel-react",
+  "react-dom",
   "react-dom/client",
   "react-hook-form",
   "vitest-browser-react"

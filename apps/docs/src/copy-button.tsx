@@ -1,3 +1,4 @@
+import { docsStyles } from './docs-style';
 import { CheckIcon, CopyIcon, WarningIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { color, space } from '@ultima/tokens/tokens.stylex';
@@ -85,7 +86,7 @@ export function CopyButton({
         aria-label={label === 'Copy failed' ? 'Copy failed' : (ariaLabel ?? (children ? undefined : 'Copy'))}
         onClick={copy}
         size="sm"
-        style={children ? undefined : [styles.icon, floating && styles.floating]}
+        style={[docsStyles.square, !children && styles.icon, !children && floating && styles.floating]}
         variant={variant}
       >
         {children ? children(label) : glyph(label)}

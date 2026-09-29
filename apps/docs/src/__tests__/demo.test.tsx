@@ -1,93 +1,76 @@
 import { expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
+import { Button, Input } from '@ultima/ui';
+import { useState } from 'react';
 
 import { Demo } from '../demo';
 
 function Example() {
-  return <span>live</span>;
-}
-
-const SHORT = ['export default function Example() {', '  return null;', '}'].join('\n');
-const LONG = Array.from({ length: 20 }, (_, index) => `const line${index} = ${index};`).join('\n');
-
-test('a short source is shown whole with no disclosure', async () => {
-  const screen = await render(<Demo component={Example} source={SHORT} />);
-  expect(screen.container.querySelector('pre')?.textContent).toBe(SHORT);
-  expect(screen.container.querySelector('[aria-expanded]')).toBeNull();
-  await expect.element(screen.getByRole('button', { name: 'Copy example source' })).toBeVisible();
-});
-
-test('a long source rests as a teaser and the whole block expands it in place', async () => {
-  const screen = await render(<Demo component={Example} source={LONG} />);
-  const pre = screen.container.querySelector('pre')!;
-  const source = pre.parentElement!;
-  const clipped = () => source.getBoundingClientRect().height < pre.getBoundingClientRect().height;
-  expect(pre.textContent).toBe(LONG);
-  expect(clipped()).toBe(true);
-
-  const show = screen.getByRole('button', { name: 'Show code' });
-  await expect.element(show).toHaveAttribute('aria-expanded', 'false');
-  expect(show.element().getBoundingClientRect().height).toBeGreaterThanOrEqual(
-    source.getBoundingClientRect().height - 1,
+  const [count, setCount] = useState(0);
+  return (
+    <>
+      <Button onClick={() => setCount(count + 1)}>Clicked {count}</Button>
+      <Input aria-label="Example input" />
+    </>
   );
+}
+const SOURCE =
+  'export default function Example() {\n  return <Button>Solid</Button>;\n}';
 
-  await userEvent.click(show);
+test('Preview is the default; switching to Code shows the exact source and preserves live state', async () => {
+  const screen = await render(<Demo component={Example} source={SOURCE} />);
   await expect
-    .element(screen.getByRole('button', { name: 'Hide code' }))
-    .toHaveAttribute('aria-expanded', 'true');
-  expect(clipped()).toBe(false);
-
-  await userEvent.click(screen.getByRole('button', { name: 'Hide code' }));
-  await expect.element(screen.getByRole('button', { name: 'Show code' })).toBeVisible();
-  expect(clipped()).toBe(true);
+    .element(screen.getByRole('tab', { name: 'Preview' }))
+    .toHaveAttribute('aria-selected', 'true');
+  await userEvent.click(screen.getByRole('button', { name: 'Clicked 0' }));
+  await userEvent.click(screen.getByRole('tab', { name: 'Code' }));
+  expect(screen.container.querySelector('pre')?.textContent).toBe(SOURCE);
+  expect(screen.getByRole('button', { name: 'Clicked 1' }).query()).toBeNull();
+  await userEvent.click(screen.getByRole('tab', { name: 'Preview' }));
+  await expect
+    .element(screen.getByRole('button', { name: 'Clicked 1' }))
+    .toBeVisible();
 });
 
-test('the preview centers its content over a floor', async () => {
-  const screen = await render(<Demo component={Example} source={SHORT} />);
-  const figure = screen.container.querySelector('figure')!;
-  const live = screen.getByText('live').element();
-  const preview = live.parentElement!.parentElement!;
-  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-  expect(preview.getBoundingClientRect().height).toBeGreaterThanOrEqual(8 * rem);
-  const mid = (rect: DOMRect) => rect.left + rect.width / 2;
-  expect(Math.abs(mid(live.getBoundingClientRect()) - mid(figure.getBoundingClientRect()))).toBeLessThan(2);
-  expect(figure.querySelector('footer')).toBeNull();
-});
-
-test('copy is a 28px icon button in the code area top-right corner that swaps to a check', async () => {
+test('the toolbar copies the source from either tab and leaves demo radii at Ultima defaults', async () => {
+  const written: string[] = [];
   Object.defineProperty(navigator, 'clipboard', {
     configurable: true,
-    value: { writeText: () => Promise.resolve() },
+    value: {
+      writeText: (value: string) => (written.push(value), Promise.resolve()),
+    },
   });
-  const screen = await render(<Demo component={Example} source={LONG} />);
+  const screen = await render(<Demo component={Example} source={SOURCE} />);
   const copy = screen.getByRole('button', { name: 'Copy example source' });
-  const button = copy.element();
-  const code = screen.container.querySelector('pre')!.parentElement!.getBoundingClientRect();
-  const rect = button.getBoundingClientRect();
-  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-
-  expect(rect.width).toBeCloseTo(1.75 * rem, 0);
-  expect(rect.height).toBeCloseTo(1.75 * rem, 0);
-  expect(rect.top - code.top).toBeCloseTo(0.5 * rem, 0);
-  expect(code.right - rect.right).toBeCloseTo(0.5 * rem, 0);
-
-  const glyph = () => button.querySelector('svg')?.outerHTML;
-  const resting = glyph();
+  expect(getComputedStyle(copy.element()).borderRadius).toBe('0px');
+  expect(
+    getComputedStyle(
+      screen.getByRole('button', { name: 'Clicked 0' }).element(),
+    ).borderRadius,
+  ).toBe('10px');
+  expect(
+    getComputedStyle(
+      screen.getByRole('textbox', { name: 'Example input' }).element(),
+    ).borderRadius,
+  ).toBe('10px');
   await userEvent.click(copy);
-  await expect.poll(() => screen.getByRole('status').element().textContent).toMatch(/Copied/);
-  expect(glyph()).not.toBe(resting);
+  expect(written.at(-1)).toBe(SOURCE);
+  await userEvent.click(screen.getByRole('tab', { name: 'Code' }));
+  await userEvent.click(copy);
+  expect(written).toEqual([SOURCE, SOURCE]);
 });
 
-test('the figure keeps its structure at 390px', async () => {
+test('the example toolbar and horizontally scrolling code fit a narrow viewport', async () => {
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
-
-  const screen = await render(<Demo component={Example} source={LONG} />);
+  const screen = await render(
+    <Demo component={Example} source={SOURCE + 'x'.repeat(200)} />,
+  );
+  await userEvent.click(screen.getByRole('tab', { name: 'Code' }));
   const figure = screen.container.querySelector('figure')!;
-  expect(getComputedStyle(figure).borderRadius).toBe('0px');
-  expect(figure.querySelector('[role="separator"], hr')).not.toBeNull();
-  await expect.element(screen.getByRole('button', { name: 'Show code' })).toBeVisible();
-  await expect.element(screen.getByRole('button', { name: 'Copy example source' })).toBeVisible();
   expect(figure.scrollWidth).toBeLessThanOrEqual(figure.clientWidth);
+  await expect
+    .element(screen.getByRole('button', { name: 'Copy example source' }))
+    .toBeVisible();
 });

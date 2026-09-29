@@ -1,3 +1,4 @@
+import { docsStyles } from '../docs-style';
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
@@ -182,7 +183,7 @@ export function ThemeStudio() {
             <Alert.Root tone="warning">
               <Alert.Title>Autosave notice</Alert.Title>
               <Alert.Description>{notice}</Alert.Description>
-              <Button onClick={dismissNotice} size="sm" variant="ghost">
+              <Button onClick={dismissNotice} size="sm" variant="ghost" style={docsStyles.square}>
                 Dismiss
               </Button>
             </Alert.Root>
@@ -214,12 +215,12 @@ export function ThemeStudio() {
             <span role="status" aria-atomic="true" {...stylex.props(styles.announce)}>
               {store.announcement}
             </span>
-            <Button nativeButton={false} render={<Link to="/tokens" />} size="sm" variant="ghost">
+            <Button nativeButton={false} render={<Link to="/tokens" />} size="sm" variant="ghost" style={docsStyles.square}>
               Token contrast · View report <ArrowUpRightIcon aria-hidden />
             </Button>
             <span {...stylex.props(styles.statusCopy)}>Editing both modes</span>
             <span {...stylex.props(styles.statusCopy)}>{draftSummary(draft)}</span>
-            <Button onClick={() => store.commit(() => stockDraft())} size="sm" variant="ghost">
+            <Button onClick={() => store.commit(() => stockDraft())} size="sm" variant="ghost" style={docsStyles.square}>
               Reset theme
             </Button>
           </div>

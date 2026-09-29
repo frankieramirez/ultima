@@ -4,10 +4,10 @@
  * fixture it ran.
  */
 export const siteDiscovery = {
-  version: 1,
+  version: 2,
   /** A route and the document.title it serves, one per shape the router knows. */
   titles: [
-    { pathname: '/', title: 'Good interfaces start with good parts — Ultima' },
+    { pathname: '/', title: 'React components. Built with StyleX. Yours to change. — Ultima' },
     { pathname: '/install', title: 'Install — Ultima' },
     { pathname: '/elements', title: 'Elements — Ultima' },
     { pathname: '/tokens', title: 'Tokens — Ultima' },

@@ -1,3 +1,4 @@
+import { docsStyles } from './docs-style';
 import { ArrowUUpLeftIcon, ArrowUUpRightIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import type { ShuffleVariation } from '@ultima/tokens';
@@ -37,14 +38,14 @@ export function ThemeStudioShuffleBar({
   return (
     <div {...stylex.props(styles.bar)}>
       <div {...stylex.props(styles.row)}>
-        <Button onClick={onShuffle} variant="outline">
+        <Button onClick={onShuffle} variant="outline" style={docsStyles.square}>
           Shuffle
         </Button>
         <div {...stylex.props(styles.history)}>
-          <Button aria-label="Undo" disabled={!canUndo} onClick={onUndo} style={styles.icon} variant="ghost">
+          <Button aria-label="Undo" disabled={!canUndo} onClick={onUndo} style={[docsStyles.square, styles.icon]} variant="ghost">
             <ArrowUUpLeftIcon aria-hidden />
           </Button>
-          <Button aria-label="Redo" disabled={!canRedo} onClick={onRedo} style={styles.icon} variant="ghost">
+          <Button aria-label="Redo" disabled={!canRedo} onClick={onRedo} style={[docsStyles.square, styles.icon]} variant="ghost">
             <ArrowUUpRightIcon aria-hidden />
           </Button>
         </div>
@@ -58,8 +59,8 @@ export function ThemeStudioShuffleBar({
           }}
           value={[variation]}
         >
-          <ToggleGroup.Item value="subtle">Subtle</ToggleGroup.Item>
-          <ToggleGroup.Item value="broad">Broad</ToggleGroup.Item>
+          <ToggleGroup.Item value="subtle" style={docsStyles.square}>Subtle</ToggleGroup.Item>
+          <ToggleGroup.Item value="broad" style={docsStyles.square}>Broad</ToggleGroup.Item>
         </ToggleGroup.Root>
         <Kicker title="Theme state fingerprint" style={styles.fingerprint}>
           seed {fingerprint}

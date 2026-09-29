@@ -78,7 +78,7 @@ export default productionScenario('site-navigation.route-and-mode', 'production'
     await panel.waitFor({ state: 'hidden' });
   } else {
     assert.ok(!(await trigger.isVisible()), 'the menu trigger is hidden at desktop width');
-    await current(page, 'Site', homeLink.heading);
+    await current(page, 'Site', 'Documentation');
     await page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: destination.name, exact: true }).click();
     await arrived(page, destination.pathname, destination.heading, `the header's ${destination.name} link`);
   }

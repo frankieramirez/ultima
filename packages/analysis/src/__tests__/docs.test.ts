@@ -111,7 +111,7 @@ describe('ULT-DOCS-001', () => {
     const header = 'apps/docs/src/header.tsx';
     const text = source(header).replace("    position: 'sticky',", "    position: 'sticky',\n    boxShadow: shadow['--ult-shadow-md'],");
     const report = run({ [header]: text });
-    assert.deepEqual(docs('ULT-DOCS-001', report, header), [[18, 16, 'styles.chrome', 'boxShadow']]);
+    assert.deepEqual(docs('ULT-DOCS-001', report, header), [[text.slice(0, text.indexOf('    boxShadow:')).split('\n').length, 16, 'styles.chrome', 'boxShadow']]);
   });
 });
 
@@ -178,7 +178,7 @@ describe('the docs rules over the repository', () => {
     assert.deepEqual(report.diagnostics, []);
     const raw = run({ [EXCEPTIONS]: NO_EXCEPTIONS });
     const count = (ruleId: string) => raw.diagnostics.filter((diagnostic) => diagnostic.ruleId === ruleId).length;
-    assert.equal(count('ULT-DOCS-001'), 38);
+    assert.equal(count('ULT-DOCS-001'), 30);
     assert.equal(count('ULT-DOCS-002'), 1);
     assert.equal(count('ULT-DOCS-REVIEW-001'), 0);
     assert.equal(count('ULT-ANALYSIS-001'), 0);
@@ -233,16 +233,34 @@ describe('the old scanner against ULT-DOCS-001', () => {
 
     // Resets remove a property rather than paint with it (`0`, `none`, `transparent`, `null`).
     assert.deepEqual(minus(counted(oldFound), counted(newFound)), [
+      'apps/docs/src/catalogue-preview.tsx borderRadius',
+      'apps/docs/src/catalogue-preview.tsx borderWidth',
       'apps/docs/src/demo.tsx backgroundColor',
       'apps/docs/src/demo.tsx borderRadius',
       'apps/docs/src/demo.tsx borderRadius',
       'apps/docs/src/demo.tsx borderWidth',
-      'apps/docs/src/demo.tsx borderWidth',
+      'apps/docs/src/docs-style.ts borderRadius',
+      'apps/docs/src/home-showcase.tsx borderRadius',
+      'apps/docs/src/routes/components.tsx backgroundColor',
+      'apps/docs/src/routes/components.tsx backgroundColor',
+      'apps/docs/src/routes/components.tsx borderRadius',
+      'apps/docs/src/routes/components.tsx borderRadius',
+      'apps/docs/src/routes/components.tsx borderWidth',
+      'apps/docs/src/routes/components.tsx borderWidth',
+      'apps/docs/src/routes/tokens.tsx borderRadius',
+      'apps/docs/src/routes/tokens.tsx borderRadius',
+      'apps/docs/src/routes/tokens.tsx borderRadius',
+      'apps/docs/src/site-menu.tsx borderInlineEndWidth',
+      'apps/docs/src/site-search.tsx borderRadius',
+      'apps/docs/src/site-search.tsx borderRadius',
+      'apps/docs/src/site-search.tsx borderRadius',
+      'apps/docs/src/site-search.tsx borderRadius',
+      'apps/docs/src/site-search.tsx borderRadius',
+      'apps/docs/src/site-search.tsx borderWidth',
       'apps/docs/src/theme-studio-preview.tsx backgroundColor',
       'apps/docs/src/theme-studio-preview.tsx borderInlineStartWidth',
     ]);
-    // Extra coverage: backgroundImage is a background, and the demo figure's fade is recorded on #369.
-    assert.deepEqual(minus(counted(newFound), counted(oldFound)), ['apps/docs/src/demo.tsx backgroundImage']);
+    assert.deepEqual(minus(counted(newFound), counted(oldFound)), []);
   });
 
   test('on the repository, the old scope outside docs chrome held nothing to lose', () => {
