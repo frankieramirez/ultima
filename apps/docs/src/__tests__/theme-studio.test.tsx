@@ -122,6 +122,21 @@ test('the draft report names the working failure and focuses its editable token'
   await userEvent.fill(report.getByRole('textbox', { name: '--ult-color-text dark', exact: true }), '#101011');
   await userEvent.keyboard('{Enter}');
   expect(readToken(screen.getByRole('region', { name: 'Dark preview' }).element(), '--ult-color-text')).toBe('#101011');
+  await expect.element(report.getByRole('region', { name: 'Repair token' })).toBeVisible();
+  await expect.element(report.getByRole('textbox', { name: '--ult-color-text dark', exact: true })).toHaveValue('#101011');
+  const pairing = report.getByText('text on surface · min 4.5:1', { exact: true }).element().closest('li')!;
+  expect(pairing.textContent).toMatch(/Dark [\d.]+:1 pass/);
+  expect(pairing.querySelector('button')).toBeNull();
+  await userEvent.click(report.getByRole('button', { name: 'Close draft report', exact: true }));
+  await expect.element(report).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: /View draft report/ }));
+  await expect.element(report.getByRole('region', { name: 'Repair token' })).not.toBeInTheDocument();
+  await userEvent.click(report.getByRole('button', { name: 'Edit text', exact: true }).first());
+  await expect.element(report.getByRole('region', { name: 'Repair token' })).toBeVisible();
+  await userEvent.keyboard('{Escape}');
+  await expect.element(report).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: /View draft report/ }));
+  await expect.element(report.getByRole('region', { name: 'Repair token' })).not.toBeInTheDocument();
 });
 
 test('a palette source is separate from the generated role colors and exact overrides', async () => {

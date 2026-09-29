@@ -198,6 +198,8 @@ for (const mode of themes) {
     );
     await openAt();
 
-    expect(await violations(page.getByRole('menu', { name: 'Row actions' }).element())).toEqual([]);
+    const popup = page.getByRole('menu', { name: 'Row actions' }).element();
+    await expect.poll(() => getComputedStyle(popup).opacity).toBe('1');
+    expect(await violations(popup)).toEqual([]);
   });
 }

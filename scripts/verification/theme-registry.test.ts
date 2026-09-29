@@ -13,7 +13,7 @@ const urlFor = (json: string) => `${origin}${THEME_REGISTRY_PATH}?theme=${deflat
 
 test('the install URL returns the same complete registry as the file export', async () => {
   const draft = stockDraft();
-  draft.typography.sans = 'Roboto, sans-serif';
+  draft.typography.sans = "'Roboto', 'Noto Sans 日本語', sans-serif";
   draft.overrides.light['--ult-color-accent'] = '#123456';
   draft.locks.typography = true;
   const { url, tooLong } = await createRegistryUrl(draft, origin);
@@ -54,6 +54,36 @@ test('malformed themes, unsupported versions and oversized drafts fail without a
   const post = await themeRegistry(new Request(`${origin}${THEME_REGISTRY_PATH}`, { method: 'POST' }));
   assert.equal(post.status, 405);
   assert.equal(post.headers.get('allow'), 'GET, HEAD');
+});
+
+test('installation URLs reject unsafe font stacks in guided values and either override mode', async () => {
+  const unsafe = [
+    'Roboto; color: red',
+    'Roboto } body { color: red',
+    'Roboto /* comment */',
+    'url(https://example.com/font.woff2)',
+    'var(--other-font)',
+    '</style><script>alert(1)</script>',
+    '"Roboto',
+  ];
+  for (const stack of unsafe) {
+    for (const family of ['sans', 'mono'] as const) {
+      const draft = stockDraft();
+      draft.typography[family] = stack;
+      const response = await themeRegistry(new Request(urlFor(JSON.stringify(draft))));
+      assert.equal(response.status, 400, `${family}: ${stack}`);
+      assert.equal(typeof (await response.json()).error, 'string');
+    }
+    for (const mode of ['dark', 'light'] as const) {
+      for (const token of ['--ult-font-sans', '--ult-font-mono']) {
+        const draft = stockDraft();
+        draft.overrides[mode][token] = stack;
+        const response = await themeRegistry(new Request(urlFor(JSON.stringify(draft))));
+        assert.equal(response.status, 400, `${mode} ${token}: ${stack}`);
+        assert.equal(typeof (await response.json()).error, 'string');
+      }
+    }
+  }
 });
 
 test('the Pages worker forwards ordinary requests and handles only the theme endpoint', async () => {

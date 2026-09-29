@@ -10,6 +10,7 @@ import { parseDraft, serializeDraft } from '../packages/tokens/src/theme/codec.t
 import { toRegistryItem } from '../packages/tokens/src/theme/export.ts';
 
 const root = process.cwd();
+await mkdir(join(root, '.scratch'), { recursive: true });
 const output = await mkdtemp(join(root, '.scratch/theme-consumer-'));
 const log = join(output, 'commands.log');
 const results: { target: string; preset: string; modes: number; tokens: number }[] = [];

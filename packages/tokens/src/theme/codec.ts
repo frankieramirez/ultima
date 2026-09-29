@@ -43,6 +43,58 @@ function isOneOf<T>(value: unknown, allowed: readonly T[]): value is T {
   return (allowed as readonly unknown[]).includes(value);
 }
 
+function isFontStack(value: unknown): value is string {
+  if (typeof value !== 'string' || /[;{}<>\u0000-\u0008\u000b\u000e-\u001f\u007f-\u009f]|\/\*|\*\//.test(value)) return false;
+  let index = 0;
+  const isSpace = (character: string | undefined) => character !== undefined && /[ \t\r\n\f]/.test(character);
+  const skipSpace = () => { while (isSpace(value[index])) index++; };
+  const skipEscape = () => {
+    index++;
+    if (index === value.length) return false;
+    let digits = 0;
+    while (digits < 6 && /[0-9a-fA-F]/.test(value[index] ?? '')) { index++; digits++; }
+    if (digits === 0) {
+      if (/[\r\n\f]/.test(value[index]!)) return false;
+      index++;
+    } else if (isSpace(value[index])) {
+      if (value[index] === '\r' && value[index + 1] === '\n') index++;
+      index++;
+    }
+    return true;
+  };
+  skipSpace();
+  while (index < value.length) {
+    const quote = value[index];
+    let hasName = false;
+    if (quote === '"' || quote === "'") {
+      index++;
+      while (index < value.length && value[index] !== quote) {
+        if (value[index] === '\\') { if (!skipEscape()) return false; }
+        else { if (/[\r\n\f]/.test(value[index]!)) return false; index++; }
+        hasName = true;
+      }
+      if (value[index] !== quote) return false;
+      index++;
+      skipSpace();
+    } else {
+      while (index < value.length && value[index] !== ',') {
+        const character = value[index]!;
+        if (isSpace(character)) { index++; continue; }
+        if (character === '\\') { if (!skipEscape()) return false; }
+        else if (/[\w-]/.test(character) || character.charCodeAt(0) >= 0x80) index++;
+        else return false;
+        hasName = true;
+      }
+    }
+    if (!hasName) return false;
+    if (index === value.length) return true;
+    if (value[index] !== ',') return false;
+    index++;
+    skipSpace();
+  }
+  return false;
+}
+
 const OVERRIDE_TOKENS = new Set(Object.keys(resolveDraft(stockDraft()).dark).filter(
   (name) => !['--ult-color-surface-overlay', '--ult-radius-full', '--ult-filter-backdrop'].includes(name),
 ));
@@ -57,6 +109,9 @@ function parseTokenTable(value: unknown): Partial<TokenTable> | string {
   for (const [name, token] of Object.entries(value)) {
     if (!OVERRIDE_TOKENS.has(name)) return `Override ${name} is unknown, fixed, or derived and cannot be edited.`;
     if (typeof token !== 'string' || !token.trim()) return `Override ${name} must be a non-empty value.`;
+    if ((name === '--ult-font-sans' || name === '--ult-font-mono') && !isFontStack(token)) {
+      return `Override ${name} must be a comma-separated list of font family names.`;
+    }
     if (name.startsWith('--ult-color-')) {
       const hex = token.trim().toLowerCase();
       if (!/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/.test(hex)) {
@@ -94,7 +149,7 @@ function parseColor(value: unknown): ScaleSeeds | null {
 
 function parseTypography(value: unknown): ThemeDraft['typography'] | null {
   if (!isRecord(value)) return null;
-  if (typeof value.sans !== 'string' || typeof value.mono !== 'string') return null;
+  if (!isFontStack(value.sans) || !isFontStack(value.mono)) return null;
   if (!inRange(value.baseSizePx, 14, 18) || !isOneOf(value.scale, TYPE_SCALES)) return null;
   if (!isOneOf(value.leading, MEASURES) || !isOneOf(value.tracking, MEASURES)) return null;
   return {

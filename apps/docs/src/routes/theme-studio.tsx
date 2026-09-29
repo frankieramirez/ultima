@@ -254,7 +254,7 @@ export function ThemeStudio() {
           </Dialog.Popup></Dialog.Viewport></Dialog.Portal>
         </Dialog.Root>
       )}
-      <Dialog.Root open={reportOpen} onOpenChange={setReportOpen}>
+      <Dialog.Root open={reportOpen} onOpenChange={(open) => { setReportOpen(open); if (!open) setRepair(null); }}>
         <Dialog.Portal container={shell}><Dialog.Backdrop forceRender /><Dialog.Viewport><Dialog.Popup style={styles.report} finalFocus={reportTrigger}>
           <div {...stylex.props(styles.dialogHeader)}><Dialog.Title>This draft's token checks</Dialog.Title><Dialog.Close render={<Button aria-label="Close draft report" variant="ghost" style={styles.close} />}><XIcon aria-hidden /></Dialog.Close></div>
           <Dialog.Description style={styles.reportBody}>Declared token pairings in both modes. Check your rendered components too.</Dialog.Description>
