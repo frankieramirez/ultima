@@ -218,6 +218,7 @@ for (const mode of themes) {
     );
     await screen.getByRole('button', { name: 'Pick color' }).click();
     await expect.element(page.getByRole('dialog', { name: 'Color picker' })).toBeVisible();
+    await expect.poll(() => getComputedStyle(page.getByRole('dialog', { name: 'Color picker' }).element()).opacity).toBe('1');
     expect(
       await violations({
         include: [page.getByRole('dialog', { name: 'Color picker' }).element()],

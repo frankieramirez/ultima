@@ -48,10 +48,10 @@ const LINKS = [
   { label: 'Studio', to: '/theme-studio' },
 ] as const;
 
-export function Header({ wide = false }: { wide?: boolean }) {
+export function Header() {
   return (
     <header {...stylex.props(styles.chrome)}>
-      <div {...stylex.props(wide ? layoutStyles.gutterWide : layoutStyles.gutter, styles.bar)}>
+      <div {...stylex.props(layoutStyles.gutter, styles.bar)}>
         <div {...stylex.props(styles.cluster)}>
           <TextLink variant="muted" render={<Link to="/" aria-label="Ultima home" />}>
             <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />

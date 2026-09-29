@@ -59,6 +59,7 @@ test('the workbench tabs the two setup targets and copies the active pair', asyn
   const panel = () =>
     document.getElementById(list.element().querySelector('[aria-selected="true"]')!.getAttribute('aria-controls')!)!;
   expect(panel().textContent).toContain('https://ultima.systems/r/setup-vite.json');
+  expect(panel().querySelectorAll('pre code span').length).toBeGreaterThan(0);
 
   await userEvent.click(screen.getByRole('button', { name: 'Copy Vite install commands' }).element());
   expect(written.at(-1)).toBe(
@@ -68,6 +69,7 @@ test('the workbench tabs the two setup targets and copies the active pair', asyn
   await userEvent.click(next.element());
   expect(next.element()).toHaveAttribute('aria-selected', 'true');
   expect(panel().textContent).toContain('https://ultima.systems/r/setup-next.json');
+  expect(panel().querySelectorAll('pre code span').length).toBeGreaterThan(0);
 
   await userEvent.click(screen.getByRole('button', { name: 'Copy Next.js install commands' }).element());
   expect(written.at(-1)).toBe(
