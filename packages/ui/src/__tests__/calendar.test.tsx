@@ -52,6 +52,21 @@ test('a calendar with no props renders a labelled day grid', async () => {
   expect(cellTriggers(screen).length).toBeGreaterThan(28);
 });
 
+test('a day grid fits a narrow container and keeps date selection', async () => {
+  const screen = await render(<div style={{ width: 220 }}><Sample /></div>);
+  const calendar = screen.container.querySelector('[data-part="root"]')!;
+  const bounds = calendar.getBoundingClientRect();
+  expect(bounds.width).toBeLessThanOrEqual(220);
+  for (const cell of screen.container.querySelectorAll('th, td, [data-part="table-cell-trigger"]')) {
+    const box = cell.getBoundingClientRect();
+    expect(box.left).toBeGreaterThanOrEqual(bounds.left);
+    expect(box.right).toBeLessThanOrEqual(bounds.right + 1);
+  }
+  const date = cellTrigger(screen, ':not([data-outside-range])', 3);
+  await userEvent.click(date);
+  expect(date).toHaveAttribute('data-selected');
+});
+
 test('the grid keeps the day view keyboard map', async () => {
   const screen = await render(<Sample />);
   const start = cellTrigger(screen, ':not([data-outside-range])', 0);

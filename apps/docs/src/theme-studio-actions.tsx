@@ -24,10 +24,11 @@ import {
   type ThemeDraft,
 } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Alert, AlertDialog, Button, Checkbox, Code, Dialog, Field, Input, Separator, Spinner, ToggleGroup } from '@ultima/ui';
+import { Accordion, Alert, AlertDialog, Button, Checkbox, Code, Dialog, Field, Input, Separator, Spinner, Tabs, ToggleGroup } from '@ultima/ui';
 import { useContext, useEffect, useRef, useState } from 'react';
 
 import { CopyButton } from './copy-button';
+import { Fence } from './prose';
 import { readStored } from './storage';
 import { useStudioDraft as useStoreDraft } from './theme-studio-store';
 import { headings } from './typography';
@@ -63,6 +64,7 @@ type PendingLoad = {
 };
 
 const styles = stylex.create({
+  action: { alignSelf: 'flex-start', maxInlineSize: '100%' },
   touch: { minBlockSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null }, minInlineSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null } },
   stack: {
     display: 'flex',
@@ -88,6 +90,7 @@ const styles = stylex.create({
     alignItems: 'center',
     display: 'flex',
     gap: space['--ult-space-4'],
+    flexWrap: 'wrap',
   },
   detail: {
     color: color['--ult-color-text-subtle'],
@@ -143,10 +146,12 @@ const styles = stylex.create({
     whiteSpace: 'nowrap',
     width: '1px',
   },
-  exportPopup: { inlineSize: '100%', maxInlineSize: '52rem', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' },
+  exportPopup: { inlineSize: '100%', maxInlineSize: '48rem', maxBlockSize: 'min(48rem, calc(100dvh - 4rem))', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' },
   exportHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space['--ult-space-5'], padding: space['--ult-space-6'], flexShrink: 0 },
   exportBody: { overflow: 'auto', minBlockSize: 0, padding: space['--ult-space-6'] },
-  code: { flexShrink: 0, whiteSpace: 'pre', overflow: 'auto', margin: 0, fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'] },
+  exportCopy: { fontSize: text['--ult-text-5'], lineHeight: font['--ult-font-leading-normal'], overflowWrap: 'anywhere' },
+  exportPanel: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-8'], paddingBlockStart: space['--ult-space-6'] },
+  exportTabs: { flexShrink: 0 },
   framework: { display: 'flex', flexWrap: 'wrap' },
   popup: {
     inlineSize: '100%',
@@ -318,7 +323,7 @@ export function StudioActions({
   return (
     <>
       <Button onClick={() => fileRef.current?.click()} size="sm" variant="outline" style={[docsStyles.square, styles.touch]}>
-        Open
+        Import
       </Button>
       <input
         accept=".json,application/json"
@@ -348,7 +353,7 @@ export function StudioActions({
         open={pending !== null}
       >
         <AlertDialog.Portal container={container}>
-          <AlertDialog.Backdrop />
+          <AlertDialog.Backdrop forceRender />
           <AlertDialog.Viewport>
             <AlertDialog.Popup style={styles.popup}>
               <AlertDialog.Title>Replace the autosaved draft?</AlertDialog.Title>
@@ -371,7 +376,7 @@ export function StudioActions({
         open={refusal !== null}
       >
         <AlertDialog.Portal container={container}>
-          <AlertDialog.Backdrop />
+          <AlertDialog.Backdrop forceRender />
           <AlertDialog.Viewport>
             <AlertDialog.Popup style={styles.popup}>
               <AlertDialog.Title>Draft refused</AlertDialog.Title>
@@ -436,16 +441,16 @@ function ExportDialog({
       open={open}
     >
       <Dialog.Portal container={container}>
-        <Dialog.Backdrop />
+        <Dialog.Backdrop forceRender />
         <Dialog.Viewport>
           <Dialog.Popup style={styles.exportPopup}>
             <div {...stylex.props(styles.exportHeader)}>
-              <Dialog.Title>Export theme</Dialog.Title>
+              <Dialog.Title style={styles.exportCopy}>Export theme</Dialog.Title>
               <Dialog.Close render={<Button variant="ghost" style={[docsStyles.square, styles.touch]} />}>Close</Dialog.Close>
             </div>
             <div {...stylex.props(styles.exportBody, styles.stack)}>
-              <Dialog.Description>Install {presetLabel(draft)}{isPresetEdited(draft) ? ' · Edited' : ''} in your application. Keep the JSON draft so you can edit it again.</Dialog.Description>
-              {failures.length === 0 ? <Alert.Root tone="success"><Alert.Title>All {gate(resolveDraft(draft)).length * 2} token checks pass</Alert.Title><Alert.Description>These are declared pairings. Verify rendered controls, focus and popups in your application.</Alert.Description></Alert.Root> : null}
+              <Dialog.Description style={styles.exportCopy}>Install {presetLabel(draft)}{isPresetEdited(draft) ? ' · Edited' : ''} in your application.</Dialog.Description>
+              {failures.length === 0 ? <Alert.Root tone="success"><Alert.Title style={styles.exportCopy}>All {gate(resolveDraft(draft)).length * 2} token checks pass</Alert.Title></Alert.Root> : null}
               {failures.length > 0 ? (
                 <>
                   <Alert.Root tone="warning">
@@ -478,52 +483,64 @@ function ExportDialog({
                   </Field.Root>}
                 </>
               ) : null}
-              <h3 {...stylex.props(headings.h3, styles.heading)}>1. Install the theme</h3>
-              <p {...stylex.props(styles.note)}>Recommended · The registry file installs the generated stylesheet and editable draft at your project root.</p>
-              <Button disabled={gated} onClick={registryDownload} style={[docsStyles.square, styles.touch]}><DownloadSimpleIcon aria-hidden /> Download registry file</Button>
-              <Code>npx shadcn add ./ultima-theme.registry.json</Code>
-              <CopyButton text="npx shadcn add ./ultima-theme.registry.json" variant="outline" style={styles.touch}>{(status) => status || 'Copy install command'}</CopyButton>
-              <p {...stylex.props(styles.note)}>Reinstalling regenerates and replaces the generated files. Keep <Code>ultima-theme.json</Code>: the draft is the editable source.</p>
-              <h3 {...stylex.props(headings.h3, styles.heading)}>2. Apply the stylesheet</h3>
-              <ToggleGroup.Root aria-label="Installation framework" value={[framework]} onValueChange={(next, details) => { if (next[0]) setFramework(next[0]); else details.cancel(); }} style={styles.framework}>
-                {['Vite', 'Next app', 'Next src/app'].map((name) => <ToggleGroup.Item key={name} value={name} style={[docsStyles.square, styles.touch]}>{name}</ToggleGroup.Item>)}
-              </ToggleGroup.Root>
-              <pre {...stylex.props(styles.code)}><code>{importExample}</code></pre>
-              <CopyButton text={importExample} variant="outline" style={styles.touch}>{(status) => status || 'Copy imports'}</CopyButton>
-              <p {...stylex.props(styles.note)}>Load the theme after the application's StyleX output in the production cascade.</p>
-              <p {...stylex.props(styles.note)}>Dark or light: set data-theme on html to "dark" or "light". System: remove data-theme from html. The stylesheet handles color-scheme and system preference.</p>
-              <p {...stylex.props(styles.note)}>For scoped StyleX themes, apply every token group and keep popups inside the themed boundary. <a href="/install#theme-adoption">Read the adoption guide</a>.</p>
-              <h3 {...stylex.props(headings.h3, styles.heading)}>3. Check your application</h3>
-              <pre {...stylex.props(styles.code)}><code>{'npx ultima-design doctor\nnpx ultima-design check'}</code></pre>
-              <p {...stylex.props(styles.note)}>Compare the root, an Ultima control and an open popup in a production build. Test dark, light and system mode, focus and other interaction states, and reduced motion. Command success alone does not prove browser parity.</p>
-              <h3 {...stylex.props(headings.h3, styles.heading)}>Individual files</h3>
-              <ul {...stylex.props(styles.downloads)}>
-                {downloads.map((item) => (
-                  <li key={item.name} {...stylex.props(styles.download)}>
-                    <Button
-                      disabled={gated}
-                      onClick={item.save}
-                      size="sm"
-                      variant="outline"
-                     style={[docsStyles.square, styles.touch]}>
-                      <DownloadSimpleIcon aria-hidden /> {item.name}
-                    </Button>
-                    <span {...stylex.props(styles.detail)}>{item.detail}</span>
-                  </li>
-                ))}
-              </ul>
-              <p {...stylex.props(styles.note)}>Sans stack: {draft.typography.sans}</p>
-              <p {...stylex.props(styles.note)}>Mono stack: {draft.typography.mono}</p>
-              <p {...stylex.props(styles.note)}>
-                Declared font faces: {faces.length > 0 ? faces.join(', ') : 'none'}; loading them is
-                the consumer's responsibility. Provide the preferred faces with @font-face or your font loader. The export includes stacks and fallbacks, but no font files.
-              </p>
-              <Separator />
-              <div {...stylex.props(styles.footer)}>
-                <p {...stylex.props(styles.fingerprint)}>
-                  Fingerprint <Code>{draftFingerprint(draft)}</Code>
-                </p>
-              </div>
+              <Tabs.Root defaultValue="install">
+                <Tabs.List aria-label="Export options" style={styles.exportTabs}>
+                  <Tabs.Tab value="install" style={styles.exportCopy}>Install</Tabs.Tab>
+                  <Tabs.Tab value="files" style={styles.exportCopy}>Files & fonts</Tabs.Tab>
+                  <Tabs.Indicator />
+                </Tabs.List>
+                <Tabs.Panel value="install" style={styles.exportPanel}>
+                  <section {...stylex.props(styles.stack)}>
+                    <h3 {...stylex.props(headings.h3, styles.heading)}>1. Install the theme</h3>
+                    <p {...stylex.props(styles.note, styles.exportCopy)}>Download the registry file, then run this command in your project.</p>
+                    <Button disabled={gated} onClick={registryDownload} style={[docsStyles.square, styles.touch, styles.action]}><DownloadSimpleIcon aria-hidden /> Download registry file</Button>
+                    <Fence code="npx shadcn add ./ultima-theme.registry.json" lang="shell" />
+                  </section>
+                  <section {...stylex.props(styles.stack)}>
+                    <h3 {...stylex.props(headings.h3, styles.heading)}>2. Apply the stylesheet</h3>
+                    <ToggleGroup.Root aria-label="Installation framework" value={[framework]} onValueChange={(next, details) => { if (next[0]) setFramework(next[0]); else details.cancel(); }} style={styles.framework}>
+                      {['Vite', 'Next app', 'Next src/app'].map((name) => <ToggleGroup.Item key={name} value={name} style={[docsStyles.square, styles.touch, styles.exportCopy]}>{name}</ToggleGroup.Item>)}
+                    </ToggleGroup.Root>
+                    <Fence code={importExample} lang="tsx" />
+                    <p {...stylex.props(styles.note, styles.exportCopy)}>Load the theme after the application's StyleX output.</p>
+                    <p {...stylex.props(styles.note, styles.exportCopy)}>Set <Code>data-theme</Code> on html to <Code>dark</Code> or <Code>light</Code>. For System mode, remove data-theme from html.</p>
+                  </section>
+                  <Accordion.Root>
+                    <Accordion.Item value="checks">
+                      <Accordion.Header><Accordion.Trigger style={styles.exportCopy}>Check your application</Accordion.Trigger></Accordion.Header>
+                      <Accordion.Panel>
+                        <div {...stylex.props(styles.stack)}>
+                          <Fence code={'npx ultima-design doctor\nnpx ultima-design check'} lang="shell" />
+                          <p {...stylex.props(styles.note, styles.exportCopy)}>Verify a rendered control and an open popup in dark, light and system mode. Check keyboard focus and reduced motion. Token checks and command success alone do not prove browser parity.</p>
+                        </div>
+                      </Accordion.Panel>
+                    </Accordion.Item>
+                  </Accordion.Root>
+                  <p {...stylex.props(styles.note, styles.exportCopy)}><a href="/install#theme-adoption">Read the full adoption guide</a> for scoped themes and portal containers.</p>
+                </Tabs.Panel>
+                <Tabs.Panel value="files" style={styles.exportPanel}>
+                  <section {...stylex.props(styles.stack)}>
+                    <h3 {...stylex.props(headings.h3, styles.heading)}>Individual files</h3>
+                    <ul {...stylex.props(styles.downloads)}>
+                      {downloads.map((item) => (
+                        <li key={item.name} {...stylex.props(styles.download)}>
+                          <Button disabled={gated} onClick={item.save} variant="outline" style={[docsStyles.square, styles.touch]}><DownloadSimpleIcon aria-hidden /> {item.name}</Button>
+                          <span {...stylex.props(styles.detail, styles.exportCopy)}>{item.detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p {...stylex.props(styles.note, styles.exportCopy)}>Keep <Code>ultima-theme.json</Code>: the draft is the editable source. Reinstalling replaces the generated files.</p>
+                  </section>
+                  <section {...stylex.props(styles.stack)}>
+                    <h3 {...stylex.props(headings.h3, styles.heading)}>Fonts</h3>
+                    <p {...stylex.props(styles.note, styles.exportCopy)}>Declared font faces: {faces.length > 0 ? faces.join(', ') : 'none'}. Loading them is the consumer's responsibility; the export includes stacks and fallbacks, but no font files.</p>
+                    <p {...stylex.props(styles.note, styles.exportCopy)}>Sans stack: {draft.typography.sans}</p>
+                    <p {...stylex.props(styles.note, styles.exportCopy)}>Mono stack: {draft.typography.mono}</p>
+                    <p {...stylex.props(styles.note, styles.exportCopy)}>Provide the preferred faces with <Code>@font-face</Code> or your font loader.</p>
+                  </section>
+                  <p {...stylex.props(styles.fingerprint, styles.exportCopy)}>Fingerprint <Code>{fingerprint}</Code></p>
+                </Tabs.Panel>
+              </Tabs.Root>
             </div>
           </Dialog.Popup>
         </Dialog.Viewport>
@@ -577,7 +594,7 @@ function ShareDialog({
       open={open}
     >
       <Dialog.Portal container={container}>
-        <Dialog.Backdrop />
+        <Dialog.Backdrop forceRender />
         <Dialog.Viewport>
           <Dialog.Popup style={styles.popup}>
             <div {...stylex.props(styles.stack)}>

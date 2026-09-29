@@ -11,6 +11,7 @@ import { draftHistory } from '../../tests/fixtures/theme-studio-history';
 import { MENU_LABEL } from '../site-menu';
 import { routeTree } from '../router';
 import { THEME_STORAGE_KEY } from '../theme';
+import { MONO_PRESETS, SANS_PRESETS } from '../theme-studio-draft';
 import '../styles.css';
 
 /** The Studio's pane-mode switch, apart from the site header's color-mode switch. */
@@ -47,6 +48,47 @@ test('the default collage shows several live compositions and complete themes ar
   await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
   expect(readToken(pane.element(), '--ult-space-1')).toBe('0.09375rem');
 });
+
+test('the complete-theme popup paints above the preview tabs and pads its hint', async () => {
+  const screen = await mount('/theme-studio', false);
+  await userEvent.click(screen.getByRole('combobox', { name: 'Complete theme', exact: true }));
+  const option = screen.getByRole('option', { name: /Neutral/ }).element();
+  const popup = option.closest('[data-side]')!;
+  await Promise.all(popup.getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => {})));
+  const box = popup.getBoundingClientRect();
+  const tabs = screen.getByRole('tablist', { name: 'Preview scenes' }).element().getBoundingClientRect();
+  const x = Math.max(box.left, tabs.left) + 4;
+  const y = Math.max(box.top, tabs.top) + 4;
+  expect(x).toBeLessThan(Math.min(box.right, tabs.right));
+  expect(y).toBeLessThan(Math.min(box.bottom, tabs.bottom));
+  expect(popup.contains(document.elementFromPoint(x, y))).toBe(true);
+  const hint = screen.getByText('Applies a complete theme. Undo restores your draft.').element();
+  expect(parseFloat(getComputedStyle(hint).paddingInlineStart)).toBeGreaterThanOrEqual(12);
+  expect(hint.getBoundingClientRect().bottom).toBeLessThanOrEqual(box.bottom);
+});
+
+for (const width of [390, 1280]) {
+  test(`slider endpoints and focus rings fit the editor at ${width}px`, async () => {
+    await page.viewport(width, 844);
+    onTestFinished(() => page.viewport(1280, 720));
+    const screen = await mount('/theme-studio', false);
+    if (width < 840) {
+      await userEvent.click(screen.getByRole('button', { name: 'Edit theme', exact: true }));
+      const drawer = screen.getByRole('dialog', { name: 'Edit theme' }).element();
+      await Promise.all(drawer.getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => {})));
+    }
+    const slider = screen.getByRole('slider', { name: 'Accent saturation' }).element();
+    slider.focus();
+    const viewport = slider.closest('[role="presentation"][tabindex]')!;
+    for (const key of ['{Home}', '{End}']) {
+      await userEvent.keyboard(key);
+      const thumb = slider.parentElement!.getBoundingClientRect();
+      const bounds = viewport.getBoundingClientRect();
+      expect(thumb.left - 4).toBeGreaterThanOrEqual(bounds.left);
+      expect(thumb.right + 4).toBeLessThanOrEqual(bounds.right);
+    }
+  });
+}
 
 test('the mobile gallery opens a focused editor drawer and Escape returns to Edit theme', async () => {
   await page.viewport(390, 844);
@@ -149,7 +191,7 @@ test('the studio route joins the site shell with the rail collapsed and no foote
   );
   expect(screen.container.textContent).not.toContain('Untitled theme');
   await expect.element(screen.getByText('Saved on this device')).toBeVisible();
-  await expect.element(screen.getByRole('button', { name: 'Open' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Import' })).toBeVisible();
   await expect.element(screen.getByRole('button', { name: 'Share' })).toBeVisible();
   await expect.element(screen.getByRole('button', { name: /Export/ })).toBeVisible();
 
@@ -158,7 +200,7 @@ test('the studio route joins the site shell with the rail collapsed and no foote
 });
 
 for (const mode of ['dark', 'light'] as const) {
-  test(`the shared header follows the ${mode} preference while the workbench stays pinned dark`, async () => {
+  test(`the shared header and workbench follow the ${mode} preference`, async () => {
     prefer(mode);
     const screen = await mount('/theme-studio');
 
@@ -166,7 +208,92 @@ for (const mode of ['dark', 'light'] as const) {
     expect(readSurface(header)).toBe(stockValue(mode, '--ult-color-surface'));
 
     const subBar = screen.getByRole('heading', { name: 'Theme Studio' }).element().parentElement!;
-    expect(readSurface(subBar)).toBe(stockValue('dark', '--ult-color-surface'));
+    expect(readSurface(subBar)).toBe(stockValue(mode, '--ult-color-surface'));
+  });
+}
+
+test('changing the site mode updates studio chrome while keeping the draft preview independent', async () => {
+  prefer('dark');
+  const screen = await mount('/theme-studio', false);
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  const preview = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const draftSurface = readSurface(preview);
+  for (const mode of ['light', 'dark'] as const) {
+    await userEvent.click(screen.getByRole('group', { name: 'Color mode', exact: true }).getByRole('button', { name: mode === 'light' ? 'Light' : 'Dark', exact: true }));
+    expect(readSurface(editor)).toBe(stockValue(mode, '--ult-color-surface'));
+    expect(getComputedStyle(editor).colorScheme).toBe(mode);
+    expect(readSurface(preview)).toBe(draftSurface);
+    expect(getComputedStyle(preview).colorScheme).toBe('dark');
+  }
+});
+
+test('elevation changes painted gallery shadows in both modes and undo restores them', async () => {
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('group', { name: 'Preview color mode' }).getByRole('button', { name: 'Compare', exact: true }));
+  const shadows = () => ['Dark', 'Light'].map((mode) => {
+    const pane = screen.getByRole('region', { name: `${mode} preview` }).element();
+    const card = pane.querySelector('[data-gallery-example="Create your workspace"]')!;
+    return getComputedStyle(card).boxShadow;
+  });
+  const elevation = screen.getByRole('group', { name: 'Elevation strength' });
+  await userEvent.click(elevation.getByRole('button', { name: 'Flat', exact: true }));
+  expect(shadows()).toEqual(['none', 'none']);
+  await userEvent.click(elevation.getByRole('button', { name: 'Subtle', exact: true }));
+  const subtle = shadows();
+  expect(subtle.every((value) => value !== 'none')).toBe(true);
+  await userEvent.click(elevation.getByRole('button', { name: 'Pronounced', exact: true }));
+  expect(shadows()[0]).not.toBe(subtle[0]);
+  expect(shadows()[1]).not.toBe(subtle[1]);
+  await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
+  expect(shadows()).toEqual(subtle);
+});
+
+test('the named font choices load real faces and reach both preview modes', async () => {
+  const screen = await mount('/theme-studio');
+  await userEvent.click(screen.getByRole('group', { name: 'Preview color mode' }).getByRole('button', { name: 'Compare', exact: true }));
+  for (const [label, presets, token] of [
+    ['Sans family', SANS_PRESETS, '--ult-font-sans'],
+    ['Mono family', MONO_PRESETS, '--ult-font-mono'],
+  ] as const) {
+    for (const preset of presets.filter((item) => !['System', 'Serif', 'Humanist'].includes(item.label))) {
+      await userEvent.click(screen.getByRole('combobox', { name: label, exact: true }));
+      await userEvent.click(screen.getByRole('option', { name: preset.label, exact: true }));
+      for (const mode of ['Dark', 'Light']) {
+        expect(readToken(screen.getByRole('region', { name: `${mode} preview` }).element(), token)).toBe(preset.value);
+      }
+      const family = preset.value.split(',')[0]!;
+      for (const weight of [400, 500, 600]) {
+        const faces = await document.fonts.load(`${weight} 16px ${family}`, 'Release 29');
+        expect(faces.length, `${preset.label} ${weight} loads a self-hosted face`).toBeGreaterThan(0);
+        expect(faces.every((face) => face.status === 'loaded')).toBe(true);
+      }
+    }
+  }
+});
+
+for (const width of [390, 1280]) {
+  test(`the roomy calendar keeps all seven columns inside its gallery card at ${width}px`, async () => {
+    await page.viewport(width, 844);
+    onTestFinished(() => page.viewport(1280, 720));
+    const draft = presetDraft('neutral');
+    draft.density = 1.25;
+    draft.typography.baseSizePx = 18;
+    localStorage.setItem(AUTOSAVE_KEY, serializeDraft(draft));
+    const screen = await mount('/theme-studio', false);
+    const card = screen.container.querySelector('[data-gallery-example="Plan your next release"]')!;
+    const calendar = card.querySelector('[data-part="root"]')!;
+    const grid = card.querySelector('table')!;
+    const bounds = calendar.getBoundingClientRect();
+    expect(grid.querySelectorAll('th').length).toBe(7);
+    for (const cell of grid.querySelectorAll('th, td, button')) {
+      const box = cell.getBoundingClientRect();
+      expect(box.left).toBeGreaterThanOrEqual(bounds.left);
+      expect(box.right).toBeLessThanOrEqual(bounds.right + 1);
+    }
+    const date = card.querySelector<HTMLButtonElement>('[data-part="table-cell-trigger"]:not([data-outside-range])')!;
+    await userEvent.click(date);
+    expect(date).toHaveAttribute('data-selected');
+    expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth + 1);
   });
 }
 
@@ -425,7 +552,7 @@ test('inspect tokens lists declared variables and resolved values per pane mode'
 
   expect(target).not.toBeNull();
   await userEvent.hover(target!);
-  expect(readout.element().textContent).not.toMatch(/--ult-color-surface-raised/);
+  await expect.element(readout).not.toBeInTheDocument();
 
   await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }).element());
   expect(screen.getByRole('button', { name: 'Inspect tokens' }).element()).toHaveAttribute(
@@ -437,6 +564,9 @@ test('inspect tokens lists declared variables and resolved values per pane mode'
   await expect.element(readout.getByText('--ult-color-surface-raised')).toBeVisible();
   const darkRaised = getComputedStyle(target!).getPropertyValue('--ult-color-surface-raised').trim();
   expect(readout.element().textContent).toContain(darkRaised);
+  expect(pane.contains(readout.element())).toBe(true);
+  await expect.poll(() => readout.element().getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);
+  await expect.poll(() => readout.element().getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
 
   await userEvent.click(previewMode(screen, 'Light'));
   const lightPane = screen.getByRole('region', { name: 'Light preview' }).element();
@@ -470,7 +600,26 @@ test('inspect targets take keyboard focus and drive the readout on focus and blu
   expect(readout.element().textContent).toContain(darkRaised);
 
   inspect.element().blur();
-  await expect.poll(() => readout.element().textContent ?? '').not.toContain('--ult-color-surface-raised');
+  await expect.element(readout).not.toBeInTheDocument();
+});
+
+test('a tapped gallery inspector opens an anchored card and Escape dismisses it', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/theme-studio', false);
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens', exact: true }));
+  const trigger = screen.getByRole('button', { name: 'Inspect Create your workspace tokens', exact: true });
+  await userEvent.click(trigger);
+  const readout = screen.getByRole('status', { name: 'Token readout' });
+  await expect.element(readout.getByText('--ult-shadow-md')).toBeVisible();
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  expect(pane.contains(readout.element())).toBe(true);
+  const box = readout.element().getBoundingClientRect();
+  expect(box.left).toBeGreaterThanOrEqual(0);
+  expect(box.right).toBeLessThanOrEqual(window.innerWidth);
+  expect(box.bottom).toBeLessThanOrEqual(window.innerHeight);
+  await userEvent.keyboard('{Escape}');
+  await expect.element(readout).not.toBeInTheDocument();
 });
 
 test('inspect targets keep pane order across the compare panes', async () => {
@@ -493,6 +642,9 @@ test('inspect targets keep pane order across the compare panes', async () => {
 
   const last = darkTargets[darkTargets.length - 1] as HTMLElement;
   last.focus();
+  await userEvent.keyboard('{Tab}');
+  expect(dark.contains(document.activeElement)).toBe(true);
+  expect(document.activeElement).toHaveAttribute('aria-label', 'Inspected tokens');
   await userEvent.keyboard('{Tab}');
   expect(light.contains(document.activeElement)).toBe(true);
 });
@@ -520,7 +672,8 @@ test('the studio passes axe with inspect targets shown', async () => {
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.html).join(', ')}`)).toEqual([]);
 });
 
-test('editor chrome stays stock dark when the preview is light', async () => {
+test('editor chrome keeps the stock site mode when the preview is light', async () => {
+  prefer('dark');
   const screen = await mount('/theme-studio');
   await userEvent.click(previewMode(screen, 'Light'));
 
@@ -549,6 +702,7 @@ test('the mobile editor keeps its header, selected group and footer inside the v
     expect(box.height).toBeGreaterThanOrEqual(44);
   }
   expect(viewport.scrollWidth).toBeLessThanOrEqual(viewport.clientWidth + 1);
+  await Promise.all(drawer.element().getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => {})));
   const results = await axe.run(document.body);
   expect(results.violations.map((v) => v.id)).toEqual([]);
 });
@@ -621,9 +775,12 @@ test('the shuffle bar carries shuffle, variation, undo, redo, and the state fing
   const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
 
   await expect.element(screen.getByRole('button', { name: 'Shuffle' })).toBeVisible();
-  const variation = screen.getByRole('group', { name: 'Shuffle variation' });
-  await expect.element(variation.getByRole('button', { name: 'Broad' })).toBeVisible();
-  await expect.element(variation.getByRole('button', { name: 'Subtle' })).toBeVisible();
+  const variation = screen.getByRole('combobox', { name: 'Shuffle variation' });
+  await expect.element(variation).toHaveTextContent('Broad');
+  await userEvent.click(variation);
+  await expect.element(screen.getByText('Small changes to your current theme.')).toBeVisible();
+  await userEvent.click(screen.getByRole('option', { name: /^Subtle/ }));
+  await expect.element(variation).toHaveTextContent('Subtle');
   await expect.element(screen.getByRole('button', { name: 'Undo' })).toBeVisible();
   await expect.element(screen.getByRole('button', { name: 'Redo' })).toBeVisible();
   await expect.element(screen.getByText(/^seed [0-9a-f]{6}$/)).toBeVisible();

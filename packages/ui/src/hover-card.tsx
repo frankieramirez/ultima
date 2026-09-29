@@ -25,6 +25,7 @@ const styles = stylex.create({
   },
   positioner: {
     outline: 0,
+    zIndex: z.popup,
   },
   popup: {
     backgroundColor: color['--ult-color-surface-raised'],

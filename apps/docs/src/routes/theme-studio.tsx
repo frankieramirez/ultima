@@ -3,8 +3,6 @@ import { StudioPortalContext } from '../theme-studio-context';
 import { XIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import {
-  colorScheme,
-  darkTheme,
   gate,
   resolveDraft,
   SHUFFLE_ATTEMPT_LIMIT,
@@ -211,7 +209,7 @@ export function ThemeStudio() {
   );
 
   return (
-    <main ref={shell} {...stylex.props(darkTheme, colorScheme.dark, styles.shell)}>
+    <main ref={shell} {...stylex.props(styles.shell)}>
       <StudioPortalContext value={shell}>
       <div {...stylex.props(styles.subBar)}>
         <h1 {...stylex.props(styles.title)}>Theme Studio</h1>
@@ -248,7 +246,7 @@ export function ThemeStudio() {
             <Button ref={reportTrigger} onClick={() => setReportOpen(true)} size="sm" variant="ghost" style={styles.touch}>{failing ? `${failing} checks failing` : 'Token checks pass'}</Button>
             <Dialog.Trigger render={<Button style={styles.edit} />}>Edit theme</Dialog.Trigger>
           </div>
-          <Dialog.Portal container={shell}><Dialog.Backdrop /><Dialog.Viewport style={styles.drawerViewport}><Dialog.Popup style={styles.drawer}>
+          <Dialog.Portal container={shell}><Dialog.Backdrop forceRender /><Dialog.Viewport style={styles.drawerViewport}><Dialog.Popup style={styles.drawer}>
             <div {...stylex.props(styles.dialogHeader)}><Dialog.Title>Edit theme</Dialog.Title><Dialog.Close render={<Button aria-label="Close editor" variant="ghost" style={styles.close} />}><XIcon aria-hidden /></Dialog.Close></div>
             <Dialog.Description style={styles.announce}>Generate and customize your theme. Every edit updates both preview modes.</Dialog.Description>
             {editor}{status}
@@ -256,7 +254,7 @@ export function ThemeStudio() {
         </Dialog.Root>
       )}
       <Dialog.Root open={reportOpen} onOpenChange={setReportOpen}>
-        <Dialog.Portal container={shell}><Dialog.Backdrop /><Dialog.Viewport><Dialog.Popup style={styles.report} finalFocus={reportTrigger}>
+        <Dialog.Portal container={shell}><Dialog.Backdrop forceRender /><Dialog.Viewport><Dialog.Popup style={styles.report} finalFocus={reportTrigger}>
           <div {...stylex.props(styles.dialogHeader)}><Dialog.Title>This draft's token checks</Dialog.Title><Dialog.Close render={<Button aria-label="Close draft report" variant="ghost" style={styles.close} />}><XIcon aria-hidden /></Dialog.Close></div>
           <Dialog.Description style={styles.reportBody}>Declared token pairings in both modes. Check your rendered components too.</Dialog.Description>
           <div {...stylex.props(styles.reportBody)}>

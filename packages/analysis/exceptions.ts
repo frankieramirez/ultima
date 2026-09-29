@@ -261,6 +261,17 @@ export default [
     authority: 'docs/spec/theme-studio.md#theme-studio-layout-and-live-preview',
   },
   {
+    id: 'studio-gallery-shows-draft-elevation',
+    rule: 'ULT-DOCS-001',
+    path: 'apps/docs/src/theme-studio-gallery.tsx',
+    symbol: 'styles.tile',
+    target: 'boxShadow',
+    expression: "shadow['--ult-shadow-md']",
+    count: 1,
+    reason: 'The studio collage applies draft elevation to its example tiles so the Elevation control has a visible result.',
+    authority: 'docs/spec/theme-studio.md#theme-studio-layout-and-live-preview',
+  },
+  {
     id: 'studio-preview-canvas-border-color',
     rule: 'ULT-DOCS-001',
     path: 'apps/docs/src/theme-studio-preview.tsx',

@@ -53,13 +53,13 @@ export default productionScenario('theme-studio.draft-history', 'production', as
   const stockAccent = await readToken(page, overrideToken);
   assert.equal(await readToken(page, '--ult-space-1'), stockSpace1, 'the studio opens on the stock draft');
 
-  // The site header follows the chosen mode; the editor around the preview stays stock dark.
+  // The site header and editor follow the chosen mode, independently of the draft.
   const header = await page.getByRole('banner').evaluate((element) => getComputedStyle(element).backgroundColor);
   await assertColor(page, header, await shippedColor(page, '--ult-color-surface', variant.mode), `the site header in ${variant.mode} mode`);
   await showGroup(page, narrow, 'Color');
   const editor = page.getByRole('complementary', { name: 'Theme editor' });
   const editorSurface = await editor.evaluate((element) => getComputedStyle(element).getPropertyValue('--ult-color-surface').trim());
-  await assertColor(page, editorSurface, await shippedColor(page, '--ult-color-surface', 'dark'), 'the editor surface');
+  await assertColor(page, editorSurface, await shippedColor(page, '--ult-color-surface', variant.mode), 'the editor surface');
 
   if (narrow) await page.getByRole('group', { name: 'Theme groups' }).waitFor({ state: 'visible' });
   await assertFits(page, editor, `/theme-studio at ${variant.viewport} width`);

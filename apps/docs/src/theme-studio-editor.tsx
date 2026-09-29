@@ -69,15 +69,18 @@ const styles = stylex.create({
     flexDirection: 'column',
     gap: space['--ult-space-8'],
   },
-  swatches: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: space['--ult-space-3'] },
+  swatches: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: space['--ult-space-3'] },
   swatchItem: {
     blockSize: 'auto',
-    flexDirection: 'column',
-    gap: space['--ult-space-2'],
-    fontSize: text['--ult-text-1'],
-    paddingBlock: space['--ult-space-1'],
-    paddingInline: space['--ult-space-1'],
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: space['--ult-space-4'],
+    fontSize: text['--ult-text-4'],
+    minBlockSize: space['--ult-space-10'],
+    paddingBlock: space['--ult-space-4'],
+    paddingInline: space['--ult-space-4'],
   },
+  swatchChip: { blockSize: space['--ult-space-8'], inlineSize: space['--ult-space-8'], flexShrink: 0 },
   detail: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-5'] },
   roleTitle: {
     fontSize: text['--ult-text-5'],
@@ -114,14 +117,19 @@ const styles = stylex.create({
   stack: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-6'] },
   row: { alignItems: 'center', display: 'flex', gap: space['--ult-space-4'] },
   themeTrigger: { inlineSize: '100%', minBlockSize: space['--ult-space-11'], justifyContent: 'space-between' },
-  themeOption: { display: 'flex', alignItems: 'center', gap: space['--ult-space-5'], minBlockSize: space['--ult-space-12'] },
-  themeCopy: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-1'] },
+  themeOption: { gridTemplateColumns: 'auto minmax(0, 1fr) auto', gap: space['--ult-space-5'], minBlockSize: space['--ult-space-12'], paddingBlock: space['--ult-space-5'], paddingInline: space['--ult-space-6'] },
+  themeCopy: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-1'], minInlineSize: 0 },
+  themePopup: { inlineSize: 'min(24rem, var(--available-width))' },
+  themeName: { gridColumn: 'auto', fontSize: text['--ult-text-5'] },
+  themeIndicator: { gridColumn: 'auto' },
+  themeHint: { color: color['--ult-color-text-muted'], fontSize: text['--ult-text-4'], lineHeight: font['--ult-font-leading-normal'], margin: 0, padding: space['--ult-space-6'] },
   role: {
     flexShrink: 0,
     fontSize: text['--ult-text-3'],
     inlineSize: `calc(${space['--ult-space-12']} + ${space['--ult-space-8']})`,
   },
   slider: { flexGrow: 1, minInlineSize: 0 },
+  sliderControl: { width: `calc(100% - 2 * ${space['--ult-space-5']})`, marginInline: space['--ult-space-5'] },
 });
 
 export function CompleteThemePicker({ draft, commit }: { draft: ThemeDraft; commit: (edit: DraftEdit) => void }) {
@@ -138,20 +146,21 @@ export function CompleteThemePicker({ draft, commit }: { draft: ThemeDraft; comm
       </Select.Trigger>
       <Select.Portal container={container}>
         <Select.Positioner>
-          <Select.Popup>
+          <Select.Popup style={styles.themePopup}>
             <Select.List>
               {THEME_PRESETS.map((preset) => (
                 <Select.Item key={preset.id} value={preset.id} style={styles.themeOption}>
                   <PresetPreview id={preset.id} />
                   <span {...stylex.props(styles.themeCopy)}>
-                    <Select.ItemText>{preset.label}</Select.ItemText>
+                    <Select.ItemText style={styles.themeName}>{preset.label}</Select.ItemText>
                     <span {...stylex.props(styles.roleNote)}>{preset.description}</span>
                   </span>
-                  <Select.ItemIndicator />
+                  <Select.ItemIndicator style={styles.themeIndicator} />
                 </Select.Item>
               ))}
             </Select.List>
-            <p {...stylex.props(styles.roleNote)}>Choosing a theme replaces the whole draft. Undo restores your work.</p>
+            <Separator />
+            <p {...stylex.props(styles.themeHint)}>Applies a complete theme. Undo restores your draft.</p>
           </Select.Popup>
         </Select.Positioner>
       </Select.Portal>
@@ -283,10 +292,6 @@ const ROLE_NOTES: Record<ScaleName, string> = {
   ruin: 'Errors and destructive actions.',
 };
 
-function scaleTitle(scale: ScaleName): string {
-  return `${scale.charAt(0).toUpperCase()}${scale.slice(1)} / ${SCALE_ROLES[scale]}`;
-}
-
 function SeedSlider({
   label,
   max,
@@ -321,7 +326,7 @@ function SeedSlider({
         step={1}
         value={value}
       >
-        <Slider.Control>
+        <Slider.Control style={styles.sliderControl}>
           <Slider.Track>
             <Slider.Indicator />
             <Slider.Thumb aria-label={name} />
@@ -376,13 +381,13 @@ function ColorControls({
             style={styles.swatchItem}
             variant="outline"
           >
-            <SwatchChip value={scales[name].dark[8] ?? '#000000'} /><span>{SCALE_ROLES[name]}</span>
+            <SwatchChip style={styles.swatchChip} value={scales[name].dark[8] ?? '#000000'} /><span>{SCALE_ROLES[name]}</span>
           </Toggle>
         ))}
       </div>
       <div {...stylex.props(styles.detail)}>
         <div>
-          <p {...stylex.props(styles.roleTitle)}>{scaleTitle(scale)}</p>
+          <p {...stylex.props(styles.roleTitle)}>{role}</p>
           <p {...stylex.props(styles.roleNote)}>{ROLE_NOTES[scale]}</p>
         </div>
         <ColorField.Root
@@ -476,7 +481,7 @@ function TypographyControls({
       >
         <Slider.Label>Base size</Slider.Label>
         <Slider.Value />
-        <Slider.Control>
+        <Slider.Control style={styles.sliderControl}>
           <Slider.Track>
             <Slider.Indicator />
             <Slider.Thumb />

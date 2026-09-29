@@ -55,38 +55,37 @@ async function uploadDraft(screen: { container: HTMLElement }, draft: ThemeDraft
   if (confirm && saved.ok && incoming.ok && draftFingerprint(saved.draft) !== draftFingerprint(incoming.draft)) await userEvent.click(page.getByRole('button', { name: 'Replace draft', exact: true }));
 }
 
-test('installation gives one registry path and exact framework imports', async () => {
+test('installation uses highlighted code and exact framework imports', async () => {
   const screen = await mount();
   await userEvent.click(screen.getByRole('button', { name: 'Export theme', exact: true }));
   const dialog = screen.getByRole('dialog', { name: 'Export theme' });
   await expect.element(dialog.getByRole('button', { name: 'Download registry file', exact: true })).toBeVisible();
-  await expect.element(dialog.getByText("import '../ultima-theme.css';", { exact: false })).toBeVisible();
-  const code = dialog.getByText("import '../ultima-theme.css';", { exact: false }).element();
-  expect(code.getBoundingClientRect().height).toBeGreaterThan(30);
+  const imports = () => Array.from(dialog.element().querySelectorAll('pre')).find((code) => code.textContent?.includes('import '))!;
+  expect(imports().textContent).toContain("import '../ultima-theme.css';");
+  expect(imports().querySelectorAll('span').length).toBeGreaterThan(0);
+  expect(imports().getBoundingClientRect().height).toBeGreaterThan(60);
+  expect(getComputedStyle(imports()).fontSize).toBe('14px');
   await userEvent.click(dialog.getByRole('group', { name: 'Installation framework' }).getByRole('button', { name: 'Next src/app', exact: true }));
-  await expect.element(dialog.getByText("import '../../ultima-theme.css';", { exact: false })).toBeVisible();
+  expect(imports().textContent).toContain("import '../../ultima-theme.css';");
   await expect.element(dialog.getByText(/remove data-theme from html/i)).toBeVisible();
-  await expect.element(dialog.getByText(/npx ultima-design doctor/)).toBeVisible();
+  await userEvent.click(dialog.getByRole('button', { name: 'Check your application', exact: true }));
+  expect(dialog.element().textContent).toContain('npx ultima-design doctor');
+  expect(dialog.element().querySelectorAll('pre').length).toBe(3);
 });
 
-test('the export dialog lists four downloads, the install flow, font faces, and the fingerprint', async () => {
+test('export separates installation from files and font details', async () => {
   const screen = await mount();
-
   await userEvent.click(screen.getByRole('button', { name: /Export/ }));
   const dialog = screen.getByRole('dialog');
   await expect.element(dialog.getByRole('heading', { name: 'Export theme' })).toBeVisible();
-
-  for (const name of [
-    'ultima-theme.json',
-    'ultima-theme.css',
-    'ultima-theme.stylex.ts',
-  ]) {
-    await expect.element(dialog.getByRole('button', { name: new RegExp(name.replaceAll('.', '\\.')) })).toBeVisible();
-  }
-
-  await expect.element(dialog.getByText(/npx shadcn add \.\/ultima-theme\.registry\.json/)).toBeVisible();
+  expect(dialog.element().textContent).toContain('npx shadcn add ./ultima-theme.registry.json');
   await expect.element(dialog.getByText(/after the application.*StyleX output/i)).toBeVisible();
   await expect.element(dialog.getByText(/data-theme/)).toBeVisible();
+  expect(dialog.element().textContent).not.toContain('Declared font faces');
+  await userEvent.click(dialog.getByRole('tab', { name: 'Files & fonts', exact: true }));
+  for (const name of ['ultima-theme.json', 'ultima-theme.css', 'ultima-theme.stylex.ts']) {
+    await expect.element(dialog.getByRole('button', { name: new RegExp(name.replaceAll('.', '\\.')) })).toBeVisible();
+  }
   await expect.element(dialog.getByText(/reinstall/i)).toBeVisible();
   await expect.element(dialog.getByText(/editable source/i)).toBeVisible();
   await expect.element(dialog.getByText(/^Declared font faces:.*Figtree/)).toBeVisible();
@@ -133,6 +132,7 @@ test('each download produces a valid artifact', async () => {
   await userEvent.click(screen.getByRole('button', { name: /Export/ }));
   const dialog = screen.getByRole('dialog');
 
+  await userEvent.click(dialog.getByRole('tab', { name: 'Files & fonts', exact: true }));
   await userEvent.click(dialog.getByRole('button', { name: /ultima-theme\.json/ }));
   const draftText = await downloads.take('ultima-theme.json');
   const parsed = parseDraft(draftText);
@@ -149,6 +149,7 @@ test('each download produces a valid artifact', async () => {
   expect(stylex).toContain('createTheme');
   expect(stylex).toContain('ultimaTheme');
 
+  await userEvent.click(dialog.getByRole('tab', { name: 'Install', exact: true }));
   await userEvent.click(dialog.getByRole('button', { name: 'Download registry file', exact: true }));
   const registry = JSON.parse(await downloads.take('ultima-theme.registry.json')) as {
     type: string;
@@ -171,6 +172,7 @@ test('an invalid draft lists failing pairings and gates downloads on acknowledgm
   await expect.element(dialog.getByRole('heading', { name: /token-contrast pairings/i })).toBeVisible();
   await expect.element(dialog.getByText(/--ult-color-text on --ult-color-surface:/)).toBeVisible();
 
+  await userEvent.click(dialog.getByRole('tab', { name: 'Files & fonts', exact: true }));
   const download = dialog.getByRole('button', { name: /ultima-theme\.json/ });
   expect(download.element()).toBeDisabled();
 
@@ -395,13 +397,15 @@ test('cancelling an import keeps the existing undo history', async () => {
   expect(getComputedStyle(screen.getByRole('region', { name: 'Dark preview' }).element()).getPropertyValue('--ult-space-1').trim()).toBe('0.125rem');
 });
 
-test('export stays inside the stable Studio theme when the site is light', async () => {
+test('export follows the site light mode', async () => {
   localStorage.setItem('ultima-theme', 'light');
   const screen = await mount();
   await userEvent.click(screen.getByRole('button', { name: 'Export theme', exact: true }));
   const dialog = screen.getByRole('dialog', { name: 'Export theme' }).element();
   expect(dialog.closest('main')).not.toBeNull();
-  expect(getComputedStyle(dialog).colorScheme).toBe('dark');
+  expect(getComputedStyle(dialog).colorScheme).toBe('light');
+  expect(dialog.getBoundingClientRect().height).toBeLessThanOrEqual(window.innerHeight - 64);
+  expect(getComputedStyle(dialog.querySelector('p')!).fontSize).toBe('16px');
 });
 
 test('an upload matching the autosave loads without a warning', async () => {

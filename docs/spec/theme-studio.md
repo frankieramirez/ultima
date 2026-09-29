@@ -51,6 +51,8 @@ The user delegated planning choices with “you pick.” The first release targe
 
 The editor keeps a stable appearance around the themed preview. Dark is the starting mode, and light receives the same attention. The visual direction is a compact editor beside a large application preview, with component scenes and an optional dark/light comparison. The prototype must settle the layout and interactions.
 
+The complete-theme picker sits above one Shuffle row with a variation selector. Subtle keeps changes near the current settings; Broad explores the allowed ranges. The selector explains these choices when opened. Undo, Redo and the draft fingerprint share the quieter row beneath. Color roles use two columns with a swatch beside each label. Slider tracks leave room for endpoint thumbs and their focus rings inside the scrolling editor.
+
 Shuffle supports locks and undo under the resolved contract below. Export and installation must reproduce the preview, including the supported color modes and font requirements.
 
 Follow [Ultima's principles](ultima.md#principles): use production Ultima controls, StyleX and Base UI, stable semantic names, generated palettes, and contrast checks. Additional tokens or reusable controls must acquire their own contracts when the design identifies them.
@@ -103,9 +105,9 @@ A draft may sit invalid: a committed edit that fails the gate applies and is mar
 
 ### Theme studio layout and live preview
 
-The revised frames in `ultima.pen` and [design revision](../research/2026-09-29-theme-studio-design-revision.md) supersede the earlier single-scene default and docked specimen strip. Desktop has a stable dark editor rail beside an independently scrolling live collage. The collage shows account creation, projects, calendar, team settings, notifications, conversation, typography, interaction states, an empty state, commands, status messages and progress. It adapts from three columns to two and one as space permits. Focused Workspace, Typography, Controls, Surfaces, Overlays, States and Motion views remain available.
+The revised frames in `ultima.pen` and [design revision](../research/2026-09-29-theme-studio-design-revision.md) supersede the earlier single-scene default and docked specimen strip. Desktop has a stable editor rail that follows the site color mode beside an independently scrolling live collage. The collage shows account creation, projects, calendar, team settings, notifications, conversation, typography, interaction states, an empty state, commands, status messages and progress. Its column width accounts for the draft’s spacing and the seven-day calendar grid, reducing the column count as space permits. The calendar day grid shrinks within a narrow container while preserving all seven columns. Each top-level gallery tile reads `--ult-shadow-md`, so the Elevation control visibly changes the collage in both modes, from Flat to Pronounced. Focused Workspace, Typography, Controls, Surfaces, Overlays, States and Motion views remain available.
 
-Dark, Light and Compare apply one working draft. Compare shows the same compositions in both modes; each pane owns its theme variables and Base UI portal container. The surrounding editor stays stock dark. Token inspection remains opt-in and exposes the resolved variables of the focused or hovered example.
+Dark, Light and Compare apply one working draft. Compare shows the same compositions in both modes; each pane owns its theme variables and Base UI portal container. The surrounding editor uses the stock theme in the site’s current color mode, including System. The site’s existing color-mode control updates the rail, toolbar, footer and studio dialogs; preview mode remains independent. Token inspection remains opt-in. Hovering or focusing an inspectable example opens an Ultima Hover Card anchored to that example, inside its preview pane and color mode. Gallery inspect buttons also open it on tap. The card shows the resolved variables without consuming space beneath the preview, permits moving the pointer into its contents, and closes on Escape, leaving the pane, disabling inspection or changing scenes.
 
 Below 840 px, the gallery starts with a persistent Edit theme action. The modal drawer keeps the preset identity, group selector, checks and close control reachable around a scrolling editor. Escape and Close return focus to Edit theme. All six groups remain available, with guided controls expanded on demand and exact per-mode overrides beneath them.
 
@@ -113,7 +115,15 @@ The footer reports the current working draft's declared token checks. View draft
 
 Palette source inputs are separate from generated colors. Generate derives the hue/saturation ramp and keeps the source visible; a description and derived dark/light samples explain changed lightness. Set exact role colors opens the corresponding override row. Visible role names identify Neutral, Accent, Action, Success, Warning and Danger.
 
+### Studio font choices
+
+The sans selector includes Figtree, Geist, Inter, Roboto, Source Sans 3, IBM Plex Sans and Space Grotesk, alongside the existing system, serif and humanist stacks. The mono selector includes IBM Plex Mono, Geist Mono, Roboto Mono, JetBrains Mono and System. Custom stacks remain editable. Selecting a family writes the same stack to both draft modes and participates in undo and autosave.
+
+The docs site self-hosts the named faces. `apps/docs/src/styles.css` declares the additional Latin variable fonts; browsers fetch a face when a preview uses it. These files come from the [Google Fonts distribution](https://github.com/google/fonts): `ofl/geist`, `ofl/inter`, `ofl/roboto`, `ofl/sourcesans3`, `ofl/geistmono`, `ofl/robotomono` and `ofl/jetbrainsmono`. Each family’s OFL license ships beside its WOFF2 file in `apps/docs/public/fonts/`. Existing bundled faces retain their existing assets and licenses. Exports carry the chosen stacks; consumers supply the font files as described in the export dialog.
+
 ### Theme export, installation, and recovery
+
+The export dialog caps its height at 48rem and the viewport minus 4rem, with a fixed close control and scrolling body. Install is the default tab; Files & fonts holds individual artifacts, font-loading details and the fingerprint. Body copy uses the 16px stock text step. Shell commands and framework imports use the same highlighted, copyable code fences as the component documentation. Application checks expand on demand.
 
 Decided on [#210](https://github.com/frankieramirez/ultima/issues/210).
 
@@ -147,7 +157,7 @@ Color Field joins the catalogue as `color-field.tsx`, the one component this con
 
 The mode-linked token row stays studio-local. It answers no question outside the studio's per-mode override model, so it is neither a catalogue item nor a documented composition. It composes `ColorField` for color tokens and `Input` for the rest, with a `Toggle` link and a `Button` reset. A row is linked by default and shows one input writing both modes. Unlinking splits the shared value into a dark and a light input. Relinking writes the dark value to both modes, dark-first, and rides undo like every other committed edit. The row marks overridden state, and its reset clears both modes.
 
-The boundary has three tiers. A control a consumer could need outside the studio is a catalogue component; this contract adds only Color Field. An arrangement bound to studio semantics is a studio-local module composing catalogue controls and painting its own surfaces: the token row, the group header cluster, the shuffle bar, the validation panel, the inspector readout, and the preview-pane scaffold. The editor is an application surface rather than docs page layout, so the component line does not forbid its surfaces. Everything around the studio route remains page layout under the existing line. The editor's fixed appearance is Ultima's stock dark theme pinned on the editor subtree, so chrome reads `--ult-*` tokens and never the draft; the draft theme's reach ends at the preview-pane boundary, which is also the per-pane Base UI portal container.
+The boundary has three tiers. A control a consumer could need outside the studio is a catalogue component; this contract adds only Color Field. An arrangement bound to studio semantics is a studio-local module composing catalogue controls and painting its own surfaces: the token row, the group header cluster, the shuffle bar, the validation panel, the inspector readout, and the preview-pane scaffold. The editor is an application surface rather than docs page layout, so the component line does not forbid its surfaces. Everything around the studio route remains page layout under the existing line. The editor inherits Ultima's stock theme from the site, so chrome reads `--ult-*` tokens in the site's current mode and never the draft; the draft theme's reach ends at the preview-pane boundary, which is also the per-pane Base UI portal container.
 
 ## First-release acceptance criteria
 
@@ -160,7 +170,7 @@ Assembled on [#210](https://github.com/frankieramirez/ultima/issues/210) from th
 - The versioned draft document is the single source of truth. The export dialog produces `ultima-theme.json`, `ultima-theme.css`, `ultima-theme.stylex.ts`, and `ultima-theme.registry.json`, and `npx shadcn add ./ultima-theme.registry.json` installs the stylesheet and draft into a project root without requiring `components.json`.
 - For a corpus of reference drafts, every exported `--ult-*` declaration equals the preview boundary's computed value in that mode, in both the stylesheet and the compiled StyleX module, including shadow values and the fixed reduced-motion durations.
 - Autosave restores the draft across sessions, a corrupt autosave is quarantined with a notice, a malformed or unknown-version upload is refused with a named reason, and a fragment share link reopens its draft.
-- Every keyboard-reachable editor control is a catalogue component under the mappings in the support contract, Color Field ships from the v0.2 checklist, the mode-linked token row is a studio-local composition, and studio chrome pins the stock dark theme while the draft theme stays inside the preview-pane boundary.
+- Every keyboard-reachable editor control is a catalogue component under the mappings in the support contract, Color Field ships from the v0.2 checklist, the mode-linked token row is a studio-local composition, and studio chrome follows the stock site theme while the draft theme stays inside the preview-pane boundary.
 
 Research supports those decisions:
 

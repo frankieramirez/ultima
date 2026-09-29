@@ -1,15 +1,20 @@
 import * as stylex from '@stylexjs/stylex';
-import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 import {
   Alert, Avatar, Badge, Button, Calendar, Card, Checkbox, Command, Empty,
   Field, Input, Popover, Progress, Select, Separator, Spinner, Switch, Table, Textarea,
 } from '@ultima/ui';
 import { ArrowRightIcon, FilePlusIcon, PaperPlaneTiltIcon } from '@phosphor-icons/react';
-import { useState, type ReactNode, type RefObject } from 'react';
+import { useContext, useState, type ReactNode, type RefObject } from 'react';
+import { StudioInspectionContext } from './theme-studio-context';
 
 const styles = stylex.create({
-  gallery: { columnWidth: '18rem', columnGap: space['--ult-space-6'], minInlineSize: 0 },
-  tile: { breakInside: 'avoid-column', display: 'inline-flex', flexDirection: 'column', inlineSize: '100%', marginBlockEnd: space['--ult-space-6'], verticalAlign: 'top' },
+  gallery: {
+    columnWidth: `max(18rem, calc(7 * (${space['--ult-space-9']} + 2 * ${space['--ult-space-1']}) + 2 * ${space['--ult-space-5']} + 2 * ${space['--ult-space-6']} + 4 * ${border.hairline}))`,
+    columnGap: space['--ult-space-6'],
+    minInlineSize: 0,
+  },
+  tile: { boxShadow: shadow['--ult-shadow-md'], breakInside: 'avoid-column', display: 'inline-flex', flexDirection: 'column', inlineSize: '100%', marginBlockEnd: space['--ult-space-6'], verticalAlign: 'top' },
   stack: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-5'] },
   row: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'], minInlineSize: 0 },
   between: { justifyContent: 'space-between' },
@@ -28,14 +33,15 @@ const styles = stylex.create({
 function Example({ title, description, children, inspect = false, tokens }: {
   title: string; description?: string; children: ReactNode; inspect?: boolean; tokens?: string;
 }) {
+  const onInspect = useContext(StudioInspectionContext);
   return (
-    <Card.Root data-gallery-example={title} data-tokens={tokens ?? '--ult-color-surface-raised,--ult-color-border,--ult-radius-lg'} style={[styles.tile, styles.inspect]}>
+    <Card.Root data-gallery-example={title} data-tokens={tokens ?? '--ult-color-surface-raised,--ult-color-border,--ult-shadow-md,--ult-radius-lg'} style={[styles.tile, styles.inspect]}>
       <Card.Header>
         <Card.Title>{title}</Card.Title>
         {description ? <Card.Description>{description}</Card.Description> : null}
       </Card.Header>
       <Card.Body style={styles.stack}>{children}</Card.Body>
-      {inspect ? <Button aria-label={`Inspect ${title} tokens`} size="sm" variant="ghost" style={styles.inspectButton}>Inspect</Button> : null}
+      {inspect ? <Button aria-label={`Inspect ${title} tokens`} onClick={(event) => onInspect(event.currentTarget)} size="sm" variant="ghost" style={styles.inspectButton}>Inspect</Button> : null}
     </Card.Root>
   );
 }

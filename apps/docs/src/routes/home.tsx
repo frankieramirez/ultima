@@ -1,5 +1,5 @@
 import { docsStyles } from '../docs-style';
-import { ArrowUpRightIcon } from '@phosphor-icons/react';
+import { ArrowRightIcon, ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, display, font, space, text } from '@ultima/tokens/tokens.stylex';
@@ -134,6 +134,15 @@ export function Home() {
             nativeButton={false}
           >
             Explore the components <ArrowUpRightIcon aria-hidden />
+          </Button>
+          <Button
+            size="lg"
+            style={[docsStyles.square, styles.heroAction]}
+            variant="outline"
+            render={<Link to="/theme-studio" />}
+            nativeButton={false}
+          >
+            Open Theme Studio <ArrowRightIcon aria-hidden />
           </Button>
           <TextLink variant="muted" style={styles.guide} render={<Link to="/install" />}>
             Installation guide <ArrowUpRightIcon aria-hidden />

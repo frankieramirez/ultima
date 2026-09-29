@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "theme-studio.pane-boundaries",
   "title": "Compare panes own their overlays and theme, and one edit reaches both",
-  "intent": "In Compare, each pane's popover and dialog mount inside that pane and paint in its mode; a guided edit changes both panes at once while they keep their dark and light values, and the editor around them stays stock.",
+  "intent": "In Compare, each pane's popover and dialog mount inside that pane and paint in its mode; a guided edit changes both panes at once while they keep their dark and light values, and the editor around them follows the stock site theme in its current color mode.",
   "contract": "docs/spec/theme-studio.md#theme-studio-layout-and-live-preview",
   "aliases": [
     "compare",
@@ -18,7 +18,8 @@
   "sources": [
     "apps/docs/src/routes/theme-studio.tsx",
     "apps/docs/src/theme-studio-preview.tsx",
-    "apps/docs/src/theme-studio-store.ts"
+    "apps/docs/src/theme-studio-store.ts",
+    "apps/docs/src/theme-studio-gallery.tsx"
   ],
   "demos": [],
   "routes": [
@@ -52,8 +53,12 @@
   ],
   "steps": [
     {
-      "action": "In Preview color mode, press Compare, then choose the Overlays scene.",
+      "action": "In Preview color mode, press Compare with All examples selected.",
       "expect": "The Dark preview and Light preview regions sit side by side, each in its own color scheme and surface."
+    },
+    {
+      "action": "In All examples, enable Inspect tokens and focus each pane’s Inspect Create your workspace tokens button, then press Escape. Disable inspection and return to Overlays.",
+      "expect": "Each token hover card anchors to its example, stays inside the viewport, inherits its own pane’s mode, reports its resolved values and closes on Escape."
     },
     {
       "action": "In each pane, press Open overlay, then Escape; press Open dialog, then Escape.",

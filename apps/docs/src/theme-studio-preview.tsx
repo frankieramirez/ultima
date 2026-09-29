@@ -10,6 +10,7 @@ import {
   Code,
   Dialog,
   Field,
+  HoverCard,
   Input,
   Meter,
   Popover,
@@ -25,6 +26,8 @@ import {
 } from '@ultima/ui';
 import { StackIcon, UsersIcon } from '@phosphor-icons/react';
 import {
+  useLayoutEffect,
+  useContext,
   useRef,
   useState,
   type CSSProperties,
@@ -36,6 +39,7 @@ import {
 
 import { breakpoints } from './breakpoints.stylex';
 import { previewVars } from './theme-studio-draft';
+import { StudioInspectionContext } from './theme-studio-context';
 import { ThemeStudioGallery } from './theme-studio-gallery';
 import { SwatchChip } from './swatch';
 
@@ -55,6 +59,7 @@ type PreviewMode = 'dark' | 'light' | 'compare';
 type PaneMode = 'dark' | 'light';
 
 type TokenReadout = { name: string; value: string }[];
+type Inspection = { anchor: HTMLElement; tokens: TokenReadout };
 
 const CARD_TOKENS = [
   '--ult-color-surface-raised',
@@ -249,7 +254,7 @@ const styles = stylex.create({
   fill: { inlineSize: '100%' },
   row: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
   miniChip: { inlineSize: space['--ult-space-7'], blockSize: space['--ult-space-7'] },
-  mini: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-1'], inlineSize: space['--ult-space-11'], flexShrink: 0 },
+  mini: { display: 'flex', flexDirection: 'row', gap: space['--ult-space-1'], flexShrink: 0 },
   display: {
     fontSize: text['--ult-text-9'],
     fontWeight: font['--ult-font-weight-semibold'],
@@ -295,7 +300,6 @@ const styles = stylex.create({
   inspectBlock: { display: 'block' },
   inspectInline: { display: 'inline-flex' },
   readout: {
-    alignSelf: 'flex-start',
     color: color['--ult-color-text-muted'],
     display: 'flex',
     flexDirection: 'column',
@@ -305,6 +309,7 @@ const styles = stylex.create({
     gap: space['--ult-space-2'],
     minInlineSize: 0,
   },
+  inspector: { maxWidth: 'min(28rem, var(--available-width))', maxHeight: 'var(--available-height)', overflow: 'auto', overflowWrap: 'anywhere' },
   tokenRow: { display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
   tokenValue: { color: color['--ult-color-text'] },
   hover: { backgroundColor: color['--ult-color-accent-hover'] },
@@ -322,7 +327,6 @@ export function ThemeStudioPreview({
 }) {
   const [scene, setScene] = useState<Scene>('gallery');
   const [inspect, setInspect] = useState(false);
-  const [readout, setReadout] = useState<TokenReadout | null>(null);
   const panes = mode === 'compare' ? (['dark', 'light'] as const) : [mode];
 
   return (
@@ -335,10 +339,7 @@ export function ThemeStudioPreview({
         <div {...stylex.props(styles.tools)}>
           <Toggle
             aria-label="Inspect tokens"
-            onPressedChange={(pressed) => {
-              setInspect(pressed);
-              if (!pressed) setReadout(null);
-            }}
+            onPressedChange={setInspect}
             pressed={inspect}
             size="sm"
           >
@@ -384,18 +385,9 @@ export function ThemeStudioPreview({
             inspect={inspect}
             key={pane}
             mode={pane}
-            onReadout={setReadout}
             scene={scene}
             table={tables[pane]}
           />
-        ))}
-      </div>
-      <div aria-label="Token readout" aria-live="polite" role="status" {...stylex.props(styles.readout)}>
-        {readout?.map((token) => (
-          <div key={token.name} {...stylex.props(styles.tokenRow)}>
-            <span>{token.name}</span>
-            <span {...stylex.props(styles.tokenValue)}>{token.value}</span>
-          </div>
         ))}
       </div>
     </section>
@@ -405,39 +397,50 @@ export function ThemeStudioPreview({
 function PreviewPane({
   inspect,
   mode,
-  onReadout,
   scene,
   table,
 }: {
   inspect: boolean;
   mode: PaneMode;
-  onReadout: (tokens: TokenReadout | null) => void;
   scene: Scene;
   table: TokenTable;
 }) {
   const portal = useRef<HTMLDivElement>(null);
+  const [readout, setReadout] = useState<Inspection | null>(null);
   const scheme = mode === 'dark' ? colorScheme.dark : colorScheme.light;
   const pane = stylex.props(scheme, styles.pane);
 
+  useLayoutEffect(() => setReadout(null), [inspect, scene]);
+  useLayoutEffect(() => {
+    setReadout((current) => current && current.anchor.isConnected
+      ? { anchor: current.anchor, tokens: resolvedTokens(current.anchor) }
+      : null);
+  }, [table]);
+
+  function resolvedTokens(target: HTMLElement): TokenReadout {
+    const computed = getComputedStyle(target);
+    return (target.dataset.tokens?.split(',') ?? [])
+      .map((name) => name.trim())
+      .filter(Boolean)
+      .map((name) => ({ name, value: computed.getPropertyValue(name).trim() || '—' }));
+  }
+
   function readTokens(event: FocusEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) {
+    inspectTarget(event.target);
+  }
+
+  function inspectTarget(element: EventTarget | null) {
     if (!inspect) return;
-    const target = (event.target as HTMLElement | null)?.closest('[data-tokens]');
-    if (!(target instanceof HTMLElement) || !event.currentTarget.contains(target)) return;
-    const names =
-      target.dataset.tokens
-        ?.split(',')
-        .map((name) => name.trim())
-        .filter(Boolean) ?? [];
-    onReadout(
-      names.map((name) => ({ name, value: getComputedStyle(target).getPropertyValue(name).trim() || '—' })),
-    );
+    const target = element instanceof HTMLElement ? element.closest('[data-tokens]') : null;
+    if (!(target instanceof HTMLElement) || !portal.current?.contains(target)) return;
+    setReadout((current) => current?.anchor === target ? current : { anchor: target, tokens: resolvedTokens(target) });
   }
 
   function clearTokens(event: FocusEvent<HTMLDivElement>) {
     if (!inspect) return;
     const next = event.relatedTarget;
     if (next instanceof Node && event.currentTarget.contains(next)) return;
-    onReadout(null);
+    setReadout(null);
   }
 
   return (
@@ -447,7 +450,7 @@ function PreviewPane({
       onBlur={clearTokens}
       onFocus={readTokens}
       onMouseLeave={() => {
-        if (inspect) onReadout(null);
+        if (inspect) setReadout(null);
       }}
       onMouseOver={readTokens}
       ref={portal}
@@ -457,10 +460,28 @@ function PreviewPane({
       <div data-preview-canvas {...stylex.props(styles.canvas)}>
         <div data-preview-scene={scene} {...stylex.props(styles.sheet)}>
           <div {...stylex.props(scene === 'workspace' ? styles.app : styles.scene, scene !== 'gallery' && styles.centred)}>
-            <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />
+            <StudioInspectionContext value={inspectTarget}>
+              <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />
+            </StudioInspectionContext>
           </div>
         </div>
       </div>
+      <HoverCard.Root open={inspect && readout !== null} onOpenChange={(open) => { if (!open) setReadout(null); }}>
+        <HoverCard.Portal container={portal}>
+          <HoverCard.Positioner anchor={readout?.anchor} collisionBoundary={portal.current ?? undefined} side="bottom" align="start">
+            <HoverCard.Popup aria-label="Inspected tokens" tabIndex={0} style={styles.inspector}>
+              <div aria-label="Token readout" aria-live="polite" role="status" {...stylex.props(styles.readout)}>
+                {readout?.tokens.map((token) => (
+                  <div key={token.name} {...stylex.props(styles.tokenRow)}>
+                    <span>{token.name}</span>
+                    <span {...stylex.props(styles.tokenValue)}>{token.value}</span>
+                  </div>
+                ))}
+              </div>
+            </HoverCard.Popup>
+          </HoverCard.Positioner>
+        </HoverCard.Portal>
+      </HoverCard.Root>
     </div>
   );
 }
@@ -746,7 +767,7 @@ function OverlaysScene({
       <Dialog.Root>
         <Dialog.Trigger render={<Button />}>Open dialog</Dialog.Trigger>
         <Dialog.Portal container={container}>
-          <Dialog.Backdrop />
+          <Dialog.Backdrop forceRender />
           <Dialog.Viewport>
             <Dialog.Popup>
               <Dialog.Title>Seal the bargain?</Dialog.Title>
@@ -813,6 +834,7 @@ function Inspectable({
   inspect: boolean;
   tokens: readonly string[];
 }) {
+  const onInspect = useContext(StudioInspectionContext);
   return (
     <div
       data-tokens={tokens.join(',')}
@@ -820,7 +842,7 @@ function Inspectable({
     >
       {children}
       {inspect ? (
-        <Button aria-label={`Inspect ${tokens.join(', ')}`} style={styles.inspectTarget} variant="ghost" />
+        <Button aria-label={`Inspect ${tokens.join(', ')}`} onClick={(event) => onInspect(event.currentTarget)} style={styles.inspectTarget} variant="ghost" />
       ) : null}
     </div>
   );

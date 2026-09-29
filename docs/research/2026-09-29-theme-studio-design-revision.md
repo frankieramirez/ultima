@@ -69,7 +69,7 @@ Before rollout, implement and verify the revised flows against the accepted defa
 
 ## Implementation and proof
 
-The implementation replaces the default specimen strip with a responsive live collage while retaining focused preview tabs and token inspection. Desktop keeps the editor beside the gallery; mobile opens the editor in a modal drawer. Editor popups inherit the Studio's stable dark theme, and preview popups inherit their own dark or light pane.
+The implementation replaces the default specimen strip with a responsive live collage while retaining focused preview tabs and token inspection. Desktop keeps the editor beside the gallery; mobile opens the editor in a modal drawer. Editor popups inherit the stock site theme in its current color mode, and preview popups inherit their own dark or light pane.
 
 Complete presets use document version 2 and recipe 2, with immutable revision-1 origins. Fresh Studio sessions start with Neutral. Recipe 1 and legacy-v1 documents retain their existing resolved values and exact generated artifacts. The global consumer base palette has not changed.
 

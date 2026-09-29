@@ -50951,6 +50951,44 @@
                   ]
                 },
                 {
+                  "type": "frame",
+                  "id": "ISZzV",
+                  "name": "Open Theme Studio button",
+                  "context": "Secondary hero action. Opens /theme-studio.",
+                  "width": "fill_container",
+                  "fill": "#151515",
+                  "cornerRadius": "$ult-radius-md",
+                  "stroke": "#686868",
+                  "strokeWidth": 1,
+                  "padding": [
+                    17,
+                    20
+                  ],
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "b5MKb",
+                      "name": "Open Theme Studio label",
+                      "fill": "#F2F2EF",
+                      "content": "Open Theme Studio",
+                      "fontFamily": "$ult-font-sans",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "Q8Df5",
+                      "name": "Theme Studio arrow",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "fill": "#F2F2EF"
+                    }
+                  ]
+                },
+                {
                   "type": "text",
                   "id": "df9WV",
                   "name": "Install secondary link",
@@ -51553,6 +51591,7 @@
                   "type": "text",
                   "id": "t4tlTQ",
                   "name": "Theme studio link",
+                  "context": "Opens /theme-studio.",
                   "fill": "#F2F2EF",
                   "content": "Try the theme studio ↗",
                   "fontFamily": "$ult-font-sans",
@@ -103040,6 +103079,17 @@
                 },
                 {
                   "type": "text",
+                  "id": "upcmQ",
+                  "name": "Studio link",
+                  "context": "Opens /theme-studio. Default: muted. Current section, hover and keyboard focus: #F2F2EF; underline on hover and focus. Keep font weight and dimensions constant.",
+                  "fill": "#B7B7B7",
+                  "content": "Studio",
+                  "fontFamily": "$ult-font-sans",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
                   "id": "t1lO3",
                   "name": "Documentation link",
                   "context": "Default: muted. Current section: #F2F2EF. Hover and keyboard focus: underline and #F2F2EF. Keep font weight and dimensions constant.",
@@ -103174,6 +103224,17 @@
                   "context": "Default: muted. Current section: #F2F2EF. Hover and keyboard focus: underline and #F2F2EF. Keep font weight and dimensions constant.",
                   "fill": "#B7B7B7",
                   "content": "Tokens",
+                  "fontFamily": "$ult-font-sans",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "U8jDA",
+                  "name": "Studio link",
+                  "context": "Opens /theme-studio. Default: muted. Current section, hover and keyboard focus: #F2F2EF; underline on hover and focus. Keep font weight and dimensions constant.",
+                  "fill": "#B7B7B7",
+                  "content": "Studio",
                   "fontFamily": "$ult-font-sans",
                   "fontSize": 14,
                   "fontWeight": "normal"
