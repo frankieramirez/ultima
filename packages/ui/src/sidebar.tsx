@@ -163,11 +163,7 @@ const styles = stylex.create({
       ':is([data-active], [aria-current="page"])': color["--ult-color-text"],
       ":hover": color["--ult-color-text"],
     },
-    fontWeight: {
-      default: font["--ult-font-weight-regular"],
-      ':is([data-active], [aria-current="page"])':
-        font["--ult-font-weight-medium"],
-    },
+    fontWeight: font["--ult-font-weight-regular"],
   },
 });
 

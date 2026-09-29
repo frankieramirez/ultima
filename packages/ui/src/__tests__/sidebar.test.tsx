@@ -237,7 +237,7 @@ for (const mode of themes) {
     const restingStyle = getComputedStyle(resting);
     expect(parseFloat(restingStyle.borderInlineStartWidth)).toBe(0);
     expect(parseFloat(currentStyle.borderInlineStartWidth)).toBeGreaterThan(0);
-    expect(currentStyle.fontWeight).not.toBe(restingStyle.fontWeight);
+    expect(currentStyle.fontWeight).toBe(restingStyle.fontWeight);
     expect(currentStyle.backgroundColor).not.toBe(restingStyle.backgroundColor);
   });
 }

@@ -118,7 +118,7 @@ There is no `bold` weight in v0. Nothing in the v0 set uses one, and adding a we
 Two families, and Ultima never loads a face.
 
 ```
---ult-font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+--ult-font-sans: 'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
 --ult-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 ```
 

@@ -1,3 +1,4 @@
+import { docsStyles } from './docs-style';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Tabs } from '@ultima/ui';
@@ -28,7 +29,7 @@ export function InstallCommands() {
     <Tabs.Root defaultValue={INSTALL_TARGETS[0].value} style={styles.root}>
       <Tabs.List aria-label="Setup target">
         {INSTALL_TARGETS.map((target) => (
-          <Tabs.Tab key={target.value} value={target.value}>
+          <Tabs.Tab key={target.value} value={target.value} style={docsStyles.square}>
             {target.label}
           </Tabs.Tab>
         ))}

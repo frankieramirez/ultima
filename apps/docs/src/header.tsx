@@ -1,13 +1,15 @@
+import { docsStyles } from './docs-style';
 import { ArrowUpRightIcon, ListIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, NavigationMenu, Separator, Sidebar } from '@ultima/ui';
+import { Button, NavigationMenu, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
 import { breakpoints } from './breakpoints.stylex';
 import { ColorModeToggle } from './color-mode-toggle';
 import { layoutStyles } from './layout';
+import { SiteSearch } from './site-search';
 import { TextLink } from './text-link';
 
 const styles = stylex.create({
@@ -15,15 +17,16 @@ const styles = stylex.create({
     backgroundColor: color['--ult-color-surface'],
     insetBlockStart: 0,
     position: 'sticky',
-    zIndex: 1,
+    zIndex: 2,
   },
   bar: {
     alignItems: 'center',
     boxSizing: 'border-box',
     display: 'flex',
-    gap: space['--ult-space-10'],
+    gap: { default: space['--ult-space-4'], [breakpoints.WIDE]: space['--ult-space-7'] },
     inlineSize: '100%',
-    paddingBlock: space['--ult-space-8'],
+    blockSize: space['--ult-space-12'],
+    paddingBlock: space['--ult-space-4'],
   },
   brandLogo: { display: 'block', height: text['--ult-text-5'], width: 'auto' },
   cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
@@ -42,10 +45,9 @@ const styles = stylex.create({
 });
 
 const LINKS = [
-  { label: 'Install', to: '/install' },
   { label: 'Components', to: '/components' },
   { label: 'Tokens', to: '/tokens' },
-  { label: 'Studio', to: '/theme-studio' },
+  { label: 'Documentation', to: '/install' },
 ] as const;
 
 export function Header() {
@@ -53,12 +55,12 @@ export function Header() {
     <header {...stylex.props(styles.chrome)}>
       <div {...stylex.props(layoutStyles.gutter, styles.bar)}>
         <div {...stylex.props(styles.cluster)}>
+          <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={[docsStyles.square, styles.trigger]} />}>
+            <ListIcon aria-hidden />
+          </Sidebar.Trigger>
           <TextLink variant="muted" render={<Link to="/" aria-label="Ultima home" />}>
             <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
           </TextLink>
-          <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={styles.trigger} />}>
-            <ListIcon aria-hidden />
-          </Sidebar.Trigger>
         </div>
         <NavigationMenu.Root aria-label="Site" style={styles.links}>
           <NavigationMenu.List>
@@ -71,12 +73,12 @@ export function Header() {
             ))}
           </NavigationMenu.List>
         </NavigationMenu.Root>
+        <SiteSearch />
         <ColorModeToggle style={styles.mode} />
         <TextLink variant="muted" style={styles.github} href="https://github.com/frankieramirez/ultima">
           GitHub <ArrowUpRightIcon aria-hidden />
         </TextLink>
       </div>
-      <Separator />
     </header>
   );
 }

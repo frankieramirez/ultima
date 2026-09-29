@@ -1,3 +1,4 @@
+import { docsStyles } from './docs-style';
 import {
   ArrowCounterClockwiseIcon,
   LinkSimpleHorizontalBreakIcon,
@@ -111,7 +112,7 @@ function ValueInput({
       }}
       size="sm"
       spellCheck={false}
-    />
+    style={docsStyles.square} />
   );
 }
 
@@ -225,7 +226,7 @@ function TokenRow({
           disabled={!overridden}
           onClick={() => setDraft((current) => resetTokenOverride(current, token))}
           size="sm"
-          style={styles.icon}
+          style={[docsStyles.square, styles.icon]}
           variant="ghost"
         >
           <ArrowCounterClockwiseIcon aria-hidden />

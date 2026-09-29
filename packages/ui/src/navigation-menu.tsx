@@ -148,10 +148,7 @@ const styles = stylex.create({
     },
     display: 'block',
     fontSize: text['--ult-text-4'],
-    fontWeight: {
-      default: font['--ult-font-weight-regular'],
-      ':is([data-active], [aria-current="page"])': font['--ult-font-weight-medium'],
-    },
+    fontWeight: font["--ult-font-weight-regular"],
     lineHeight: font['--ult-font-leading-normal'],
     paddingBlock: space['--ult-space-2'],
     paddingInline: space['--ult-space-3'],

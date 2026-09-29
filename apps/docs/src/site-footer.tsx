@@ -43,7 +43,7 @@ export function SiteFooter({ wide = false }: { wide?: boolean }) {
       <div {...stylex.props(styles.cluster)}>
         <div {...stylex.props(styles.links)}>
           <TextLink variant="muted" render={<Link to="/install" />}>
-            Install <ArrowUpRightIcon aria-hidden />
+            Documentation <ArrowUpRightIcon aria-hidden />
           </TextLink>
           <TextLink variant="muted" href="https://github.com/frankieramirez/ultima">
             GitHub <ArrowUpRightIcon aria-hidden />

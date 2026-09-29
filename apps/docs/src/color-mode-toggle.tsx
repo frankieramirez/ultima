@@ -1,3 +1,4 @@
+import { docsStyles } from './docs-style';
 import type { StyleXStyles } from '@stylexjs/stylex';
 import { ToggleGroup } from '@ultima/ui';
 
@@ -28,7 +29,7 @@ export function ColorModeToggle({ style }: { style?: StyleXStyles }) {
       value={[preference]}
     >
       {OPTIONS.map((option) => (
-        <ToggleGroup.Item key={option.value} value={option.value}>
+        <ToggleGroup.Item key={option.value} value={option.value} style={docsStyles.square}>
           {option.label}
         </ToggleGroup.Item>
       ))}

@@ -98,15 +98,17 @@ test('Demo follows the ambient color mode and highlights the printed source', as
     { props: stylex.props(lightTheme, colorScheme.light), paper: 'rgb(247, 249, 255)' },
   ];
   for (const mode of modes) {
-    const { container } = await render(
+    const screen = await render(
       <div {...mode.props}>
         <Demo component={Example} source={source} />
       </div>,
     );
-    const figure = container.querySelector('figure')!;
+    await userEvent.click(screen.getByRole('tab', { name: 'Code', exact: true }));
+    const figure = screen.container.querySelector('figure')!;
     expect(figure.querySelector('pre')?.textContent).toBe(source);
     expect(getComputedStyle(figure).backgroundColor).toBe(mode.paper);
     expect(colorOf('function', figure)).not.toBe(colorOf('Example', figure));
+    await screen.unmount();
   }
 });
 

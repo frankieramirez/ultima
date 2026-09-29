@@ -15,7 +15,7 @@ import iconOnlySource from '../../demos/button/icon-only?raw';
 
 # Button
 
-A clickable control built on Base UI's Button, with three variants, three sizes, and two tones.
+Trigger an action with three variants, three sizes, and two tones. Built on Base UI.
 
 ## Install
 
@@ -25,25 +25,25 @@ npx shadcn add @ultima/button
 
 ## Variants
 
-`solid` is the role fill, `outline` a transparent fill with a border, `ghost` transparent with muted text.
+Choose the emphasis an action needs.
 
 <Demo component={Variants} source={variantsSource} />
 
 ## Sizes
 
-The three control heights every Ultima control shares.
+Small, medium, and large control sizes.
 
 <Demo component={Sizes} source={sizesSource} />
 
 ## Tones
 
-`tone` picks the color role. `danger` recolors all three variants to the ruin role and brings its own contrast color with it, so you never name a token.
+Use danger for destructive actions.
 
 <Demo component={Danger} source={dangerSource} />
 
 ## Disabled
 
-`disabled` reaches Base UI, which blocks activation and sets `data-disabled`. Ultima dims the root from that attribute.
+Unavailable actions remain visible.
 
 <Demo component={Disabled} source={disabledSource} />
 

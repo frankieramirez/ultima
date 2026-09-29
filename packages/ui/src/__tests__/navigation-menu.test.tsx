@@ -255,7 +255,7 @@ test('documented state drives the style on the trigger, the link, and the conten
   const current = page.getByTestId('tokens').element();
   expect(current.getAttribute('aria-current')).toBe('page');
   expect(current.getAttribute('data-active')).toBe('');
-  expect(getComputedStyle(current).fontWeight).not.toBe(getComputedStyle(plain).fontWeight);
+  expect(getComputedStyle(current).fontWeight).toBe(getComputedStyle(plain).fontWeight);
   expect(getComputedStyle(current).color).not.toBe(getComputedStyle(plain).color);
 
   const content = page.getByTestId('products-content').element();

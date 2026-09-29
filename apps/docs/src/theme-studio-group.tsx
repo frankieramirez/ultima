@@ -1,3 +1,4 @@
+import { docsStyles } from './docs-style';
 import { ArrowCounterClockwiseIcon, CaretDownIcon, LockSimpleIcon, ShuffleIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
@@ -69,7 +70,7 @@ export function ThemeStudioGroup({
             aria-label={`Shuffle ${label}`}
             onClick={onShuffle}
             size="sm"
-            style={styles.icon}
+            style={[docsStyles.square, styles.icon]}
             variant="ghost"
           >
             <ShuffleIcon aria-hidden />
@@ -88,14 +89,14 @@ export function ThemeStudioGroup({
             aria-label={`Reset ${label}`}
             onClick={onReset}
             size="sm"
-            style={styles.icon}
+            style={[docsStyles.square, styles.icon]}
             variant="ghost"
           >
             <ArrowCounterClockwiseIcon aria-hidden />
           </Button>
           <Collapsible.Trigger
             render={
-              <Button aria-label={`${label} token overrides`} size="sm" style={styles.icon} variant="ghost" />
+              <Button aria-label={`${label} token overrides`} size="sm" style={[docsStyles.square, styles.icon]} variant="ghost" />
             }
           >
             <CaretDownIcon aria-hidden />

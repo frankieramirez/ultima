@@ -70,7 +70,7 @@ test('the export dialog lists four downloads, the install flow, font faces, and 
   await expect.element(dialog.getByText(/data-theme/)).toBeVisible();
   await expect.element(dialog.getByText(/reinstall/i)).toBeVisible();
   await expect.element(dialog.getByText(/editable source/i)).toBeVisible();
-  await expect.element(dialog.getByText(/IBM Plex Sans/)).toBeVisible();
+  await expect.element(dialog.getByText(/Figtree/)).toBeVisible();
   await expect.element(dialog.getByText(/IBM Plex Mono/)).toBeVisible();
   await expect.element(dialog.getByText(/consumer/i)).toBeVisible();
   await expect.element(dialog.getByText(new RegExp(draftFingerprint(stockDraft())))).toBeVisible();

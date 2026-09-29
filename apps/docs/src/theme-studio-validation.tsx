@@ -1,3 +1,4 @@
+import { docsStyles } from './docs-style';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import type { PairingResult } from '@ultima/tokens';
@@ -89,7 +90,7 @@ export function ThemeStudioValidation({ results }: { results: PairingResult[] })
             {failing === 0 ? 'All pairings pass' : `${failing} pairing${failing === 1 ? '' : 's'} failing`}
           </span>
           <Collapsible.Trigger
-            render={<Button aria-label="Pairing results" size="sm" style={styles.icon} variant="ghost" />}
+            render={<Button aria-label="Pairing results" size="sm" style={[docsStyles.square, styles.icon]} variant="ghost" />}
           >
             <CaretDownIcon aria-hidden />
           </Collapsible.Trigger>

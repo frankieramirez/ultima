@@ -41,7 +41,7 @@ export const SCALE_ROLES = {
 } as const;
 
 export const SANS_PRESETS = [
-  { label: 'IBM Plex Sans', value: STOCK_SANS },
+  { label: 'Figtree', value: STOCK_SANS },
   {
     label: 'System',
     value: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif",

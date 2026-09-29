@@ -1,6 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router';
 
-import { RELEASES, componentsInRelease } from './components';
+import { components } from './components';
 
 export type NavLink = {
   label: string;
@@ -25,17 +25,12 @@ export const pages = [
   { label: 'Components', to: '/components' },
 ] satisfies NavLink[];
 
-/** Flat catalogue in release order: every set's rows in turn, derived from `release`. */
-export const componentPages: NavLink[] = RELEASES.flatMap((release) =>
-  componentsInRelease(release).map(({ name, item }) => ({
-    label: name,
-    to: '/components/$name',
-    params: { name: item },
-  })),
-);
+export const componentPages: NavLink[] = [...components].sort((a, b) => a.name.localeCompare(b.name)).map(({ name, item }) => ({
+  label: name, to: '/components/$name', params: { name: item },
+}));
 
 export const navigation = [
-  { label: 'Foundations', links: pages.filter(({ to }) => to !== '/components') },
+  { label: 'Foundations', links: pages.filter(({ to }) => to !== '/components').sort((a, b) => a.label.localeCompare(b.label)) },
   {
     label: 'Components',
     links: componentPages,

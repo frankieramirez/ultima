@@ -38,7 +38,7 @@ test(
     const history = createMemoryHistory({ initialEntries: ['/'] });
     const testRouter = createRouter({ routeTree, history });
     const view = await render(<RouterProvider router={testRouter} />);
-    await expect.poll(() => document.title).toBe('Good interfaces start with good parts — Ultima');
+    await expect.poll(() => document.title).toBe('React components. Built with StyleX. Yours to change. — Ultima');
 
     await testRouter.navigate({ to: '/rationale' });
     await expect.poll(() => document.title).toBe('Rationale — Ultima');

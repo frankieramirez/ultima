@@ -44,7 +44,7 @@ export type ThemeDraft = {
 export type ResolvedDraft = { dark: TokenTable; light: TokenTable };
 
 export const STOCK_SANS =
-  "'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif";
+  "'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif";
 export const STOCK_MONO = "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
 const SPACE_PX = [2, 4, 6, 8, 12, 16, 20, 24, 32, 40, 48, 64];

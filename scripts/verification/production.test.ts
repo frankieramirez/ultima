@@ -29,7 +29,7 @@ const ROOT = join(here, '../..');
 const scratch = mkdtempSync(join(tmpdir(), 'ultima-production-'));
 after(() => rmSync(scratch, { recursive: true, force: true }));
 
-const FONT = join(ROOT, 'apps/docs/public/fonts/IBMPlexSans-Regular.woff2');
+const FONT = join(ROOT, 'apps/docs/public/fonts/figtree-latin-wght-normal.woff2');
 
 /** A tiny production-shaped build: a shell with a main landmark, a self-hosted face, a stylesheet and a script. */
 function site(overrides: Record<string, string> = {}): string {
@@ -38,8 +38,8 @@ function site(overrides: Record<string, string> = {}): string {
     'index.html': `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Fixture</title>
 <link rel="stylesheet" href="/assets/app.css"><script type="module" src="/assets/app.js"></script></head>
 <body><div id="root"></div></body></html>`,
-    'assets/app.css': `@font-face { font-family: 'IBM Plex Sans'; src: url('/fonts/plex.woff2') format('woff2'); }
-body { font-family: 'IBM Plex Sans', sans-serif; background: #ffffff; color: #111111; }
+    'assets/app.css': `@font-face { font-family: 'Figtree'; src: url('/fonts/plex.woff2') format('woff2'); }
+body { font-family: 'Figtree', sans-serif; background: #ffffff; color: #111111; }
 .panel { background-color: rgb(20, 21, 22); color: #ffffff; padding: 8px; }`,
     'assets/app.js': `const root = document.getElementById('root');
 root.innerHTML = '<main><h1>Fixture</h1><p class="panel" id="panel">Painted</p><button type="button">Press</button></main>';`,
