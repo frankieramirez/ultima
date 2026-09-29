@@ -111,7 +111,7 @@ export function ComponentsPage() {
   const input = useRef<HTMLInputElement>(null);
   const term = query.trim().toLowerCase();
   const matches = components.filter((entry) =>
-    `${entry.name} ${summaries[entry.item] ?? entry.description} ${summaries[entry.item] ?? ''}`
+    `${entry.name} ${entry.description} ${summaries[entry.item] ?? ''}`
       .toLowerCase()
       .includes(term),
   );

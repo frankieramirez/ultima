@@ -6,7 +6,7 @@ Ultima gives developers React components they install as source. Its identity sh
 
 The primary identity is monochrome: ink `#171717` and paper `#FAFAF9`. Use the dark logo on dark backgrounds and the light logo on light backgrounds. A pure-white version is available for production contexts that require white artwork. Keep every character the same color, including the punctuation.
 
-The wordmark uses IBM Plex Mono SemiBold with squared punctuation. The exported lettering is outlined SVG, so it needs no installed font. Site prose and controls use Figtree; technical text uses IBM Plex Mono. Figtree retains its [OFL license](../apps/docs/public/fonts/Figtree-OFL.txt); IBM Plex retains its [OFL license](../apps/docs/public/fonts/OFL.txt). Existing exported brand artwork keeps its original lettering.
+The wordmark uses IBM Plex Mono SemiBold with squared punctuation. The exported lettering is outlined SVG, so it needs no installed font. Site prose and controls use Figtree; docs headings use Space Grotesk; technical text uses IBM Plex Mono. Figtree retains its [OFL license](../apps/docs/public/fonts/Figtree-OFL.txt); Space Grotesk retains its [OFL license](../apps/docs/public/fonts/SpaceGrotesk-OFL.txt); IBM Plex retains its [OFL license](../apps/docs/public/fonts/OFL.txt). Existing exported brand artwork keeps its original lettering.
 
 Blue remains available through the component palette. It is not required for brand recognition. Component states and theme previews keep their semantic colors; the brand does not redefine those tokens.
 

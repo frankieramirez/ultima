@@ -109,6 +109,18 @@ test('search finds an entry near the end of the complete catalogue', async () =>
   );
 });
 
+test('search includes full descriptions alongside the displayed summaries', async () => {
+  const screen = await mount();
+  const main = screen.getByRole('main');
+  const input = main.getByRole('searchbox', { name: 'Filter components' });
+  for (const query of ['  ToNeS  ', 'solid, outline, or ghost']) {
+    await userEvent.fill(input, query);
+    await expect
+      .element(main.getByRole('link', { name: /^Button Trigger / }))
+      .toBeVisible();
+  }
+});
+
 for (const mode of ['dark', 'light'])
   test(`directory search and empty state fit and remain accessible in ${mode} on mobile`, async () => {
     localStorage.setItem(THEME_STORAGE_KEY, mode);

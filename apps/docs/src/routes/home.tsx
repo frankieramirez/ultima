@@ -149,7 +149,7 @@ export function Home() {
 
       <section aria-labelledby="install-headline" {...stylex.props(layoutStyles.gutterWide, styles.workbench)}>
         <div {...stylex.props(styles.installIntro)}>
-          <Kicker tone="muted">03 / MAKE IT YOURS</Kicker>
+          <Kicker tone="muted">MAKE IT YOURS</Kicker>
           <h2 id="install-headline" {...stylex.props(styles.installHeadline)}>
             Start with one
             <br />
