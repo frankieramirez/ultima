@@ -72,3 +72,40 @@ Nine components also ship as custom elements for a host that cannot run React, i
 Install the `ultima-design` skill through skills.sh, the Ultima marketplace in Claude Code, or the consumer CLI. The [CLI page](/cli#other-skill-installers) lists the commands and explains which route also installs post-edit hooks. GitHub installation requires repository access until Ultima becomes public.
 
 The skill directs your agent to [`/llms.txt`](/llms.txt) before UI work and to CLI checks after edits. The hosted guide contains the principles, conventions, component imports and props, and token names. It is generated on every build; the skill carries workflow instructions and links to that guidance.
+
+## Theme adoption
+
+[Theme Studio](/theme-studio) generates a theme for an existing Ultima application. Download the registry file, then run:
+
+```sh
+npx shadcn add ./ultima-theme.registry.json
+```
+
+The registry installs `ultima-theme.css` and `ultima-theme.json` at the project root. Keep the JSON draft for later editing. Reinstalling replaces the generated files.
+
+Import the stylesheet after your application's StyleX output. For Vite, in `src/main.tsx`:
+
+```tsx
+import './index.css';
+import '../ultima-theme.css';
+```
+
+For Next.js, in `app/layout.tsx`:
+
+```tsx
+import './ultima.css';
+import '../ultima-theme.css';
+```
+
+For Next.js with `src/app/layout.tsx`:
+
+```tsx
+import './ultima.css';
+import '../../ultima-theme.css';
+```
+
+Set `data-theme="dark"` or `data-theme="light"` on `html` to select a mode. Remove the attribute to follow the system preference. The generated CSS sets `color-scheme` and respects reduced motion. It exports font stacks; load your preferred font faces yourself or use the fallbacks.
+
+The optional StyleX export contains all token groups. Apply both `ultimaTheme.dark` and `colorScheme.dark` to a dark scope, or their light equivalents to a light scope. Put the portal containers for Select, Dialog, Popover and other popups inside that scope. A popup attached to `document.body` inherits the document theme instead.
+
+Run `npx ultima-design doctor` and `npx ultima-design check`, then compare your production build with the Studio preview. Check the root, an Ultima control and an open popup in dark, light and system mode, including focus, disabled states and reduced motion. The commands cannot prove that the browser applied the stylesheet.

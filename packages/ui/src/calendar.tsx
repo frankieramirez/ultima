@@ -30,6 +30,8 @@ const styles = stylex.create({
     gap: space['--ult-space-4'],
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
+    maxInlineSize: '100%',
+    minInlineSize: 0,
     padding: space['--ult-space-5'],
   },
   label: {
@@ -106,6 +108,11 @@ const styles = stylex.create({
     paddingBlockEnd: space['--ult-space-3'],
     textAlign: 'center',
   },
+  dayTable: {
+    inlineSize: `calc(7 * (${space['--ult-space-9']} + 2 * ${space['--ult-space-1']}))`,
+    maxInlineSize: '100%',
+    tableLayout: 'fixed',
+  },
   tableCell: {
     margin: 0,
     padding: space['--ult-space-1'],
@@ -153,7 +160,7 @@ const styles = stylex.create({
       default: font['--ult-font-weight-regular'],
       ':is([data-today])': font['--ult-font-weight-semibold'],
     },
-    inlineSize: space['--ult-space-9'],
+    inlineSize: `min(${space['--ult-space-9']}, 100%)`,
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
@@ -378,7 +385,7 @@ function Table({ view = 'day', columns, style, children, ...props }: CalendarTab
         api.getTableProps({ view, columns, id: props.id }),
         { 'aria-labelledby': labelledBy },
         props,
-        stylex.props(styles.table, style),
+        stylex.props(styles.table, view === 'day' && styles.dayTable, style),
       )}
     >
       {children ?? (

@@ -1,5 +1,6 @@
 import {
   THEME_DRAFT_VERSION,
+  THEME_PRESETS,
   resolveDraft,
   stockDraft,
   type DensityFactor,
@@ -9,6 +10,7 @@ import {
   type ThemeDraft,
   type TokenTable,
   type TypeScale,
+  type ThemePresetOrigin,
 } from './draft.ts';
 import { RECIPE_VERSION, SCALE_NAMES, type ScaleSeed, type ScaleSeeds } from './recipe.ts';
 
@@ -41,6 +43,58 @@ function isOneOf<T>(value: unknown, allowed: readonly T[]): value is T {
   return (allowed as readonly unknown[]).includes(value);
 }
 
+function isFontStack(value: unknown): value is string {
+  if (typeof value !== 'string' || /[;{}<>\u0000-\u0008\u000b\u000e-\u001f\u007f-\u009f]|\/\*|\*\//.test(value)) return false;
+  let index = 0;
+  const isSpace = (character: string | undefined) => character !== undefined && /[ \t\r\n\f]/.test(character);
+  const skipSpace = () => { while (isSpace(value[index])) index++; };
+  const skipEscape = () => {
+    index++;
+    if (index === value.length) return false;
+    let digits = 0;
+    while (digits < 6 && /[0-9a-fA-F]/.test(value[index] ?? '')) { index++; digits++; }
+    if (digits === 0) {
+      if (/[\r\n\f]/.test(value[index]!)) return false;
+      index++;
+    } else if (isSpace(value[index])) {
+      if (value[index] === '\r' && value[index + 1] === '\n') index++;
+      index++;
+    }
+    return true;
+  };
+  skipSpace();
+  while (index < value.length) {
+    const quote = value[index];
+    let hasName = false;
+    if (quote === '"' || quote === "'") {
+      index++;
+      while (index < value.length && value[index] !== quote) {
+        if (value[index] === '\\') { if (!skipEscape()) return false; }
+        else { if (/[\r\n\f]/.test(value[index]!)) return false; index++; }
+        hasName = true;
+      }
+      if (value[index] !== quote) return false;
+      index++;
+      skipSpace();
+    } else {
+      while (index < value.length && value[index] !== ',') {
+        const character = value[index]!;
+        if (isSpace(character)) { index++; continue; }
+        if (character === '\\') { if (!skipEscape()) return false; }
+        else if (/[\w-]/.test(character) || character.charCodeAt(0) >= 0x80) index++;
+        else return false;
+        hasName = true;
+      }
+    }
+    if (!hasName) return false;
+    if (index === value.length) return true;
+    if (value[index] !== ',') return false;
+    index++;
+    skipSpace();
+  }
+  return false;
+}
+
 const OVERRIDE_TOKENS = new Set(Object.keys(resolveDraft(stockDraft()).dark).filter(
   (name) => !['--ult-color-surface-overlay', '--ult-radius-full', '--ult-filter-backdrop'].includes(name),
 ));
@@ -55,6 +109,9 @@ function parseTokenTable(value: unknown): Partial<TokenTable> | string {
   for (const [name, token] of Object.entries(value)) {
     if (!OVERRIDE_TOKENS.has(name)) return `Override ${name} is unknown, fixed, or derived and cannot be edited.`;
     if (typeof token !== 'string' || !token.trim()) return `Override ${name} must be a non-empty value.`;
+    if ((name === '--ult-font-sans' || name === '--ult-font-mono') && !isFontStack(token)) {
+      return `Override ${name} must be a comma-separated list of font family names.`;
+    }
     if (name.startsWith('--ult-color-')) {
       const hex = token.trim().toLowerCase();
       if (!/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/.test(hex)) {
@@ -92,7 +149,7 @@ function parseColor(value: unknown): ScaleSeeds | null {
 
 function parseTypography(value: unknown): ThemeDraft['typography'] | null {
   if (!isRecord(value)) return null;
-  if (typeof value.sans !== 'string' || typeof value.mono !== 'string') return null;
+  if (!isFontStack(value.sans) || !isFontStack(value.mono)) return null;
   if (!inRange(value.baseSizePx, 14, 18) || !isOneOf(value.scale, TYPE_SCALES)) return null;
   if (!isOneOf(value.leading, MEASURES) || !isOneOf(value.tracking, MEASURES)) return null;
   return {
@@ -148,12 +205,29 @@ export type FragmentEncodeResult = {
 async function pipeThrough(
   bytes: Uint8Array,
   stream: CompressionStream | DecompressionStream,
+  maxBytes = Infinity,
 ): Promise<Uint8Array> {
-  const pending = new Response(stream.readable).arrayBuffer();
-  const writer = stream.writable.getWriter();
-  await writer.write(new Uint8Array(bytes));
-  await writer.close();
-  return new Uint8Array(await pending);
+  const reader = new Blob([new Uint8Array(bytes)]).stream().pipeThrough(stream).getReader();
+  const chunks: Uint8Array[] = [];
+  let length = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      length += value.byteLength;
+      if (length > maxBytes) {
+        await reader.cancel();
+        throw new Error('Theme draft exceeds the decoded size limit.');
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const result = new Uint8Array(length);
+  let offset = 0;
+  for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.byteLength; }
+  return result;
 }
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -198,7 +272,7 @@ export async function encodeFragment(draft: ThemeDraft): Promise<FragmentEncodeR
   return { fragment, tooLong: fragment.length > FRAGMENT_SAFE_LENGTH };
 }
 
-export async function decodeFragment(hash: string): Promise<DraftParseResult> {
+export async function decodeFragment(hash: string, options: { maxBytes?: number } = {}): Promise<DraftParseResult> {
   if (!hash.startsWith(FRAGMENT_PREFIX)) {
     return fail('malformed', 'Theme fragment is missing the #theme= prefix.');
   }
@@ -206,7 +280,7 @@ export async function decodeFragment(hash: string): Promise<DraftParseResult> {
   if (!bytes) return fail('malformed', 'Theme fragment is not valid base64url.');
   try {
     const json = new TextDecoder().decode(
-      await pipeThrough(bytes, new DecompressionStream('deflate')),
+      await pipeThrough(bytes, new DecompressionStream('deflate'), options.maxBytes),
     );
     return parseDraft(json);
   } catch {
@@ -228,13 +302,24 @@ export function parseDraft(input: string): DraftParseResult {
 
   if (!isRecord(raw)) return fail('malformed', 'Draft must be an object.');
   if (!isFiniteNumber(raw.version)) return fail('malformed', 'Draft is missing a version.');
-  if (raw.version !== THEME_DRAFT_VERSION) {
+  if (raw.version !== 1 && raw.version !== THEME_DRAFT_VERSION) {
     return fail('unknown-version', `Draft version ${raw.version} is not supported.`);
   }
   if (!isFiniteNumber(raw.recipeVersion)) return fail('malformed', 'Draft is missing a recipe version.');
 
-  if (raw.recipeVersion !== RECIPE_VERSION) {
-    return fail('unknown-version', `Recipe version ${raw.recipeVersion} is not supported; use ${RECIPE_VERSION}.`);
+  if (raw.recipeVersion !== (raw.version === 1 ? RECIPE_VERSION : 2)) {
+    return fail('unknown-version', `Recipe version ${raw.recipeVersion} is not supported for draft version ${raw.version}.`);
+  }
+
+  let preset: ThemePresetOrigin | null = null;
+  if (raw.version === THEME_DRAFT_VERSION && raw.preset !== null) {
+    if (!isRecord(raw.preset)) return fail('malformed', 'Draft must declare a preset origin or null.');
+    const id = raw.preset.id;
+    const definition = THEME_PRESETS.find((item) => item.id === id);
+    if (!definition || raw.preset.revision !== 1) {
+      return fail('unknown-version', `Preset ${String(raw.preset.id)} revision ${String(raw.preset.revision)} is not supported.`);
+    }
+    preset = { id: definition.id, revision: 1 };
   }
 
   const color = parseColor(raw.color);
@@ -258,7 +343,7 @@ export function parseDraft(input: string): DraftParseResult {
   return {
     ok: true,
     draft: {
-      version: THEME_DRAFT_VERSION,
+      version: raw.version,
       recipeVersion: raw.recipeVersion,
       color,
       typography,
@@ -269,6 +354,7 @@ export function parseDraft(input: string): DraftParseResult {
       overrides,
       locks,
       shuffleSeeds,
+      ...(raw.version === THEME_DRAFT_VERSION ? { preset } : {}),
     },
   };
 }

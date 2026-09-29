@@ -1,6 +1,8 @@
+import { spawnSync } from 'node:child_process';
+
 import { expect, test } from 'vitest';
 
-import { resolveDraft, stockDraft } from '../theme/draft.ts';
+import { presetDraft, resolveDraft, stockDraft, THEME_PRESETS } from '../theme/draft.ts';
 import {
   decodeFragment,
   encodeFragment,
@@ -19,6 +21,94 @@ test('serializeDraft round-trips through parseDraft', () => {
   expect(parsed).toEqual({ ok: true, draft });
 });
 
+test('all shipped theme presets retain their exact font stacks on import', () => {
+  for (const { id } of THEME_PRESETS) {
+    const draft = presetDraft(id);
+    expect(parseDraft(serializeDraft(draft)), id).toEqual({ ok: true, draft });
+  }
+});
+
+test('imports preserve custom font names, Unicode, quoting, and CSS escapes', () => {
+  const stacks = [
+    'Geist, Roboto, ui-sans-serif, sans-serif',
+    'Noto Sans 日本語, sans-serif',
+    "'Example',\n sans-serif",
+    "'Example',\r sans-serif",
+    "'Example',\r\n sans-serif",
+    'Roboto\nserif, sans-serif',
+    'Roboto,\f sans-serif',
+    String.raw`'Example\20` + '\r\nFont\', sans-serif',
+    '"L\'Atelier, Display", serif',
+    String.raw`'L\'Atelier', serif`,
+    String.raw`"A \"Display\" Font", sans-serif`,
+    String.raw`"A \\ Font", sans-serif`,
+    String.raw`Noto\ Sans, \65 speranto, sans-serif`,
+    '"Font (Display)", sans-serif',
+  ];
+  for (const stack of stacks) {
+    const draft = stockDraft();
+    draft.typography.sans = stack;
+    draft.typography.mono = stack;
+    for (const mode of ['dark', 'light'] as const) {
+      draft.overrides[mode]['--ult-font-sans'] = stack;
+      draft.overrides[mode]['--ult-font-mono'] = stack;
+    }
+    expect(parseDraft(serializeDraft(draft)), stack).toEqual({ ok: true, draft });
+  }
+});
+
+test('imports reject malformed font stacks at every guided and override field', () => {
+  const stacks = [
+    '', ' ', 'Roboto,', ',Roboto', 'Roboto,,serif', '"Roboto', "Roboto'",
+    'Roboto; color: red', 'Roboto } body { color: red',
+    'Roboto /* comment */', 'Roboto */',
+    'url(https://example.com/font.woff2)', 'var(--other-font)', 'local(Roboto)',
+    '</style><script>alert(1)</script>',
+    '"Roboto"; background: url(https://example.com)',
+    '"Roboto\nserif"', '"Roboto\rserif"', '"Roboto\fserif"', 'Roboto\u0000',
+    String.raw`"Roboto\", serif`,
+  ];
+  for (const stack of stacks) {
+    for (const family of ['sans', 'mono'] as const) {
+      const draft = stockDraft();
+      draft.typography[family] = stack;
+      expect(parseDraft(serializeDraft(draft)), `${family}: ${stack}`).toMatchObject({ ok: false, reason: 'malformed' });
+    }
+    for (const mode of ['dark', 'light'] as const) {
+      for (const token of ['--ult-font-sans', '--ult-font-mono']) {
+        const draft = stockDraft();
+        draft.overrides[mode][token] = stack;
+        expect(parseDraft(serializeDraft(draft)), `${mode} ${token}: ${stack}`).toMatchObject({ ok: false, reason: 'malformed' });
+      }
+    }
+  }
+});
+
+test('long escaped font names with an invalid suffix are rejected within a bounded process', () => {
+  const codec = new URL('../theme/codec.ts', import.meta.url).href;
+  const draft = new URL('../theme/draft.ts', import.meta.url).href;
+  const result = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '-e', `
+    import assert from 'node:assert/strict';
+    import { parseDraft, serializeDraft } from ${JSON.stringify(codec)};
+    import { stockDraft } from ${JSON.stringify(draft)};
+    const unsafe = ${JSON.stringify(String.raw`\61 `)}.repeat(10_000) + '!';
+    for (const family of ['sans', 'mono']) {
+      const draft = stockDraft();
+      draft.typography[family] = unsafe;
+      assert.equal(parseDraft(serializeDraft(draft)).ok, false);
+    }
+    for (const mode of ['dark', 'light']) {
+      for (const token of ['--ult-font-sans', '--ult-font-mono']) {
+        const draft = stockDraft();
+        draft.overrides[mode][token] = unsafe;
+        assert.equal(parseDraft(serializeDraft(draft)).ok, false);
+      }
+    }
+  `], { encoding: 'utf8', timeout: 2_000 });
+  expect(result.error).toBeUndefined();
+  expect(result.status, result.stderr).toBe(0);
+});
+
 test('parseDraft refuses malformed documents with a named reason', () => {
   for (const input of ['', '{', 'null', '[]', '{"version":1}', serializeDraft(stockDraft()).slice(0, 20)]) {
     const parsed = parseDraft(input);
@@ -29,7 +119,7 @@ test('parseDraft refuses malformed documents with a named reason', () => {
 
 test('parseDraft refuses an unknown version without loading fields', () => {
   const payload = JSON.parse(serializeDraft(stockDraft())) as { version: number };
-  payload.version = 2;
+  payload.version = 999;
   const parsed = parseDraft(JSON.stringify(payload));
   expect(parsed).toEqual({
     ok: false,

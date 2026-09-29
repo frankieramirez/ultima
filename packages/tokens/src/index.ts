@@ -35,6 +35,11 @@ export {
   THEME_DRAFT_VERSION,
   STOCK_SANS,
   STOCK_MONO,
+  THEME_PRESETS,
+  presetDraft,
+  resetDraft,
+  presetLabel,
+  isPresetEdited,
 } from './theme/draft';
 export type {
   DensityFactor,
@@ -45,6 +50,8 @@ export type {
   ThemeDraft,
   TokenTable,
   TypeScale,
+  ThemePresetId,
+  ThemePresetOrigin,
 } from './theme/draft';
 export {
   decodeFragment,
@@ -56,6 +63,7 @@ export {
 } from './theme/codec';
 export type { DraftParseReason, DraftParseResult, FragmentEncodeResult } from './theme/codec';
 export { toCss, toRegistryItem, toStylex, STUDIO_VERSION } from './theme/export';
+export { createRegistryUrl, REGISTRY_URL_MAX_LENGTH, THEME_REGISTRY_PATH } from './theme/registry-url';
 export {
   AUTOSAVE_BACKUP_KEY,
   AUTOSAVE_KEY,

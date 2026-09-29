@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, type ResolvedDraft, type TokenTable } from '@ultima/tokens';
+import { colorScheme, presetDraft, resolveDraft, type ThemePresetId, type ResolvedDraft, type TokenTable } from '@ultima/tokens';
 import { border, color, font, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 import {
   Alert,
@@ -10,6 +10,7 @@ import {
   Code,
   Dialog,
   Field,
+  HoverCard,
   Input,
   Meter,
   Popover,
@@ -25,6 +26,8 @@ import {
 } from '@ultima/ui';
 import { StackIcon, UsersIcon } from '@phosphor-icons/react';
 import {
+  useLayoutEffect,
+  useContext,
   useRef,
   useState,
   type CSSProperties,
@@ -35,10 +38,13 @@ import {
 } from 'react';
 
 import { breakpoints } from './breakpoints.stylex';
-import { Kicker } from './page';
 import { previewVars } from './theme-studio-draft';
+import { StudioInspectionContext } from './theme-studio-context';
+import { ThemeStudioGallery } from './theme-studio-gallery';
+import { SwatchChip } from './swatch';
 
 const SCENES = [
+  { id: 'gallery', label: 'All examples' },
   { id: 'workspace', label: 'Workspace' },
   { id: 'typography', label: 'Typography' },
   { id: 'controls', label: 'Controls' },
@@ -53,6 +59,7 @@ type PreviewMode = 'dark' | 'light' | 'compare';
 type PaneMode = 'dark' | 'light';
 
 type TokenReadout = { name: string; value: string }[];
+type Inspection = { anchor: HTMLElement; tokens: TokenReadout };
 
 const CARD_TOKENS = [
   '--ult-color-surface-raised',
@@ -66,7 +73,8 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     flexGrow: 1,
-    flexShrink: { default: 0, [breakpoints.RAIL]: 1 },
+    flexShrink: 1,
+    flexBasis: 0,
     gap: space['--ult-space-6'],
     minBlockSize: 0,
     minInlineSize: 0,
@@ -102,13 +110,12 @@ const styles = stylex.create({
     minBlockSize: 0,
     minInlineSize: 0,
   },
-  // Below the rail each pane keeps a floor, so the sheet scrolls rather than collapsing the canvas.
   pane: {
     display: 'flex',
     flexBasis: 0,
     flexDirection: 'column',
     flexGrow: 1,
-    minBlockSize: { default: '16rem', [breakpoints.RAIL]: 0 },
+    minBlockSize: 0,
     minInlineSize: 0,
     position: 'relative',
   },
@@ -127,7 +134,7 @@ const styles = stylex.create({
     minBlockSize: 0,
     overflow: 'hidden',
   },
-  // The scene box owns the canvas height above the strip and is the only part that scrolls.
+
   sheet: {
     display: 'flex',
     flexDirection: 'column',
@@ -246,6 +253,8 @@ const styles = stylex.create({
   inviteIcon: { color: color['--ult-color-accent-text'], fontSize: text['--ult-text-9'] },
   fill: { inlineSize: '100%' },
   row: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
+  miniChip: { inlineSize: space['--ult-space-7'], blockSize: space['--ult-space-7'] },
+  mini: { display: 'flex', flexDirection: 'row', gap: space['--ult-space-1'], flexShrink: 0 },
   display: {
     fontSize: text['--ult-text-9'],
     fontWeight: font['--ult-font-weight-semibold'],
@@ -290,47 +299,7 @@ const styles = stylex.create({
   },
   inspectBlock: { display: 'block' },
   inspectInline: { display: 'inline-flex' },
-  specimen: {
-    backgroundColor: color['--ult-color-surface-raised'],
-    color: color['--ult-color-text'],
-    display: 'grid',
-    flexShrink: { default: 1, [breakpoints.RAIL]: 0 },
-    fontFamily: font['--ult-font-sans'],
-    minBlockSize: 0,
-    overflow: { default: 'auto', [breakpoints.RAIL]: 'hidden' },
-    gridTemplateColumns: {
-      default: 'minmax(0, 1fr)',
-      [breakpoints.RAIL]: 'minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)',
-    },
-  },
-  specimenGroup: {
-    borderInlineStartColor: color['--ult-color-border'],
-    borderInlineStartStyle: 'solid',
-    borderInlineStartWidth: { default: 0, [breakpoints.RAIL]: border.hairline },
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space['--ult-space-4'],
-    justifyContent: 'space-between',
-    minInlineSize: 0,
-    padding: space['--ult-space-7'],
-  },
-  specimenLead: { backgroundColor: color['--ult-color-surface'], borderInlineStartWidth: 0 },
-  typeMark: {
-    fontSize: text['--ult-text-8'],
-    fontWeight: font['--ult-font-weight-medium'],
-    letterSpacing: font['--ult-font-tracking-tight'],
-    lineHeight: font['--ult-font-leading-tight'],
-    margin: 0,
-  },
-  specimenNote: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-2'], margin: 0 },
-  tokenName: {
-    color: color['--ult-color-text'],
-    fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-3'],
-    margin: 0,
-  },
   readout: {
-    alignSelf: 'flex-start',
     color: color['--ult-color-text-muted'],
     display: 'flex',
     flexDirection: 'column',
@@ -340,6 +309,7 @@ const styles = stylex.create({
     gap: space['--ult-space-2'],
     minInlineSize: 0,
   },
+  inspector: { maxWidth: 'min(28rem, var(--available-width))', maxHeight: 'var(--available-height)', overflow: 'auto', overflowWrap: 'anywhere' },
   tokenRow: { display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
   tokenValue: { color: color['--ult-color-text'] },
   hover: { backgroundColor: color['--ult-color-accent-hover'] },
@@ -355,9 +325,8 @@ export function ThemeStudioPreview({
   onModeChange: (mode: PreviewMode) => void;
   tables: ResolvedDraft;
 }) {
-  const [scene, setScene] = useState<Scene>('workspace');
+  const [scene, setScene] = useState<Scene>('gallery');
   const [inspect, setInspect] = useState(false);
-  const [readout, setReadout] = useState<TokenReadout | null>(null);
   const panes = mode === 'compare' ? (['dark', 'light'] as const) : [mode];
 
   return (
@@ -370,10 +339,7 @@ export function ThemeStudioPreview({
         <div {...stylex.props(styles.tools)}>
           <Toggle
             aria-label="Inspect tokens"
-            onPressedChange={(pressed) => {
-              setInspect(pressed);
-              if (!pressed) setReadout(null);
-            }}
+            onPressedChange={setInspect}
             pressed={inspect}
             size="sm"
           >
@@ -419,18 +385,9 @@ export function ThemeStudioPreview({
             inspect={inspect}
             key={pane}
             mode={pane}
-            onReadout={setReadout}
             scene={scene}
             table={tables[pane]}
           />
-        ))}
-      </div>
-      <div aria-label="Token readout" aria-live="polite" role="status" {...stylex.props(styles.readout)}>
-        {readout?.map((token) => (
-          <div key={token.name} {...stylex.props(styles.tokenRow)}>
-            <span>{token.name}</span>
-            <span {...stylex.props(styles.tokenValue)}>{token.value}</span>
-          </div>
         ))}
       </div>
     </section>
@@ -440,39 +397,50 @@ export function ThemeStudioPreview({
 function PreviewPane({
   inspect,
   mode,
-  onReadout,
   scene,
   table,
 }: {
   inspect: boolean;
   mode: PaneMode;
-  onReadout: (tokens: TokenReadout | null) => void;
   scene: Scene;
   table: TokenTable;
 }) {
   const portal = useRef<HTMLDivElement>(null);
+  const [readout, setReadout] = useState<Inspection | null>(null);
   const scheme = mode === 'dark' ? colorScheme.dark : colorScheme.light;
   const pane = stylex.props(scheme, styles.pane);
 
+  useLayoutEffect(() => setReadout(null), [inspect, scene]);
+  useLayoutEffect(() => {
+    setReadout((current) => current && current.anchor.isConnected
+      ? { anchor: current.anchor, tokens: resolvedTokens(current.anchor) }
+      : null);
+  }, [table]);
+
+  function resolvedTokens(target: HTMLElement): TokenReadout {
+    const computed = getComputedStyle(target);
+    return (target.dataset.tokens?.split(',') ?? [])
+      .map((name) => name.trim())
+      .filter(Boolean)
+      .map((name) => ({ name, value: computed.getPropertyValue(name).trim() || '—' }));
+  }
+
   function readTokens(event: FocusEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) {
+    inspectTarget(event.target);
+  }
+
+  function inspectTarget(element: EventTarget | null) {
     if (!inspect) return;
-    const target = (event.target as HTMLElement | null)?.closest('[data-tokens]');
-    if (!(target instanceof HTMLElement) || !event.currentTarget.contains(target)) return;
-    const names =
-      target.dataset.tokens
-        ?.split(',')
-        .map((name) => name.trim())
-        .filter(Boolean) ?? [];
-    onReadout(
-      names.map((name) => ({ name, value: getComputedStyle(target).getPropertyValue(name).trim() || '—' })),
-    );
+    const target = element instanceof HTMLElement ? element.closest('[data-tokens]') : null;
+    if (!(target instanceof HTMLElement) || !portal.current?.contains(target)) return;
+    setReadout((current) => current?.anchor === target ? current : { anchor: target, tokens: resolvedTokens(target) });
   }
 
   function clearTokens(event: FocusEvent<HTMLDivElement>) {
     if (!inspect) return;
     const next = event.relatedTarget;
     if (next instanceof Node && event.currentTarget.contains(next)) return;
-    onReadout(null);
+    setReadout(null);
   }
 
   return (
@@ -482,7 +450,7 @@ function PreviewPane({
       onBlur={clearTokens}
       onFocus={readTokens}
       onMouseLeave={() => {
-        if (inspect) onReadout(null);
+        if (inspect) setReadout(null);
       }}
       onMouseOver={readTokens}
       ref={portal}
@@ -491,13 +459,29 @@ function PreviewPane({
     >
       <div data-preview-canvas {...stylex.props(styles.canvas)}>
         <div data-preview-scene={scene} {...stylex.props(styles.sheet)}>
-          <div {...stylex.props(scene === 'workspace' ? styles.app : styles.scene, styles.centred)}>
-            <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />
+          <div {...stylex.props(scene === 'workspace' ? styles.app : styles.scene, scene !== 'gallery' && styles.centred)}>
+            <StudioInspectionContext value={inspectTarget}>
+              <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />
+            </StudioInspectionContext>
           </div>
         </div>
-        <Separator />
-        <SpecimenStrip inspect={inspect} mode={mode} />
       </div>
+      <HoverCard.Root open={inspect && readout !== null} onOpenChange={(open) => { if (!open) setReadout(null); }}>
+        <HoverCard.Portal container={portal}>
+          <HoverCard.Positioner anchor={readout?.anchor} collisionBoundary={portal.current ?? undefined} side="bottom" align="start">
+            <HoverCard.Popup aria-label="Inspected tokens" tabIndex={0} style={styles.inspector}>
+              <div aria-label="Token readout" aria-live="polite" role="status" {...stylex.props(styles.readout)}>
+                {readout?.tokens.map((token) => (
+                  <div key={token.name} {...stylex.props(styles.tokenRow)}>
+                    <span>{token.name}</span>
+                    <span {...stylex.props(styles.tokenValue)}>{token.value}</span>
+                  </div>
+                ))}
+              </div>
+            </HoverCard.Popup>
+          </HoverCard.Positioner>
+        </HoverCard.Portal>
+      </HoverCard.Root>
     </div>
   );
 }
@@ -514,6 +498,8 @@ function SceneBody({
   scene: Scene;
 }) {
   switch (scene) {
+    case 'gallery':
+      return <ThemeStudioGallery container={container} inspect={inspect} mode={mode} />;
     case 'workspace':
       return <WorkspaceScene inspect={inspect} mode={mode} />;
     case 'typography':
@@ -529,6 +515,17 @@ function SceneBody({
     case 'motion':
       return <MotionScene inspect={inspect} />;
   }
+}
+
+export function PresetPreview({ id }: { id: ThemePresetId }) {
+  const table = resolveDraft(presetDraft(id)).dark;
+  return (
+    <span aria-hidden="true" {...stylex.props(styles.mini)}>
+      <SwatchChip style={styles.miniChip} value={table['--ult-color-text']!} />
+      <SwatchChip style={styles.miniChip} value={table['--ult-color-action']!} />
+      <SwatchChip style={styles.miniChip} value={table['--ult-color-accent']!} />
+    </span>
+  );
 }
 
 const PROJECTS = [
@@ -770,7 +767,7 @@ function OverlaysScene({
       <Dialog.Root>
         <Dialog.Trigger render={<Button />}>Open dialog</Dialog.Trigger>
         <Dialog.Portal container={container}>
-          <Dialog.Backdrop />
+          <Dialog.Backdrop forceRender />
           <Dialog.Viewport>
             <Dialog.Popup>
               <Dialog.Title>Seal the bargain?</Dialog.Title>
@@ -826,38 +823,6 @@ function MotionScene({ inspect }: { inspect: boolean }) {
   );
 }
 
-function SpecimenStrip({ inspect, mode }: { inspect: boolean; mode: PaneMode }) {
-  return (
-    <div data-preview-specimen {...stylex.props(styles.specimen)}>
-      <div {...stylex.props(styles.specimenGroup, styles.specimenLead)}>
-        <Kicker>01 / TYPE</Kicker>
-        <p {...stylex.props(styles.typeMark)}>Aa / Built to be yours.</p>
-        <p {...stylex.props(styles.specimenNote)}>Sans for reading, mono for the record.</p>
-      </div>
-      <div {...stylex.props(styles.specimenGroup)}>
-        <Kicker>02 / INTERACTION</Kicker>
-        <div {...stylex.props(styles.row)}>
-          <Button size="sm">Rest</Button>
-          <Button size="sm" style={styles.hover}>
-            Hover
-          </Button>
-          <Button size="sm" style={styles.active}>
-            Active
-          </Button>
-        </div>
-        <p {...stylex.props(styles.specimenNote)}>Accent / {mode === 'dark' ? 'Dark' : 'Light'} mode</p>
-      </div>
-      <div {...stylex.props(styles.specimenGroup)}>
-        <Kicker>03 / INSPECT</Kicker>
-        <Inspectable inspect={inspect} tokens={['--ult-color-accent']}>
-          <Code>--ult-color-accent</Code>
-        </Inspectable>
-        <p {...stylex.props(styles.specimenNote)}>Hover a part with inspect on to read its tokens.</p>
-      </div>
-    </div>
-  );
-}
-
 function Inspectable({
   children,
   inline = false,
@@ -869,6 +834,7 @@ function Inspectable({
   inspect: boolean;
   tokens: readonly string[];
 }) {
+  const onInspect = useContext(StudioInspectionContext);
   return (
     <div
       data-tokens={tokens.join(',')}
@@ -876,7 +842,7 @@ function Inspectable({
     >
       {children}
       {inspect ? (
-        <Button aria-label={`Inspect ${tokens.join(', ')}`} style={styles.inspectTarget} variant="ghost" />
+        <Button aria-label={`Inspect ${tokens.join(', ')}`} onClick={(event) => onInspect(event.currentTarget)} style={styles.inspectTarget} variant="ghost" />
       ) : null}
     </div>
   );

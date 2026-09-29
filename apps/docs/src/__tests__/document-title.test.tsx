@@ -38,13 +38,13 @@ test(
     const history = createMemoryHistory({ initialEntries: ['/'] });
     const testRouter = createRouter({ routeTree, history });
     const view = await render(<RouterProvider router={testRouter} />);
-    await expect.poll(() => document.title).toBe('React components. Built with StyleX. Yours to change. — Ultima');
+    await expect.poll(() => document.title).toBe('React components. Built with StyleX. Yours to change. - Ultima');
 
     await testRouter.navigate({ to: '/rationale' });
-    await expect.poll(() => document.title).toBe('Rationale — Ultima');
+    await expect.poll(() => document.title).toBe('Rationale - Ultima');
 
     await testRouter.navigate({ to: '/components/$name', params: { name: 'button' } });
-    await expect.poll(() => document.title).toBe('Button — Ultima');
+    await expect.poll(() => document.title).toBe('Button - Ultima');
 
     await testRouter.navigate({ to: '/components/$name', params: { name: siteDiscovery.notFound.component } });
     await expect.poll(() => document.title).toBe(siteDiscovery.notFound.title);

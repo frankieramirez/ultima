@@ -23,11 +23,11 @@ type TitleMatch = {
   staticData: { title?: string | ((params: Record<string, string>) => string) };
 };
 
-/** `X — Ultima` from the deepest match's `staticData.title`, or the not-found title when the router reports one. */
+/** `X - Ultima` from the deepest match's `staticData.title`, or the not-found title when the router reports one. */
 export function documentTitle(matches: readonly TitleMatch[]): string {
   const leaf = matches[matches.length - 1];
-  if (!leaf || leaf._notFound || leaf.status === 'notFound') return `${NOT_FOUND_TITLE} — Ultima`;
+  if (!leaf || leaf._notFound || leaf.status === 'notFound') return `${NOT_FOUND_TITLE} - Ultima`;
   const option = leaf.staticData.title;
   const title = typeof option === 'function' ? option(leaf.params) : option;
-  return title ? `${title} — Ultima` : 'Ultima';
+  return title ? `${title} - Ultima` : 'Ultima';
 }

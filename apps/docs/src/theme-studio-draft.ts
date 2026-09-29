@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import {
   STOCK_MONO,
   STOCK_SANS,
-  stockDraft,
+  resetDraft,
   type ColorMode,
   type GuidedGroup,
   type ThemeDraft,
@@ -42,6 +42,12 @@ export const SCALE_ROLES = {
 
 export const SANS_PRESETS = [
   { label: 'Figtree', value: STOCK_SANS },
+  { label: 'Geist', value: "'Geist', ui-sans-serif, system-ui, sans-serif" },
+  { label: 'Inter', value: "'Inter', ui-sans-serif, system-ui, sans-serif" },
+  { label: 'Roboto', value: "'Roboto', ui-sans-serif, system-ui, sans-serif" },
+  { label: 'Source Sans 3', value: "'Source Sans 3', ui-sans-serif, system-ui, sans-serif" },
+  { label: 'IBM Plex Sans', value: "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif" },
+  { label: 'Space Grotesk', value: "'Space Grotesk', ui-sans-serif, system-ui, sans-serif" },
   {
     label: 'System',
     value: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif",
@@ -52,6 +58,9 @@ export const SANS_PRESETS = [
 
 export const MONO_PRESETS = [
   { label: 'IBM Plex Mono', value: STOCK_MONO },
+  { label: 'Geist Mono', value: "'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" },
+  { label: 'Roboto Mono', value: "'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" },
+  { label: 'JetBrains Mono', value: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" },
   { label: 'System', value: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace' },
 ] as const;
 
@@ -73,7 +82,7 @@ export function presetValue(stack: string, presets: readonly { label: string; va
 }
 
 export function resetGroup(draft: ThemeDraft, group: GuidedGroup): ThemeDraft {
-  const stock = stockDraft();
+  const stock = resetDraft(draft);
   const next: ThemeDraft = {
     ...draft,
     color: { ...draft.color },

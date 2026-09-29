@@ -1,4 +1,5 @@
 import { docsStyles } from './docs-style';
+import { breakpoints } from './breakpoints.stylex';
 import { CaretDownIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import type { PairingResult } from '@ultima/tokens';
@@ -6,6 +7,7 @@ import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Collapsible } from '@ultima/ui';
 
 const styles = stylex.create({
+  touch: { minBlockSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null } },
   root: {
     display: 'flex',
     flexDirection: 'column',
@@ -78,30 +80,34 @@ function shortName(token: string): string {
   return token.replace(/^--ult-color-/, '');
 }
 
-export function ThemeStudioValidation({ results }: { results: PairingResult[] }) {
+export function ThemeStudioValidation({ results, expanded = false, onEdit }: {
+  results: PairingResult[]; expanded?: boolean; onEdit?: (token: string) => void;
+}) {
   const failing = results.filter((result) => !result.dark.pass || !result.light.pass).length;
+  const ordered = [...results].sort((a, b) => Number(!b.dark.pass || !b.light.pass) - Number(!a.dark.pass || !a.light.pass));
 
   return (
-    <Collapsible.Root>
+    <Collapsible.Root open={expanded ? true : undefined}>
       <section aria-label="Token contrast" {...stylex.props(styles.root)}>
         <header {...stylex.props(styles.header)}>
           <h2 {...stylex.props(styles.title)}>Token contrast</h2>
           <span {...stylex.props(styles.summary, failing > 0 && styles.summaryFailing)}>
             {failing === 0 ? 'All pairings pass' : `${failing} pairing${failing === 1 ? '' : 's'} failing`}
           </span>
-          <Collapsible.Trigger
+          {!expanded ? <Collapsible.Trigger
             render={<Button aria-label="Pairing results" size="sm" style={[docsStyles.square, styles.icon]} variant="ghost" />}
           >
             <CaretDownIcon aria-hidden />
-          </Collapsible.Trigger>
+          </Collapsible.Trigger> : null}
         </header>
         <Collapsible.Panel>
           <ul {...stylex.props(styles.list)}>
-            {results.map((result) => (
+            {ordered.map((result) => (
               <li key={`${result.foreground}|${result.background}`} {...stylex.props(styles.pair)}>
                 <span {...stylex.props(styles.pairName)}>
                   {shortName(result.foreground)} on {shortName(result.background)} · min {result.minimum}:1
                 </span>
+                {onEdit && (!result.dark.pass || !result.light.pass) ? <Button size="sm" variant="outline" style={styles.touch} onClick={() => onEdit(result.foreground)}>Edit {shortName(result.foreground)}</Button> : null}
                 <span {...stylex.props(styles.pairModes)}>
                   {(['dark', 'light'] as const).map((mode) => (
                     <span

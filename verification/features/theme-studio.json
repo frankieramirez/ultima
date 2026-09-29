@@ -4,7 +4,12 @@
   "title": "Theme studio",
   "summary": "The /theme-studio workbench: guided controls, overrides and locks on one draft, with history, autosave, preview and export.",
   "knowledge": "proposed",
-  "aliases": ["studio", "theme editor", "theme draft", "palette editor"],
+  "aliases": [
+    "studio",
+    "theme editor",
+    "theme draft",
+    "palette editor"
+  ],
   "contract": "docs/spec/theme-studio.md#contracts",
   "items": [],
   "sourceRoots": [
@@ -13,14 +18,24 @@
     "apps/docs/src/theme-studio-draft.ts",
     "apps/docs/src/theme-studio-editor.tsx",
     "apps/docs/src/theme-studio-group.tsx",
+    "apps/docs/src/theme-studio-gallery.tsx",
+    "apps/docs/src/theme-studio-context.ts",
     "apps/docs/src/theme-studio-preview.tsx",
     "apps/docs/src/theme-studio-shuffle.tsx",
     "apps/docs/src/theme-studio-store.ts",
     "apps/docs/src/theme-studio-token-row.tsx",
     "apps/docs/src/theme-studio-validation.tsx",
-    "packages/tokens/src/theme"
+    "packages/tokens/src/theme",
+    "apps/docs/server",
+    "apps/docs/scripts/build-worker.ts",
+    "apps/docs/scripts/theme-registry-plugin.ts"
   ],
-  "extraDependencies": [],
+  "extraDependencies": [
+    {
+      "path": "scripts/verification/theme-registry.test.ts",
+      "reason": "Stateless registry generation, asset forwarding, malformed URLs and bounded decoding."
+    }
+  ],
   "supporting": [
     {
       "path": "apps/docs/src/__tests__/theme-studio.test.tsx",
@@ -28,7 +43,7 @@
     },
     {
       "path": "apps/docs/src/__tests__/theme-studio-export.test.tsx",
-      "reason": "The four downloads, share links and autosave recovery."
+      "reason": "URL installation, registry and individual downloads, share links and autosave recovery."
     },
     {
       "path": "apps/docs/src/__tests__/theme-studio-parity.test.tsx",

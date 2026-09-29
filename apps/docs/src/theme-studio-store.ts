@@ -7,7 +7,7 @@ import {
   redo as redoHistory,
   SHUFFLE_ATTEMPT_LIMIT,
   shuffleDraft,
-  stockDraft,
+  presetDraft,
   undo as undoHistory,
   type DraftHistory,
   type ShuffleExhaustion,
@@ -27,7 +27,7 @@ export type DraftEdit = (draft: ThemeDraft) => ThemeDraft;
 export function useStudioDraft() {
   const [{ draft, history }, setState] = useState<{ draft: ThemeDraft; history: DraftHistory }>(
     () => {
-      const initial = stockDraft();
+      const initial = presetDraft('neutral');
       return { draft: initial, history: createHistory(initial) };
     },
   );
@@ -93,6 +93,7 @@ export function useStudioDraft() {
 
   return {
     draft,
+    committedDraft: history.committed,
     update,
     replace,
     commit,

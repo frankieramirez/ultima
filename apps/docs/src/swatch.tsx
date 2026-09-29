@@ -37,8 +37,8 @@ const square = stylex.create({
   chip: { display: 'block', height: space['--ult-space-9'], width: space['--ult-space-9'] },
 });
 
-export function SwatchChip({ value }: { value: string }) {
-  return <span aria-hidden {...stylex.props(styles.chip, square.chip, fill.chip(value))} />;
+export function SwatchChip({ value, style }: { value: string; style?: stylex.StyleXStyles }) {
+  return <span aria-hidden {...stylex.props(styles.chip, square.chip, fill.chip(value), style)} />;
 }
 
 /**

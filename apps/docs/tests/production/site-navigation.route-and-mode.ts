@@ -29,6 +29,17 @@ async function current(page: Page, scope: 'Site' | 'Ultima', name: string) {
   const nav = page.getByRole('navigation', { name: scope });
   assert.equal(await nav.getByRole('link', { name, exact: true }).getAttribute('aria-current'), 'page', `${name} is the current page in the ${scope} navigation`);
   assert.equal(await nav.locator('a[aria-current="page"]').count(), 1, `the ${scope} navigation marks one current page`);
+  if (scope === 'Site') {
+    const active = await nav.getByRole('link', { name, exact: true }).evaluate((link) => {
+      const style = getComputedStyle(link);
+      return { color: style.color, weight: style.fontWeight, decoration: style.textDecorationLine, thickness: style.textDecorationThickness };
+    });
+    assert.equal(active.weight, '600');
+    assert.equal(active.decoration, 'underline');
+    assert.equal(active.thickness, '2px');
+    const mode = await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme) as 'dark' | 'light';
+    await assertColor(page, active.color, await shippedColor(page, '--ult-color-accent-text', mode), 'the active header link');
+  }
 }
 
 async function painted(page: Page, mode: 'dark' | 'light', what: string) {

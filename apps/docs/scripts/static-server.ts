@@ -3,17 +3,20 @@
  * browser verification in docs/spec/agent-infrastructure.md. It binds loopback port 0, serves only files
  * inside the build root with their MIME type, falls back to `index.html` for an HTML navigation to a
  * client-side route, and answers 404 for a missing asset, so a missing script can never load the app
- * shell as a successful response. A request that decodes outside the root is refused.
+ * shell as a successful response. A request that decodes outside the root is refused. The theme
+ * registry route executes the built Cloudflare worker when that artifact is present.
  *
  * `IDENTITY_PATH` answers with the run's nonce and the build manifest's digest. It lives outside the
  * published build, and the runner checks both before any scenario starts, so an earlier run's server or
  * a foreign one cannot stand in for this build.
  */
-import { createReadStream, realpathSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, realpathSync, statSync } from 'node:fs';
 import { type Server, createServer } from 'node:http';
 import { extname, isAbsolute, join, relative, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { IDENTITY_PATH } from '../../../scripts/verification/ports.ts';
+import { THEME_REGISTRY_PATH } from '../../../packages/tokens/src/theme/registry-url.ts';
 
 export { IDENTITY_PATH };
 
@@ -87,10 +90,12 @@ export function isNavigation(method: string, pathname: string, accept: string | 
   return (accept ?? '').includes('text/html');
 }
 
-export function startStaticServer(options: StaticServerOptions): Promise<StaticServer> {
+export async function startStaticServer(options: StaticServerOptions): Promise<StaticServer> {
   const root = realpathSync(options.root);
+  const workerFile = join(root, '_worker.js');
+  const worker = existsSync(workerFile) ? (await import(pathToFileURL(workerFile).href)).default : null;
   const requests: ServedRequest[] = [];
-  const server: Server = createServer((request, response) => {
+  const server: Server = createServer(async (request, response) => {
     const method = request.method ?? 'GET';
     let pathname: string;
     try {
@@ -111,6 +116,17 @@ export function startStaticServer(options: StaticServerOptions): Promise<StaticS
     };
     if (pathname === IDENTITY_PATH) {
       answer(200, null, JSON.stringify({ nonce: options.nonce, manifest: options.manifestDigest }), MIME['.json']);
+      return;
+    }
+    if (pathname === THEME_REGISTRY_PATH && worker) {
+      try {
+        const result: Response = await worker.fetch(new Request(new URL(request.url ?? '/', `http://${request.headers.host ?? '127.0.0.1'}`), { method }));
+        requests.push({ method, path: pathname, status: result.status, file: null });
+        response.writeHead(result.status, Object.fromEntries(result.headers));
+        response.end(await result.text());
+      } catch {
+        answer(500, null, JSON.stringify({ error: 'The theme could not be generated.' }), MIME['.json']);
+      }
       return;
     }
     if (method !== 'GET' && method !== 'HEAD') {

@@ -15,6 +15,7 @@ test('the landing renders the workshop hero, specimen, and workbench sections', 
 
   await expect.element(screen.getByRole('heading', { level: 1, name: /Yours to change/i })).toBeVisible();
   await expect.element(screen.getByRole('button', { name: 'Explore the components' })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: 'Open Theme Studio' })).toHaveAttribute('href', '/theme-studio');
   await expect.element(screen.getByRole('heading', { name: 'Meet the components.' })).toBeVisible();
   await expect.element(screen.getByRole('region', { name: 'Component specimen' })).toBeVisible();
   // The workbench sits below the fold of the shell's scroll panel, so it is present but not visible.

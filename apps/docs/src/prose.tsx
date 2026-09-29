@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Code as UltimaCode, ScrollArea, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import {
@@ -49,6 +49,12 @@ const styles = stylex.create({
     paddingBlock: space['--ult-space-7'],
     paddingInlineEnd: space['--ult-space-12'],
     paddingInlineStart: space['--ult-space-7'],
+  },
+  scrollingCode: {
+    overflowX: 'auto',
+    overflowWrap: 'normal',
+    whiteSpace: 'pre',
+    ':focus-visible': { outline: `${border.focus} solid ${color['--ult-color-border-focus']}`, outlineOffset: border.focusOffset },
   },
   inlineCode: { overflowWrap: 'anywhere' },
   inlineCodeInScrollableTable: { overflowWrap: 'normal', whiteSpace: 'nowrap' },
@@ -107,10 +113,10 @@ function Code({ children }: ComponentProps<'code'>) {
   );
 }
 /** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
-export function Fence({ code, lang }: { code: string; lang?: string }) {
+export function Fence({ code, lang, wrap = true }: { code: string; lang?: string; wrap?: boolean }) {
   return (
     <div {...stylex.props(styles.fence)}>
-      <HighlightedCode code={code} lang={lang} style={styles.code} />
+      <HighlightedCode code={code} lang={lang} style={[styles.code, !wrap && styles.scrollingCode]} tabIndex={wrap ? undefined : 0} />
       <CopyButton text={code} floating />
     </div>
   );

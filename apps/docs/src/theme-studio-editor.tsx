@@ -1,7 +1,13 @@
 import { docsStyles } from './docs-style';
+import { StudioPortalContext } from './theme-studio-context';
 import * as stylex from '@stylexjs/stylex';
 import {
   generateScales,
+  isPresetEdited,
+  presetDraft,
+  presetLabel,
+  THEME_PRESETS,
+  type ThemePresetId,
   seedFromSrgb,
   type DensityFactor,
   type MeasurePreset,
@@ -14,6 +20,7 @@ import {
 } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import {
+  Button,
   ColorField,
   Field,
   Input,
@@ -24,7 +31,7 @@ import {
   Toggle,
   ToggleGroup,
 } from '@ultima/ui';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 
 import { breakpoints } from './breakpoints.stylex';
 import {
@@ -43,8 +50,10 @@ import { ThemeStudioGroup } from './theme-studio-group';
 import type { DraftEdit } from './theme-studio-store';
 import { TokenRows, type ModeOffenders } from './theme-studio-token-row';
 import { ThemeStudioValidation } from './theme-studio-validation';
+import { PresetPreview } from './theme-studio-preview';
 
 const styles = stylex.create({
+  touch: { minBlockSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null }, minInlineSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null } },
   selector: {
     display: { default: 'flex', [breakpoints.RAIL]: 'none' },
     flexDirection: 'row',
@@ -59,13 +68,20 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-8'],
+    paddingBlockEnd: space['--ult-space-8'],
   },
-  swatches: { display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-3'] },
+  swatches: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: space['--ult-space-3'] },
   swatchItem: {
     blockSize: 'auto',
-    paddingBlock: space['--ult-space-1'],
-    paddingInline: space['--ult-space-1'],
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: space['--ult-space-4'],
+    fontSize: text['--ult-text-4'],
+    minBlockSize: space['--ult-space-10'],
+    paddingBlock: space['--ult-space-4'],
+    paddingInline: space['--ult-space-4'],
   },
+  swatchChip: { blockSize: space['--ult-space-8'], inlineSize: space['--ult-space-8'], flexShrink: 0 },
   detail: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-5'] },
   roleTitle: {
     fontSize: text['--ult-text-5'],
@@ -101,13 +117,57 @@ const styles = stylex.create({
   divider: { marginBlockEnd: space['--ult-space-8'] },
   stack: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-6'] },
   row: { alignItems: 'center', display: 'flex', gap: space['--ult-space-4'] },
+  themeTrigger: { inlineSize: '100%', minBlockSize: space['--ult-space-11'], justifyContent: 'space-between' },
+  themeOption: { gridTemplateColumns: 'auto minmax(0, 1fr) auto', gap: space['--ult-space-5'], minBlockSize: space['--ult-space-12'], paddingBlock: space['--ult-space-5'], paddingInline: space['--ult-space-6'] },
+  themeCopy: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-1'], minInlineSize: 0 },
+  themePopup: { inlineSize: 'min(24rem, var(--available-width))' },
+  themeName: { gridColumn: 'auto', fontSize: text['--ult-text-5'] },
+  themeIndicator: { gridColumn: 'auto' },
+  themeHint: { color: color['--ult-color-text-muted'], fontSize: text['--ult-text-4'], lineHeight: font['--ult-font-leading-normal'], margin: 0, padding: space['--ult-space-6'] },
   role: {
     flexShrink: 0,
     fontSize: text['--ult-text-3'],
     inlineSize: `calc(${space['--ult-space-12']} + ${space['--ult-space-8']})`,
   },
   slider: { flexGrow: 1, minInlineSize: 0 },
+  sliderControl: { width: `calc(100% - 2 * ${space['--ult-space-5']})`, marginInline: space['--ult-space-5'] },
 });
+
+export function CompleteThemePicker({ draft, commit }: { draft: ThemeDraft; commit: (edit: DraftEdit) => void }) {
+  const container = useContext(StudioPortalContext);
+  const identity = `${presetLabel(draft)}${isPresetEdited(draft) ? ' · Edited' : ''}`;
+  return (
+    <Select.Root
+      items={THEME_PRESETS.map((preset) => ({ label: preset.label, value: preset.id }))}
+      value={draft.preset?.id ?? null}
+      onValueChange={(id) => { if (id) commit(() => presetDraft(id as ThemePresetId)); }}
+    >
+      <Select.Trigger aria-label="Complete theme" style={[docsStyles.square, styles.themeTrigger]}>
+        <span>{identity}</span><Select.Icon />
+      </Select.Trigger>
+      <Select.Portal container={container}>
+        <Select.Positioner>
+          <Select.Popup style={styles.themePopup}>
+            <Select.List>
+              {THEME_PRESETS.map((preset) => (
+                <Select.Item key={preset.id} value={preset.id} style={styles.themeOption}>
+                  <PresetPreview id={preset.id} />
+                  <span {...stylex.props(styles.themeCopy)}>
+                    <Select.ItemText style={styles.themeName}>{preset.label}</Select.ItemText>
+                    <span {...stylex.props(styles.roleNote)}>{preset.description}</span>
+                  </span>
+                  <Select.ItemIndicator style={styles.themeIndicator} />
+                </Select.Item>
+              ))}
+            </Select.List>
+            <Separator />
+            <p {...stylex.props(styles.themeHint)}>Applies a complete theme. Undo restores your draft.</p>
+          </Select.Popup>
+        </Select.Positioner>
+      </Select.Portal>
+    </Select.Root>
+  );
+}
 
 const SCALE_OPTIONS: { label: string; value: string }[] = [
   { label: 'Ultima', value: 'stock' },
@@ -140,6 +200,7 @@ function FamilySelect({
   stack: string;
   onStack: (stack: string) => void;
 }) {
+  const container = useContext(StudioPortalContext);
   const matched = presetValue(stack, presets);
   const items = [
     ...presets.map((preset) => ({ label: preset.label, value: preset.value })),
@@ -158,12 +219,12 @@ function FamilySelect({
       >
         <Field.Root name={name}>
           <Select.Label>{label}</Select.Label>
-          <Select.Trigger size="sm" style={docsStyles.square}>
+          <Select.Trigger size="sm" style={[docsStyles.square, styles.touch]}>
             <Select.Value />
             <Select.Icon />
           </Select.Trigger>
         </Field.Root>
-        <Select.Portal>
+        <Select.Portal container={container}>
           <Select.Positioner>
             <Select.Popup>
               <Select.List>
@@ -183,7 +244,7 @@ function FamilySelect({
         onValueChange={onStack}
         size="sm"
         value={stack}
-      style={docsStyles.square} />
+      style={[docsStyles.square, styles.touch]} />
     </>
   );
 }
@@ -212,7 +273,7 @@ function PresetGroup({
         value={[value]}
       >
         {options.map((option) => (
-          <ToggleGroup.Item key={option.value} value={option.value} style={docsStyles.square}>
+          <ToggleGroup.Item key={option.value} value={option.value} style={[docsStyles.square, styles.touch]}>
             {option.label}
           </ToggleGroup.Item>
         ))}
@@ -220,6 +281,8 @@ function PresetGroup({
     </Field.Root>
   );
 }
+
+const EXACT_ROLE_TOKENS: Record<ScaleName, string> = { mithril: '--ult-color-surface', arcane: '--ult-color-accent', mana: '--ult-color-action', verdant: '--ult-color-success', ember: '--ult-color-warning', ruin: '--ult-color-danger' };
 
 const ROLE_NOTES: Record<ScaleName, string> = {
   mithril: 'Surfaces, text, and borders.',
@@ -229,10 +292,6 @@ const ROLE_NOTES: Record<ScaleName, string> = {
   ember: 'Cautions that still need a look.',
   ruin: 'Errors and destructive actions.',
 };
-
-function scaleTitle(scale: ScaleName): string {
-  return `${scale.charAt(0).toUpperCase()}${scale.slice(1)} / ${SCALE_ROLES[scale]}`;
-}
 
 function SeedSlider({
   label,
@@ -268,7 +327,7 @@ function SeedSlider({
         step={1}
         value={value}
       >
-        <Slider.Control>
+        <Slider.Control style={styles.sliderControl}>
           <Slider.Track>
             <Slider.Indicator />
             <Slider.Thumb aria-label={name} />
@@ -283,16 +342,21 @@ function ColorControls({
   draft,
   update,
   commit,
+  onExact,
 }: {
   draft: ThemeDraft;
   update: (edit: DraftEdit) => void;
   commit: (edit: DraftEdit) => void;
+  onExact: (token: string) => void;
 }) {
+  const container = useContext(StudioPortalContext);
   const [scale, setScale] = useState<ScaleName>('arcane');
-  const scales = useMemo(() => generateScales(draft.color), [draft.color]);
+  const [sources, setSources] = useState<Partial<Record<ScaleName, string>>>({});
+  const scales = useMemo(() => generateScales(draft.color, draft.recipeVersion, draft.preset?.id === 'ultima'), [draft.color, draft.recipeVersion, draft.preset?.id]);
   const role = SCALE_ROLES[scale];
   const seed = draft.color[scale];
   const swatch = scales[scale].dark[8] ?? '#000000';
+  const source = sources[scale] ?? swatch;
 
   const patch = (apply: (edit: DraftEdit) => void, key: 'hue' | 'saturation') => (value: number) => {
     apply((current) => ({
@@ -318,31 +382,26 @@ function ColorControls({
             style={styles.swatchItem}
             variant="outline"
           >
-            <SwatchChip value={scales[name].dark[8] ?? '#000000'} />
+            <SwatchChip style={styles.swatchChip} value={scales[name].dark[8] ?? '#000000'} /><span>{SCALE_ROLES[name]}</span>
           </Toggle>
         ))}
       </div>
       <div {...stylex.props(styles.detail)}>
         <div>
-          <p {...stylex.props(styles.roleTitle)}>{scaleTitle(scale)}</p>
+          <p {...stylex.props(styles.roleTitle)}>{role}</p>
           <p {...stylex.props(styles.roleNote)}>{ROLE_NOTES[scale]}</p>
         </div>
         <ColorField.Root
           key={scale}
-          onValueChange={(hex) => {
-            commit((current) => ({
-              ...current,
-              color: { ...current.color, [scale]: seedFromSrgb(hex, scale, current.color[scale]) },
-            }));
-          }}
+          onValueChange={(hex) => setSources((current) => ({ ...current, [scale]: hex }))}
           size="sm"
-          value={swatch}
+          value={source}
         >
           <div {...stylex.props(styles.hexRow)}>
-            <ColorField.Swatch aria-label={`${role} seed`} />
-            <ColorField.Input aria-label={`${role} hex`} style={styles.hexInput} />
+            <ColorField.Swatch aria-label={`${role} seed`} style={styles.touch} />
+            <ColorField.Input aria-label={`${role} hex`} style={[styles.hexInput, styles.touch]} />
           </div>
-          <ColorField.Portal>
+          <ColorField.Portal container={container}>
             <ColorField.Positioner sideOffset={8}>
               <ColorField.Popup>
                 <ColorField.Picker />
@@ -350,6 +409,10 @@ function ColorControls({
             </ColorField.Positioner>
           </ColorField.Portal>
         </ColorField.Root>
+        <p {...stylex.props(styles.roleNote)}>Palette source: hue and saturation generate accessible lightness steps. The result may differ from your source color.</p>
+        <Button style={[docsStyles.square, styles.touch]} onClick={() => commit((current) => ({ ...current, color: { ...current.color, [scale]: seedFromSrgb(source, scale, current.color[scale]) } }))}>Generate {role} palette</Button>
+        <p {...stylex.props(styles.roleNote)}>Derived step 9 · Dark {scales[scale].dark[8]} · Light {scales[scale].light[8]}</p>
+        <Button style={[docsStyles.square, styles.touch]} variant="outline" onClick={() => onExact(EXACT_ROLE_TOKENS[scale])}>Set exact {role} colors</Button>
         <SeedSlider
           label="HUE"
           max={359}
@@ -419,7 +482,7 @@ function TypographyControls({
       >
         <Slider.Label>Base size</Slider.Label>
         <Slider.Value />
-        <Slider.Control>
+        <Slider.Control style={styles.sliderControl}>
           <Slider.Track>
             <Slider.Indicator />
             <Slider.Thumb />
@@ -531,6 +594,7 @@ export function ThemeStudioEditor({
   update: (edit: DraftEdit) => void;
   commit: (edit: DraftEdit) => void;
 }) {
+  const [requestedToken, setRequestedToken] = useState<{ token: string; serial: number } | null>(null);
   const offenders = useMemo<ModeOffenders>(() => {
     const dark = new Set<string>();
     const light = new Set<string>();
@@ -559,7 +623,7 @@ export function ThemeStudioEditor({
         value={[group]}
       >
         {GROUPS.map((item) => (
-          <ToggleGroup.Item key={item.id} value={item.label} style={docsStyles.square}>
+          <ToggleGroup.Item key={item.id} value={item.label} style={[docsStyles.square, styles.touch]}>
             {item.label}
           </ToggleGroup.Item>
         ))}
@@ -576,6 +640,8 @@ export function ThemeStudioEditor({
                 {index > 0 ? <Separator style={styles.divider} /> : null}
                 <ThemeStudioGroup
                   label={item.label}
+                  active={group === item.label}
+                  overrideRequest={item.id === 'color' ? requestedToken?.serial : undefined}
                   locked={draft.locks[item.id]}
                   summary={summarize(item.id, draft)}
                   onLock={(locked) =>
@@ -586,6 +652,8 @@ export function ThemeStudioEditor({
                   panel={
                     <TokenRows
                       draft={draft}
+                      focusToken={item.id === 'color' ? requestedToken?.token : undefined}
+                      focusRequest={requestedToken?.serial}
                       group={item.id}
                       offenders={offenders}
                       resolved={resolved}
@@ -594,7 +662,7 @@ export function ThemeStudioEditor({
                   }
                 >
                   {item.id === 'color' ? (
-                    <ColorControls draft={draft} update={update} commit={commit} />
+                    <ColorControls draft={draft} update={update} commit={commit} onExact={(token) => setRequestedToken((current) => ({ token, serial: (current?.serial ?? 0) + 1 }))} />
                   ) : null}
                   {item.id === 'typography' ? (
                     <TypographyControls draft={draft} update={update} commit={commit} />

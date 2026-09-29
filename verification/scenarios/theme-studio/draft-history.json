@@ -2,16 +2,22 @@
   "schemaVersion": 1,
   "id": "theme-studio.draft-history",
   "title": "Reset theme is one undoable step that keeps edits, overrides and locks",
-  "intent": "A guided edit, a token override and a group lock survive as one draft: Reset theme returns the stock draft, and a single Undo restores all three, in the controls and in the painted preview.",
+  "intent": "A guided edit, a token override and a group lock survive as one draft: Reset theme returns the Neutral preset, and a single Undo restores all three, in the controls and in the painted preview.",
   "contract": "docs/spec/theme-studio.md#shuffle-manual-overrides-and-validation",
-  "aliases": ["reset theme", "undo", "redo", "history", "override", "lock", "autosave", "draft restore", "reload"],
+  "aliases": ["reset theme", "undo", "redo", "history", "override", "lock", "autosave", "draft restore", "reload", "URL install", "theme registry"],
   "items": [],
   "sources": [
     "apps/docs/src/routes/theme-studio.tsx",
     "apps/docs/src/theme-studio-actions.tsx",
     "apps/docs/src/theme-studio-store.ts",
     "packages/tokens/src/theme/history.ts",
-    "packages/tokens/src/theme/autosave.ts"
+    "packages/tokens/src/theme/autosave.ts",
+    "apps/docs/server/theme-registry.ts",
+    "apps/docs/server/worker.ts",
+    "apps/docs/scripts/build-worker.ts",
+    "packages/tokens/src/theme/codec.ts",
+    "packages/tokens/src/theme/registry-url.ts",
+    "packages/tokens/src/theme/export.ts"
   ],
   "demos": [],
   "routes": [{ "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/theme-studio" }],
@@ -27,16 +33,17 @@
     }
   ],
   "preconditions": [
-    "Storage and the URL fragment are empty, so the studio opens on the stock draft with no history.",
-    "Below 840px the editor is a bottom sheet; pick each group from its horizontal selector before using its controls."
+    "Storage and the URL fragment are empty, so the studio opens on the Neutral preset with no history.",
+    "Below 840px, open Edit theme and pick a group from the drawer selector. Desktop groups expand through Edit Density or Edit Color."
   ],
   "steps": [
-    { "action": "In Density preset, choose Roomy.", "expect": "Roomy is pressed and the preview's --ult-space-1 changes from its stock value." },
+    { "action": "Expand Density and choose Roomy in Density preset.", "expect": "Roomy is pressed and the preview's --ult-space-1 changes from its stock value." },
     { "action": "Open Color token overrides and commit #ff0000 to --ult-color-accent.", "expect": "The preview's --ult-color-accent is #ff0000." },
     { "action": "Press Lock Density.", "expect": "Lock Density is pressed and the status reads 1 locked group." },
     { "action": "Production only: reload the page.", "expect": "The autosaved draft restores the edit, override and lock; undo history starts empty." },
-    { "action": "Press Reset theme.", "expect": "The stock draft returns: Cosy is pressed, Lock Density is not, and the preview shows stock spacing and accent." },
-    { "action": "Press Undo once.", "expect": "Roomy, the #ff0000 override and the Density lock are back, in the controls and in the preview." }
+    { "action": "Press Reset theme.", "expect": "The Neutral preset returns: Cosy is pressed, Lock Density is not, and the preview shows stock spacing and accent." },
+    { "action": "Press Undo once.", "expect": "Roomy, the #ff0000 override and the Density lock are back, in the controls and in the preview." },
+    {"action": "Production only: close the mobile editor, open Export theme, acknowledge any failed pairings, and copy the install command. Fetch its registry URL.", "expect": "The built worker returns the same stylesheet and editable draft as the file export, preserving the override and Density lock; the export fits both viewports."}
   ],
   "targets": [
     { "target": "docs-vitest", "variants": "default" },

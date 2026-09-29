@@ -4,20 +4,20 @@
  * fixture it ran.
  */
 export const siteDiscovery = {
-  version: 2,
+  version: 3,
   /** A route and the document.title it serves, one per shape the router knows. */
   titles: [
-    { pathname: '/', title: 'React components. Built with StyleX. Yours to change. — Ultima' },
-    { pathname: '/install', title: 'Install — Ultima' },
-    { pathname: '/elements', title: 'Elements — Ultima' },
-    { pathname: '/tokens', title: 'Tokens — Ultima' },
-    { pathname: '/palette', title: 'Palette — Ultima' },
-    { pathname: '/rationale', title: 'Rationale — Ultima' },
-    { pathname: '/theme-studio', title: 'Theme Studio — Ultima' },
-    { pathname: '/components', title: 'Components — Ultima' },
-    { pathname: '/components/button', title: 'Button — Ultima' },
+    { pathname: '/', title: 'React components. Built with StyleX. Yours to change. - Ultima' },
+    { pathname: '/install', title: 'Install - Ultima' },
+    { pathname: '/elements', title: 'Elements - Ultima' },
+    { pathname: '/tokens', title: 'Tokens - Ultima' },
+    { pathname: '/palette', title: 'Palette - Ultima' },
+    { pathname: '/rationale', title: 'Rationale - Ultima' },
+    { pathname: '/theme-studio', title: 'Theme Studio - Ultima' },
+    { pathname: '/components', title: 'Components - Ultima' },
+    { pathname: '/components/button', title: 'Button - Ultima' },
   ],
   /** Both not-found shapes: a path no route knows and a component name the catalogue lacks. */
-  notFound: { title: 'Lost in the aether — Ultima', component: 'not-a-component' },
+  notFound: { title: 'Lost in the aether - Ultima', component: 'not-a-component' },
   origin: 'https://ultima.systems',
 } as const;

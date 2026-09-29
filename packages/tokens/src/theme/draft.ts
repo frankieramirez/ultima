@@ -9,7 +9,17 @@ import {
   type ScaleSeeds,
 } from './recipe.ts';
 
-export const THEME_DRAFT_VERSION = 1;
+export const THEME_DRAFT_VERSION = 2;
+
+export const THEME_PRESETS = [
+  { id: 'neutral', label: 'Neutral', description: 'Achromatic · balanced' },
+  { id: 'ultima', label: 'Ultima', description: 'Indigo / cyan · balanced' },
+  { id: 'grove', label: 'Grove', description: 'Green / earthy · serif · roomy' },
+  { id: 'cinder', label: 'Cinder', description: 'Copper · compact · sharp' },
+] as const;
+
+export type ThemePresetId = (typeof THEME_PRESETS)[number]['id'];
+export type ThemePresetOrigin = { id: ThemePresetId; revision: 1 };
 
 export type GuidedGroup = 'color' | 'typography' | 'density' | 'shape' | 'elevation' | 'motion';
 
@@ -21,7 +31,8 @@ export type ShapePreset = 'sharp' | 'default' | 'round';
 export type TokenTable = Record<string, string>;
 
 export type ThemeDraft = {
-  version: typeof THEME_DRAFT_VERSION;
+  version: 1 | typeof THEME_DRAFT_VERSION;
+  preset?: ThemePresetOrigin | null;
   recipeVersion: number;
   color: ScaleSeeds;
   typography: {
@@ -238,7 +249,7 @@ function applyOverrides(table: TokenTable, overrides: Partial<TokenTable>, mode:
 
 export function stockDraft(): ThemeDraft {
   return {
-    version: THEME_DRAFT_VERSION,
+    version: 1,
     recipeVersion: RECIPE_VERSION,
     color: Object.fromEntries(SCALE_NAMES.map((name) => [name, { ...STOCK_SEEDS[name] }])) as ScaleSeeds,
     typography: {
@@ -266,8 +277,51 @@ export function stockDraft(): ThemeDraft {
   };
 }
 
+export function presetDraft(id: ThemePresetId): ThemeDraft {
+  const draft = stockDraft();
+  draft.version = THEME_DRAFT_VERSION;
+  draft.recipeVersion = 2;
+  draft.preset = { id, revision: 1 };
+  if (id === 'neutral') {
+    for (const scale of ['mithril', 'arcane', 'mana'] as const) draft.color[scale].saturation = 0;
+  }
+  if (id === 'grove' || id === 'cinder') {
+    const grove = id === 'grove';
+    draft.color.mithril = { hue: grove ? 145 : 32, saturation: 0.15 };
+    draft.color.arcane = { hue: grove ? 140 : 28, saturation: grove ? 0.8 : 0.85 };
+    draft.color.mana = { hue: grove ? 75 : 45, saturation: 0.75 };
+    draft.typography.sans = grove
+      ? "Georgia, 'Times New Roman', Times, serif"
+      : "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
+    draft.typography.mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+    draft.typography.scale = grove ? 1.2 : 1.125;
+    draft.typography.leading = grove ? 'loose' : 'compact';
+    draft.typography.tracking = grove ? 'default' : 'compact';
+    draft.density = grove ? 1.25 : 0.75;
+    draft.shape = grove ? 'round' : 'sharp';
+    draft.elevation = grove ? 0.5 : 1.5;
+    draft.motion = grove ? 1.5 : 0.6;
+  }
+  return draft;
+}
+
+export function resetDraft(draft: ThemeDraft): ThemeDraft {
+  return draft.version === 1 ? stockDraft() : presetDraft(draft.preset?.id ?? 'neutral');
+}
+
+export function presetLabel(draft: ThemeDraft): string {
+  if (draft.version === 1) return 'Legacy Ultima';
+  return THEME_PRESETS.find((preset) => preset.id === draft.preset?.id)?.label ?? 'Custom';
+}
+
+export function isPresetEdited(draft: ThemeDraft): boolean {
+  const baseline = resetDraft(draft);
+  return (['color', 'typography', 'density', 'shape', 'elevation', 'motion', 'overrides', 'locks'] as const)
+    .some((key) => JSON.stringify(draft[key]) !== JSON.stringify(baseline[key]));
+}
+
 export function resolveDraft(draft: ThemeDraft): ResolvedDraft {
-  const scales = generateScales(draft.color);
+  const scales = generateScales(draft.color, draft.recipeVersion, draft.preset?.id === 'ultima');
   const resolve = (mode: ColorMode): TokenTable =>
     applyOverrides({ ...colorTable(scales, mode), ...nonColorTable(draft, mode) }, draft.overrides[mode], mode);
   return { dark: resolve('dark'), light: resolve('light') };

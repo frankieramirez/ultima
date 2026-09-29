@@ -1,7 +1,7 @@
 /**
  * The production binding for theme-studio.pane-boundaries, desktop only. In Compare, each pane's
  * overlays portal inside that pane's theme boundary and paint its values; one guided edit reaches both
- * panes while the editor chrome stays stock dark. The contract is the portal's mount point and the theme
+ * panes while the editor chrome follows the site mode. The contract is the portal's mount point and the theme
  * it inherits (docs/spec/theme-studio.md); a Dialog still centres in the window.
  */
 import assert from 'node:assert/strict';
@@ -43,7 +43,7 @@ export default productionScenario('theme-studio.pane-boundaries', 'production', 
   const headerBefore = await header.evaluate((element) => getComputedStyle(element).backgroundColor);
   await assertColor(page, headerBefore, await shippedColor(page, '--ult-color-surface', variant.mode), `the site header in ${variant.mode} mode`);
   const editorBefore = await tokens(editor, EDITOR_TOKENS);
-  await assertColor(page, editorBefore['--ult-color-surface'] ?? '', await shippedColor(page, '--ult-color-surface', 'dark'), 'the editor surface');
+  await assertColor(page, editorBefore['--ult-color-surface'] ?? '', await shippedColor(page, '--ult-color-surface', variant.mode), 'the editor surface');
 
   const modes = page.getByRole('group', { name: 'Preview color mode' });
   await modes.getByRole('button', { name: 'Compare', exact: true }).click();
@@ -58,6 +58,24 @@ export default productionScenario('theme-studio.pane-boundaries', 'production', 
   assert.deepEqual(stock.map((pane) => pane.scheme), ['dark', 'light'], 'each pane is forced to its own color scheme');
   assert.ok(!(await sameColor(page, stock[0]?.['--ult-color-surface'] ?? '', stock[1]?.['--ult-color-surface'] ?? '')), 'the panes paint different surfaces');
   assert.equal(stock[0]?.['--ult-space-1'], stockSpace1, 'the draft starts stock');
+  await page.getByRole('button', { name: 'Inspect tokens', exact: true }).click();
+  for (const [index, pane] of panes.entries()) {
+    const region = index === 0 ? dark : light;
+    const trigger = region.getByRole('button', { name: 'Inspect Create your workspace tokens', exact: true });
+    await trigger.focus();
+    const readout = region.getByRole('status', { name: 'Token readout' });
+    await readout.waitFor({ state: 'visible' });
+    await animationsSettle(region, 'the token hover card finishes opening');
+    const owner = await readout.evaluate((element) => element.closest('[role="region"]')?.getAttribute('aria-label'));
+    assert.equal(owner, pane.name, 'the hover card belongs to the inspected pane');
+    assert.ok((await readout.textContent())?.includes(stock[index]?.['--ult-color-surface-raised'] ?? ''), 'the hover card shows the pane’s resolved surface');
+    assert.equal(await readout.evaluate((element) => getComputedStyle(element).colorScheme), pane.mode, 'the hover card inherits its pane’s mode');
+    await assertFits(page, readout, `the token hover card in ${pane.name}`);
+    await axe(`token inspection in ${pane.name}`);
+    await page.keyboard.press('Escape');
+    await readout.waitFor({ state: 'hidden' });
+  }
+  await page.getByRole('button', { name: 'Inspect tokens', exact: true }).click();
   await page.getByRole('tablist', { name: 'Preview scenes' }).getByRole('tab', { name: scene, exact: true }).click();
   await assertFits(page, light, 'the studio in Compare');
   await axe('Compare with the Overlays scene');
@@ -89,6 +107,7 @@ export default productionScenario('theme-studio.pane-boundaries', 'production', 
     }
   }
 
+  await editor.getByRole('button', { name: `Edit ${densityGroup}`, exact: true }).click();
   await editor.getByRole('group', { name: `${densityGroup} preset` }).getByRole('button', { name: editedDensity, exact: true }).click();
   await page.waitForFunction(
     ([name, value]) => getComputedStyle(document.querySelector(`[role="region"][aria-label="${name}"]`) as Element).getPropertyValue('--ult-space-1').trim() !== value,

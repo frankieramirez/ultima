@@ -67,6 +67,8 @@ describe('the workspace classification', () => {
       ['apps/docs/src/demos/button/variants.tsx', 'demo'],
       ['apps/docs/src/content/components/button.mdx', 'content'],
       ['apps/docs/src/routes/home.tsx', 'docs'],
+      ['apps/docs/server/worker.ts', 'docs'],
+      ['apps/docs/server/worker.test.ts', 'test'],
       ['registry/metadata/react/button.ts', 'metadata'],
       ['scripts/check-architecture.ts', 'tooling'],
       ['packages/ui/src/parts/button.tsx', undefined],

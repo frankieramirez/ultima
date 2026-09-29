@@ -115,7 +115,10 @@ function oklchToHex(L: number, C: number, H: number): string {
     .join('')}`;
 }
 
-export function generateScales(seeds: ScaleSeeds): GeneratedScales {
+const RECIPE_2_BRAND_PINS = { mithril: { index: 0, value: '#101011' }, mana: { index: 11, value: '#8ff5ff' } } as const;
+
+export function generateScales(seeds: ScaleSeeds, recipeVersion = RECIPE_VERSION, brandPins = false): GeneratedScales {
+  if (recipeVersion !== 1 && recipeVersion !== 2) throw new Error(`Unsupported palette recipe ${recipeVersion}.`);
   const out = {} as GeneratedScales;
   for (const name of SCALE_NAMES) {
     const seed = seeds[name];
@@ -130,6 +133,12 @@ export function generateScales(seeds: ScaleSeeds): GeneratedScales {
       const fractions = CF_OVR[name]?.[mode] ?? CF[mode];
       const peak = PEAK[name][mode] * seed.saturation;
       out[name][mode] = lightness.map((L, i) => oklchToHex(L, peak * (fractions[i] ?? 0), seed.hue));
+      if (recipeVersion === 2 && brandPins && seed.hue === STOCK_SEEDS[name].hue && seed.saturation === STOCK_SEEDS[name].saturation) {
+        if (mode === 'dark' && (name === 'mithril' || name === 'mana')) {
+          const pin = RECIPE_2_BRAND_PINS[name];
+          out[name][mode][pin.index] = pin.value;
+        }
+      }
     }
   }
   return out;

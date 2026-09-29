@@ -178,7 +178,7 @@ describe('the docs rules over the repository', () => {
     assert.deepEqual(report.diagnostics, []);
     const raw = run({ [EXCEPTIONS]: NO_EXCEPTIONS });
     const count = (ruleId: string) => raw.diagnostics.filter((diagnostic) => diagnostic.ruleId === ruleId).length;
-    assert.equal(count('ULT-DOCS-001'), 30);
+    assert.equal(count('ULT-DOCS-001'), 27);
     assert.equal(count('ULT-DOCS-002'), 1);
     assert.equal(count('ULT-DOCS-REVIEW-001'), 0);
     assert.equal(count('ULT-ANALYSIS-001'), 0);
@@ -258,7 +258,6 @@ describe('the old scanner against ULT-DOCS-001', () => {
       'apps/docs/src/site-search.tsx borderRadius',
       'apps/docs/src/site-search.tsx borderWidth',
       'apps/docs/src/theme-studio-preview.tsx backgroundColor',
-      'apps/docs/src/theme-studio-preview.tsx borderInlineStartWidth',
     ]);
     assert.deepEqual(minus(counted(newFound), counted(oldFound)), []);
   });

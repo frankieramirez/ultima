@@ -1,4 +1,6 @@
 import { docsStyles } from './docs-style';
+import { StudioPortalContext } from './theme-studio-context';
+import { breakpoints } from './breakpoints.stylex';
 import {
   ArrowCounterClockwiseIcon,
   LinkSimpleHorizontalBreakIcon,
@@ -8,11 +10,12 @@ import * as stylex from '@stylexjs/stylex';
 import type { ColorMode, GuidedGroup, ResolvedDraft, ThemeDraft } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, ColorField, Field, Input, Toggle } from '@ultima/ui';
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import { useContext, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { groupTokens, linkTokenOverride, resetTokenOverride, setTokenOverride } from './theme-studio-draft';
 
 const styles = stylex.create({
+  touch: { minBlockSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null }, minInlineSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null } },
   rows: {
     display: 'flex',
     flexDirection: 'column',
@@ -112,7 +115,7 @@ function ValueInput({
       }}
       size="sm"
       spellCheck={false}
-    style={docsStyles.square} />
+    style={[docsStyles.square, styles.touch]} />
   );
 }
 
@@ -133,9 +136,10 @@ function TokenField({
   value: string;
   onCommit: (value: string) => void;
 }) {
+  const container = useContext(StudioPortalContext);
   return (
     <Field.Root name={label} style={styles.grow}>
-      {modeLabel ? <Field.Label>{modeLabel}</Field.Label> : null}
+      {modeLabel ? <Field.Label>{label}</Field.Label> : null}
       {colorToken ? (
         <ColorField.Root
           onValueChange={(hex) => {
@@ -145,10 +149,10 @@ function TokenField({
           value={value}
         >
           <div {...stylex.props(styles.colorField)}>
-            <ColorField.Swatch aria-label={`${label} swatch`} />
-            <ColorField.Input aria-invalid={offending || undefined} aria-label={label} />
+            <ColorField.Swatch aria-label={`${label} swatch`} style={styles.touch} />
+            <ColorField.Input aria-invalid={offending || undefined} aria-label={label} data-studio-token={label} style={styles.touch} />
           </div>
-          <ColorField.Portal>
+          <ColorField.Portal container={container}>
             <ColorField.Positioner sideOffset={8}>
               <ColorField.Popup>
                 <ColorField.Picker />
@@ -216,7 +220,7 @@ function TokenRow({
           }}
           pressed={!unlinked}
           size="sm"
-          style={styles.icon}
+          style={[styles.icon, styles.touch]}
           variant="ghost"
         >
           {unlinked ? <LinkSimpleHorizontalBreakIcon aria-hidden /> : <LinkSimpleHorizontalIcon aria-hidden />}
@@ -226,7 +230,7 @@ function TokenRow({
           disabled={!overridden}
           onClick={() => setDraft((current) => resetTokenOverride(current, token))}
           size="sm"
-          style={[docsStyles.square, styles.icon]}
+          style={[docsStyles.square, styles.icon, styles.touch]}
           variant="ghost"
         >
           <ArrowCounterClockwiseIcon aria-hidden />
@@ -275,16 +279,32 @@ export function TokenRows({
   offenders,
   resolved,
   setDraft,
+  focusToken,
+  focusRequest,
+  onlyToken,
 }: {
   draft: ThemeDraft;
   group: GuidedGroup;
   offenders: ModeOffenders;
   resolved: ResolvedDraft;
   setDraft: Dispatch<SetStateAction<ThemeDraft>>;
+  focusToken?: string;
+  focusRequest?: number;
+  onlyToken?: string;
 }) {
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!focusToken) return;
+    const frame = requestAnimationFrame(() => {
+      const field = root.current?.querySelector<HTMLInputElement>(`input[data-studio-token="${focusToken}"], input[data-studio-token="${focusToken} dark"]`);
+      field?.focus();
+      field?.scrollIntoView({ block: 'nearest' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusToken, focusRequest]);
   return (
-    <div {...stylex.props(styles.rows)}>
-      {groupTokens(resolved.dark, group).map((token) => (
+    <div ref={root} {...stylex.props(styles.rows)}>
+      {groupTokens(resolved.dark, group).filter((token) => !onlyToken || token === onlyToken).map((token) => (
         <TokenRow
           draft={draft}
           group={group}
