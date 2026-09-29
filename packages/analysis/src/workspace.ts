@@ -273,7 +273,7 @@ export function workspaceScope(files: Files): Scope {
       {
         // The self-hosted IBM Plex faces and the document reset, imported once by each docs entry.
         stylesheet: 'apps/docs/src/styles.css',
-        importers: ['apps/docs/src/main.tsx', 'apps/docs/src/main-coming-soon.tsx'],
+        importers: ['apps/docs/src/main.tsx'],
         authority: 'docs/spec/ultima.md#typefaces',
       },
     ],
