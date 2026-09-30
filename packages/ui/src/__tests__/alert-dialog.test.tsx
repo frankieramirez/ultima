@@ -100,14 +100,14 @@ test('Escape closes and returns focus to the trigger, Tab loops, and a backdrop 
   const inside = screen.getByTestId('inside').element();
   last.focus();
   await userEvent.tab();
-  expect(document.activeElement).toBe(inside);
+  await expect.poll(() => document.activeElement).toBe(inside);
 
   await userEvent.click(screen.getByTestId('viewport').element(), { position: { x: 1, y: 1 } });
   await expect.element(screen.getByRole('alertdialog', { name: 'Delete report' })).toBeVisible();
 
   await userEvent.keyboard('{Escape}');
   await expect.poll(() => screen.getByRole('alertdialog').query()).toBeNull();
-  expect(document.activeElement).toBe(trigger);
+  await expect.poll(() => document.activeElement).toBe(trigger);
 });
 
 test('opening focuses Cancel, the first action in DOM', async () => {
@@ -158,6 +158,7 @@ for (const mode of themes) {
     await userEvent.click(screen.getByRole('button', { name: 'Open' }).element());
     await expect.element(screen.getByRole('alertdialog', { name: 'Delete report' })).toBeVisible();
 
+    await expect.poll(() => getComputedStyle(screen.getByTestId('popup').element()).opacity).toBe('1');
     expect(await violations()).toEqual([]);
   });
 }

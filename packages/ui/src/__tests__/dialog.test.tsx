@@ -99,11 +99,11 @@ test(
     const inside = screen.getByTestId('inside').element();
     close.focus();
     await userEvent.tab();
-    expect(document.activeElement).toBe(inside);
+    await expect.poll(() => document.activeElement).toBe(inside);
 
     await userEvent.keyboard('{Escape}');
     await expect.poll(() => screen.getByRole('dialog').query()).toBeNull();
-    expect(document.activeElement).toBe(trigger);
+    await expect.poll(() => document.activeElement).toBe(trigger);
   }),
 );
 
@@ -140,6 +140,7 @@ for (const mode of themes) {
     await userEvent.click(screen.getByRole('button', { name: 'Open' }).element());
     await expect.element(screen.getByRole('dialog', { name: 'Archive run' })).toBeVisible();
 
+    await expect.poll(() => getComputedStyle(screen.getByTestId('popup').element()).opacity).toBe('1');
     expect(await violations()).toEqual([]);
   });
 }
