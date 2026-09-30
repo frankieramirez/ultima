@@ -90,6 +90,7 @@ export function registryPlan(sources: StagedSource[], elements: string[]): Plann
     { name: 'setup-vite', from: 'setup' },
     { name: 'setup-next', from: 'setup' },
     { name: 'tokens-css', from: 'artifact' },
+    { name: 'design-md', from: 'artifact' },
     ...[...elements].sort((a, b) => a.localeCompare(b)).map((name): PlannedItem => ({ name, from: 'element' })),
   ];
 }

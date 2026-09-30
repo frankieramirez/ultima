@@ -28,4 +28,10 @@ The consumer skill can also be installed through skills.sh and the Ultima Claude
 
 These copies belong to the installer that creates them. They carry no CLI-managed stamp, and the CLI preserves them during install and uninstall. Consumers update or remove them through skills.sh or Claude Code. External skill installation adds neither the CLI dependency nor project hooks. The CLI remains the installation route for a managed project skill and hooks together.
 
-Conventions remain hosted. This amendment permits distribution of the same pointer skill through additional installers and keeps the prohibition on installed root guidance documents.
+Conventions remain hosted. This amendment permits distribution of the same pointer skill through additional installers and keeps the prohibition on installed root guidance documents until the DESIGN.md amendment below.
+
+## Amendment (2026-09-29): consumer-owned design artifact
+
+Theme Studio now exports a `DESIGN.md` from the current theme draft. Its theme registry item installs that file beside the stylesheet and editable JSON draft. A separate `design-md` registry item installs the default Ultima design document. Both writes are explicit shadcn installs. The consumer owns the result and can edit it; reinstalling may replace it through the CLI's overwrite flow.
+
+This is an exception for a theme-specific design artifact. Studio export values come from the same draft as the CSS; the default document comes from the compiled token values. The hosted guide remains the source for Ultima conventions and component APIs. The consumer CLI still neither writes nor manages root documents, and setup items still avoid them. Consumers should regenerate or revise `DESIGN.md` when they change the theme.

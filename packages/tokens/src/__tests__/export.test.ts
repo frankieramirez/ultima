@@ -8,7 +8,7 @@ import ts from 'typescript';
 
 import { draftFingerprint, parseDraft, serializeDraft } from '../theme/codec.ts';
 import { resolveDraft, stockDraft } from '../theme/draft.ts';
-import { toCss, toRegistryItem, toStylex } from '../theme/export.ts';
+import { toCss, toDesignMd, toRegistryItem, toStylex } from '../theme/export.ts';
 
 const GROUPS = ['color', 'space', 'text', 'font', 'radius', 'shadow', 'filter', 'motion'] as const;
 
@@ -120,7 +120,32 @@ test.each([
   expect(values).toEqual([value, value, value, value]);
 });
 
-test('toRegistryItem is a universal item carrying the stylesheet and draft', () => {
+test('toDesignMd uses the resolved dark and light values, including edits', () => {
+  const draft = stockDraft();
+  draft.overrides.light['--ult-color-accent'] = '#123456';
+  const document = toDesignMd(draft);
+  const tables = resolveDraft(draft);
+  expect(document).toContain(draftFingerprint(draft));
+  expect(document).toContain(`| \`--ult-color-accent\` | ${tables.dark['--ult-color-accent']} | #123456 |`);
+  expect(document).toContain(`| \`--ult-font-sans\` | ${tables.dark['--ult-font-sans']} |`);
+  expect(document).toContain('## Component styling');
+});
+
+test('toDesignMd preserves Markdown characters in accepted font stacks', () => {
+  const draft = stockDraft();
+  draft.typography.sans = String.raw`'Example_*[Font]\20', sans-serif`;
+  expect(parseDraft(serializeDraft(draft)).ok).toBe(true);
+  expect(toDesignMd(draft)).toContain(String.raw`'Example\_\*\[Font\]\\20', sans-serif`);
+});
+
+test('toDesignMd preserves backticks and pipes in accepted font stacks', () => {
+  const draft = stockDraft();
+  draft.typography.sans = "'Example`|Font', sans-serif";
+  expect(parseDraft(serializeDraft(draft)).ok).toBe(true);
+  expect(toDesignMd(draft)).toContain("'Example\\`\\|Font', sans-serif");
+});
+
+test('toRegistryItem is a universal item carrying the stylesheet, draft, and design document', () => {
   const draft = stockDraft();
   const json = toRegistryItem(draft);
   const item = JSON.parse(json) as {
@@ -128,7 +153,7 @@ test('toRegistryItem is a universal item carrying the stylesheet and draft', () 
     files: { path: string; type: string; target: string; content: string }[];
   };
   expect(item.type).toBe('registry:item');
-  expect(item.files).toHaveLength(2);
+  expect(item.files).toHaveLength(3);
   for (const file of item.files) {
     expect(file.type).toBe('registry:file');
     expect(file.target).toBeTruthy();
@@ -136,9 +161,11 @@ test('toRegistryItem is a universal item carrying the stylesheet and draft', () 
   expect(item.files.map((file) => file.target)).toEqual([
     '~/ultima-theme.css',
     '~/ultima-theme.json',
+    '~/DESIGN.md',
   ]);
   expect(item.files[0]?.content).toBe(toCss(draft));
   expect(item.files[1]?.content).toBe(serializeDraft(draft));
+  expect(item.files[2]?.content).toBe(toDesignMd(draft));
 });
 
 test('npx shadcn add installs the registry item without components.json', () => {
@@ -154,6 +181,7 @@ test('npx shadcn add installs the registry item without components.json', () => 
     expect(existsSync(join(dir, 'components.json'))).toBe(false);
     expect(readFileSync(join(dir, 'ultima-theme.css'), 'utf8')).toBe(toCss(draft));
     expect(readFileSync(join(dir, 'ultima-theme.json'), 'utf8')).toBe(serializeDraft(draft));
+    expect(readFileSync(join(dir, 'DESIGN.md'), 'utf8')).toBe(toDesignMd(draft));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -306,6 +306,11 @@ export const items: Record<string, RegistryItemDescription> = {
     "description": "A short overlay on hover or focus, labelled through aria-label on its trigger.",
     "docs": "import { Tooltip } from '@/components/ui/tooltip';\n\n<Tooltip.Provider>\n  <Tooltip.Root>\n    <Tooltip.Trigger aria-label=\"Copied\" render={<Button />}>Copy</Tooltip.Trigger>\n    <Tooltip.Portal>\n      <Tooltip.Positioner>\n        <Tooltip.Popup>Copied</Tooltip.Popup>\n      </Tooltip.Positioner>\n    </Tooltip.Portal>\n  </Tooltip.Root>\n</Tooltip.Provider>"
   },
+  "design-md": {
+    "title": "Ultima design system",
+    "description": "The default Ultima design system as a root DESIGN.md file.",
+    "docs": "Installs DESIGN.md at the project root. Review it for your application, then keep it in sync with your theme. Theme Studio exports a DESIGN.md with the values of your current draft."
+  },
   "tokens-css": {
     "title": "Ultima tokens as CSS",
     "description": "The generated token stylesheet, for a project that cannot run StyleX.",

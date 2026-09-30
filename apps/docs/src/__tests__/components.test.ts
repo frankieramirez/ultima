@@ -3,7 +3,7 @@ import { expect, test } from 'vitest';
 import { items } from '../../../../registry/items.config';
 import { RELEASES, components, componentsInRelease } from '../components';
 
-const NOT_A_COMPONENT = ['tokens', 'lib', 'setup-vite', 'setup-next', 'tokens-css'];
+const NOT_A_COMPONENT = ['tokens', 'lib', 'setup-vite', 'setup-next', 'tokens-css', 'design-md'];
 
 const pages = import.meta.glob('../content/components/*.mdx');
 const demos = import.meta.glob('../demos/*/*.tsx');

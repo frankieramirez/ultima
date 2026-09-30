@@ -1,5 +1,5 @@
 import { draftFingerprint, serializeDraft } from './codec.ts';
-import { resolveDraft, type ThemeDraft, type TokenTable } from './draft.ts';
+import { presetLabel, resolveDraft, type ResolvedDraft, type ThemeDraft, type TokenTable } from './draft.ts';
 import { gate } from './gate.ts';
 
 export const STUDIO_VERSION = 1;
@@ -120,6 +120,66 @@ export function toStylex(draft: ThemeDraft): string {
   ].join('\n')}\n`;
 }
 
+function markdownValue(value: string): string {
+  return value.replace(/\s+/g, ' ').replace(/[\\`*_\[\]|]/g, '\\$&');
+}
+
+function designDocument(tables: ResolvedDraft, title: string, header: string, intro: string, warning: boolean): string {
+  const rows = (group: Group) => tokenNames(tables.dark, group).map((name) =>
+    `| \`${name}\` | ${markdownValue(tables.dark[name] ?? '')} | ${markdownValue(tables.light[name] ?? '')} |`,
+  );
+  const table = (group: Group) => [
+    '| Semantic token | Dark | Light |',
+    '| --- | --- | --- |',
+    ...rows(group),
+  ].join('\n');
+  const sections = [
+    `<!-- ${header} -->`,
+    ...(warning ? ['> This source draft failed token-contrast pairings. Review the colors before use.'] : []),
+    `# Design System: ${title}`,
+    intro,
+    '## Visual theme',
+    'Use semantic roles for surfaces, text, borders, actions, and status. The theme supplies complete dark and light values. With the CSS export, set `data-theme="dark"` or `data-theme="light"` on the root to pin a mode; omit it to follow the system. With the Studio StyleX export, apply `ultimaTheme.dark` or `ultimaTheme.light` and the matching `colorScheme` style through `stylex.props` on the theme boundary. Mount portals inside that boundary so popups inherit the same values.',
+    '## Color palette and roles',
+    'Surface roles establish depth. Text roles provide hierarchy. Accent and action roles distinguish emphasis and prominent actions; success, warning, and danger communicate status. Use the contrast tokens on their matching fills.',
+    table('color'),
+    '## Typography',
+    'Use the semantic font and text tokens for type size, family, weight, line height, and tracking. Font stacks name preferred faces and fallbacks; the theme does not load font files.',
+    table('font'),
+    table('text'),
+    '## Component styling',
+    'Use Ultima components and their documented variants for controls. Pass StyleX styles through the component’s `style` prop, and read semantic color, radius, and shadow tokens when composing application layouts. Keep focus and interaction states visible in both modes. Read [Ultima conventions and component APIs](https://ultima.systems/llms.txt) before adding or changing components.',
+    table('radius'),
+    table('shadow'),
+    '## Layout and motion',
+    'Use the space scale for gaps and padding. Honor reduced motion: fast, base, and slow durations collapse to 1ms, and looping motion stops.',
+    table('space'),
+    table('motion'),
+    table('filter'),
+  ];
+  return `${sections.join('\n\n')}\n`;
+}
+
+export function toDesignMd(draft: ThemeDraft): string {
+  return designDocument(
+    resolveDraft(draft),
+    draft.version === 1 ? 'Ultima' : presetLabel(draft),
+    artifactHeader(draft),
+    'This document describes an Ultima theme. In Theme Studio, `ultima-theme.json` is the editable draft and the CSS and StyleX exports carry the values applications render. Regenerate this file after changing the theme.',
+    pairingFailed(draft),
+  );
+}
+
+export function toDefaultDesignMd(tables: ResolvedDraft): string {
+  return designDocument(
+    tables,
+    'Ultima',
+    'Ultima default design tokens. Generated from the compiled StyleX token values.',
+    'This document describes the default Ultima token values. The token CSS and StyleX sources determine what applications render. If you change the theme in Theme Studio, export a new DESIGN.md for those values.',
+    false,
+  );
+}
+
 export function toRegistryItem(draft: ThemeDraft): string {
   return `${JSON.stringify(
     {
@@ -140,6 +200,12 @@ export function toRegistryItem(draft: ThemeDraft): string {
           type: 'registry:file',
           target: '~/ultima-theme.json',
           content: serializeDraft(draft),
+        },
+        {
+          path: 'DESIGN.md',
+          type: 'registry:file',
+          target: '~/DESIGN.md',
+          content: toDesignMd(draft),
         },
       ],
     },

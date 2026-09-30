@@ -18,6 +18,7 @@ import {
   saveAutosave,
   serializeDraft,
   toCss,
+  toDesignMd,
   toRegistryItem,
   toStylex,
   type FragmentEncodeResult,
@@ -432,6 +433,7 @@ function ExportDialog({
   const downloads = [
     { name: 'ultima-theme.registry.json', detail: 'Registry item', save: registryDownload },
     { name: 'ultima-theme.json', detail: 'Draft document', save: () => downloadDraft(draft) },
+    { name: 'DESIGN.md', detail: 'Design system for people and agents', save: () => download('DESIGN.md', toDesignMd(draft), 'text/markdown') },
     {
       name: 'ultima-theme.css',
       detail: 'Stylesheet',
@@ -508,7 +510,7 @@ function ExportDialog({
                   <section {...stylex.props(styles.stack)}>
                     <h3 {...stylex.props(headings.h3, styles.heading)}>1. Install the theme</h3>
                     {installCommand ? <>
-                      <p {...stylex.props(styles.note, styles.exportCopy)}>Run this command in your project. It installs the stylesheet and editable draft.</p>
+                      <p {...stylex.props(styles.note, styles.exportCopy)}>Run this command in your project. It installs the stylesheet, editable draft, and DESIGN.md.</p>
                       <CopyButton ariaLabel="Copy install command" text={installCommand} variant="solid" style={[styles.touch, styles.action, styles.exportCopy]}>{(status) => status || 'Copy install command'}</CopyButton>
                       <Fence code={installCommand} lang="shell" wrap={false} />
                     </> : gated ? <Button disabled style={[docsStyles.square, styles.touch, styles.action]}>Copy install command</Button> : currentInstall?.reason ? <>
@@ -550,7 +552,7 @@ function ExportDialog({
                         </li>
                       ))}
                     </ul>
-                    <p {...stylex.props(styles.note, styles.exportCopy)}>Keep <Code>ultima-theme.json</Code>: the draft is the editable source. Reinstalling replaces the generated files.</p>
+                    <p {...stylex.props(styles.note, styles.exportCopy)}>Keep <Code>ultima-theme.json</Code>: the draft is the editable source. Reinstalling replaces the generated files, including <Code>DESIGN.md</Code>.</p>
                   </section>
                   <section {...stylex.props(styles.stack)}>
                     <h3 {...stylex.props(headings.h3, styles.heading)}>Fonts</h3>
