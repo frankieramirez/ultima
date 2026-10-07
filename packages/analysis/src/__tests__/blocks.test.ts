@@ -18,22 +18,26 @@ describe('block files', () => {
     );
   });
 
-  test('reject a raw value, className, paint, a native control and an engine import', () => {
+  test('reject a raw value, className, paint, a native control, an option outside NativeSelect.Select and an engine import', () => {
     const report = run({ [FILE]: fixture('blocks/invalid.tsx') });
     assert.deepEqual(
       located(report, FILE).map(({ ruleId, line, column, target }) => [ruleId, line, column, target]),
       [
         ['ULT-IMPORT-001', 2, 29, 'd3-scale'],
-        ['ULT-TOKEN-001', 8, 10, 'gap'],
-        ['ULT-DOCS-001', 10, 22, 'backgroundColor'],
-        ['ULT-STYLE-001', 16, 14, 'className'],
-        ['ULT-DOCS-002', 18, 8, '<button>'],
+        ['ULT-TOKEN-001', 12, 10, 'gap'],
+        ['ULT-DOCS-001', 14, 22, 'backgroundColor'],
+        ['ULT-STYLE-001', 22, 14, 'className'],
+        ['ULT-DOCS-002', 24, 8, '<button>'],
+        ['ULT-DOCS-002', 26, 10, '<option>'],
+        ['ULT-DOCS-002', 29, 10, '<option>'],
+        ['ULT-DOCS-002', 32, 10, '<option>'],
+        ['ULT-DOCS-002', 34, 56, '<option>'],
       ],
     );
     assert.equal(report.status, 'violations');
   });
 
-  test('pass tokens, StyleX, catalogue components, render composition and their own glyphs', () => {
+  test("pass tokens, StyleX, catalogue components, render composition, NativeSelect's options and their own glyphs", () => {
     const report = run({ [FILE]: fixture('blocks/valid.tsx') });
     assert.deepEqual(located(report, FILE), []);
     assert.equal(report.status, 'clean');
