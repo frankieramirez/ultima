@@ -6,7 +6,7 @@ import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import { GROUPS, components } from '../components';
+import { components } from '../components';
 import { blocks } from '../generated/blocks';
 import { componentPages, pages } from '../navigation';
 import { router, routeTree } from '../router';
@@ -50,6 +50,12 @@ const menuLink = (name: string) => menu().getByRole('link', { name, exact: true 
 /** A menu link's text without its `aria-hidden` catalogue number. */
 const plainText = (link: Element) =>
   Array.from(link.childNodes, (node) => (node instanceof Element && node.hasAttribute('aria-hidden') ? '' : node.textContent)).join('');
+/** Where a menu link's name starts, past its number column. */
+function nameLeft(link: Element) {
+  const range = document.createRange();
+  range.selectNodeContents(link.lastChild!);
+  return range.getBoundingClientRect().left;
+}
 
 beforeEach(() => {
   localStorage.removeItem(NAVIGATION_STORAGE_KEY);
@@ -63,10 +69,12 @@ test('every destination in the menu is a route the router serves', () => {
   expect(destinations.filter((to) => !served.has(to))).toEqual([]);
 });
 
-test('the menu derives its entries from the catalogue, by group and then alphabetically', () => {
-  const rank = (group: string) => GROUPS.findIndex(({ id }) => id === group);
-  const expected = [...components].sort((a, b) => rank(a.group) - rank(b.group) || a.name.localeCompare(b.name));
+test('the menu derives its component entries from the catalogue, alphabetical and numbered in sequence', () => {
+  const expected = [...components].sort((a, b) => a.name.localeCompare(b.name));
   expect(componentPages.map(({ params }) => params?.name)).toEqual(expected.map(({ item }) => item));
+  expect(componentPages.map(({ number }) => number)).toEqual(
+    Array.from({ length: components.length }, (_, index) => String(index + 1).padStart(3, '0')),
+  );
 });
 
 test('component and block entries lead with their generated number, and foundation pages show the name alone', async () => {
@@ -87,9 +95,12 @@ test('component and block entries lead with their generated number, and foundati
   }
   for (const { label } of pages.filter(({ to }) => to !== '/components' && to !== '/blocks')) {
     const link = menuLink(label).element();
-    expect(link.querySelector('[aria-hidden]'), label).toBeNull();
+    expect(link.querySelector('[aria-hidden="true"]')?.textContent, label).toBe('');
     expect(link.textContent).toBe(label);
   }
+  const links = Array.from(menuPanel().querySelectorAll('a'));
+  expect(new Set(links.map(nameLeft)).size).toBe(1);
+  expect(nameLeft(links[0]!)).toBeGreaterThan(links[0]!.querySelector('[aria-hidden="true"]')!.getBoundingClientRect().left);
 });
 
 test('the open drawer fits every numbered entry at 390 without overflow', async () => {
@@ -105,6 +116,7 @@ test('the open drawer fits every numbered entry at 390 without overflow', async 
   const links = Array.from(popup.element().querySelectorAll('a'));
   expect(links.length).toBe(pages.length - 2 + components.length + blocks.length);
   const oneLine = links.find((link) => link.textContent === 'Home')!.getBoundingClientRect().height;
+  expect(new Set(links.map(nameLeft)).size).toBe(1);
   for (const link of links) {
     const box = link.getBoundingClientRect();
     expect(link.scrollWidth, plainText(link)).toBeLessThanOrEqual(link.clientWidth);
@@ -113,20 +125,16 @@ test('the open drawer fits every numbered entry at 390 without overflow', async 
   }
 });
 
-test('the Components entry holds the six groups as labelled sub-lists that never collapse', async () => {
+test('the Components entry is one flat list under one heading, with no group labels', async () => {
   await mount('/components/sidebar');
   await expect.element(menuLink('Sidebar')).toBeVisible();
-  const labels = Array.from(menuPanel().querySelectorAll('h4'), (heading) => heading.textContent);
-  expect(labels).toEqual(['Forms', 'Overlays', 'Data display', 'Navigation', 'Feedback', 'Layout']);
-  const navigation = menu().getByRole('heading', { name: 'Navigation', level: 4 }).element();
-  const list = navigation.nextElementSibling as HTMLElement;
-  expect(Array.from(list.querySelectorAll('a'), plainText)).toEqual([
-    'Breadcrumb',
-    'Navigation Menu',
-    'Pagination',
-    'Sidebar',
-    'Tabs',
-  ]);
+  const headings = Array.from(menuPanel().querySelectorAll('h3, h4'), (heading) => heading.textContent);
+  expect(headings).toEqual(['Foundations', 'Components', 'Blocks']);
+  const list = menu().getByRole('heading', { name: 'Components', exact: true }).element().nextElementSibling as HTMLElement;
+  expect(list.querySelectorAll('ul')).toHaveLength(0);
+  expect(Array.from(list.querySelectorAll('a'), (link) => link.textContent)).toEqual(
+    [...components].sort((a, b) => a.number.localeCompare(b.number)).map(({ number, name }) => `${number}${name}`),
+  );
   expect(menuPanel().querySelectorAll('[aria-expanded]').length).toBe(0);
 });
 
@@ -359,12 +367,12 @@ test('a direct load leaves focus alone', async () => {
   expect(document.activeElement).toBe(document.body);
 });
 
-test('the grouped catalogue follows the page links in keyboard order', async () => {
+test('the catalogue follows the page links in keyboard order', async () => {
   await mount('/install');
   await expect.element(menuLink('Install')).toBeVisible();
   (menuLink('Tokens').element() as HTMLElement).focus();
   await userEvent.keyboard('{Tab}');
-  expect(document.activeElement).toBe(menuLink('Button').element());
+  expect(document.activeElement).toBe(menuLink('Accordion').element());
 });
 
 test('the logo returns to the editorial home page, which folds the menu rail away', async () => {

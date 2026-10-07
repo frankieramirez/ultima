@@ -4,7 +4,7 @@
  * when a value changes so a report names the fixture it ran.
  */
 export const siteNavigation = {
-  version: 4,
+  version: 5,
   directLoads: [
     { pathname: '/', heading: 'A system for building interfaces.' },
     { pathname: '/install', heading: 'Install' },
@@ -12,13 +12,14 @@ export const siteNavigation = {
     { pathname: '/elements/', heading: 'Elements' },
     { pathname: '/components/button', heading: 'Button' },
   ],
-  /** The direct load whose link the grouped menu marks current. */
+  /** The direct load whose link the menu marks current. */
   componentLoad: { pathname: '/components/button', heading: 'Button' },
   /** The home page's link to the install guide, in the page content. */
   homeLink: { name: 'Installation guide', pathname: '/install', heading: 'Install' },
   /** A destination both the desktop header and the narrow site menu link to. */
   destination: { name: 'Tokens', pathname: '/tokens', heading: 'Tokens' },
   menu: { trigger: 'Toggle navigation', name: 'Ultima' },
-  componentGroups: ['Forms', 'Overlays', 'Data display', 'Navigation', 'Feedback', 'Layout'],
+  /** The menu's section headings, in order; Components is one flat list under its heading. */
+  menuSections: ['Foundations', 'Components', 'Blocks'],
   colorMode: { group: 'Color mode', storageKey: 'ultima-theme' },
 } as const;

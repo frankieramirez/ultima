@@ -48,8 +48,13 @@ const styles = stylex.create({
     paddingInline: `calc(${shell.edge} - ${space['--ult-space-4']})`,
   },
   groupLabel: { fontFamily: font['--ult-font-mono'] },
-  subgroup: { paddingBlockEnd: 0, paddingInlineStart: space['--ult-space-4'] },
-  number: { color: color['--ult-color-text-subtle'], fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-1'] },
+  number: {
+    color: color['--ult-color-text-subtle'],
+    flexShrink: 0,
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-1'],
+    inlineSize: '3ch',
+  },
 });
 
 export function SiteMenu() {
@@ -73,13 +78,7 @@ export function SiteMenu() {
               {navigation.map((group) => (
                 <Sidebar.Group key={group.label}>
                   <Sidebar.GroupLabel style={styles.groupLabel}>{group.label}</Sidebar.GroupLabel>
-                  {group.links.length > 0 && <MenuList links={group.links} />}
-                  {group.groups?.map((subgroup) => (
-                    <Sidebar.Group key={subgroup.label} style={styles.subgroup}>
-                      <Sidebar.GroupLabel render={<h4 />}>{subgroup.label}</Sidebar.GroupLabel>
-                      <MenuList links={subgroup.links} />
-                    </Sidebar.Group>
-                  ))}
+                  <MenuList links={group.links} />
                 </Sidebar.Group>
               ))}
             </ScrollArea.Content>
@@ -104,11 +103,9 @@ function MenuLink({ link: { label, number, ...destination } }: { link: NavLink }
   return (
     <Sidebar.Item>
       <Sidebar.Link render={<Link {...destination} activeOptions={{ exact: true }} />}>
-        {number && (
-          <span aria-hidden {...stylex.props(styles.number)}>
-            {number}
-          </span>
-        )}
+        <span aria-hidden {...stylex.props(styles.number)}>
+          {number}
+        </span>
         {label}
       </Sidebar.Link>
     </Sidebar.Item>
