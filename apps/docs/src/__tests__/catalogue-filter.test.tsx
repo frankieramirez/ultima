@@ -198,7 +198,8 @@ test('the HTML element switch keeps the components the Elements page lists, and 
   await expect.element(status(main)).toHaveTextContent(`${elements.length} components · A–Z`);
   const items = elements.map((element) => element.item);
   expect(entries(main.element()).sort()).toEqual(items.map((item) => `/components/${item}`).sort());
-  for (const li of main.element().querySelectorAll('section > ul > li')) expect(li.textContent).toContain('Element');
+  for (const li of main.element().querySelectorAll('section > ul > li'))
+    expect(Array.from(li.querySelectorAll('span'), (span) => span.textContent)).toContain('Element');
   await userEvent.fill(main.getByRole('searchbox', { name: 'Filter components' }), 'button');
   expect(entries(main.element())).toEqual(['/components/button']);
   await userEvent.click(main.getByRole('button', { name: 'Clear filters' }));
@@ -242,6 +243,57 @@ test('slash focuses the filter, and the controls come before the entries in tab 
   expect(document.activeElement?.textContent).toBe(`All ${components.length}`);
   await userEvent.tab();
   expect(document.activeElement?.getAttribute('href')).toBe('/components/button');
+});
+
+test('slash leaves focus in an open search dialog', async () => {
+  const screen = await mount();
+  const input = screen.getByRole('main').getByRole('searchbox', { name: 'Filter components' }).element() as HTMLInputElement;
+  await userEvent.keyboard('{Control>}k{/Control}');
+  const dialog = screen.getByRole('dialog');
+  await expect.element(dialog).toBeVisible();
+  await expect.poll(() => dialog.element().contains(document.activeElement)).toBe(true);
+  await userEvent.tab();
+  await expect.poll(() => document.activeElement?.tagName).toBe('BUTTON');
+  await userEvent.keyboard('/');
+  expect(dialog.element().contains(document.activeElement)).toBe(true);
+  expect(input.value).toBe('');
+});
+
+test('slash leaves focus in the open navigation drawer at 390', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount();
+  const input = screen.getByRole('main').getByRole('searchbox', { name: 'Filter components' }).element() as HTMLInputElement;
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle navigation' }));
+  const drawer = screen.getByRole('dialog');
+  await expect.element(drawer).toBeVisible();
+  await expect.poll(() => drawer.element().contains(document.activeElement)).toBe(true);
+  await userEvent.keyboard('/');
+  expect(drawer.element().contains(document.activeElement)).toBe(true);
+  expect(input.value).toBe('');
+});
+
+test('Shift+Tab up the grid never leaves a focused entry under the stuck toolbar', async () => {
+  await page.viewport(1280, 720);
+  const screen = await mount();
+  const main = screen.getByRole('main').element();
+  const toolbar = main.querySelector('section')!.previousElementSibling as HTMLElement;
+  const links = Array.from(main.querySelectorAll<HTMLAnchorElement>('section > ul > li a[href^="/components/"]'));
+  links.at(-1)!.focus();
+  for (let press = 0; press < 16; press += 1) {
+    await userEvent.tab({ shift: true });
+    const focused = document.activeElement as HTMLElement;
+    expect(links).toContain(focused);
+    expect(getComputedStyle(toolbar).position).toBe('sticky');
+    expect(focused.getBoundingClientRect().top).toBeGreaterThanOrEqual(toolbar.getBoundingClientRect().bottom);
+  }
+});
+
+test('the grid holds four columns at most, however wide its column', async () => {
+  const screen = await mount();
+  const grid = screen.getByRole('main').element().querySelector<HTMLElement>('section ul')!;
+  grid.style.inlineSize = '120rem';
+  expect(getComputedStyle(grid).gridTemplateColumns.split(' ')).toHaveLength(4);
 });
 
 for (const mode of ['dark', 'light'])

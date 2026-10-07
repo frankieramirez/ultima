@@ -1805,7 +1805,7 @@ Settled on [Match the Components directory to its frame](https://github.com/fran
 3. The toolbar.
 4. One section per group, in display order. Each section heading carries the group's mark (§ 01 to § 06), its label and its count, with a one-line summary of the group beside it.
 
-**The toolbar.** The first row holds the filter field, then the "Has an HTML element" switch and the view toggle at its end. The second row holds the group chips, then the status line and Clear filters. From 64rem the toolbar sticks under the site header. Below 64rem it wraps and scrolls with the page, because a wrapped toolbar that stuck would cover too much of a phone screen.
+**The toolbar.** The first row holds the filter field, then the "Has an HTML element" switch and the view toggle at its end. The second row holds the group chips, then the status line and Clear filters. From 64rem the toolbar sticks under the site header. Below 64rem it wraps and scrolls with the page, because a wrapped toolbar that stuck would cover too much of a phone screen. A stuck toolbar must never hide the focus (WCAG 2.2 SC 2.4.11). The page's scroll padding only allows for the header, and the toolbar's height changes as it wraps, so when focus lands inside a section above the toolbar's bottom edge, the page scrolls until the focused element sits one toolbar gap below it.
 
 **The card.** Each entry in the grid is a Card with two parts:
 
@@ -1814,7 +1814,7 @@ Settled on [Match the Components directory to its frame](https://github.com/fran
 
 The number and name are the link to `/components/<item>`. The link's box stretches over the whole card, so the preview and summary are clickable too, and the summary is the link's accessible description.
 
-**The grid.** The grid fits as many columns as it can at a 15rem minimum, up to four. That gives four at 1440 beside the menu, fewer as the width narrows, and one at 390. Cards in a row share a height.
+**The grid.** The grid fits as many columns as it can at a 15rem minimum, up to four. The minimum never drops below a quarter of the row, so the grid holds four at most however wide the column gets. That gives four at 1440 beside the menu, fewer as the width narrows, and one at 390. Cards in a row share a height.
 
 **The list.** The list is the compact form. Each row drops the preview and sits under a rule, with the number, name and badge in a 15rem column and the summary beside it from 48rem. Below 48rem the summary stacks under the name. The link and its stretched box work as they do on a card.
 
@@ -1822,7 +1822,7 @@ The number and name are the link to `/components/<item>`. The link's box stretch
 
 | Control | Built from | What it does |
 | --- | --- | --- |
-| Filter | Input Group, a searchbox named "Filter components" | Keeps the entries whose name, description or summary contains the trimmed query, ignoring case. `/` focuses it from anywhere on the page outside an editable field. |
+| Filter | Input Group, a searchbox named "Filter components" | Keeps the entries whose name, description or summary contains the trimmed query, ignoring case. `/` focuses it from anywhere on the page outside an editable field and outside an open dialog, and does nothing while a modal hides the page. |
 | Group chips | Toggle Group named "Group": All, then one item per group | Keeps one group. Exactly one chip is pressed, All by default, and pressing the pressed chip does nothing. A chip's count is that group's matches under the query and the switch, so a chip with no match reads 0 and stays. |
 | Has an HTML element | Switch, labelled by its text | Keeps the components that ship a custom element, the ones the Elements page lists. Off by default. |
 | View | Toggle Group named "View": Grid and List | Swaps the card grid for the list. Grid by default. It isn't a filter, so Clear filters leaves it alone. |

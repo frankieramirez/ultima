@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Badge, Button, Card, Empty, Field, InputGroup, Separator, Switch, ToggleGroup } from '@ultima/ui';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FocusEvent } from 'react';
 
 import { breakpoints } from '../breakpoints.stylex';
 import { CataloguePreview } from '../catalogue-preview';
@@ -178,7 +178,7 @@ const styles = stylex.create({
   grid: {
     display: 'grid',
     gap: space['--ult-space-6'],
-    gridTemplateColumns: 'repeat(auto-fill, minmax(15rem, 1fr))',
+    gridTemplateColumns: `repeat(auto-fill, minmax(max(15rem, calc((100% - 3 * ${space['--ult-space-6']}) / 4)), 1fr))`,
     listStyle: 'none',
     margin: 0,
     padding: 0,
@@ -223,7 +223,7 @@ const styles = stylex.create({
   element: {
     flexShrink: 0,
     fontFamily: font['--ult-font-mono'],
-    fontSize: '0.59375rem',
+    fontSize: text['--ult-text-1'],
     fontWeight: font['--ult-font-weight-regular'],
     paddingBlock: space['--ult-space-1'],
     textTransform: 'uppercase',
@@ -279,12 +279,21 @@ export function ComponentsPage() {
   const [elementsOnly, setElementsOnly] = useState(false);
   const [view, setView] = useState<View>('grid');
   const input = useRef<HTMLInputElement>(null);
+  const toolbar = useRef<HTMLDivElement>(null);
+
+  const keepClearOfToolbar = (event: FocusEvent<HTMLElement>) => {
+    if (!toolbar.current) return;
+    const clear = toolbar.current.getBoundingClientRect().bottom + parseFloat(getComputedStyle(toolbar.current).rowGap);
+    const top = event.target.getBoundingClientRect().top;
+    if (top < clear) window.scrollBy({ top: top - clear, behavior: 'instant' });
+  };
 
   useEffect(() => {
     const focusFilter = (event: KeyboardEvent) => {
       if (event.key !== '/' || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
       const target = event.target;
-      if (target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select'))) return;
+      if (target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select, [role="dialog"], [role="alertdialog"]'))) return;
+      if (!input.current || input.current.closest('[aria-hidden="true"], [inert]')) return;
       event.preventDefault();
       input.current?.focus();
     };
@@ -342,7 +351,7 @@ export function ComponentsPage() {
           <Separator />
         </div>
       </div>
-      <div {...stylex.props(styles.toolbar)}>
+      <div ref={toolbar} {...stylex.props(styles.toolbar)}>
         <div {...stylex.props(styles.row)}>
           <Field.Root name="filter" style={styles.search}>
             <InputGroup.Root>
@@ -438,7 +447,7 @@ export function ComponentsPage() {
         if (entries.length === 0) return null;
         const heading = `group-${group.id}`;
         return (
-          <section key={group.id} aria-labelledby={heading}>
+          <section key={group.id} aria-labelledby={heading} onFocus={keepClearOfToolbar}>
             <div {...stylex.props(styles.groupHead)}>
               <h2 id={heading} {...stylex.props(headings.h2, styles.group)}>
                 <span aria-hidden {...stylex.props(styles.groupMark)}>

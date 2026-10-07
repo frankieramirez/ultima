@@ -98,7 +98,7 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   const toggle = main.getByRole('switch', { name: switchLabel });
   await toggle.click();
   const withElement = await counted(page, (n) => n > 0 && n < whole, `the ${chip} chip with ${switchLabel}`);
-  assert.equal(await main.locator('section > ul > li').filter({ hasText: 'Element' }).count(), withElement, 'every entry left ships an element');
+  assert.equal(await main.locator('section > ul > li').filter({ has: page.getByText('Element', { exact: true }) }).count(), withElement, 'every entry left ships an element');
   const view = main.getByRole('group', { name: 'View' });
   await view.getByRole('button', { name: 'List' }).click();
   assert.equal(await entries.count(), withElement, 'the list view keeps the same entries');
