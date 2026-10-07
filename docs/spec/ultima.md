@@ -1742,6 +1742,7 @@ Every item lives under the `@ultima` namespace.
 | `setup-vite` | `registry:item` | `components.json`, `ultima.vite.ts` |
 | `setup-next` | `registry:item` | `components.json`, `babel.config.js`, `postcss.config.js`, `app/ultima.css` |
 | `tokens-css` | `registry:item` | the generated tokens stylesheet at `~/ultima-tokens.css` |
+| `<block>` | `registry:block` | one screen as several files under `@components/<id>/`, per [Blocks](#blocks) |
 
 Items are atomic. There are no bundles (`report-set`, `all`) and no `registry:base` item in v0: `registryDependencies` already pulls `tokens` and `lib` transitively, `shadcn add` takes several items in one call, and a bundle is a second place to forget a component. Both are additive later.
 
@@ -1916,6 +1917,94 @@ Settled on [#160](https://github.com/frankieramirez/ultima/issues/160) and [the 
 
 Carried from the map as out of scope: wrapping the React catalogue as custom elements; hosting third-party web components inside Ultima React apps; parity beyond the report set and any Tailwind or Radix reintroduction; an npm package for the element catalogue, ADR 0003's deferral holding since no consumer has asked; and versioned registry history, which takes the same latest-channel contract as the React catalogue rather than a scheme of its own.
 
+## Blocks
+
+Decided on [Decide what a Block is in the catalogue](https://github.com/frankieramirez/ultima/issues/645) on [Map: Incorporate the October 2026 ultima.pen redesign](https://github.com/frankieramirez/ultima/issues/641). The October 2026 frames add a Blocks section with four blocks: Dashboard 01, CRM 01, Settings 01 and Sign-in 01 (`exLBC`, `vyn3r`, `WAxrI`, and the layouts `SzoSN`, `P4hdt`, `mmMDx`, `qtcCM`). Blocks beyond those four are a later effort.
+
+### What a block is
+
+**A block is a registry item that installs one working screen, built from catalogue components, as several files the consumer owns.** It is not a component: it has no barrel export, no `style` slot API, and no row in the Accessibility contract. It is not a recipe either, because a recipe has no installable unit. A block meets every contract of the components and recipes it uses, and where a frame conflicts with one of those contracts, the contract wins and the frame is redrawn.
+
+### Placement in the consumer
+
+The item's type is `registry:block`. Every file in it is `registry:component` with the target `@components/<id>/<file>.tsx`, so `npx shadcn add @ultima/dashboard-01` writes one folder, `@/components/dashboard-01/`, in Vite and Next.js alike. The entry file, `<id>.tsx`, exports the block's root component, `Dashboard01`, which takes no props. The consumer renders it from a route of their own.
+
+There is no `registry:page`. shadcn's own blocks target `app/<route>/page.tsx`, which only Next.js understands, and they write flat files such as `app-sidebar.tsx` that would collide between two blocks. One folder per block avoids both problems and never overwrites a route file the consumer owns. Because the folder installs as a unit, the block's relative imports between its own files survive shadcn's import rewrite, and its `@ultima/ui/<name>` imports are rewritten to the consumer's `ui` alias like any component's.
+
+Each served file carries an item stamp with a `c1` hash, as [Versioning and drift](#versioning-and-drift) specifies for TypeScript source, so `status` and `diff` cover installed blocks with no new rule.
+
+### Sources and the files of a block
+
+Block sources live in a workspace package, `packages/blocks`, one directory per block at `packages/blocks/src/<id>/`. A block imports the catalogue only through `@ultima/ui/<name>` and the tokens through `@ultima/tokens/*`. Nothing imports `@ultima/blocks` except the docs site. The registry build stages each directory to `registry/ultima/components/<id>/`, and the item's file list, targets, npm `dependencies` and `registryDependencies` are derived from that directory and its imports, the same way a component's are.
+
+[One file per component](#one-file-per-component) governs catalogue components, not block files. A block holds the entry file plus one file per region of the screen: for Dashboard 01, the sidebar, the header, the stat row, the revenue chart, the top-products list and the recent-orders table. Sample data stays in the file that renders it.
+
+A block file follows the component-code rules: tokens only, no raw values, StyleX only, and no `className`. It also follows the docs site's [line between a component and page layout](#the-line-between-a-component-and-page-layout): a block file may arrange its regions and set type and flow spacing, and every control and every painted surface comes from a catalogue component. The exception is the marks of a recipe the block follows, which paint as that recipe's markup does, recorded as declaration-scoped exceptions like the docs site's.
+
+### Engines in a block
+
+A block may import the headless engine of a recipe it follows, and that engine becomes the block's npm dependency. Components still never take one. Dashboard 01 follows the [Chart](#chart) recipe as written, so it imports `d3-scale` and `d3-array`, and installing it installs them. [ADR 0007](../adr/0007-engines-ship-as-recipes.md) carries the amendment. The import checker allows an engine import in a block only when the block's descriptor names a recipe whose demos import that engine.
+
+The recipe's accessibility contract comes along unchanged. The revenue chart's SVG is `aria-hidden`, and its rows sit in a real `Table`. The frame shows no table, so the chart card gains a Collapsible "Show data" disclosure holding it. A visually hidden table would weaken the recipe's rule, so it is declined.
+
+### Identity and numbering
+
+A block's id is kebab-case with a two-digit family suffix, `dashboard-01`, following shadcn's naming. Its title is "Dashboard 01" and its install command is `npx shadcn add @ultima/dashboard-01`. Blocks carry no `release`: Blocks is its own section, ordered by number, and the release sets stay the components' track.
+
+**The catalogue number is a display ordinal, derived and never stored.** The generator numbers each kind separately, in alphabetical order of id, padded to three digits. The frames already number components this way: Avatar 005, Button 008, Card 011, Date Picker 019, Input 027, Meter 031, Sidebar 042, Stat 046, Table 048 and Tabs 049 each match their alphabetical position among the 54 React items. The number shifts when an item is added and is never used as an identity; the id is the identity. A stored number would stay put, but someone would have to allocate it, and two branches adding a component would both take the same one. Blocks number the same way, so CRM 01 is 001 and Dashboard 01 is 002, and a frame showing otherwise is redrawn. The Components directory, block Anatomy and global search all show this number.
+
+### The descriptor
+
+A block has one descriptor at `registry/metadata/block/<id>.ts`, `kind: 'block'`, under the rules of [Component metadata and scaffolding](agent-infrastructure.md#component-metadata-and-scaffolding).
+
+| Field | Owner |
+| --- | --- |
+| `id`, `title`, `description`, `contract`, `installDocs` | Authored, as for a React item. `contract` points at the block's own note under Per-block notes below. |
+| `primaryExport` | Authored, and checked against the entry file's export. |
+| `recipes` | Authored: the ids of the recipes the block follows, checked against the recipe descriptors. Recipes are not imported, so this is the one fact source cannot supply. |
+| Files and targets | Derived from `packages/blocks/src/<id>/`. |
+| `dependencies`, `registryDependencies` | Derived from imports. |
+| Number | Derived by the generator. |
+
+**Built from** is derived: the block's direct `@ultima/ui/<name>` imports plus its `recipes`, shown with their catalogue numbers in number order. No authored list of components exists to fall out of step with the source.
+
+Block pages have no MDX. The page is a template filled from the descriptor and the source.
+
+### Generated wiring
+
+`pnpm catalogue:generate` emits block items into `registry/items.config.ts` and writes `apps/docs/src/generated/blocks.ts`: id, title, description, number, install command, file tree, Built from, and the preview component. The docs navigation gains a Blocks entry, and `/llms.txt` gains a Blocks section listing each block's install command and Built from. `pnpm scaffold block <id>` creates the descriptor, the entry file and the test file with `test.todo` per proof item, and regenerates the wiring.
+
+### Docs routes
+
+| Route | Holds |
+| --- | --- |
+| `/blocks` | The index: one card per block, in number order, with a live thumbnail |
+| `/blocks/<id>` | The block page: the preview, the install command, the file tree, each file's source read through `?raw`, Built from, and Anatomy |
+| `/blocks/<id>/preview` | The block alone, in Neutral and the site's color mode, rendered for framing |
+
+**The preview is an iframe.** A block such as Dashboard 01 is an app shell with a Sidebar, and Sidebar picks its layout from `matchMedia` on the real viewport, so a block scaled down inside the 840px content column would lay out for the reader's window, not the preview's width. [Sidebar's docs page](#sidebars-docs-page) declined an iframe until a second case needed a responsive preview. Blocks are that case, and the iframe becomes the docs-local pattern that page anticipated. The block page frames the preview route at the block's design width, with a desktop and narrow toggle. The index reuses the same route in lazy-loaded, `inert` iframes scaled to the card, so thumbnails cannot drift from the blocks. The PNGs under `ultima-assets/blocks/` are design assets only. How Anatomy labels the preview is decided on [Decide how a block page shows its anatomy](https://github.com/frankieramirez/ultima/issues/646).
+
+### What a block build ticket proves
+
+Tests live in `packages/blocks/src/__tests__/<id>.test.tsx`, in the same browser-mode environment as `packages/ui`. Six items:
+
+1. **It renders.** The entry mounts with no props in both color modes, at 1280×720 and 390×844, without throwing.
+2. **Its structure resolves.** Every region has its landmark or heading, every control is queryable by role and accessible name, and each navigation landmark has a distinct name.
+3. **axe passes** in both modes at both widths, scanning `document.body`, including Sidebar's open mobile menu at the narrow width.
+4. **Behavior the block wires itself.** Every interaction that belongs to the block rather than to a component is exercised: in Dashboard 01, the period control changing the chart's data and the "Show data" disclosure.
+5. **The recipes it follows still hold.** Each recipe's own contract is asserted in place: for Chart, the SVG is `aria-hidden` and the `Table` holds the same rows.
+6. **Typecheck passes.**
+
+The component rule stands: no test asserts a color value.
+
+**Smoke install.** `scripts/smoke-install.sh` installs each block alone into a fresh Vite app and a fresh Next.js app, imports its entry from a route, and builds both. It asserts that the files landed under `components/<id>/`, that every derived registry dependency and engine package arrived, and that every installed file is stamped and `status` reports it `current`. A whole-catalogue install would mask a missing edge, which is the reason Sidebar is installed alone.
+
+**Production matrix.** One scenario, `blocks.preview`, at both widths in both modes: direct-load `/blocks`, open a block card by keyboard, wait for the preview frame's block to be ready, copy the install command, switch the preview to narrow, check horizontal fit and run axe on the page. That is four cells, taking the matrix from 28 to 32.
+
+### Per-block notes
+
+Each block's regions, landmarks, data and wired behavior are written here before its build ticket opens, one subsection per block. The four notes are pending.
+
 ## Mana report adoption
 
 Decided on Mana report adoption (ULT-13), against how the report is styled today (ULT-5). Mana's `ultima` audit report is the first true consumer of Ultima, of the tokens CSS export only. It keeps its Python render pipeline, and the work below happens in the mana repository, on the branch that carries the `ultima` skill. It is recorded here because the export's constraints and the `<role>-border` tokens exist for it, and because the checklist is what a build ticket in mana slices.
@@ -1978,6 +2067,8 @@ Decided on Docs site scope (ULT-14). The site at `apps/docs` is three things at 
 | `/palette` | The six scales, twelve steps, dark and light values, the step convention, and the WCAG gate results |
 | `/components` | Index of the catalogue, sectioned v0, then v0.1, then v0.2 |
 | `/components/<name>` | One page per catalogue component |
+| `/blocks` | Index of the blocks, per [Blocks](#blocks) |
+| `/blocks/<id>` | One page per block, with its framed preview at `/blocks/<id>/preview` |
 | `/rationale` | Why StyleX, why Base UI, why registry-first, why dark-first. Links the ADRs |
 
 `/install` is the long form the `docs` field of each setup item points at; the setup items print a short imperative list and nothing is installed into the consumer's repo as a README.
@@ -2081,7 +2172,7 @@ Decided on What shape Sidebar's demo takes on its docs page (ULT-60). Sidebar is
 
 **A desktop reader cannot be shown the mobile menu in the page, by any construction.** The switch is two halves reading one string: a static at-rule key compiled into the stylesheet, and a `matchMedia` read deciding what mounts. A runtime `breakpoint` prop could redirect the mount but not the at-rule, because a runtime value cannot sit in a StyleX media condition; `style` overrides move the at-rule but not the mount. Either half alone desyncs the two. Only a genuinely narrow viewport produces the mobile menu.
 
-The page therefore does not try. No iframe, no screenshot, and no second demo module composing Dialog by hand, which would copy `sidebar.tsx`'s private overrides into `apps/docs` and then drift from them. The page states in prose what happens below the breakpoint and points at the site's own menu. An iframe at a mobile width was measured and declined: it costs a route that exists only to be framed, a second React root with its own `ThemeRoot` reading `ultima-theme` and listening for `storage`, which does reach a same-origin frame, and a printed source that is no longer the thing rendered. It returns only if a second component needs a responsive preview, and then as a docs-local pattern rather than one page's one-off.
+The page therefore does not try. No iframe, no screenshot, and no second demo module composing Dialog by hand, which would copy `sidebar.tsx`'s private overrides into `apps/docs` and then drift from them. The page states in prose what happens below the breakpoint and points at the site's own menu. An iframe at a mobile width was measured and declined: it costs a route that exists only to be framed, a second React root with its own `ThemeRoot` reading `ultima-theme` and listening for `storage`, which does reach a same-origin frame, and a printed source that is no longer the thing rendered. It returns only if a second component needs a responsive preview, and then as a docs-local pattern rather than one page's one-off. Blocks were that case: the framed preview under [Blocks](#docs-routes) is the pattern, and Sidebar's page keeps its prose.
 
 **The site's own Sidebar is the whole-navigation demonstration**, the way the header's theme control demonstrates that light is a full peer rather than the site asserting it. The page says so in as many words. Its own demos are each narrow and show one thing: the parts, a nested group through Collapsible, the active state, the desktop collapse, and a scrolling panel. None of them is a second full navigation.
 

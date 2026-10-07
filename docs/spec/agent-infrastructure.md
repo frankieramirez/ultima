@@ -241,6 +241,7 @@ All records have a unique kebab-case `id`, `kind`, `title`, `description`, and a
 | `source-bundle` | Describes the `tokens` or `lib` source group using the existing inventory and exclusions; dependencies come from the grouped sources. It is not a UI component and gets no component route. |
 | `artifact` | Describes generated non-element files such as `tokens-css`, including the producing build, output path, file type and install destination. It is not copied source or a component. |
 | `recipe` | Names the owning component page and section anchor, release/checklist authority and demo modules. Has no install guidance field, registry item, component barrel export or independent route. Component and engine dependencies are derived from its executable demos; the MDX explains the consumer's installation steps. |
+| `block` | Names `primaryExport` and the `recipes` it follows. Its files, targets, dependencies and catalogue number are derived from `packages/blocks/src/<id>/`; it has no release, no MDX and no barrel export. The contract is [Blocks](ultima.md#blocks). |
 
 The loader scans these descriptor directories and rejects duplicate IDs across kinds, unexpected descriptor files, missing referenced items and cycles in derived registry dependencies. It reconciles descriptors with source discovery in both directions: every component source has a descriptor, and every descriptor has its required authored files. An unregistered source cannot disappear from the published catalogue silently. Source-bundle inventory names, artifact producers and file roles are validated enum values, not arbitrary commands that metadata can execute.
 
@@ -272,6 +273,7 @@ Generate these small source projections and commit them with the inputs:
 | `apps/docs/src/generated/catalogue.ts` | React entries and release definitions. Existing `components.ts` becomes a small adapter for helpers such as `componentsInRelease`, without a second authored item list. |
 | `apps/docs/src/generated/component-pages.ts` | Explicit eager MDX imports and the component-page map. `router.tsx` retains route construction, breadcrumbs and navigation behavior, and imports this map. |
 | `apps/docs/src/generated/elements.ts` | Element catalogue presentation assembled from descriptors and source-derived tag/enum data. The existing `elements.ts` keeps a thin compatibility export. |
+| `apps/docs/src/generated/blocks.ts` | Block entries with derived numbers, file trees and Built from lists, as [Blocks](ultima.md#generated-wiring) specifies. |
 | `packages/ui/src/index.ts` | Explicit public value/type exports from the authored component files. Helper subpaths and package export policy stay authored. |
 | `scripts/generated/browser-dependencies.ts` | Separate UI and docs browser-test optimizer include arrays, with each dependency's source provenance available from the generator diagnostics. |
 
@@ -307,7 +309,7 @@ CI checks freshness before expensive browser/build steps and fails on stale comm
 
 ### Scaffolding
 
-Add `pnpm scaffold <kind> <id> --from <request.json>`. Its default is a dry-run. `--write` applies the displayed plan after revalidating its preconditions. Support `react`, `element` and `recipe` initially. Support/setup records are infrequent packaging work and are authored against their schema; the scaffold must report that limitation rather than guessing install destinations.
+Add `pnpm scaffold <kind> <id> --from <request.json>`. Its default is a dry-run. `--write` applies the displayed plan after revalidating its preconditions. Support `react`, `element` and `recipe` initially, and `block` once [Blocks](ultima.md#blocks) lands. Support/setup records are infrequent packaging work and are authored against their schema; the scaffold must report that limitation rather than guessing install destinations.
 
 The request contains the descriptor fields and a transient authoring brief: settled contract reference, primary export where relevant, primitive/part shape, axes/defaults and the applicable proof-bar requirements. This brief drives template selection; it is not a new persistent owner of those facts. Reject absent contract answers before any write. In particular, do not invent a `RootProps` type, choose a primitive by similarity, assign a release position silently, or guess an element parity mapping.
 

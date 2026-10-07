@@ -66,9 +66,17 @@ A release checklist entry satisfied by a documented composition rather than by a
 
 An arrangement of components a docs page prints so a consumer can copy it, where no checklist entry is being satisfied. It has no registry item, no mapping to record, and no checks of its own, which is the whole difference between it and a **Recipe**: a recipe answers for an entry, a documented composition answers for a question the entry's own page leaves open. An avatar group is the first: negative inline spacing, a ring through the `style` slot, and an overflow count that is a plain `Avatar.Root`.
 
+## Block
+
+A registry item that installs one working screen, built from catalogue components, as several files in its own folder under the consumer's components alias. The consumer renders it from their own route and owns it from then on. A block is not a component, so it has no barrel export, `style` slot or contract row, and it is not a **Recipe**, because it installs. It meets every contract of the components and recipes it uses, and it may carry the **Engine** of a recipe it follows. Dashboard 01 is the first.
+
+## Catalogue number
+
+A three-digit display ordinal, such as Button 008, derived from an item's alphabetical position among items of its kind. It shifts when an item is added, so it is never an identity: the id is.
+
 ## Engine
 
-A headless dependency that supplies a model rather than an interaction: TanStack Table's row model, React Hook Form's form state, and whatever Calendar and Chart turn out to need. An engine renders no DOM and no styles, and supplies no roles, ARIA, keyboard handling, or focus management, which is the whole difference between it and a primitive. It belongs to the consumer, never to a registry item, so a composition that needs one is a recipe. An engine a composition only may use is the same: Field is complete without a form library, and the library is a recipe over it.
+A headless dependency that supplies a model rather than an interaction: TanStack Table's row model, React Hook Form's form state, and whatever Calendar and Chart turn out to need. An engine renders no DOM and no styles, and supplies no roles, ARIA, keyboard handling, or focus management, which is the whole difference between it and a primitive. It belongs to the consumer, never to a component's registry item, so a composition that needs one is a recipe. A **Block** that follows such a recipe carries its engine as the block's own dependency. An engine a composition only may use is the same: Field is complete without a form library, and the library is a recipe over it.
 
 ## Primitive layer
 

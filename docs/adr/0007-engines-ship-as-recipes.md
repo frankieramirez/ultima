@@ -47,3 +47,12 @@ One consequence is new. An optional engine never reaches the component's source 
 Recorded on [Item or recipe on each of the six remaining v0.2 lines](https://github.com/frankieramirez/ultima/issues/277). The headless gate reads literally: an engine renders no DOM and no styles. A candidate that renders DOM fails candidacy rather than earning a waiver, so cmdk, react-day-picker, input-otp, and react-resizable-panels — DOM-renderers that ship no styles — are out, and a DOM-emitting helper like `d3-axis` fails the same way.
 
 The gate's other edge is new. A library that renders nothing and ships no styles while supplying the roles, ARIA state, keyboard handling, and focus management ADR 0002 names is not an engine at all but a primitive. An entry built on one is a catalogue item under the ADR 0002 amendment rather than a recipe under this ground, and Calendar, Date Picker, and Resizable are the first entries to take that path.
+
+## Amendment (2026-10-07)
+
+Recorded on [Decide what a Block is in the catalogue](https://github.com/frankieramirez/ultima/issues/645). The redesign adds blocks: registry items that install a whole screen built from catalogue components. Dashboard 01 draws a revenue bar chart, so it follows the Chart recipe, and the recipe's engine is `d3-scale` and `d3-array`.
+
+**A block may import the headless engine of a recipe it follows, and the engine becomes that block's npm dependency. Components still never do.** The consequence above, that installing one component never installs a data layer, is the reason this ADR exists, and it holds unchanged for components. It does not reach a block, because a consumer who installs a dashboard has asked for its chart. The alternative was a block that computes its marks without the engine. That keeps every registry item engine-free, but the chart would stop being the recipe that the block's Anatomy and Built from list name, and a second, unreviewed way of drawing a chart would ship.
+
+The gate is unchanged: the engine must be headless, and only an engine that a recipe already uses qualifies. The import checker allows an engine import in a block only when the block's descriptor names a recipe whose demos import that engine. The recipe's accessibility contract comes with it, so the block's chart is decoration and a `Table` holds its data.
+
