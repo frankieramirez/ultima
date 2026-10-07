@@ -203,6 +203,9 @@ const exportName = (item: Export) => (item.kind === 'type' ? `type ${item.name}`
 function anatomyProjection(entry: ReactEntry): string {
   const source = `@ultima/ui/${entry.id}`;
   const rest = entry.exports.filter((item) => item.name !== entry.primaryExport);
+  const reexport = (items: Export[]) => `export {\n${items.map((item) => `  ${exportName(item)},\n`).join('')}} from '${source}';\n`;
+  // An arrow, a `memo` or a part object with nothing to mark passes through untouched.
+  if (entry.parts.length === 0) return `${header(`registry/metadata/react/${entry.id}.ts and ${entry.source}`)}\n${reexport(entry.exports)}`;
   const marked = (part: string, from: string) => `mark(${from}, '${entry.id}', '${part}')`;
   const single = entry.parts.length === 1 && entry.parts[0] === entry.primaryExport;
   const value = single
@@ -212,7 +215,7 @@ function anatomyProjection(entry: ReactEntry): string {
 import { ${entry.primaryExport} as Source } from '${source}';
 
 import { mark } from '../../anatomy-mark';
-${rest.length > 0 ? `\nexport {\n${rest.map((item) => `  ${exportName(item)},\n`).join('')}} from '${source}';\n` : ''}
+${rest.length > 0 ? `\n${reexport(rest)}` : ''}
 export const ${entry.primaryExport} = ${value};
 `;
 }

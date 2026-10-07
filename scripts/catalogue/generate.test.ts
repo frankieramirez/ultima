@@ -81,9 +81,22 @@ describe('the planned projections', () => {
     files[path] = (files[path] as string).replace("group: 'navigation'", "group: 'navigation',\n  elementless: ['Root']").replace('"group": "navigation"', '"group": "navigation",\n  "elementless": ["Root"]');
     const planned = planOutputs(memoryFiles(files), policy);
     assert.deepEqual(planned.diagnostics, []);
-    assert.match(planned.outputs.get(anatomyModule('sidebar')) as string, /export const Sidebar = \{\n  \.\.\.Source,\n\};/);
+    assert.equal(
+      body(planned.outputs.get(anatomyModule('sidebar')) as string),
+      "export {\n  type SidebarRootProps,\n  Sidebar,\n  useSidebar,\n} from '@ultima/ui/sidebar';\n",
+    );
     files[path] = (files[path] as string).replace('["Root"]', '["Popup"]');
     assert.match(formatDiagnostics(planOutputs(memoryFiles(files), policy).diagnostics), /elementless names "Popup", which is not a part of Sidebar/);
+  });
+
+  test('re-export unchanged a primary export whose parts the source does not spell out', () => {
+    const files = fixture();
+    const path = 'packages/ui/src/calendar.tsx';
+    files[path] = (files[path] as string).replace('const Calendar = { Root };', 'const Calendar = memo(Root);');
+    const planned = planOutputs(memoryFiles(files), policy);
+    assert.deepEqual(planned.diagnostics, []);
+    assert.equal(body(planned.outputs.get(anatomyModule('calendar')) as string), "export {\n  Calendar,\n} from '@ultima/ui/calendar';\n");
+    assert.match(planned.outputs.get(OUTPUTS.anatomy) as string, /'calendar': \{ parts: \[\] \},/);
   });
 
   test('re-export each component file explicitly, aliases resolved and type modifiers kept', () => {

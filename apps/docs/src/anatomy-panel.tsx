@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ComponentType } from 'react';
 
 import { AnatomyOverlay, type AnatomyBox, type AnatomyEntry, type AnatomySize } from './anatomy';
 import { breakpoints } from './breakpoints.stylex';
+import { ThemeBoundary } from './theme-boundary';
 
 const styles = stylex.create({
   view: { position: 'relative' },
@@ -84,10 +85,14 @@ export function AnatomyPanel({ item, component: Component }: { item: string; com
     const node = stage.current;
     if (!node) return;
     let frame = 0;
+    let width: number | undefined;
     const update = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         const next = measure(node, item);
+        // A new width lays the demo out again, so the stage gives back any room an earlier stack took.
+        if (width !== undefined && width !== next.size.width) setReach(0);
+        width = next.size.width;
         setMeasured((current) => (JSON.stringify(current) === JSON.stringify(next) ? current : next));
         for (const target of node.querySelectorAll(`[data-anatomy-item="${item}"]`)) resize.observe(target);
       });
@@ -123,9 +128,9 @@ export function AnatomyPanel({ item, component: Component }: { item: string; com
     <>
       <div {...stylex.props(styles.view)}>
         <div ref={stage} inert {...stylex.props(styles.stage, reach > 0 && styles.reach(reach))}>
-          <div {...stylex.props(styles.stageInner)}>
+          <ThemeBoundary style={styles.stageInner}>
             <Component />
-          </div>
+          </ThemeBoundary>
         </div>
         {measured && (
           <AnatomyOverlay entries={entries} size={measured.size} labelled={labelled} emphasis={emphasis} onPlace={grow} />

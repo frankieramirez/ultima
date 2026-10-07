@@ -9,9 +9,11 @@ import { render } from 'vitest-browser-react';
 import { placeLabels } from '../anatomy';
 import { hasAnatomyTab } from '../component-page';
 import { components } from '../components';
+import SidebarCollapse from '../demos/sidebar/collapse';
 import { anatomyTabs } from '../generated/anatomy-tabs';
 import { routeTree } from '../router';
 import { THEME_STORAGE_KEY } from '../theme';
+import { ThemeBoundary } from '../theme-boundary';
 // axe resolves a text contrast against the nearest painted ancestor, and the ground is on `body`.
 import '../styles.css';
 
@@ -190,4 +192,67 @@ test("Button's page has no Anatomy tab", async () => {
   const screen = await render(<RouterProvider router={createRouter({ routeTree, history })} />);
   await expect.element(screen.getByRole('tab', { name: 'Preview' }).first()).toBeVisible();
   expect(screen.getByRole('tab', { name: 'Anatomy' }).query()).toBeNull();
+});
+
+test('a demo keeps its Anatomy marks and still portals its popup into the Neutral boundary', async () => {
+  await page.viewport(1440, 900);
+  onTestFinished(() => page.viewport(1280, 720));
+  const history = createMemoryHistory({ initialEntries: ['/components/select'] });
+  const screen = await render(<RouterProvider router={createRouter({ routeTree, history })} />);
+  const trigger = screen.getByRole('combobox', { name: 'Crafting material' });
+  expect(trigger.element().getAttribute('data-anatomy-part')).toBe('Trigger');
+  await userEvent.click(trigger);
+  const option = screen.getByRole('option', { name: 'Oak' });
+  await expect.element(option).toBeVisible();
+  const popup = option.element().closest('[data-anatomy-part="Popup"]') as HTMLElement;
+  expect(popup.dataset.anatomyItem).toBe('select');
+  expect(popup.closest('[data-theme-boundary="neutral"]')).toBe(trigger.element().closest('[data-theme-boundary="neutral"]'));
+  expect(option.element().closest('[data-anatomy-part="Item"]')).not.toBeNull();
+  await userEvent.keyboard('{Escape}');
+});
+
+test("a Sidebar demo's mobile menu keeps its Panel mark inside the Neutral boundary", async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await render(
+    <ThemeBoundary>
+      <SidebarCollapse />
+    </ThemeBoundary>,
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle the collapsing navigation' }));
+  const dialog = screen.getByRole('dialog', { name: 'Collapsing navigation' });
+  await expect.element(dialog).toBeVisible();
+  const panel = dialog.element().querySelector('[data-anatomy-part="Panel"]');
+  expect(panel?.getAttribute('data-anatomy-item')).toBe('sidebar');
+  expect(dialog.element().closest('[data-theme-boundary="neutral"]')).not.toBeNull();
+  await userEvent.keyboard('{Escape}');
+});
+
+test('the Anatomy stage applies Neutral, and the open dialog sits inside it', async () => {
+  const { panel } = await openAnatomy(1440, 'dialog');
+  await settledLabels(panel, ['Backdrop', 'Viewport', 'Popup', 'Title', 'Description', 'Close']);
+  const stage = panel.querySelector('[inert]') as HTMLElement;
+  const boundary = stage.querySelector('[data-theme-boundary="neutral"]');
+  expect(boundary).not.toBeNull();
+  expect(boundary?.contains(stage.querySelector('[data-anatomy-part="Popup"]'))).toBe(true);
+  expect(panel.querySelector('[data-anatomy-overlay]')?.closest('[data-theme-boundary]')).toBeNull();
+});
+
+test('the stage gives back the room a stack took once a new width no longer needs it', async () => {
+  const { panel } = await openAnatomy(1440, 'slider');
+  const parts = ['Root', 'Label', 'Value', 'Control', 'Track', 'Indicator', 'Thumb'];
+  const stage = panel.querySelector('[inert]') as HTMLElement;
+  const height = () => Math.round(stage.getBoundingClientRect().height);
+  const settled = async () => {
+    await settledLabels(panel, parts);
+    let last = -1;
+    await expect.poll(() => (last === (last = height()) ? 'still' : 'moving'), { interval: 100 }).toBe('still');
+    return height();
+  };
+  const wide = await settled();
+  await page.viewport(390, 900);
+  const narrow = await settled();
+  expect(narrow).not.toBe(wide);
+  await page.viewport(1440, 900);
+  expect(await settled()).toBe(wide);
 });

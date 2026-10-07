@@ -19,6 +19,7 @@ import {
   withStamp,
 } from '../packages/cli/src/stamp.ts';
 import type { SetupDescriptor } from '../registry/metadata/schema.ts';
+import { markedFiles } from './catalogue/anatomy-guard.ts';
 import { agentGuide, type GuideBlock, type GuideComponent } from './build-agent-guide.ts';
 import { ordinal } from './catalogue/browser.ts';
 import { diskFiles } from './catalogue/files.ts';
@@ -402,13 +403,10 @@ async function verifyStamps() {
   }
 }
 
-function verifyUnmarked(directory = PUBLIC_DIR) {
-  for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) verifyUnmarked(path);
-    else if (readFileSync(path).includes('data-anatomy')) {
-      throw new Error(`${path.slice(root.length + 1)} carries a data-anatomy mark; Anatomy marks only what the docs imports`);
-    }
+function verifyUnmarked() {
+  const marked = markedFiles(PUBLIC_DIR);
+  if (marked.length > 0) {
+    throw new Error(`${marked.map((path) => path.slice(root.length + 1)).join(', ')} carries a data-anatomy mark; Anatomy marks only what the docs imports`);
   }
 }
 
