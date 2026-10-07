@@ -406,6 +406,10 @@ Decided on [Decide the complete-screen composition guide and recipe discovery](h
 
 Decided on [Decide the StyleX linting contract for consumer projects](https://github.com/frankieramirez/ultima/issues/730). Status: accepted for implementation. The [consumer lint contract](consumer-lint.md) owns candidate compatibility, the consumer-owned flat-config recipe, severities, local/CI commands and installed-fixture proof. Setup guidance will offer the official StyleX plugin with `valid-styles` as an error, cleanup warnings and key sorting off. Doctor will advise about integration gaps without executing config code; `check` retains Ultima's policies. Compatibility and lint execution remain unverified until the named fixtures run.
 
+## Adoption delivery
+
+Decided on [Decide the adoption delivery order and first-screen acceptance test](https://github.com/frankieramirez/ultima/issues/731). Status: accepted for implementation. The [adoption delivery plan](adoption-delivery.md) orders the consumer default theme rollout, the consumer proof runner, the mode and scope recipes, consumer linting, product theme discovery, screen composition, project bootstrap and the full support matrix. It defines the first-screen exercise that gates an adoption recommendation.
+
 ## Palette
 
 Decided on The palette (ULT-10). Six scales, twelve steps each, a dark and a light value per step, generated in OKLCH and committed as hex. The reference generator is `packages/tokens/scripts/palette.py`; the v0 build ports it into the tokens package and must reproduce these values exactly.

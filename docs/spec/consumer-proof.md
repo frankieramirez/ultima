@@ -37,6 +37,8 @@ Every assertion must target a stable role, accessible name, test ID for a value 
 
 ## Gates and cost
 
+The [adoption delivery plan](adoption-delivery.md) sequences this runner (slice S2) and its 54-cell expansion (S8), and reuses it for the first-screen exercise.
+
 Relevant PRs run the affected installed-consumer cases and delivery paths when setup, tokens, theme resolution/export, registry metadata, components used by the scene, StyleX configuration, CLI or the verifier changes. Shared resolver, runner, browser configuration or dependency changes run the full shared matrix. Unknown dependency impact expands to the full matrix rather than silently skipping a case. Keep the existing full-catalogue smoke install trigger and checks. Use one scaffold per layout and reuse it across mode/browser assertions; cache immutable package downloads, not installed source or generated output being tested. Report warm-CI time and tune selection against the browser-support decision's initial 15-minute additional budget, without dropping a required assertion to meet it.
 
 A release recommendation requires the full shared 54-cell browser matrix, all four delivery obligations, the existing smoke install, Studio pairing/parity gates and `pnpm verify release` green on the same source revision. Record the report IDs and artifact hashes. A failed preset revision blocks a recommendation for that preset and any release that includes it. Weekly runs and dependency/browser upgrades refresh the complete evidence; stale reports do not prove a changed build.
