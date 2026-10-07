@@ -10,5 +10,6 @@ export default {
   primaryExport: 'DropdownMenu',
   release: 'v0',
   order: 11,
+  group: 'overlays',
   replaces: { roles: ['menu', 'menuitem', 'menuitemcheckbox', 'menuitemradio'] },
 } satisfies ReactDescriptor;

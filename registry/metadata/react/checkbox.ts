@@ -10,5 +10,6 @@ export default {
   primaryExport: 'Checkbox',
   release: 'v0.1',
   order: 3,
+  group: 'forms',
   replaces: { elements: ['input[type=checkbox]'], roles: ['checkbox'] },
 } satisfies ReactDescriptor;

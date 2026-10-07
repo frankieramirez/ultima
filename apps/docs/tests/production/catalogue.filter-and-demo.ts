@@ -12,7 +12,25 @@ import { productionScenario } from '../../../../scripts/verification/production.
 import { catalogue } from '../fixtures/catalogue.ts';
 import { assertFits, assertFocusRing, isFocused, shippedLength, siteColor } from '../support/production.ts';
 
-const { broadQuery, broadMatch, emptyQuery, emptyHeading, openQuery, open: result, demo, copyLabel } = catalogue;
+const { groups, broadQuery, broadMatch, broadGroups, emptyQuery, emptyHeading, openQuery, open: result, demo, copyLabel } = catalogue;
+
+async function sections(page: Page) {
+  return page.getByRole('main').locator('section').evaluateAll((elements) =>
+    elements.map((section) => {
+      const heading = section.querySelector('h2');
+      const parts = Array.from(heading?.childNodes ?? [], (node) => (node as Element).getAttribute?.('aria-hidden') ? '' : node.textContent?.trim() ?? '').filter(Boolean);
+      return { label: parts[0] ?? '', count: Number(parts[1]), entries: section.querySelectorAll('li a[href^="/components/"]').length };
+    }),
+  );
+}
+
+async function assertSections(page: Page, labels: readonly string[], what: string) {
+  const shown = await sections(page);
+  assert.deepEqual(shown.map(({ label }) => label), labels, `${what}: the group sections shown`);
+  for (const { label, count, entries } of shown) {
+    assert.ok(entries > 0 && count === entries, `${what}: ${label} lists ${entries} entries under a count of ${count}`);
+  }
+}
 
 /** The catalogue's count, read from its status line: "54 components". */
 async function count(page: Page): Promise<number> {
@@ -46,7 +64,8 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   // The entries are the list links into a component page; the breadcrumb and the on-this-page rail also hold lists of links.
   const entries = main.getByRole('listitem').getByRole('link').and(main.locator('a[href^="/components/"]'));
   const whole = await counted(page, (n) => n > 1, 'the whole catalogue');
-  assert.equal(await entries.count(), whole, 'the complete catalogue appears in one list');
+  assert.equal(await entries.count(), whole, 'every component appears once across the group sections');
+  await assertSections(page, groups, 'the whole catalogue');
   assert.equal(await main.getByRole('button', { name: /Next components|Previous components/ }).count(), 0, 'the directory has no pagination');
   assert.equal(await main.getByRole('button', { name: 'Clear filters' }).count(), 0, 'no filters need clearing initially');
   await assertFits(page, filter, `/components at ${variant.viewport} width`);
@@ -55,17 +74,20 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   await type(page, broadQuery);
   const narrowed = await counted(page, (n) => n > 0 && n < whole, `filtering by "${broadQuery}"`);
   assert.equal(await entries.count(), narrowed, 'the list shows exactly the counted matches');
-  assert.ok((await entries.filter({ hasText: new RegExp(`^${broadMatch}`) }).count()) >= 1, `${broadMatch} is listed`);
+  assert.equal(await entries.getByText(broadMatch, { exact: true }).count(), 1, `${broadMatch} is listed`);
+  await assertSections(page, broadGroups, `filtering by "${broadQuery}" hides every group without a match`);
   for (const name of await entries.allTextContents()) assert.match(name, new RegExp(broadQuery, 'i'), `"${name}" matches the query`);
 
   await type(page, emptyQuery);
   await counted(page, (n) => n === 0, 'a query that matches nothing');
+  await assertSections(page, [], 'a query that matches nothing');
   await main.getByRole('heading', { name: emptyHeading }).waitFor();
   assert.equal(await entries.count(), 0, 'the empty state lists nothing');
   await axe('empty results');
   // The filter bar's Clear filters comes first; the empty state's own is the last.
   await main.getByRole('button', { name: 'Clear filters' }).last().click();
   await counted(page, (n) => n === whole, 'clearing the filters');
+  await assertSections(page, groups, 'clearing the filters');
   assert.equal(await filter.inputValue(), '', 'the query is cleared');
   assert.ok(await isFocused(filter), 'clearing returns focus to the filter');
   assert.equal(await main.getByRole('heading', { name: emptyHeading }).count(), 0, 'the empty state is gone');

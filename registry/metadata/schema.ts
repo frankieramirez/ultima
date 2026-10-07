@@ -1,6 +1,11 @@
 import type { HandStep } from '../../packages/cli/src/hand-steps.ts';
+import type groups from './groups.ts';
 
 export type Release = { id: string; label: string };
+
+export type Group = { id: string; label: string };
+
+export type GroupId = (typeof groups)[number]['id'];
 
 type Common = {
   /** Kebab-case, unique across every kind, and the descriptor's file name. */
@@ -22,6 +27,7 @@ export type ReactDescriptor = Common & {
   release: string;
   /** Unique within `release`; gaps are allowed. */
   order: number;
+  group: GroupId;
   /**
    * The native controls and interactive roles the component stands in for, which `check` reads as
    * ULT-APP-CONTROL-001. An element is a tag, or `input[type=<type>]` for one input type; an input
@@ -103,10 +109,30 @@ export type RecipeDescriptor = Common & {
   demos: string[];
 };
 
+/** A recipe a block follows, and the accessible query of the recipe's root inside the block. */
+export type BlockRecipe = {
+  /** A recipe descriptor's id. */
+  id: string;
+  root: { role: string; name: string };
+};
+
+/**
+ * One working screen, installed as several files under `@components/<id>/`. Its files, targets,
+ * dependencies, catalogue number and Built from list are derived from `packages/blocks/src/<id>/`.
+ */
+export type BlockDescriptor = Common & {
+  kind: 'block';
+  installDocs: string;
+  /** The root component the entry file `<id>.tsx` exports, checked against it. */
+  primaryExport: string;
+  recipes: BlockRecipe[];
+};
+
 export type Descriptor =
   | ReactDescriptor
   | ElementDescriptor
   | SetupDescriptor
   | SourceBundleDescriptor
   | ArtifactDescriptor
-  | RecipeDescriptor;
+  | RecipeDescriptor
+  | BlockDescriptor;

@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Tooltip',
   release: 'v0',
   order: 9,
+  group: 'overlays',
 } satisfies ReactDescriptor;

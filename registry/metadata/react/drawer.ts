@@ -11,4 +11,5 @@ export default {
   primaryExport: 'Drawer',
   release: 'v0.2',
   order: 5,
+  group: 'overlays',
 } satisfies ReactDescriptor;

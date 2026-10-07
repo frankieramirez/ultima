@@ -10,4 +10,5 @@ export default {
   primaryExport: 'InputGroup',
   release: 'v0.2',
   order: 19,
+  group: 'forms',
 } satisfies ReactDescriptor;

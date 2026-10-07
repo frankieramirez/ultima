@@ -23,7 +23,7 @@ import { headingAnchors } from './source.ts';
 /** Every file the scaffold creates carries it until the author finishes the work; ULT-SOURCE-001 rejects it. */
 export const INCOMPLETE_MARKER = '@ultima-scaffold-incomplete';
 
-export const SCAFFOLD_KINDS = ['react', 'element', 'recipe'] as const;
+export const SCAFFOLD_KINDS = ['react', 'element', 'recipe', 'block'] as const;
 export type ScaffoldKind = (typeof SCAFFOLD_KINDS)[number];
 
 export const MANIFESTS = '.scaffold';
@@ -38,6 +38,16 @@ const PROOF_BAR = [
   'Typecheck passes',
   'Behavior this component wires itself',
   'CSS the primitive reads',
+] as const;
+
+/** docs/spec/ultima.md#what-a-block-build-ticket-proves */
+const BLOCK_PROOF = [
+  'It renders',
+  'Its structure resolves',
+  'axe passes',
+  'Behavior the block wires itself',
+  'The recipes it follows still hold',
+  'Typecheck passes',
 ] as const;
 
 const AXES = ['variant', 'size', 'tone'] as const;
@@ -65,6 +75,8 @@ type ElementBrief = {
 };
 
 type RecipeBrief = { proof: string[] };
+
+type BlockBrief = { proof: string[] };
 
 export type Request = { descriptor: Record<string, unknown>; brief: Record<string, unknown> };
 
@@ -140,12 +152,14 @@ const DESCRIPTOR_TYPES: Record<ScaffoldKind, string> = {
   react: 'ReactDescriptor',
   element: 'ElementDescriptor',
   recipe: 'RecipeDescriptor',
+  block: 'BlockDescriptor',
 };
 
 const FIELD_ORDER: Record<ScaffoldKind, string[]> = {
-  react: ['id', 'kind', 'title', 'description', 'docsDescription', 'contract', 'installDocs', 'primaryExport', 'release', 'order'],
+  react: ['id', 'kind', 'title', 'description', 'docsDescription', 'contract', 'installDocs', 'primaryExport', 'release', 'order', 'group'],
   element: ['id', 'kind', 'title', 'description', 'contract', 'installDocs', 'reactItem', 'order', 'registryDependencies', 'tags', 'attributes', 'example'],
   recipe: ['id', 'kind', 'title', 'description', 'contract', 'page', 'section', 'release', 'demos'],
+  block: ['id', 'kind', 'title', 'description', 'contract', 'installDocs', 'primaryExport', 'recipes'],
 };
 
 function descriptorText(kind: ScaffoldKind, descriptor: Record<string, unknown>): string {
@@ -270,6 +284,13 @@ function briefProblems(kind: ScaffoldKind, brief: Record<string, unknown>, descr
     problems.push(...unknownFields(brief, ['proof'], 'brief'));
     if (!isTextList(brief.proof)) problems.push('brief.proof is missing: what the recipe’s tests must prove, per its checklist authority');
   }
+
+  if (kind === 'block') {
+    problems.push(...unknownFields(brief, ['proof'], 'brief'));
+    if (!Array.isArray(brief.proof) || brief.proof.length !== BLOCK_PROOF.length || !brief.proof.every(isText)) {
+      problems.push(`brief.proof is missing: six answers, one per proof item (${BLOCK_PROOF.join('; ')}); "none, because …" is an answer`);
+    }
+  }
   return problems;
 }
 
@@ -301,10 +322,19 @@ export function requestProblems(kind: ScaffoldKind, id: string, request: unknown
       );
     }
   }
-  problems.push(...shape.filter((problem) => !['descriptor.order is missing', 'descriptor.release is missing'].includes(problem)));
+  if (kind === 'react') {
+    const groups = groupIds(files);
+    if (descriptor.group === undefined) problems.push(`descriptor.group is missing: one of ${groups.join(', ')}`);
+    else if (!groups.includes(descriptor.group as string)) {
+      problems.push(`descriptor.group ${JSON.stringify(descriptor.group)} is not one of ${groups.join(', ')}`);
+    }
+  }
+  problems.push(
+    ...shape.filter((problem) => !['descriptor.order is missing', 'descriptor.release is missing', 'descriptor.group is missing'].includes(problem)),
+  );
   problems.push(...briefProblems(kind, brief, descriptor));
 
-  if (kind === 'react' && isText(descriptor.primaryExport) && !PASCAL.test(descriptor.primaryExport)) {
+  if ((kind === 'react' || kind === 'block') && isText(descriptor.primaryExport) && !PASCAL.test(descriptor.primaryExport)) {
     problems.push(`descriptor.primaryExport "${descriptor.primaryExport}" is not a PascalCase root name`);
   }
   if (kind === 'element' && Array.isArray(descriptor.tags) && descriptor.tags.some((tag) => !(isText(tag) && /^ult-[a-z0-9-]+$/.test(tag)))) {
@@ -322,6 +352,10 @@ export function requestProblems(kind: ScaffoldKind, id: string, request: unknown
 
 function releaseIds(files: Files): string[] {
   return loadCatalogue(files).catalogue.releases.map((release) => release.id);
+}
+
+function groupIds(files: Files): string[] {
+  return loadCatalogue(files).catalogue.groups.map((group) => group.id);
 }
 
 function appendPosition(files: Files, kind: 'react' | 'element', release: string | undefined): number | undefined {
@@ -541,6 +575,38 @@ function todoTests(what: string, proof: string[]): string {
   ].join('\n');
 }
 
+function blockEntry(descriptor: Record<string, unknown>): string {
+  const name = descriptor.primaryExport as string;
+  return [
+    "'use client';",
+    '',
+    marker(`${name} is a skeleton. Write the screen to ${descriptor.contract as string}, one file per region in this folder, then remove this line.`),
+    "import * as stylex from '@stylexjs/stylex';",
+    '',
+    'const styles = stylex.create({\n  root: {},\n});',
+    '',
+    `export function ${name}() {`,
+    '  return <div {...stylex.props(styles.root)} />;',
+    '}',
+    '',
+  ].join('\n');
+}
+
+function blockTest(name: string, brief: BlockBrief): string {
+  return [
+    marker('every proof item below is a todo, not coverage. Write the tests and delete the todos.'),
+    "import { test } from 'vitest';",
+    '',
+    '/**',
+    ' * What a block build ticket proves (docs/spec/ultima.md#what-a-block-build-ticket-proves)',
+    ...BLOCK_PROOF.map((item, index) => ` * ${index + 1}. ${item}: ${brief.proof[index] as string}`),
+    ' */',
+    '',
+    ...BLOCK_PROOF.map((item) => `test.todo(${quote(`${name}: ${item}`)});`),
+    '',
+  ].join('\n');
+}
+
 function recipeDemo(component: string): string {
   return [
     marker('write the recipe’s composition, then remove this line.'),
@@ -662,6 +728,17 @@ function authoredFiles(kind: ScaffoldKind, id: string, request: Request, files: 
       `Apply the page snippet below to ${pagePath} by hand; the scaffold never rewrites a page.`,
     );
   }
+  if (kind === 'block') {
+    const brief = request.brief as unknown as BlockBrief;
+    const name = descriptor.primaryExport as string;
+    create.set(`packages/blocks/src/${id}/${id}.tsx`, blockEntry(descriptor));
+    create.set(`packages/blocks/src/__tests__/${id}.test.tsx`, blockTest(name, brief));
+    remaining.push(
+      `Write ${name}'s regions to ${descriptor.contract as string}: the entry lays them out, and each region is its own file in packages/blocks/src/${id}/, glyphs in a private icons.tsx.`,
+      ...BLOCK_PROOF.map((item, index) => `Proof item ${index + 1}, ${item}: ${brief.proof[index] as string}`),
+      `Install it alone into fresh Vite and Next.js apps through scripts/smoke-install.sh.`,
+    );
+  }
   remaining.push(`Remove every ${INCOMPLETE_MARKER} marker. ULT-SOURCE-001 rejects them once \`pnpm check:architecture\` lands (#453).`);
   return { descriptor, create, snippets, remaining, exports };
 }
@@ -692,6 +769,7 @@ export function planScaffold(files: Files, kind: ScaffoldKind, id: string, reque
     if (files.read(path) !== undefined) collisions.push(`${path} already exists`);
   }
   if (kind === 'react' && files.list(`apps/docs/src/demos/${id}`) !== undefined) collisions.push(`apps/docs/src/demos/${id}/ already exists`);
+  if (kind === 'block' && files.list(`packages/blocks/src/${id}`) !== undefined) collisions.push(`packages/blocks/src/${id}/ already exists`);
   for (const name of exports) {
     const holder = before.exports.get(name);
     if (holder) collisions.push(`public export "${name}" is already exported by ${holder.item}`);
@@ -843,7 +921,7 @@ export function writeScaffold(root: string, kind: ScaffoldKind, id: string, requ
 // ---------------------------------------------------------------------------------------------------
 // The command.
 
-const USAGE = 'usage: pnpm scaffold <react | element | recipe> <id> --from <request.json> [--write]';
+const USAGE = 'usage: pnpm scaffold <react | element | recipe | block> <id> --from <request.json> [--write]';
 
 export function formatPlan(plan: Plan, written: boolean): string {
   const lines = [

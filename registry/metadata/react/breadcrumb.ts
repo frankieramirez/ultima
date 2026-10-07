@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Breadcrumb',
   release: 'v0.2',
   order: 1,
+  group: 'navigation',
 } satisfies ReactDescriptor;

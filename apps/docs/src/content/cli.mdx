@@ -1,3 +1,7 @@
+import { WarningIcon } from '@phosphor-icons/react';
+
+import { Callout } from '../foundation';
+
 # CLI
 
 `ultima-design` is Ultima's command-line tool for a project built on the registry. It verifies your setup, checks your edits against the consumer rules, and reports how your installed items drift from what the registry serves now.
@@ -10,6 +14,30 @@ npx ultima-design install
 ```
 
 `install` writes into your repository, not a global harness directory: the `ultima-design` skill your agent reads, and one post-edit hook per detected harness. Everything it writes is a managed file it owns, rewrites on the next run, and removes with `uninstall`. The hooks run `check` on each file your agent edits and hand the findings back in the same turn.
+
+## Commands
+
+`status` and `diff` fetch the hosted registry; everything else runs offline.
+
+| Command | What it does | Writes | Network |
+| --- | --- | --- | --- |
+| `npx ultima-design install` | Writes the managed skill and hook entries. Idempotent, and `--dry-run` prints the plan first. | Yes | No |
+| `npx ultima-design doctor` | Verifies the setup steps for your target. Reports and never writes; every repair is printed as the exact edit. | No | No |
+| `npx ultima-design check` | Reports consumer-rule findings, like a color literal or a native control where the catalogue has the item. `--files <path>...` scopes the run, which is what the hooks use. | No | No |
+| `npx ultima-design status` | Lists each installed file's state against the served registry: current, behind, edited, or diverged. | No | Yes |
+| `npx ultima-design diff <item>` | Prints the unified diff between your file and what the registry serves now, so you can read a `diverged` before deciding. | No | Yes |
+| `npx ultima-design uninstall` | Removes the managed files `install` wrote. | Yes | No |
+
+## In CI
+
+One step to copy:
+
+```bash
+npx --no-install ultima-design doctor
+npx --no-install ultima-design check
+```
+
+Both commands gate: any nonzero exit fails the job. `doctor` runs first so a broken setup reports as itself rather than as a failed `check`. Add `--strict` to `check` when your team wants advisories to block, and `status --json` as a non-gating step when you want a drift report as a build artifact. `diff` is a reading tool, not a gate.
 
 ## Other skill installers
 
@@ -30,26 +58,4 @@ These routes require access to the GitHub repository until it becomes public. Th
 
 Both install the same skill shipped with the CLI. They install no hooks or CLI dependency; add `ultima-design` to your project's dev dependencies with `npm i -D ultima-design` to run its checks. Use the CLI installation above when you want a managed project skill and post-edit hooks together.
 
-Update or remove an externally installed skill through its installer. The CLI preserves unstamped skill files, so rerunning `ultima-design install` does not refresh a skills.sh copy. Avoid installing the skill through multiple routes in the same project.
-
-## Commands
-
-- `npx ultima-design install` — writes the managed skill and hook entries. Idempotent, and `--dry-run` prints the plan first.
-- `npx ultima-design doctor` — verifies the setup steps for your target. Reports and never writes; every repair is printed as the exact edit.
-- `npx ultima-design check` — reports consumer-rule findings, like a color literal or a native control where the catalogue has the item. `--files <path>...` scopes the run, which is what the hooks use.
-- `npx ultima-design status` — lists each installed file's state against the served registry: current, behind, edited, or diverged.
-- `npx ultima-design diff <item>` — prints the unified diff between your file and what the registry serves now, so you can read a `diverged` before deciding.
-- `npx ultima-design uninstall` — removes the managed files `install` wrote.
-
-`status` and `diff` fetch the hosted registry; everything else runs offline.
-
-## In CI
-
-One step to copy:
-
-```bash
-npx --no-install ultima-design doctor
-npx --no-install ultima-design check
-```
-
-Both commands gate: any nonzero exit fails the job. `doctor` runs first so a broken setup reports as itself rather than as a failed `check`. Add `--strict` to `check` when your team wants advisories to block, and `status --json` as a non-gating step when you want a drift report as a build artifact. `diff` is a reading tool, not a gate.
+<Callout tone="warning" icon={<WarningIcon />} title="Avoid installing the skill through multiple routes in the same project.">Update or remove an externally installed skill through its installer. The CLI preserves unstamped skill files, so rerunning `ultima-design install` does not refresh a skills.sh copy.</Callout>

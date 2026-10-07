@@ -6,7 +6,7 @@ import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import { RELEASES, components, componentsInRelease } from '../components';
+import { GROUPS, components } from '../components';
 import { componentPages, pages } from '../navigation';
 import { router, routeTree } from '../router';
 const NAVIGATION_STORAGE_KEY = 'ultima-navigation';
@@ -59,8 +59,27 @@ test('every destination in the menu is a route the router serves', () => {
   expect(destinations.filter((to) => !served.has(to))).toEqual([]);
 });
 
-test('the menu derives its alphabetical entries from the catalogue', () => {
-  expect(componentPages.map(({ params }) => params?.name)).toEqual([...components].sort((a,b) => a.name.localeCompare(b.name)).map(({ item }) => item));
+test('the menu derives its entries from the catalogue, by group and then alphabetically', () => {
+  const rank = (group: string) => GROUPS.findIndex(({ id }) => id === group);
+  const expected = [...components].sort((a, b) => rank(a.group) - rank(b.group) || a.name.localeCompare(b.name));
+  expect(componentPages.map(({ params }) => params?.name)).toEqual(expected.map(({ item }) => item));
+});
+
+test('the Components entry holds the six groups as labelled sub-lists that never collapse', async () => {
+  await mount('/components/sidebar');
+  await expect.element(menuLink('Sidebar')).toBeVisible();
+  const labels = Array.from(menuPanel().querySelectorAll('h4'), (heading) => heading.textContent);
+  expect(labels).toEqual(['Forms', 'Overlays', 'Data display', 'Navigation', 'Feedback', 'Layout']);
+  const navigation = menu().getByRole('heading', { name: 'Navigation', level: 4 }).element();
+  const list = navigation.nextElementSibling as HTMLElement;
+  expect(Array.from(list.querySelectorAll('a'), (link) => link.getAttribute('aria-label'))).toEqual([
+    'Breadcrumb',
+    'Navigation Menu',
+    'Pagination',
+    'Sidebar',
+    'Tabs',
+  ]);
+  expect(menuPanel().querySelectorAll('[aria-expanded]').length).toBe(0);
 });
 
 test('the header offers the workshop nav and hides the menu trigger on desktop', async () => {
@@ -234,12 +253,13 @@ test('the mode control switches the theme', async () => {
   );
 });
 
-test('the article trail is a Breadcrumb landmark that links the section and marks the page current', async () => {
+test('a redesigned foundation page leads with its running head and carries no trail', async () => {
   const install = await mount('/install');
-  const installTrail = install.container.querySelector('nav[aria-label="Breadcrumb"]')!;
-  expect(installTrail.querySelector('[aria-current="page"]')?.textContent).toBe('Install');
-  await install.unmount();
+  await expect.element(install.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
+  expect(install.container.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
+});
 
+test('the article trail is a Breadcrumb landmark that links the section and marks the page current', async () => {
   const tokens = await mount('/tokens');
   const tokensTrail = tokens.container.querySelector('nav[aria-label="Breadcrumb"]')!;
   const docsLink = tokensTrail.querySelector('a[href="/install"]')!;
@@ -248,11 +268,12 @@ test('the article trail is a Breadcrumb landmark that links the section and mark
   await tokens.unmount();
 
   const component = await mount('/components/alert-dialog');
-  expect(component.container.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
   await expect.element(component.getByRole('heading', { name: 'Alert Dialog', level: 1 })).toBeVisible();
+  // A component page's trail lives in the mobile Docs bar, out of sight above the breakpoint.
+  expect(component.container.querySelector('nav[aria-label="Breadcrumb"]')!.checkVisibility()).toBe(false);
 });
 
-test('a direct load of a component page marks that link current in the flat catalogue', async () => {
+test('a direct load of a component page marks that link current in its group', async () => {
   await mount('/components/sidebar');
   await expect.element(menuLink('Sidebar')).toBeVisible();
 
@@ -288,19 +309,19 @@ test('a direct load leaves focus alone', async () => {
   expect(document.activeElement).toBe(document.body);
 });
 
-test('the flat catalogue follows the page links in keyboard order', async () => {
+test('the grouped catalogue follows the page links in keyboard order', async () => {
   await mount('/install');
   await expect.element(menuLink('Install')).toBeVisible();
   (menuLink('Tokens').element() as HTMLElement).focus();
   await userEvent.keyboard('{Tab}');
-  expect(document.activeElement).toBe(menuLink('Accordion').element());
+  expect(document.activeElement).toBe(menuLink('Button').element());
 });
 
 test('the logo returns to the editorial home page, which folds the menu rail away', async () => {
   const screen = await mount('/install');
   expect(menu().element()).toHaveAttribute('data-open');
   await userEvent.click(screen.getByRole('link', { name: 'Ultima home' }).element());
-  await expect.element(screen.getByRole('heading', { level: 1, name: /React components/ })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { level: 1, name: /A system for building interfaces/ })).toBeVisible();
   expect(menu().element()).toHaveAttribute('data-closed');
   await userEvent.click(
     screen
@@ -343,7 +364,7 @@ test('leaving the home page slides the menu rail open rather than snapping it', 
     });
     observer.observe(panel, { attributes: true });
   });
-  await userEvent.click(screen.getByRole('button', { name: 'Explore the components' }).element());
+  await userEvent.click(screen.getByRole('link', { name: 'Installation guide' }).element());
 
   const { transitions, width } = await opened;
   // Chromium names a logical property's transition by the physical one it resolves to.
@@ -447,6 +468,9 @@ for (const theme of ['dark', 'light'] as const) {
     prefer(theme);
     const screen = await mount('/');
     await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+    // The hero's entrance fades in on the first mount in a file; axe reads its end state.
+    const entrances = document.getAnimations().filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity);
+    await Promise.all(entrances.map((animation) => animation.finished));
 
     const results = await axe.run(document.body);
     expect(results.violations.map(describe)).toEqual([]);
@@ -548,14 +572,95 @@ test('the index stays right of the article and the menu scrolls without a visibl
 });
 
 for (const width of [390, 1024, 1440]) {
-  test(`the header logo stays aligned from home to the catalogue at ${width}px`, async () => {
+  test(`the header logo stays aligned from home to a component page at ${width}px`, async () => {
     await page.viewport(width, 844);
     onTestFinished(() => page.viewport(1280, 720));
     const screen = await mount('/');
     const logo = () => screen.getByRole('link', { name: 'Ultima home' }).element().getBoundingClientRect().left;
     const before = logo();
-    await userEvent.click(screen.getByRole('button', { name: 'Explore the components' }).element());
-    await expect.element(screen.getByRole('heading', { name: 'Components', level: 1 })).toBeVisible();
+    await userEvent.click(screen.getByRole('list', { name: 'Components' }).getByRole('link', { name: /Button$/ }).element());
+    await expect.element(screen.getByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
     expect(logo()).toBe(before);
   });
 }
+
+test('below the breakpoint the header holds the wordmark at the start and search and the menu at the end', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/components/button');
+  await expect.element(screen.getByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
+
+  const header = screen.getByRole('banner').element();
+  const logo = screen.getByRole('link', { name: 'Ultima home' }).element().getBoundingClientRect();
+  const search = screen.getByRole('button', { name: 'Search Ultima' }).element().getBoundingClientRect();
+  const trigger = screen.getByRole('button', { name: 'Toggle navigation' }).element().getBoundingClientRect();
+  expect(logo.left).toBe(20);
+  expect(search.left).toBeGreaterThan(logo.right);
+  expect(trigger.left).toBeGreaterThanOrEqual(search.right);
+  expect(390 - trigger.right).toBe(8);
+  expect(header.querySelector('a[href*="github"]')!.getBoundingClientRect().width).toBe(0);
+  expect(header.querySelector('[role="separator"]')!.getBoundingClientRect().width).toBe(390);
+});
+
+test('the open drawer leads with the wordmark and its close control over a rule', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/components/button');
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle navigation' }).element());
+  const popup = screen.getByRole('dialog', { name: MENU_LABEL }).element();
+  await expect.poll(() => popup.contains(document.activeElement)).toBe(true);
+
+  await expect.poll(() => popup.getBoundingClientRect().left).toBe(0);
+  const wordmark = popup.querySelector('img')!.getBoundingClientRect();
+  const close = screen.getByRole('button', { name: 'Close navigation' }).element().getBoundingClientRect();
+  const rule = popup.querySelector('[role="separator"]')!.getBoundingClientRect();
+  expect(wordmark.left).toBe(20);
+  expect(Math.abs(wordmark.top + wordmark.height / 2 - (close.top + close.height / 2))).toBeLessThanOrEqual(1);
+  expect(rule.top).toBeGreaterThanOrEqual(close.bottom);
+  expect(rule.width).toBe(popup.getBoundingClientRect().width - 1);
+  expect(menuLink('Button').element().getBoundingClientRect().top).toBeGreaterThan(rule.bottom);
+});
+
+for (const theme of ['dark', 'light'] as const)
+  for (const width of [390, 768, 1280, 1440, 1920])
+    test(`the chrome never scrolls sideways at ${width}px in ${theme}`, async () => {
+      await page.viewport(width, 844);
+      onTestFinished(() => page.viewport(1280, 720));
+      prefer(theme);
+      for (const path of ['/components/button', '/install']) {
+        const screen = await mount(path);
+        await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+        expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
+        await screen.unmount();
+      }
+    });
+
+for (const theme of ['dark', 'light'] as const)
+  for (const width of [1440, 390])
+    for (const path of ['/components/button', '/install'])
+      test(`${path} passes axe at ${width}px in ${theme}`, async () => {
+        await page.viewport(width, 844);
+        onTestFinished(() => page.viewport(1280, 720));
+        prefer(theme);
+        const screen = await mount(path);
+        await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+
+        const results = await axe.run(document.body);
+        expect(results.violations.map(describe)).toEqual([]);
+      });
+
+for (const width of [390, 768, 1440])
+  for (const path of ['/install', '/theme-studio'])
+    test(`${path} keeps a GitHub link at ${width}px`, async () => {
+      await page.viewport(width, 844);
+      onTestFinished(() => page.viewport(1280, 720));
+      const screen = await mount(path);
+      await expect.element(screen.getByRole('heading', { level: 1 }).first()).toBeVisible();
+
+      const github = [...document.querySelectorAll<HTMLElement>('a[href="https://github.com/frankieramirez/ultima"]')].filter(
+        (link) => link.checkVisibility() && link.getBoundingClientRect().width > 0,
+      );
+      expect(github.length).toBeGreaterThan(0);
+      for (const link of github) expect(link.getBoundingClientRect().right).toBeLessThanOrEqual(width);
+      expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
+    });

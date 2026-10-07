@@ -101,7 +101,7 @@ function Shell() {
       >
         Skip to content
       </TextLink>
-      <Header />
+      <Header footer={!studio} />
       <div {...stylex.props(styles.body, studio && styles.bounded)}>
         <SiteMenu />
         <div

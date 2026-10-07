@@ -76,6 +76,7 @@ const CONFIGURATION: Partial<Record<CheckId, string[]>> = {
   'tokens-tests': ['packages/tokens/package.json', 'packages/tokens/vitest.config.ts'],
   'cli-tests': ['packages/cli/package.json', 'packages/cli/vitest.config.ts', 'packages/cli/scripts/build.ts'],
   'ui-tests': ['packages/ui/package.json', 'packages/ui/vitest.config.ts', 'packages/ui/src/__tests__/setup.ts', 'stylex.options.ts'],
+  'blocks-tests': ['packages/blocks/package.json', 'packages/blocks/vitest.config.ts', 'packages/blocks/src/__tests__/setup.ts', 'stylex.options.ts'],
   'elements-tests': ['packages/elements/package.json', 'packages/elements/vitest.config.ts', 'packages/elements/scripts/build.ts', 'packages/tokens/scripts/build-tokens.ts'],
   'docs-tests': ['apps/docs/package.json', 'apps/docs/vitest.config.ts', 'stylex.options.ts', 'package.json', 'scripts/build-registry.ts'],
   'registry-build': ['package.json', 'scripts/build-registry.ts', 'packages/tokens/scripts/build-tokens.ts', 'packages/elements/scripts/build.ts', 'packages/elements/scripts/bundle.ts'],
@@ -94,6 +95,7 @@ export const DISCOVERY: Partial<Record<CheckId, string[]>> = {
   'tokens-tests': ['packages/tokens/src/__tests__/**/*.test.ts'],
   'cli-tests': ['packages/cli/src/__tests__/**/*.test.ts'],
   'ui-tests': ['packages/ui/src/__tests__/**/*.test.ts', 'packages/ui/src/__tests__/**/*.test.tsx'],
+  'blocks-tests': ['packages/blocks/src/__tests__/**/*.test.tsx'],
   // Both projects: the browser families and parity, and the `.node.test.ts` bundle and guide assertions.
   'elements-tests': ['packages/elements/src/__tests__/**/*.test.ts'],
   'docs-tests': ['apps/docs/src/__tests__/**/*.test.ts', 'apps/docs/src/__tests__/**/*.test.tsx'],
@@ -300,6 +302,7 @@ function retainScreenshots(context: AdapterContext): string[] {
 
 const CHECK_TESTS: Partial<Record<CheckId, string>> = {
   'ui-tests': 'packages/ui/src/__tests__',
+  'blocks-tests': 'packages/blocks/src/__tests__',
   'elements-tests': 'packages/elements/src/__tests__',
   'docs-tests': 'apps/docs/src/__tests__',
 };
@@ -599,6 +602,7 @@ export const ADAPTERS: Adapters = {
   'tokens-tests': vitestSuite(),
   'cli-tests': vitestSuite(),
   'ui-tests': vitestSuite(),
+  'blocks-tests': vitestSuite(),
   'elements-tests': vitestSuite(),
   'docs-tests': vitestSuite(),
   'registry-build': registryBuildAdapter,

@@ -81,15 +81,33 @@ describe('the planned projections', () => {
     assert.equal(pages.match(/^import \w+Content from/gm)?.length, 4);
   });
 
-  test('order the docs catalogue by release, then order, with the visitor prose', () => {
+  test('order the docs catalogue by group, then alphabetically, with numbers and the visitor prose', () => {
     const text = outputs.get(OUTPUTS.catalogue) as string;
+    assert.match(text, /export const GROUPS = \[\n {2}\{\n {4}"id": "forms",\n {4}"label": "Forms"\n {2}\},\n {2}\{\n {4}"id": "navigation",\n {4}"label": "Navigation"\n {2}\}\n\] as const;/);
     assert.match(text, /export const RELEASES = \[\n {2}"v0",\n {2}"v0\.1"\n\] as const;/);
-    assert.deepEqual([...text.matchAll(/"item": "([\w-]+)"/g)].map((match) => match[1]), [
-      'button',
-      'sidebar',
-      'calendar',
-      'input-otp',
-    ]);
+    assert.doesNotMatch(text, /RELEASE_LABELS/);
+    assert.deepEqual(
+      [...text.matchAll(/"item": "([\w-]+)",\n {4}"number": "(\d+)",\n {4}"group": "([\w-]+)"/g)].map((match) => match.slice(1)),
+      [
+        ['button', '001', 'forms'],
+        ['calendar', '002', 'forms'],
+        ['input-otp', '003', 'forms'],
+        ['sidebar', '004', 'navigation'],
+      ],
+    );
+  });
+
+  test('name the primitive each component builds on from its imports', () => {
+    const text = outputs.get(OUTPUTS.catalogue) as string;
+    const primitives = Object.fromEntries(
+      [...text.matchAll(/"item": "([\w-]+)",[\s\S]*?"primitive": (null|\{[^}]*\})/g)].map(([, item, primitive]) => [item, JSON.parse(primitive as string)]),
+    );
+    assert.deepEqual(primitives, {
+      button: { library: 'base-ui', module: 'button' },
+      calendar: { library: 'zag', module: 'date-picker' },
+      'input-otp': { library: 'base-ui', module: 'otp-field' },
+      sidebar: null,
+    });
   });
 
   test('read element values from the source table and keep the joined attribute presentation', () => {
@@ -137,6 +155,7 @@ describe('the planned projections', () => {
     const stale: OptimizerPolicy = {
       ui: { add: [{ specifier: '@zag-js/react', reason: 'r', source: 's' }], exclude: policy.ui.exclude },
       docs: { add: policy.docs.add, exclude: [...policy.docs.exclude, { specifier: 'lodash', reason: 'r', source: 's' }] },
+      blocks: policy.blocks,
     };
     const found = planOutputs(memoryFiles(fixture()), stale).diagnostics;
     assert.deepEqual(found.map((d) => d.code), ['stale-policy', 'stale-policy']);
@@ -224,11 +243,14 @@ describe('generation on disk', () => {
       () => generate(root, { policy }),
       (error: GenerationError) => {
         assert.deepEqual(error.written, [OUTPUTS.registry, OUTPUTS.catalogue, OUTPUTS.pages]);
-        assert.match(error.message, /not written: apps\/docs\/src\/generated\/elements\.ts, packages\/ui\/src\/index\.ts, scripts\/generated\/browser-dependencies\.ts/);
+        assert.match(
+          error.message,
+          /not written: apps\/docs\/src\/generated\/elements\.ts, apps\/docs\/src\/generated\/blocks\.ts, packages\/ui\/src\/index\.ts, scripts\/generated\/browser-dependencies\.ts/,
+        );
         return true;
       },
     );
-    assert.deepEqual(check(root, policy).freshness.added, [OUTPUTS.elements, OUTPUTS.barrel, OUTPUTS.browser]);
+    assert.deepEqual(check(root, policy).freshness.added, [OUTPUTS.elements, OUTPUTS.blocks, OUTPUTS.barrel, OUTPUTS.browser]);
     assert.equal(existsSync(join(root, LOCK)), false);
   });
 });

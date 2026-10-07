@@ -2,15 +2,18 @@ import { posix } from 'node:path';
 
 import type {
   ArtifactDescriptor,
+  BlockDescriptor,
   Descriptor,
   ElementDescriptor,
+  Group,
   ReactDescriptor,
   RecipeDescriptor,
   Release,
   SetupDescriptor,
   SourceBundleDescriptor,
 } from '../../registry/metadata/schema.ts';
-import { KINDS, type Kind, readLiteral, releaseProblems, shapeProblems } from './descriptors.ts';
+import { KINDS, type Kind, groupProblems, readLiteral, releaseProblems, shapeProblems } from './descriptors.ts';
+import { ordinal } from './browser.ts';
 import type { Files } from './files.ts';
 import {
   type Export,
@@ -31,6 +34,7 @@ export type DiagnosticCode =
   | 'duplicate-id'
   | 'duplicate-order'
   | 'unknown-release'
+  | 'unknown-group'
   | 'broken-anchor'
   | 'path-outside'
   | 'missing-file'
@@ -62,7 +66,15 @@ export type Dependencies = {
 };
 
 export type ReactEntry = ReactDescriptor &
-  Dependencies & { source: string; page: string; test: string; demos: string; exports: Export[]; imports: Import[] };
+  Dependencies & {
+    source: string;
+    page: string;
+    test: string;
+    demos: string;
+    exports: Export[];
+    imports: Import[];
+    number: string;
+  };
 
 export type ElementEntry = Omit<ElementDescriptor, 'attributes'> & {
   source: string;
@@ -76,8 +88,27 @@ export type SourceBundleEntry = SourceBundleDescriptor & Dependencies & { source
 /** What a consumer installs to run the recipe's demos: registry items and npm packages. */
 export type RecipeEntry = RecipeDescriptor & Dependencies;
 
+/** A component the block imports or a recipe it follows, with its catalogue number among its own kind. */
+export type BuiltFrom = { id: string; title: string; number: string; kind: 'component' | 'recipe' };
+
+export type BlockEntry = BlockDescriptor &
+  Dependencies & {
+    number: string;
+    /** `packages/blocks/src/<id>`. */
+    directory: string;
+    /** The block's file names, the entry `<id>.tsx` first, then alphabetically; each installs to `@components/<id>/<name>`. */
+    files: string[];
+    test: string;
+    /** The components it imports in number order, then the recipes it follows in number order. */
+    builtFrom: BuiltFrom[];
+    /** The `@types` package of each dependency that packages/blocks declares one for, so a TypeScript consumer builds. */
+    devDependencies: string[];
+  };
+
 export type Catalogue = {
   releases: Release[];
+  /** In display order. */
+  groups: Group[];
   /** In docs order: release position, then `order`. */
   react: ReactEntry[];
   /** In docs family order. */
@@ -86,6 +117,8 @@ export type Catalogue = {
   sourceBundles: SourceBundleEntry[];
   artifacts: ArtifactDescriptor[];
   recipes: RecipeEntry[];
+  /** In number order. */
+  blocks: BlockEntry[];
   /** The UI barrel's plan: each public name and the React item whose file exports it. */
   exports: Map<string, Export & { item: string }>;
   /** Every installable record. Recipes are never among them. */
@@ -102,6 +135,9 @@ const DEMOS = 'apps/docs/src/demos';
 const ELEMENT_SOURCE = 'packages/elements/src';
 const ELEMENT_TESTS = 'packages/elements/src/__tests__';
 const STATIC = 'registry/static';
+const BLOCK_PACKAGE = 'packages/blocks';
+export const BLOCK_SOURCE = `${BLOCK_PACKAGE}/src`;
+const BLOCK_TESTS = 'packages/blocks/src/__tests__';
 export const BARREL = 'packages/ui/src/index.ts';
 
 const INVENTORIES = {
@@ -127,6 +163,14 @@ function packageName(specifier: string): string {
 function registryOrder(ids: Iterable<string>): string[] {
   const rank = (id: string) => (DEPENDENCY_ORDER.includes(id) ? DEPENDENCY_ORDER.indexOf(id) : DEPENDENCY_ORDER.length);
   return [...new Set(ids)].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+}
+
+/**
+ * The catalogue number of each id: its position in code-unit id order, padded to three digits. It is a
+ * display ordinal that shifts when an item is added, never an identity. Each kind numbers separately.
+ */
+export function catalogueNumbers(ids: readonly string[]): Map<string, string> {
+  return new Map([...ids].sort(ordinal).map((id, index) => [id, String(index + 1).padStart(3, '0')]));
 }
 
 function isSafeRepositoryPath(path: string): boolean {
@@ -163,28 +207,34 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
     return base;
   };
 
-  const releasesPath = `${METADATA}/releases.ts`;
-  const releasesText = files.read(releasesPath);
-  let releases: Release[] = [];
-  if (releasesText === undefined) report('missing-file', releasesPath, 'the release definitions are missing');
-  else {
-    const { value, problems } = readLiteral(releasesPath, releasesText);
-    for (const problem of problems) report('not-data', releasesPath, problem);
-    const shape = problems.length === 0 ? releaseProblems(value) : [];
-    for (const problem of shape) report('invalid-descriptor', releasesPath, problem);
-    if (problems.length === 0 && shape.length === 0) releases = value as Release[];
-  }
+  const definitions = <T extends { id: string }>(name: 'release' | 'group', check: (value: unknown) => string[]): T[] => {
+    const path = `${METADATA}/${name}s.ts`;
+    const text = files.read(path);
+    let defined: T[] = [];
+    if (text === undefined) report('missing-file', path, `the ${name} definitions are missing`);
+    else {
+      const { value, problems } = readLiteral(path, text);
+      for (const problem of problems) report('not-data', path, problem);
+      const shape = problems.length === 0 ? check(value) : [];
+      for (const problem of shape) report('invalid-descriptor', path, problem);
+      if (problems.length === 0 && shape.length === 0) defined = value as T[];
+    }
+    defined.forEach(({ id }, index) => {
+      if (defined.findIndex((entry) => entry.id === id) !== index) report('duplicate-id', path, `${name} "${id}" is defined twice`);
+    });
+    return defined;
+  };
+  const releases = definitions<Release>('release', releaseProblems);
   const releaseIds = releases.map((release) => release.id);
-  releaseIds.forEach((id, index) => {
-    if (releaseIds.indexOf(id) !== index) report('duplicate-id', releasesPath, `release "${id}" is defined twice`);
-  });
+  const groups = definitions<Group>('group', groupProblems);
+  const groupIds = groups.map((group) => group.id);
 
   const loaded: { path: string; descriptor: Descriptor }[] = [];
   for (const entry of files.list(METADATA) ?? []) {
     const path = `${METADATA}/${entry.name}`;
     if (!entry.directory) {
-      if (entry.name !== 'schema.ts' && entry.name !== 'releases.ts') {
-        report('unexpected-descriptor', path, 'metadata holds schema.ts, releases.ts and one directory per kind');
+      if (!['schema.ts', 'releases.ts', 'groups.ts'].includes(entry.name)) {
+        report('unexpected-descriptor', path, 'metadata holds schema.ts, releases.ts, groups.ts and one directory per kind');
       }
       continue;
     }
@@ -300,11 +350,16 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
 
   const releaseRank = (release: string) => releaseIds.indexOf(release);
   const react: ReactEntry[] = [];
+  const numbers = catalogueNumbers(ofKind('react').map((d) => d.id));
   for (const descriptor of ofKind('react')) {
     const path = pathOf(descriptor.id);
     if (!releaseIds.includes(descriptor.release)) report('unknown-release', path, `release "${descriptor.release}" is not defined`);
+    if (!(groupIds as string[]).includes(descriptor.group)) {
+      report('unknown-group', path, `group "${descriptor.group}" is not defined in ${METADATA}/groups.ts`);
+    }
     const entry = {
       ...descriptor,
+      number: numbers.get(descriptor.id) as string,
       source: `${UI_SOURCE}/${descriptor.id}.tsx`,
       page: `${PAGES}/${descriptor.id}.mdx`,
       test: `${UI_TESTS}/${descriptor.id}.test.tsx`,
@@ -503,6 +558,63 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
     });
   }
 
+  const blocks: BlockEntry[] = [];
+  const blockManifest = JSON.parse(files.read(`${BLOCK_PACKAGE}/package.json`) ?? '{}') as Record<string, Record<string, string> | undefined>;
+  const blockTypes = new Set([...Object.keys(blockManifest.dependencies ?? {}), ...Object.keys(blockManifest.devDependencies ?? {})]);
+  const blockNumbers = catalogueNumbers(ofKind('block').map((d) => d.id));
+  const recipeNumbers = catalogueNumbers(recipes.map((entry) => entry.id));
+  for (const descriptor of ofKind('block')) {
+    const path = pathOf(descriptor.id);
+    const directory = `${BLOCK_SOURCE}/${descriptor.id}`;
+    const entryFile = `${descriptor.id}.tsx`;
+    const test = `${BLOCK_TESTS}/${descriptor.id}.test.tsx`;
+    const listed = files.list(directory) ?? [];
+    for (const entry of listed) {
+      if (entry.directory || !entry.name.endsWith('.tsx')) report('path-outside', `${directory}/${entry.name}`, 'a block folder holds only its .tsx files');
+    }
+    const names = listed.filter((entry) => !entry.directory && entry.name.endsWith('.tsx')).map((entry) => entry.name);
+    if (!names.includes(entryFile)) report('missing-file', path, `${directory}/${entryFile} is missing`);
+    if (files.read(test) === undefined) report('missing-file', path, `${test} is missing`);
+    const ordered = [...names.filter((name) => name === entryFile), ...names.filter((name) => name !== entryFile).sort(ordinal)];
+    const sources = ordered.map((name) => `${directory}/${name}`);
+    const derived = sources.map((source) => {
+      const analysed = analyse(source);
+      if (source.endsWith(`/${entryFile}`) && analysed) {
+        const exported = exportsOf(analysed.file);
+        const primary = exported.exports.find((item) => item.name === descriptor.primaryExport);
+        if (!primary || primary.kind !== 'value' || primary.typeOnly || primary.declaration === 'import') {
+          report('invalid-primary-export', path, `${source} exports no root component "${descriptor.primaryExport}"`);
+        }
+      }
+      return installDependenciesOf(source, analysed?.imports ?? [], sources);
+    });
+    const registryDependencies = registryOrder(derived.flatMap((d) => d.registryDependencies));
+    const components = registryDependencies
+      .filter((id) => reactIds.has(id))
+      .map((id) => react.find((entry) => entry.id === id) as ReactEntry)
+      .map((entry): BuiltFrom => ({ id: entry.id, title: entry.title, number: entry.number, kind: 'component' }))
+      .sort((a, b) => ordinal(a.number, b.number));
+    const followed: BuiltFrom[] = [];
+    for (const { id } of descriptor.recipes) {
+      const recipe = recipes.find((entry) => entry.id === id);
+      if (!recipe) report('missing-reference', path, `recipe "${id}" is not a recipe descriptor`);
+      else followed.push({ id, title: recipe.title, number: recipeNumbers.get(id) as string, kind: 'recipe' });
+    }
+    const dependencies = [...new Set(derived.flatMap((d) => d.dependencies))].sort((a, b) => a.localeCompare(b));
+    blocks.push({
+      ...descriptor,
+      number: blockNumbers.get(descriptor.id) as string,
+      directory,
+      files: ordered,
+      test,
+      dependencies,
+      devDependencies: dependencies.map((name) => `@types/${name}`).filter((name) => blockTypes.has(name)),
+      registryDependencies,
+      builtFrom: [...components, ...followed.sort((a, b) => ordinal(a.number, b.number))],
+    });
+  }
+  blocks.sort((a, b) => ordinal(a.number, b.number));
+
   const described = (ids: Set<string>, directory: string, suffix: string) => {
     for (const name of filesIn(directory, suffix)) {
       if (!ids.has(name.slice(0, -suffix.length))) {
@@ -513,6 +625,12 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
   described(reactIds, UI_SOURCE, '.tsx');
   described(reactIds, PAGES, '.mdx');
   described(new Set(ofKind('element').map((d) => d.id)), ELEMENT_SOURCE, '.element.ts');
+  const blockIds = new Set(ofKind('block').map((d) => d.id));
+  for (const entry of files.list(BLOCK_SOURCE) ?? []) {
+    if (entry.name === '__tests__') continue;
+    if (!entry.directory) report('path-outside', `${BLOCK_SOURCE}/${entry.name}`, 'packages/blocks/src/ holds one directory per block');
+    else if (!blockIds.has(entry.name)) report('source-without-metadata', `${BLOCK_SOURCE}/${entry.name}`, 'no block descriptor under registry/metadata/ claims it');
+  }
   const setupIds = new Set(ofKind('setup').map((d) => d.id));
   for (const entry of files.list(STATIC) ?? []) {
     if (entry.directory && !setupIds.has(entry.name)) {
@@ -527,6 +645,7 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
     ...sourceBundles.map((entry): [string, string[]] => [entry.id, entry.registryDependencies]),
     ...elements.map((entry): [string, string[]] => [entry.id, entry.registryDependencies]),
     ...setup.map((entry): [string, string[]] => [entry.id, entry.registryDependencies ?? []]),
+    ...blocks.map((entry): [string, string[]] => [entry.id, entry.registryDependencies]),
   ]);
   for (const [id, targets] of [...edges, ...recipes.map((r): [string, string[]] => [r.id, r.registryDependencies])]) {
     for (const target of targets) {
@@ -549,12 +668,14 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
   return {
     catalogue: {
       releases,
+      groups,
       react,
       elements,
       setup: setup.sort((a, b) => a.id.localeCompare(b.id)),
       sourceBundles,
       artifacts: ofKind('artifact'),
       recipes,
+      blocks,
       exports: exportPlan,
       registryItems,
       componentRoutes: react.map((entry) => entry.id),

@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Calendar',
   release: 'v0.2',
   order: 16,
+  group: 'forms',
 } satisfies ReactDescriptor;

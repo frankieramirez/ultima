@@ -113,6 +113,16 @@ process.stdout.write(`${names.join("\n")}\n`);
 '
 }
 
+blocks() {
+  curl -fsS "$HOST/r/registry.json" | node --input-type=module -e '
+import { readFileSync } from "node:fs";
+
+const registry = JSON.parse(readFileSync(0, "utf8"));
+const names = registry.items.filter((item) => item.type === "registry:block").map((item) => item.name);
+process.stdout.write(names.length > 0 ? `${names.join("\n")}\n` : "");
+'
+}
+
 # `root` is the directory the consumer's `@/` alias points at: create-vite's src/, and the
 # Next.js scaffold's own root, which is scaffolded with --no-src-dir.
 add_catalogue() {
@@ -232,6 +242,72 @@ if (missing.length > 0 || drifted.length > 0) {
 }
 console.log(`smoke-install: status reports all ${files.length} installed files current`);
 '
+}
+
+# docs/spec/ultima.md, What a block build ticket proves, Smoke install.
+assert_block_installed() {
+  local app="$1" root="$2" block="$3"
+  curl -fsS "$HOST/r/$block.json" -o "$WORK/$block.json"
+  ITEM="$WORK/$block.json" APP="$app" ROOT_DIR="$root" REGISTRY_HOST="$HOST" node --input-type=module -e '
+import { existsSync, readFileSync } from "node:fs";
+import { basename, join } from "node:path";
+
+const item = JSON.parse(readFileSync(process.env.ITEM, "utf8"));
+const missing = [];
+for (const file of item.files) {
+  const path = file.target.replace(/^@components\//, "components/");
+  if (!path.startsWith(`components/${item.name}/`) || !existsSync(join(process.env.ROOT_DIR, path))) missing.push(path);
+}
+const folder = { "registry:ui": "components/ui", "registry:lib": "lib" };
+for (const dependency of item.registryDependencies ?? []) {
+  const name = dependency.replace(/^@ultima\//, "");
+  const served = await (await fetch(`${process.env.REGISTRY_HOST}/r/${name}.json`)).json();
+  for (const file of served.files) {
+    const path = join(folder[served.type] ?? "components", basename(file.path));
+    if (!existsSync(join(process.env.ROOT_DIR, path))) missing.push(`${path} (from ${dependency})`);
+  }
+}
+const manifest = JSON.parse(readFileSync(join(process.env.APP, "package.json"), "utf8"));
+for (const name of [...(item.dependencies ?? []), ...(item.devDependencies ?? [])]) {
+  if (!manifest.dependencies?.[name] && !manifest.devDependencies?.[name]) missing.push(`the npm package ${name}`);
+}
+if (missing.length > 0) {
+  console.error(`smoke-install: ${item.name} installed without ${missing.join(", ")}`);
+  process.exit(1);
+}
+console.log(`smoke-install: ${item.name} installed its ${item.files.length} files under components/${item.name}/ with its dependencies`);
+'
+}
+
+assert_block_status_current() {
+  local app="$1" block="$2"
+  node "$ROOT/packages/cli/dist/cli.js" status --json --cwd "$app" >"$WORK/status.json"
+  STATUS="$WORK/status.json" ITEM="$WORK/$block.json" node --input-type=module -e '
+import { readFileSync } from "node:fs";
+
+const { files } = JSON.parse(readFileSync(process.env.STATUS, "utf8"));
+const item = JSON.parse(readFileSync(process.env.ITEM, "utf8"));
+const own = files.filter((row) => row.item === item.name).map((row) => row.file.split("/").pop());
+const absent = item.files.map((file) => file.target.split("/").pop()).filter((name) => !own.includes(name));
+const drifted = files.filter((row) => row.state !== "current").map((row) => `${row.file} (${row.state})`);
+if (absent.length > 0 || drifted.length > 0) {
+  console.error(`smoke-install: status reports ${[...absent.map((name) => `${name} (not found)`), ...drifted].join(", ")}`);
+  process.exit(1);
+}
+console.log(`smoke-install: status reports all ${files.length} installed files current, ${own.length} of them ${item.name}'"'"'s`);
+'
+}
+
+write_block_route() {
+  local file="$1" component="$2" root="$3" block="$4"
+  local root_export
+  root_export="$(sed -nE 's/^export function ([A-Z][A-Za-z0-9]*)\(.*/\1/p' "$root/components/$block/$block.tsx" | head -n 1)"
+  if [ -z "$root_export" ]; then
+    echo "smoke-install: components/$block/$block.tsx exports no root component" >&2
+    exit 1
+  fi
+  printf "import { %s } from '@/components/%s/%s';\n\nexport default function %s() {\n  return <%s />;\n}\n" \
+    "$root_export" "$block" "$block" "$component" "$root_export" >"$file"
 }
 
 # docs/spec/ultima.md, Diff: an edit shows alone, with no hunks from alias rewrites or the RSC directive.
@@ -572,6 +648,66 @@ APP
   (cd "$app" && npm run build)
 }
 
+# docs/spec/ultima.md, What a block build ticket proves: each block alone, in a fresh Vite and a fresh Next.js app.
+block_vite() {
+  local block="$1"
+  TARGET="$block in vite"
+  local app="$WORK/$block-vite"
+
+  step "$block vite: scaffolding"
+  (cd "$WORK" && npm create vite@latest "$block-vite" -- --template react-ts)
+  (cd "$app" && npm install)
+  setup_add "$app" setup-vite
+  point_namespace_at_host "$app/components.json"
+  add_paths_alias "$app/tsconfig.json"
+  add_paths_alias "$app/tsconfig.app.json"
+  replace_in_file "$app/vite.config.ts" "plugins: [" \
+    "plugins: [ultimaStylex(), "
+  replace_in_file "$app/vite.config.ts" "import { defineConfig } from 'vite'" \
+    "import { defineConfig } from 'vite'
+import { ultimaStylex } from './ultima.vite.ts'"
+  layer_reset "$app/src/index.css"
+
+  step "$block vite: npx shadcn add @ultima/$block"
+  (cd "$app" && npx -y shadcn@latest add "@ultima/$block" --yes)
+  assert_block_installed "$app" "$app/src" "$block"
+  write_block_route "$app/src/App.tsx" App "$app/src" "$block"
+
+  step "$block vite: npm run build"
+  (cd "$app" && npm run build)
+
+  step "$block vite: ultima status"
+  assert_block_status_current "$app" "$block"
+}
+
+block_next() {
+  local block="$1"
+  TARGET="$block in next"
+  local app="$WORK/$block-next"
+
+  step "$block next: scaffolding"
+  (cd "$WORK" && npx -y create-next-app@latest "$block-next" \
+    --ts --app --no-tailwind --no-src-dir --no-eslint --turbopack \
+    --import-alias "@/*" --use-npm --yes)
+  setup_add "$app" setup-next
+  point_namespace_at_host "$app/components.json"
+  replace_in_file "$app/app/layout.tsx" 'import "./globals.css";' \
+    'import "./globals.css";
+import "./ultima.css";'
+  layer_reset "$app/app/globals.css"
+
+  step "$block next: npx shadcn add @ultima/$block"
+  (cd "$app" && npx -y shadcn@latest add "@ultima/$block" --yes)
+  assert_block_installed "$app" "$app" "$block"
+  write_block_route "$app/app/page.tsx" Page "$app" "$block"
+
+  step "$block next: npm run build"
+  (cd "$app" && npm run build)
+
+  step "$block next: ultima status"
+  assert_block_status_current "$app" "$block"
+}
+
 # An element is a universal item for a host that can run the CLI but not React:
 # a vanilla scaffold, no setup item, no components.json. tokens-css arrives only
 # through the item's manifest-declared URL registryDependency.
@@ -624,6 +760,10 @@ echo "smoke-install: the catalogue is $(echo "$CATALOGUE" | wc -w | tr -d ' ') c
 vite_target
 next_target
 sidebar_target
+for block in $(blocks); do
+  block_vite "$block"
+  block_next "$block"
+done
 element_target
 TARGET=""
 

@@ -70,6 +70,7 @@ function reactRequest(overrides: Record<string, unknown> = {}, brief: Record<str
       primaryExport: 'Ribbon',
       release: 'v0.1',
       order: 3,
+      group: 'forms',
       ...overrides,
     },
     brief: {
@@ -172,6 +173,80 @@ describe('a React scaffold', () => {
   });
 });
 
+const BLOCK_PROOF = [
+  'mounts with no props in both modes at both widths',
+  'a main, one h1, a named complementary region',
+  'document.body in both modes at both widths',
+  'the filter narrows the list',
+  'none; it follows no recipe',
+  'the root takes no props',
+];
+
+function blockRequest(overrides: Record<string, unknown> = {}, brief: Record<string, unknown> = {}) {
+  return {
+    descriptor: {
+      title: 'Example 01',
+      description: 'An example screen, for the scaffold fixture.',
+      contract: 'docs/spec/ultima.md#compound-components',
+      installDocs: "import { Example01 } from '@/components/example-01/example-01';",
+      primaryExport: 'Example01',
+      recipes: [],
+      ...overrides,
+    },
+    brief: { proof: BLOCK_PROOF, ...brief },
+  };
+}
+
+const BLOCK_CREATED = ['registry/metadata/block/example-01.ts', 'packages/blocks/src/example-01/example-01.tsx', 'packages/blocks/src/__tests__/example-01.test.tsx'];
+
+function blockCheckout(): string {
+  const root = checkout();
+  mkdirSync(join(root, 'packages/blocks'), { recursive: true });
+  writeFileSync(join(root, 'packages/blocks/package.json'), JSON.stringify({ name: '@ultima/blocks', exports: { './*': './src/*.tsx' }, devDependencies: { vitest: '1' } }));
+  return root;
+}
+
+describe('a block scaffold', () => {
+  test('dry-runs by default, planning the descriptor, the entry and the test', () => {
+    const root = blockCheckout();
+    const before = snapshot(root);
+    const plan = planScaffold(diskFiles(root), 'block', 'example-01', blockRequest(), policy);
+    assert.deepEqual([...plan.create.keys()], BLOCK_CREATED);
+    assert.deepEqual(plan.regenerate, [OUTPUTS.registry, OUTPUTS.blocks, OUTPUTS.browser]);
+    assert.match(plan.remaining.join('\n'), /Proof item 4, Behavior the block wires itself: the filter narrows the list/);
+    assert.deepEqual(snapshot(root), before);
+  });
+
+  test('writes the three files with the marker and a todo per proof item, and regenerates the wiring', () => {
+    const root = blockCheckout();
+    const { manifest } = writeScaffold(root, 'block', 'example-01', blockRequest(), { policy });
+    assert.equal(manifest.status, 'complete');
+    assert.deepEqual(manifest.created, BLOCK_CREATED);
+    assert.deepEqual(manifest.regenerated, [OUTPUTS.registry, OUTPUTS.blocks, OUTPUTS.browser]);
+    assert.deepEqual(check(root, policy), { diagnostics: [], freshness: { added: [], changed: [], stale: [] } });
+    for (const path of BLOCK_CREATED.slice(1)) assert.match(read(root, path), new RegExp(INCOMPLETE_MARKER), path);
+    assert.match(read(root, BLOCK_CREATED[0] as string), /"recipes": \[\]|recipes: \[\]/);
+    assert.match(read(root, BLOCK_CREATED[1] as string), /^export function Example01\(\) \{$/m);
+    const test = read(root, BLOCK_CREATED[2] as string);
+    assert.equal(test.match(/^test\.todo\(/gm)?.length, 6);
+    assert.doesNotMatch(test, /^(test|it)\(|expect/m);
+    assert.match(read(root, OUTPUTS.blocks), /import \{ Example01 \} from '@ultima\/blocks\/example-01\/example-01';/);
+    assert.match(read(root, OUTPUTS.registry), /"example-01": \{/);
+  });
+
+  test('rejects missing proof answers, an unknown recipe, and an existing folder', () => {
+    const root = blockCheckout();
+    assert.throws(() => planScaffold(diskFiles(root), 'block', 'example-01', blockRequest({}, { proof: BLOCK_PROOF.slice(0, 5) }), policy), /brief\.proof is missing: six answers/);
+    assert.throws(
+      () => planScaffold(diskFiles(root), 'block', 'example-01', blockRequest({ recipes: [{ id: 'chart', root: { role: 'img', name: 'Revenue' } }] }), policy),
+      /missing-reference .* recipe "chart" is not a recipe descriptor/,
+    );
+    mkdirSync(join(root, 'packages/blocks/src/example-01'), { recursive: true });
+    writeFileSync(join(root, 'packages/blocks/src/example-01/region.tsx'), 'export {};\n');
+    assert.throws(() => planScaffold(diskFiles(root), 'block', 'example-01', blockRequest(), policy), /packages\/blocks\/src\/example-01\/ already exists/);
+  });
+});
+
 describe('preconditions', () => {
   const rejects = (request: unknown, pattern: RegExp, id = 'ribbon') => {
     const root = checkout();
@@ -200,6 +275,11 @@ describe('preconditions', () => {
     rejects(reactRequest({ contract: 'docs/spec/ultima.md#no-such-heading' }), /broken-anchor .* has no heading #no-such-heading/);
     rejects(reactRequest({ id: 'banner' }), /descriptor\.id "banner" contradicts the command's "ribbon"/);
     rejects(reactRequest({ summary: 'x' }), /descriptor\.summary is not a known field/);
+  });
+
+  test('requires a catalogue group and never assigns one', () => {
+    rejects(reactRequest({ group: undefined }), /descriptor\.group is missing: one of forms, navigation/);
+    rejects(reactRequest({ group: 'widgets' }), /descriptor\.group "widgets" is not one of forms, navigation/);
   });
 
   test('detects id, path, export and order collisions before writing', () => {

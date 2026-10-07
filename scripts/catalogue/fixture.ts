@@ -4,7 +4,7 @@ import { OUTPUTS } from './projections.ts';
 export const descriptor = (kind: string, type: string, value: object) =>
   `import type { ${type} } from '../schema.ts';\n\nexport default ${JSON.stringify(value, null, 2)} satisfies ${type};\n`;
 
-const react = (id: string, primaryExport: string, release: string, order: number, contract: string) =>
+const react = (id: string, primaryExport: string, release: string, order: number, contract: string, group: string) =>
   descriptor('react', 'ReactDescriptor', {
     id,
     kind: 'react',
@@ -15,6 +15,7 @@ const react = (id: string, primaryExport: string, release: string, order: number
     primaryExport,
     release,
     order,
+    group,
   });
 
 const componentFiles = (id: string, source: string) => ({
@@ -49,8 +50,10 @@ export function validFixture(): Record<string, string> {
     'registry/metadata/schema.ts': 'export type ReactDescriptor = object;\n',
     'registry/metadata/releases.ts':
       "import type { Release } from './schema.ts';\n\nexport default [\n  { id: 'v0', label: 'The v0 set' },\n  { id: 'v0.1', label: 'The v0.1 set' },\n] satisfies Release[];\n",
+    'registry/metadata/groups.ts':
+      "import type { Group } from './schema.ts';\n\nexport default [\n  { id: 'forms', label: 'Forms' },\n  { id: 'navigation', label: 'Navigation' },\n] as const satisfies readonly Group[];\n",
 
-    'registry/metadata/react/button.ts': react('button', 'Button', 'v0', 1, 'plain-components'),
+    'registry/metadata/react/button.ts': react('button', 'Button', 'v0', 1, 'plain-components', 'forms'),
     ...componentFiles(
       'button',
       [
@@ -66,7 +69,7 @@ export function validFixture(): Record<string, string> {
       ].join('\n'),
     ),
 
-    'registry/metadata/react/sidebar.ts': react('sidebar', 'Sidebar', 'v0', 2, 'compound-components'),
+    'registry/metadata/react/sidebar.ts': react('sidebar', 'Sidebar', 'v0', 2, 'compound-components', 'navigation'),
     ...componentFiles(
       'sidebar',
       [
@@ -83,7 +86,7 @@ export function validFixture(): Record<string, string> {
       ].join('\n'),
     ),
 
-    'registry/metadata/react/calendar.ts': react('calendar', 'Calendar', 'v0.1', 1, 'the-date-set'),
+    'registry/metadata/react/calendar.ts': react('calendar', 'Calendar', 'v0.1', 1, 'the-date-set', 'forms'),
     ...componentFiles(
       'calendar',
       [
@@ -97,7 +100,7 @@ export function validFixture(): Record<string, string> {
       ].join('\n'),
     ),
 
-    'registry/metadata/react/input-otp.ts': react('input-otp', 'InputOTP', 'v0.1', 2, 'plain-components'),
+    'registry/metadata/react/input-otp.ts': react('input-otp', 'InputOTP', 'v0.1', 2, 'plain-components', 'forms'),
     ...componentFiles(
       'input-otp',
       [
@@ -240,6 +243,7 @@ export const testPolicy: OptimizerPolicy = {
       { specifier: 'vitest', reason: 'Vitest serves it', source: 'apps/docs/vitest.config.ts' },
     ],
   },
+  blocks: { add: [], exclude: [] },
 };
 
 /** The valid fixture with its generated projections absent and the package manifests the optimizer reads. */

@@ -47,6 +47,7 @@ const CLASSES: readonly [RegExp, SourceKind][] = [
   [/^packages\/ui\/src\/lib\/[^/]+\.ts$/, 'react-helper'],
   [/^packages\/ui\/src\/[^/]+\.tsx$/, 'react-component'],
   [/^packages\/elements\/src\/[^/]+\.element\.ts$/, 'element'],
+  [/^packages\/blocks\/src\/[^/]+\/[^/]+\.tsx$/, 'block'],
   [/^apps\/docs\/src\/demos\/[^/]+\/[^/]+\.tsx?$/, 'demo'],
   [/^apps\/docs\/src\/content\/.+\.mdx$/, 'content'],
   [/^apps\/docs\/src\/[^/]+(\/[^/]+)?\.tsx?$/, 'docs'],
@@ -152,6 +153,7 @@ export function workspaceScope(files: Files): Scope {
     ['setup', catalogue.setup.map((entry) => entry.id)],
     ['source-bundle', catalogue.sourceBundles.map((entry) => entry.id)],
     ['artifact', catalogue.artifacts.map((entry) => entry.id)],
+    ['block', catalogue.blocks.map((entry) => entry.id)],
   ] as const) {
     for (const id of ids) descriptors.set(id, { kind, path: `registry/metadata/${kind}/${id}.ts` });
   }
@@ -247,7 +249,15 @@ export function workspaceScope(files: Files): Scope {
   const items = new Map<string, string>([
     ...catalogue.react.map((entry): [string, string] => [entry.source, entry.id]),
     ...catalogue.elements.map((entry): [string, string] => [entry.source, entry.id]),
+    ...catalogue.blocks.flatMap((entry) => entry.files.map((name): [string, string] => [`${entry.directory}/${name}`, entry.id])),
   ]);
+
+  const engines = new Map(
+    catalogue.blocks.map((block): [string, ReadonlySet<string>] => [
+      block.id,
+      new Set(block.recipes.flatMap(({ id }) => catalogue.recipes.find((recipe) => recipe.id === id)?.dependencies ?? [])),
+    ]),
+  );
 
   const anchorCache = new Map<string, Set<string> | undefined>();
 
@@ -267,6 +277,7 @@ export function workspaceScope(files: Files): Scope {
     resolve,
     staged: (path) => staged.get(path),
     itemOf: (path) => items.get(path),
+    blockEngines: (block) => engines.get(block) ?? new Set(),
     policy: POLICY,
     styles: STYLE_POLICY,
     tokenSources: inventory.filter(({ path, kind }) => kind === 'token-source' && path.endsWith('.stylex.ts')).map(({ path }) => path),
@@ -278,7 +289,7 @@ export function workspaceScope(files: Files): Scope {
         authority: 'docs/spec/ultima.md#typefaces',
       },
     ],
-    testPlacement: ['packages/ui', 'packages/elements', 'packages/tokens'].map((directory) => ({
+    testPlacement: ['packages/ui', 'packages/elements', 'packages/tokens', 'packages/blocks'].map((directory) => ({
       package: `${directory}/`,
       tests: `${directory}/src/__tests__/`,
     })),

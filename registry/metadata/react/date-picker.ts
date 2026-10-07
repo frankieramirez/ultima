@@ -10,5 +10,6 @@ export default {
   primaryExport: 'DatePicker',
   release: 'v0.2',
   order: 17,
+  group: 'forms',
   replaces: { elements: ['input[type=date]'] },
 } satisfies ReactDescriptor;

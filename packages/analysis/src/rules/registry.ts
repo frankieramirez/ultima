@@ -14,7 +14,7 @@ const OWNERSHIP = `${INFRA}#ownership`;
 const ITEM = 'docs/spec/ultima.md#the-registry-item';
 
 /** The descriptor kind each planned item's files need. */
-const SHAPE = { staged: ['react', 'source-bundle'], setup: ['setup'], artifact: ['artifact'], element: ['element'] } as const;
+const SHAPE = { staged: ['react', 'source-bundle'], block: ['block'], setup: ['setup'], artifact: ['artifact'], element: ['element'] } as const;
 
 /** What an author does about each catalogue finding. */
 const REPAIR: Record<string, string> = {
@@ -23,6 +23,7 @@ const REPAIR: Record<string, string> = {
   'broken-anchor': 'Point the contract at an existing specification heading.',
   'duplicate-order': 'Give the item an order no other item in its group holds.',
   'unknown-release': 'Use a release defined in registry/metadata/releases.ts.',
+  'unknown-group': 'Use a catalogue group defined in registry/metadata/groups.ts.',
   'path-outside': 'Keep every path inside the directory the descriptor owns.',
   'source-without-metadata': 'Add the descriptor that claims the file, or remove the file.',
   'invalid-primary-export': 'Export the root function or namespace the descriptor names as primaryExport.',
@@ -53,7 +54,7 @@ export function checkRegistry(context: Context): void {
   // The catalogue reads component and element sources too; where one does not parse, its findings about
   // exports and tags are echoes of that failure, which already leaves the run incomplete.
   const unparsed = context.scope.inventory.some(
-    ({ path, kind }) => ['react-component', 'react-helper', 'element', 'token-source'].includes(kind) && !context.source(path),
+    ({ path, kind }) => ['react-component', 'react-helper', 'element', 'token-source', 'block'].includes(kind) && !context.source(path),
   );
 
   for (const finding of unparsed ? [] : registry.findings) {

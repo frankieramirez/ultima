@@ -25,8 +25,11 @@ export type ConsumerScope = Scope & {
   /** An absolute specifier resolution from an absolute file, for the commands that work on disk paths. */
   resolveFile(specifier: string, from: string): string | null;
   aliases: { ui: string; lib: string };
-  /** Where `aliases.ui` and `aliases.lib` point, through the tsconfig `paths`. */
-  directories: { ui: string; lib: string };
+  /**
+   * Where `aliases.ui` and `aliases.lib` point, through the tsconfig `paths`, and `aliases.components`
+   * when it is set and mapped: a block's files install under it.
+   */
+  directories: { ui: string; lib: string; components?: string };
   components: Record<string, unknown>;
   /** Paths `--files` named that the scope does not hold, with the reason, listed and skipped. */
   skipped: { path: string; reason: string }[];
@@ -83,6 +86,9 @@ export function consumerScope(
     aliases[key] = alias;
     directories[key] = directory;
   }
+  const componentsAlias = (components.aliases as Record<string, unknown> | undefined)?.components;
+  const componentsDirectory = typeof componentsAlias === 'string' ? aliasDirectory(componentsAlias, configs) : null;
+  if (componentsDirectory) directories.components = componentsDirectory;
 
   const optionsFor = (from: string) =>
     ((configs.find(({ fileNames }) => fileNames.includes(from)) ?? configs.find(({ fileNames }) => fileNames.length > 0) ?? configs[0]) as ts.ParsedCommandLine).options;

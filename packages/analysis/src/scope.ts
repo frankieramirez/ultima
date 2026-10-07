@@ -13,6 +13,7 @@ export type SourceKind =
   | 'react-component'
   | 'react-helper'
   | 'element'
+  | 'block'
   // The docs application: chrome, demos and executable MDX pages.
   | 'docs'
   | 'demo'
@@ -29,7 +30,7 @@ export type SourceKind =
   | 'app'
   | 'stylesheet';
 
-export const PRODUCTION_KINDS: readonly SourceKind[] = ['token-source', 'react-component', 'react-helper', 'element'];
+export const PRODUCTION_KINDS: readonly SourceKind[] = ['token-source', 'react-component', 'react-helper', 'element', 'block'];
 export const DOCS_KINDS: readonly SourceKind[] = ['docs', 'demo', 'content'];
 
 export type Classified = { path: string; kind: SourceKind };
@@ -84,8 +85,13 @@ export type Scope = {
   kindOf(path: string): SourceKind | undefined;
   resolve(specifier: string, from: string): Resolution;
   staged(path: string): Staged | undefined;
-  /** The registry item a production source belongs to, when it is a component or element file. */
+  /** The registry item a production source belongs to, when it is a component, element or block file. */
   itemOf(path: string): string | undefined;
+  /**
+   * The packages a block may import as engines: those the demos of the recipes its descriptor names
+   * import. Only the workspace scope reads descriptors, so a consumer scope leaves it unset.
+   */
+  blockEngines?(block: string): ReadonlySet<string>;
   policy: DependencyPolicy;
   /** Runtime variables, alternative styling engines and the other value policy the style rules read. */
   styles: StylePolicy;

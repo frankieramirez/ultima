@@ -122,7 +122,7 @@ const RELEASE_INPUTS: readonly [RegExp, string][] = [
   [/^packages\/[^/]+\/scripts\//, 'a package build or generator script can affect every item it builds'],
   [/^packages\/analysis\//, 'the architecture checker and its fixtures are verification tooling'],
   [/^packages\/tokens\//, 'a shared token source, palette recipe or token export affects both targets, contrast, every demo and installation'],
-  [/^registry\/metadata\/(schema|releases)\.ts$/, 'the descriptor schema and release order shape every item'],
+  [/^registry\/metadata\/(schema|releases|groups)\.ts$/, 'the descriptor schema, release order and catalogue groups shape every item'],
   [/^docs\/spec\/ultima\.md$/, 'the registry build and the agent guide generate prose from this specification'],
 ];
 

@@ -19,7 +19,8 @@ import {
   withStamp,
 } from '../packages/cli/src/stamp.ts';
 import type { SetupDescriptor } from '../registry/metadata/schema.ts';
-import { agentGuide, type GuideComponent } from './build-agent-guide.ts';
+import { agentGuide, type GuideBlock, type GuideComponent } from './build-agent-guide.ts';
+import { ordinal } from './catalogue/browser.ts';
 import { diskFiles } from './catalogue/files.ts';
 import { formatDiagnostics, loadCatalogue } from './catalogue/model.ts';
 import { registryUrl } from './catalogue/projections.ts';
@@ -53,6 +54,7 @@ type RegistryItem = {
   type: string;
   title: string;
   description: string;
+  categories?: string[];
   dependencies?: string[];
   devDependencies?: string[];
   registryDependencies?: string[];
@@ -69,12 +71,31 @@ const files = diskFiles(root);
 const { catalogue, diagnostics } = loadCatalogue(files);
 if (diagnostics.length > 0) throw new Error(`the catalogue under registry/metadata/ is invalid:\n${formatDiagnostics(diagnostics)}`);
 
-type Description = { title: string; description: string; docs: string; dependencies: string[]; registryDependencies: string[] };
+type Description = {
+  title: string;
+  description: string;
+  docs: string;
+  dependencies: string[];
+  /** Blocks only: the type packages of their engines. */
+  devDependencies?: string[];
+  registryDependencies: string[];
+  /** React items only: shadcn's own field, holding the item's catalogue group. */
+  categories?: string[];
+};
 
 const descriptions = new Map<string, Description>([
-  ...[...catalogue.sourceBundles, ...catalogue.react].map((entry): [string, Description] => [
+  ...catalogue.sourceBundles.map((entry): [string, Description] => [
     entry.id,
     { ...entry, docs: entry.installDocs, registryDependencies: entry.registryDependencies.map((id) => `@ultima/${id}`) },
+  ]),
+  ...catalogue.react.map((entry): [string, Description] => [
+    entry.id,
+    {
+      ...entry,
+      docs: entry.installDocs,
+      registryDependencies: entry.registryDependencies.map((id) => `@ultima/${id}`),
+      categories: [entry.group],
+    },
   ]),
   ...catalogue.artifacts.map((entry): [string, Description] => [
     entry.id,
@@ -83,6 +104,10 @@ const descriptions = new Map<string, Description>([
   ...catalogue.elements.map((entry): [string, Description] => [
     entry.id,
     { ...entry, docs: entry.installDocs, dependencies: [], registryDependencies: entry.registryDependencies.map(registryUrl) },
+  ]),
+  ...catalogue.blocks.map((entry): [string, Description] => [
+    entry.id,
+    { ...entry, docs: entry.installDocs, registryDependencies: entry.registryDependencies.map((id) => `@ultima/${id}`) },
   ]),
 ]);
 
@@ -97,12 +122,13 @@ function meta(files: { path: string; hash: string }[]): Meta {
 
 async function stage(sources: StagedSource[]): Promise<Staged[]> {
   const staged: Staged[] = [];
-  for (const { source: path, item, staged: to, type } of sources) {
+  for (const { source: path, item, staged: to, type, target } of sources) {
     const source = readFileSync(join(root, path), 'utf8');
     const name = basename(path).replace(/\.tsx?$/, '');
     const { hash, text } = await stamped(item, rewriteImports(source, path), 'c1');
+    mkdirSync(dirname(join(REGISTRY_DIR, to)), { recursive: true });
     writeFileSync(join(REGISTRY_DIR, to), text);
-    staged.push({ name, file: { path: to, type, hash }, source });
+    staged.push({ name, file: { path: to, type, ...(target && { target }), hash }, source });
   }
   return staged;
 }
@@ -134,13 +160,15 @@ function describe(name: string): Description {
 }
 
 function item(name: string, type: string, files: HashedFile[]): RegistryItem {
-  const { title, description, docs, dependencies, registryDependencies } = describe(name);
+  const { title, description, docs, dependencies, devDependencies = [], registryDependencies, categories } = describe(name);
   return {
     name,
     type,
     title,
     description,
+    ...(categories && { categories }),
     ...(dependencies.length > 0 && { dependencies }),
+    ...(devDependencies.length > 0 && { devDependencies }),
     ...(registryDependencies.length > 0 && { registryDependencies }),
     files: files.map(({ hash: _, ...file }) => file),
     docs,
@@ -236,7 +264,8 @@ async function stageSources() {
   const of = (item: string) => all.filter((_, index) => (sources[index] as StagedSource).item === item);
   return {
     sources,
-    components: all.filter((_, index) => !['tokens', 'lib'].includes((sources[index] as StagedSource).item)),
+    components: all.filter((_, index) => (sources[index] as StagedSource).type === 'registry:ui'),
+    blocks: catalogue.blocks.map(({ id }) => of(id)),
     tokens: of('tokens'),
     lib: of('lib'),
     elements,
@@ -246,10 +275,11 @@ async function stageSources() {
 
 type Sources = Awaited<ReturnType<typeof stageSources>>;
 
-function describeRegistry({ sources, components, tokens, lib, elements, tokensCss }: Sources) {
+function describeRegistry({ sources, components, blocks, tokens, lib, elements, tokensCss }: Sources) {
   const staged = new Map([...components.map((entry): [string, HashedFile[]] => [entry.name, [entry.file]])]);
   staged.set('tokens', tokens.map((entry) => entry.file));
   staged.set('lib', lib.map((entry) => entry.file));
+  catalogue.blocks.forEach(({ id }, index) => staged.set(id, (blocks[index] ?? []).map((entry) => entry.file)));
   const registry = {
     $schema: 'https://ui.shadcn.com/schema/registry.json',
     name: 'ultima',
@@ -259,6 +289,7 @@ function describeRegistry({ sources, components, tokens, lib, elements, tokensCs
     meta: { ultima: { format: REGISTRY_FORMAT } },
     items: registryPlan(sources, elements).map(({ name, from }) => {
       if (from === 'setup') return setupItem(name);
+      if (from === 'block') return item(name, 'registry:block', staged.get(name) ?? []);
       if (from === 'element') return vendoredElementItem(name);
       if (from === 'artifact') {
         if (name === 'design-md') {
@@ -304,10 +335,16 @@ function publishExports({ components, elements, tokensCss }: Sources) {
   const guide = agentGuide({
     specPath: SPEC,
     tokensJsonPath: join(TOKENS_DIST, 'tokens.json'),
-    components: components.map(({ name, source }): GuideComponent => {
-      const { title, description } = describe(name);
-      return { name, title, description, source };
-    }),
+    groups: catalogue.groups.map(({ id, label }) => ({
+      label,
+      components: components
+        .filter(({ name }) => catalogue.react.find((entry) => entry.id === name)?.group === id)
+        .sort((a, b) => ordinal(a.name, b.name))
+        .map(({ name, source }): GuideComponent => {
+          const { title, description } = describe(name);
+          return { name, title, description, source };
+        }),
+    })),
     elements: elements.map((name): GuideComponent => {
       const { title, description } = describe(name);
       return {
@@ -317,6 +354,15 @@ function publishExports({ components, elements, tokensCss }: Sources) {
         source: readFileSync(join(ELEMENTS_SRC, `${name}.element.ts`), 'utf8'),
       };
     }),
+    blocks: catalogue.blocks.map(
+      ({ id, title, description, primaryExport, builtFrom }): GuideBlock => ({
+        name: id,
+        title,
+        description,
+        primaryExport,
+        builtFrom: builtFrom.map((entry) => entry.title),
+      }),
+    ),
   });
   writeFileSync(join(PUBLIC_DIR, 'llms.txt'), guide);
 }

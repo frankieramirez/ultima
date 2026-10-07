@@ -7,12 +7,12 @@ const INFRA = 'docs/spec/agent-infrastructure.md';
 export const RULES = {
   'ULT-TOKEN-001': {
     status: 'blocking',
-    scope: 'React and element component declarations',
+    scope: 'React and element component declarations, and block files',
     link: `${INFRA}#values-and-runtime-styles`,
   },
   'ULT-STYLE-001': {
     status: 'blocking',
-    scope: 'Production components and docs styling',
+    scope: 'Production components, block files and docs styling',
     link: `${INFRA}#rule-catalogue`,
   },
   'ULT-PRIMITIVE-001': {
@@ -32,12 +32,12 @@ export const RULES = {
   },
   'ULT-DOCS-001': {
     status: 'blocking',
-    scope: 'Docs application layout and chrome',
+    scope: 'Docs application layout and chrome, and block files',
     link: `${INFRA}#docs-controls-and-surfaces`,
   },
   'ULT-DOCS-002': {
     status: 'blocking',
-    scope: 'Docs application layout and chrome, including executable page JSX',
+    scope: 'Docs application layout and chrome, including executable page JSX, and block files',
     link: `${INFRA}#docs-controls-and-surfaces`,
   },
   'ULT-DOCS-REVIEW-001': {

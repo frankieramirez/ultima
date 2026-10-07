@@ -7,7 +7,7 @@ export const siteDiscovery = {
   version: 3,
   /** A route and the document.title it serves, one per shape the router knows. */
   titles: [
-    { pathname: '/', title: 'React components. Built with StyleX. Yours to change. - Ultima' },
+    { pathname: '/', title: 'A system for building interfaces. - Ultima' },
     { pathname: '/install', title: 'Install - Ultima' },
     { pathname: '/elements', title: 'Elements - Ultima' },
     { pathname: '/tokens', title: 'Tokens - Ultima' },

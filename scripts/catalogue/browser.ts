@@ -7,11 +7,12 @@ import type { Diagnostic } from './model.ts';
 import { type Import, importsOf, lineOf, mdxImports, parse } from './source.ts';
 
 /** A Vitest browser project: its package, and the files its config loads before any test. */
-export type BrowserProject = { id: 'ui' | 'docs'; directory: string; setup: string[] };
+export type BrowserProject = { id: 'ui' | 'docs' | 'blocks'; directory: string; setup: string[] };
 
 export const BROWSER_PROJECTS: BrowserProject[] = [
   { id: 'ui', directory: 'packages/ui', setup: ['packages/ui/src/__tests__/setup.ts'] },
   { id: 'docs', directory: 'apps/docs', setup: [] },
+  { id: 'blocks', directory: 'packages/blocks', setup: ['packages/blocks/src/__tests__/setup.ts'] },
 ];
 
 export type PolicyEntry = { specifier: string; reason: string; source: string };
@@ -147,7 +148,7 @@ export function browserDependencies(
   for (const project of BROWSER_PROJECTS) {
     const tests = filesUnder(`${project.directory}/src/__tests__`).filter((path) => /\.test\.tsx?$/.test(path));
     const found = new Map<string, string>();
-    const queue = [...tests, ...project.setup];
+    const queue = [...tests, ...project.setup.filter((path) => read(path) !== undefined)];
     const visited = new Set<string>();
     const report = (path: string, message: string) => diagnostics.push({ code: 'unresolved-import', path, message });
 

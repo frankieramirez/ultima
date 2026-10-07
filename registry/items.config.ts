@@ -387,6 +387,16 @@ export const items: Record<string, RegistryItemDescription> = {
     "registryDependencies": [
       "https://ultima.systems/r/tokens-css.json"
     ]
+  },
+  "dashboard-01": {
+    "title": "Dashboard 01",
+    "description": "A store overview: workspace navigation, four key metrics, a revenue chart with its data table, top products and recent orders.",
+    "docs": "Render it from a route of your own: import { Dashboard01 } from '@/components/dashboard-01/dashboard-01'. It installs d3-scale and d3-array for the revenue chart. Replace the sample data in each region file with your own; Export, the workspace menu items and the navigation links have no handler of their own."
+  },
+  "sign-in-01": {
+    "title": "Sign-in 01",
+    "description": "A split sign-in screen: a brand panel with a customer story beside an email and password form.",
+    "docs": "Render it from a route of your own: import { SignIn01 } from '@/components/sign-in-01/sign-in-01'. Replace the signIn stub in sign-in-form.tsx with your authentication call; the GitHub and SSO buttons and the links have no handler of their own."
   }
 };
 

@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Skeleton',
   release: 'v0.1',
   order: 12,
+  group: 'feedback',
 } satisfies ReactDescriptor;

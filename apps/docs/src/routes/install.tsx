@@ -1,6 +1,6 @@
-import { Prose } from '../prose';
+import { Foundation } from '../foundation';
 import Content from '../content/install.mdx';
 
 export function InstallPage() {
-  return <Prose Content={Content} breadcrumb={[{ label: 'Install' }]} />;
+  return <Foundation Content={Content} labels={['Shadcn-compatible registry', 'Vite · Next.js']} />;
 }

@@ -1,9 +1,9 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 
+import { ComponentPage } from './component-page';
 import { components } from './components';
 import { componentTitle } from './document-title';
 import { componentPages } from './generated/component-pages';
-import { Prose } from './prose';
 import { CliPage } from './routes/cli';
 import { ComponentsPage } from './routes/components';
 import { Home } from './routes/home';
@@ -25,7 +25,7 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: Home,
-  staticData: { title: 'React components. Built with StyleX. Yours to change.' },
+  staticData: { title: 'A system for building interfaces.' },
 });
 
 const installRoute = createRoute({
@@ -84,12 +84,7 @@ function ComponentNamePage() {
 
   if (!component || !Content) return <NotFound />;
 
-  return (
-    <Prose
-      Content={Content}
-      breadcrumb={[]}
-    />
-  );
+  return <ComponentPage key={component.item} entry={component} Content={Content} />;
 }
 
 const rationaleRoute = createRoute({

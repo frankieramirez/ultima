@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 
 import { memoryFiles } from './files.ts';
 import { descriptor, validFixture } from './fixture.ts';
-import { type DiagnosticCode, loadCatalogue } from './model.ts';
+import { type DiagnosticCode, catalogueNumbers, loadCatalogue } from './model.ts';
 
 function load(changes: Record<string, string | undefined> = {}) {
   const files = { ...validFixture(), ...changes };
@@ -234,6 +234,43 @@ describe('releases and order', () => {
   });
 });
 
+describe('catalogue groups and numbers', () => {
+  test('rejects a React descriptor with no group', () => {
+    expectDiagnostic(edit(BUTTON, (v) => delete v.group), 'invalid-descriptor', 'descriptor.group is missing');
+  });
+  test('rejects a group the definitions lack', () => {
+    expectDiagnostic(edit(BUTTON, (v) => (v.group = 'widgets')), 'unknown-group', 'group "widgets" is not defined in registry/metadata/groups.ts');
+  });
+  test('rejects a group on a recipe, which has no directory entry', () => {
+    expectDiagnostic(edit(RECIPE, (v) => (v.group = 'forms')), 'invalid-descriptor', 'descriptor.group is not a known field');
+  });
+  test('rejects a group defined twice', () => {
+    expectDiagnostic(
+      { 'registry/metadata/groups.ts': "export default [{ id: 'forms', label: 'a' }, { id: 'forms', label: 'b' }] as const satisfies readonly Group[];" },
+      'duplicate-id',
+      'group "forms"',
+    );
+  });
+  test('keeps the group definitions in display order', () => {
+    assert.deepEqual(load().catalogue.groups, [
+      { id: 'forms', label: 'Forms' },
+      { id: 'navigation', label: 'Navigation' },
+    ]);
+  });
+  test('numbers React items alphabetically by id, padded to three digits', () => {
+    const numbers = Object.fromEntries(load().catalogue.react.map((entry) => [entry.id, entry.number]));
+    assert.deepEqual(numbers, { button: '001', calendar: '002', 'input-otp': '003', sidebar: '004' });
+  });
+  test('derives numbers over ids, where a prefix sorts before its longer siblings', () => {
+    assert.deepEqual([...catalogueNumbers(['tooltip', 'alert-dialog', 'alert', 'accordion'])], [
+      ['accordion', '001'],
+      ['alert', '002'],
+      ['alert-dialog', '003'],
+      ['tooltip', '004'],
+    ]);
+  });
+});
+
 describe('bidirectional membership', () => {
   for (const [label, path] of [
     ['source', 'packages/ui/src/sidebar.tsx'],
@@ -245,6 +282,7 @@ describe('bidirectional membership', () => {
     ['setup file', 'registry/static/setup-vite/components.json'],
     ['recipe demo', 'apps/docs/src/demos/button/sorting.tsx'],
     ['release definitions', 'registry/metadata/releases.ts'],
+    ['group definitions', 'registry/metadata/groups.ts'],
   ] as const) {
     test(`reports a missing ${label}`, () => expectDiagnostic({ [path]: undefined }, 'missing-file', path.replace(/\/basic\.tsx$/, '/')));
   }
@@ -432,5 +470,91 @@ describe('recipes', () => {
     });
     assert.deepEqual(diagnostics, []);
     assert.deepEqual(catalogue.recipes[0]?.registryDependencies, ['calendar']);
+  });
+});
+
+describe('blocks', () => {
+  const BLOCK = 'registry/metadata/block/login-01.ts';
+  const block = (recipes: unknown[] = []) =>
+    descriptor('block', 'BlockDescriptor', {
+      id: 'login-01',
+      kind: 'block',
+      title: 'Login 01',
+      description: 'A login screen, for the fixture.',
+      contract: 'docs/spec/ultima.md#compound-components',
+      installDocs: "import { Login01 } from '@/components/login-01/login-01';",
+      primaryExport: 'Login01',
+      recipes,
+    });
+  const files = (overrides: Record<string, string | undefined> = {}) => ({
+    [BLOCK]: block(),
+    'packages/blocks/src/login-01/login-01.tsx': [
+      "import * as stylex from '@stylexjs/stylex';",
+      "import { space } from '@ultima/tokens/tokens.stylex';",
+      "import { Sidebar } from '@ultima/ui/sidebar';",
+      "import { Form } from './form';",
+      'export function Login01() { return <Sidebar.Root><Form /></Sidebar.Root>; }',
+    ].join('\n'),
+    'packages/blocks/src/login-01/form.tsx': [
+      "import { Form as BaseForm } from '@base-ui/react/form';",
+      "import { useState } from 'react';",
+      "import { Button } from '@ultima/ui/button';",
+      "import { Glyph } from './icons';",
+      'export function Form() { return <BaseForm><Button><Glyph /></Button></BaseForm>; }',
+    ].join('\n'),
+    'packages/blocks/src/login-01/icons.tsx': 'export function Glyph() { return <svg aria-hidden="true" />; }\n',
+    'packages/blocks/src/__tests__/login-01.test.tsx': "test('login-01', () => {});\n",
+    ...overrides,
+  });
+
+  test('derives its files entry first, its dependencies, its number and Built from in number order', () => {
+    const { catalogue, diagnostics } = load(files());
+    assert.deepEqual(diagnostics, []);
+    const [entry] = catalogue.blocks;
+    assert.deepEqual(entry?.files, ['login-01.tsx', 'form.tsx', 'icons.tsx']);
+    assert.deepEqual(entry?.dependencies, ['@base-ui/react', '@stylexjs/stylex']);
+    assert.deepEqual(entry?.registryDependencies, ['tokens', 'button', 'sidebar']);
+    assert.equal(entry?.number, '001');
+    assert.deepEqual(
+      entry?.builtFrom.map(({ id, number, kind }) => [id, number, kind]),
+      [
+        ['button', '001', 'component'],
+        ['sidebar', '004', 'component'],
+      ],
+    );
+    assert.ok(catalogue.registryItems.includes('login-01'));
+  });
+
+  test("installs the type package of a dependency that packages/blocks declares one for, as a dev dependency", () => {
+    assert.deepEqual(load(files()).catalogue.blocks[0]?.devDependencies, []);
+    const engine = {
+      'packages/blocks/src/login-01/icons.tsx': "import { scaleLinear } from 'd3-scale';\nexport function Glyph() { return <svg aria-hidden=\"true\" width={scaleLinear()(1)} />; }\n",
+      'packages/blocks/package.json': JSON.stringify({ name: '@ultima/blocks', dependencies: { 'd3-scale': '4' }, devDependencies: { '@types/d3-scale': '4', '@types/react': '19' } }),
+    };
+    const [entry] = load(files(engine)).catalogue.blocks;
+    assert.deepEqual(entry?.dependencies, ['@base-ui/react', '@stylexjs/stylex', 'd3-scale']);
+    assert.deepEqual(entry?.devDependencies, ['@types/d3-scale']);
+  });
+
+  test('lists the recipes it follows after its components, and rejects one that is not a recipe', () => {
+    const recipe = { id: 'data-table', root: { role: 'table', name: 'Orders' } };
+    const { catalogue } = load(files({ [BLOCK]: block([recipe]) }));
+    assert.deepEqual(catalogue.blocks[0]?.builtFrom.at(-1), { id: 'data-table', title: 'Data Table', number: '001', kind: 'recipe' });
+    expectDiagnostic(files({ [BLOCK]: block([{ id: 'chart', root: { role: 'img', name: 'Revenue' } }]) }), 'missing-reference', 'recipe "chart"');
+  });
+
+  test('requires its entry exporting the primary export, and its test', () => {
+    expectDiagnostic(files({ 'packages/blocks/src/login-01/login-01.tsx': 'export function Other() { return null; }\n' }), 'invalid-primary-export', 'no root component "Login01"');
+    expectDiagnostic(files({ 'packages/blocks/src/__tests__/login-01.test.tsx': undefined }), 'missing-file', 'packages/blocks/src/__tests__/login-01.test.tsx is missing');
+    expectDiagnostic(files({ 'packages/blocks/src/login-01/login-01.tsx': undefined }), 'missing-file', 'packages/blocks/src/login-01/login-01.tsx is missing');
+  });
+
+  test("reports a block folder no descriptor claims, and an import outside the block's own files", () => {
+    expectDiagnostic({ ...files(), 'packages/blocks/src/crm-01/crm-01.tsx': 'export function Crm01() { return null; }\n' }, 'source-without-metadata', 'packages/blocks/src/crm-01');
+    expectDiagnostic(
+      files({ 'packages/blocks/src/login-01/icons.tsx': "import { Other } from '../crm-01/other';\nexport function Glyph() { return <Other />; }\n" }),
+      'unresolved-import',
+      'packages/blocks/src/login-01/icons.tsx:1',
+    );
   });
 });

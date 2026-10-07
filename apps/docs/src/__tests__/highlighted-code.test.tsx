@@ -93,23 +93,23 @@ test('Demo follows the ambient color mode and highlights the printed source', as
   }
 
   const source = 'export default function Example() {\n  return null;\n}';
-  const modes = [
-    { props: stylex.props(darkTheme, colorScheme.dark), paper: 'rgb(20, 21, 22)' },
-    { props: stylex.props(lightTheme, colorScheme.light), paper: 'rgb(247, 249, 255)' },
-  ];
+  const modes = [stylex.props(darkTheme, colorScheme.dark), stylex.props(lightTheme, colorScheme.light)];
+  const keywords: string[] = [];
   for (const mode of modes) {
     const screen = await render(
-      <div {...mode.props}>
+      <div {...mode}>
         <Demo component={Example} source={source} />
       </div>,
     );
     await userEvent.click(screen.getByRole('tab', { name: 'Code', exact: true }));
     const figure = screen.container.querySelector('figure')!;
     expect(figure.querySelector('pre')?.textContent).toBe(source);
-    expect(getComputedStyle(figure).backgroundColor).toBe(mode.paper);
+    expect(getComputedStyle(figure).backgroundColor).toBe('rgba(0, 0, 0, 0)');
     expect(colorOf('function', figure)).not.toBe(colorOf('Example', figure));
+    keywords.push(colorOf('function', figure));
     await screen.unmount();
   }
+  expect(keywords[0]).not.toBe(keywords[1]);
 });
 
 test('an MDX fence highlights its source in a bordered block', async () => {

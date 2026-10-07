@@ -1,6 +1,6 @@
 import { type OptimizerPlan, type OptimizerPolicy, browserDependencies, ordinal } from './browser.ts';
 import type { Files } from './files.ts';
-import { BARREL, type Catalogue, type Diagnostic, loadCatalogue } from './model.ts';
+import { BARREL, type Catalogue, type Diagnostic, type ReactEntry, loadCatalogue } from './model.ts';
 
 /** Every path the generator owns. It writes these and nothing else. */
 export const OUTPUTS = {
@@ -8,6 +8,7 @@ export const OUTPUTS = {
   catalogue: 'apps/docs/src/generated/catalogue.ts',
   pages: 'apps/docs/src/generated/component-pages.ts',
   elements: 'apps/docs/src/generated/elements.ts',
+  blocks: 'apps/docs/src/generated/blocks.ts',
   barrel: BARREL,
   browser: 'scripts/generated/browser-dependencies.ts',
 } as const;
@@ -30,6 +31,7 @@ function registryProjection(catalogue: Catalogue): string {
     ...[...catalogue.react].sort((a, b) => ordinal(a.id, b.id)),
     ...catalogue.artifacts,
     ...[...catalogue.elements].sort((a, b) => ordinal(a.id, b.id)),
+    ...[...catalogue.blocks].sort((a, b) => ordinal(a.id, b.id)),
   ];
   const items = Object.fromEntries(
     installable.map((entry) => [
@@ -79,22 +81,41 @@ export const setupItems = ${data(setupItems)} satisfies Record<string, SetupItem
 `;
 }
 
+const NON_COMPONENT_MODULES = new Set(['use-render', 'merge-props', 'direction-provider', 'csp-provider', 'react', 'core', 'types']);
+
+function primitiveOf(entry: ReactEntry): { library: 'base-ui' | 'zag'; module: string } | null {
+  const modules = entry.imports.flatMap(({ specifier, typeOnly }) => {
+    const match = /^@(base-ui)\/react\/([a-z-]+)$|^@zag-js\/([a-z-]+)$/.exec(specifier);
+    if (typeOnly || !match) return [];
+    const module = (match[2] ?? match[3]) as string;
+    return NON_COMPONENT_MODULES.has(module) ? [] : [{ library: match[1] ? ('base-ui' as const) : ('zag' as const), module }];
+  });
+  return modules.find(({ module }) => module === entry.id) ?? modules[0] ?? null;
+}
+
 function catalogueProjection(catalogue: Catalogue): string {
   const releases = catalogue.releases.map((release) => release.id);
-  const labels = Object.fromEntries(catalogue.releases.map((release) => [release.id, release.label]));
-  const components = catalogue.react.map((entry) => ({
-    name: entry.title,
-    item: entry.id,
-    description: entry.docsDescription ?? entry.description,
-    release: entry.release,
-  }));
-  return `${header('registry/metadata/releases.ts and registry/metadata/react/')}
+  const rank = (group: string) => catalogue.groups.findIndex((entry) => entry.id === group);
+  const components = [...catalogue.react]
+    .sort((a, b) => rank(a.group) - rank(b.group) || ordinal(a.id, b.id))
+    .map((entry) => ({
+      name: entry.title,
+      item: entry.id,
+      number: entry.number,
+      group: entry.group,
+      description: entry.docsDescription ?? entry.description,
+      release: entry.release,
+      primitive: primitiveOf(entry),
+    }));
+  return `${header('registry/metadata/groups.ts, registry/metadata/releases.ts and registry/metadata/react/')}
 import type { ComponentEntry } from '../components';
+
+/** In display order. */
+export const GROUPS = ${data(catalogue.groups)} as const;
 
 export const RELEASES = ${data(releases)} as const;
 
-export const RELEASE_LABELS: Record<(typeof RELEASES)[number], string> = ${data(labels)};
-
+/** By group, then alphabetically. \`number\` is the catalogue number, derived from id order. */
 export const components: ComponentEntry[] = ${data(components)};
 `;
 }
@@ -130,6 +151,46 @@ export const elements: readonly ElementEntry[] = ${data(elements)};
 `;
 }
 
+function blocksProjection(catalogue: Catalogue): string {
+  const imports = catalogue.blocks.map((entry) => `import { ${entry.primaryExport} } from '@ultima/blocks/${entry.id}/${entry.id}';`);
+  const entries = catalogue.blocks.map((entry) => {
+    const fields = data({
+      id: entry.id,
+      title: entry.title,
+      description: entry.description,
+      number: entry.number,
+      install: `npx shadcn add @ultima/${entry.id}`,
+      files: entry.files,
+      builtFrom: entry.builtFrom,
+    });
+    return `  ${fields.slice(0, -2).replaceAll('\n', '\n  ')},\n    "preview": ${entry.primaryExport}\n  }`;
+  });
+  return `${header('registry/metadata/block/ and packages/blocks/src/')}
+import type { ComponentType } from 'react';
+${imports.length > 0 ? `\n${imports.join('\n')}\n` : ''}
+/** A component the block imports, or a recipe it follows, numbered among its own kind. */
+export type BuiltFrom = { id: string; title: string; number: string; kind: 'component' | 'recipe' };
+
+export type BlockEntry = {
+  id: string;
+  title: string;
+  description: string;
+  /** The catalogue number, derived from id order among blocks. */
+  number: string;
+  install: string;
+  /** The files installed under \`components/<id>/\`, the entry first. */
+  files: readonly string[];
+  /** The components it imports in number order, then the recipes it follows. */
+  builtFrom: readonly BuiltFrom[];
+  /** The root component, which takes no props. */
+  preview: ComponentType;
+};
+
+/** In number order. */
+export const blocks: readonly BlockEntry[] = [${entries.length > 0 ? `\n${entries.join(',\n')},\n` : ''}];
+`;
+}
+
 function barrelProjection(catalogue: Catalogue): string {
   const byItem = new Map<string, string[]>();
   for (const entry of catalogue.exports.values()) {
@@ -152,6 +213,9 @@ export const uiOptimizerInclude = ${data(plan.include.ui)};
 
 /** apps/docs/vitest.config.ts: prebundled up front, since discovering one mid-run reloads the page. */
 export const docsOptimizerInclude = ${data(plan.include.docs)};
+
+/** packages/blocks/vitest.config.ts: prebundled up front, since discovering one mid-run reloads the page. */
+export const blocksOptimizerInclude = ${data(plan.include.blocks)};
 `;
 }
 
@@ -169,6 +233,7 @@ export function planOutputs(
     [OUTPUTS.catalogue, catalogueProjection(catalogue)],
     [OUTPUTS.pages, pagesProjection(catalogue)],
     [OUTPUTS.elements, elementsProjection(catalogue)],
+    [OUTPUTS.blocks, blocksProjection(catalogue)],
     [OUTPUTS.barrel, barrelProjection(catalogue)],
   ]);
   const barrel = new Map([...catalogue.exports.values()].map((entry) => [entry.name, `packages/ui/src/${entry.item}.tsx`]));

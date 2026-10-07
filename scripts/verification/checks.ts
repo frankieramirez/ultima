@@ -19,6 +19,7 @@ export type CheckId =
   | 'palette'
   | 'tokens-tests'
   | 'ui-tests'
+  | 'blocks-tests'
   | 'elements-tests'
   | 'docs-tests'
   | 'cli-tests'
@@ -201,6 +202,22 @@ export const CHECKS: readonly CheckDefinition[] = [
     adapter: BROWSER,
   },
   {
+    id: 'blocks-tests',
+    title: 'Block proof items: browser, axe at both widths and both modes, and wired behavior',
+    argv: ['pnpm', '--filter', '@ultima/blocks', 'test'],
+    cwd: '.',
+    nested: [],
+    prerequisites: FRESHNESS,
+    locks: ['browser'],
+    needs: ['chromium'],
+    deadlineSeconds: 600,
+    scope: 'scoped',
+    selector: 'none',
+    package: '@ultima/blocks',
+    tests: 'packages/blocks/src/__tests__',
+    adapter: BROWSER,
+  },
+  {
     id: 'elements-tests',
     title: 'Element families, lifecycle, parity and bundle assertions',
     argv: ['pnpm', '--filter', '@ultima/elements', 'test'],
@@ -289,7 +306,7 @@ export const CHECKS: readonly CheckDefinition[] = [
     argv: ['scripts/smoke-install.sh', '--keep'],
     cwd: '.',
     // Its local path builds tokens, the registry and the docs, then serves apps/docs/dist itself.
-    nested: ['pnpm --filter @ultima/tokens build', 'pnpm registry:build', 'pnpm --filter @ultima/docs build', 'loopback server on port 0', 'Vite consumer', 'Next.js root and src consumers with production browser styles', 'sidebar consumer', 'element consumer'],
+    nested: ['pnpm --filter @ultima/tokens build', 'pnpm registry:build', 'pnpm --filter @ultima/docs build', 'loopback server on port 0', 'Vite consumer', 'Next.js root and src consumers with production browser styles', 'sidebar consumer', 'each block alone in Vite and Next.js consumers', 'element consumer'],
     prerequisites: ['registry-build'],
     after: READ_FIRST,
     locks: ['writes:tokens-dist', 'writes:elements-dist', 'writes:registry', 'writes:docs-dist'],
@@ -354,7 +371,7 @@ export const CI_OBLIGATIONS: readonly { workflow: string; command: string; check
   {
     workflow: 'ci.yml',
     command: 'pnpm test',
-    checks: ['tooling-tests', 'analysis-fixtures', 'cli-tests', 'tokens-tests', 'ui-tests', 'elements-tests', 'docs-tests'],
+    checks: ['tooling-tests', 'analysis-fixtures', 'cli-tests', 'tokens-tests', 'ui-tests', 'blocks-tests', 'elements-tests', 'docs-tests'],
   },
   { workflow: 'ci.yml', command: 'python3 packages/tokens/scripts/palette.py --check', checks: ['palette'] },
   { workflow: 'ci.yml', command: 'pnpm registry:build', checks: ['registry-build'] },
