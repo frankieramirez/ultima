@@ -135,6 +135,25 @@ const styles = stylex.create({
     overflow: 'hidden',
   },
 
+  paneLabel: {
+    color: color['--ult-color-text-subtle'],
+    display: { default: 'none', [breakpoints.RAIL]: 'flex' },
+    flexShrink: 0,
+    flexWrap: 'wrap',
+    fontSize: text['--ult-text-2'],
+    gap: space['--ult-space-4'],
+    justifyContent: 'space-between',
+    lineHeight: font['--ult-font-leading-snug'],
+    paddingBlockStart: space['--ult-space-8'],
+    paddingInline: space['--ult-space-9'],
+  },
+  paneMode: {
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-1'],
+    letterSpacing: font['--ult-font-tracking-wide'],
+    textTransform: 'uppercase',
+  },
+  railLabelClearance: { paddingBlockStart: { default: null, [breakpoints.RAIL]: space['--ult-space-5'] } },
   sheet: {
     display: 'flex',
     flexDirection: 'column',
@@ -253,8 +272,8 @@ const styles = stylex.create({
   inviteIcon: { color: color['--ult-color-accent-text'], fontSize: text['--ult-text-9'] },
   fill: { inlineSize: '100%' },
   row: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
-  miniChip: { inlineSize: space['--ult-space-7'], blockSize: space['--ult-space-7'] },
-  mini: { display: 'flex', flexDirection: 'row', gap: space['--ult-space-1'], flexShrink: 0 },
+  miniChip: { flexGrow: 1, height: space['--ult-space-6'], width: 'auto' },
+  mini: { display: 'flex', flexDirection: 'row', flexShrink: 0, gap: space['--ult-space-1'] },
   display: {
     fontSize: text['--ult-text-9'],
     fontWeight: font['--ult-font-weight-semibold'],
@@ -320,10 +339,12 @@ const styles = stylex.create({
 });
 
 export function ThemeStudioPreview({
+  identity,
   mode,
   onModeChange,
   tables,
 }: {
+  identity: string;
   mode: PreviewMode;
   onModeChange: (mode: PreviewMode) => void;
   tables: ResolvedDraft;
@@ -385,6 +406,8 @@ export function ThemeStudioPreview({
       <div {...stylex.props(styles.panes)}>
         {panes.map((pane) => (
           <PreviewPane
+            label={`${identity} · ${pane}`}
+            note={mode === 'compare' ? 'Portal and variables owned by this pane' : inspect ? 'Hover any example to see the tokens it reads' : null}
             inspect={inspect}
             key={pane}
             mode={pane}
@@ -398,11 +421,15 @@ export function ThemeStudioPreview({
 }
 
 function PreviewPane({
+  label,
+  note,
   inspect,
   mode,
   scene,
   table,
 }: {
+  label: string;
+  note: string | null;
   inspect: boolean;
   mode: PaneMode;
   scene: Scene;
@@ -465,8 +492,12 @@ function PreviewPane({
       style={{ ...pane.style, ...previewVars(table) } as CSSProperties}
     >
       <div data-preview-canvas {...stylex.props(styles.canvas)}>
+        <div data-pane-label {...stylex.props(styles.paneLabel)}>
+          <span {...stylex.props(styles.paneMode)}>{label}</span>
+          {note ? <span>{note}</span> : null}
+        </div>
         <div data-preview-scene={scene} {...stylex.props(styles.sheet)}>
-          <div {...stylex.props(scene === 'workspace' ? styles.app : styles.scene, scene !== 'gallery' && styles.centred)}>
+          <div {...stylex.props(scene === 'workspace' ? styles.app : styles.scene, scene !== 'gallery' && styles.centred, styles.railLabelClearance)}>
             <StudioInspectionContext value={inspectTarget}>
               <SceneBody container={portal} inspect={inspect} mode={mode} scene={scene} />
             </StudioInspectionContext>
@@ -535,9 +566,9 @@ export function PresetPreview({ id }: { id: ThemePresetId }) {
   const table = resolveDraft(presetDraft(id)).dark;
   return (
     <span aria-hidden="true" {...stylex.props(styles.mini)}>
-      <SwatchChip style={styles.miniChip} value={table['--ult-color-text']!} />
-      <SwatchChip style={styles.miniChip} value={table['--ult-color-action']!} />
-      <SwatchChip style={styles.miniChip} value={table['--ult-color-accent']!} />
+      {(['--ult-color-surface', '--ult-color-accent', '--ult-color-action'] as const).map((token) => (
+        <SwatchChip key={token} style={styles.miniChip} value={table[token]!} />
+      ))}
     </span>
   );
 }
