@@ -2012,6 +2012,7 @@ A block has one descriptor at `registry/metadata/block/<id>.ts`, `kind: 'block'`
 | `recipes` | Authored: each recipe the block follows, as its id, checked against the recipe descriptors, and the accessible query of the recipe's root in the block, `{ role, name }`, which [Anatomy](#anatomy) outlines. Recipes are not imported, so this is the one fact source cannot supply. |
 | Files and targets | Derived from `packages/blocks/src/<id>/`. |
 | `dependencies`, `registryDependencies` | Derived from imports. |
+| `devDependencies` | Derived: the `@types` package of each dependency that `packages/blocks` declares one for, such as `@types/d3-scale`, so the engine type-checks in a TypeScript consumer. |
 | Number | Derived by the generator. |
 
 **Built from** is derived: the block's direct `@ultima/ui/<name>` imports plus its `recipes`, shown with their catalogue numbers in number order. No authored list of components exists to fall out of step with the source.

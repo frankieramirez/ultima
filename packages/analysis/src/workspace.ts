@@ -252,6 +252,13 @@ export function workspaceScope(files: Files): Scope {
     ...catalogue.blocks.flatMap((entry) => entry.files.map((name): [string, string] => [`${entry.directory}/${name}`, entry.id])),
   ]);
 
+  const engines = new Map(
+    catalogue.blocks.map((block): [string, ReadonlySet<string>] => [
+      block.id,
+      new Set(block.recipes.flatMap(({ id }) => catalogue.recipes.find((recipe) => recipe.id === id)?.dependencies ?? [])),
+    ]),
+  );
+
   const anchorCache = new Map<string, Set<string> | undefined>();
 
   const compilerOptions = (): ts.CompilerOptions => {
@@ -270,6 +277,7 @@ export function workspaceScope(files: Files): Scope {
     resolve,
     staged: (path) => staged.get(path),
     itemOf: (path) => items.get(path),
+    blockEngines: (block) => engines.get(block) ?? new Set(),
     policy: POLICY,
     styles: STYLE_POLICY,
     tokenSources: inventory.filter(({ path, kind }) => kind === 'token-source' && path.endsWith('.stylex.ts')).map(({ path }) => path),

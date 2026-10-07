@@ -101,6 +101,8 @@ export type BlockEntry = BlockDescriptor &
     test: string;
     /** The components it imports in number order, then the recipes it follows in number order. */
     builtFrom: BuiltFrom[];
+    /** The `@types` package of each dependency that packages/blocks declares one for, so a TypeScript consumer builds. */
+    devDependencies: string[];
   };
 
 export type Catalogue = {
@@ -133,7 +135,8 @@ const DEMOS = 'apps/docs/src/demos';
 const ELEMENT_SOURCE = 'packages/elements/src';
 const ELEMENT_TESTS = 'packages/elements/src/__tests__';
 const STATIC = 'registry/static';
-export const BLOCK_SOURCE = 'packages/blocks/src';
+const BLOCK_PACKAGE = 'packages/blocks';
+export const BLOCK_SOURCE = `${BLOCK_PACKAGE}/src`;
 const BLOCK_TESTS = 'packages/blocks/src/__tests__';
 export const BARREL = 'packages/ui/src/index.ts';
 
@@ -556,6 +559,8 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
   }
 
   const blocks: BlockEntry[] = [];
+  const blockManifest = JSON.parse(files.read(`${BLOCK_PACKAGE}/package.json`) ?? '{}') as Record<string, Record<string, string> | undefined>;
+  const blockTypes = new Set([...Object.keys(blockManifest.dependencies ?? {}), ...Object.keys(blockManifest.devDependencies ?? {})]);
   const blockNumbers = catalogueNumbers(ofKind('block').map((d) => d.id));
   const recipeNumbers = catalogueNumbers(recipes.map((entry) => entry.id));
   for (const descriptor of ofKind('block')) {
@@ -595,13 +600,15 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
       if (!recipe) report('missing-reference', path, `recipe "${id}" is not a recipe descriptor`);
       else followed.push({ id, title: recipe.title, number: recipeNumbers.get(id) as string, kind: 'recipe' });
     }
+    const dependencies = [...new Set(derived.flatMap((d) => d.dependencies))].sort((a, b) => a.localeCompare(b));
     blocks.push({
       ...descriptor,
       number: blockNumbers.get(descriptor.id) as string,
       directory,
       files: ordered,
       test,
-      dependencies: [...new Set(derived.flatMap((d) => d.dependencies))].sort((a, b) => a.localeCompare(b)),
+      dependencies,
+      devDependencies: dependencies.map((name) => `@types/${name}`).filter((name) => blockTypes.has(name)),
       registryDependencies,
       builtFrom: [...components, ...followed.sort((a, b) => ordinal(a.number, b.number))],
     });
