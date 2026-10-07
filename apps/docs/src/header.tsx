@@ -72,6 +72,7 @@ const styles = stylex.create({
 
 const LINKS = [
   { label: 'Components', to: '/components' },
+  { label: 'Blocks', to: '/blocks' },
   { label: 'Tokens', to: '/tokens' },
   { label: 'Studio', to: '/theme-studio' },
   { label: 'Documentation', to: '/install' },

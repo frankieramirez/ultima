@@ -5,6 +5,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useState,
@@ -45,8 +46,9 @@ const styles = stylex.create({
   },
 });
 
-function themeProps(preference: ThemePreference, scheme: Scheme) {
-  return stylex.props(siteTheme[scheme], colorScheme[preference], styles.scrollPad);
+function themeProps(preference: ThemePreference, scheme: Scheme, theme: 'site' | 'neutral') {
+  const site = theme === 'site';
+  return stylex.props(site ? siteTheme[scheme] : neutralTheme[scheme], colorScheme[preference], site && styles.scrollPad);
 }
 
 export function useTheme() {
@@ -79,8 +81,21 @@ function useSchemeFor(preference: ThemePreference): Scheme {
   return preference === 'system' ? system : preference;
 }
 
-export function ThemeRoot({ children }: { children: ReactNode }) {
+/**
+ * Applies the site's mode and a theme on `<html>`: `site` for the docs chrome, or Neutral for a
+ * document that is itself a boundary, such as a framed block preview, whose portals mount on `body`.
+ */
+export function ThemeRoot({ children, theme = 'site' }: { children: ReactNode; theme?: 'site' | 'neutral' }) {
   const [preference, setPreferenceState] = useState<ThemePreference>(readPreference);
+
+  // Another document on the site changed the mode, such as the page framing this one.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === THEME_STORAGE_KEY || event.key === null) setPreferenceState(readPreference());
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const setPreference = useCallback((next: ThemePreference) => {
     setPreferenceState(next);
@@ -91,7 +106,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
 
   useLayoutEffect(() => {
     const el = document.documentElement;
-    const applied = themeProps(preference, scheme);
+    const applied = themeProps(preference, scheme, theme);
     const previousClass = el.getAttribute('class');
     const previousInline = el.getAttribute('style');
     if (applied.className) el.setAttribute('class', applied.className);
@@ -104,7 +119,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
       if (previousInline === null) el.removeAttribute('style');
       else el.setAttribute('style', previousInline);
     };
-  }, [preference, scheme]);
+  }, [preference, scheme, theme]);
 
   const value = useMemo(() => ({ preference, setPreference }), [preference, setPreference]);
 

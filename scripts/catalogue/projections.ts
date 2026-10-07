@@ -160,6 +160,7 @@ function blocksProjection(catalogue: Catalogue): string {
       description: entry.description,
       number: entry.number,
       install: `npx shadcn add @ultima/${entry.id}`,
+      installDocs: entry.installDocs,
       files: entry.files,
       builtFrom: entry.builtFrom,
     });
@@ -178,6 +179,8 @@ export type BlockEntry = {
   /** The catalogue number, derived from id order among blocks. */
   number: string;
   install: string;
+  /** How to render it and what to replace, from the descriptor. */
+  installDocs: string;
   /** The files installed under \`components/<id>/\`, the entry first. */
   files: readonly string[];
   /** The components it imports in number order, then the recipes it follows. */

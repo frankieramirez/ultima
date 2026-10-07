@@ -1,9 +1,12 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 
+import { BlockPage } from './block-page';
 import { ComponentPage } from './component-page';
 import { components } from './components';
-import { componentTitle } from './document-title';
+import { blockTitle, componentTitle } from './document-title';
+import { blocks } from './generated/blocks';
 import { componentPages } from './generated/component-pages';
+import { BlocksPage } from './routes/blocks';
 import { CliPage } from './routes/cli';
 import { ComponentsPage } from './routes/components';
 import { Home } from './routes/home';
@@ -87,6 +90,40 @@ function ComponentNamePage() {
   return <ComponentPage key={component.item} entry={component} Content={Content} />;
 }
 
+const blocksRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/blocks',
+  component: BlocksPage,
+  staticData: { title: 'Blocks' },
+});
+
+const blockRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/blocks/$id',
+  component: BlockIdPage,
+  staticData: { title: blockTitle },
+});
+
+function BlockIdPage() {
+  const { id } = blockRoute.useParams();
+  const block = blocks.find((entry) => entry.id === id);
+  if (!block) return <NotFound />;
+  return <BlockPage key={block.id} block={block} />;
+}
+
+const blockPreviewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/blocks/$id/preview',
+  component: BlockPreviewPage,
+  staticData: { title: (params) => `${blockTitle(params)} preview`, bare: true },
+});
+
+function BlockPreviewPage() {
+  const { id } = blockPreviewRoute.useParams();
+  const Block = blocks.find((entry) => entry.id === id)?.preview;
+  return Block ? <Block /> : <NotFound />;
+}
+
 const rationaleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/rationale',
@@ -110,6 +147,9 @@ export const routeTree = rootRoute.addChildren([
   paletteRoute,
   componentsRoute,
   componentNameRoute,
+  blocksRoute,
+  blockRoute,
+  blockPreviewRoute,
   rationaleRoute,
   themeStudioRoute,
 ]);

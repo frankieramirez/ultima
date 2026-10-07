@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "blocks.preview",
+  "title": "A block card opens from the keyboard, its framed preview copies and narrows, and every block page passes",
+  "intent": "The /blocks index lists every block in number order with thumbnails that are lazy, inert and never a tab stop; a card opens from the keyboard with a visible focus ring; the block page's framed preview reaches its block in Neutral, its install command copies exactly, and the narrow toggle lays the block out at 390 pixels inside the frame without widening the page; and every other block's page frames its block, fits and passes axe.",
+  "contract": "docs/spec/ultima.md#docs-routes",
+  "aliases": ["blocks index", "block card", "thumbnail", "inert", "lazy", "framed preview", "narrow", "copy install command", "clipboard", "neutral"],
+  "items": [],
+  "sources": [
+    "apps/docs/src/routes/blocks.tsx",
+    "apps/docs/src/block-page.tsx",
+    "apps/docs/src/block-frame.tsx"
+  ],
+  "demos": [],
+  "routes": [
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/blocks" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/blocks/$id" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/blocks/$id/preview" }
+  ],
+  "fixtures": [
+    {
+      "name": "the block opened from the index and its install command",
+      "path": "apps/docs/tests/fixtures/blocks.ts",
+      "reset": "fresh-context"
+    }
+  ],
+  "preconditions": [
+    "The context grants clipboard read and write to the served origin only."
+  ],
+  "steps": [
+    {
+      "action": "Load /blocks directly.",
+      "expect": "One card per block in number order, each a link to its page; every thumbnail is an inert, lazy iframe of /blocks/<id>/preview; the page fits its window and axe passes."
+    },
+    {
+      "action": "Press Tab through the cards.",
+      "expect": "Focus moves from card link to card link and never lands in a thumbnail."
+    },
+    {
+      "action": "Tab to the Sign-in 01 card and press Enter.",
+      "expect": "The card link shows the focus ring and /blocks/sign-in-01 opens with the heading Sign-in 01."
+    },
+    {
+      "action": "Wait for the framed preview.",
+      "expect": "The frame's document lays out at 1200 pixels, its main landmark is visible, and its root computes Neutral's values rather than site's."
+    },
+    {
+      "action": "Press Copy install command.",
+      "expect": "The clipboard holds exactly npx shadcn add @ultima/sign-in-01."
+    },
+    {
+      "action": "Press Narrow.",
+      "expect": "The frame's document lays out at 390 by 844 and fits its own width; the page fits its window and axe passes."
+    },
+    {
+      "action": "Open every other block's page from its card's link.",
+      "expect": "Each frames its block, the page fits and axe passes."
+    }
+  ],
+  "targets": [
+    {
+      "target": "production",
+      "variants": {
+        "mode": ["dark", "light"],
+        "viewport": ["desktop", "narrow"],
+        "motion": ["normal"]
+      }
+    }
+  ]
+}

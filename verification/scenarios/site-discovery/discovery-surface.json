@@ -22,6 +22,9 @@
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/theme-studio" },
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/components" },
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/components/$name" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/blocks" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/blocks/$id" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/blocks/$id/preview" },
     { "kind": "static", "file": "apps/docs/public/robots.txt", "pathname": "/robots.txt" },
     { "kind": "static", "file": "apps/docs/public/sitemap.xml", "pathname": "/sitemap.xml" }
   ],
