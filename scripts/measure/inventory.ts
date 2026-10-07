@@ -160,7 +160,7 @@ const elementsSnapshot = {
     file: `packages/elements/src/${file}`,
     tags: [...read(`packages/elements/src/${file}`).matchAll(/customElements\.define\('([^']+)'/g)].map((match) => match[1]!),
   })),
-  fixture: { path: 'apps/docs/public/elements.html', sha256: sha256(read('apps/docs/public/elements.html')) },
+  fixture: { path: 'apps/docs/public/elements-gallery.html', sha256: sha256(read('apps/docs/public/elements-gallery.html')) },
   servedBundles: existsSync(join(root, 'apps/docs/public/elements')) ? readdirSync(join(root, 'apps/docs/public/elements')).sort() : [],
 };
 

@@ -36,7 +36,7 @@ test('emits an Elements section once an element item exists', () => {
   expect(output).toContain('npx shadcn add @ultima/ult-button');
   expect(output).toContain('/elements/ult-button.js');
   expect(output).toContain('/elements/ultima.js');
-  expect(output).toContain('/elements.html');
+  expect(output).toContain('/elements-gallery.html');
   expect(output).toContain('- `variant`: `solid` | `outline` | `ghost`');
   expect(output).toContain('- `size`: `sm` | `md` | `lg`');
   expect(output).toContain('- `tone`: `accent` | `danger`');
