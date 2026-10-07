@@ -6,7 +6,7 @@ import { useState, type ComponentType, type ReactNode } from 'react';
 import { breakpoints } from './breakpoints.stylex';
 import { CopyButton } from './copy-button';
 import { HighlightedCode } from './highlighted-code';
-import { NeutralBoundary } from './neutral-boundary';
+import { ThemeBoundary } from './theme-boundary';
 
 const styles = stylex.create({
   figure: {
@@ -141,9 +141,9 @@ export function Demo({
         </div>
         <Separator />
         <Tabs.Panel value="preview" keepMounted style={styles.preview}>
-          <NeutralBoundary data-component-preview style={styles.previewInner}>
+          <ThemeBoundary data-component-preview style={styles.previewInner}>
             <Component />
-          </NeutralBoundary>
+          </ThemeBoundary>
         </Tabs.Panel>
         <Tabs.Panel value="code" style={styles.code}>
           <HighlightedCode code={source} lang={lang} style={styles.source} />

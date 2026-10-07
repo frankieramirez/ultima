@@ -4,14 +4,16 @@ import { PAIRINGS, colorScheme, gate, presetDraft, resolveDraft } from '@ultima/
 import * as ui from '@ultima/ui';
 import axe from 'axe-core';
 import { beforeEach, expect, onTestFinished, test } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import * as demoUi from '../demo-ui';
+import SidebarCollapse from '../demos/sidebar/collapse';
 import { routeTree } from '../router';
 import { neutralDraft, renderSiteThemes, siteDraft } from '../site-theme-draft';
 import committed from '../site-themes.ts?raw';
 import { THEME_STORAGE_KEY, neutralTheme, siteTheme, type Scheme } from '../theme';
+import { ThemeBoundary } from '../theme-boundary';
 import '../styles.css';
 
 const MODES = ['dark', 'light'] as const;
@@ -44,13 +46,19 @@ function widen(value: string) {
   return /^#[0-9a-f]{3,4}$/i.test(value) ? `#${[...value.slice(1)].map((digit) => digit + digit).join('')}` : value;
 }
 
-function computedColors(theme: (typeof siteTheme)[Scheme] | (typeof neutralTheme)[Scheme]) {
+const THEMED = /^--ult-(color|radius)-/;
+
+function computedTokens(theme: (typeof siteTheme)[Scheme] | (typeof neutralTheme)[Scheme]) {
   const probe = document.createElement('div');
   probe.className = stylex.props(theme).className ?? '';
   document.body.append(probe);
-  const table = Object.fromEntries(Object.keys(site.dark).filter((token) => token.startsWith('--ult-color-')).map((token) => [token, widen(readToken(probe, token))]));
+  const table = Object.fromEntries(Object.keys(site.dark).filter((token) => THEMED.test(token)).map((token) => [token, widen(readToken(probe, token))]));
   probe.remove();
   return table;
+}
+
+function themedOf(table: Record<string, string>) {
+  return Object.fromEntries(Object.entries(table).filter(([token]) => THEMED.test(token)));
 }
 
 function colorsOf(table: Record<string, string>) {
@@ -79,12 +87,13 @@ test('site resolves Neutral with Ultima revision 1 mana and passes all 49 pairin
   expect(siteDraft().color.mana).toEqual(presetDraft({ id: 'ultima', revision: 1 }).color.mana);
 });
 
-test('the committed site and Neutral themes match the recipe', () => {
+test('the committed site and Neutral themes match the recipe, colors and Tight corners', () => {
   expect(committed).toBe(renderSiteThemes());
   for (const mode of MODES) {
-    expect(computedColors(siteTheme[mode])).toEqual(colorsOf(site[mode]));
-    expect(computedColors(neutralTheme[mode])).toEqual(colorsOf(neutral[mode]));
+    expect(computedTokens(siteTheme[mode])).toEqual(themedOf(site[mode]));
+    expect(computedTokens(neutralTheme[mode])).toEqual(themedOf(neutral[mode]));
   }
+  expect(['xs', 'sm', 'md', 'lg'].map((step) => neutral.dark[`--ult-radius-${step}`])).toEqual(['1px', '2px', '4px', '6px']);
 });
 
 test('every catalogue portal part mounts into the demo boundary', () => {
@@ -94,6 +103,40 @@ test('every catalogue portal part mounts into the demo boundary', () => {
     const wrapped = demoUi[name as keyof typeof demoUi] as { Portal: unknown };
     expect(wrapped.Portal, name).not.toBe((ui[name as keyof typeof ui] as { Portal: unknown }).Portal);
   }
+  expect(demoUi.Sidebar.Panel).not.toBe(ui.Sidebar.Panel);
+});
+
+for (const mode of MODES) {
+  test(`a Sidebar demo's mobile menu computes Neutral in ${mode}`, async () => {
+    await page.viewport(390, 844);
+    onTestFinished(() => page.viewport(1280, 720));
+    startInMode(mode);
+    const screen = await render(
+      <ThemeBoundary mode={mode}>
+        <SidebarCollapse />
+      </ThemeBoundary>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Toggle the collapsing navigation' }));
+    const dialog = screen.getByRole('dialog', { name: 'Collapsing navigation' });
+    await expect.element(dialog).toBeVisible();
+    expect(dialog.element().closest('[data-theme-boundary="neutral"]')).not.toBeNull();
+    expect(readToken(dialog.element(), '--ult-color-highlight')).toBe(neutral[mode]['--ult-color-highlight']);
+    expect(readToken(dialog.element(), '--ult-radius-lg')).toBe('6px');
+    await userEvent.keyboard('{Escape}');
+  });
+}
+
+test('a boundary given another preset resolves that preset instead of Neutral', async () => {
+  const ultima = resolveDraft(presetDraft('ultima'));
+  const screen = await render(
+    <ThemeBoundary preset="ultima" mode="dark" data-testid="boundary">
+      <span>inside</span>
+    </ThemeBoundary>,
+  );
+  const boundary = screen.getByTestId('boundary').element();
+  expect(boundary.getAttribute('data-theme-boundary')).toBe('ultima');
+  expect(readToken(boundary, '--ult-color-accent')).toBe(ultima.dark['--ult-color-accent']);
+  expect(readToken(boundary, '--ult-color-accent')).not.toBe(neutral.dark['--ult-color-accent']);
 });
 
 for (const mode of MODES) {

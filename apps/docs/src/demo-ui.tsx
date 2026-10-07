@@ -1,20 +1,21 @@
 import * as ui from '@ultima/ui';
 import { useContext, type ComponentType, type RefObject } from 'react';
 
-import { BoundaryPortalContext } from './neutral-boundary';
+import { BoundaryPortalContext } from './theme-boundary';
 
 export * from '@ultima/ui';
 
 type Portalled = { Portal: ComponentType<never> };
 
-function withBoundaryPortal<T extends Portalled>(namespace: T): T {
-  const Portal = namespace.Portal as ComponentType<{ container?: unknown }>;
-  function BoundaryPortal(props: { container?: unknown }) {
+/** `part` is whichever part takes Base UI's portal `container`: `Portal`, or `Sidebar.Panel` for its mobile menu. */
+function withBoundaryPortal<T extends Record<P, ComponentType<never>>, P extends string = 'Portal'>(namespace: T, part = 'Portal' as P): T {
+  const Part = namespace[part] as ComponentType<{ container?: unknown }>;
+  function BoundaryPart(props: { container?: unknown }) {
     const container = useContext(BoundaryPortalContext);
-    if (container === undefined || props.container !== undefined) return <Portal {...props} />;
-    return <Portal container={container} {...props} />;
+    if (container === undefined || props.container !== undefined) return <Part {...props} />;
+    return <Part container={container} {...props} />;
   }
-  return { ...namespace, Portal: BoundaryPortal };
+  return { ...namespace, [part]: BoundaryPart };
 }
 
 /** Zag's Portal takes a ref and falls back to `<body>` while it is empty, so it waits here instead. */
@@ -42,5 +43,6 @@ export const HoverCard = withBoundaryPortal(ui.HoverCard);
 export const NavigationMenu = withBoundaryPortal(ui.NavigationMenu);
 export const Popover = withBoundaryPortal(ui.Popover);
 export const Select = withBoundaryPortal(ui.Select);
+export const Sidebar = withBoundaryPortal(ui.Sidebar, 'Panel');
 export const Toast = withBoundaryPortal(ui.Toast);
 export const Tooltip = withBoundaryPortal(ui.Tooltip);

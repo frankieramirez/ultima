@@ -19,9 +19,17 @@ export function siteColor(token: string, mode: 'dark' | 'light'): string {
   return resolved(SITE, token, mode, 'site');
 }
 
-/** A color inside a demo's Neutral boundary, resolved the same way. */
+/** A color, or any other token, inside a demo's Neutral boundary, resolved the same way. */
 export function neutralColor(token: string, mode: 'dark' | 'light'): string {
   return resolved(NEUTRAL, token, mode, 'Neutral');
+}
+
+/** A `px` length inside a demo's Neutral boundary, such as a radius step. */
+export function neutralLength(token: string, mode: 'dark' | 'light'): number {
+  const value = resolved(NEUTRAL, token, mode, 'Neutral');
+  const match = /^(-?\d*\.?\d+)px$/.exec(value);
+  if (!match) throw new AssertionError({ message: `${token} is ${value} in Neutral, not a px length` });
+  return Number(match[1]);
 }
 
 function resolved(tables: typeof SITE, token: string, mode: 'dark' | 'light', theme: string): string {

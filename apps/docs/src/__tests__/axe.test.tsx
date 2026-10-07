@@ -8,7 +8,7 @@ import { beforeAll, expect, onTestFinished, test } from 'vitest';
 import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import { NeutralBoundary } from '../neutral-boundary';
+import { ThemeBoundary } from '../theme-boundary';
 import { siteTheme } from '../theme';
 
 const demos = import.meta.glob<{ default: ComponentType }>('../demos/**/*.tsx', { eager: true });
@@ -58,9 +58,9 @@ for (const [path, module] of Object.entries(demos)) {
       await render(
         <main>
           <Card.Root style={styles.stage}>
-            <NeutralBoundary mode={mode.name}>
+            <ThemeBoundary mode={mode.name}>
               <Demo />
-            </NeutralBoundary>
+            </ThemeBoundary>
           </Card.Root>
         </main>,
       );

@@ -1,8 +1,8 @@
 import * as stylex from '@stylexjs/stylex';
 import type { StyleXStyles } from '@stylexjs/stylex';
-import { colorScheme } from '@ultima/tokens';
+import { colorScheme, presetDraft, resolveDraft, type ThemePresetId } from '@ultima/tokens';
 import { color } from '@ultima/tokens/tokens.stylex';
-import { createContext, useState, type HTMLAttributes, type ReactNode } from 'react';
+import { createContext, useMemo, useState, type CSSProperties, type HTMLAttributes, type ReactNode } from 'react';
 
 import { neutralTheme, useResolvedScheme, type Scheme } from './theme';
 
@@ -17,30 +17,39 @@ const styles = stylex.create({
 });
 
 /**
- * Shows components as a consumer gets them: Neutral in the site's mode, and the portal container
- * for every popup inside, so a Select or Dialog in a demo is Neutral too, never `site`.
- * docs/spec/ultima.md, The docs site theme.
+ * Shows components as a consumer gets them, in a preset's theme and the site's mode, and is the
+ * portal container for every popup inside, so a Select or Dialog in a demo wears that theme too,
+ * never `site`. Neutral, the default, comes from the generated `site-themes.ts`; another preset
+ * resolves its draft. docs/spec/ultima.md, The docs site theme.
  */
-export function NeutralBoundary({
+export function ThemeBoundary({
   children,
+  preset = 'neutral',
   mode,
   style,
   ...props
 }: Omit<HTMLAttributes<HTMLDivElement>, 'className' | 'style'> & {
   children: ReactNode;
+  preset?: ThemePresetId;
   /** A fixed mode in place of the site's, for a specimen that shows the other one. */
   mode?: Scheme;
   style?: StyleXStyles;
 }) {
   const siteScheme = useResolvedScheme();
   const scheme = mode ?? siteScheme;
+  const vars = useMemo(
+    () => (preset === 'neutral' ? undefined : (resolveDraft(presetDraft(preset))[scheme] as CSSProperties)),
+    [preset, scheme],
+  );
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const applied = stylex.props(!vars && neutralTheme[scheme], colorScheme[scheme], styles.boundary, style);
   return (
     <div
       {...props}
       ref={setContainer}
-      data-theme-boundary="neutral"
-      {...stylex.props(neutralTheme[scheme], colorScheme[scheme], styles.boundary, style)}
+      data-theme-boundary={preset}
+      {...applied}
+      style={{ ...applied.style, ...vars }}
     >
       <BoundaryPortalContext.Provider value={container}>{children}</BoundaryPortalContext.Provider>
     </div>

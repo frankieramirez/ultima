@@ -10,7 +10,7 @@ import type { Page } from 'playwright';
 
 import { productionScenario } from '../../../../scripts/verification/production.ts';
 import { catalogue } from '../fixtures/catalogue.ts';
-import { assertFits, assertFocusRing, isFocused, shippedLength, siteColor } from '../support/production.ts';
+import { assertFits, assertFocusRing, isFocused, neutralLength, shippedLength, siteColor } from '../support/production.ts';
 
 const { groups, broadQuery, broadMatch, broadGroups, emptyQuery, emptyHeading, openQuery, open: result, demo, copyLabel } = catalogue;
 
@@ -127,5 +127,5 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   const liveButton = figure.getByRole('button', { name: demo.control, exact: true });
   await liveButton.waitFor({ state: 'visible' });
   const previewRadius = await liveButton.evaluate((element) => parseFloat(getComputedStyle(element).borderTopLeftRadius));
-  assert.equal(previewRadius, await shippedLength(page, '--ult-radius-md', variant.mode), 'the live demo retains the default Ultima radius');
+  assert.equal(previewRadius, neutralLength('--ult-radius-md', variant.mode), "the live demo wears Neutral's Tight radius");
 });

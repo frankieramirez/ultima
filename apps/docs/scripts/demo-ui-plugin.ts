@@ -1,14 +1,14 @@
-import { dirname, join, sep } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Plugin } from 'vite';
+import { normalizePath, type Plugin } from 'vite';
 
-const src = join(dirname(fileURLToPath(import.meta.url)), '../src');
-const demos = join(src, 'demos') + sep;
-const demoUi = join(src, 'demo-ui.tsx');
+const src = normalizePath(join(dirname(fileURLToPath(import.meta.url)), '../src'));
+const demos = `${src}/demos/`;
+const demoUi = `${src}/demo-ui.tsx`;
 
 /**
  * Resolves `@ultima/ui` to `src/demo-ui.tsx` for modules under `src/demos/`, so their portals mount
- * inside the Neutral boundary that shows them. docs/spec/ultima.md, The docs site theme.
+ * inside the theme boundary that shows them. docs/spec/ultima.md, The docs site theme.
  */
 export function demoUiPlugin(): Plugin {
   return {
@@ -16,8 +16,8 @@ export function demoUiPlugin(): Plugin {
     enforce: 'pre',
     resolveId(source, importer) {
       if (source !== '@ultima/ui' || !importer) return null;
-      const from = importer.split('?')[0] ?? '';
-      return from.startsWith(demos) ? demoUi : null;
+      return normalizePath(importer.split('?')[0] ?? '').startsWith(demos) ? demoUi : null;
     },
   };
 }
+
