@@ -317,8 +317,8 @@ export function TokensPage() {
           with plain CSS on the root. A consumer compiling with StyleX gets the same result from{' '}
           <Code>createTheme</Code>, which returns a class to put on any subtree.
         </P>
-        <Fence code={OVERRIDE_CSS} lang="css" />
-        <Fence code={OVERRIDE_STYLEX} lang="ts" />
+        <Fence code={OVERRIDE_CSS} lang="css" title="theme.css" />
+        <Fence code={OVERRIDE_STYLEX} lang="ts" title="brand.stylex.ts" />
       </section>
     </FoundationLayout>
   );

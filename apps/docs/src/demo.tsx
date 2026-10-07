@@ -73,12 +73,7 @@ const styles = stylex.create({
   },
   previewInner: { minInlineSize: 'fit-content' },
   code: { padding: 0 },
-  source: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderRadius: 0,
-    padding: space['--ult-space-8'],
-  },
+  source: { backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0 },
   caption: {
     color: color['--ult-color-text-muted'],
     display: 'flex',
@@ -155,7 +150,7 @@ export function Demo({
           </ThemeBoundary>
         </Tabs.Panel>
         <Tabs.Panel value="code" style={styles.code}>
-          <HighlightedCode code={source} lang={lang} style={styles.source} />
+          <HighlightedCode code={source} lang={lang} lineNumbers style={styles.source} />
         </Tabs.Panel>
         {anatomy && (
           <Tabs.Panel value="anatomy">

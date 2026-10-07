@@ -7,6 +7,7 @@ import { expect, test } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
+import { remarkFenceTitle } from '../../scripts/remark-fence-title';
 import { Demo } from '../demo';
 import { fenceLanguage, HighlightedCode, nodeText } from '../highlighted-code';
 import { Prose } from '../prose';
@@ -154,4 +155,102 @@ test('copying a demo still copies the original source string', async () => {
   const screen = await render(<Demo component={Example} source={source} />);
   await userEvent.click(screen.getByRole('button', { name: 'Copy example source' }));
   expect(copied).toBe(source);
+});
+
+const FILE = ':root {\n  --ult-color-accent: #7c5cff;\n}';
+
+function stubClipboard() {
+  const copied: string[] = [];
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: (value: string) => (copied.push(value), Promise.resolve()) },
+  });
+  return copied;
+}
+
+function LabelledFence({ components }: { components?: MDXComponents }) {
+  const Pre = components!.pre as ComponentType<ComponentProps<'pre'>>;
+  const MdCode = components!.code as ComponentType<ComponentProps<'code'>>;
+  return (
+    <Pre>
+      <MdCode className="language-css" title="theme.css">
+        {FILE}
+      </MdCode>
+    </Pre>
+  );
+}
+
+test('a fence title becomes the code element title the docs Pre reads', () => {
+  const fence = { type: 'code', lang: 'bash', meta: 'title="Terminal"' };
+  const plain = { type: 'code', lang: 'bash', meta: null };
+  const other = { type: 'code', lang: 'bash', meta: 'showLineNumbers' };
+  remarkFenceTitle()({ type: 'root', children: [fence, plain, other] });
+  expect(fence).toMatchObject({ data: { hProperties: { title: 'Terminal' } } });
+  expect(plain).not.toHaveProperty('data');
+  expect(other).not.toHaveProperty('data');
+});
+
+test('a labelled fence shows its label and numbers its lines outside the copied text', async () => {
+  const copied = stubClipboard();
+  const screen = await renderWithRouter(<Prose Content={LabelledFence} breadcrumb={[{ label: 'Tokens' }]} />);
+  const article = screen.getByRole('article').element();
+  await expect.element(screen.getByText('theme.css', { exact: true })).toBeVisible();
+
+  const pre = article.querySelector('pre')!;
+  expect(pre.textContent).toBe(FILE);
+  const gutter = article.querySelector('[aria-hidden="true"]:has(> code)')!;
+  expect(gutter.textContent).toBe('1\n2\n3');
+  expect(gutter.contains(pre)).toBe(false);
+  expect(getComputedStyle(gutter).userSelect).toBe('none');
+  expect(gutter.getBoundingClientRect().height).toBe(pre.getBoundingClientRect().height);
+
+  await userEvent.click(screen.getByRole('button', { name: 'Copy theme.css' }));
+  expect(copied).toEqual([FILE]);
+});
+
+test('a numbered block scrolls a long line instead of wrapping it', async () => {
+  const line = `npx shadcn add ${'https://ultima.systems/r/setup-vite.json '.repeat(6)}`;
+  function Long({ components }: { components?: MDXComponents }) {
+    const Pre = components!.pre as ComponentType<ComponentProps<'pre'>>;
+    return (
+      <Pre>
+        <code className="language-bash" title="Terminal">
+          {line}
+        </code>
+      </Pre>
+    );
+  }
+  const screen = await renderWithRouter(<Prose Content={Long} breadcrumb={[{ label: 'Install' }]} />);
+  const pre = screen.getByRole('article').element().querySelector('pre')!;
+  expect(getComputedStyle(pre).whiteSpace).toBe('pre');
+  const viewport = pre.parentElement!.parentElement!;
+  expect(viewport.scrollWidth).toBeGreaterThan(viewport.clientWidth);
+  expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth);
+});
+
+test('an unlabelled fence stays a plain block with no numbers', async () => {
+  function Plain({ components }: { components?: MDXComponents }) {
+    const Pre = components!.pre as ComponentType<ComponentProps<'pre'>>;
+    return (
+      <Pre>
+        <code className="language-bash">npx shadcn add @ultima/button</code>
+      </Pre>
+    );
+  }
+  const screen = await renderWithRouter(<Prose Content={Plain} breadcrumb={[{ label: 'Button' }]} />);
+  const article = screen.getByRole('article').element();
+  expect(article.querySelector('[aria-hidden="true"]:has(> code)')).toBeNull();
+  await expect.element(screen.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
+});
+
+test('a demo numbers its source lines without adding them to the source', async () => {
+  function Example() {
+    return <span>live</span>;
+  }
+  const source = 'export default function Example() {\n  return null;\n}\n';
+  const screen = await render(<Demo component={Example} source={source} />);
+  await userEvent.click(screen.getByRole('tab', { name: 'Code', exact: true }));
+  const figure = screen.container.querySelector('figure')!;
+  expect(figure.querySelector('pre')?.textContent).toBe(source);
+  expect(figure.querySelector('[aria-hidden="true"]:has(> code)')?.textContent).toBe('1\n2\n3');
 });
