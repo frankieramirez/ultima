@@ -135,7 +135,7 @@ async function checkCell(block: BlockEntry, panel: HTMLElement, frame: HTMLIFram
     const href = entry.kind === 'component' ? `/components/${entry.id}` : `/components/${entry.page}#${entry.section}`;
     expect(link?.getAttribute('href'), entry.title).toBe(href);
     expect(text(link)).toBe(entry.kind === 'component' ? entry.title : `${entry.title} recipe`);
-    expect(text(row).endsWith('not shown at this width'), `${cell}: ${entry.title} is marked not shown only when it is`).toBe(!visible.includes(keyOf(entry)));
+    expect(text(row).endsWith('not shown in this preview'), `${cell}: ${entry.title} is marked not shown only when it is`).toBe(!visible.includes(keyOf(entry)));
   }
 
   // A mode change transitions the page's colors in; axe reads the settled ones.

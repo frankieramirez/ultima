@@ -122,7 +122,7 @@ export function AnatomyControls({
                 {entry.number}
               </span>
               {entry.name}
-              {!entry.shown && <span {...stylex.props(styles.absent)}>not shown at this width</span>}
+              {!entry.shown && <span {...stylex.props(styles.absent)}>not shown in this preview</span>}
             </li>
           ))}
         </ol>
