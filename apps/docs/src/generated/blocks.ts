@@ -3,6 +3,7 @@
 
 import type { ComponentType } from 'react';
 
+import { Dashboard01 } from '@ultima/blocks/dashboard-01/dashboard-01';
 import { SignIn01 } from '@ultima/blocks/sign-in-01/sign-in-01';
 
 /** A component the block imports, or a recipe it follows, numbered among its own kind. */
@@ -26,10 +27,120 @@ export type BlockEntry = {
 /** In number order. */
 export const blocks: readonly BlockEntry[] = [
   {
+    "id": "dashboard-01",
+    "title": "Dashboard 01",
+    "description": "A store overview: workspace navigation, four key metrics, a revenue chart with its data table, top products and recent orders.",
+    "number": "001",
+    "install": "npx shadcn add @ultima/dashboard-01",
+    "files": [
+      "dashboard-01.tsx",
+      "app-sidebar.tsx",
+      "icons.tsx",
+      "page-header.tsx",
+      "recent-orders.tsx",
+      "revenue-chart.tsx",
+      "stat-row.tsx",
+      "top-products.tsx"
+    ],
+    "builtFrom": [
+      {
+        "id": "avatar",
+        "title": "Avatar",
+        "number": "005",
+        "kind": "component"
+      },
+      {
+        "id": "badge",
+        "title": "Badge",
+        "number": "006",
+        "kind": "component"
+      },
+      {
+        "id": "button",
+        "title": "Button",
+        "number": "008",
+        "kind": "component"
+      },
+      {
+        "id": "card",
+        "title": "Card",
+        "number": "011",
+        "kind": "component"
+      },
+      {
+        "id": "collapsible",
+        "title": "Collapsible",
+        "number": "014",
+        "kind": "component"
+      },
+      {
+        "id": "dropdown-menu",
+        "title": "Dropdown Menu",
+        "number": "022",
+        "kind": "component"
+      },
+      {
+        "id": "input-group",
+        "title": "Input Group",
+        "number": "028",
+        "kind": "component"
+      },
+      {
+        "id": "meter",
+        "title": "Meter",
+        "number": "031",
+        "kind": "component"
+      },
+      {
+        "id": "select",
+        "title": "Select",
+        "number": "040",
+        "kind": "component"
+      },
+      {
+        "id": "separator",
+        "title": "Separator",
+        "number": "041",
+        "kind": "component"
+      },
+      {
+        "id": "sidebar",
+        "title": "Sidebar",
+        "number": "042",
+        "kind": "component"
+      },
+      {
+        "id": "stat",
+        "title": "Stat",
+        "number": "046",
+        "kind": "component"
+      },
+      {
+        "id": "table",
+        "title": "Table",
+        "number": "048",
+        "kind": "component"
+      },
+      {
+        "id": "toggle-group",
+        "title": "Toggle Group",
+        "number": "053",
+        "kind": "component"
+      },
+      {
+        "id": "chart",
+        "title": "Chart",
+        "number": "002",
+        "kind": "recipe"
+      }
+    ],
+    "preview": Dashboard01
+  },
+  {
     "id": "sign-in-01",
     "title": "Sign-in 01",
     "description": "A split sign-in screen: a brand panel with a customer story beside an email and password form.",
-    "number": "001",
+    "number": "002",
     "install": "npx shadcn add @ultima/sign-in-01",
     "files": [
       "sign-in-01.tsx",

@@ -85,8 +85,13 @@ export type Scope = {
   kindOf(path: string): SourceKind | undefined;
   resolve(specifier: string, from: string): Resolution;
   staged(path: string): Staged | undefined;
-  /** The registry item a production source belongs to, when it is a component or element file. */
+  /** The registry item a production source belongs to, when it is a component, element or block file. */
   itemOf(path: string): string | undefined;
+  /**
+   * The packages a block may import as engines: those the demos of the recipes its descriptor names
+   * import. Only the workspace scope reads descriptors, so a consumer scope leaves it unset.
+   */
+  blockEngines?(block: string): ReadonlySet<string>;
   policy: DependencyPolicy;
   /** Runtime variables, alternative styling engines and the other value policy the style rules read. */
   styles: StylePolicy;
