@@ -90,13 +90,20 @@ const styles = stylex.create({
     marginInline: 0,
     padding: 0,
   },
+  indexNumber: {
+    color: color['--ult-color-text-subtle'],
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-1'],
+    marginInlineEnd: space['--ult-space-4'],
+  },
   current: {
     color: color['--ult-color-text'],
     fontWeight: font['--ult-font-weight-medium'],
   },
 });
 
-type Heading = { id: string; label: string };
+/** `number` is a heading's `data-index-number`, the section number a page shows beside it. */
+type Heading = { id: string; label: string; number?: string };
 
 function slugify(value: string, used: Set<string>) {
   const base =
@@ -148,7 +155,7 @@ export function DocumentLayout({
       const id = heading.id || slugify(label, used);
       heading.id = id;
       used.add(id);
-      next.push({ id, label });
+      next.push({ id, label, number: heading.dataset.indexNumber });
     });
     setHeadings(next);
   }, [children]);
@@ -243,7 +250,7 @@ export function DocumentLayout({
               <div {...stylex.props(styles.indexContents)}>
                 <Kicker style={styles.indexLabel}>On this page</Kicker>
                 <ul {...stylex.props(styles.indexList)}>
-                  {headings.map(({ id, label }) => (
+                  {headings.map(({ id, label, number }) => (
                     <li key={id}>
                       <TextLink
                         href={`#${id}`}
@@ -252,6 +259,11 @@ export function DocumentLayout({
                         aria-current={id === current ? 'location' : undefined}
                         style={id === current ? styles.current : undefined}
                       >
+                        {number && (
+                          <span aria-hidden {...stylex.props(styles.indexNumber)}>
+                            {number}
+                          </span>
+                        )}
                         {label}
                       </TextLink>
                     </li>
