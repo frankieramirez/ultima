@@ -17,7 +17,6 @@ export const siteDiscovery = {
     { pathname: '/components', title: 'Components - Ultima' },
     { pathname: '/blocks', title: 'Blocks - Ultima' },
     { pathname: '/blocks/sign-in-01', title: 'Sign-in 01 - Ultima' },
-    { pathname: '/blocks/sign-in-01/preview', title: 'Sign-in 01 preview - Ultima' },
     { pathname: '/components/button', title: 'Button - Ultima' },
   ],
   /** Both not-found shapes: a path no route knows and a component name the catalogue lacks. */

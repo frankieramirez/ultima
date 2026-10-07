@@ -131,6 +131,7 @@ describe.each(['dark', 'light'] as const)('a block preview in %s', (mode) => {
     const screen = await at(390, '/blocks/settings-01/preview', mode);
     await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
     expect(document.querySelector('header nav[aria-label="Site"]')).toBeNull();
+    await expect.poll(() => document.title).toBe('Settings 01 preview - Ultima');
 
     const token = (element: Element, name: string) => getComputedStyle(element).getPropertyValue(name).trim();
     expect(NEUTRAL[mode]['--ult-color-action']).not.toBe(SITE[mode]['--ult-color-action']);
