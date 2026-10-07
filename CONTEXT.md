@@ -162,6 +162,10 @@ The animated grid of mana dots behind the landing hero. It is decoration in the 
 
 The block a component page renders for each example: one Card with the live preview, a hairline, and the example's source. Settled on [#369](https://github.com/frankieramirez/ultima/issues/369): the preview is centered with an 8rem floor, the source rests as a six-line teaser that expands in place (a source of eight lines or fewer never collapses), and copy is an icon button inside the code area's top-right corner. The same copy control serves every code block on the site. It composes catalogue components only, so it sits on the page-layout side of the line.
 
+## Anatomy
+
+A tab on a block page, and on a component page with two or more rendering parts, that dims the live preview and outlines each catalogue component or part with a label: `Sidebar 042` on a block, `Popup` on Dialog. The docs marks parts as it imports them, so no coordinate is authored and nothing Ultima ships carries the mark. A legend list beside it holds what the outlines show. Settled on [#646](https://github.com/frankieramirez/ultima/issues/646).
+
 ## Element section
 
 The **Web component** section at the foot of a component page whose item also ships as a custom element: the tag, both acquisition paths, a live example rendered from the served bundle with its markup as the figure's source, the tag family, and the attributes. It reads `apps/docs/src/elements.ts`, which restates each `ult-<item>.element.ts` file's tags and observed attributes and is held to them by a test. `/elements` carries the shared story once and links every section.
