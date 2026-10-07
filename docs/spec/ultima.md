@@ -130,13 +130,17 @@ There is no display family. Mana's `--pixel` (Pixelify Sans) stays mana's brand,
 
 Five values, in `px` so corners do not grow with the font size.
 
+Amended on [Decide the default radius scale and respace the Shape presets](https://github.com/frankieramirez/ultima/issues/644). Status: accepted for implementation. The base tokens still ship the previous values, 2/4/10/12, until this lands with the Neutral base-token rollout under Consumer default theme. Both changes reach consumers in one release, with one piece of update guidance. A consumer who wants the previous corners selects the Ultima preset, whose `soft` shape keeps them.
+
 | Token | Value | Used by |
 | --- | --- | --- |
-| `--ult-radius-xs` | 2px | swatches, bars, indicator dots |
-| `--ult-radius-sm` | 4px | inline code, small insets |
-| `--ult-radius-md` | 10px | Button, Input, Select trigger, menu items |
-| `--ult-radius-lg` | 12px | Card, Dialog, popups |
+| `--ult-radius-xs` | 1px | swatches, bars, indicator dots |
+| `--ult-radius-sm` | 2px | inline code, small insets |
+| `--ult-radius-md` | 4px | Button, Input, Select trigger, menu items |
+| `--ult-radius-lg` | 6px | Card, Dialog, popups |
 | `--ult-radius-full` | 9999px | Badge and any pill |
+
+This is the Tight scale, and the Studio's `default` Shape. Nested corners rely on one relationship: `lg` minus `md` equals the 2px `space-1` inset a popup gives its items, so a Select item sits concentric inside its popup. Tight keeps it (6 − 2 = 4), and a segmented Tabs trigger (`sm`) becomes concentric inside its `md` list. No component computes a value from a radius step.
 
 ### Shadow
 
@@ -252,9 +256,9 @@ Decided on [Decide the consumer default theme and separation from Ultima brandin
 
 ### Fresh installs and brand boundaries
 
-A fresh consumer gets **Neutral**, a complete usable theme with achromatic surfaces, text, borders and interactive colors. Installation does not require a theme-selection step. Neutral retains the current non-color defaults, including font stacks, spacing, shape, shadows and reduced-motion behavior. It loads no fonts. The palette generator produces its values; neither component source nor generated files receive hand-authored color patches.
+A fresh consumer gets **Neutral**, a complete usable theme with achromatic surfaces, text, borders and interactive colors. Installation does not require a theme-selection step. Neutral retains the current non-color defaults, including font stacks, spacing, shadows and reduced-motion behavior. Its shape is the Tight radius scale under Radius, amended on [#644](https://github.com/frankieramirez/ultima/issues/644). It loads no fonts. The palette generator produces its values; neither component source nor generated files receive hand-authored color patches.
 
-The existing complete appearance remains available as **Ultima**, an explicit opt-in preset preserving the current indigo accent, cyan action/highlight and non-color defaults. Its current brand pins belong to that preset. Neutral disables those pins and uses zero chroma for mithril, arcane and mana; status scales retain their current seeds. Recipe lightness adjustments needed for contrast belong in the generator and must preserve the compatibility rules below.
+The existing complete appearance remains available as **Ultima**, an explicit opt-in preset preserving the current indigo accent, cyan action/highlight and non-color defaults, including the 2/4/10/12 radius as the `soft` shape. Its current brand pins belong to that preset. Neutral disables those pins and uses zero chroma for mithril, arcane and mana; status scales retain their current seeds. Recipe lightness adjustments needed for contrast belong in the generator and must preserve the compatibility rules below.
 
 Components keep their semantic token names and existing APIs. Button continues to default to `tone="accent"`. Accent supplies the default interactive emphasis, with focus following accent; action remains available for prominent actions, and highlight retains its existing semantic use. Action and highlight continue to share the mana scale. Neutral makes these roles achromatic while retaining their separate ramps and state tokens, so their values need not be identical. A custom theme may color them independently through the existing guided scale controls and semantic overrides. Changing a product accent does not implicitly recolor success, warning or danger.
 
@@ -262,7 +266,23 @@ Success, warning and danger keep the current green, amber and red role assignmen
 
 Both Neutral and Ultima must pass every declared token pairing in dark and light before shipping. Dark remains the default design target, with the existing system preference and explicit `data-theme` behavior. Neutral changes palette choice, not mode selection. Focus visibility, interaction states and reduced motion remain required in both modes.
 
-Ultima's docs and Studio editor chrome explicitly apply their own theme. They cannot obtain their brand by making consumer token exports branded. Studio preview boundaries and their portal containers follow the active draft. New consumer-facing base tokens, CSS/JSON exports, registry token dependencies and element defaults must agree on Neutral when the change ships. Demos that choose another theme identify it explicitly.
+Ultima's docs and Studio editor chrome explicitly apply their own theme, [`site`](#the-docs-site-theme). They cannot obtain their brand by making consumer token exports branded. Studio preview boundaries and their portal containers follow the active draft. New consumer-facing base tokens, CSS/JSON exports, registry token dependencies and element defaults must agree on Neutral when the change ships. Demos that choose another theme identify it explicitly.
+
+### The docs site theme
+
+Decided on [Decide the docs site's chrome theme](https://github.com/frankieramirez/ultima/issues/642). Status: accepted for implementation. The docs chrome still applies `darkTheme` and `lightTheme` today.
+
+The docs chrome wears **`site`**: Neutral's surfaces, text, borders, accent and status, with Ultima's mana on action and highlight. Its definition is a draft, Neutral preset revision 1 with the mana seed of Ultima preset revision 1, resolved by recipe 2. Taking the seed rather than the resolved values keeps the contrast tokens on Neutral's neutral steps and needs no brand pin. The draft's generated dark and light values are the only source of `site` values; none are hand-written.
+
+`site` is docs-only. The docs app owns the definition and applies its generated dark and light themes on `<html>` through the site's existing color-mode control, as it applies `darkTheme` and `lightTheme` today. It is not a preset: it stays out of the Studio picker and `THEME_PRESETS`, `tokens.css`, `tokens.json`, the registry and element defaults. A consumer reaches mana by selecting Ultima or building a custom draft, never by inheriting the docs' theme.
+
+`site` follows Neutral's accent by reference. When Neutral's accent changes, as [Decide Neutral's accent shade](https://github.com/frankieramirez/ultima/issues/643) may change it, `site` changes with it and is re-gated. Where the redesign's frames paint a value that differs from the generated one, such as the slightly tinted light text `#181a24` against Neutral's `#1b1b1b`, the generated value wins.
+
+`site` passes all 49 declared pairings in each mode at full precision, the bar a shipped preset meets, with no acknowledgment available. The docs test suite resolves the draft and runs the same `gate()` in both modes, and fails when the generated themes are stale against the recipe. With today's Neutral accent every pairing passes; the lowest mana pairing is `highlight-contrast` on `highlight` at 4.57 in light.
+
+Inside the chrome, every surface that shows components as a consumer gets them applies an explicit theme boundary that is also its portal container. Component demos, block previews and anatomy views apply Neutral. A Studio preview pane applies the active draft. The Studio header, rail, toolbar, footer and dialogs are chrome and wear `site` in the site's current mode.
+
+The Ultima preset has no special role on the site. It is an explicit opt-in preset in Studio and the preset docs, and the source of `site`'s mana seed.
 
 ### Existing consumers and saved drafts
 
@@ -279,7 +299,7 @@ An empty Studio session starts with Neutral. Opening a valid saved draft takes p
 - A new Vite or Next consumer installs Button without choosing a theme. Its accent button and focus ring are neutral, and a danger action keeps the danger role.
 - A product with an existing green identity adopts that identity through a custom theme. An agent preserves the supplied brand and uses Neutral only when no project theme has been chosen; selecting Ultima requires an explicit choice.
 - A user opens a pre-change indigo/cyan draft or a customized v1 share link. Preview and regenerated exports retain the old resolved values. A separate fresh session begins with Neutral.
-- Ultima's docs use the Ultima preset while a Studio preview shows Neutral. A portalled control in the preview receives Neutral from that preview's theme boundary.
+- Ultima's docs chrome uses `site` while a component demo applies Neutral and a Studio preview applies the active draft. A portalled control in a demo or a preview receives that boundary's theme, never `site`.
 
 Implementation must capture pre-change stock and customized v1 fixtures, including per-mode overrides and omitted values that use resolver defaults. Compare every resolved token before and after import, autosave restore, shared-link restore and export. Reject unknown recipe identities. Verify Neutral through both the Python reference generator and runtime recipe, then prove the pairing gate, compiled StyleX/CSS parity and rendered focus/interaction behavior in both modes. These are required future checks, not evidence produced by this decision.
 
@@ -1746,6 +1766,34 @@ Every item lives under the `@ultima` namespace.
 
 Items are atomic. There are no bundles (`report-set`, `all`) and no `registry:base` item in v0: `registryDependencies` already pulls `tokens` and `lib` transitively, `shadcn add` takes several items in one call, and a bundle is a second place to forget a component. Both are additive later.
 
+### Catalogue groups
+
+Settled on [Decide how the Components directory groups the catalogue](https://github.com/frankieramirez/ultima/issues/647), from the October 2026 Components directory frame (`E9XvL` in `ultima.pen`). Every component belongs to exactly one group, named for its main job. The groups replace release sets everywhere a visitor browses the catalogue: the `/components` directory, the docs menu, the registry index and `/llms.txt`. In display order:
+
+| Group | Holds | Members |
+| --- | --- | --- |
+| Forms | A control a reader operates to enter a value or start an action, and the structure that labels one | Button, Button Group, Calendar, Checkbox, Color Field, Combobox, Date Picker, Field, Fieldset, Input, Input Group, Input OTP, Native Select, Radio Group, Select, Slider, Switch, Textarea, Toggle, Toggle Group |
+| Overlays | A surface that floats above the page, and the bar that exists to open them | Alert Dialog, Command, Context Menu, Dialog, Drawer, Dropdown Menu, Hover Card, Menubar, Popover, Toast, Tooltip |
+| Data display | Content and values set out to read, including content shown or hidden in place | Accordion, Avatar, Badge, Card, Code, Collapsible, Meter, Stat, Table |
+| Navigation | Moving between pages or between views of one page | Breadcrumb, Navigation Menu, Pagination, Sidebar, Tabs |
+| Feedback | The state of a process or of the page: a message, progress, loading, or nothing to show | Alert, Empty, Progress, Skeleton, Spinner |
+| Layout | Shaping or dividing space, with no content of its own | Aspect Ratio, Resizable, Scroll Area, Separator |
+
+The counts are the frame's, 20, 11, 9, 5, 5 and 4. Where a component could sit in two groups, these rules decide it, and they decide a new component the same way:
+
+- **A control whose popup holds its value is Forms**, because the reader is entering a value: Select, Combobox, Date Picker and Color Field. Overlays is for a surface that is the point of the interaction.
+- **A floating surface is Overlays even when it reports status or holds a list**: Toast and Command. Menubar is Overlays for the reason [The overlay set](#the-overlay-set) gives: its contract means nothing apart from the menus it opens.
+- **Meter is Data display and Progress is Feedback**, which is the line their contracts already draw: a bounded measurement is a reading, and task completion is the state of a process.
+- **Accordion and Collapsible are Data display**, because they hold content. Layout is for a component with nothing inside it but the caller's content and its own geometry.
+
+**The group is a descriptor field.** Every React descriptor carries a required `group`, one of the ids `forms`, `overlays`, `data-display`, `navigation`, `feedback` and `layout`. These are defined once, with their labels and display order, in `registry/metadata/groups.ts`, the same shape as `releases.ts`. The catalogue model rejects an unknown group, `pnpm scaffold react` requires one and never assigns it silently, and `pnpm catalogue:generate` emits the group definitions and each entry's group into `apps/docs/src/generated/catalogue.ts`. Elements, recipes and blocks carry no group. An element is documented on the Elements page in its family order, a recipe has no directory entry of its own, and blocks are their own section.
+
+**The registry and the agent guide use it.** Each React item's registry record carries `categories: ["<group>"]`, shadcn's own registry-item field, so a registry client can filter Ultima's components by kind with no Ultima-specific field. `/llms.txt` lists the components under one heading per group, in display order, and alphabetically within each.
+
+**Within a group, components are alphabetical**, on the directory and in the menu alike, which is the order the site already ships and the order [catalogue numbers](#what-a-block-is) follow. The `/components` directory renders one section per group, its heading carrying the group's count. The filter searches across every group and hides a group with no match. In the menu, the Components entry holds the six groups as labelled sub-lists, and they don't collapse: a group is a heading in the list, not a disclosure.
+
+**`release` stays, and nothing a visitor sees is sectioned by it.** It still names which section of this specification holds an item's contract, and with `order` it still fixes the registry manifest's order. The release disclosures planned in ULT-85, and the release sections of the index that replaced them, are superseded. When nothing reads the docs projection's release labels any more, `RELEASE_LABELS` and `componentsInRelease` leave it.
+
 ### Placement in the consumer
 
 Flat, following shadcn's default rules. A `registry:ui` file lands in `aliases.ui` as `@/components/ui/<name>.tsx`; a `registry:lib` file lands in `aliases.lib` as `@/lib/<name>.ts`. Ultima does not namespace its installed files into an `ultima/` subfolder: that costs an explicit `target` on every file and makes the installed tree read as vendored, which fights the premise that the consumer owns the code. Ultima replaces shadcn's components rather than sitting beside them; a consumer who wants both resolves the `button.tsx` collision with `-p`.
@@ -2065,7 +2113,7 @@ Decided on Docs site scope (ULT-14). The site at `apps/docs` is three things at 
 | `/cli` | The consumer CLI: what it is, the install, each command, the post-edit hooks, and the CI step |
 | `/tokens` | Every semantic token by group, live swatches in both modes, the tokens CSS export, and the APCA readout per semantic pairing |
 | `/palette` | The six scales, twelve steps, dark and light values, the step convention, and the WCAG gate results |
-| `/components` | Index of the catalogue, sectioned v0, then v0.1, then v0.2 |
+| `/components` | The directory of the catalogue, one section per [catalogue group](#catalogue-groups) |
 | `/components/<name>` | One page per catalogue component |
 | `/blocks` | Index of the blocks, per [Blocks](#blocks) |
 | `/blocks/<id>` | One page per block, with its framed preview at `/blocks/<id>/preview` |
@@ -2151,7 +2199,7 @@ Once Sidebar carries the menu, a second navigation in the header would put two `
 
 Route data is one module that Sidebar reads. Today it is four partial copies that already disagree: the header's own list, a second list in the home page missing `/palette` and in a different order, the component catalogue, and the router's page map. The catalogue stays the data it is; the navigation tree derives from it.
 
-The September 12, 2026 designs in `ultima.pen` replace the nested release disclosures planned in ULT-85 with a flat catalogue. `apps/docs/src/components.ts` remains the source in specification order, and a docs-only `release: 'v0' | 'v0.1'` on each entry still drives that order and sections the `/components` index into "The v0 set" and "The v0.1 set" without slicing at a magic index. The navigation set needs one thing from that field and nothing more: the union widens to include `'v0.2'`, and each of the three carries it. How the index sections a third release, and whether it sections by release at all once the rest of v0.2 lands, is the v0.2-wide catalogue question under Release scope rather than this set's. The menu stays flat under `@components`, derived from the same field. Navigation uses `::root` and `@components` group labels and `--`-prefixed destination labels. Sidebar retains its reusable nested-list parts. The wordmark always links home. Below 48rem, a separate menu icon button opens the navigation overlay. Desktop navigation remains visible and does not restore a saved collapsed state. Documentation articles include a separate section index derived from their headings; it hides below 80rem. Token and palette pages use the full content width.
+The September 12, 2026 designs in `ultima.pen` replaced the nested release disclosures planned in ULT-85 with a flat catalogue, and the October 2026 designs group it by kind. The index no longer sections by release: [Catalogue groups](#catalogue-groups), settled on [Decide how the Components directory groups the catalogue](https://github.com/frankieramirez/ultima/issues/647), holds the six groups, each component's group, and the order within a group. The menu's `@components` entry holds those groups as labelled sub-lists, derived from the same generated catalogue. Navigation uses `::root` and `@components` group labels and `--`-prefixed destination labels. Sidebar retains its reusable nested-list parts. The wordmark always links home. Below 48rem, a separate menu icon button opens the navigation overlay. Desktop navigation remains visible and does not restore a saved collapsed state. Documentation articles include a separate section index derived from their headings; it hides below 80rem. Token and palette pages use the full content width.
 
 The theme control stays docs-local, composed from Toggle Group. Ultima ships the widget and nothing more. The preference, its storage key, and applying the theme class to the document are the application's job, and a component that shipped them would assert a storage key and a root element on every consumer.
 
@@ -2205,6 +2253,36 @@ On a block page the preview is an iframe scaled to the column, so the overlay is
 
 **What proves it.** The docs tests mount each block page's Anatomy at the desktop and narrow preview widths in both modes. They assert that every Built from entry visible at that width has exactly one outline and one label, that no two labels intersect, that every label lies inside the preview, that the legend lists every entry, and that axe passes with the panel open. Each component page with the tab gets the same check for its parts. The registry build fails if `data-anatomy` appears in any file it serves. The production matrix covers Anatomy inside the `blocks.preview` scenario, adding no cells.
 
+### Global search
+
+Decided on [Decide what global search indexes and offers](https://github.com/frankieramirez/ultima/issues/648) on [Map: Incorporate the October 2026 ultima.pen redesign](https://github.com/frankieramirez/ultima/issues/641). The frames are `tZy0v` (empty query), `CekIX` (results for "button" with the preview pane) and `t1aKl` (mobile). `site-search.tsx` stays the one palette, opened by the header trigger and Ctrl K or ⌘ K, and it remains an instance of the command-dialog recipe on Command's page.
+
+**The index has four sources, all generated or already route data.** Components come from `generated/catalogue.ts`, elements from `generated/elements.ts`, blocks from `generated/blocks.ts`, and pages from `navigation.ts`. No search index is authored by hand, so a new item becomes searchable when `pnpm catalogue:generate` runs. Two kinds stay out. Recipes have no page of their own, only a section on a component page, and the generator does not emit them to the docs. Doc headings would need an MDX heading extractor the frames do not ask for. Either can join later as a new generated source.
+
+**Results group in a fixed order: Components, Elements, Blocks, Pages.** A group with no match is hidden, and no group is capped. Component and block rows show their [catalogue number](#identity-and-numbering). Element rows show their root tag, `<ult-button>`. The Appearance actions (dark, light, system) show on an empty query and when the query matches their labels.
+
+**Matching is a case-insensitive substring test, and ranking is three tiers.** Every kind matches on its title. Elements also match on their tags, and components and blocks also match on their description. Within a group, a title that starts with the query ranks first, a title that contains it second, and a match only in a tag or description third. Ties break by catalogue number, or alphabetically for pages. No fuzzy scorer is used, so a result's position follows from the rule and a test can assert it. The site ranks the rows itself and hands Command the ordered groups, rather than relying on the primitive's default Collator filter.
+
+**"Blocks using X" is derived.** When the top component result appears in any block's Built from, a group titled "Blocks using <name>" follows Components and lists those blocks in number order. The data is the inverse of the Built from lists in `generated/blocks.ts`, so the block descriptor gains no field.
+
+**The empty query shows three groups.** Go to lists Components, Blocks, Install, CLI, Tokens and Theme Studio. Recent follows, then Appearance.
+
+**Recent holds the last five destinations opened from the palette.** It stores what was opened, never what was typed, as kind and id pairs under one key, `ultima-search-recent`, read and written through `storage.ts`. An entry whose item has left the index is dropped on read. When storage is blocked or empty, the Recent group is absent. There is no Clear control.
+
+**Where each result goes.** A component opens `/components/<item>`, a block `/blocks/<id>`, and a page its route. An element opens `/components/<item>#web-component`, the link the element index already uses. Opening a result closes the palette and records it in Recent.
+
+**The preview pane shows at the `DESKTOP` breakpoint, and only for a highlighted catalogue item.** A page or an Appearance action shows no pane.
+
+- A component shows its name, number and description, its `catalogue-preview.tsx` demo rendered live, and its install command with a copy button. The demo sits inside a Neutral theme boundary that is also its portal container, as [The docs site theme](#the-docs-site-theme) requires of every demo.
+- A block shows its name, number, description and Built from, the lazy `inert` thumbnail iframe the `/blocks` index uses, and its install command with a copy button.
+- An element shows its tag, its tag family, and its `example` markup. It renders nothing live.
+
+**Ctrl ↵, or ⌘ ↵ on a Mac, copies the highlighted item's install command**, `npx shadcn add @ultima/<id>`, for a component or a block. The palette stays open, and a polite live region announces the copy. The footer shows the hint only while the highlighted row has a command. Elements install through the `/elements/ultima.js` bundle and pages install nothing, so neither has a copy action. Plain ↵ opens the row.
+
+**Below the `WIDE` breakpoint the palette fills the screen.** A Cancel button replaces Esc, and the preview pane and the copy shortcut are absent. Sources, grouping, ranking and Recent are unchanged.
+
+**What the build proves**, in `apps/docs/src/__tests__/`: the ranking tiers and group order for a fixed query, including a description-only match; the "Blocks using" group's derivation; Recent's write, the stale-entry drop and the blocked-storage fallback; the copy shortcut's clipboard write and announcement; and axe on the open palette in both modes at both widths.
+
 ### Authoring
 
 Content pages are MDX, one file per page under `apps/docs/src/content/`, compiled by `@mdx-js/rollup`. A single `Prose` component carries every typography style; MDX files hold no styling of their own. Routes stay code-based: a page module's default export is a component like any other, so MDX costs one plugin and no routing change.
@@ -2248,6 +2326,34 @@ The fantasy voice lives in the brand layer only: the name, the six scale names, 
 The header also carries a theme control offering dark, light, and system. Dark-first with light as a full peer is a claim the site should demonstrate rather than assert, and the control is the demonstration.
 
 `/rationale` is the page that makes the system legible to a reader who is not installing it: the ADRs in prose, with the alternatives that were actually on the table.
+
+### Landing motion
+
+Decided on [Decide how the landing dot field runs on the site](https://github.com/frankieramirez/ultima/issues/649). Status: accepted for implementation. The landing has no field today.
+
+The landing hero sits on an animated **dot field**: quantised noise on a 16px dot grid in the `site` theme's mana, drifting slowly, brightest toward a focus away from the copy, with a glow under the mouse. It is decoration and carries no content. The field is `aria-hidden`, takes no focus and no pointer events, and the hero reads completely without it.
+
+**One program.** The field runs `ultima-assets/shaders/dot-field.glsl`, the shader Pen draws the landing frames `dFeVc` and `cxfxc` and the motion board `i124M` with. The site imports that file with `?raw`, so the design file and the site cannot drift apart. Cell, dot, speed, steps, focus, reach, floor and glow come from the shader's `@default` annotations, so tuning the field in Pen tunes the site. Colour is the one exception, below. Importing from `ultima-assets/` is a new import boundary, and the architecture check allows it by name.
+
+**Rendering.** A hand-written WebGL 1 fragment shader drawing one quad on one canvas, with no rendering library and no new runtime dependency. Canvas 2D would need the shader written a second time for the CPU, and CSS or SVG cannot quantise noise per dot, so both break the one-program rule. The canvas renders at CSS-pixel resolution and upscales with `image-rendering: pixelated`. The dots are square and sit on the pixel grid, so the upscale is exact. The shader's pixel constants, its 200px glow radius among them, mean the same at every device pixel ratio, and a dense display does not multiply the fragment count. The canvas covers the hero section only and never widens the document.
+
+**Load.** The hero paints first. The field is its own chunk, imported by the landing route only, after first paint once the browser is idle, and under 6 KB gzipped with the shader. It fades in over `--ult-motion-slow` after its first frame is drawn, so an empty canvas never flashes. The hero's largest contentful paint is its heading, never the canvas. A visitor sending `Save-Data` gets no field.
+
+**Colour.** The field reads `site` tokens from the canvas element's computed style: `--ult-color-surface` for the ground, `--ult-color-highlight-border` for the dim dot and `--ult-color-highlight-active` for the bright one. Active is the highlight step furthest from the ground in both modes, and in dark it is the pen's own bright dot. The shader's hex defaults are never used. The shader blends each dot onto the ground, so the same three roles work on dark ground and light paper. The field reads the tokens again when the color mode or the theme on `<html>` changes, and draws once. A changed highlight recolours the field with no code change. Where a pen frame paints a dot colour the tokens do not produce, the generated value wins, as it does for `site`.
+
+**Drift settles.** Drift plays for five seconds from the first frame, easing to rest over its last second, and then the field holds still. WCAG 2.2.2 requires a pause control for automatic motion that runs longer than five seconds beside other content, and a hero that settles is a better page than a hero with a pause button. The cursor glow is not automatic motion. It follows a mouse pointer over the hero, draws only when the pointer moves, and fades when the pointer leaves. Touch and pen input never move it, and under `(hover: none)` it is off: a glow that jumps to a tap and stays there reads as a defect.
+
+**Reduced motion.** Under `prefers-reduced-motion: reduce` the field is a still frame, the shader drawn once at time zero with no drift, no glow and no fade. A still image is not motion, and removing the field would make reduced motion the lesser page. The field reads the preference through `matchMedia` and follows a change while the page is open. This is docs chrome running a JavaScript loop that duration tokens cannot stop, so it is not a second instance of the [Motion](#motion) exception for components.
+
+**Frame budget.** While drifting, the field draws one quad per frame at no more than 30 frames a second. At rest it draws nothing. It stops when the document is hidden, when the hero leaves the viewport, and when drift settles. It draws again only for a glow move, a resize, a token change or a restored context. The CSS-pixel canvas bounds the cost. No millisecond budget is set, because CI's software renderer cannot stand in for a real device.
+
+**Without WebGL.** When the canvas has no WebGL context, the shader fails to compile or the context is lost, the field is absent and the hero stands on `surface`, the page it already paints before the field arrives. There is no image fallback. A restored context draws once at rest.
+
+**The hero reveal and hover states.** The motion board's other motion uses existing tokens. The reveal is a one-time opacity and translate entrance on `--ult-motion-slow` with the `enter` easing, staggered in steps of `--ult-motion-fast`. Under reduced motion it collapses with the tokens and the hero appears in place. Hover states are the components' own. Neither adds a motion token.
+
+**Ownership.** The field is docs chrome in `apps/docs/src/dot-field.tsx`, not a catalogue component. It belongs to the brand layer, like the wordmark, and a consumer has no use for it. The canvas paints no CSS background, border, shadow or radius, so it adds no entry under [Painted declarations the docs keeps](#painted-declarations-the-docs-keeps). Its wrapper exposes the field's state as `data-field`: `loading`, `running`, `settled`, `still` or `off`.
+
+**Proof.** A new `site-landing` feature, whose contract is this section, registers two production scenarios. `site-landing.dot-field` runs dark and light at desktop and narrow width under normal and reduced motion, eight cells. Under normal motion the hero heading and install commands are visible while the field is still `loading`. The canvas is `aria-hidden`, out of the tab order, sized to the hero and inside the one-pixel fit. The field reaches `running`, paints pixels other than `surface`, and reaches `settled` within a bounded wait. Under reduced motion the state is `still` and two captures a frame apart are identical. `site-landing.without-field` runs dark and light at both widths, four cells, with WebGL removed before load. The state is `off`, the hero heading, copy and install commands are present and fit, and the page logs no error. The with-field cells run on Chromium's software WebGL, which the runner enables at launch and records in its report. A with-field cell that finds no WebGL fails; it never passes through the fallback. Vitest proves the token mapping, the settle timing and each stop condition. The matrix grows from 28 cells to 40, recorded under [Validation and coverage](agent-infrastructure.md#validation-and-coverage).
 
 ### README
 
@@ -2402,7 +2508,7 @@ ADR 0005 keeps shared guidance hosted on these surfaces:
 | `/llms.txt` | an agent in a consumer's repository | The conventions, the token names, and the component list as plain Markdown at one fetchable URL |
 | `/rationale` and the component pages | a human | The long form |
 
-`/llms.txt` is generated build output beside `/tokens.css`, not a hand-written file and not a route. It leads with the Principles section, then the component list with each component's import and the props Ultima adds, then the semantic token names. It is generated from this specification and the registry manifest, so no convention gets a third place to be updated.
+`/llms.txt` is generated build output beside `/tokens.css`, not a hand-written file and not a route. It leads with the Principles section, then the component list with each component's import and the props Ultima adds, under one heading per [catalogue group](#catalogue-groups), then the semantic token names. It is generated from this specification and the registry manifest, so no convention gets a third place to be updated.
 
 ### The authoring skill
 

@@ -209,7 +209,7 @@ Decided on [Component metadata: ownership, generated wiring, and scaffolding](ht
 
 ### Ownership
 
-Give each item one authored descriptor at `registry/metadata/<kind>/<id>.ts`. Use data-only default exports checked with `satisfies` against discriminated types in `registry/metadata/schema.ts`. Permit type-only imports; reject runtime imports, calls, getters, computed execution and filesystem access in descriptors. The loader validates the shape at runtime as well as through TypeScript. Shared release definitions live in `registry/metadata/releases.ts` as data under the same restrictions.
+Give each item one authored descriptor at `registry/metadata/<kind>/<id>.ts`. Use data-only default exports checked with `satisfies` against discriminated types in `registry/metadata/schema.ts`. Permit type-only imports; reject runtime imports, calls, getters, computed execution and filesystem access in descriptors. The loader validates the shape at runtime as well as through TypeScript. Shared release definitions live in `registry/metadata/releases.ts`, and the catalogue group definitions in `registry/metadata/groups.ts`, as data under the same restrictions.
 
 Use one file per item to avoid requiring every component addition to edit a shared manifest. `registry/items.config.ts` becomes a generated compatibility projection with its existing `items` export and item-description shape. Existing consumers can continue importing it; browser code receives plain generated data and never imports the metadata loader, filesystem APIs or the TypeScript compiler.
 
@@ -218,7 +218,7 @@ Authority is split by fact:
 | Fact | Authoritative owner | Derived or checked uses |
 | --- | --- | --- |
 | Behavioral contract, parts, defaults, accessibility and permitted primitive | Specification and ADR amendments | Source review, checker policy, scaffold preconditions and proof-bar assertions |
-| Item identity, title, shared summary, release placement, specification reference and install guidance | Item descriptor | Registry prose, docs catalogue, navigation inputs and agent-guide descriptions |
+| Item identity, title, shared summary, release placement, catalogue group, specification reference and install guidance | Item descriptor | Registry prose and categories, docs catalogue, navigation inputs and agent-guide descriptions |
 | Code, explicit public exports and actual imports | Authored implementation | Barrel exports, runtime dependencies, component registry edges and optimizer discovery |
 | Documentation explanation and component demos | Authored MDX and demo modules | Generated page imports; existing live/source demo pairing |
 | Element registrations and finite attribute values | Element source | Generated tag/enum data, checked documentation references and existing parity proof |
@@ -235,7 +235,7 @@ All records have a unique kebab-case `id`, `kind`, `title`, `description`, and a
 
 | Kind | Required distinctions |
 | --- | --- |
-| `react` | `id` matches the source basename and registry item. `primaryExport` names the actual root function/namespace; it is validated against source rather than guessed from spelling. `release` and integer `order` place the item in the docs catalogue. Source, MDX, test and demo-directory paths follow existing conventions and are derived. |
+| `react` | `id` matches the source basename and registry item. `primaryExport` names the actual root function/namespace; it is validated against source rather than guessed from spelling. `release` and integer `order` fix its specification section and registry manifest order. `group` names its [catalogue group](ultima.md#catalogue-groups), which places it in the docs directory, the menu, the registry `categories` and `/llms.txt`. Source, MDX, test and demo-directory paths follow existing conventions and are derived. |
 | `element` | `id` is the root `ult-*` item and `reactItem` references its React counterpart. `order` owns its docs-family placement. Source and per-family bundle paths follow current conventions. Declare the vendored artifact's registry dependency IDs, attribute documentation and example markup. No React barrel or component-page entry is created. |
 | `setup` | Declares its authored static files with registry file types and install targets, plus npm/dev dependencies and any registry dependencies that cannot be inferred from compiled source. Vite and Next.js remain separate records. |
 | `source-bundle` | Describes the `tokens` or `lib` source group using the existing inventory and exclusions; dependencies come from the grouped sources. It is not a UI component and gets no component route. |
@@ -251,7 +251,7 @@ Recipe records cover specification/checklist recipes only. An ordinary documente
 
 ### Ordering and compatibility
 
-The ordered release definitions own the release IDs and labels once. React descriptors carry a unique integer `order` within their release; gaps are allowed, duplicate positions are errors. Docs sort by release position and then this order. Do not resolve collisions alphabetically or renumber unrelated entries during scaffolding. If no position is supplied, report the available append position in the dry-run and require the author to accept it in the scaffold request.
+The ordered release definitions own the release IDs and labels once. React descriptors carry a unique integer `order` within their release; gaps are allowed, duplicate positions are errors. The registry manifest sorts by release position and then this order. The docs sort by catalogue group, then alphabetically, per [Catalogue groups](ultima.md#catalogue-groups). Do not resolve collisions alphabetically or renumber unrelated entries during scaffolding. If no position is supplied, report the available append position in the dry-run and require the author to accept it in the scaffold request.
 
 Preserve the current docs order and all route slugs during migration. The inspected baseline has 54 React entries in groups of 18, 14 and 22, and nine element families. These are migration observations, not permanent ceilings. Registry staging keeps its existing alphabetical ordering and the tokens/lib precedence in derived dependencies. Element build ordering remains alphabetical; docs-family order is separate.
 
@@ -270,7 +270,7 @@ Generate these small source projections and commit them with the inputs:
 | Output | Contract |
 | --- | --- |
 | `registry/items.config.ts` | Existing registry description shape, with installable records only; authored setup and vendored-artifact dependency declarations retained. |
-| `apps/docs/src/generated/catalogue.ts` | React entries and release definitions. Existing `components.ts` becomes a small adapter for helpers such as `componentsInRelease`, without a second authored item list. |
+| `apps/docs/src/generated/catalogue.ts` | React entries with their groups, and the group and release definitions. Existing `components.ts` becomes a small adapter for helpers such as `componentsInRelease`, without a second authored item list. |
 | `apps/docs/src/generated/component-pages.ts` | Explicit eager MDX imports and the component-page map. `router.tsx` retains route construction, breadcrumbs and navigation behavior, and imports this map. |
 | `apps/docs/src/generated/elements.ts` | Element catalogue presentation assembled from descriptors and source-derived tag/enum data. The existing `elements.ts` keeps a thin compatibility export. |
 | `apps/docs/src/generated/blocks.ts` | Block entries with derived numbers, file trees and Built from lists, as [Blocks](ultima.md#generated-wiring) specifies. |
@@ -496,7 +496,7 @@ Use the normal production Vite build and its real entry point, stylesheet order,
 
 Serve the built docs from an owned loopback HTTP server bound to port 0. Use a small static-server adapter with explicit HTML-navigation fallback for client-side routes, correct MIME types, and 404 responses for missing assets. Scope files to the build root and reject path traversal. A missing JavaScript file must never receive index.html as a successful asset response. The server exposes a run-only identity response outside the published build; verify its nonce and manifest identity before launching scenarios. Record the actual URL. An arbitrary external URL or already-running server cannot satisfy this local production check.
 
-The runner navigates through the shipped application. Its own scripts may read DOM state, inject the installed axe runtime and seed declared storage preconditions. They must not replace application code, inject corrective CSS or mock production behavior to make assertions pass. Do not introduce a second demo site. Stable internal locator hooks are allowed only where accessible roles/names and existing fixture boundaries cannot identify a repeated specimen.
+The runner navigates through the shipped application. Its own scripts may read DOM state, inject the installed axe runtime, seed declared storage preconditions and remove a declared platform capability before load. The one capability removal is WebGL for `site-landing.without-field`, settled on [Decide how the landing dot field runs on the site](https://github.com/frankieramirez/ultima/issues/649): it takes away what a device may lack and leaves application code alone. They must not replace application code, inject corrective CSS or mock production behavior to make assertions pass. Do not introduce a second demo site. Stable internal locator hooks are allowed only where accessible roles/names and existing fixture boundaries cannot identify a repeated specimen.
 
 ### Initial matrix
 
@@ -613,7 +613,7 @@ Required production variants come from these records, and the production runner 
 | `motion.reduced-loop` | Dark/light × desktop/narrow, reduced motion |
 | `site-discovery.discovery-surface` | Dark/light × desktop, normal motion |
 
-These are the same 28 production cells already decided. Splitting a long scenario is allowed when the replacement IDs retain every obligation and matrix variant, and the reviewed migration records the correspondence. Counts alone do not establish equivalent coverage. Keep a small, independent acceptance fixture for the required obligations and variant expansion; mutation tests must catch a removed target or light/narrow variant. This fixture is a contract test, not a runtime discovery source. Adding a new required production scenario automatically adds its cases to full PR and release verification.
+These are the same 28 production cells already decided. [Decide how the landing dot field runs on the site](https://github.com/frankieramirez/ultima/issues/649) adds two scenarios under a `site-landing` feature, registered with the field's implementation: `site-landing.dot-field` at dark/light × desktop/narrow under normal and reduced motion, and `site-landing.without-field` at dark/light × desktop/narrow, normal motion, with WebGL removed. They bring the matrix to 40 cells. [Landing motion](ultima.md#landing-motion) holds their assertions, and the with-field cells run on Chromium's software WebGL, which the runner enables at launch and records. Splitting a long scenario is allowed when the replacement IDs retain every obligation and matrix variant, and the reviewed migration records the correspondence. Counts alone do not establish equivalent coverage. Keep a small, independent acceptance fixture for the required obligations and variant expansion; mutation tests must catch a removed target or light/narrow variant. This fixture is a contract test, not a runtime discovery source. Adding a new required production scenario automatically adds its cases to full PR and release verification.
 
 Source import closure plus explicit validated runtime dependencies connects records to changed-file selection. A feature selection includes all its scenarios, affected item proof-bar checks and required build/install checks. A component selection finds scenarios through item references, demo imports and reverse dependencies. Base/current discovery both participate for deletions and renames, as the verification contract requires. Unknown ownership or unsupported dynamic edges expand to release; they cannot silently omit scenarios. Scenario metadata and its executable binding are themselves check inputs. Changes to shared schema/helpers/runner configuration require full release validation.
 

@@ -122,6 +122,10 @@ The consumer CLI's way of running the contributor's analysis engine over a consu
 
 A `check` rule in the `ULT-APP-*` family, run over a consumer's code rather than Ultima's source. It enforces that paint comes from tokens and that overrides keep Ultima's guarantees; arrangement stays the consumer's. Blocking consumer rules protect color mode, theming, and contrast. Advisory ones protect consistency and block only under `--strict`.
 
+## Catalogue group
+
+The one kind a component belongs to, named for its main job: Forms, Overlays, Data display, Navigation, Feedback or Layout. The directory, the docs menu, the registry and `/llms.txt` group components this way. It is not a release, which only records when a component's contract was written.
+
 ## Catalogue revision
 
 The commit the registry build ran at, shortened to twelve hex characters. One revision covers a whole deploy. It tells a person which build a file came from, and it never decides whether a file has changed; the content hash does that.
@@ -150,6 +154,10 @@ The site at `apps/docs`. Three things at once: Ultima's reference, the host that
 
 The site's front door at `/`: the pitch, the live specimen strip, and the install commands. Settled on [#371](https://github.com/frankieramirez/ultima/issues/371): the docs sidebar is per-route chrome, open on the documentation routes and closed on the landing page and the Studio. The header's links and the hero's calls to action carry the landing's navigation, and below the breakpoint the menu trigger still opens the mobile menu. The install workbench panel carries the same Vite / Next.js underline Tabs as `/install`'s Commands section, settled on [#379](https://github.com/frankieramirez/ultima/issues/379); its copy button writes the active tab's pair of commands.
 
+## Dot field
+
+The animated grid of mana dots behind the landing hero. It is decoration in the brand layer: the site runs the same shader Pen draws the frames with, coloured from `site` tokens. Drift settles after five seconds, reduced motion shows a still frame, and without WebGL the hero stands on its plain surface. Settled on [#649](https://github.com/frankieramirez/ultima/issues/649).
+
 ## Demo figure
 
 The block a component page renders for each example: one Card with the live preview, a hairline, and the example's source. Settled on [#369](https://github.com/frankieramirez/ultima/issues/369): the preview is centered with an 8rem floor, the source rests as a six-line teaser that expands in place (a source of eight lines or fewer never collapses), and copy is an icon button inside the code area's top-right corner. The same copy control serves every code block on the site. It composes catalogue components only, so it sits on the page-layout side of the line.
@@ -170,9 +178,13 @@ The line `/tokens` renders per semantic token. Settled on [#372](https://github.
 
 The docs-local side of the line between an Ultima component and the site's own chrome. Page layout arranges content and sets type and flow spacing. It never builds a control from plain elements and never paints a surface, meaning a background, a border, a shadow, or a radius. Anything that does one of those comes from a component, or becomes one. A control here is anything the user reaches with a keyboard, so a tabbable scroll region counts even though it presses nothing. A third prong arrived with Scroll Area: page layout may rely on a native scrollbar and may not hide one without painting a replacement, since the first two prongs are about building something badly and this one is about removing something the platform already gave you. The site's shell scrolls the document rather than an inner region: the header, menu panel, and on-this-page index are sticky, and the footer flows after content, resting at the viewport bottom only on a short page. Theme Studio keeps its own fixed-height app shell.
 
+## Site theme
+
+The docs chrome's own theme, `site`: Neutral with Ultima's mana on action and highlight. It is docs-only, never a preset or a consumer export, and it ends at every theme boundary that shows components as a consumer gets them: demos and block previews in Neutral, Studio previews in the active draft. Settled on [#642](https://github.com/frankieramirez/ultima/issues/642).
+
 ## Studio chrome
 
-The theme studio's own application surface: the workbench sub-bar, editor rail, group headers, shuffle bar, validation and inspector panels, and the preview scaffold. It is not page layout, so it may paint surfaces, but every keyboard-reachable control in it is a catalogue component. Its fixed appearance is Ultima's stock dark theme pinned on the editor subtree, beginning at the sub-bar; the shared site header above it is site chrome and follows the user's color-mode preference. The draft theme applies only inside the preview panes, whose boundary is also the per-pane portal container.
+The theme studio's own application surface: the workbench sub-bar, editor rail, group headers, shuffle bar, validation and inspector panels, and the preview scaffold. It is not page layout, so it may paint surfaces, but every keyboard-reachable control in it is a catalogue component. It wears the site theme in the site's current color mode, like the shared site header above it. The draft theme applies only inside the preview panes, whose boundary is also the per-pane portal container.
 
 ## Preview canvas
 
@@ -445,6 +457,10 @@ A manual semantic-token value set in the theme studio. It pins the token's resol
 ## Density
 
 The theme studio axis that scales the `space` group: compact, cosy, and roomy presets. Control heights follow because they read space steps. Density never touches type size, leading, or radius; those belong to typography and shape.
+
+## Shape
+
+The theme studio axis that sets the four radius steps xs to lg. In draft document version 3 its presets are sharp (square), default (the Tight scale, 1/2/4/6), soft (2/4/10/12, Ultima's original corners), and round. A shape name means what the draft's document version defines; versions 1 and 2 keep the earlier three-shape table. `radius-full` never changes.
 
 ## Editor chrome
 
