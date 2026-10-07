@@ -430,6 +430,10 @@ A manual semantic-token value set in the theme studio. It pins the token's resol
 
 The theme studio axis that scales the `space` group: compact, cosy, and roomy presets. Control heights follow because they read space steps. Density never touches type size, leading, or radius; those belong to typography and shape.
 
+## Shape
+
+The theme studio axis that sets the four radius steps xs to lg. In draft document version 3 its presets are sharp (square), default (the Tight scale, 1/2/4/6), soft (2/4/10/12, Ultima's original corners), and round. A shape name means what the draft's document version defines; versions 1 and 2 keep the earlier three-shape table. `radius-full` never changes.
+
 ## Editor chrome
 
 The earlier name for **Studio chrome**, settled on [#217](https://github.com/frankieramirez/ultima/issues/217). It is not page layout, and its fixed appearance comes from the pinned stock dark theme rather than its own values.

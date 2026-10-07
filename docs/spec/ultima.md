@@ -130,13 +130,17 @@ There is no display family. Mana's `--pixel` (Pixelify Sans) stays mana's brand,
 
 Five values, in `px` so corners do not grow with the font size.
 
+Amended on [Decide the default radius scale and respace the Shape presets](https://github.com/frankieramirez/ultima/issues/644). Status: accepted for implementation. The base tokens still ship the previous values, 2/4/10/12, until this lands with the Neutral base-token rollout under Consumer default theme. Both changes reach consumers in one release, with one piece of update guidance. A consumer who wants the previous corners selects the Ultima preset, whose `soft` shape keeps them.
+
 | Token | Value | Used by |
 | --- | --- | --- |
-| `--ult-radius-xs` | 2px | swatches, bars, indicator dots |
-| `--ult-radius-sm` | 4px | inline code, small insets |
-| `--ult-radius-md` | 10px | Button, Input, Select trigger, menu items |
-| `--ult-radius-lg` | 12px | Card, Dialog, popups |
+| `--ult-radius-xs` | 1px | swatches, bars, indicator dots |
+| `--ult-radius-sm` | 2px | inline code, small insets |
+| `--ult-radius-md` | 4px | Button, Input, Select trigger, menu items |
+| `--ult-radius-lg` | 6px | Card, Dialog, popups |
 | `--ult-radius-full` | 9999px | Badge and any pill |
+
+This is the Tight scale, and the Studio's `default` Shape. Nested corners rely on one relationship: `lg` minus `md` equals the 2px `space-1` inset a popup gives its items, so a Select item sits concentric inside its popup. Tight keeps it (6 − 2 = 4), and a segmented Tabs trigger (`sm`) becomes concentric inside its `md` list. No component computes a value from a radius step.
 
 ### Shadow
 
@@ -252,9 +256,9 @@ Decided on [Decide the consumer default theme and separation from Ultima brandin
 
 ### Fresh installs and brand boundaries
 
-A fresh consumer gets **Neutral**, a complete usable theme with achromatic surfaces, text, borders and interactive colors. Installation does not require a theme-selection step. Neutral retains the current non-color defaults, including font stacks, spacing, shape, shadows and reduced-motion behavior. It loads no fonts. The palette generator produces its values; neither component source nor generated files receive hand-authored color patches.
+A fresh consumer gets **Neutral**, a complete usable theme with achromatic surfaces, text, borders and interactive colors. Installation does not require a theme-selection step. Neutral retains the current non-color defaults, including font stacks, spacing, shadows and reduced-motion behavior. Its shape is the Tight radius scale under Radius, amended on [#644](https://github.com/frankieramirez/ultima/issues/644). It loads no fonts. The palette generator produces its values; neither component source nor generated files receive hand-authored color patches.
 
-The existing complete appearance remains available as **Ultima**, an explicit opt-in preset preserving the current indigo accent, cyan action/highlight and non-color defaults. Its current brand pins belong to that preset. Neutral disables those pins and uses zero chroma for mithril, arcane and mana; status scales retain their current seeds. Recipe lightness adjustments needed for contrast belong in the generator and must preserve the compatibility rules below.
+The existing complete appearance remains available as **Ultima**, an explicit opt-in preset preserving the current indigo accent, cyan action/highlight and non-color defaults, including the 2/4/10/12 radius as the `soft` shape. Its current brand pins belong to that preset. Neutral disables those pins and uses zero chroma for mithril, arcane and mana; status scales retain their current seeds. Recipe lightness adjustments needed for contrast belong in the generator and must preserve the compatibility rules below.
 
 Components keep their semantic token names and existing APIs. Button continues to default to `tone="accent"`. Accent supplies the default interactive emphasis, with focus following accent; action remains available for prominent actions, and highlight retains its existing semantic use. Action and highlight continue to share the mana scale. Neutral makes these roles achromatic while retaining their separate ramps and state tokens, so their values need not be identical. A custom theme may color them independently through the existing guided scale controls and semantic overrides. Changing a product accent does not implicitly recolor success, warning or danger.
 
