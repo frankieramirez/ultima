@@ -55,6 +55,7 @@ const styles = stylex.create({
     maxInlineSize: '52.5rem',
     marginInline: 'auto',
   },
+  wide: { maxInlineSize: '75rem' },
   fullWidth: {
     gridTemplateColumns: {
       default: 'minmax(0, 1fr)',
@@ -128,12 +129,12 @@ export function DocumentLayout({
   children,
   breadcrumb,
   index = true,
-  rail: resourceRail,
+  wide = false,
 }: {
   children: ReactNode;
   breadcrumb: Crumb[];
   index?: boolean;
-  rail?: ReactNode;
+  wide?: boolean;
 }) {
   const article = useRef<HTMLElement>(null);
   const [headings, setHeadings] = useState<Heading[]>([]);
@@ -199,7 +200,7 @@ export function DocumentLayout({
         <article
           ref={article}
           data-document-article
-          {...stylex.props(styles.article)}
+          {...stylex.props(styles.article, wide && styles.wide)}
         >
           {breadcrumb.length > 0 && (
             <Breadcrumb.Root style={styles.breadcrumb}>
@@ -230,15 +231,7 @@ export function DocumentLayout({
           )}
           {children}
         </article>
-        {resourceRail ? (
-          <aside
-            aria-label="Start building"
-            {...stylex.props(styles.indexRail)}
-          >
-            {resourceRail}
-          </aside>
-        ) : (
-          index &&
+        {index &&
           headings.length > 0 && (
             <aside
               ref={rail}
@@ -268,8 +261,7 @@ export function DocumentLayout({
                 </ul>
               </div>
             </aside>
-          )
-        )}
+          )}
       </div>
     </main>
   );

@@ -4,7 +4,7 @@
  * changes so a report names the fixture it ran.
  */
 export const catalogue = {
-  version: 2,
+  version: 3,
   groups: ['Forms', 'Overlays', 'Data display', 'Navigation', 'Feedback', 'Layout'],
   /** Matches more than one entry by name or description, and not the whole catalogue. */
   broadQuery: 'dialog',
@@ -14,6 +14,9 @@ export const catalogue = {
   /** Matches nothing. */
   emptyQuery: 'zzzz no such part',
   emptyHeading: 'No components match these filters',
+  /** A group chip whose group holds at least one component that ships an element, and not every one. */
+  chip: 'Overlays',
+  switchLabel: 'Has an HTML element',
   /** Narrows the list to the entry the keyboard opens. */
   openQuery: 'button',
   open: { name: 'Button', pathname: '/components/button' },

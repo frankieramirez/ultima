@@ -180,6 +180,17 @@ export default [
     authority: 'docs/spec/ultima.md#painted-declarations-the-docs-keeps',
   },
   {
+    id: 'components-toolbar-background-color',
+    rule: 'ULT-DOCS-001',
+    path: 'apps/docs/src/routes/components.tsx',
+    symbol: 'styles.toolbar',
+    target: 'backgroundColor',
+    expression: "color['--ult-color-surface']",
+    count: 1,
+    reason: 'The sticky directory toolbar restates the page ground so cards scrolled under it stay hidden, settled on #705.',
+    authority: 'docs/spec/ultima.md#painted-declarations-the-docs-keeps',
+  },
+  {
     id: 'studio-shell-background-color',
     rule: 'ULT-DOCS-001',
     path: 'apps/docs/src/routes/theme-studio.tsx',

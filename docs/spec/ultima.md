@@ -1790,9 +1790,54 @@ The counts are the frame's, 20, 11, 9, 5, 5 and 4. Where a component could sit i
 
 **The registry and the agent guide use it.** Each React item's registry record carries `categories: ["<group>"]`, shadcn's own registry-item field, so a registry client can filter Ultima's components by kind with no Ultima-specific field. `/llms.txt` lists the components under one heading per group, in display order, and alphabetically within each.
 
-**Within a group, components are alphabetical**, on the directory and in the menu alike, which is the order the site already ships and the order [catalogue numbers](#what-a-block-is) follow. The `/components` directory renders one section per group, its heading carrying the group's count. The filter searches across every group and hides a group with no match. In the menu, the Components entry holds the six groups as labelled sub-lists, and they don't collapse: a group is a heading in the list, not a disclosure.
+**Within a group, components are alphabetical**, on the directory and in the menu alike, which is the order the site already ships and the order [catalogue numbers](#what-a-block-is) follow. The `/components` directory renders one section per group, its heading carrying the group's count. The filter searches across every group and hides a group with no match, and [Components directory](#components-directory) holds the rest of the page. In the menu, the Components entry holds the six groups as labelled sub-lists, and they don't collapse: a group is a heading in the list, not a disclosure.
 
 **`release` stays, and nothing a visitor sees is sectioned by it.** It still names which section of this specification holds an item's contract, and with `order` it still fixes the registry manifest's order. The release disclosures planned in ULT-85, and the release sections of the index that replaced them, are superseded. Nothing reads the docs projection's release labels any more, so `RELEASE_LABELS` and `componentsInRelease` have left it, and `componentsInGroup` serves the directory and the menu.
+
+### Components directory
+
+Settled on [Match the Components directory to its frame](https://github.com/frankieramirez/ultima/issues/705), from `E9XvL`. [Catalogue groups](#catalogue-groups) decides what the sections are. This section decides how `/components` lays them out and what its controls do. Where the frame is silent, the smallest behavior is chosen and recorded here.
+
+**The page.** The directory sits in the docs shell like every other docs page, so the docs menu stays beside it. The frame draws the page without the menu, and the shell wins. The directory's column runs to 75rem, the frame's 1200px content width, instead of the 52.5rem prose column, and it has no on-this-page rail. From the top, the page holds:
+
+1. A running head: Components, then the component, group and element counts, then Base UI · Zag.
+2. The title block: the heading, a one-line lede, and the Start building links (Installation, Theme Studio and Tokens) to the right. Below 48rem the links sit under the lede.
+3. The toolbar.
+4. One section per group, in display order. Each section heading carries the group's mark (§ 01 to § 06), its label and its count, with a one-line summary of the group beside it.
+
+**The toolbar.** The first row holds the filter field, then the "Has an HTML element" switch and the view toggle at its end. The second row holds the group chips, then the status line and Clear filters. From 64rem the toolbar sticks under the site header. Below 64rem it wraps and scrolls with the page, because a wrapped toolbar that stuck would cover too much of a phone screen.
+
+**The card.** Each entry in the grid is a Card with two parts:
+
+- The live preview: `CataloguePreview`, in the Neutral `ThemeBoundary` like every demo. It is `inert` and `aria-hidden`, it sits outside the link, and it holds no tab stop.
+- The body: the catalogue number, the name, an Element badge when the component ships a custom element, and the one-line summary.
+
+The number and name are the link to `/components/<item>`. The link's box stretches over the whole card, so the preview and summary are clickable too, and the summary is the link's accessible description.
+
+**The grid.** The grid fits as many columns as it can at a 15rem minimum, up to four. That gives four at 1440 beside the menu, fewer as the width narrows, and one at 390. Cards in a row share a height.
+
+**The list.** The list is the compact form. Each row drops the preview and sits under a rule, with the number, name and badge in a 15rem column and the summary beside it from 48rem. Below 48rem the summary stacks under the name. The link and its stretched box work as they do on a card.
+
+**The controls.**
+
+| Control | Built from | What it does |
+| --- | --- | --- |
+| Filter | Input Group, a searchbox named "Filter components" | Keeps the entries whose name, description or summary contains the trimmed query, ignoring case. `/` focuses it from anywhere on the page outside an editable field. |
+| Group chips | Toggle Group named "Group": All, then one item per group | Keeps one group. Exactly one chip is pressed, All by default, and pressing the pressed chip does nothing. A chip's count is that group's matches under the query and the switch, so a chip with no match reads 0 and stays. |
+| Has an HTML element | Switch, labelled by its text | Keeps the components that ship a custom element, the ones the Elements page lists. Off by default. |
+| View | Toggle Group named "View": Grid and List | Swaps the card grid for the list. Grid by default. It isn't a filter, so Clear filters leaves it alone. |
+
+A chip filters rather than jumping to its section. The frame draws All pressed with the whole catalogue below it, which is a filter's resting state, and a jump would need no pressed state at all.
+
+The controls wear their components' own look. The frame draws the chips as separate outlined pills, the card preview on a sunken fill, and the `/` key in a bordered box. Each of those is a painted surface, which a docs file may not add under [The line between a component and page layout](#the-line-between-a-component-and-page-layout). So the chips sit in Toggle Group's track, the preview sits on Card's ground, and the key is plain mono text, shown from 64rem. The one painted declaration the page keeps is the sticky toolbar's ground, recorded under [Painted declarations the docs keeps](#painted-declarations-the-docs-keeps).
+
+**How they combine.** The query, the chip and the switch intersect. A section lists only its matching entries, its heading counts them, and a group with no match is hidden. The status line reads "N components · A–Z" for the entries shown. Clear filters appears while any of the three is set. It resets all three and returns focus to the filter. When nothing matches, the Empty state "No components match these filters" replaces the sections, with its own Clear filters.
+
+**State.** The state lives in the page and nowhere else, so nothing goes into the URL or storage. Every visit starts with the whole catalogue, All pressed, the switch off and the grid showing.
+
+**Keyboard and names.** Tab moves through the filter, the switch, the view toggle, the chips, Clear filters when it shows, and then each entry's link in order. Each Toggle Group is one tab stop, and the arrow keys move inside it. The accessible names are "Filter components", "Has an HTML element", "View" with Grid and List, and "Group" with each chip named by its label and count, such as "Forms 20". The status line is a polite live region, so a screen reader hears the new count after each change.
+
+Implemented on [#705](https://github.com/frankieramirez/ultima/issues/705) in `apps/docs/src/routes/components.tsx`.
 
 ### Placement in the consumer
 
@@ -2241,7 +2286,7 @@ Decided on Docs site scope (ULT-14). The site at `apps/docs` is three things at 
 | `/cli` | The consumer CLI: what it is, the install, each command, the post-edit hooks, and the CI step |
 | `/tokens` | Every semantic token by group, live swatches in both modes, the tokens CSS export, and the APCA readout per semantic pairing |
 | `/palette` | The six scales, twelve steps, dark and light values, the step convention, and the WCAG gate results |
-| `/components` | The directory of the catalogue, one section per [catalogue group](#catalogue-groups) |
+| `/components` | The directory of the catalogue, one section per [catalogue group](#catalogue-groups), per [Components directory](#components-directory) |
 | `/components/<name>` | One page per catalogue component |
 | `/blocks` | Index of the blocks, per [Blocks](#blocks) |
 | `/blocks/<id>` | One page per block, with its framed preview at `/blocks/<id>/preview` |
@@ -2315,7 +2360,7 @@ Recorded on [Enforce docs controls and surface rules](https://github.com/frankie
 - **Swatch**, on the stated exception above: the chip's border, radius and value fill in `swatch.tsx`, and the ring on a scale's brand anchor on `/palette`, which is that border in the text color.
 - **The demo figure**, settled on [What shape does the demo figure take](https://github.com/frankieramirez/ultima/issues/369): `demo.tsx` paints the code area's `surface-sunken` fill, the teaser fade over its last lines, and the Show code pill. `copy-button.tsx` gives the icon button its `surface-sunken` backdrop below the wide breakpoint, where it sits over scrolling code, and restates Button's ghost hover over that backdrop.
 - **The sticky header**, settled on [Shell: document scroll, sticky chrome, flowing footer](https://github.com/frankieramirez/ultima/issues/337): `header.tsx` fills the sticky bar with the page's own `surface` ground so content scrolled under it stays hidden. It restates the page background rather than adding a surface.
-- **The catalogue cards**, on the stated exception above: `routes/components.tsx` restates Card's surface at `surface-hover`.
+- **The directory toolbar**, settled on [Match the Components directory to its frame](https://github.com/frankieramirez/ultima/issues/705): `routes/components.tsx` fills the toolbar that sticks under the header with the page's `surface` ground, as the header does, so cards scrolled under it stay hidden.
 - **Anatomy**, settled on [Decide how a block page shows its anatomy](https://github.com/frankieramirez/ultima/issues/646): `anatomy.tsx` dims the preview with Dialog's backdrop fill and draws each outline as a highlight hairline, thickened to the `border.focus` width while its legend entry is hovered or focused, under [Anatomy](#anatomy).
 - **The landing's scales and plate**, settled on [Rebuild the landing page](https://github.com/frankieramirez/ultima/issues/678): `landing-scales.tsx` sets each scale band's Card tokens (ground, rule and text) to that scale's own generated steps inline, a raw palette display on Swatch's reasoning, and `landing-index.tsx` applies the previewed preset's resolved table to the plate's stage inline, as Studio's preview pane applies a draft. Both are `ULT-STYLE-001` entries; neither writes a painting declaration.
 - **Theme Studio** paints its chrome and its preview scenes under [Theme studio layout and live preview](theme-studio.md#theme-studio-layout-and-live-preview), and its entries link there. The hidden file input behind the Studio's Open button is a `ULT-DOCS-002` entry under [Theme export, installation, and recovery](theme-studio.md#theme-export-installation-and-recovery): the Button is the control, and the input only opens the platform's file chooser.

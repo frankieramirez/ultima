@@ -8,6 +8,7 @@ import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import { GROUPS, components, componentsInGroup } from '../components';
+import { elements } from '../elements';
 import { routeTree } from '../router';
 import { THEME_STORAGE_KEY } from '../theme';
 import '../styles.css';
@@ -49,8 +50,8 @@ test('the directory sections the catalogue by group, alphabetical within each, n
     const section = main.getByRole('region', { name: `${label} ${componentsInGroup(id).length}` });
     expect(entries(section.element())).toEqual(componentsInGroup(id).map((entry) => `/components/${entry.item}`));
   }
-  await expect.element(main.getByRole('link', { name: /^008 Button Trigger / })).toBeVisible();
-  await expect.element(main.getByRole('link', { name: /^048 Table / })).toBeVisible();
+  await expect.element(main.getByRole('link', { name: '008 Button', exact: true })).toBeVisible();
+  await expect.element(main.getByRole('link', { name: '048 Table', exact: true })).toBeVisible();
   await expect
     .element(main.getByRole('status'))
     .toHaveTextContent(`${components.length} components · A–Z`);
@@ -85,7 +86,7 @@ test('search combines names and descriptions, empty results clear with focus, an
     .element(main.getByRole('status'))
     .toHaveTextContent(`${matches.length} components · A–Z`);
   await expect
-    .element(main.getByRole('link', { name: /^008 Button Trigger / }))
+    .element(main.getByRole('link', { name: '008 Button', exact: true }))
     .toBeVisible();
   await expect
     .element(
@@ -110,7 +111,7 @@ test('search combines names and descriptions, empty results clear with focus, an
   await expect.element(input).toHaveValue('');
   await expect.element(input).toHaveFocus();
   await userEvent.fill(input, 'button');
-  await userEvent.click(main.getByRole('link', { name: /^008 Button Trigger / }));
+  await userEvent.click(main.getByRole('link', { name: '008 Button', exact: true }));
   await expect
     .element(main.getByRole('heading', { name: 'Button', level: 1 }))
     .toBeVisible();
@@ -138,10 +139,127 @@ test('search includes full descriptions alongside the displayed summaries', asyn
   for (const query of ['  ToNeS  ', 'solid, outline, or ghost']) {
     await userEvent.fill(input, query);
     await expect
-      .element(main.getByRole('link', { name: /^008 Button Trigger / }))
+      .element(main.getByRole('link', { name: '008 Button', exact: true }))
       .toBeVisible();
   }
 });
+
+const status = (main: ReturnType<typeof page.getByRole>) => main.getByRole('status');
+
+test('entries are cards with inert previews outside their links, four columns at 1440', async () => {
+  await page.viewport(1440, 900);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount();
+  const main = screen.getByRole('main').element();
+  const previews = Array.from(main.querySelectorAll<HTMLElement>('section [data-component-preview]'));
+  expect(previews).toHaveLength(components.length);
+  for (const preview of previews) {
+    expect(preview.getAttribute('aria-hidden')).toBe('true');
+    expect(preview.inert).toBe(true);
+    expect(preview.closest('a')).toBeNull();
+  }
+  const link = main.querySelector<HTMLAnchorElement>('a[href="/components/button"]')!;
+  expect(document.getElementById(link.getAttribute('aria-describedby')!)?.textContent).toBe(
+    'Trigger an action with solid, outline, or ghost styling.',
+  );
+  const card = link.closest('li')!.firstElementChild!;
+  expect(getComputedStyle(link, '::after').position).toBe('absolute');
+  expect(link.closest('li')!.querySelector('[data-component-preview]')).not.toBeNull();
+  expect(card.contains(link)).toBe(true);
+  const grid = main.querySelector('section ul')!;
+  expect(getComputedStyle(grid).gridTemplateColumns.split(' ')).toHaveLength(4);
+});
+
+test('the group chips filter to one group, with counts that follow the query', async () => {
+  const screen = await mount();
+  const main = screen.getByRole('main');
+  const chips = main.getByRole('group', { name: 'Group' });
+  await expect.element(chips.getByRole('button', { name: `All ${components.length}` })).toHaveAttribute('aria-pressed', 'true');
+  await userEvent.click(chips.getByRole('button', { name: 'Overlays 11' }));
+  expect(sections(main.element())).toEqual(['§ 02 Overlays 11']);
+  await expect.element(status(main)).toHaveTextContent('11 components · A–Z');
+  await userEvent.click(chips.getByRole('button', { name: 'Overlays 11' }));
+  await expect.element(chips.getByRole('button', { name: 'Overlays 11' })).toHaveAttribute('aria-pressed', 'true');
+  await userEvent.fill(main.getByRole('searchbox', { name: 'Filter components' }), 'dialog');
+  await expect.element(chips.getByRole('button', { name: 'All 2' })).toBeVisible();
+  await expect.element(chips.getByRole('button', { name: 'Forms 0' })).toBeVisible();
+  await userEvent.click(chips.getByRole('button', { name: 'Forms 0' }));
+  await expect.element(main.getByRole('heading', { name: 'No components match these filters' })).toBeVisible();
+  await userEvent.click(main.getByRole('button', { name: 'Clear filters' }).first());
+  await expect.element(chips.getByRole('button', { name: `All ${components.length}` })).toHaveAttribute('aria-pressed', 'true');
+  expect(sections(main.element())).toHaveLength(GROUPS.length);
+});
+
+test('the HTML element switch keeps the components the Elements page lists, and combines with the query', async () => {
+  const screen = await mount();
+  const main = screen.getByRole('main');
+  const toggle = main.getByRole('switch', { name: 'Has an HTML element' });
+  await userEvent.click(toggle);
+  await expect.element(status(main)).toHaveTextContent(`${elements.length} components · A–Z`);
+  const items = elements.map((element) => element.item);
+  expect(entries(main.element()).sort()).toEqual(items.map((item) => `/components/${item}`).sort());
+  for (const li of main.element().querySelectorAll('section > ul > li')) expect(li.textContent).toContain('Element');
+  await userEvent.fill(main.getByRole('searchbox', { name: 'Filter components' }), 'button');
+  expect(entries(main.element())).toEqual(['/components/button']);
+  await userEvent.click(main.getByRole('button', { name: 'Clear filters' }));
+  await expect.element(toggle).not.toBeChecked();
+  await expect.element(status(main)).toHaveTextContent(`${components.length} components · A–Z`);
+});
+
+test('the view toggle swaps the card grid for the list, and clearing the filters keeps it', async () => {
+  const screen = await mount();
+  const main = screen.getByRole('main');
+  const view = main.getByRole('group', { name: 'View' });
+  await expect.element(view.getByRole('button', { name: 'Grid' })).toHaveAttribute('aria-pressed', 'true');
+  await userEvent.click(view.getByRole('button', { name: 'List' }));
+  expect(main.element().querySelectorAll('section [data-component-preview]')).toHaveLength(0);
+  expect(entries(main.element())).toEqual(components.map((entry) => `/components/${entry.item}`));
+  await userEvent.fill(main.getByRole('searchbox', { name: 'Filter components' }), 'dialog');
+  expect(entries(main.element())).toEqual(['/components/alert-dialog', '/components/dialog']);
+  await userEvent.click(main.getByRole('button', { name: 'Clear filters' }));
+  await expect.element(view.getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'true');
+  await userEvent.click(main.getByRole('link', { name: '008 Button', exact: true }));
+  await expect.element(main.getByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
+});
+
+test('slash focuses the filter, and the controls come before the entries in tab order', async () => {
+  const screen = await mount();
+  const main = screen.getByRole('main');
+  const input = main.getByRole('searchbox', { name: 'Filter components' });
+  (document.activeElement as HTMLElement | null)?.blur();
+  await userEvent.keyboard('/');
+  await expect.element(input).toHaveFocus();
+  await expect.element(input).toHaveValue('');
+  await userEvent.keyboard('/');
+  await expect.element(input).toHaveValue('/');
+  await userEvent.fill(input, '');
+  const root = main.element();
+  await userEvent.tab();
+  expect(document.activeElement?.getAttribute('role')).toBe('switch');
+  await userEvent.tab();
+  expect(document.activeElement).toBe(root.querySelector('[aria-label="Grid"]'));
+  await userEvent.tab();
+  expect(document.activeElement?.textContent).toBe(`All ${components.length}`);
+  await userEvent.tab();
+  expect(document.activeElement?.getAttribute('href')).toBe('/components/button');
+});
+
+for (const mode of ['dark', 'light'])
+  for (const width of [390, 768, 1024, 1280, 1440])
+    test(`the directory fits at ${width} in ${mode}${width === 390 || width === 1440 ? ' and passes axe' : ''}`, async () => {
+      localStorage.setItem(THEME_STORAGE_KEY, mode);
+      await page.viewport(width, 900);
+      onTestFinished(() => page.viewport(1280, 720));
+      const screen = await mount();
+      await expect.element(status(screen.getByRole('main'))).toHaveTextContent(`${components.length} components · A–Z`);
+      expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
+      if (width === 390) expect(getComputedStyle(screen.getByRole('main').element().querySelector('section ul')!).gridTemplateColumns.split(' ')).toHaveLength(1);
+      if (width !== 390 && width !== 1440) return;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      expect(
+        (await axe.run(document.body)).violations.map(({ id, nodes }) => `${id}: ${nodes.map(({ html }) => html).join(', ')}`),
+      ).toEqual([]);
+    });
 
 for (const mode of ['dark', 'light'])
   test(`directory search and empty state fit and remain accessible in ${mode} on mobile`, async () => {

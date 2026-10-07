@@ -12,7 +12,7 @@ import { productionScenario } from '../../../../scripts/verification/production.
 import { catalogue } from '../fixtures/catalogue.ts';
 import { assertFits, assertFocusRing, isFocused, neutralLength, shippedLength, siteColor } from '../support/production.ts';
 
-const { groups, broadQuery, broadMatch, broadGroups, emptyQuery, emptyHeading, openQuery, open: result, demo, copyLabel } = catalogue;
+const { groups, broadQuery, broadMatch, broadGroups, emptyQuery, emptyHeading, chip, switchLabel, openQuery, open: result, demo, copyLabel } = catalogue;
 
 async function sections(page: Page) {
   return page.getByRole('main').locator('section').evaluateAll((elements) =>
@@ -91,6 +91,25 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   assert.equal(await filter.inputValue(), '', 'the query is cleared');
   assert.ok(await isFocused(filter), 'clearing returns focus to the filter');
   assert.equal(await main.getByRole('heading', { name: emptyHeading }).count(), 0, 'the empty state is gone');
+
+  const chips = main.getByRole('group', { name: 'Group' });
+  await chips.getByRole('button', { name: new RegExp(`^${chip} \\d+$`) }).click();
+  await assertSections(page, [chip], `the ${chip} chip`);
+  const toggle = main.getByRole('switch', { name: switchLabel });
+  await toggle.click();
+  const withElement = await counted(page, (n) => n > 0 && n < whole, `the ${chip} chip with ${switchLabel}`);
+  assert.equal(await main.locator('section > ul > li').filter({ hasText: 'Element' }).count(), withElement, 'every entry left ships an element');
+  const view = main.getByRole('group', { name: 'View' });
+  await view.getByRole('button', { name: 'List' }).click();
+  assert.equal(await entries.count(), withElement, 'the list view keeps the same entries');
+  assert.equal(await main.locator('section [data-component-preview]').count(), 0, 'the list view drops the previews');
+  await main.getByRole('button', { name: 'Clear filters' }).click();
+  await counted(page, (n) => n === whole, 'clearing the chip and the switch');
+  await assertSections(page, groups, 'clearing the chip and the switch');
+  assert.equal(await toggle.getAttribute('aria-checked'), 'false', 'clearing turns the switch off');
+  assert.equal(await view.getByRole('button', { name: 'List' }).getAttribute('aria-pressed'), 'true', 'clearing keeps the list view');
+  await view.getByRole('button', { name: 'Grid' }).click();
+  assert.equal(await main.locator('section [data-component-preview]').count(), whole, 'the grid shows a preview per entry');
 
   // Open a result from the keyboard: Tab out of the filter until the entry has focus, then Enter.
   await type(page, openQuery);
