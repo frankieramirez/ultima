@@ -9,7 +9,17 @@ import { Settings01 } from '@ultima/blocks/settings-01/settings-01';
 import { SignIn01 } from '@ultima/blocks/sign-in-01/sign-in-01';
 
 /** A component the block imports, or a recipe it follows, numbered among its own kind. */
-export type BuiltFrom = { id: string; title: string; number: string; kind: 'component' | 'recipe' };
+export type BuiltFrom = { id: string; title: string; number: string } & (
+  | { kind: 'component' }
+  | {
+      kind: 'recipe';
+      /** The component page and section that document the recipe. */
+      page: string;
+      section: string;
+      /** The accessible query of the recipe's root in the block, which Anatomy outlines. */
+      root: { role: string; name: string };
+    }
+);
 
 export type BlockEntry = {
   id: string;
@@ -111,7 +121,13 @@ export const blocks: readonly BlockEntry[] = [
         "id": "item",
         "title": "Item",
         "number": "005",
-        "kind": "recipe"
+        "kind": "recipe",
+        "page": "card",
+        "section": "item",
+        "root": {
+          "role": "list",
+          "name": "Deals"
+        }
       }
     ],
     "preview": Crm01
@@ -222,7 +238,13 @@ export const blocks: readonly BlockEntry[] = [
         "id": "chart",
         "title": "Chart",
         "number": "002",
-        "kind": "recipe"
+        "kind": "recipe",
+        "page": "table",
+        "section": "chart",
+        "root": {
+          "role": "figure",
+          "name": "Revenue"
+        }
       }
     ],
     "preview": Dashboard01

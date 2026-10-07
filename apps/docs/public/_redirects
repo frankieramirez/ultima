@@ -1,0 +1,3 @@
+# Cloudflare Pages reads this from the top of the build output, before it serves any file.
+
+/elements.html /elements-gallery 301

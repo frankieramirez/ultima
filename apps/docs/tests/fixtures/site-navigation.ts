@@ -4,10 +4,12 @@
  * when a value changes so a report names the fixture it ran.
  */
 export const siteNavigation = {
-  version: 3,
+  version: 4,
   directLoads: [
     { pathname: '/', heading: 'A system for building interfaces.' },
     { pathname: '/install', heading: 'Install' },
+    { pathname: '/elements', heading: 'Elements' },
+    { pathname: '/elements/', heading: 'Elements' },
     { pathname: '/components/button', heading: 'Button' },
   ],
   /** The direct load whose link the grouped menu marks current. */

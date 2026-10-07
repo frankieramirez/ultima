@@ -1,5 +1,6 @@
 import { InfoIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
+import type { StyleXStyles } from '@stylexjs/stylex';
 import type { ThemePresetId } from '@ultima/tokens';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Accordion, Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card } from '@ultima/ui';
@@ -222,10 +223,10 @@ const styles = stylex.create({
   contents: { display: 'flex', justifyContent: 'center', inlineSize: '100%', maxInlineSize: '100%', pointerEvents: 'none', minInlineSize: 0 },
 });
 
-export function CataloguePreview({ item, preset }: { item: string; preset?: ThemePresetId }) {
+export function CataloguePreview({ item, preset, style }: { item: string; preset?: ThemePresetId; style?: StyleXStyles }) {
   const Preview = previews.get(item);
   return (
-    <Card.Root aria-hidden inert data-component-preview style={styles.sample}>
+    <Card.Root aria-hidden inert data-component-preview style={[styles.sample, style]}>
       <ThemeBoundary preset={preset} style={styles.contents}>
         {compactSample(item) ?? (Preview && <Preview />)}
       </ThemeBoundary>

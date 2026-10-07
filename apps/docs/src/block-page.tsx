@@ -14,6 +14,7 @@ import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Card, Separator, Tabs, ToggleGroup } from '@ultima/ui';
 import { useEffect, useState, type ReactNode } from 'react';
 
+import { BlockAnatomy } from './block-anatomy';
 import { BlockFrame, PREVIEW_SIZES, type PreviewSize } from './block-frame';
 import { breakpoints } from './breakpoints.stylex';
 import { CopyButton } from './copy-button';
@@ -283,6 +284,9 @@ function Preview({ block }: { block: BlockEntry }) {
             <Tabs.Tab value="preview" style={styles.tab}>
               Preview
             </Tabs.Tab>
+            <Tabs.Tab value="anatomy" style={styles.tab}>
+              Anatomy
+            </Tabs.Tab>
             <Tabs.Tab value="code" style={styles.tab}>
               Code
             </Tabs.Tab>
@@ -310,6 +314,9 @@ function Preview({ block }: { block: BlockEntry }) {
         <Separator />
         <Tabs.Panel value="preview" keepMounted>
           <BlockFrame block={block} size={size} />
+        </Tabs.Panel>
+        <Tabs.Panel value="anatomy">
+          <BlockAnatomy block={block} size={size} />
         </Tabs.Panel>
         <Tabs.Panel value="code" style={styles.code}>
           <Code block={block} />

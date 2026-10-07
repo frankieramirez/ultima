@@ -52,7 +52,7 @@ A candidate exemplar is validated against the current rules before it is cited h
 
 - Contract: `docs/spec/ultima.md#web-components`, including `#light-dom` and `#one-file-per-element`
 - Source: `UltButton` in `packages/elements/src/ult-button.element.ts`, defined by the guarded `customElements.define('ult-button', …)`
-- Fixture: `apps/docs/public/elements.html`, served at `/elements.html`
+- Fixture: `apps/docs/public/elements-gallery.html`, served at `/elements-gallery.html`
 - Proof: `packages/elements/src/__tests__/ult-button.test.ts` and the shared `packages/elements/src/__tests__/parity.test.ts`
 - Pattern: a light-DOM custom element with its own attribute/property lifecycle, staying React-free under its ADR 0008 primitive layer.
 
@@ -60,7 +60,7 @@ A candidate exemplar is validated against the current rules before it is cited h
 
 - Contract: `docs/spec/ultima.md#web-components`, with `#parity-gate` and the `ult-<item>-<part>` family naming under the same section
 - Source: `UltTabs`, `UltTabsList`, `UltTabsTab`, `UltTabsPanel`, `UltTabsIndicator` in `packages/elements/src/ult-tabs.element.ts`
-- Fixture: `apps/docs/public/elements.html`, covered by scenario `elements.fixture-interactions` (`verification/scenarios/elements/fixture-interactions.json`)
+- Fixture: `apps/docs/public/elements-gallery.html`, covered by scenario `elements.fixture-interactions` (`verification/scenarios/elements/fixture-interactions.json`)
 - Proof: `packages/elements/src/__tests__/ult-tabs.test.ts`, the shared `packages/elements/src/__tests__/parity.test.ts`, and `apps/docs/tests/production/elements.fixture-interactions.ts`
 - Pattern: a compound family shipped as `ult-tabs-*` tags, keyboard behavior proved in the fixture, and parity with the React `Tabs` asserted rather than assumed.
 

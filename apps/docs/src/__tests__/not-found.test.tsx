@@ -1,8 +1,10 @@
+import * as stylex from '@stylexjs/stylex';
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
 import { expect, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 
 import { routeTree } from '../router';
+import { headings } from '../typography';
 import '../styles.css';
 
 async function mount(path: string) {
@@ -23,9 +25,8 @@ test('the not-found page renders inside the document chrome', async () => {
 });
 
 test('the not-found title takes the same treatment as a page title', async () => {
-  const { screen } = await mount('/components');
-  await expect.element(screen.getByRole('heading', { name: 'Components', level: 1 })).toBeVisible();
-  const expected = getComputedStyle(screen.container.querySelector('h1')!);
+  const probe = await render(<h1 {...stylex.props(headings.h1)}>Page title</h1>);
+  const expected = getComputedStyle(probe.container.querySelector('h1')!);
   expect(expected.fontWeight).toBe('500');
 
   const second = await mount('/lost-in-the-suite');
