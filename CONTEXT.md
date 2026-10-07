@@ -150,6 +150,10 @@ The site at `apps/docs`. Three things at once: Ultima's reference, the host that
 
 The site's front door at `/`: the pitch, the live specimen strip, and the install commands. Settled on [#371](https://github.com/frankieramirez/ultima/issues/371): the docs sidebar is per-route chrome, open on the documentation routes and closed on the landing page and the Studio. The header's links and the hero's calls to action carry the landing's navigation, and below the breakpoint the menu trigger still opens the mobile menu. The install workbench panel carries the same Vite / Next.js underline Tabs as `/install`'s Commands section, settled on [#379](https://github.com/frankieramirez/ultima/issues/379); its copy button writes the active tab's pair of commands.
 
+## Dot field
+
+The animated grid of mana dots behind the landing hero. It is decoration in the brand layer: the site runs the same shader Pen draws the frames with, coloured from `site` tokens. Drift settles after five seconds, reduced motion shows a still frame, and without WebGL the hero stands on its plain surface. Settled on [#649](https://github.com/frankieramirez/ultima/issues/649).
+
 ## Demo figure
 
 The block a component page renders for each example: one Card with the live preview, a hairline, and the example's source. Settled on [#369](https://github.com/frankieramirez/ultima/issues/369): the preview is centered with an 8rem floor, the source rests as a six-line teaser that expands in place (a source of eight lines or fewer never collapses), and copy is an icon button inside the code area's top-right corner. The same copy control serves every code block on the site. It composes catalogue components only, so it sits on the page-layout side of the line.
