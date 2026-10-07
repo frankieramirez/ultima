@@ -102,8 +102,9 @@ export function HighlightedCode({
     [code, lang],
   );
 
+  const numbers = lineNumbers && code !== '';
   const block = (
-    <Code variant="block" style={[style, lineNumbers && numbered.code]} tabIndex={tabIndex}>
+    <Code variant="block" style={[style, numbers && numbered.code]} tabIndex={tabIndex}>
       {tokens.map((token, index) =>
         token.className ? (
           <span key={index} {...stylex.props(TOKEN_STYLES[token.className])}>
@@ -115,7 +116,7 @@ export function HighlightedCode({
       )}
     </Code>
   );
-  if (!lineNumbers) return block;
+  if (!numbers) return block;
 
   return (
     <div {...stylex.props(numbered.root)}>

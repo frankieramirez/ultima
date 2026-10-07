@@ -183,9 +183,11 @@ function LabelledFence({ components }: { components?: MDXComponents }) {
 test('a fence title becomes the code element title the docs Pre reads', () => {
   const fence = { type: 'code', lang: 'bash', meta: 'title="Terminal"' };
   const plain = { type: 'code', lang: 'bash', meta: null };
+  const quoted = { type: 'code', lang: 'css', meta: "title='src/index.css'" };
   const other = { type: 'code', lang: 'bash', meta: 'showLineNumbers' };
-  remarkFenceTitle()({ type: 'root', children: [fence, plain, other] });
+  remarkFenceTitle()({ type: 'root', children: [fence, quoted, plain, other] });
   expect(fence).toMatchObject({ data: { hProperties: { title: 'Terminal' } } });
+  expect(quoted).toMatchObject({ data: { hProperties: { title: 'src/index.css' } } });
   expect(plain).not.toHaveProperty('data');
   expect(other).not.toHaveProperty('data');
 });
@@ -253,4 +255,10 @@ test('a demo numbers its source lines without adding them to the source', async 
   const figure = screen.container.querySelector('figure')!;
   expect(figure.querySelector('pre')?.textContent).toBe(source);
   expect(figure.querySelector('[aria-hidden="true"]:has(> code)')?.textContent).toBe('1\n2\n3');
+});
+
+test('empty code shows no line numbers', async () => {
+  const screen = await render(<HighlightedCode code="" lang="tsx" lineNumbers />);
+  expect(screen.container.querySelector('pre')).not.toBeNull();
+  expect(screen.container.querySelector('[aria-hidden="true"]:has(> code)')).toBeNull();
 });
