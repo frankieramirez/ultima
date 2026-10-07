@@ -130,7 +130,7 @@ There is no display family. Mana's `--pixel` (Pixelify Sans) stays mana's brand,
 
 Five values, in `px` so corners do not grow with the font size.
 
-Amended on [Decide the default radius scale and respace the Shape presets](https://github.com/frankieramirez/ultima/issues/644). Status: accepted for implementation. The base tokens still ship the previous values, 2/4/10/12, until this lands with the Neutral base-token rollout under Consumer default theme. Both changes reach consumers in one release, with one piece of update guidance. A consumer who wants the previous corners selects the Ultima preset, whose `soft` shape keeps them.
+Amended on [Decide the default radius scale and respace the Shape presets](https://github.com/frankieramirez/ultima/issues/644). Status: the Shape presets are implemented (draft document v3, [#665](https://github.com/frankieramirez/ultima/issues/665)), and the `site` and Neutral theme boundaries show the new scale ([#666](https://github.com/frankieramirez/ultima/issues/666)). The base tokens still ship the previous values, 2/4/10/12, until this lands with the Neutral base-token rollout under Consumer default theme. Both changes reach consumers in one release, with one piece of update guidance. A consumer who wants the previous corners selects the Ultima preset, whose `soft` shape keeps them.
 
 | Token | Value | Used by |
 | --- | --- | --- |
