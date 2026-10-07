@@ -13,7 +13,7 @@ from PIL.PngImagePlugin import PngInfo
 
 PUBLIC = Path(__file__).resolve().parents[1] / 'apps/docs/public'
 BRAND = PUBLIC / 'brand'
-INK, PAPER = '#171717', '#FAFAF9'
+INK, PAPER, CYAN = '#0d0e0e', '#eeeeea', '#31c6d2'
 BRAND.mkdir(exist_ok=True)
 
 
@@ -27,13 +27,9 @@ def lettering(value, family='IBMPlexMono-SemiBold'):
         glyph.draw(pen)
         glyph.draw(bounds)
         path, box = pen.getCommands(), bounds.bounds
-        if char == '-':
-            path, box = 'M30 260H450V380H30Z', (30, 260, 450, 380)
-        elif char == ':':
-            path, box = 'M200 0H340V140H200Z M200 360H340V500H200Z', (200, 0, 340, 500)
         if box:
             letters.append((x, path, box))
-        x += 530 if char == '-' else glyph.width
+        x += glyph.width
     left = min(x + b[0] for x, _, b in letters)
     right = max(x + b[2] for x, _, b in letters)
     bottom = min(b[1] for _, _, b in letters)
@@ -53,17 +49,24 @@ def save(name, source, width=None):
         raw = cairosvg.svg2png(bytestring=source.encode(), output_width=width)
         image = Image.open(BytesIO(raw))
         metadata = PngInfo()
-        metadata.add_text('Source', 'Generated from outlined IBM Plex lettering by scripts/build-brand.py; see fonts/OFL.txt.')
+        metadata.add_text('Source', 'Generated from Compact path artwork by scripts/build-brand.py; social captions use IBM Plex (fonts/OFL.txt).')
         image.save((PUBLIC / name).with_suffix('.png'), pnginfo=metadata)
 
 
-word, word_width, word_height = lettering('--ultima:')
-mark, mark_width, mark_height = lettering('u:')
+WORD_PATHS = (
+    'M0 55H35V148Q35 161 49 161H93Q107 161 107 148V55H142V150Q142 194 99 194H43Q0 194 0 150Z',
+    'M155 0H189V194H155Z',
+    'M215 26H249V55H288V89H249V143Q249 160 267 160H288V194H263Q215 194 215 145V89H200V55H215Z',
+    'M302 0H336V34H302ZM302 55H336V194H302Z',
+    'M350 55H384V72C395 58 410 52 429 52C448 52 463 61 471 76C483 60 499 52 519 52C551 52 570 72 570 108V194H536V116C536 97 526 86 506.5 86C487 86 477 97 477 116V194H443V116C443 97 433 86 413.5 86C394 86 384 97 384 116V194H350Z',
+    'M581 98Q585 52 650 52Q714 52 714 110V194H679V174Q660 197 626 197Q578 197 578 154Q578 113 631 113H679V106Q679 83 650 83Q622 83 617 98ZM679 136H637Q612 136 612 154Q612 171 638 171Q679 171 679 136Z',
+)
+word = ''.join(f'<path fill-rule="evenodd" d="{path}"/>' for path in WORD_PATHS)
+word_width, word_height = 714, 197
 
 
 def compact(foreground):
-    scale = 40 / mark_width
-    return f'<g fill="{foreground}" transform="translate(12 {(64-mark_height*scale)/2}) scale({scale})">{mark}</g>'
+    return f'<path fill="{foreground}" d="M14 17H24V39Q24 42 27 42H37Q40 42 40 39V17H50V40Q50 52 38 52H26Q14 52 14 40Z"/>'
 
 
 for variant, foreground in [('dark', PAPER), ('light', INK), ('white', '#FFFFFF'), ('ink', INK)]:
@@ -71,10 +74,10 @@ for variant, foreground in [('dark', PAPER), ('light', INK), ('white', '#FFFFFF'
          f'<g fill="{foreground}">{word}</g>'), 1600)
     save(f'brand/ultima-mark-{variant}.svg', svg('Ultima compact mark', 64, 64, compact(foreground)), 512)
 save('brand/ultima-mark.svg', svg('Ultima compact mark', 64, 64, compact(INK)))
-icon_svg = svg('Ultima', 64, 64, f'<rect width="64" height="64" rx="14" fill="{INK}"/>{compact(PAPER)}')
+icon_svg = svg('Ultima', 64, 64, f'<rect width="64" height="64" rx="12" fill="{CYAN}"/>{compact(INK)}')
 save('favicon.svg', icon_svg)
 save('brand/ultima-avatar.svg', svg('Ultima', 64, 64,
-     f'<rect width="64" height="64" fill="{INK}"/>{compact(PAPER)}'), 1024)
+     f'<rect width="64" height="64" fill="{CYAN}"/>{compact(INK)}'), 1024)
 
 
 def icon(size):
@@ -97,7 +100,7 @@ def placed(value, x, y, width, fill, family='IBMPlexMono-SemiBold'):
 
 
 social = (f'<rect width="1200" height="630" fill="{INK}"/>'
-          + placed('--ultima:', 80, 154, 960, PAPER)
+          + f'<g fill="{PAPER}" transform="translate(80 120) scale({720/word_width})">{word}</g>'
           + placed('React components. Your source.', 84, 398, 660, PAPER, 'IBMPlexSans-Regular')
           + placed('ultima.systems', 84, 544, 210, PAPER, 'IBMPlexMono-Regular'))
 save('brand/ultima-social.svg', svg('Ultima. React components. Your source.', 1200, 630, social))

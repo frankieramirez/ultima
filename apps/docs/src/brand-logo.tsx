@@ -8,19 +8,17 @@ const LIGHT_LOGO = '/brand/ultima-logo-light.svg';
 
 type BrandLogoProps = {
   alt: string;
-  height: number;
   style?: StyleXStyles;
-  width: number;
 };
 
-export function BrandLogo({ alt, height, style, width }: BrandLogoProps) {
+export function BrandLogo({ alt, style }: BrandLogoProps) {
   const { preference } = useTheme();
   const image = (
     <img
       src={preference === 'light' ? LIGHT_LOGO : DARK_LOGO}
       alt={alt}
-      width={width}
-      height={height}
+      width={714}
+      height={197}
       {...stylex.props(style)}
     />
   );
