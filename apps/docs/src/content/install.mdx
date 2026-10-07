@@ -56,7 +56,7 @@ The `docs` field on each setup item prints the same list at install. This page a
 
 **Why resets need a layer.** Every StyleX rule sits in a cascade layer, so an unlayered reset such as create-next-app's `* { padding: 0 }` beats component styles, including a Button's own padding.
 
-```css title="src/index.css"
+```css title="src/index.css · app/globals.css"
 @layer reset {
   *,
   *::before,

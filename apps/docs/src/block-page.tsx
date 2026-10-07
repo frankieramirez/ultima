@@ -264,8 +264,9 @@ function Code({ block }: { block: BlockEntry }) {
       </Tabs.List>
       {block.files.map((name) => (
         <Tabs.Panel key={name} value={name} style={styles.source}>
-          <CopyButton text={loaded[name] ?? ''} ariaLabel={`Copy ${name}`} floating />
           <HighlightedCode code={loaded[name] ?? ''} lang="tsx" lineNumbers style={styles.sourceCode} />
+          {/* After the code: the Scroll Area is positioned too, and the later sibling paints on top. */}
+          <CopyButton text={loaded[name] ?? ''} ariaLabel={`Copy ${name}`} floating />
         </Tabs.Panel>
       ))}
     </Tabs.Root>
