@@ -103,13 +103,14 @@ function reducedMotionRules(element: Element): CSSStyleRule[] {
   return found;
 }
 
-test('the overriding examples carry the site copy button', async () => {
-  const { container } = await renderWithRouter(<TokensPage />);
-  const fences = Array.from(container.querySelectorAll('pre')).filter((pre) =>
+test('the overriding examples carry their file label and the site copy button', async () => {
+  const screen = await renderWithRouter(<TokensPage />);
+  const fences = Array.from(screen.container.querySelectorAll('pre')).filter((pre) =>
     /createTheme|:root/.test(pre.textContent ?? ''),
   );
   expect(fences.length).toBe(2);
-  for (const pre of fences) {
-    expect(pre.parentElement?.querySelector('button[aria-label="Copy"]')).not.toBeNull();
+  for (const label of ['theme.css', 'brand.stylex.ts']) {
+    await expect.element(screen.getByText(label, { exact: true })).toBeVisible();
+    await expect.element(screen.getByRole('button', { name: `Copy ${label}` })).toBeVisible();
   }
 });

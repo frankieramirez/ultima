@@ -1,7 +1,8 @@
+import { FileCodeIcon, TerminalIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Code as UltimaCode, ScrollArea, Table } from '@ultima/ui';
+import { Card, Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import {
   createContext,
@@ -45,6 +46,28 @@ const styles = stylex.create({
   },
   li: { marginBlock: space['--ult-space-3'] },
   fence: { marginBlock: space['--ult-space-6'], position: 'relative' },
+  labelled: { marginBlock: space['--ult-space-6'], minInlineSize: 0 },
+  head: {
+    alignItems: 'center',
+    display: 'flex',
+    gap: space['--ult-space-4'],
+    justifyContent: 'space-between',
+    paddingBlock: space['--ult-space-2'],
+    paddingInlineEnd: space['--ult-space-2'],
+    paddingInlineStart: space['--ult-space-5'],
+  },
+  label: {
+    alignItems: 'center',
+    color: color['--ult-color-text-muted'],
+    display: 'flex',
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-2'],
+    gap: space['--ult-space-4'],
+    minInlineSize: 0,
+    overflowWrap: 'anywhere',
+  },
+  glyph: { color: color['--ult-color-text-subtle'], display: 'flex', flexShrink: 0, fontSize: text['--ult-text-3'] },
+  onCard: { backgroundColor: 'transparent', borderRadius: 0, borderWidth: 0 },
   code: {
     paddingBlock: space['--ult-space-7'],
     paddingInlineEnd: space['--ult-space-12'],
@@ -112,8 +135,43 @@ function Code({ children }: ComponentProps<'code'>) {
     </UltimaCode>
   );
 }
-/** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
-export function Fence({ code, disabled, lang, wrap = true }: { code: string; disabled?: boolean; lang?: string; wrap?: boolean }) {
+const FILE_LABEL = /[./]/;
+
+/**
+ * A `title` labels the block: a Card with the label and copy button over numbered lines. Without one
+ * it is the plain block with a floating copy button (docs/spec/ultima.md, Authoring).
+ */
+export function Fence({
+  code,
+  disabled,
+  lang,
+  title,
+  wrap = true,
+}: {
+  code: string;
+  disabled?: boolean;
+  lang?: string;
+  title?: string;
+  wrap?: boolean;
+}) {
+  if (title) {
+    const Glyph = FILE_LABEL.test(title) ? FileCodeIcon : TerminalIcon;
+    return (
+      <Card.Root style={styles.labelled}>
+        <div {...stylex.props(styles.head)}>
+          <span {...stylex.props(styles.label)}>
+            <span aria-hidden {...stylex.props(styles.glyph)}>
+              <Glyph />
+            </span>
+            {title}
+          </span>
+          <CopyButton disabled={disabled} text={code} ariaLabel={`Copy ${title}`} />
+        </div>
+        <Separator />
+        <HighlightedCode code={code} lang={lang} lineNumbers style={styles.onCard} />
+      </Card.Root>
+    );
+  }
   return (
     <div {...stylex.props(styles.fence)}>
       <HighlightedCode code={code} lang={lang} style={[styles.code, !wrap && styles.scrollingCode]} tabIndex={wrap ? undefined : 0} />
@@ -121,8 +179,9 @@ export function Fence({ code, disabled, lang, wrap = true }: { code: string; dis
     </div>
   );
 }
+/** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
 function Pre({ children }: ComponentProps<'pre'>) {
-  const nested = isValidElement<{ children?: ReactNode; className?: string }>(
+  const nested = isValidElement<{ children?: ReactNode; className?: string; title?: string }>(
     children,
   )
     ? children
@@ -131,6 +190,7 @@ function Pre({ children }: ComponentProps<'pre'>) {
     <Fence
       code={nodeText(nested ? nested.props.children : children)}
       lang={fenceLanguage(nested?.props.className)}
+      title={nested?.props.title}
     />
   );
 }

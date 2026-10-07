@@ -8,7 +8,7 @@ import { Callout } from '../foundation';
 
 ## Install
 
-```bash
+```bash title="Terminal"
 npm i -D ultima-design
 npx ultima-design install
 ```
@@ -32,7 +32,7 @@ npx ultima-design install
 
 One step to copy:
 
-```bash
+```bash title="Terminal"
 npx --no-install ultima-design doctor
 npx --no-install ultima-design check
 ```
@@ -43,13 +43,13 @@ Both commands gate: any nonzero exit fails the job. `doctor` runs first so a bro
 
 You can install the consumer skill through [skills.sh](https://skills.sh/docs):
 
-```bash
+```bash title="Terminal"
 npx skills add frankieramirez/ultima --skill ultima-design
 ```
 
 Or add the Ultima marketplace in Claude Code:
 
-```text
+```text title="Claude Code"
 /plugin marketplace add frankieramirez/ultima
 /plugin install ultima-design@ultima
 ```
