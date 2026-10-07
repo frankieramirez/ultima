@@ -377,6 +377,7 @@ export function SiteSearch({ style }: { style?: StyleXStyles }) {
     setAnnouncement((current) => (current === result ? `${result}${WORD_JOINER}` : result));
   };
   const onInputKeyDown = (event: ReactKeyboardEvent<HTMLInputElement> & { preventBaseUIHandler: () => void }) => {
+    if (event.nativeEvent.isComposing) return;
     if (event.key !== 'Enter' || !(event.ctrlKey || event.metaKey)) return;
     event.preventBaseUIHandler();
     event.preventDefault();

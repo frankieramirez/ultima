@@ -104,6 +104,22 @@ test('Ctrl Enter copies the install command, keeps the palette open and announce
   expect(write).toHaveBeenCalledTimes(2);
 });
 
+test('Ctrl Enter that confirms an IME composition copies nothing', async () => {
+  await page.viewport(1440, 900);
+  const write = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
+  const { screen } = await mount();
+  const { dialog, input } = await openSearch(screen, 'button');
+  await expect.element(dialog.getByRole('option', { name: /^Button A button/ })).toBeVisible();
+  const event = new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, isComposing: true, bubbles: true, cancelable: true });
+  // A composing keydown reports keyCode 229, which is what Base UI checks.
+  for (const key of ['keyCode', 'which']) Object.defineProperty(event, key, { value: 229 });
+  input.element().dispatchEvent(event);
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  expect(write).not.toHaveBeenCalled();
+  expect(event.defaultPrevented).toBe(false);
+  await expect.element(dialog).toBeVisible();
+});
+
 test('opening an element goes to its web-component section and lands in Recent', async () => {
   const { router, screen } = await mount('/install');
   const { dialog } = await openSearch(screen, 'ult-button');
