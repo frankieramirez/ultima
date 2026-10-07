@@ -13,6 +13,7 @@ export type SourceKind =
   | 'react-component'
   | 'react-helper'
   | 'element'
+  | 'block'
   // The docs application: chrome, demos and executable MDX pages.
   | 'docs'
   | 'demo'
@@ -29,7 +30,7 @@ export type SourceKind =
   | 'app'
   | 'stylesheet';
 
-export const PRODUCTION_KINDS: readonly SourceKind[] = ['token-source', 'react-component', 'react-helper', 'element'];
+export const PRODUCTION_KINDS: readonly SourceKind[] = ['token-source', 'react-component', 'react-helper', 'element', 'block'];
 export const DOCS_KINDS: readonly SourceKind[] = ['docs', 'demo', 'content'];
 
 export type Classified = { path: string; kind: SourceKind };

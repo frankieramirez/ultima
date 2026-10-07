@@ -13,23 +13,29 @@ export const STAGED_INVENTORIES = [
   { directory: 'packages/ui/src/lib', extension: '.ts', destination: 'lib', type: 'registry:lib', item: 'lib' },
 ] as const;
 
+export const BLOCK_INVENTORY = { directory: 'packages/blocks/src', destination: 'components', type: 'registry:component' } as const;
+
 export type StagedSource = {
   /** Repository path of the authored file. */
   source: string;
-  /** The registry item it installs as. A component file is its own item. */
+  /** The registry item it installs as. A component file is its own item; a block's files share its item. */
   item: string;
   /** Path under `registry/`, as the item's `files[].path` names it. */
   staged: string;
   type: string;
+  /** Block files only: where shadcn writes the file, under the consumer's components alias. */
+  target?: string;
 };
 
 /** The items the build describes, in `registry.json` order, and where each one's files come from. */
-export type PlannedItem = { name: string; from: 'staged' | 'setup' | 'artifact' | 'element' };
+export type PlannedItem = { name: string; from: 'staged' | 'block' | 'setup' | 'artifact' | 'element' };
 
 /** Checks every segment, so the exclusion holds even if the listing is widened to walk subdirectories. */
 export function isExcluded(relativePath: string): boolean {
   return relativePath.split('/').some((segment) => NEVER_STAGE.has(segment) || /\.test\.tsx?$/.test(segment));
 }
+
+const entryFirst = (entry: string) => (a: string, b: string) => Number(b === entry) - Number(a === entry) || a.localeCompare(b);
 
 /** Every staged source file, and any two that would land on one staged path. */
 export function stagedSources(files: Files): { sources: StagedSource[]; collisions: { source: string; staged: string; with: string }[] } {
@@ -52,6 +58,19 @@ export function stagedSources(files: Files): { sources: StagedSource[]; collisio
       taken.set(staged, source);
       const item = 'item' in inventory ? inventory.item : name.replace(/\.tsx?$/, '');
       sources.push({ source, item, staged, type: inventory.type });
+    }
+  }
+  const blocks = (files.list(BLOCK_INVENTORY.directory) ?? []).filter((entry) => entry.directory && !isExcluded(entry.name));
+  for (const { name: block } of blocks.sort((a, b) => a.name.localeCompare(b.name))) {
+    const directory = `${BLOCK_INVENTORY.directory}/${block}`;
+    const names = (files.list(directory) ?? [])
+      .filter((file) => !file.directory && file.name.endsWith('.tsx') && !isExcluded(file.name))
+      .map((file) => file.name)
+      .sort(entryFirst(`${block}.tsx`));
+    for (const name of names) {
+      const source = `${directory}/${name}`;
+      const staged = `ultima/${BLOCK_INVENTORY.destination}/${block}/${name}`;
+      sources.push({ source, item: block, staged, type: BLOCK_INVENTORY.type, target: `@components/${block}/${name}` });
     }
   }
   return { sources, collisions };
@@ -81,12 +100,14 @@ export function stagedTarget(specifier: string, sources: StagedSource[]): Staged
  * build writes each through its own path; a descriptor the plan never names is metadata no build uses.
  */
 export function registryPlan(sources: StagedSource[], elements: string[]): PlannedItem[] {
-  const staged = [...new Set(sources.map((source) => source.item))];
+  const blocks = [...new Set(sources.filter((source) => source.type === BLOCK_INVENTORY.type).map((source) => source.item))];
+  const staged = [...new Set(sources.map((source) => source.item))].filter((name) => !blocks.includes(name));
   const shared = staged.filter((name) => name === 'tokens' || name === 'lib').sort((a, b) => (a === 'tokens' ? -1 : b === 'tokens' ? 1 : 0));
   const components = staged.filter((name) => name !== 'tokens' && name !== 'lib');
   return [
     ...shared.map((name): PlannedItem => ({ name, from: 'staged' })),
     ...components.map((name): PlannedItem => ({ name, from: 'staged' })),
+    ...blocks.map((name): PlannedItem => ({ name, from: 'block' })),
     { name: 'setup-vite', from: 'setup' },
     { name: 'setup-next', from: 'setup' },
     { name: 'tokens-css', from: 'artifact' },

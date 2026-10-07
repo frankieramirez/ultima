@@ -249,12 +249,13 @@ test('the mode control switches the theme', async () => {
   );
 });
 
-test('the article trail is a Breadcrumb landmark that links the section and marks the page current', async () => {
+test('a redesigned foundation page leads with its running head and carries no trail', async () => {
   const install = await mount('/install');
-  const installTrail = install.container.querySelector('nav[aria-label="Breadcrumb"]')!;
-  expect(installTrail.querySelector('[aria-current="page"]')?.textContent).toBe('Install');
-  await install.unmount();
+  await expect.element(install.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
+  expect(install.container.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
+});
 
+test('the article trail is a Breadcrumb landmark that links the section and marks the page current', async () => {
   const tokens = await mount('/tokens');
   const tokensTrail = tokens.container.querySelector('nav[aria-label="Breadcrumb"]')!;
   const docsLink = tokensTrail.querySelector('a[href="/install"]')!;

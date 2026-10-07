@@ -88,6 +88,8 @@ export const POLICY: DependencyPolicy = {
       zag: { categories: ['zag-react', 'zag-machine', 'zag-companion'], items: ZAG_REACT_ITEMS },
     },
     element: { runtime: { categories: ['styling', 'zag-vanilla', 'zag-machine'] } },
+    // Base UI for the `Form` docs/spec/ultima.md#forms names, which ships no item of its own.
+    block: { runtime: { categories: ['react', 'styling', 'base-ui'] } },
   },
 };
 

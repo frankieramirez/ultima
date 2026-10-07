@@ -1,6 +1,6 @@
-import { Prose } from '../prose';
+import { Foundation } from '../foundation';
 import Content from '../content/cli.mdx';
 
 export function CliPage() {
-  return <Prose Content={Content} breadcrumb={[{ label: 'CLI' }]} />;
+  return <Foundation Content={Content} labels={['ultima-design', '6 commands']} />;
 }
