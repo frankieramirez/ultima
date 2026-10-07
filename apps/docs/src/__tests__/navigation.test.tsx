@@ -574,3 +574,84 @@ for (const width of [390, 1024, 1440]) {
     expect(logo()).toBe(before);
   });
 }
+
+test('below the breakpoint the header holds the wordmark at the start and search and the menu at the end', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/components/button');
+  await expect.element(screen.getByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
+
+  const header = screen.getByRole('banner').element();
+  const logo = screen.getByRole('link', { name: 'Ultima home' }).element().getBoundingClientRect();
+  const search = screen.getByRole('button', { name: 'Search Ultima' }).element().getBoundingClientRect();
+  const trigger = screen.getByRole('button', { name: 'Toggle navigation' }).element().getBoundingClientRect();
+  expect(logo.left).toBe(20);
+  expect(search.left).toBeGreaterThan(logo.right);
+  expect(trigger.left).toBeGreaterThanOrEqual(search.right);
+  expect(390 - trigger.right).toBe(8);
+  expect(header.querySelector('a[href*="github"]')!.getBoundingClientRect().width).toBe(0);
+  expect(header.querySelector('[role="separator"]')!.getBoundingClientRect().width).toBe(390);
+});
+
+test('the open drawer leads with the wordmark and its close control over a rule', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/components/button');
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle navigation' }).element());
+  const popup = screen.getByRole('dialog', { name: MENU_LABEL }).element();
+  await expect.poll(() => popup.contains(document.activeElement)).toBe(true);
+
+  await expect.poll(() => popup.getBoundingClientRect().left).toBe(0);
+  const wordmark = popup.querySelector('img')!.getBoundingClientRect();
+  const close = screen.getByRole('button', { name: 'Close navigation' }).element().getBoundingClientRect();
+  const rule = popup.querySelector('[role="separator"]')!.getBoundingClientRect();
+  expect(wordmark.left).toBe(20);
+  expect(Math.abs(wordmark.top + wordmark.height / 2 - (close.top + close.height / 2))).toBeLessThanOrEqual(1);
+  expect(rule.top).toBeGreaterThanOrEqual(close.bottom);
+  expect(rule.width).toBe(popup.getBoundingClientRect().width - 1);
+  expect(menuLink('Button').element().getBoundingClientRect().top).toBeGreaterThan(rule.bottom);
+});
+
+for (const theme of ['dark', 'light'] as const)
+  for (const width of [390, 768, 1280, 1440, 1920])
+    test(`the chrome never scrolls sideways at ${width}px in ${theme}`, async () => {
+      await page.viewport(width, 844);
+      onTestFinished(() => page.viewport(1280, 720));
+      prefer(theme);
+      for (const path of ['/components/button', '/install']) {
+        const screen = await mount(path);
+        await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+        expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
+        await screen.unmount();
+      }
+    });
+
+for (const theme of ['dark', 'light'] as const)
+  for (const width of [1440, 390])
+    for (const path of ['/components/button', '/install'])
+      test(`${path} passes axe at ${width}px in ${theme}`, async () => {
+        await page.viewport(width, 844);
+        onTestFinished(() => page.viewport(1280, 720));
+        prefer(theme);
+        const screen = await mount(path);
+        await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+
+        const results = await axe.run(document.body);
+        expect(results.violations.map(describe)).toEqual([]);
+      });
+
+for (const width of [390, 768, 1440])
+  for (const path of ['/install', '/theme-studio'])
+    test(`${path} keeps a GitHub link at ${width}px`, async () => {
+      await page.viewport(width, 844);
+      onTestFinished(() => page.viewport(1280, 720));
+      const screen = await mount(path);
+      await expect.element(screen.getByRole('heading', { level: 1 }).first()).toBeVisible();
+
+      const github = [...document.querySelectorAll<HTMLElement>('a[href="https://github.com/frankieramirez/ultima"]')].filter(
+        (link) => link.checkVisibility() && link.getBoundingClientRect().width > 0,
+      );
+      expect(github.length).toBeGreaterThan(0);
+      for (const link of github) expect(link.getBoundingClientRect().right).toBeLessThanOrEqual(width);
+      expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
+    });

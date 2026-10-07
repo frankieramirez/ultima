@@ -23,6 +23,10 @@ const styles = stylex.create({
     paddingBlockStart: space['--ult-space-12'],
     paddingBlockEnd: space['--ult-space-12'],
   },
+  edgePinned: {
+    paddingInlineEnd: { default: null, [breakpoints.INDEX]: shell.edge },
+    paddingInlineStart: { default: null, [breakpoints.INDEX]: space['--ult-space-11'] },
+  },
   breadcrumb: {
     fontFamily: font['--ult-font-mono'],
     letterSpacing: font['--ult-font-tracking-wide'],
@@ -39,16 +43,16 @@ const styles = stylex.create({
   },
   grid: {
     display: 'grid',
-    gap: space['--ult-space-9'],
+    gap: { default: space['--ult-space-9'], [breakpoints.INDEX]: space['--ult-space-11'] },
     gridTemplateColumns: {
       default: 'minmax(0, 1fr)',
-      [breakpoints.INDEX]: 'minmax(0, 1fr) 11.5rem',
+      [breakpoints.INDEX]: 'minmax(0, 1fr) 12.25rem',
     },
   },
   article: {
     minInlineSize: 0,
     inlineSize: '100%',
-    maxInlineSize: '40rem',
+    maxInlineSize: '52.5rem',
     marginInline: 'auto',
   },
   fullWidth: {
@@ -69,6 +73,7 @@ const styles = stylex.create({
   indexContents: {
     minInlineSize: 0,
     paddingBlockStart: space['--ult-space-4'],
+    paddingInlineStart: space['--ult-space-4'],
   },
   indexLabel: {
     fontFamily: 'Space Grotesk, Figtree, sans-serif',
@@ -184,7 +189,7 @@ export function DocumentLayout({
   const { pathname } = useLocation();
 
   return (
-    <main {...stylex.props(layoutStyles.gutter, styles.main)}>
+    <main {...stylex.props(layoutStyles.gutter, styles.main, index && styles.edgePinned)}>
       <div {...stylex.props(styles.grid, !index && styles.fullWidth)}>
         <article
           ref={article}
