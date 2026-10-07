@@ -112,6 +112,24 @@ describe.each(blocks)('$title', (block) => {
   });
 });
 
+test("a block file's copy button sits above its numbered source and copies that file", async () => {
+  const copied: string[] = [];
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: (value: string) => (copied.push(value), Promise.resolve()) },
+  });
+  const [block] = blocks;
+  const [file] = block!.files;
+  const screen = await renderWithRouter(<BlockPage block={block!} />);
+  await userEvent.click(screen.getByRole('tab', { name: 'Code' }));
+  const copy = screen.getByRole('button', { name: `Copy ${file}` });
+  await expect.element(copy).toBeVisible();
+  const box = copy.element().getBoundingClientRect();
+  expect(copy.element().contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2))).toBe(true);
+  await userEvent.click(copy);
+  expect(copied).toEqual([raw[`../../../../packages/blocks/src/${block!.id}/${file}`]]);
+});
+
 test('a source that fails to load says so rather than loading forever', async () => {
   const [block] = blocks;
   const screen = await renderWithRouter(<BlockPage block={{ ...block!, files: [...block!.files, 'missing.tsx'] }} />);
