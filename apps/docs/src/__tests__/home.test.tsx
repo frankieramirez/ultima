@@ -6,6 +6,7 @@ import { render } from 'vitest-browser-react';
 
 import { GROUPS, components } from '../components';
 import { INSTALL_TARGETS } from '../install-commands';
+import { BAND_INK } from '../landing-scales';
 import { countInWords } from '../routes/home';
 import { routeTree } from '../router';
 
@@ -34,11 +35,34 @@ test('every count the landing shows matches the catalogue', async () => {
   }
 });
 
-test('countInWords spells the catalogue count', () => {
+function contrast(a: string, b: string) {
+  const luminance = (hex: string) => {
+    const [r, g, bl] = [1, 3, 5].map((i) => {
+      const v = Number.parseInt(hex.slice(i, i + 2), 16) / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * bl!;
+  };
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi! + 0.05) / (lo! + 0.05);
+}
+
+test('each band name clears 3:1 and its small text 4.5:1 on the band ground', () => {
+  for (const scale of palette) {
+    for (const mode of ['dark', 'light'] as const) {
+      const steps = scale[mode];
+      const ink = BAND_INK[scale.name][mode];
+      expect(contrast(steps[ink.name - 1]!, steps[1]!), `${scale.name} ${mode} name`).toBeGreaterThanOrEqual(3);
+      expect(contrast(steps[ink.muted - 1]!, steps[1]!), `${scale.name} ${mode} small text`).toBeGreaterThanOrEqual(4.5);
+    }
+  }
+});
+
+test('countInWords writes the catalogue count in words, and in digits past ninety-nine', () => {
   expect(countInWords(54)).toBe('Fifty-four');
   expect(countInWords(60)).toBe('Sixty');
   expect(countInWords(13)).toBe('Thirteen');
-  expect(() => countInWords(100)).toThrow(RangeError);
+  expect(countInWords(100)).toBe('100');
 });
 
 test('the hero copies the default target pair, which the guide documents', async () => {

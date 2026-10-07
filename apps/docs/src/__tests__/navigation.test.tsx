@@ -463,6 +463,9 @@ for (const theme of ['dark', 'light'] as const) {
     prefer(theme);
     const screen = await mount('/');
     await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+    // The hero's entrance fades in on the first mount in a file; axe reads its end state.
+    const entrances = document.getAnimations().filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity);
+    await Promise.all(entrances.map((animation) => animation.finished));
 
     const results = await axe.run(document.body);
     expect(results.violations.map(describe)).toEqual([]);

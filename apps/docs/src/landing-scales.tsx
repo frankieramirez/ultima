@@ -1,6 +1,6 @@
 import { ArrowRightIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
-import { palette, type ScaleName } from '@ultima/tokens';
+import { palette, type ColorMode, type ScaleName } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Badge, Button, Card } from '@ultima/ui';
 import type { CSSProperties } from 'react';
@@ -79,13 +79,21 @@ const styles = stylex.create({
   step: { blockSize: '100%', borderRadius: 0, inlineSize: '100%' },
 });
 
-const STEPS = {
-  ground: 2,
-  rule: 4,
-  text: 12,
-  muted: { dark: 11, light: 12 },
-  name: { dark: 9, light: 11 },
-} as const;
+const STEPS = { ground: 2, rule: 4, text: 12 } as const;
+
+/**
+ * Per scale and mode, the step for the band's name (large text, 3:1 on step 2) and for its small muted
+ * text (4.5:1 on step 2). The frames draw names in step 9 and mithril's in 12; light ember's 9 measures
+ * 1.92 and its 11 measures 3.01, so it takes 11 for the name and 12 for small text.
+ */
+export const BAND_INK: Record<ScaleName, Record<ColorMode, { name: number; muted: number }>> = {
+  mithril: { dark: { name: 12, muted: 11 }, light: { name: 12, muted: 11 } },
+  arcane: { dark: { name: 9, muted: 11 }, light: { name: 9, muted: 11 } },
+  mana: { dark: { name: 9, muted: 11 }, light: { name: 9, muted: 11 } },
+  verdant: { dark: { name: 9, muted: 11 }, light: { name: 9, muted: 11 } },
+  ember: { dark: { name: 9, muted: 11 }, light: { name: 11, muted: 12 } },
+  ruin: { dark: { name: 9, muted: 11 }, light: { name: 9, muted: 11 } },
+};
 
 const ink = stylex.create({ name: (value: string) => ({ color: value }) });
 
@@ -101,9 +109,9 @@ export function ScaleBands({ onPreviewAccent }: { onPreviewAccent: () => void })
           '--ult-color-surface-raised': step(STEPS.ground),
           '--ult-color-border': step(STEPS.rule),
           '--ult-color-text': step(STEPS.text),
-          '--ult-color-text-muted': step(STEPS.muted[mode]),
+          '--ult-color-text-muted': step(BAND_INK[scale.name][mode].muted),
         } as CSSProperties;
-        const name = step(scale.name === 'mithril' ? STEPS.text : STEPS.name[mode]);
+        const name = step(BAND_INK[scale.name][mode].name);
         return (
           <li key={scale.name} style={boundary}>
             <Card.Root style={styles.band}>

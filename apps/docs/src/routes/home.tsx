@@ -27,7 +27,7 @@ const ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'
 const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
 
 export function countInWords(count: number): string {
-  if (!Number.isInteger(count) || count < 1 || count > 99) throw new RangeError(`countInWords spells 1 to 99, not ${count}`);
+  if (!Number.isInteger(count) || count < 1 || count > 99) return String(count);
   const words = count < 20 ? ONES[count]! : `${TENS[Math.floor(count / 10)]}${count % 10 ? `-${ONES[count % 10]}` : ''}`;
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
