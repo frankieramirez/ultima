@@ -184,7 +184,7 @@ The docs chrome's own theme, `site`: Neutral with Ultima's mana on action and hi
 
 ## Studio chrome
 
-The theme studio's own application surface: the workbench sub-bar, editor rail, group headers, shuffle bar, validation and inspector panels, and the preview scaffold. It is not page layout, so it may paint surfaces, but every keyboard-reachable control in it is a catalogue component. It wears the site theme in the site's current color mode, like the shared site header above it. The draft theme applies only inside the preview panes, whose boundary is also the per-pane portal container.
+The theme studio's own application surface: the workbench sub-bar, editor rail, group headers, shuffle bar, checks footer, draft report, inspector panel, and the preview scaffold. The redesign frames call the editor rail a recipe rail; the spec keeps editor rail, because **Recipe** already has a meaning. It is not page layout, so it may paint surfaces, but every keyboard-reachable control in it is a catalogue component. It wears the site theme in the site's current color mode, like the shared site header above it. The draft theme applies only inside the preview panes, whose boundary is also the per-pane portal container.
 
 ## Preview canvas
 
