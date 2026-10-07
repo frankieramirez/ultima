@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import { placeLabels } from '../anatomy';
+import { AnatomyPanel } from '../anatomy-panel';
 import { hasAnatomyTab } from '../component-page';
 import { components } from '../components';
 import SidebarCollapse from '../demos/sidebar/collapse';
@@ -255,6 +256,24 @@ test('a popup Base UI has yet to position never grows the stage', async () => {
   const demo = stage.firstElementChild as HTMLElement;
   const { paddingTop, paddingBottom } = getComputedStyle(stage);
   expect(Math.round(stage.clientHeight)).toBe(Math.round(demo.offsetHeight + parseFloat(paddingTop) + parseFloat(paddingBottom)));
+});
+
+test('a part that stays past the stage foot is still measured once the settling frames run out', async () => {
+  function Stranded() {
+    return (
+      <>
+        <span data-anatomy-item="stranded" data-anatomy-part="Root">
+          Root
+        </span>
+        <span data-anatomy-item="stranded" data-anatomy-part="Popup" style={{ position: 'absolute', insetBlockStart: '300%' }}>
+          Popup
+        </span>
+      </>
+    );
+  }
+  const screen = await render(<AnatomyPanel item="stranded" component={Stranded} />);
+  const legend = screen.getByRole('list', { name: 'Parts' });
+  await expect.poll(() => [...legend.element().querySelectorAll('li')].map((entry) => entry.childNodes[1]?.textContent)).toEqual(['Root', 'Popup']);
 });
 
 test('the stage gives back the room a stack took once a new width no longer needs it', async () => {

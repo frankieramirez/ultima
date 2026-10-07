@@ -1,6 +1,6 @@
 import { ArchiveIcon, LinkSimpleIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
-import { color, text } from '@ultima/tokens/tokens.stylex';
+import { text } from '@ultima/tokens/tokens.stylex';
 import { ContextMenu, DropdownMenu } from '@ultima/ui';
 import { useRef } from 'react';
 
@@ -14,10 +14,6 @@ const styles = stylex.create({
   target: {
     fontSize: text['--ult-text-4'],
     userSelect: 'none',
-  },
-  hint: {
-    color: color['--ult-color-text-subtle'],
-    fontSize: text['--ult-text-2'],
   },
 });
 
@@ -35,7 +31,6 @@ export default function ContextMenuAnatomy() {
       <ContextMenu.Root>
         <ContextMenu.Trigger ref={trigger} {...stylex.props(styles.target)}>
           Quarterly report
-          <span {...stylex.props(styles.hint)}> — right click me</span>
         </ContextMenu.Trigger>
       </ContextMenu.Root>
       <DropdownMenu.Root open modal={false}>
