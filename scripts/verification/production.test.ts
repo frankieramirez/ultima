@@ -18,6 +18,7 @@ import { type BuildManifest, createManifest, hashBuild, manifestProblems, readMa
 import { BUILD_MANIFEST, productionAdapter } from '../../apps/docs/scripts/production-adapter.ts';
 import { SOFTWARE_WEBGL_ARGS, type Cell, type RunnerOptions, installedAxe, runCells } from '../../apps/docs/scripts/production-runner.ts';
 import { internal, launchChromium, selectCells } from '../../apps/docs/scripts/production.ts';
+import { docsRoutes, routeShadows } from '../../apps/docs/scripts/route-shadows.ts';
 import { IDENTITY_PATH, isNavigation, resolveFile, startStaticServer, verifyIdentity } from '../../apps/docs/scripts/static-server.ts';
 import { productionPlan, runStandalone } from '../../apps/docs/scripts/test-production.ts';
 import { loadCatalogue } from '../catalogue/model.ts';
@@ -137,6 +138,22 @@ describe('the static server', () => {
     }
   });
 
+  test('resolves an extensionless path to its .html file the way Cloudflare Pages does', async () => {
+    const root = site({ 'gallery.html': '<!doctype html><title>Gallery</title>' });
+    const server = await startStaticServer({ root, nonce: 'n', manifestDigest: 'd' });
+    const html = { headers: { accept: 'text/html' } };
+    try {
+      for (const path of ['/gallery', '/gallery/', '/gallery.html']) {
+        const response = await fetch(`${server.url}${path}`, html);
+        assert.equal(response.status, 200, path);
+        assert.match(await response.text(), /<title>Gallery<\/title>/, `${path} serves gallery.html`);
+      }
+      assert.match(await (await fetch(`${server.url}/elsewhere`, html)).text(), /<div id="root">/, 'a path with no file still gets the shell');
+    } finally {
+      await server.close();
+    }
+  });
+
   test('refuses paths that escape the build root, encoded or through a symlink', async () => {
     const root = site();
     const outside = mkdtempSync(join(scratch, 'outside-'));
@@ -156,6 +173,39 @@ describe('the static server', () => {
     } finally {
       await server.close();
     }
+  });
+});
+
+describe('route shadows', () => {
+  test('a static file or redirect at a docs route path is reported, and nothing else is', () => {
+    const root = site({
+      'elements.html': '<!doctype html>',
+      'components/button/index.html': '<!doctype html>',
+      '_redirects': '# moved\n/install /elsewhere 301\n/old.html /gallery 301\n',
+      'gallery.html': '<!doctype html>',
+      'elements/ultima.js': '',
+      'components/button.png': '',
+      '_headers': '',
+    });
+    const shadows = routeShadows(root, ['/', '/install', '/elements', '/components/$name']);
+    assert.deepEqual(
+      shadows.map(({ source, route }) => `${source} ${route}`).sort(),
+      ['_redirects /install', 'components/button/index.html /components/$name', 'elements.html /elements'],
+    );
+  });
+
+  test('the docs public directory shadows no docs route', () => {
+    const routes = docsRoutes();
+    assert.ok(routes.includes('/elements'), 'the router declares /elements');
+    assert.deepEqual(routeShadows(join(ROOT, 'apps/docs/public'), routes), []);
+  });
+
+  test('the old /elements.html link redirects to the gallery', () => {
+    const publicRoot = join(ROOT, 'apps/docs/public');
+    const rules = readFileSync(join(publicRoot, '_redirects'), 'utf8').split('\n').map((line) => line.trim().split(/\s+/));
+    const rule = rules.find(([from]) => from === '/elements.html');
+    assert.deepEqual(rule, ['/elements.html', '/elements-gallery', '301']);
+    assert.equal(resolveFile(publicRoot, '/elements-gallery'), join(publicRoot, 'elements-gallery.html'));
   });
 });
 

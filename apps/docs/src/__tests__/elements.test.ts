@@ -1,7 +1,7 @@
 import axe from 'axe-core';
 import { afterEach, expect, test } from 'vitest';
 
-const FIXTURE_URL = '/elements.html';
+const FIXTURE_URL = '/elements-gallery.html';
 const ELEMENTS = [
   'ult-badge',
   'ult-button',
