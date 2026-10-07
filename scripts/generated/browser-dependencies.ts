@@ -122,11 +122,17 @@ export const blocksOptimizerInclude = [
   "@base-ui/react/button",
   "@base-ui/react/checkbox",
   "@base-ui/react/checkbox-group",
+  "@base-ui/react/dialog",
   "@base-ui/react/field",
   "@base-ui/react/form",
   "@base-ui/react/input",
   "@base-ui/react/separator",
+  "@base-ui/react/tabs",
+  "@base-ui/react/toggle",
+  "@base-ui/react/toggle-group",
+  "@base-ui/react/use-render",
   "@stylexjs/stylex",
   "axe-core",
+  "react-dom",
   "vitest-browser-react"
 ];
