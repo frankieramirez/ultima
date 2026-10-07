@@ -388,6 +388,11 @@ export const items: Record<string, RegistryItemDescription> = {
       "https://ultima.systems/r/tokens-css.json"
     ]
   },
+  "settings-01": {
+    "title": "Settings 01",
+    "description": "A Notifications settings page: a settings sidebar beside one form of switches, push choices and quiet hours, with an unsaved-changes bar.",
+    "docs": "Render it from a route of your own: import { Settings01 } from '@/components/settings-01/settings-01'. Saving only moves the current values into the block's saved state; persist them from the submit handler in notifications-form.tsx. The sidebar links have no handler of their own."
+  },
   "sign-in-01": {
     "title": "Sign-in 01",
     "description": "A split sign-in screen: a brand panel with a customer story beside an email and password form.",

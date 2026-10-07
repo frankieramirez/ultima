@@ -16,6 +16,9 @@ export function Region() {
     <section className="region" {...stylex.props(styles.region)}>
       <Button>{scaleLinear().domain([0, 1]).range([0, 1])(1)}</Button>
       <button type="button">Raw</button>
+      <div>
+        <option>Loose</option>
+      </div>
     </section>
   );
 }

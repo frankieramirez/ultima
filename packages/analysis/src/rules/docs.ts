@@ -289,6 +289,15 @@ export function renderOwner(element: ts.Node, attribute: Parsed['attributes'][nu
   return undefined;
 }
 
+function jsxParentTag(element: ts.Node): string | undefined {
+  for (let parent = element.parent; parent; parent = parent.parent) {
+    if (ts.isJsxElement(parent)) return tagText(parent.openingElement.tagName);
+    if (passes(parent) || ts.isCallExpression(parent) || (ts.isJsxExpression(parent) && !ts.isJsxAttribute(parent.parent))) continue;
+    return undefined;
+  }
+  return undefined;
+}
+
 export function attributeNamed(attributes: ts.JsxAttributes, name: string): ts.JsxAttribute | undefined {
   return attributes.properties.find((property): property is ts.JsxAttribute => ts.isJsxAttribute(property) && ts.isIdentifier(property.name) && property.name.text === name);
 }
@@ -325,6 +334,8 @@ function checkControls(
   const nativeControl = (node: ts.Node, tagNode: ts.Node, tag: string) => {
     const owner = renderOwner(node, attribute);
     if (owner && isUltimaComponent(context, parsed, owner, imports)) return;
+    const select = tag === 'option' ? jsxParentTag(node) : undefined;
+    if (select && isUltimaComponent(context, parsed, select, imports)) return;
     const symbol = topLevelName(node);
     context.report({
       ruleId: 'ULT-DOCS-002',

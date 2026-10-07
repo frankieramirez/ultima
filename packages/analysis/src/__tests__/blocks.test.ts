@@ -18,7 +18,7 @@ describe('block files', () => {
     );
   });
 
-  test('reject a raw value, className, paint, a native control and an engine import', () => {
+  test('reject a raw value, className, paint, a native control, an option outside a kit select and an engine import', () => {
     const report = run({ [FILE]: fixture('blocks/invalid.tsx') });
     assert.deepEqual(
       located(report, FILE).map(({ ruleId, line, column, target }) => [ruleId, line, column, target]),
@@ -28,12 +28,13 @@ describe('block files', () => {
         ['ULT-DOCS-001', 10, 22, 'backgroundColor'],
         ['ULT-STYLE-001', 16, 14, 'className'],
         ['ULT-DOCS-002', 18, 8, '<button>'],
+        ['ULT-DOCS-002', 20, 10, '<option>'],
       ],
     );
     assert.equal(report.status, 'violations');
   });
 
-  test('pass tokens, StyleX, catalogue components, render composition and their own glyphs', () => {
+  test("pass tokens, StyleX, catalogue components, render composition, a kit select's options and their own glyphs", () => {
     const report = run({ [FILE]: fixture('blocks/valid.tsx') });
     assert.deepEqual(located(report, FILE), []);
     assert.equal(report.status, 'clean');

@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button } from '@ultima/ui/button';
+import { NativeSelect } from '@ultima/ui/native-select';
 
 import { GitHubGlyph } from './icons';
 
@@ -30,6 +31,13 @@ export function Region() {
         <GitHubGlyph />
         More
       </Button>
+      <NativeSelect.Root>
+        <NativeSelect.Select aria-label="Zone">
+          {['UTC', 'Europe/Oslo'].map((zone) => (
+            <option key={zone}>{zone}</option>
+          ))}
+        </NativeSelect.Select>
+      </NativeSelect.Root>
     </section>
   );
 }
