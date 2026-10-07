@@ -5,6 +5,8 @@ import { blocks } from './generated/blocks';
 
 export type NavLink = {
   label: string;
+  /** The catalogue number, for a component or a block page. */
+  number?: string;
   to: NonNullable<LinkProps['to']>;
   params?: Record<string, string>;
 };
@@ -31,12 +33,12 @@ export const pages = [
 /** The catalogue groups in display order, each alphabetical. */
 export const componentGroups: NavGroup[] = GROUPS.map(({ id, label }) => ({
   label,
-  links: componentsInGroup(id).map(({ name, item }) => ({ label: name, to: '/components/$name', params: { name: item } })),
+  links: componentsInGroup(id).map(({ name, item, number }) => ({ label: name, number, to: '/components/$name', params: { name: item } })),
 }));
 
 export const componentPages: NavLink[] = componentGroups.flatMap(({ links }) => links);
 
-export const blockPages: NavLink[] = blocks.map(({ id, title }) => ({ label: title, to: '/blocks/$id', params: { id } }));
+export const blockPages: NavLink[] = blocks.map(({ id, title, number }) => ({ label: title, number, to: '/blocks/$id', params: { id } }));
 
 const SECTIONS: string[] = ['/components', '/blocks'];
 

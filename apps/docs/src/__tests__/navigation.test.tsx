@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import { GROUPS, components } from '../components';
+import { blocks } from '../generated/blocks';
 import { componentPages, pages } from '../navigation';
 import { router, routeTree } from '../router';
 const NAVIGATION_STORAGE_KEY = 'ultima-navigation';
@@ -46,6 +47,9 @@ const menu = () => page.getByRole('navigation', { name: MENU_LABEL, exact: true 
 // Folded, the panel is `visibility: hidden` and so out of the accessibility tree a role query reads.
 const menuPanel = () => document.querySelector<HTMLElement>(`nav[aria-label="${MENU_LABEL}"]`)!;
 const menuLink = (name: string) => menu().getByRole('link', { name, exact: true });
+/** A menu link's text without its `aria-hidden` catalogue number. */
+const plainText = (link: Element) =>
+  Array.from(link.childNodes, (node) => (node instanceof Element && node.hasAttribute('aria-hidden') ? '' : node.textContent)).join('');
 
 beforeEach(() => {
   localStorage.removeItem(NAVIGATION_STORAGE_KEY);
@@ -65,6 +69,50 @@ test('the menu derives its entries from the catalogue, by group and then alphabe
   expect(componentPages.map(({ params }) => params?.name)).toEqual(expected.map(({ item }) => item));
 });
 
+test('component and block entries lead with their generated number, and foundation pages show the name alone', async () => {
+  await mount('/install');
+  await expect.element(menuLink('Button')).toBeVisible();
+  const numbered = [
+    ...components.map(({ name, number }) => ({ name, number })),
+    ...blocks.map(({ title, number }) => ({ name: title, number })),
+  ];
+  for (const { name, number } of numbered) {
+    const link = menuLink(name).element();
+    const shown = link.querySelector('[aria-hidden="true"]');
+    expect(shown?.textContent, name).toBe(number);
+    expect(link.firstElementChild, name).toBe(shown);
+    expect(plainText(link), name).toBe(name);
+    expect(getComputedStyle(shown!).fontFamily).not.toBe(getComputedStyle(link).fontFamily);
+    expect(getComputedStyle(shown!).color).not.toBe(getComputedStyle(link).color);
+  }
+  for (const { label } of pages.filter(({ to }) => to !== '/components' && to !== '/blocks')) {
+    const link = menuLink(label).element();
+    expect(link.querySelector('[aria-hidden]'), label).toBeNull();
+    expect(link.textContent).toBe(label);
+  }
+});
+
+test('the open drawer fits every numbered entry at 390 without overflow', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+
+  const screen = await mount('/components/button');
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle navigation' }).element());
+  const popup = screen.getByRole('dialog', { name: MENU_LABEL });
+  await expect.element(popup).toBeVisible();
+
+  const panel = popup.element().getBoundingClientRect();
+  const links = Array.from(popup.element().querySelectorAll('a'));
+  expect(links.length).toBe(pages.length - 2 + components.length + blocks.length);
+  const oneLine = links.find((link) => link.textContent === 'Home')!.getBoundingClientRect().height;
+  for (const link of links) {
+    const box = link.getBoundingClientRect();
+    expect(link.scrollWidth, plainText(link)).toBeLessThanOrEqual(link.clientWidth);
+    expect(box.right, plainText(link)).toBeLessThanOrEqual(panel.right);
+    expect(box.height, plainText(link)).toBe(oneLine);
+  }
+});
+
 test('the Components entry holds the six groups as labelled sub-lists that never collapse', async () => {
   await mount('/components/sidebar');
   await expect.element(menuLink('Sidebar')).toBeVisible();
@@ -72,7 +120,7 @@ test('the Components entry holds the six groups as labelled sub-lists that never
   expect(labels).toEqual(['Forms', 'Overlays', 'Data display', 'Navigation', 'Feedback', 'Layout']);
   const navigation = menu().getByRole('heading', { name: 'Navigation', level: 4 }).element();
   const list = navigation.nextElementSibling as HTMLElement;
-  expect(Array.from(list.querySelectorAll('a'), (link) => link.textContent)).toEqual([
+  expect(Array.from(list.querySelectorAll('a'), plainText)).toEqual([
     'Breadcrumb',
     'Navigation Menu',
     'Pagination',
