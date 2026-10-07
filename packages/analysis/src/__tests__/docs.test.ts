@@ -178,7 +178,7 @@ describe('the docs rules over the repository', () => {
     assert.deepEqual(report.diagnostics, []);
     const raw = run({ [EXCEPTIONS]: NO_EXCEPTIONS });
     const count = (ruleId: string) => raw.diagnostics.filter((diagnostic) => diagnostic.ruleId === ruleId).length;
-    assert.equal(count('ULT-DOCS-001'), 35);
+    assert.equal(count('ULT-DOCS-001'), 36);
     assert.equal(count('ULT-DOCS-002'), 1);
     assert.equal(count('ULT-DOCS-REVIEW-001'), 1);
     assert.equal(count('ULT-ANALYSIS-001'), 0);
@@ -251,20 +251,14 @@ describe('the old scanner against ULT-DOCS-001', () => {
       'apps/docs/src/landing-scales.tsx borderInlineWidth',
       'apps/docs/src/landing-scales.tsx borderRadius',
       'apps/docs/src/landing-scales.tsx borderRadius',
-      'apps/docs/src/routes/components.tsx backgroundColor',
-      'apps/docs/src/routes/components.tsx backgroundColor',
-      'apps/docs/src/routes/components.tsx borderRadius',
-      'apps/docs/src/routes/components.tsx borderRadius',
-      'apps/docs/src/routes/components.tsx borderWidth',
-      'apps/docs/src/routes/components.tsx borderWidth',
       'apps/docs/src/routes/home.tsx borderInlineWidth',
       'apps/docs/src/routes/home.tsx borderRadius',
       'apps/docs/src/routes/home.tsx borderRadius',
+      'apps/docs/src/site-search.tsx backgroundColor',
       'apps/docs/src/site-search.tsx borderRadius',
       'apps/docs/src/site-search.tsx borderRadius',
       'apps/docs/src/site-search.tsx borderRadius',
-      'apps/docs/src/site-search.tsx borderRadius',
-      'apps/docs/src/site-search.tsx borderRadius',
+      'apps/docs/src/site-search.tsx borderWidth',
       'apps/docs/src/site-search.tsx borderWidth',
       'apps/docs/src/theme-studio-preview.tsx backgroundColor',
     ]);
