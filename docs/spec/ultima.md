@@ -2200,6 +2200,36 @@ The page therefore does not try. No iframe, no screenshot, and no second demo mo
 
 **Below the breakpoint the page's own demos change shape too**, since every Sidebar on the page reads the same viewport: each demo stage holds its trigger and the panel moves into an overlay. That is the component being honest rather than a defect, and the page's prose accounts for it rather than the demos working around it.
 
+### Global search
+
+Decided on [Decide what global search indexes and offers](https://github.com/frankieramirez/ultima/issues/648) on [Map: Incorporate the October 2026 ultima.pen redesign](https://github.com/frankieramirez/ultima/issues/641). The frames are `tZy0v` (empty query), `CekIX` (results for "button" with the preview pane) and `t1aKl` (mobile). `site-search.tsx` stays the one palette, opened by the header trigger and Ctrl K or ⌘ K, and it remains an instance of the command-dialog recipe on Command's page.
+
+**The index has four sources, all generated or already route data.** Components come from `generated/catalogue.ts`, elements from `generated/elements.ts`, blocks from `generated/blocks.ts`, and pages from `navigation.ts`. No search index is authored by hand, so a new item becomes searchable when `pnpm catalogue:generate` runs. Two kinds stay out. Recipes have no page of their own, only a section on a component page, and the generator does not emit them to the docs. Doc headings would need an MDX heading extractor the frames do not ask for. Either can join later as a new generated source.
+
+**Results group in a fixed order: Components, Elements, Blocks, Pages.** A group with no match is hidden, and no group is capped. Component and block rows show their [catalogue number](#identity-and-numbering). Element rows show their root tag, `<ult-button>`. The Appearance actions (dark, light, system) show on an empty query and when the query matches their labels.
+
+**Matching is a case-insensitive substring test, and ranking is three tiers.** Every kind matches on its title. Elements also match on their tags, and components and blocks also match on their description. Within a group, a title that starts with the query ranks first, a title that contains it second, and a match only in a tag or description third. Ties break by catalogue number, or alphabetically for pages. No fuzzy scorer is used, so a result's position follows from the rule and a test can assert it. The site ranks the rows itself and hands Command the ordered groups, rather than relying on the primitive's default Collator filter.
+
+**"Blocks using X" is derived.** When the top component result appears in any block's Built from, a group titled "Blocks using <name>" follows Components and lists those blocks in number order. The data is the inverse of the Built from lists in `generated/blocks.ts`, so the block descriptor gains no field.
+
+**The empty query shows three groups.** Go to lists Components, Blocks, Install, CLI, Tokens and Theme Studio. Recent follows, then Appearance.
+
+**Recent holds the last five destinations opened from the palette.** It stores what was opened, never what was typed, as kind and id pairs under one key, `ultima-search-recent`, read and written through `storage.ts`. An entry whose item has left the index is dropped on read. When storage is blocked or empty, the Recent group is absent. There is no Clear control.
+
+**Where each result goes.** A component opens `/components/<item>`, a block `/blocks/<id>`, and a page its route. An element opens `/components/<item>#web-component`, the link the element index already uses. Opening a result closes the palette and records it in Recent.
+
+**The preview pane shows at the `DESKTOP` breakpoint, and only for a highlighted catalogue item.** A page or an Appearance action shows no pane.
+
+- A component shows its name, number and description, its `catalogue-preview.tsx` demo rendered live, and its install command with a copy button. The demo sits inside a Neutral theme boundary that is also its portal container, as [The docs site theme](#the-docs-site-theme) requires of every demo.
+- A block shows its name, number, description and Built from, the lazy `inert` thumbnail iframe the `/blocks` index uses, and its install command with a copy button.
+- An element shows its tag, its tag family, and its `example` markup. It renders nothing live.
+
+**Ctrl ↵, or ⌘ ↵ on a Mac, copies the highlighted item's install command**, `npx shadcn add @ultima/<id>`, for a component or a block. The palette stays open, and a polite live region announces the copy. The footer shows the hint only while the highlighted row has a command. Elements install through the `/elements/ultima.js` bundle and pages install nothing, so neither has a copy action. Plain ↵ opens the row.
+
+**Below the `WIDE` breakpoint the palette fills the screen.** A Cancel button replaces Esc, and the preview pane and the copy shortcut are absent. Sources, grouping, ranking and Recent are unchanged.
+
+**What the build proves**, in `apps/docs/src/__tests__/`: the ranking tiers and group order for a fixed query, including a description-only match; the "Blocks using" group's derivation; Recent's write, the stale-entry drop and the blocked-storage fallback; the copy shortcut's clipboard write and announcement; and axe on the open palette in both modes at both widths.
+
 ### Authoring
 
 Content pages are MDX, one file per page under `apps/docs/src/content/`, compiled by `@mdx-js/rollup`. A single `Prose` component carries every typography style; MDX files hold no styling of their own. Routes stay code-based: a page module's default export is a component like any other, so MDX costs one plugin and no routing change.
