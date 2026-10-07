@@ -93,6 +93,14 @@ describe('ULT-IMPORT-001', () => {
     ]);
   });
 
+  test('lets only the named importer reach a design asset under ultima-assets/', () => {
+    const field = 'apps/docs/src/dot-field.tsx';
+    assert.match(source(field), /from '\.\.\/\.\.\/\.\.\/ultima-assets\/shaders\/dot-field\.glsl\?raw'/);
+    assert.deepEqual(withImport(field, "import again from '../../../ultima-assets/shaders/dot-field.glsl?raw';"), []);
+    only(CHROME, "import shader from '../../../ultima-assets/shaders/dot-field.glsl?raw';", 'ULT-IMPORT-001');
+    only(field, "import logo from '../../../ultima-assets/ultima-logo-dark.png';", 'ULT-IMPORT-001');
+  });
+
   test('lets the docs application read generated wiring, recipe engines and icon sets', () => {
     for (const statement of [
       "import { setupItems } from '../../../registry/items.config';",

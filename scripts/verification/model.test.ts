@@ -163,6 +163,11 @@ describe('bindings', () => {
 describe('records', () => {
   test('an unknown field', () => expectDiagnostic(withScenario({ owner: 'me' }), 'invalid-record', 'scenario.owner is not a known field'));
 
+  test('a capability removal outside the production target, or of an unknown capability', () => {
+    expectDiagnostic(withScenario({ targets: [{ target: 'ui-vitest', variants: 'default', remove: ['webgl'] }] }), 'invalid-record', 'remove is for the production target only');
+    expectDiagnostic(withScenario({ targets: [{ target: 'production', variants: 'default', remove: ['camera'] }] }), 'invalid-record', 'remove[0] is not one of webgl');
+  });
+
   test('text that is not JSON', () => expectDiagnostic({ [SCENARIO]: '{ id: button.press }' }, 'not-json', SCENARIO));
 
   test('an ID that disagrees with its path', () => expectDiagnostic(withScenario({ id: 'button.click' }), 'id-mismatch', 'makes it "button.press"'));

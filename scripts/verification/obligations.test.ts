@@ -1,6 +1,6 @@
 /**
  * The required production obligations, written out independently of the records they protect: the
- * 28-cell matrix under Validation and coverage in docs/spec/agent-infrastructure.md. A contract test,
+ * 40-cell matrix under Validation and coverage in docs/spec/agent-infrastructure.md. A contract test,
  * never a discovery source. Removing a target, a light/narrow variant or a binding, repeating a variant,
  * or skipping or doubling a cell fails here; a new required scenario joins the cases on its own.
  */
@@ -16,19 +16,25 @@ import { casesFor, loadVerification, repositoryFiles } from './model.ts';
 import { judge } from './run.ts';
 
 const BOTH = ['dark', 'light'];
-const MATRIX: [scenario: string, viewports: string[], motion: string][] = [
-  ['site-navigation.route-and-mode', ['desktop', 'narrow'], 'normal'],
-  ['catalogue.filter-and-demo', ['desktop', 'narrow'], 'normal'],
-  ['dialog.keyboard-dismissal', ['desktop', 'narrow'], 'normal'],
-  ['theme-studio.draft-history', ['desktop', 'narrow'], 'normal'],
-  ['theme-studio.pane-boundaries', ['desktop'], 'normal'],
-  ['elements.fixture-interactions', ['desktop', 'narrow'], 'normal'],
-  ['motion.reduced-loop', ['desktop', 'narrow'], 'reduced'],
-  ['site-discovery.discovery-surface', ['desktop'], 'normal'],
+const MATRIX: [scenario: string, viewports: string[], motion: string[]][] = [
+  ['site-navigation.route-and-mode', ['desktop', 'narrow'], ['normal']],
+  ['catalogue.filter-and-demo', ['desktop', 'narrow'], ['normal']],
+  ['dialog.keyboard-dismissal', ['desktop', 'narrow'], ['normal']],
+  ['theme-studio.draft-history', ['desktop', 'narrow'], ['normal']],
+  ['theme-studio.pane-boundaries', ['desktop'], ['normal']],
+  ['elements.fixture-interactions', ['desktop', 'narrow'], ['normal']],
+  ['motion.reduced-loop', ['desktop', 'narrow'], ['reduced']],
+  ['site-discovery.discovery-surface', ['desktop'], ['normal']],
+  ['site-landing.dot-field', ['desktop', 'narrow'], ['normal', 'reduced']],
+  ['site-landing.without-field', ['desktop', 'narrow'], ['normal']],
 ];
 
-const REQUIRED = MATRIX.flatMap(([scenario, viewports, motion]) =>
-  BOTH.flatMap((mode) => viewports.map((viewport) => `${scenario}@production[mode=${mode},viewport=${viewport},motion=${motion}]`)),
+const CAPABILITY_REMOVALS: Record<string, string[]> = { 'site-landing.without-field': ['webgl'] };
+
+const REQUIRED = MATRIX.flatMap(([scenario, viewports, motions]) =>
+  BOTH.flatMap((mode) =>
+    viewports.flatMap((viewport) => motions.map((motion) => `${scenario}@production[mode=${mode},viewport=${viewport},motion=${motion}]`)),
+  ),
 );
 
 function coverage(actual: string[]) {
@@ -94,12 +100,13 @@ function registered(declared: Declared) {
 }
 
 const complete = (): Declared =>
-  Object.fromEntries(MATRIX.map(([id, viewports, motion]) => [id, { mode: [...BOTH], viewport: [...viewports], motion: [motion] }]));
+  Object.fromEntries(MATRIX.map(([id, viewports, motions]) => [id, { mode: [...BOTH], viewport: [...viewports], motion: [...motions] }]));
 
 describe('the production obligations', () => {
-  test('are 28 cells across eight scenarios', () => {
-    assert.equal(REQUIRED.length, 28);
-    assert.equal(new Set(REQUIRED).size, 28);
+  test('are 40 cells across ten scenarios', () => {
+    assert.equal(MATRIX.length, 10);
+    assert.equal(REQUIRED.length, 40);
+    assert.equal(new Set(REQUIRED).size, 40);
   });
 
   test('a model registering the whole matrix covers exactly those cells', () => {
@@ -193,7 +200,7 @@ describe('the repository', () => {
   const files = repositoryFiles(root);
   const { model, diagnostics } = loadVerification(files, loadCatalogue(diskFiles(root)).catalogue);
 
-  test('registers exactly the 28 required production cells', () => {
+  test('registers exactly the 40 required production cells', () => {
     assert.deepEqual(diagnostics, []);
     assert.deepEqual(coverage(casesFor(model, 'production')), { missing: [], unexpected: [] });
   });
@@ -203,6 +210,15 @@ describe('the repository', () => {
       const slot = model.scenarios.find((s) => s.id === id)?.bindings.find((b) => b.target === 'production');
       assert.equal(slot?.binding?.path, `apps/docs/tests/production/${id}.ts`, id);
     }
+  });
+
+  test('removes a platform capability only where a scenario declares it', () => {
+    const removed = Object.fromEntries(
+      model.scenarios
+        .map((s) => [s.id, s.targets.find((t) => t.target === 'production')?.remove ?? []] as const)
+        .filter(([, capabilities]) => capabilities.length > 0),
+    );
+    assert.deepEqual(removed, CAPABILITY_REMOVALS);
   });
 
   test('keeps each pilot scenario registered in its existing Vitest suite', () => {

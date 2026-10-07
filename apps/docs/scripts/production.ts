@@ -24,7 +24,7 @@ import { loadCatalogue } from '../../../scripts/catalogue/model.ts';
 import { loadVerification, repositoryFiles } from '../../../scripts/verification/model.ts';
 import type { ProductionScenario, ProductionVariant } from '../../../scripts/verification/production.ts';
 import { manifestProblems, readManifest } from './build-manifest.ts';
-import { type Cell, LIMITS, type Limits, type RunnerResult, installedAxe, runCells } from './production-runner.ts';
+import { CHROMIUM_ARGS, type Cell, LIMITS, type Limits, type RunnerResult, installedAxe, runCells } from './production-runner.ts';
 import { type StaticServer, startStaticServer, verifyIdentity } from './static-server.ts';
 
 export const REPORT_VERSION = 1;
@@ -107,14 +107,15 @@ export async function selectCells(source: string, expected: string[]): Promise<{
       problems.push(`${caseId}: ${slot.binding.path} registers ${loaded.id}@${loaded.target}, not ${scenario.id}@production`);
       continue;
     }
-    cells.push({ caseId, scenario: scenario.id, variant: variant as ProductionVariant, binding: slot.binding.path, run: loaded.run });
+    const remove = scenario.targets.find((target) => target.target === 'production')?.remove ?? [];
+    cells.push({ caseId, scenario: scenario.id, variant: variant as ProductionVariant, binding: slot.binding.path, run: loaded.run, remove });
   }
   return { cells, problems };
 }
 
 export async function launchChromium() {
   const { chromium } = await import('playwright');
-  return chromium.launch({ headless: true });
+  return chromium.launch({ headless: true, args: CHROMIUM_ARGS });
 }
 
 /** One production pass inside a verification run. Never throws; the report says what happened. */
@@ -178,6 +179,7 @@ export async function internal(options: InternalOptions): Promise<{ exit: number
       relativeTo: options.relativeTo,
       revision: options.revision,
       launch: options.launch ?? launchChromium,
+      launchArgs: options.launch ? [] : CHROMIUM_ARGS,
       axeSource: installedAxe(),
       limits: { ...limits, matrixMs: Math.min(limits.matrixMs, options.deadlineMs) },
       signal: options.signal,

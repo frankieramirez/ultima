@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "site-landing.dot-field",
+  "title": "The dot field loads after the hero, paints behind it and settles, or holds still under reduced motion",
+  "intent": "The hero heading and install commands show while the field is still loading; the field's canvas is decorative, sized to the hero and inside the page; under normal motion it runs, paints dots other than the ground and settles, and under reduced motion it is one still frame.",
+  "contract": "docs/spec/ultima.md#landing-motion",
+  "aliases": ["landing", "hero background", "dots", "webgl", "shader", "reduced motion", "still frame", "settle"],
+  "items": [],
+  "sources": ["apps/docs/src/dot-field.tsx", "apps/docs/src/routes/home.tsx"],
+  "demos": [],
+  "routes": [
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/install" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/" }
+  ],
+  "fixtures": [],
+  "preconditions": [
+    "The browser has WebGL, on Chromium's software renderer, enabled at launch.",
+    "The browser context reports the variant's motion preference before the page loads."
+  ],
+  "steps": [
+    { "action": "Load /install and let the browser go idle.", "expect": "The field's chunk is never requested." },
+    { "action": "Load /.", "expect": "The hero heading and the install commands are visible while the hero's data-field is still loading, the hero paints before the field draws, the heading is the largest contentful paint, and the field arrives as one chunk under 6 KB gzipped." },
+    { "action": "Read the field's canvas.", "expect": "It is aria-hidden, out of the tab order, takes no pointer events, matches the hero's box and leaves the document within the one-pixel fit." },
+    { "action": "Under normal motion, wait for the field.", "expect": "data-field reaches running, the hero paints pixels other than the surface colour, and data-field reaches settled within a bounded wait." },
+    { "action": "Under reduced motion, wait for the field and capture the hero twice, a frame apart.", "expect": "data-field is still, and the two captures are identical." }
+  ],
+  "targets": [
+    { "target": "production", "variants": { "mode": ["dark", "light"], "viewport": ["desktop", "narrow"], "motion": ["normal", "reduced"] } }
+  ]
+}

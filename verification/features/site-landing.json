@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "site-landing",
+  "title": "Landing dot field",
+  "summary": "The landing hero's dot field: Pen's shader drawn in WebGL behind the copy, coloured from the site tokens, loaded after the hero paints, settling after five seconds of drift, still under reduced motion and absent without WebGL.",
+  "knowledge": "proposed",
+  "aliases": ["landing", "home", "hero", "dot field", "dots", "shader", "webgl", "canvas", "background", "glow", "drift"],
+  "contract": "docs/spec/ultima.md#landing-motion",
+  "items": [],
+  "sourceRoots": [
+    "apps/docs/src/dot-field.tsx",
+    "apps/docs/src/routes/home.tsx"
+  ],
+  "extraDependencies": [],
+  "supporting": [
+    {
+      "path": "apps/docs/src/__tests__/dot-field.test.tsx",
+      "reason": "Proves the token mapping, the shader defaults, the settle timing, the frame cap and each stop condition on a controlled clock."
+    }
+  ]
+}

@@ -3,7 +3,8 @@
  * server (MIME, navigation fallback, asset 404s, traversal, identity), the build manifest (stale,
  * foreign and edited builds), and the runner's cells: readiness, axe, fresh storage, a production-only
  * stylesheet defect, a missing asset, an element fixture's definitions and bundle, the clipboard grant,
- * a stuck readiness condition, a deadline, cancellation, a browser that cannot launch and an absent case.
+ * a stuck readiness condition, a deadline, cancellation, a browser that cannot launch, a declared capability
+ * removal and an absent case.
  * The real matrix runs through `pnpm --filter @ultima/docs test:production`.
  */
 import assert from 'node:assert/strict';
@@ -15,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 import { type BuildManifest, createManifest, hashBuild, manifestProblems, readManifest } from '../../apps/docs/scripts/build-manifest.ts';
 import { BUILD_MANIFEST, productionAdapter } from '../../apps/docs/scripts/production-adapter.ts';
-import { type Cell, type RunnerOptions, installedAxe, runCells } from '../../apps/docs/scripts/production-runner.ts';
+import { CHROMIUM_ARGS, type Cell, type RunnerOptions, installedAxe, runCells } from '../../apps/docs/scripts/production-runner.ts';
 import { internal, launchChromium, selectCells } from '../../apps/docs/scripts/production.ts';
 import { IDENTITY_PATH, isNavigation, resolveFile, startStaticServer, verifyIdentity } from '../../apps/docs/scripts/static-server.ts';
 import { productionPlan, runStandalone } from '../../apps/docs/scripts/test-production.ts';
@@ -345,6 +346,26 @@ describe('the runner', () => {
     assert.deepEqual(result.cells[1]?.permissions, []);
   });
 
+  test('a declared removal takes WebGL away before load in that cell only, and the run records the software renderer', async () => {
+    const webgl = (expected: boolean): Cell['run'] => async ({ page, open, axe }) => {
+      await open('/');
+      const found = await page.evaluate(() => ({
+        canvas: document.createElement('canvas').getContext('webgl') !== null,
+        offscreen: new OffscreenCanvas(1, 1).getContext('webgl2') !== null,
+        flat: document.createElement('canvas').getContext('2d') !== null,
+      }));
+      assert.deepEqual(found, { canvas: expected, offscreen: expected, flat: true });
+      await axe('probed');
+    };
+    const without = { ...cell('fixture.without@production[a]', webgl(false)), remove: ['webgl' as const] };
+    const { result } = await runOn(site(), [without, cell('fixture.with@production[b]', webgl(true))], { launchArgs: CHROMIUM_ARGS });
+    assert.equal(result.cells[0]?.status, 'passed', result.cells[0]?.failure?.message ?? '');
+    assert.equal(result.cells[1]?.status, 'passed', result.cells[1]?.failure?.message ?? '');
+    assert.deepEqual(result.cells.map((c) => c.removed), [['webgl'], []]);
+    assert.deepEqual(result.browser.args, CHROMIUM_ARGS);
+    assert.match(result.browser.webgl ?? '', /SwiftShader/, 'WebGL runs on the software renderer enabled at launch');
+  });
+
   test('a browser that cannot launch leaves every cell incomplete with the reason', async () => {
     const launch = async () => {
       const { chromium } = await import('playwright');
@@ -374,6 +395,13 @@ describe('the internal entry', () => {
     const { cells, problems } = await selectCells(ROOT, [...cases, 'dialog.keyboard-dismissal@production[mode=sepia]']);
     assert.deepEqual(cells.map((c) => [c.caseId, c.binding, c.variant.viewport]), [[cases[0], 'apps/docs/tests/production/dialog.keyboard-dismissal.ts', 'desktop']]);
     assert.match(problems.join(), /mode=sepia\] is expected but no registered production scenario declares it/);
+  });
+
+  test('carries the capability a scenario declares removed onto each of its cells', async () => {
+    const landing = (id: string, mode: string) => `site-landing.${id}@production[mode=${mode},viewport=narrow,motion=normal]`;
+    const { cells, problems } = await selectCells(ROOT, [landing('without-field', 'dark'), landing('dot-field', 'light')]);
+    assert.deepEqual(problems, []);
+    assert.deepEqual(cells.map((c) => [c.scenario, c.remove]), [['site-landing.without-field', ['webgl']], ['site-landing.dot-field', []]]);
   });
 
   test('refuses a stale or foreign manifest before any browser starts', async () => {
@@ -411,7 +439,7 @@ describe('the adapter and the standalone command', () => {
     const files = repositoryFiles(ROOT);
     const { model } = loadVerification(files, loadCatalogue(files).catalogue);
     assert.deepEqual(plan.checks[1]?.cases, casesFor(model, 'production'), 'the plan runs exactly what the joined model registers');
-    assert.equal(plan.checks[1]?.cases.length, 28);
+    assert.equal(plan.checks[1]?.cases.length, 40);
   });
 
   test('the standalone command takes only its own options and prints help', async () => {
