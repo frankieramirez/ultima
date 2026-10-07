@@ -40,7 +40,7 @@ The generated companion to the tokens CSS export: every semantic token with its 
 
 ## Agent guide
 
-The generated Markdown at `/llms.txt`: Ultima's principles, conventions, component list, and token names at one fetchable URL. It is how a consumer's agent learns the system, because Ultima installs no documentation into a consumer's repository.
+The generated Markdown at `/llms.txt`: Ultima's principles, conventions, component list, and token names at one fetchable URL. It is how a consumer's agent learns the system: shared conventions stay hosted there. The consumer CLI manages only the `ultima-design` pointer skill and hook entries, which point at it and write no root documents. A `DESIGN.md` reaches a consumer's root only through an explicit install of a Theme Studio theme item or the `design-md` item, and the consumer owns and updates it with their theme.
 
 ## Agent surface
 
