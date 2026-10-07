@@ -402,6 +402,16 @@ async function verifyStamps() {
   }
 }
 
+function verifyUnmarked(directory = PUBLIC_DIR) {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) verifyUnmarked(path);
+    else if (readFileSync(path).includes('data-anatomy')) {
+      throw new Error(`${path.slice(root.length + 1)} carries a data-anatomy mark; Anatomy marks only what the docs imports`);
+    }
+  }
+}
+
 requireTokenExports();
 requireElementExports();
 const staged = await stageSources();
@@ -411,5 +421,6 @@ shadcnBuild();
 publishExports(staged);
 publishElements();
 await verifyStamps();
+verifyUnmarked();
 
 console.log(`registry: built ${registry.items.length} items into apps/docs/public/r`);

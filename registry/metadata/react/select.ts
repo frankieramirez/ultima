@@ -13,4 +13,5 @@ export default {
   order: 12,
   group: 'forms',
   replaces: { elements: ['select'], roles: ['listbox'] },
+  elementless: ['Root', 'Portal'],
 } satisfies ReactDescriptor;

@@ -12,4 +12,5 @@ export default {
   order: 10,
   group: 'overlays',
   replaces: { elements: ['dialog'], roles: ['dialog'] },
+  elementless: ['Root', 'Portal'],
 } satisfies ReactDescriptor;
