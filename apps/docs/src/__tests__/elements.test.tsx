@@ -70,7 +70,7 @@ test('every element page carries the section under its own heading', async () =>
     expect(screen.container.textContent).toContain(`<${element.tag}>`);
     const index = document.querySelector('aside[aria-label="On this page"]');
     expect(index?.textContent).toContain('Web component');
-    screen.unmount();
+    await screen.unmount();
   }
 });
 

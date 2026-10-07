@@ -40,7 +40,8 @@ export default defineConfig({
     browser: {
       enabled: true,
       headless: true,
-      provider: playwright(),
+      // The old headless shell crashes its compositor during screenshot capture.
+      provider: playwright({ launchOptions: { channel: 'chromium' } }),
       instances: [{ browser: 'chromium' }],
       viewport: { width: 1280, height: 720 },
       commands: {

@@ -22,14 +22,14 @@ for (const { pathname, title } of siteDiscovery.titles) {
   test(`a direct load of ${pathname} titles the document ${title}`, async () => {
     const view = await mount(pathname);
     await expect.poll(() => document.title).toBe(title);
-    view.unmount();
+    await view.unmount();
   });
 }
 
 test('an unknown path takes the not-found title', async () => {
   const view = await mount('/not-in-the-grimoire');
   await expect.poll(() => document.title).toBe(siteDiscovery.notFound.title);
-  view.unmount();
+  await view.unmount();
 });
 
 test(
@@ -57,6 +57,6 @@ test(
     const sitemap = await (await fetch('/sitemap.xml')).text();
     expect(sitemap).toContain(`<loc>${siteDiscovery.origin}/rationale</loc>`);
 
-    view.unmount();
+    await view.unmount();
   }),
 );

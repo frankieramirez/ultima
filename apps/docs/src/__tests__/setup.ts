@@ -1,12 +1,13 @@
-import { afterAll } from 'vitest';
+import { afterEach } from 'vitest';
 import { cdp } from 'vitest/browser';
+import { cleanup } from 'vitest-browser-react';
 
 /**
- * Chromium holds each finished file's shared memory in TMPDIR (Playwright launches it with
- * --disable-dev-shm-usage) until the renderer collects garbage. A full TMPDIR fails the next file's
- * iframe load, which Vitest reports as "Cannot connect to the iframe". Vitest collects only once
- * TMPDIR has under 4 GB free, so every file collects on its way out.
+ * Detached preview frames retain Chromium resources until the renderer collects garbage. Files
+ * that repeatedly mount the full docs app can exhaust its module loaders before the file ends.
+ * Unmount first, then collect after each test so the next preview can load.
  */
-afterAll(async () => {
+afterEach(async () => {
+  await cleanup();
   await cdp().send('HeapProfiler.collectGarbage');
 });
