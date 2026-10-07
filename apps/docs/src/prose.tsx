@@ -113,11 +113,11 @@ function Code({ children }: ComponentProps<'code'>) {
   );
 }
 /** MDX nests the fence's text in a `code` element; Code writes that pair itself, so unwrap it. */
-export function Fence({ code, lang, wrap = true }: { code: string; lang?: string; wrap?: boolean }) {
+export function Fence({ code, disabled, lang, wrap = true }: { code: string; disabled?: boolean; lang?: string; wrap?: boolean }) {
   return (
     <div {...stylex.props(styles.fence)}>
       <HighlightedCode code={code} lang={lang} style={[styles.code, !wrap && styles.scrollingCode]} tabIndex={wrap ? undefined : 0} />
-      <CopyButton text={code} floating />
+      <CopyButton disabled={disabled} text={code} floating />
     </div>
   );
 }

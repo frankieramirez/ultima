@@ -14,7 +14,6 @@ import {
   type AccentFill,
   type DensityFactor,
   type MeasurePreset,
-  type PairingResult,
   type ResolvedDraft,
   type ScaleName,
   type ShapePreset,
@@ -589,7 +588,7 @@ function familyLabel(stack: string, presets: readonly { label: string; value: st
 function summarize(group: GroupId, draft: ThemeDraft): string {
   switch (group) {
     case 'color':
-      return `${optionLabel(ACCENT_FILL_OPTIONS, draft.accentFill ?? 'hue')} · ${draft.color.arcane.hue}°`;
+      return `${optionLabel(ACCENT_FILL_OPTIONS, draft.accentFill ?? 'hue')} · ${Math.round(draft.color.arcane.hue)}°`;
     case 'typography':
       return `${familyLabel(draft.typography.sans, SANS_PRESETS)} / ${familyLabel(draft.typography.mono, MONO_PRESETS)}`;
     case 'density':
@@ -609,7 +608,7 @@ export function ThemeStudioEditor({
   onGroupChange,
   onShuffleGroup,
   resolved,
-  results,
+  offenders,
   update,
   commit,
 }: {
@@ -618,26 +617,11 @@ export function ThemeStudioEditor({
   onGroupChange: (group: GroupLabel) => void;
   onShuffleGroup: (group: GroupId) => void;
   resolved: ResolvedDraft;
-  results: PairingResult[];
+  offenders: ModeOffenders;
   update: (edit: DraftEdit) => void;
   commit: (edit: DraftEdit) => void;
 }) {
   const [requestedToken, setRequestedToken] = useState<{ token: string; serial: number } | null>(null);
-  const offenders = useMemo<ModeOffenders>(() => {
-    const dark = new Set<string>();
-    const light = new Set<string>();
-    for (const result of results) {
-      if (!result.dark.pass) {
-        dark.add(result.foreground);
-        dark.add(result.background);
-      }
-      if (!result.light.pass) {
-        light.add(result.foreground);
-        light.add(result.background);
-      }
-    }
-    return { dark, light };
-  }, [results]);
 
   return (
     <>
