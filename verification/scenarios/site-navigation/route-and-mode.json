@@ -39,7 +39,7 @@
   ],
   "steps": [
     { "action": "Load /, /install and /components/button directly.", "expect": "Each shows its own level-one heading and fits the window width within one pixel. At desktop width the menu's Components entry holds the six catalogue groups as labelled sub-lists that do not collapse, and Button is its current page." },
-    { "action": "On /, follow the Installation guide link.", "expect": "The URL is /install, the heading is Install, and Documentation in the desktop header or --install in the narrow menu is the current page. The active desktop link has semibold accent text and a 2px underline in both modes." },
+    { "action": "On /, follow the Installation guide link.", "expect": "The URL is /install, the heading is Install, and Documentation in the desktop header or Install in the narrow menu is the current page. The active desktop link has semibold accent text and a 2px underline in both modes." },
     { "action": "Narrow only: focus Toggle navigation, press Enter, then press Escape.", "expect": "The Ultima menu opens with focus inside it, holding the same six group sub-lists, and Escape closes it with focus back on Toggle navigation." },
     { "action": "Follow the Tokens link: the header's at desktop width, the reopened menu's at narrow width.", "expect": "The URL is /tokens, the heading is Tokens, and the narrow menu has closed." },
     { "action": "Press the browser's Back twice, then Forward twice.", "expect": "The URL and heading walk /install, /, /install, /tokens, and Tokens is the current page again." },

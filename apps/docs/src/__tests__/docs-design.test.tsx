@@ -160,13 +160,10 @@ test('the chrome sits above scrolled tab labels', async () => {
     document.elementFromPoint(rect.left + 10, rect.top + 10)?.closest('header'),
   ).toBe(header);
   for (const group of menu.querySelectorAll('ul')) {
-    const labels = Array.from(
-      group.querySelectorAll('a'),
-      (link) => link.textContent?.trim() ?? '',
-    );
-    expect(labels.every((label) => /^--[a-z0-9]+(?:-[a-z0-9]+)*$/.test(label))).toBe(
-      true,
-    );
+    const links = Array.from(group.querySelectorAll('a'));
+    expect(links.every((link) => !link.hasAttribute('aria-label'))).toBe(true);
+    const labels = links.map((link) => link.textContent?.trim() ?? '');
+    expect(labels.every((label) => label.length > 0 && !label.startsWith('--'))).toBe(true);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b)));
   }
 });

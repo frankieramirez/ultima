@@ -102,9 +102,7 @@ function MenuList({ links }: { links: NavLink[] }) {
 function MenuLink({ link: { label, ...destination } }: { link: NavLink }) {
   return (
     <Sidebar.Item>
-      <Sidebar.Link aria-label={label} render={<Link {...destination} activeOptions={{ exact: true }} />}>
-        --{label.toLowerCase().replace(/\s+/g, '-')}
-      </Sidebar.Link>
+      <Sidebar.Link render={<Link {...destination} activeOptions={{ exact: true }} />}>{label}</Sidebar.Link>
     </Sidebar.Item>
   );
 }

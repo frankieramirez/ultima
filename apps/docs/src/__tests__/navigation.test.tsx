@@ -72,7 +72,7 @@ test('the Components entry holds the six groups as labelled sub-lists that never
   expect(labels).toEqual(['Forms', 'Overlays', 'Data display', 'Navigation', 'Feedback', 'Layout']);
   const navigation = menu().getByRole('heading', { name: 'Navigation', level: 4 }).element();
   const list = navigation.nextElementSibling as HTMLElement;
-  expect(Array.from(list.querySelectorAll('a'), (link) => link.getAttribute('aria-label'))).toEqual([
+  expect(Array.from(list.querySelectorAll('a'), (link) => link.textContent)).toEqual([
     'Breadcrumb',
     'Navigation Menu',
     'Pagination',
@@ -204,10 +204,11 @@ test.each(['dark', 'light'] as const)('the current header link has a clear under
   expect(getComputedStyle(current[0]!).color).toBe(activeColor);
 });
 
-test('Documentation links to installation while the sidebar uses the CSS variable label', async () => {
+test('Documentation links to installation while the sidebar shows the plain page name', async () => {
   const screen = await mount('/install');
   await expect.element(screen.getByRole('navigation', { name: 'Site', exact: true }).getByRole('link', { name: 'Documentation' })).toHaveAttribute('href', '/install');
-  expect(menuLink('Install').element().textContent).toBe('--install');
+  expect(menuLink('Install').element().textContent).toBe('Install');
+  expect(menuLink('Install').element()).not.toHaveAttribute('aria-label');
 });
 
 test('above the breakpoint the header carries the mode control and the footer hides its own', async () => {
