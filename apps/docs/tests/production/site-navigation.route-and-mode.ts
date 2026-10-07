@@ -11,17 +11,17 @@ import { productionScenario } from '../../../../scripts/verification/production.
 import { siteNavigation } from '../fixtures/site-navigation.ts';
 import { animationsSettle, assertColor, assertFits, focusSettlesInside, isFocused, siteColor } from '../support/production.ts';
 
-const { directLoads, componentLoad, homeLink, destination, menu, componentGroups, colorMode } = siteNavigation;
+const { directLoads, componentLoad, homeLink, destination, menu, menuSections, colorMode } = siteNavigation;
 
-async function assertGroupedMenu(page: Page, what: string) {
+async function assertFlatMenu(page: Page, what: string) {
   const nav = page.getByRole('navigation', { name: menu.name });
-  const labels = await nav.getByRole('heading', { level: 4 }).allTextContents();
-  assert.deepEqual(labels, [...componentGroups], `${what}: the Components entry's sub-lists`);
-  for (const label of componentGroups) {
-    const links = await nav.getByRole('heading', { level: 4, name: label, exact: true }).locator('xpath=following-sibling::ul[1]//a').count();
-    assert.ok(links > 0, `${what}: ${label} lists its components`);
-  }
-  assert.equal(await nav.locator('[aria-expanded]').count(), 0, `${what}: no group collapses`);
+  assert.deepEqual(await nav.getByRole('heading').allTextContents(), [...menuSections], `${what}: the menu's sections`);
+  const list = nav.getByRole('heading', { name: 'Components', exact: true }).locator('xpath=following-sibling::ul[1]');
+  assert.equal(await list.locator('ul').count(), 0, `${what}: Components holds no sub-lists`);
+  const numbers = await list.locator('a > [aria-hidden="true"]').allTextContents();
+  assert.ok(numbers.length > 0, `${what}: Components lists its entries`);
+  assert.deepEqual(numbers, numbers.map((_, index) => String(index + 1).padStart(3, '0')), `${what}: the components run in catalogue-number order`);
+  assert.equal(await nav.locator('[aria-expanded]').count(), 0, `${what}: nothing in the menu collapses`);
 }
 
 function heading(page: Page) {
@@ -74,7 +74,7 @@ export default productionScenario('site-navigation.route-and-mode', 'production'
   if (!narrow) {
     await open(componentLoad.pathname);
     await arrived(page, componentLoad.pathname, componentLoad.heading, `direct load of ${componentLoad.pathname}`);
-    await assertGroupedMenu(page, `direct load of ${componentLoad.pathname}`);
+    await assertFlatMenu(page, `direct load of ${componentLoad.pathname}`);
     await current(page, 'Ultima', componentLoad.heading);
   }
 
@@ -93,7 +93,7 @@ export default productionScenario('site-navigation.route-and-mode', 'production'
     await panel.waitFor({ state: 'visible' });
     await focusSettlesInside(page, panel, 'opening the menu from the keyboard moves focus into it');
     await current(page, 'Ultima', homeLink.heading);
-    await assertGroupedMenu(page, 'the open site menu');
+    await assertFlatMenu(page, 'the open site menu');
     await animationsSettle(panel, 'the menu finishes opening');
     await axe('open site menu');
     await page.keyboard.press('Escape');

@@ -2,7 +2,7 @@ import { docsStyles } from './docs-style';
 import { XIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { Link } from '@tanstack/react-router';
-import { font, space, text } from '@ultima/tokens/tokens.stylex';
+import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, ScrollArea, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
@@ -48,7 +48,12 @@ const styles = stylex.create({
     paddingInline: `calc(${shell.edge} - ${space['--ult-space-4']})`,
   },
   groupLabel: { fontFamily: font['--ult-font-mono'] },
-  subgroup: { paddingBlockEnd: 0, paddingInlineStart: space['--ult-space-4'] },
+  number: {
+    color: color['--ult-color-text-subtle'],
+    flexShrink: 0,
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-1'],
+  },
 });
 
 export function SiteMenu() {
@@ -72,13 +77,7 @@ export function SiteMenu() {
               {navigation.map((group) => (
                 <Sidebar.Group key={group.label}>
                   <Sidebar.GroupLabel style={styles.groupLabel}>{group.label}</Sidebar.GroupLabel>
-                  {group.links.length > 0 && <MenuList links={group.links} />}
-                  {group.groups?.map((subgroup) => (
-                    <Sidebar.Group key={subgroup.label} style={styles.subgroup}>
-                      <Sidebar.GroupLabel render={<h4 />}>{subgroup.label}</Sidebar.GroupLabel>
-                      <MenuList links={subgroup.links} />
-                    </Sidebar.Group>
-                  ))}
+                  <MenuList links={group.links} />
                 </Sidebar.Group>
               ))}
             </ScrollArea.Content>
@@ -99,11 +98,16 @@ function MenuList({ links }: { links: NavLink[] }) {
   );
 }
 
-function MenuLink({ link: { label, ...destination } }: { link: NavLink }) {
+function MenuLink({ link: { label, number, ...destination } }: { link: NavLink }) {
   return (
     <Sidebar.Item>
-      <Sidebar.Link aria-label={label} render={<Link {...destination} activeOptions={{ exact: true }} />}>
-        --{label.toLowerCase().replace(/\s+/g, '-')}
+      <Sidebar.Link render={<Link {...destination} activeOptions={{ exact: true }} />}>
+        {number && (
+          <span aria-hidden {...stylex.props(styles.number)}>
+            {number}
+          </span>
+        )}
+        {label}
       </Sidebar.Link>
     </Sidebar.Item>
   );
