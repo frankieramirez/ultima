@@ -5,6 +5,7 @@ import type { ComponentType } from 'react';
 
 import { Crm01 } from '@ultima/blocks/crm-01/crm-01';
 import { Dashboard01 } from '@ultima/blocks/dashboard-01/dashboard-01';
+import { Settings01 } from '@ultima/blocks/settings-01/settings-01';
 import { SignIn01 } from '@ultima/blocks/sign-in-01/sign-in-01';
 
 /** A component the block imports, or a recipe it follows, numbered among its own kind. */
@@ -223,10 +224,86 @@ export const blocks: readonly BlockEntry[] = [
     "preview": Dashboard01
   },
   {
+    "id": "settings-01",
+    "title": "Settings 01",
+    "description": "A Notifications settings page: a settings sidebar beside one form of switches, push choices and quiet hours, with an unsaved-changes bar.",
+    "number": "003",
+    "install": "npx shadcn add @ultima/settings-01",
+    "files": [
+      "settings-01.tsx",
+      "icons.tsx",
+      "notifications-form.tsx",
+      "settings-sidebar.tsx"
+    ],
+    "builtFrom": [
+      {
+        "id": "button",
+        "title": "Button",
+        "number": "008",
+        "kind": "component"
+      },
+      {
+        "id": "card",
+        "title": "Card",
+        "number": "011",
+        "kind": "component"
+      },
+      {
+        "id": "field",
+        "title": "Field",
+        "number": "024",
+        "kind": "component"
+      },
+      {
+        "id": "fieldset",
+        "title": "Fieldset",
+        "number": "025",
+        "kind": "component"
+      },
+      {
+        "id": "native-select",
+        "title": "Native Select",
+        "number": "032",
+        "kind": "component"
+      },
+      {
+        "id": "radio-group",
+        "title": "Radio Group",
+        "number": "037",
+        "kind": "component"
+      },
+      {
+        "id": "separator",
+        "title": "Separator",
+        "number": "041",
+        "kind": "component"
+      },
+      {
+        "id": "sidebar",
+        "title": "Sidebar",
+        "number": "042",
+        "kind": "component"
+      },
+      {
+        "id": "switch",
+        "title": "Switch",
+        "number": "047",
+        "kind": "component"
+      },
+      {
+        "id": "toast",
+        "title": "Toast",
+        "number": "051",
+        "kind": "component"
+      }
+    ],
+    "preview": Settings01
+  },
+  {
     "id": "sign-in-01",
     "title": "Sign-in 01",
     "description": "A split sign-in screen: a brand panel with a customer story beside an email and password form.",
-    "number": "003",
+    "number": "004",
     "install": "npx shadcn add @ultima/sign-in-01",
     "files": [
       "sign-in-01.tsx",
