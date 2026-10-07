@@ -19,6 +19,10 @@ function previewMode(screen: Awaited<ReturnType<typeof mount>>, name: 'Dark' | '
   return screen.getByRole('group', { name: 'Preview color mode' }).getByRole('button', { name }).element();
 }
 
+function presetChip(screen: Awaited<ReturnType<typeof mount>>, name: 'Neutral' | 'Ultima' | 'Grove' | 'Cinder') {
+  return screen.getByRole('group', { name: 'Start from a preset' }).getByRole('button', { name, exact: true });
+}
+
 async function selectHueFill(screen: Awaited<ReturnType<typeof mount>>) {
   await userEvent.click(screen.getByRole('group', { name: 'Accent fill' }).getByRole('button', { name: 'Hue', exact: true }));
 }
@@ -42,33 +46,75 @@ test('the default collage shows several live compositions and complete themes ar
   await expect.element(pane.getByRole('heading', { name: 'Create your workspace' })).toBeInTheDocument();
   await expect.element(pane.getByRole('table', { name: 'Recent projects' })).toBeInTheDocument();
   await expect.element(pane.getByText('Notifications', { exact: true })).toBeInTheDocument();
-  await userEvent.click(screen.getByRole('combobox', { name: 'Complete theme' }));
-  await userEvent.click(screen.getByRole('option', { name: /Grove/ }));
+  await userEvent.click(presetChip(screen, 'Grove'));
   expect(readToken(pane.element(), '--ult-space-1')).toBe('0.15625rem');
+  await expect.element(presetChip(screen, 'Grove')).toHaveAttribute('aria-pressed', 'true');
   await userEvent.click(screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Compact' }));
-  await expect.element(screen.getByRole('combobox', { name: 'Complete theme' })).toHaveTextContent('Grove · Edited');
+  await expect.element(screen.getByRole('complementary', { name: 'Theme editor' }).getByText('Grove · Edited', { exact: true })).toBeVisible();
   await userEvent.click(screen.getByRole('button', { name: 'Reset theme', exact: true }));
   expect(readToken(pane.element(), '--ult-space-1')).toBe('0.15625rem');
   await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
   expect(readToken(pane.element(), '--ult-space-1')).toBe('0.09375rem');
 });
 
-test('the complete-theme popup paints above the preview tabs and pads its hint', async () => {
+test('the preset chips are keyboard operable and each choice is one Undo step', async () => {
   const screen = await mount('/theme-studio', false);
-  await userEvent.click(screen.getByRole('combobox', { name: 'Complete theme', exact: true }));
-  const option = screen.getByRole('option', { name: /Neutral/ }).element();
-  const popup = option.closest('[data-side]')!;
-  await Promise.all(popup.getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => {})));
-  const box = popup.getBoundingClientRect();
-  const tabs = screen.getByRole('tablist', { name: 'Preview scenes' }).element().getBoundingClientRect();
-  const x = Math.max(box.left, tabs.left) + 4;
-  const y = Math.max(box.top, tabs.top) + 4;
-  expect(x).toBeLessThan(Math.min(box.right, tabs.right));
-  expect(y).toBeLessThan(Math.min(box.bottom, tabs.bottom));
-  expect(popup.contains(document.elementFromPoint(x, y))).toBe(true);
-  const hint = screen.getByText('Applies a complete theme. Undo restores your draft.').element();
-  expect(parseFloat(getComputedStyle(hint).paddingInlineStart)).toBeGreaterThanOrEqual(12);
-  expect(hint.getBoundingClientRect().bottom).toBeLessThanOrEqual(box.bottom);
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const chips = screen.getByRole('group', { name: 'Start from a preset' });
+  expect([...chips.element().querySelectorAll('button')].map((chip) => chip.textContent)).toEqual(['Neutral', 'Ultima', 'Grove', 'Cinder']);
+  await expect.element(presetChip(screen, 'Neutral')).toHaveAttribute('aria-pressed', 'true');
+
+  presetChip(screen, 'Neutral').element().focus();
+  await userEvent.keyboard('{ArrowRight}{ArrowRight}');
+  expect(document.activeElement).toBe(presetChip(screen, 'Grove').element());
+  await userEvent.keyboard('{Enter}');
+  await expect.element(presetChip(screen, 'Grove')).toHaveAttribute('aria-pressed', 'true');
+  expect(readToken(pane, '--ult-space-1')).toBe('0.15625rem');
+  await userEvent.keyboard('{Enter}');
+  await expect.element(presetChip(screen, 'Grove')).toHaveAttribute('aria-pressed', 'true');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
+  await expect.element(presetChip(screen, 'Neutral')).toHaveAttribute('aria-pressed', 'true');
+  expect(readToken(pane, '--ult-space-1')).toBe('0.125rem');
+  expect(screen.getByRole('button', { name: 'Undo', exact: true }).element()).toHaveAttribute('data-disabled');
+});
+
+test('the rail head counts groups and locks, the groups number in contract order, and the foot counts the manifest', async () => {
+  const screen = await mount('/theme-studio', false);
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' });
+  const counts = () => editor.element().querySelector('[data-rail-counts]')!.textContent;
+  expect(counts()).toBe('6 groups · 0 locked');
+  expect(editor.element().querySelector('[data-draft-identity]')!.textContent).toBe('Neutral');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Lock Density' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Lock Motion' }));
+  await expect.poll(counts).toBe('6 groups · 2 locked');
+  expect(editor.element().querySelector('[data-draft-identity]')!.textContent).toBe('Neutral · Edited');
+  await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
+  await expect.poll(counts).toBe('6 groups · 1 locked');
+  await userEvent.click(presetChip(screen, 'Cinder'));
+  await expect.poll(counts).toBe('6 groups · 0 locked');
+  expect(editor.element().querySelector('[data-draft-identity]')!.textContent).toBe('Cinder');
+
+  const numbered = [...editor.element().querySelectorAll('section header')].map((header) => [
+    header.querySelector('[data-group-number]')?.textContent,
+    header.querySelector('h2')?.textContent,
+  ]);
+  expect(numbered).toEqual([['01', 'Color'], ['02', 'Typography'], ['03', 'Density'], ['04', 'Shape'], ['05', 'Elevation'], ['06', 'Motion']]);
+  await expect.element(editor.getByText(`keeps a draft only if all ${PAIRINGS.length} pairings pass in both modes.`, { exact: false })).toBeVisible();
+});
+
+test('each pane labels its draft identity and mode, with the inspection hint or its compare boundary', async () => {
+  const screen = await mount('/theme-studio', false);
+  const label = (name: string) => screen.getByRole('region', { name }).element().querySelector('[data-pane-label]')!;
+  expect(label('Dark preview').textContent).toBe('Neutral · dark');
+  expect(getComputedStyle(label('Dark preview').firstElementChild!).textTransform).toBe('uppercase');
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens' }));
+  expect(label('Dark preview').textContent).toBe('Neutral · darkHover any example to see the tokens it reads');
+  await userEvent.click(screen.getByRole('button', { name: 'Lock Shape' }));
+  await userEvent.click(screen.getByRole('group', { name: 'Preview color mode' }).getByRole('button', { name: 'Compare' }));
+  expect(label('Dark preview').textContent).toBe('Neutral · Edited · darkPortal and variables owned by this pane');
+  expect(label('Light preview').textContent).toBe('Neutral · Edited · lightPortal and variables owned by this pane');
 });
 
 for (const width of [390, 1280]) {
@@ -472,7 +518,7 @@ test('the rail sits beside the preview, with persistent draft status below both'
   await expect.element(screen.getByRole('button', { name: /View draft report/ })).toBeVisible();
   await expect.element(screen.getByText(/Editing both modes/)).toBeVisible();
   await expect.element(screen.getByText(/^Editing both modes ·/)).toBeVisible();
-  await expect.element(screen.getByText(/locked group/)).toBeVisible();
+  await expect.element(screen.getByText(/\d+ locked groups?$/)).toBeVisible();
   await expect.element(screen.getByRole('button', { name: 'Reset theme' })).toBeVisible();
   expect(editor.contains(screen.getByRole('button', { name: 'Reset theme' }).element())).toBe(false);
 });
@@ -481,7 +527,7 @@ test('the editor rail runs picker, Shuffle, history, then the six groups, each h
   const screen = await mount('/theme-studio');
   const editor = screen.getByRole('complementary', { name: 'Theme editor' });
   const sequence = [
-    editor.getByRole('combobox', { name: 'Complete theme' }),
+    editor.getByRole('group', { name: 'Start from a preset' }),
     editor.getByRole('button', { name: 'Shuffle', exact: true }),
     editor.getByRole('button', { name: 'Undo', exact: true }),
     editor.getByRole('button', { name: 'Redo', exact: true }),
@@ -1023,7 +1069,8 @@ test('the Shape control lists four presets on a version-3 draft and three on a v
 
   localStorage.setItem(AUTOSAVE_KEY, serializeDraft(presetDraft({ id: 'grove', revision: 1 })));
   const saved = await mount('/theme-studio');
-  await expect.element(saved.getByRole('combobox', { name: 'Complete theme' })).toHaveTextContent('Grove');
+  await expect.poll(() => document.querySelector('[data-draft-identity]')?.textContent).toBe('Grove');
+  await expect.element(presetChip(saved, 'Grove')).toHaveAttribute('aria-pressed', 'false');
   expect(shapes(saved)).toEqual(['Sharp', 'Default', 'Round']);
   for (const button of saved.getByRole('group', { name: 'Accent fill' }).element().querySelectorAll('button')) {
     expect(button).toHaveAttribute('data-disabled');
@@ -1044,8 +1091,8 @@ test('selecting a preset moves a version-2 draft to revision 2 in one entry and 
   expect(localStorage.getItem(AUTOSAVE_KEY)).toBe(serializeDraft(presetDraft({ id: 'neutral', revision: 1 })));
   await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
 
-  await userEvent.click(screen.getByRole('combobox', { name: 'Complete theme' }));
-  await userEvent.click(screen.getByRole('option', { name: /Neutral/ }));
+  await expect.element(presetChip(screen, 'Neutral')).toHaveAttribute('aria-pressed', 'false');
+  await userEvent.click(presetChip(screen, 'Neutral'));
   expect(readAccent(pane)).toBe('#e8e8e8');
   await expect.element(fingerprint).toHaveTextContent(`seed ${draftFingerprint(presetDraft('neutral'))}`);
   expect(localStorage.getItem(AUTOSAVE_KEY)).toBe(serializeDraft(presetDraft('neutral')));
@@ -1060,12 +1107,19 @@ test('the shuffle bar carries shuffle, variation, undo, redo, and the state fing
   const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
 
   await expect.element(screen.getByRole('button', { name: 'Shuffle' })).toBeVisible();
-  const variation = screen.getByRole('combobox', { name: 'Shuffle variation' });
-  await expect.element(variation).toHaveTextContent('Broad');
-  await userEvent.click(variation);
+  const variation = screen.getByRole('group', { name: 'Shuffle variation' });
+  const broad = variation.getByRole('button', { name: 'Broad', exact: true });
+  const subtle = variation.getByRole('button', { name: 'Subtle', exact: true });
+  await expect.element(broad).toHaveAttribute('aria-pressed', 'true');
+  await expect.element(variation).toHaveAccessibleDescription('Explore new color, spacing and type combinations.');
+  broad.element().focus();
+  await userEvent.keyboard('{ArrowRight}{Enter}');
+  await expect.element(subtle).toHaveAttribute('aria-pressed', 'true');
+  await expect.element(variation).toHaveAccessibleDescription('Small changes to your current theme.');
   await expect.element(screen.getByText('Small changes to your current theme.')).toBeVisible();
-  await userEvent.click(screen.getByRole('option', { name: /^Subtle/ }));
-  await expect.element(variation).toHaveTextContent('Subtle');
+  await userEvent.click(subtle);
+  await expect.element(subtle).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: 'Undo', exact: true }).element()).toHaveAttribute('data-disabled');
   await expect.element(screen.getByRole('button', { name: 'Undo' })).toBeVisible();
   await expect.element(screen.getByRole('button', { name: 'Redo' })).toBeVisible();
   await expect.element(screen.getByText(/^seed [0-9a-f]{6}$/)).toBeVisible();

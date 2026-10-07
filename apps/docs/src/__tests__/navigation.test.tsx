@@ -6,7 +6,8 @@ import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import { GROUPS, components } from '../components';
+import { components } from '../components';
+import { blocks } from '../generated/blocks';
 import { componentPages, pages } from '../navigation';
 import { router, routeTree } from '../router';
 const NAVIGATION_STORAGE_KEY = 'ultima-navigation';
@@ -46,6 +47,19 @@ const menu = () => page.getByRole('navigation', { name: MENU_LABEL, exact: true 
 // Folded, the panel is `visibility: hidden` and so out of the accessibility tree a role query reads.
 const menuPanel = () => document.querySelector<HTMLElement>(`nav[aria-label="${MENU_LABEL}"]`)!;
 const menuLink = (name: string) => menu().getByRole('link', { name, exact: true });
+/** A menu link's text without its `aria-hidden` catalogue number. */
+const plainText = (link: Element) =>
+  Array.from(link.childNodes, (node) => (node instanceof Element && node.hasAttribute('aria-hidden') ? '' : node.textContent)).join('');
+/** Where a menu entry's content starts: its number when it has one, else its name. */
+function startEdge(node: Element) {
+  const range = document.createRange();
+  range.selectNodeContents(node.querySelector('[aria-hidden="true"]') ?? node);
+  return range.getBoundingClientRect().left;
+}
+
+/** The headings, foundation names and catalogue numbers in `scope` that miss the 24px edge. */
+const offEdge = (scope: Element) =>
+  Array.from(scope.querySelectorAll('h3, a'), (node) => [node.textContent, startEdge(node)]).filter(([, left]) => left !== 24);
 
 beforeEach(() => {
   localStorage.removeItem(NAVIGATION_STORAGE_KEY);
@@ -59,26 +73,71 @@ test('every destination in the menu is a route the router serves', () => {
   expect(destinations.filter((to) => !served.has(to))).toEqual([]);
 });
 
-test('the menu derives its entries from the catalogue, by group and then alphabetically', () => {
-  const rank = (group: string) => GROUPS.findIndex(({ id }) => id === group);
-  const expected = [...components].sort((a, b) => rank(a.group) - rank(b.group) || a.name.localeCompare(b.name));
+test('the menu derives its component entries from the catalogue, alphabetical and numbered in sequence', () => {
+  const expected = [...components].sort((a, b) => a.name.localeCompare(b.name));
   expect(componentPages.map(({ params }) => params?.name)).toEqual(expected.map(({ item }) => item));
+  expect(componentPages.map(({ number }) => number)).toEqual(
+    Array.from({ length: components.length }, (_, index) => String(index + 1).padStart(3, '0')),
+  );
 });
 
-test('the Components entry holds the six groups as labelled sub-lists that never collapse', async () => {
+test('component and block entries lead with their generated number, and foundation pages show the name alone', async () => {
+  await mount('/install');
+  await expect.element(menuLink('Button')).toBeVisible();
+  const numbered = [
+    ...components.map(({ name, number }) => ({ name, number })),
+    ...blocks.map(({ title, number }) => ({ name: title, number })),
+  ];
+  for (const { name, number } of numbered) {
+    const link = menuLink(name).element();
+    const shown = link.querySelector('[aria-hidden="true"]');
+    expect(shown?.textContent, name).toBe(number);
+    expect(link.firstElementChild, name).toBe(shown);
+    expect(plainText(link), name).toBe(name);
+    expect(getComputedStyle(shown!).fontFamily).not.toBe(getComputedStyle(link).fontFamily);
+    expect(getComputedStyle(shown!).color).not.toBe(getComputedStyle(link).color);
+  }
+  for (const { label } of pages.filter(({ to }) => to !== '/components' && to !== '/blocks')) {
+    const link = menuLink(label).element();
+    expect(link.querySelector('[aria-hidden]'), label).toBeNull();
+    expect(link.textContent).toBe(label);
+  }
+  expect(offEdge(menuPanel())).toEqual([]);
+});
+
+test('the open drawer fits every entry at 390 flush with the edge and without overflow', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+
+  const screen = await mount('/components/button');
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle navigation' }).element());
+  const popup = screen.getByRole('dialog', { name: MENU_LABEL });
+  await expect.element(popup).toBeVisible();
+
+  const links = Array.from(popup.element().querySelectorAll('a'));
+  expect(links.length).toBe(pages.length - 2 + components.length + blocks.length);
+  const oneLine = links.find((link) => link.textContent === 'Home')!.getBoundingClientRect().height;
+  // The drawer slides in from the inline start, so its entries reach the edge when it settles.
+  await expect.poll(() => offEdge(popup.element())).toEqual([]);
+  const panel = popup.element().getBoundingClientRect();
+  for (const link of links) {
+    const box = link.getBoundingClientRect();
+    expect(link.scrollWidth, plainText(link)).toBeLessThanOrEqual(link.clientWidth);
+    expect(box.right, plainText(link)).toBeLessThanOrEqual(panel.right);
+    expect(box.height, plainText(link)).toBe(oneLine);
+  }
+});
+
+test('the Components entry is one flat list under one heading, with no group labels', async () => {
   await mount('/components/sidebar');
   await expect.element(menuLink('Sidebar')).toBeVisible();
-  const labels = Array.from(menuPanel().querySelectorAll('h4'), (heading) => heading.textContent);
-  expect(labels).toEqual(['Forms', 'Overlays', 'Data display', 'Navigation', 'Feedback', 'Layout']);
-  const navigation = menu().getByRole('heading', { name: 'Navigation', level: 4 }).element();
-  const list = navigation.nextElementSibling as HTMLElement;
-  expect(Array.from(list.querySelectorAll('a'), (link) => link.getAttribute('aria-label'))).toEqual([
-    'Breadcrumb',
-    'Navigation Menu',
-    'Pagination',
-    'Sidebar',
-    'Tabs',
-  ]);
+  const headings = Array.from(menuPanel().querySelectorAll('h3, h4'), (heading) => heading.textContent);
+  expect(headings).toEqual(['Foundations', 'Components', 'Blocks']);
+  const list = menu().getByRole('heading', { name: 'Components', exact: true }).element().nextElementSibling as HTMLElement;
+  expect(list.querySelectorAll('ul')).toHaveLength(0);
+  expect(Array.from(list.querySelectorAll('a'), (link) => link.textContent)).toEqual(
+    [...components].sort((a, b) => a.number.localeCompare(b.number)).map(({ number, name }) => `${number}${name}`),
+  );
   expect(menuPanel().querySelectorAll('[aria-expanded]').length).toBe(0);
 });
 
@@ -204,10 +263,11 @@ test.each(['dark', 'light'] as const)('the current header link has a clear under
   expect(getComputedStyle(current[0]!).color).toBe(activeColor);
 });
 
-test('Documentation links to installation while the sidebar uses the CSS variable label', async () => {
+test('Documentation links to installation while the sidebar shows the plain page name', async () => {
   const screen = await mount('/install');
   await expect.element(screen.getByRole('navigation', { name: 'Site', exact: true }).getByRole('link', { name: 'Documentation' })).toHaveAttribute('href', '/install');
-  expect(menuLink('Install').element().textContent).toBe('--install');
+  expect(menuLink('Install').element().textContent).toBe('Install');
+  expect(menuLink('Install').element()).not.toHaveAttribute('aria-label');
 });
 
 test('above the breakpoint the header carries the mode control and the footer hides its own', async () => {
@@ -310,12 +370,12 @@ test('a direct load leaves focus alone', async () => {
   expect(document.activeElement).toBe(document.body);
 });
 
-test('the grouped catalogue follows the page links in keyboard order', async () => {
+test('the catalogue follows the page links in keyboard order', async () => {
   await mount('/install');
   await expect.element(menuLink('Install')).toBeVisible();
   (menuLink('Tokens').element() as HTMLElement).focus();
   await userEvent.keyboard('{Tab}');
-  expect(document.activeElement).toBe(menuLink('Button').element());
+  expect(document.activeElement).toBe(menuLink('Accordion').element());
 });
 
 test('the logo returns to the editorial home page, which folds the menu rail away', async () => {

@@ -1769,7 +1769,7 @@ Items are atomic. There are no bundles (`report-set`, `all`) and no `registry:ba
 
 ### Catalogue groups
 
-Settled on [Decide how the Components directory groups the catalogue](https://github.com/frankieramirez/ultima/issues/647), from the October 2026 Components directory frame (`E9XvL` in `ultima.pen`). Every component belongs to exactly one group, named for its main job. The groups replace release sets everywhere a visitor browses the catalogue: the `/components` directory, the docs menu, the registry index and `/llms.txt`. In display order:
+Settled on [Decide how the Components directory groups the catalogue](https://github.com/frankieramirez/ultima/issues/647), from the October 2026 Components directory frame (`E9XvL` in `ultima.pen`). Every component belongs to exactly one group, named for its main job. The groups replace release sets everywhere a visitor browses the catalogue by kind: the `/components` directory, the registry index and `/llms.txt`. The docs menu is not sectioned by group, and global search keeps its own grouping by kind of result, under [Global search](#global-search). In display order:
 
 | Group | Holds | Members |
 | --- | --- | --- |
@@ -1791,9 +1791,9 @@ The counts are the frame's, 20, 11, 9, 5, 5 and 4. Where a component could sit i
 
 **The registry and the agent guide use it.** Each React item's registry record carries `categories: ["<group>"]`, shadcn's own registry-item field, so a registry client can filter Ultima's components by kind with no Ultima-specific field. `/llms.txt` lists the components under one heading per group, in display order, and alphabetically within each.
 
-**Within a group, components are alphabetical**, on the directory and in the menu alike, which is the order the site already ships and the order [catalogue numbers](#what-a-block-is) follow. The `/components` directory renders one section per group, its heading carrying the group's count. The filter searches across every group and hides a group with no match, and [Components directory](#components-directory) holds the rest of the page. In the menu, the Components entry holds the six groups as labelled sub-lists, and they don't collapse: a group is a heading in the list, not a disclosure.
+**Within a group, components are alphabetical**, which is the order the site already ships and the order [catalogue numbers](#what-a-block-is) follow. The `/components` directory renders one section per group, its heading carrying the group's count. The filter searches across every group and hides a group with no match, and [Components directory](#components-directory) holds the rest of the page. The docs menu does not use the groups. Its Components entry is one heading over one flat list of every component in alphabetical order, so the numbers run 001 to 054 in sequence, at the same level as the Foundations and Blocks entries. The owner chose it over the October 2026 frames, which put a group label under the Components heading and indent its members, settled on [Show plain names in the docs menu](https://github.com/frankieramirez/ultima/issues/710). Nothing in the list collapses.
 
-**`release` stays, and nothing a visitor sees is sectioned by it.** It still names which section of this specification holds an item's contract, and with `order` it still fixes the registry manifest's order. The release disclosures planned in ULT-85, and the release sections of the index that replaced them, are superseded. Nothing reads the docs projection's release labels any more, so `RELEASE_LABELS` and `componentsInRelease` have left it, and `componentsInGroup` serves the directory and the menu.
+**`release` stays, and nothing a visitor sees is sectioned by it.** It still names which section of this specification holds an item's contract, and with `order` it still fixes the registry manifest's order. The release disclosures planned in ULT-85, and the release sections of the index that replaced them, are superseded. Nothing reads the docs projection's release labels any more, so `RELEASE_LABELS` and `componentsInRelease` have left it, and `componentsInGroup` serves the directory.
 
 ### Components directory
 
@@ -2045,7 +2045,7 @@ The recipe's accessibility contract comes along unchanged. The revenue chart's S
 
 A block's id is kebab-case with a two-digit family suffix, `dashboard-01`, following shadcn's naming. Its title is "Dashboard 01" and its install command is `npx shadcn add @ultima/dashboard-01`. Blocks carry no `release`: Blocks is its own section, ordered by number, and the release sets stay the components' track.
 
-**The catalogue number is a display ordinal, derived and never stored.** The generator numbers each kind separately, in alphabetical order of id, padded to three digits. The frames already number components this way: Avatar 005, Button 008, Card 011, Date Picker 019, Input 027, Meter 031, Sidebar 042, Stat 046, Table 048 and Tabs 049 each match their alphabetical position among the 54 React items. The number shifts when an item is added and is never used as an identity; the id is the identity. A stored number would stay put, but someone would have to allocate it, and two branches adding a component would both take the same one. Blocks number the same way, so CRM 01 is 001 and Dashboard 01 is 002, and a frame showing otherwise is redrawn. The Components directory, block Anatomy and global search all show this number.
+**The catalogue number is a display ordinal, derived and never stored.** The generator numbers each kind separately, in alphabetical order of id, padded to three digits. The frames already number components this way: Avatar 005, Button 008, Card 011, Date Picker 019, Input 027, Meter 031, Sidebar 042, Stat 046, Table 048 and Tabs 049 each match their alphabetical position among the 54 React items. The number shifts when an item is added and is never used as an identity; the id is the identity. A stored number would stay put, but someone would have to allocate it, and two branches adding a component would both take the same one. Blocks number the same way, so CRM 01 is 001 and Dashboard 01 is 002, and a frame showing otherwise is redrawn. The Components directory, block Anatomy, global search and the docs menu all show this number. In the menu, the desktop panel and the mobile drawer alike, it leads each component and block entry in the muted mono face, so the entries read `001 Accordion` through `054 Tooltip` and `001 CRM 01`. It is `aria-hidden` there, and the link's accessible name stays the plain name. A foundation page has no number and shows its name alone, flush with its section heading. A foundation name and a numbered entry's number start at the same edge, so names line up within a section and not across them.
 
 ### The descriptor
 
@@ -2283,15 +2283,19 @@ Decided on Docs site scope (ULT-14). The site at `apps/docs` is three things at 
 | Route | Holds |
 | --- | --- |
 | `/` | The pitch, a live demo strip, the two install commands |
-| `/install` | The canonical long-form install per target, with the reasoning |
-| `/cli` | The consumer CLI: what it is, the install, each command, the post-edit hooks, and the CI step |
+| `/install` | The canonical long-form install per target, with the reasoning, ending on where to go next: the components, Tokens, Theme Studio, the CLI and Blocks |
+| `/cli` | The consumer CLI: what it is, the install and the files it writes, each command, the post-edit hooks, the CI step, and the three routes to the skill compared |
 | `/tokens` | Every semantic token by group, live swatches in both modes, the tokens CSS export, and the APCA readout per semantic pairing |
 | `/palette` | The six scales, twelve steps, dark and light values, the step convention, and the WCAG gate results |
 | `/components` | The directory of the catalogue, one section per [catalogue group](#catalogue-groups), per [Components directory](#components-directory) |
 | `/components/<name>` | One page per catalogue component |
 | `/blocks` | Index of the blocks, per [Blocks](#blocks) |
 | `/blocks/<id>` | One page per block, with its framed preview at `/blocks/<id>/preview` |
-| `/rationale` | Why StyleX, why Base UI, why registry-first, why dark-first. Links the ADRs |
+| `/rationale` | Why StyleX, why Base UI, why registry-first, why dark-first, behind an index of those decisions. Links the ADRs, and lists every one of them |
+
+The content the October 2026 frames add to `/install`, `/cli` and `/rationale` is built only where it derives from facts the repository already holds, settled on [Number the foundation rails and add the frames' derived content](https://github.com/frankieramirez/ultima/issues/713). Each "where to go next" card restates what its page holds. The CLI's cards name the paths `install` writes, which are the ones in `packages/cli/src/install.ts`, and its route comparison restates [Skill](#skill): only the CLI route brings the hooks and the checks. The CI step is shown as a GitHub Actions workflow whose two gating steps are the commands under [CI](#ci). The Rationale's table of records is read from `docs/adr/` when the site builds, so a new ADR joins it without an edit, and the running head counts the decisions and the records. The frames' framework picker on `/install` and its "check your setup" transcript are not built: the picker would hide the per-target text the page owes both targets, and the transcript's output would be invented.
+
+The section index beside `/install`, `/cli`, `/elements`, `/tokens` and `/rationale` numbers its entries with each section's § number, as the component pages' index does. A section the page leaves unnumbered reads `··` there, as the Rationale's list of every record and a component page's Web component section do.
 
 `/install` is the long form the `docs` field of each setup item points at; the setup items print a short imperative list and nothing is installed into the consumer's repo as a README.
 
@@ -2376,7 +2380,7 @@ The chrome is pinned to the viewport edges at every width, settled on [Pin the d
 
 Route data is one module that Sidebar reads. Today it is four partial copies that already disagree: the header's own list, a second list in the home page missing `/palette` and in a different order, the component catalogue, and the router's page map. The catalogue stays the data it is; the navigation tree derives from it.
 
-The September 12, 2026 designs in `ultima.pen` replaced the nested release disclosures planned in ULT-85 with a flat catalogue, and the October 2026 designs group it by kind. The index no longer sections by release: [Catalogue groups](#catalogue-groups), settled on [Decide how the Components directory groups the catalogue](https://github.com/frankieramirez/ultima/issues/647), holds the six groups, each component's group, and the order within a group. The menu's `@components` entry holds those groups as labelled sub-lists, derived from the same generated catalogue. Navigation uses `::root` and `@components` group labels and `--`-prefixed destination labels. Sidebar retains its reusable nested-list parts. The wordmark always links home. Below 48rem, a separate menu icon button opens the navigation overlay. Desktop navigation remains visible and does not restore a saved collapsed state. Documentation articles include a separate section index derived from their headings; it hides below 80rem. Token and palette pages use the full content width.
+The September 12, 2026 designs in `ultima.pen` replaced the nested release disclosures planned in ULT-85 with a flat catalogue, and the October 2026 designs group it by kind. The index no longer sections by release: [Catalogue groups](#catalogue-groups), settled on [Decide how the Components directory groups the catalogue](https://github.com/frankieramirez/ultima/issues/647), holds the six groups, each component's group, and the order within a group. The menu's Components entry is one flat list derived from the same generated catalogue, in catalogue-number order, with no group labels. Menu entries show plain destination names, and component and block entries lead with their catalogue number. Sidebar retains its reusable nested-list parts. The wordmark always links home. Below 48rem, a separate menu icon button opens the navigation overlay. Desktop navigation remains visible and does not restore a saved collapsed state. Documentation articles include a separate section index derived from their headings; it hides below 80rem. Token and palette pages use the full content width.
 
 The theme control stays docs-local, composed from Toggle Group. Ultima ships the widget and nothing more. The preference, its storage key, and applying the theme class to the document are the application's job, and a component that shipped them would assert a storage key and a root element on every consumer.
 
@@ -2930,7 +2934,7 @@ Decided on [Which events each harness hook fires on, what it runs, and what runs
 
 ### CI
 
-Decided on [Which events each harness hook fires on, what it runs, and what runs in CI](https://github.com/frankieramirez/ultima/issues/480). `install` writes no CI configuration. A workflow file is the consumer's own and is not a managed file. The docs site's CLI page shows one step to copy:
+Decided on [Which events each harness hook fires on, what it runs, and what runs in CI](https://github.com/frankieramirez/ultima/issues/480). `install` writes no CI configuration. A workflow file is the consumer's own and is not a managed file. The docs site's CLI page shows a workflow to copy, whose two gating steps run:
 
 ```sh
 npx --no-install ultima-design doctor

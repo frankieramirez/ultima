@@ -89,7 +89,7 @@ test('the sections are numbered, the examples are plates, and the rail lists the
     ['01', 'Examples'],
     ['02', 'Props'],
     ['03', 'Accessibility'],
-    ['', 'Web component'],
+    ['··', 'Web component'],
   ]);
 
   const plates = [...article.querySelectorAll('figure')].filter((figure) => figure.querySelector('h3'));

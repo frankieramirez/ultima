@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     themeRegistryPlugin(),
     demoUiPlugin(),
-    { enforce: 'pre', ...mdx({ remarkPlugins: [remarkGfm, remarkFenceTitle] }) },
+    { enforce: 'pre', ...mdx({ mdExtensions: [], remarkPlugins: [remarkGfm, remarkFenceTitle] }) },
     // Registered before stylex.vite so its middleware gates the dev CSS endpoint.
     stylexConstsWarmup(['/src/breakpoints.stylex.ts']),
     // StyleX must run before @vitejs/plugin-react so Fast Refresh keeps working.
