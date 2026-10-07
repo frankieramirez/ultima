@@ -3,13 +3,22 @@
 
 import type { ComponentType } from 'react';
 
+import AlertDialogAnatomy from '../demos/alert-dialog/anatomy';
+import CommandAnatomy from '../demos/command/anatomy';
+import ContextMenuAnatomy from '../demos/context-menu/anatomy';
 import DialogAnatomy from '../demos/dialog/anatomy';
+import DrawerAnatomy from '../demos/drawer/anatomy';
+import DropdownMenuAnatomy from '../demos/dropdown-menu/anatomy';
+import HoverCardAnatomy from '../demos/hover-card/anatomy';
+import PopoverAnatomy from '../demos/popover/anatomy';
+import ToastAnatomy from '../demos/toast/anatomy';
+import TooltipAnatomy from '../demos/tooltip/anatomy';
 
 /** Each React item's parts that render an element, and the open overlay its Anatomy tab renders when it has one. */
 export const anatomyTabs: Record<string, { parts: readonly string[]; demo?: ComponentType }> = {
   'accordion': { parts: ['Root', 'Item', 'Header', 'Trigger', 'Panel'] },
   'alert': { parts: ['Root', 'Title', 'Description', 'Icon'] },
-  'alert-dialog': { parts: ['Trigger', 'Backdrop', 'Viewport', 'Popup', 'Title', 'Description', 'Close'] },
+  'alert-dialog': { parts: ['Trigger', 'Backdrop', 'Viewport', 'Popup', 'Title', 'Description', 'Close'], demo: AlertDialogAnatomy },
   'aspect-ratio': { parts: ['AspectRatio'] },
   'avatar': { parts: ['Root', 'Image', 'Fallback'] },
   'badge': { parts: ['Badge'] },
@@ -23,16 +32,16 @@ export const anatomyTabs: Record<string, { parts: readonly string[]; demo?: Comp
   'collapsible': { parts: ['Root', 'Trigger', 'Panel'] },
   'color-field': { parts: ['Root', 'Swatch', 'Input', 'Positioner', 'Popup', 'Picker'] },
   'combobox': { parts: ['Label', 'Input', 'InputGroup', 'Trigger', 'Icon', 'Clear', 'Chips', 'Chip', 'ChipRemove', 'Backdrop', 'Positioner', 'Popup', 'Arrow', 'List', 'Row', 'Item', 'ItemIndicator', 'Group', 'GroupLabel', 'Separator', 'Status', 'Empty'] },
-  'command': { parts: ['Trigger', 'Input', 'InputGroup', 'Icon', 'Clear', 'List', 'Status', 'Backdrop', 'Positioner', 'Popup', 'Arrow', 'Group', 'GroupLabel', 'Item', 'Row', 'Empty', 'Separator'] },
-  'context-menu': { parts: ['Trigger', 'Backdrop', 'Positioner', 'Popup', 'Arrow', 'Item', 'LinkItem', 'Group', 'GroupLabel', 'Separator', 'CheckboxItem', 'CheckboxItemIndicator', 'RadioGroup', 'RadioItem', 'RadioItemIndicator', 'SubmenuTrigger'] },
+  'command': { parts: ['Trigger', 'Input', 'InputGroup', 'Icon', 'Clear', 'List', 'Status', 'Backdrop', 'Positioner', 'Popup', 'Arrow', 'Group', 'GroupLabel', 'Item', 'Row', 'Empty', 'Separator'], demo: CommandAnatomy },
+  'context-menu': { parts: ['Trigger', 'Backdrop', 'Positioner', 'Popup', 'Arrow', 'Item', 'LinkItem', 'Group', 'GroupLabel', 'Separator', 'CheckboxItem', 'CheckboxItemIndicator', 'RadioGroup', 'RadioItem', 'RadioItemIndicator', 'SubmenuTrigger'], demo: ContextMenuAnatomy },
   'date-picker': { parts: ['Root', 'Label', 'Control', 'Input', 'Trigger', 'ClearTrigger', 'PresetTrigger', 'Content', 'Positioner', 'ViewControl', 'PrevTrigger', 'NextTrigger', 'ViewTrigger', 'RangeText', 'View', 'Table', 'TableHead', 'TableBody', 'TableRow', 'TableHeader', 'TableCell', 'TableCellTrigger', 'MonthSelect', 'YearSelect'] },
   'dialog': { parts: ['Trigger', 'Backdrop', 'Viewport', 'Popup', 'Title', 'Description', 'Close'], demo: DialogAnatomy },
-  'drawer': { parts: ['Trigger', 'Backdrop', 'Viewport', 'Popup', 'Content', 'Title', 'Description', 'Close', 'Indent', 'IndentBackground', 'SwipeArea'] },
-  'dropdown-menu': { parts: ['Trigger', 'Backdrop', 'Positioner', 'Popup', 'Viewport', 'Arrow', 'Item', 'LinkItem', 'Group', 'GroupLabel', 'Separator', 'CheckboxItem', 'CheckboxItemIndicator', 'RadioGroup', 'RadioItem', 'RadioItemIndicator', 'SubmenuTrigger'] },
+  'drawer': { parts: ['Trigger', 'Backdrop', 'Viewport', 'Popup', 'Content', 'Title', 'Description', 'Close', 'Indent', 'IndentBackground', 'SwipeArea'], demo: DrawerAnatomy },
+  'dropdown-menu': { parts: ['Trigger', 'Backdrop', 'Positioner', 'Popup', 'Viewport', 'Arrow', 'Item', 'LinkItem', 'Group', 'GroupLabel', 'Separator', 'CheckboxItem', 'CheckboxItemIndicator', 'RadioGroup', 'RadioItem', 'RadioItemIndicator', 'SubmenuTrigger'], demo: DropdownMenuAnatomy },
   'empty': { parts: ['Root', 'Title', 'Description', 'Icon'] },
   'field': { parts: ['Root', 'Label', 'Description', 'Error', 'Item', 'Control'] },
   'fieldset': { parts: ['Root', 'Legend'] },
-  'hover-card': { parts: ['Trigger', 'Positioner', 'Popup', 'Arrow', 'Backdrop', 'Viewport'] },
+  'hover-card': { parts: ['Trigger', 'Positioner', 'Popup', 'Arrow', 'Backdrop', 'Viewport'], demo: HoverCardAnatomy },
   'input': { parts: ['Input'] },
   'input-group': { parts: ['Root', 'Input', 'Addon'] },
   'input-otp': { parts: ['Root', 'Input', 'Separator'] },
@@ -41,7 +50,7 @@ export const anatomyTabs: Record<string, { parts: readonly string[]; demo?: Comp
   'native-select': { parts: ['Root', 'Select'] },
   'navigation-menu': { parts: ['Root', 'List', 'Item', 'Trigger', 'Icon', 'Content', 'Positioner', 'Popup', 'Viewport', 'Backdrop', 'Arrow', 'Link'] },
   'pagination': { parts: ['Root', 'List', 'Item', 'Page', 'Previous', 'Next', 'Ellipsis'] },
-  'popover': { parts: ['Trigger', 'Positioner', 'Popup', 'Arrow', 'Backdrop', 'Title', 'Description', 'Close', 'Viewport'] },
+  'popover': { parts: ['Trigger', 'Positioner', 'Popup', 'Arrow', 'Backdrop', 'Title', 'Description', 'Close', 'Viewport'], demo: PopoverAnatomy },
   'progress': { parts: ['Root', 'Label', 'Track', 'Indicator', 'Value'] },
   'radio-group': { parts: ['Root', 'Item', 'Indicator'] },
   'resizable': { parts: ['Root', 'Panel', 'Handle', 'HandleIndicator'] },
@@ -57,8 +66,8 @@ export const anatomyTabs: Record<string, { parts: readonly string[]; demo?: Comp
   'table': { parts: ['Scroll', 'Root', 'Head', 'Body', 'Row', 'HeadCell', 'SortButton', 'Cell', 'Caption'] },
   'tabs': { parts: ['Root', 'List', 'Tab', 'Indicator', 'Panel'] },
   'textarea': { parts: ['Textarea'] },
-  'toast': { parts: ['Viewport', 'Positioner', 'Root', 'Content', 'Title', 'Description', 'Action', 'Close', 'Arrow'] },
+  'toast': { parts: ['Viewport', 'Positioner', 'Root', 'Content', 'Title', 'Description', 'Action', 'Close', 'Arrow'], demo: ToastAnatomy },
   'toggle': { parts: ['Toggle'] },
   'toggle-group': { parts: ['Root', 'Item'] },
-  'tooltip': { parts: ['Trigger', 'Positioner', 'Popup', 'Arrow', 'Viewport'] },
+  'tooltip': { parts: ['Trigger', 'Positioner', 'Popup', 'Arrow', 'Viewport'], demo: TooltipAnatomy },
 };
