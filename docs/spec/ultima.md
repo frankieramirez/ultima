@@ -1766,6 +1766,34 @@ Every item lives under the `@ultima` namespace.
 
 Items are atomic. There are no bundles (`report-set`, `all`) and no `registry:base` item in v0: `registryDependencies` already pulls `tokens` and `lib` transitively, `shadcn add` takes several items in one call, and a bundle is a second place to forget a component. Both are additive later.
 
+### Catalogue groups
+
+Settled on [Decide how the Components directory groups the catalogue](https://github.com/frankieramirez/ultima/issues/647), from the October 2026 Components directory frame (`E9XvL` in `ultima.pen`). Every component belongs to exactly one group, named for its main job. The groups replace release sets everywhere a visitor browses the catalogue: the `/components` directory, the docs menu, the registry index and `/llms.txt`. In display order:
+
+| Group | Holds | Members |
+| --- | --- | --- |
+| Forms | A control a reader operates to enter a value or start an action, and the structure that labels one | Button, Button Group, Calendar, Checkbox, Color Field, Combobox, Date Picker, Field, Fieldset, Input, Input Group, Input OTP, Native Select, Radio Group, Select, Slider, Switch, Textarea, Toggle, Toggle Group |
+| Overlays | A surface that floats above the page, and the bar that exists to open them | Alert Dialog, Command, Context Menu, Dialog, Drawer, Dropdown Menu, Hover Card, Menubar, Popover, Toast, Tooltip |
+| Data display | Content and values set out to read, including content shown or hidden in place | Accordion, Avatar, Badge, Card, Code, Collapsible, Meter, Stat, Table |
+| Navigation | Moving between pages or between views of one page | Breadcrumb, Navigation Menu, Pagination, Sidebar, Tabs |
+| Feedback | The state of a process or of the page: a message, progress, loading, or nothing to show | Alert, Empty, Progress, Skeleton, Spinner |
+| Layout | Shaping or dividing space, with no content of its own | Aspect Ratio, Resizable, Scroll Area, Separator |
+
+The counts are the frame's, 20, 11, 9, 5, 5 and 4. Where a component could sit in two groups, these rules decide it, and they decide a new component the same way:
+
+- **A control whose popup holds its value is Forms**, because the reader is entering a value: Select, Combobox, Date Picker and Color Field. Overlays is for a surface that is the point of the interaction.
+- **A floating surface is Overlays even when it reports status or holds a list**: Toast and Command. Menubar is Overlays for the reason [The overlay set](#the-overlay-set) gives: its contract means nothing apart from the menus it opens.
+- **Meter is Data display and Progress is Feedback**, which is the line their contracts already draw: a bounded measurement is a reading, and task completion is the state of a process.
+- **Accordion and Collapsible are Data display**, because they hold content. Layout is for a component with nothing inside it but the caller's content and its own geometry.
+
+**The group is a descriptor field.** Every React descriptor carries a required `group`, one of the ids `forms`, `overlays`, `data-display`, `navigation`, `feedback` and `layout`. These are defined once, with their labels and display order, in `registry/metadata/groups.ts`, the same shape as `releases.ts`. The catalogue model rejects an unknown group, `pnpm scaffold react` requires one and never assigns it silently, and `pnpm catalogue:generate` emits the group definitions and each entry's group into `apps/docs/src/generated/catalogue.ts`. Elements, recipes and blocks carry no group. An element is documented on the Elements page in its family order, a recipe has no directory entry of its own, and blocks are their own section.
+
+**The registry and the agent guide use it.** Each React item's registry record carries `categories: ["<group>"]`, shadcn's own registry-item field, so a registry client can filter Ultima's components by kind with no Ultima-specific field. `/llms.txt` lists the components under one heading per group, in display order, and alphabetically within each.
+
+**Within a group, components are alphabetical**, on the directory and in the menu alike, which is the order the site already ships and the order [catalogue numbers](#what-a-block-is) follow. The `/components` directory renders one section per group, its heading carrying the group's count. The filter searches across every group and hides a group with no match. In the menu, the Components entry holds the six groups as labelled sub-lists, and they don't collapse: a group is a heading in the list, not a disclosure.
+
+**`release` stays, and nothing a visitor sees is sectioned by it.** It still names which section of this specification holds an item's contract, and with `order` it still fixes the registry manifest's order. The release disclosures planned in ULT-85, and the release sections of the index that replaced them, are superseded. When nothing reads the docs projection's release labels any more, `RELEASE_LABELS` and `componentsInRelease` leave it.
+
 ### Placement in the consumer
 
 Flat, following shadcn's default rules. A `registry:ui` file lands in `aliases.ui` as `@/components/ui/<name>.tsx`; a `registry:lib` file lands in `aliases.lib` as `@/lib/<name>.ts`. Ultima does not namespace its installed files into an `ultima/` subfolder: that costs an explicit `target` on every file and makes the installed tree read as vendored, which fights the premise that the consumer owns the code. Ultima replaces shadcn's components rather than sitting beside them; a consumer who wants both resolves the `button.tsx` collision with `-p`.
@@ -2085,7 +2113,7 @@ Decided on Docs site scope (ULT-14). The site at `apps/docs` is three things at 
 | `/cli` | The consumer CLI: what it is, the install, each command, the post-edit hooks, and the CI step |
 | `/tokens` | Every semantic token by group, live swatches in both modes, the tokens CSS export, and the APCA readout per semantic pairing |
 | `/palette` | The six scales, twelve steps, dark and light values, the step convention, and the WCAG gate results |
-| `/components` | Index of the catalogue, sectioned v0, then v0.1, then v0.2 |
+| `/components` | The directory of the catalogue, one section per [catalogue group](#catalogue-groups) |
 | `/components/<name>` | One page per catalogue component |
 | `/blocks` | Index of the blocks, per [Blocks](#blocks) |
 | `/blocks/<id>` | One page per block, with its framed preview at `/blocks/<id>/preview` |
@@ -2170,7 +2198,7 @@ Once Sidebar carries the menu, a second navigation in the header would put two `
 
 Route data is one module that Sidebar reads. Today it is four partial copies that already disagree: the header's own list, a second list in the home page missing `/palette` and in a different order, the component catalogue, and the router's page map. The catalogue stays the data it is; the navigation tree derives from it.
 
-The September 12, 2026 designs in `ultima.pen` replace the nested release disclosures planned in ULT-85 with a flat catalogue. `apps/docs/src/components.ts` remains the source in specification order, and a docs-only `release: 'v0' | 'v0.1'` on each entry still drives that order and sections the `/components` index into "The v0 set" and "The v0.1 set" without slicing at a magic index. The navigation set needs one thing from that field and nothing more: the union widens to include `'v0.2'`, and each of the three carries it. How the index sections a third release, and whether it sections by release at all once the rest of v0.2 lands, is the v0.2-wide catalogue question under Release scope rather than this set's. The menu stays flat under `@components`, derived from the same field. Navigation uses `::root` and `@components` group labels and `--`-prefixed destination labels. Sidebar retains its reusable nested-list parts. The wordmark always links home. Below 48rem, a separate menu icon button opens the navigation overlay. Desktop navigation remains visible and does not restore a saved collapsed state. Documentation articles include a separate section index derived from their headings; it hides below 80rem. Token and palette pages use the full content width.
+The September 12, 2026 designs in `ultima.pen` replaced the nested release disclosures planned in ULT-85 with a flat catalogue, and the October 2026 designs group it by kind. The index no longer sections by release: [Catalogue groups](#catalogue-groups), settled on [Decide how the Components directory groups the catalogue](https://github.com/frankieramirez/ultima/issues/647), holds the six groups, each component's group, and the order within a group. The menu's `@components` entry holds those groups as labelled sub-lists, derived from the same generated catalogue. Navigation uses `::root` and `@components` group labels and `--`-prefixed destination labels. Sidebar retains its reusable nested-list parts. The wordmark always links home. Below 48rem, a separate menu icon button opens the navigation overlay. Desktop navigation remains visible and does not restore a saved collapsed state. Documentation articles include a separate section index derived from their headings; it hides below 80rem. Token and palette pages use the full content width.
 
 The theme control stays docs-local, composed from Toggle Group. Ultima ships the widget and nothing more. The preference, its storage key, and applying the theme class to the document are the application's job, and a component that shipped them would assert a storage key and a root element on every consumer.
 
@@ -2397,7 +2425,7 @@ ADR 0005 keeps shared guidance hosted on these surfaces:
 | `/llms.txt` | an agent in a consumer's repository | The conventions, the token names, and the component list as plain Markdown at one fetchable URL |
 | `/rationale` and the component pages | a human | The long form |
 
-`/llms.txt` is generated build output beside `/tokens.css`, not a hand-written file and not a route. It leads with the Principles section, then the component list with each component's import and the props Ultima adds, then the semantic token names. It is generated from this specification and the registry manifest, so no convention gets a third place to be updated.
+`/llms.txt` is generated build output beside `/tokens.css`, not a hand-written file and not a route. It leads with the Principles section, then the component list with each component's import and the props Ultima adds, under one heading per [catalogue group](#catalogue-groups), then the semantic token names. It is generated from this specification and the registry manifest, so no convention gets a third place to be updated.
 
 ### The authoring skill
 

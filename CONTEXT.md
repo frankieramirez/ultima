@@ -122,6 +122,10 @@ The consumer CLI's way of running the contributor's analysis engine over a consu
 
 A `check` rule in the `ULT-APP-*` family, run over a consumer's code rather than Ultima's source. It enforces that paint comes from tokens and that overrides keep Ultima's guarantees; arrangement stays the consumer's. Blocking consumer rules protect color mode, theming, and contrast. Advisory ones protect consistency and block only under `--strict`.
 
+## Catalogue group
+
+The one kind a component belongs to, named for its main job: Forms, Overlays, Data display, Navigation, Feedback or Layout. The directory, the docs menu, the registry and `/llms.txt` group components this way. It is not a release, which only records when a component's contract was written.
+
 ## Catalogue revision
 
 The commit the registry build ran at, shortened to twelve hex characters. One revision covers a whole deploy. It tells a person which build a file came from, and it never decides whether a file has changed; the content hash does that.
