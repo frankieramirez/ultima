@@ -5,10 +5,11 @@ import { palette, presetDraft, resolveDraft } from '@ultima/tokens';
 import { color, easing, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
 import { Card, Separator, ToggleGroup } from '@ultima/ui';
 import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
-import { useEffect, useState, type ReactNode } from 'react';
+import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
 
 import { breakpoints } from '../breakpoints.stylex';
 import { components } from '../components';
+import type { FieldState } from '../dot-field';
 import { docsStyles } from '../docs-style';
 import { INSTALL_TARGETS } from '../install-commands';
 import { LandingCommand } from '../landing-command';
@@ -40,13 +41,13 @@ const rise = stylex.keyframes({
 const styles = stylex.create({
   page: { display: 'flex', flexDirection: 'column', inlineSize: '100%' },
   gutter: { paddingInline: { default: space['--ult-space-7'], [breakpoints.WIDE]: space['--ult-space-12'] } },
-  // The dot field (#679) mounts behind the hero's content: the section is its positioned, clipped ground.
   hero: {
     overflow: 'clip',
     paddingBlockEnd: { default: space['--ult-space-9'], [breakpoints.WIDE]: '6rem' },
     paddingBlockStart: { default: space['--ult-space-7'], [breakpoints.WIDE]: space['--ult-space-12'] },
     position: 'relative',
   },
+  field: { inset: 0, pointerEvents: 'none', position: 'absolute' },
   heroContent: {
     display: 'flex',
     flexDirection: 'column',
@@ -254,6 +255,41 @@ const PRINCIPLES = [
 
 let heroEnteredThisDocument = false;
 
+function FieldUnavailable({ onState }: { onState: (state: FieldState) => void }): ReactNode {
+  useEffect(() => onState('off'), [onState]);
+  return null;
+}
+
+const DotField = lazy(() => import('../dot-field').then((module) => ({ default: module.DotField }), () => ({ default: FieldUnavailable })));
+
+function HeroField() {
+  const [state, setState] = useState<FieldState>('loading');
+  const [load, setLoad] = useState(false);
+  useEffect(() => {
+    if ((navigator as { connection?: { saveData?: boolean } }).connection?.saveData) {
+      setState('off');
+      return;
+    }
+    let idle: number | undefined;
+    const frame = requestAnimationFrame(() => {
+      idle = typeof requestIdleCallback === 'function' ? requestIdleCallback(() => setLoad(true)) : window.setTimeout(() => setLoad(true));
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      if (idle !== undefined) (typeof cancelIdleCallback === 'function' ? cancelIdleCallback : window.clearTimeout)(idle);
+    };
+  }, []);
+  return (
+    <div aria-hidden data-field={state} {...stylex.props(styles.field)}>
+      {load ? (
+        <Suspense fallback={null}>
+          <DotField onState={setState} />
+        </Suspense>
+      ) : null}
+    </div>
+  );
+}
+
 function SectionHead({ mark, id, children }: { mark: string; id: string; children: ReactNode }) {
   return (
     <div {...stylex.props(styles.sectionHead)}>
@@ -308,6 +344,7 @@ export function Home() {
   return (
     <main {...stylex.props(styles.page)}>
       <section aria-labelledby="hero-heading" data-hero {...stylex.props(styles.gutter, styles.hero)}>
+        <HeroField />
         <div {...stylex.props(styles.heroContent)}>
           <div {...stylex.props(styles.runningHead, reveal && styles.reveal)}>
             <div {...stylex.props(styles.runningRow)}>

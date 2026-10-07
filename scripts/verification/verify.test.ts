@@ -35,7 +35,7 @@ describe('pnpm verify list', () => {
     assert.equal(exit, 0);
     assert.equal(document.schemaVersion, 1);
     assert.equal(document.status, 'discovered');
-    assert.deepEqual(document.features.map((f: { id: string }) => f.id), ['blocks', 'catalogue', 'dialog', 'elements', 'motion', 'site-discovery', 'site-navigation', 'theme-studio']);
+    assert.deepEqual(document.features.map((f: { id: string }) => f.id), ['blocks', 'catalogue', 'dialog', 'elements', 'motion', 'site-discovery', 'site-landing', 'site-navigation', 'theme-studio']);
     assert.deepEqual(document.scenarios.map((s: { id: string }) => s.id), [
       'blocks.preview',
       'catalogue.filter-and-demo',
@@ -43,6 +43,8 @@ describe('pnpm verify list', () => {
       'elements.fixture-interactions',
       'motion.reduced-loop',
       'site-discovery.discovery-surface',
+      'site-landing.dot-field',
+      'site-landing.without-field',
       'site-navigation.route-and-mode',
       'theme-studio.draft-history',
       'theme-studio.pane-boundaries',

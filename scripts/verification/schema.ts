@@ -19,6 +19,13 @@ export type Variant = { [A in Axis]?: (typeof AXES)[A][number] };
 
 export const RESETS = ['unmount', 'fresh-context'] as const;
 
+/**
+ * Platform capabilities a production scenario may require, which picks the browser its cells run in, or
+ * declare removed before load: what a device may lack, never application code.
+ */
+export const CAPABILITIES = ['webgl'] as const;
+export type Capability = (typeof CAPABILITIES)[number];
+
 /** Who settled a feature's intent: drafted from code, agreed by a person, or an open question. */
 export const KNOWLEDGE = ['proposed', 'confirmed', 'unresolved'] as const;
 
@@ -71,7 +78,7 @@ export type ScenarioRecord = {
   fixtures: FixtureReference[];
   preconditions: string[];
   steps: { action: string; expect: string }[];
-  targets: { target: Target; variants: Variants }[];
+  targets: { target: Target; variants: Variants; require?: Capability[]; remove?: Capability[] }[];
 };
 
 type Check = (value: unknown, at: string, problems: string[]) => void;
@@ -176,7 +183,7 @@ const scenarioShape = shape({
   ),
   preconditions: list(text),
   steps: list(shape({ action: text, expect: text }), { nonempty: true }),
-  targets: list(shape({ target: oneOf(TARGETS), variants }), { nonempty: true }),
+  targets: list(shape({ target: oneOf(TARGETS), variants }, { require: list(oneOf(CAPABILITIES), { nonempty: true }), remove: list(oneOf(CAPABILITIES), { nonempty: true }) }), { nonempty: true }),
 });
 
 export function featureProblems(value: unknown): string[] {
@@ -188,6 +195,19 @@ export function featureProblems(value: unknown): string[] {
 export function scenarioProblems(value: unknown): string[] {
   const problems: string[] = [];
   scenarioShape(value, 'scenario', problems);
+  const targets = isObject(value) && Array.isArray(value.targets) ? value.targets : [];
+  targets.forEach((entry, index) => {
+    if (!isObject(entry)) return;
+    for (const key of ['require', 'remove'] as const) {
+      if (key in entry && entry.target !== 'production') {
+        problems.push(`scenario.targets[${index}].${key} is for the production target only, where the runner picks or changes the browser`);
+      }
+    }
+    const [required, removed] = [entry.require, entry.remove].map((value) => (Array.isArray(value) ? value : []));
+    for (const capability of required ?? []) {
+      if (removed?.includes(capability)) problems.push(`scenario.targets[${index}] both requires and removes ${String(capability)}`);
+    }
+  });
   return problems;
 }
 

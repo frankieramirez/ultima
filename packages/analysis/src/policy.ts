@@ -93,6 +93,11 @@ export const POLICY: DependencyPolicy = {
   },
 };
 
+/** The design assets under `ultima-assets/` the docs may import, each by name and from one importer. */
+export const DESIGN_ASSETS: readonly { asset: string; importer: string; authority: string }[] = [
+  { asset: 'ultima-assets/shaders/dot-field.glsl', importer: 'apps/docs/src/dot-field.tsx', authority: 'docs/spec/ultima.md#landing-motion' },
+];
+
 export function packageName(specifier: string): string {
   const segments = specifier.split('/');
   return specifier.startsWith('@') ? segments.slice(0, 2).join('/') : (segments[0] as string);
