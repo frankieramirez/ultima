@@ -236,6 +236,7 @@ describe('the old scanner against ULT-DOCS-001', () => {
       'apps/docs/src/catalogue-preview.tsx borderRadius',
       'apps/docs/src/catalogue-preview.tsx borderWidth',
       'apps/docs/src/demo.tsx backgroundColor',
+      'apps/docs/src/demo.tsx backgroundColor',
       'apps/docs/src/demo.tsx borderRadius',
       'apps/docs/src/demo.tsx borderRadius',
       'apps/docs/src/demo.tsx borderWidth',

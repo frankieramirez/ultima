@@ -388,6 +388,11 @@ export const items: Record<string, RegistryItemDescription> = {
       "https://ultima.systems/r/tokens-css.json"
     ]
   },
+  "crm-01": {
+    "title": "CRM 01",
+    "description": "A contact manager: workspace navigation, a searchable and filterable contact list, and the selected contact's record with its activity, notes and details.",
+    "docs": "Render it from a route of your own: import { Crm01 } from '@/components/crm-01/crm-01'. Search, the filter, the selection, the note composer and Log activity are wired; Add contact and the navigation links have no handler of their own, and Email and Call are mailto: and tel: links."
+  },
   "dashboard-01": {
     "title": "Dashboard 01",
     "description": "A store overview: workspace navigation, four key metrics, a revenue chart with its data table, top products and recent orders.",

@@ -272,7 +272,7 @@ Generate these small source projections and commit them with the inputs:
 | Output | Contract |
 | --- | --- |
 | `registry/items.config.ts` | Existing registry description shape, with installable records only; authored setup and vendored-artifact dependency declarations retained. |
-| `apps/docs/src/generated/catalogue.ts` | React entries with their groups, and the group and release definitions. Each entry carries its derived catalogue number. Existing `components.ts` becomes a small adapter for helpers such as `componentsInGroup`, without a second authored item list. |
+| `apps/docs/src/generated/catalogue.ts` | React entries with their groups, and the group and release definitions. Each entry carries its derived catalogue number and the primitive its source imports, the Base UI or Zag module named for the item or else the first, which the component page shows. Existing `components.ts` becomes a small adapter for helpers such as `componentsInGroup`, without a second authored item list. |
 | `apps/docs/src/generated/component-pages.ts` | Explicit eager MDX imports and the component-page map. `router.tsx` retains route construction, breadcrumbs and navigation behavior, and imports this map. |
 | `apps/docs/src/generated/elements.ts` | Element catalogue presentation assembled from descriptors and source-derived tag/enum data. The existing `elements.ts` keeps a thin compatibility export. |
 | `apps/docs/src/generated/blocks.ts` | Block entries with derived numbers, file trees and Built from lists, as [Blocks](ultima.md#generated-wiring) specifies. |

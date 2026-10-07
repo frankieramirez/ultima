@@ -14,6 +14,8 @@ export type ComponentEntry = {
   group: ComponentGroup;
   description: string;
   release: ComponentRelease;
+  /** The headless component the source builds on, or `null` for one on native elements alone. */
+  primitive: { library: 'base-ui' | 'zag'; module: string } | null;
 };
 
 /** One group's entries, alphabetical. */
