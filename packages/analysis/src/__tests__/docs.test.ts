@@ -178,7 +178,7 @@ describe('the docs rules over the repository', () => {
     assert.deepEqual(report.diagnostics, []);
     const raw = run({ [EXCEPTIONS]: NO_EXCEPTIONS });
     const count = (ruleId: string) => raw.diagnostics.filter((diagnostic) => diagnostic.ruleId === ruleId).length;
-    assert.equal(count('ULT-DOCS-001'), 34);
+    assert.equal(count('ULT-DOCS-001'), 35);
     assert.equal(count('ULT-DOCS-002'), 1);
     assert.equal(count('ULT-DOCS-REVIEW-001'), 1);
     assert.equal(count('ULT-ANALYSIS-001'), 0);

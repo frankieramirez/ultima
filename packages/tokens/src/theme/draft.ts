@@ -373,10 +373,22 @@ export function isPresetEdited(draft: ThemeDraft): boolean {
     .some((key) => JSON.stringify(draft[key]) !== JSON.stringify(baseline[key]));
 }
 
-export function resolveDraft(draft: ThemeDraft): ResolvedDraft {
+function derivedTables(draft: ThemeDraft): ResolvedDraft {
   const scales = generateScales(draft.color, draft.recipeVersion, draft.preset?.id === 'ultima');
   const ink = draft.accentFill === 'ink' ? generateInkStates(draft.color.mithril) : null;
-  const resolve = (mode: ColorMode): TokenTable =>
-    applyOverrides({ ...colorTable(scales, mode, ink), ...nonColorTable(draft, mode) }, draft.overrides[mode], mode);
-  return { dark: resolve('dark'), light: resolve('light') };
+  const derive = (mode: ColorMode): TokenTable => ({ ...colorTable(scales, mode, ink), ...nonColorTable(draft, mode) });
+  return { dark: derive('dark'), light: derive('light') };
+}
+
+export function modeResolver(draft: ThemeDraft, mode: ColorMode): (overrides: Partial<TokenTable>) => TokenTable {
+  const derived = derivedTables(draft)[mode];
+  return (overrides) => applyOverrides(derived, overrides, mode);
+}
+
+export function resolveDraft(draft: ThemeDraft): ResolvedDraft {
+  const derived = derivedTables(draft);
+  return {
+    dark: applyOverrides(derived.dark, draft.overrides.dark, 'dark'),
+    light: applyOverrides(derived.light, draft.overrides.light, 'light'),
+  };
 }

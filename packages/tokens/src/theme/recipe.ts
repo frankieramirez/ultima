@@ -95,7 +95,7 @@ function pythonRound(value: number): number {
   return integer % 2 === 0 ? integer : integer + 1;
 }
 
-function oklchToHex(L: number, C: number, H: number): string {
+export function oklchToHex(L: number, C: number, H: number): string {
   let chroma = C;
   if (!inGamut(oklchToRgb(L, C, H))) {
     let lo = 0;
@@ -165,7 +165,7 @@ export function srgbToLin(c: number): number {
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 }
 
-function hexToOklch(hex: string): { C: number; h: number } {
+export function hexToOklch(hex: string): { L: number; C: number; h: number } {
   const n = Number.parseInt(hex.slice(1), 16);
   const r = srgbToLin(((n >> 16) & 255) / 255);
   const g = srgbToLin(((n >> 8) & 255) / 255);
@@ -175,7 +175,11 @@ function hexToOklch(hex: string): { C: number; h: number } {
   const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
   const a = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s;
   const b2 = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s;
-  return { C: Math.hypot(a, b2), h: ((Math.atan2(b2, a) * 180) / Math.PI + 360) % 360 };
+  return {
+    L: 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    C: Math.hypot(a, b2),
+    h: ((Math.atan2(b2, a) * 180) / Math.PI + 360) % 360,
+  };
 }
 
 export function seedFromSrgb(hex: string, scale: ScaleName, current?: ScaleSeed): ScaleSeed {

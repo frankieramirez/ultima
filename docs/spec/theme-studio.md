@@ -129,7 +129,7 @@ A draft may sit invalid: a committed edit that fails the gate applies and is mar
 
 #### Fixing a failing pairing
 
-Decided on [Decide which Theme Studio redesign behaviors amend the studio spec](https://github.com/frankieramirez/ultima/issues/650). Status: decided, not yet implemented. The draft report offers two fixes on each failing pairing. Each names the token it changes, its **target**: the pairing's overridden token, or its foreground when both or neither are overridden. A pairing whose preferred target is not directly editable targets the other token.
+Decided on [Decide which Theme Studio redesign behaviors amend the studio spec](https://github.com/frankieramirez/ultima/issues/650). Status: implemented. The draft report offers two fixes on each failing pairing. Each names the token it changes, its **target**: the pairing's overridden token, or its foreground when both or neither are overridden. A pairing whose preferred target is not directly editable targets the other token.
 
 **Use closest passing value** moves the target to the nearest lightness that passes. It holds the target's current OKLCH hue and chroma and scans lightness from its current value in steps of 0.001, outward in both directions, across 0 to 1. Each candidate is gamut-mapped by the recipe's own rule (chroma reduced to the sRGB boundary at that lightness) and quantized to `#rrggbb`. A candidate is accepted only when it passes every declared pairing the target takes part in, in that mode, at full precision after quantization. Fixing one pairing must not break another. The smallest lightness distance wins; at an equal distance, the candidate with the higher ratio against the failing partner wins. The search is deterministic, so a fixture can pin its output.
 
