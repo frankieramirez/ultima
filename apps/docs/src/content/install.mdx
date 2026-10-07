@@ -1,3 +1,7 @@
+import { InfoIcon } from '@phosphor-icons/react';
+import { Card, Code } from '@ultima/ui';
+
+import { Callout, Columns } from '../foundation';
 import { HandSteps } from '../hand-steps';
 import { InstallCommands } from '../install-commands';
 
@@ -5,7 +9,7 @@ import { InstallCommands } from '../install-commands';
 
 Ultima ships as a shadcn-compatible registry. You copy source into your project with the CLI and own it after that.
 
-`npx shadcn init` is not supported. Its preflight requires Tailwind on disk, and Ultima does not use Tailwind. The entry is a per-target setup item, which is a universal `registry:item` and installs into a project that has no `components.json` yet.
+<Callout icon={<InfoIcon />} title={<><Code>npx shadcn init</Code> is not supported.</>}>Its preflight requires Tailwind on disk, and Ultima does not use Tailwind. The entry is a per-target setup item, which is a universal `registry:item` and installs into a project that has no `components.json` yet.</Callout>
 
 ## Commands
 
@@ -19,9 +23,22 @@ Add more components the same way: `npx shadcn add @ultima/card`. `registryDepend
 
 A setup item never overwrites a file your scaffold already owns.
 
+<Columns>
+<Card.Root>
+<Card.Body>
+
 **Vite.** `components.json` and `ultima.vite.ts` at the project root. The second exports `ultimaStylex()`, the StyleX unplugin set up with CSS layers on, runtime injection off, module resolution rooted at the project, and the `@/` alias. You add two lines to your own Vite config: the import, and the plugin call first in the plugin list. Shipping a Vite config of our own would destroy yours.
 
+</Card.Body>
+</Card.Root>
+<Card.Root>
+<Card.Body>
+
 **Next.js App Router.** `components.json`, a Babel config, a PostCSS config, and `app/ultima.css`, which holds the StyleX marker. None of those exist in a fresh App Router app, so nothing is clobbered. Turbopack finds the Babel config on its own.
+
+</Card.Body>
+</Card.Root>
+</Columns>
 
 **Both.** Each `components.json` sets the style to `base-ultima`, whose prefix enables Base UI's `render` transform. It leaves the Tailwind config empty and keeps Tailwind's CSS variables on, because turning them off enables a transform that rewrites string literals in installed source. The aliases are flat, for components and lib, and the file registers the `@ultima` namespace. React Server Components are on for Next and off for Vite.
 
