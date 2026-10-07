@@ -3,6 +3,7 @@ import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Card, Separator, Tabs } from '@ultima/ui';
 import { useState, type ComponentType, type ReactNode } from 'react';
 
+import { AnatomyPanel } from './anatomy-panel';
 import { breakpoints } from './breakpoints.stylex';
 import { CopyButton } from './copy-button';
 import { HighlightedCode } from './highlighted-code';
@@ -99,6 +100,7 @@ export function Demo({
   number,
   caption,
   plate = false,
+  anatomy,
 }: {
   component: ComponentType;
   source: string;
@@ -108,6 +110,8 @@ export function Demo({
   number?: string;
   caption?: ReactNode;
   plate?: boolean;
+  /** The item whose parts a third tab labels, and the module it renders: an overlay's open `anatomy.tsx`, or this demo. */
+  anatomy?: { item: string; component: ComponentType };
 }) {
   const [tab, setTab] = useState<string | number>('preview');
   return (
@@ -134,6 +138,11 @@ export function Demo({
               <Tabs.Tab value="code" style={styles.tab}>
                 Code
               </Tabs.Tab>
+              {anatomy && (
+                <Tabs.Tab value="anatomy" style={styles.tab}>
+                  Anatomy
+                </Tabs.Tab>
+              )}
               <Tabs.Indicator />
             </Tabs.List>
             <CopyButton text={source} ariaLabel="Copy example source" />
@@ -148,6 +157,11 @@ export function Demo({
         <Tabs.Panel value="code" style={styles.code}>
           <HighlightedCode code={source} lang={lang} style={styles.source} />
         </Tabs.Panel>
+        {anatomy && (
+          <Tabs.Panel value="anatomy">
+            <AnatomyPanel item={anatomy.item} component={anatomy.component} />
+          </Tabs.Panel>
+        )}
       </Tabs.Root>
       {caption != null && (
         <>

@@ -23,7 +23,8 @@ describe('the repository catalogue', () => {
   });
 
   test('matches the committed generated wiring byte for byte', () => {
-    assert.deepEqual(check(root), { diagnostics: [], freshness: { added: [], changed: [], stale: [] } });
+    const { diagnostics, freshness } = check(root);
+    assert.deepEqual({ diagnostics, freshness }, { diagnostics: [], freshness: { added: [], changed: [], stale: [] } });
   });
 
   test('re-exports from the barrel exactly what the component files export, modifiers included', () => {

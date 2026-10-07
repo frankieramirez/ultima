@@ -19,7 +19,7 @@ describe('the repository', () => {
   test('passes every delivered rule with no finding, and each exception matches its one site', () => {
     assert.deepEqual(report.diagnostics, []);
     assert.equal(report.status, 'clean');
-    assert.equal(report.counts.excepted, 41);
+    assert.equal(report.counts.excepted, 46);
     assert.equal(exitCode(report), 0);
   });
 
@@ -103,7 +103,7 @@ describe('the output', () => {
     const json = JSON.parse(formatJson(failing));
     assert.equal(json.schemaVersion, 1);
     assert.equal(json.status, 'violations');
-    assert.deepEqual(json.counts, { blocking: 2, advisory: 0, incomplete: 2, excepted: 41 });
+    assert.deepEqual(json.counts, { blocking: 2, advisory: 0, incomplete: 2, excepted: 46 });
     assert.ok(json.scopes.some((entry: { kind: string }) => entry.kind === 'react-component'));
     for (const diagnostic of json.diagnostics) {
       for (const field of ['ruleId', 'severity', 'file', 'start', 'end', 'message', 'repair', 'link']) assert.ok(field in diagnostic, field);

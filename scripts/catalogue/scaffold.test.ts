@@ -9,7 +9,7 @@ import { after, describe, test } from 'node:test';
 import { diskFiles } from './files.ts';
 import { diskFixture, testPolicy as policy } from './fixture.ts';
 import { check, generate } from './generate.ts';
-import { OUTPUTS } from './projections.ts';
+import { OUTPUTS, anatomyModule } from './projections.ts';
 import { INCOMPLETE_MARKER, MANIFESTS, type Manifest, ScaffoldError, main, planScaffold, writeScaffold } from './scaffold.ts';
 
 const repository = join(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -94,6 +94,11 @@ const CREATED = [
   'apps/docs/src/content/components/ribbon.mdx',
 ];
 
+const fresh = (root: string) => {
+  const { diagnostics, freshness } = check(root, policy);
+  return { diagnostics, freshness };
+};
+
 const generated = (root: string) => Object.fromEntries(Object.values(OUTPUTS).map((path) => [path, read(root, path)]));
 
 describe('a React scaffold', () => {
@@ -102,7 +107,7 @@ describe('a React scaffold', () => {
     const before = snapshot(root);
     const plan = planScaffold(diskFiles(root), 'react', 'ribbon', reactRequest(), policy);
     assert.deepEqual([...plan.create.keys()], CREATED);
-    assert.deepEqual(plan.regenerate, [OUTPUTS.registry, OUTPUTS.catalogue, OUTPUTS.pages, OUTPUTS.barrel]);
+    assert.deepEqual(plan.regenerate, [OUTPUTS.registry, OUTPUTS.catalogue, OUTPUTS.pages, OUTPUTS.anatomy, OUTPUTS.anatomyBarrel, anatomyModule('ribbon'), OUTPUTS.barrel]);
     assert.match(plan.remaining.join('\n'), /Proof bar 2, The name resolves: role status, named by its text/);
     assert.deepEqual(snapshot(root), before);
   });
@@ -112,9 +117,9 @@ describe('a React scaffold', () => {
     const { manifest } = writeScaffold(root, 'react', 'ribbon', reactRequest(), { policy });
     assert.equal(manifest.status, 'complete');
     assert.deepEqual(manifest.created, CREATED);
-    assert.deepEqual(manifest.regenerated, [OUTPUTS.registry, OUTPUTS.catalogue, OUTPUTS.pages, OUTPUTS.barrel]);
+    assert.deepEqual(manifest.regenerated, [OUTPUTS.registry, OUTPUTS.catalogue, OUTPUTS.pages, OUTPUTS.anatomy, OUTPUTS.anatomyBarrel, anatomyModule('ribbon'), OUTPUTS.barrel]);
     for (const path of CREATED.slice(1)) assert.match(read(root, path), new RegExp(INCOMPLETE_MARKER), path);
-    assert.deepEqual(check(root, policy), { diagnostics: [], freshness: { added: [], changed: [], stale: [] } });
+    assert.deepEqual(fresh(root), { diagnostics: [], freshness: { added: [], changed: [], stale: [] } });
     assert.match(read(root, OUTPUTS.barrel), /export \{\n {2}Ribbon,\n {2}type RibbonProps,\n {2}type RibbonVariant,\n {2}type RibbonSize,\n\} from '\.\/ribbon';/);
 
     const source = read(root, 'packages/ui/src/ribbon.tsx');
@@ -223,7 +228,7 @@ describe('a block scaffold', () => {
     assert.equal(manifest.status, 'complete');
     assert.deepEqual(manifest.created, BLOCK_CREATED);
     assert.deepEqual(manifest.regenerated, [OUTPUTS.registry, OUTPUTS.blocks, OUTPUTS.browser]);
-    assert.deepEqual(check(root, policy), { diagnostics: [], freshness: { added: [], changed: [], stale: [] } });
+    assert.deepEqual(fresh(root), { diagnostics: [], freshness: { added: [], changed: [], stale: [] } });
     for (const path of BLOCK_CREATED.slice(1)) assert.match(read(root, path), new RegExp(INCOMPLETE_MARKER), path);
     assert.match(read(root, BLOCK_CREATED[0] as string), /"recipes": \[\]|recipes: \[\]/);
     assert.match(read(root, BLOCK_CREATED[1] as string), /^export function Example01\(\) \{$/m);

@@ -12,4 +12,5 @@ export default {
   release: 'v0.2',
   order: 5,
   group: 'overlays',
+  elementless: ['Root', 'Provider', 'Portal', 'VirtualKeyboardProvider', 'Handle'],
 } satisfies ReactDescriptor;

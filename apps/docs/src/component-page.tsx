@@ -30,6 +30,7 @@ import {
 
 import { breakpoints } from './breakpoints.stylex';
 import { components, type ComponentEntry } from './components';
+import { anatomyTabs } from './generated/anatomy-tabs';
 import { CopyButton } from './copy-button';
 import { Demo } from './demo';
 import { DocumentLayout } from './document-layout';
@@ -617,6 +618,9 @@ function demoted(block: Block): Block {
   return <h4 key={block.key} {...block.props} {...stylex.props(styles.h4)} />;
 }
 
+/** An Anatomy figure's labels need the whole row. */
+const takesFullRow = (plate: ReactElement | undefined) => Boolean((plate?.props as ComponentProps<typeof Demo> | undefined)?.anatomy);
+
 /** Consecutive plates that both fit half the row pair up (`h`); any other plate takes the row (`f`). */
 function pairSpans(fits: boolean[]): string {
   let spans = '';
@@ -637,7 +641,8 @@ function Plates({ children, folded }: { children: ReactElement[]; folded: (key: 
     if (!node || layout) return;
     const width = node.clientWidth;
     const gap = parseFloat(getComputedStyle(node).columnGap) || 0;
-    const fits = Array.from(node.children, (plate) => {
+    const fits = Array.from(node.children, (plate, index) => {
+      if (takesFullRow(children[index])) return false;
       const inner = plate.querySelector<HTMLElement>('[data-component-preview]');
       const stage = inner?.parentElement;
       if (!inner || !stage) return false;
@@ -869,6 +874,27 @@ function Pager({ entry }: { entry: ComponentEntry }) {
 
 const hasDemo = (section: Section) => section.blocks.some((block) => block.type === Demo);
 
+/** An overlay's first demo is closed, so its page has the tab only once an `anatomy.tsx` renders it open. */
+export function hasAnatomyTab(entry: ComponentEntry): boolean {
+  const tab = anatomyTabs[entry.item];
+  return tab !== undefined && tab.parts.length >= 2 && (entry.group !== 'overlays' || tab.demo !== undefined);
+}
+
+function withAnatomy(sections: Section[], entry: ComponentEntry): Section[] {
+  const tab = anatomyTabs[entry.item];
+  if (!tab || !hasAnatomyTab(entry)) return sections;
+  const first = sections.flatMap((section) => section.blocks).find((block) => block.type === Demo);
+  if (!first) return sections;
+  const { component } = first.props as ComponentProps<typeof Demo>;
+  const anatomy = { item: entry.item, component: tab.demo ?? component };
+  return sections.map((section) => ({
+    ...section,
+    blocks: section.blocks.map((block) =>
+      block === first ? (cloneElement(block as ReactElement<ComponentProps<typeof Demo>>, { anatomy }) as Block) : block,
+    ),
+  }));
+}
+
 type Part = { kind: 'examples'; sections: Section[] } | { kind: 'section'; section: Section };
 
 /**
@@ -890,7 +916,9 @@ function partsOf(sections: Section[]): Part[] {
 }
 
 export function ComponentPage({ entry, Content }: { entry: ComponentEntry; Content: MdxContent }) {
-  const { intro, sections } = sectionsOf(blocksOf(Content));
+  const page = sectionsOf(blocksOf(Content));
+  const { intro } = page;
+  const sections = withAnatomy(page.sections, entry);
   const titleBlock = intro.find((block) => block.type === H1);
   const lede = intro.find((block) => block.type === P);
   const introduction = intro.filter((block) => block !== titleBlock && block !== lede);
