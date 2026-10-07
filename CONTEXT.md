@@ -505,3 +505,7 @@ The consumer workflow for choosing a complete theme in Studio, installing its ge
 ## Complete theme preset
 
 A named, versioned definition of an entire Theme Studio draft: color seeds, typography, density, shape, elevation, motion, and clean override, lock, and shuffle state. Selecting one replaces the working draft in one undoable step. Its stable ID and revision let an edited or saved draft reset to the same definition later. The [preset contract](docs/spec/theme-studio.md#complete-theme-preset-amendment) defines the initial catalogue and release bar.
+
+## First-screen exercise
+
+The acceptance test for consumer adoption. Someone new to Ultima, either a fresh agent or a person, starts in an empty supported project with a fixed product brief and only public guidance. They build a custom-themed, responsive screen with a form and a portalled control. The run records every manual intervention and undocumented decision, the styling the project emits, and the production behavior measured by the consumer proof runner. Doctor and check results feed the record but are never rendered proof. Settled on [#731](https://github.com/frankieramirez/ultima/issues/731).
