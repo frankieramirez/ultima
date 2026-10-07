@@ -280,6 +280,17 @@ export default [
     authority: 'docs/spec/ultima.md#painted-declarations-the-docs-keeps',
   },
   {
+    id: 'swatch-anchor-border-color',
+    rule: 'ULT-DOCS-001',
+    path: 'apps/docs/src/swatch.tsx',
+    symbol: 'styles.anchor',
+    target: 'borderColor',
+    expression: "color['--ult-color-text']",
+    count: 1,
+    reason: "The ring on a scale's brand anchor is the same chip's border, drawn in the text color.",
+    authority: 'docs/spec/ultima.md#painted-declarations-the-docs-keeps',
+  },
+  {
     id: 'studio-preview-canvas-background-color',
     rule: 'ULT-DOCS-001',
     path: 'apps/docs/src/theme-studio-preview.tsx',
