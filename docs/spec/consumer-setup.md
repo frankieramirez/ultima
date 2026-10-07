@@ -1,0 +1,95 @@
+# Consumer project bootstrap
+
+Decided on [Decide the supported project bootstrap experience](https://github.com/frankieramirez/ultima/issues/726), under [Map: Make Ultima a plug-and-play StyleX design system](https://github.com/frankieramirez/ultima/issues/725). Status: accepted for implementation. `init` does not exist in the current CLI. These commands specify future behavior; the current [install walkthrough](../../apps/docs/src/content/install.mdx) remains the usable entry until implementation lands. [Ultima's principles](ultima.md#principles), [Theme adoption](ultima.md#theme-adoption) and [ADR 0005](../adr/0005-hosted-agent-guidance.md) set the ownership boundaries.
+
+## Entry point and command journey
+
+Make `npx ultima-design@latest init` the primary guided entry. For a new directory it invokes a pinned official framework scaffold, installs Ultima through shadcn, and completes supported setup edits. For an existing directory it detects the application and proposes bounded edits. Ultima maintains integration recipes and a small preview, rather than separate starter repositories. The framework owns its scaffold; installed source and application edits belong to the consumer.
+
+Before writing, interactive `init` shows the target, layout, exact dependencies, file diffs, subprocess commands and manual steps, then asks to apply. Cancellation leaves the project unchanged. `--plan --json` emits a versioned plan without writing project files, installing packages or executing configuration. `--apply <plan.json>` applies an inspected plan without another prompt. Noninteractive calls without either mode refuse to write. Plan operations are typed recipe data, never arbitrary shell commands.
+
+New-project examples, once implemented:
+
+```sh
+npx ultima-design@latest init my-app --framework vite --package-manager pnpm --harness codex
+npx ultima-design@latest init my-next-app --framework next --layout src --package-manager npm
+```
+
+The first previews a Vite React TypeScript application, setup, preview and pinned CLI dependency, plus Codex's managed skill and hook. The second creates Next App Router under `src/app`. Next defaults to root `app` for a new project when layout is omitted; Vite uses `src`. Framework selection is required for an empty target. Both recipes disable Tailwind and optional React Compiler integrations. The pinned Next scaffold recipe disables git initialization and optional agent-document/feedback generation. `init` creates no commit or repository. Verify those options against the pinned scaffold; do not rely on remembered prompts or upstream defaults.
+
+Existing-project example:
+
+```sh
+npx ultima-design@latest init . --plan --json > /tmp/ultima-init-plan.json
+npx ultima-design@latest init --apply /tmp/ultima-init-plan.json
+```
+
+The plan records the canonical application root, CLI and recipe identity, input hashes, registry payload hashes, manager/version, harness selection and output inventory. Apply rechecks these inputs before edits. Stale files or changed registry payloads require replanning. A plan cannot override an existing framework/layout mismatch; `--apply` accepts only the plan path, so other options cannot change reviewed operations. Network failure or an unknown plan version returns an incomplete result.
+
+## Supported layouts and compatibility
+
+| Target | Initial automated contract |
+| --- | --- |
+| Vite React TypeScript | Root `package.json`, `vite.config.ts`, `index.html`, `src/main.tsx`. `@/*` resolves to `./src/*` in root/application tsconfigs. Fresh aliases install UI under `src/components/ui` and shared source under `src/lib`. |
+| Next App Router TypeScript, root | Root configuration, `app/layout.tsx`, `@/*` resolving inside the root. Fresh UI/shared paths are `components/ui` and `lib`; marker CSS lives under `app`. |
+| Next App Router TypeScript, src | Root configuration, `src/app/layout.tsx`, `@/*` resolving to `./src/*`. Fresh UI/shared paths are `src/components/ui` and `src/lib`; marker CSS lives under `src/app`. Leave no unused root `app` directory. |
+
+Require one unambiguous application and active layout. Follow tsconfig inheritance when resolving aliases. Preserve existing compatible `components.json` aliases that resolve inside the application and satisfy doctor/check. Fresh files use the defaults above. Conflicting `@/` targets, incompatible style/RSC/transform settings, dual active Next layouts or an incompatible registry installation block automatic apply. Keep unrelated namespaces and configuration keys.
+
+Initially automate npm and pnpm with `node_modules`. Detect the lockfile and `packageManager` field, preserving both. Multiple lockfiles or conflicting manager declarations require a resolved choice before planning. New projects use an explicit manager flag, otherwise an unambiguous enclosing preference or npm. Record and use the exact manager version. Do not convert an existing lockfile or mutate an enclosing workspace. Yarn, Bun, PnP, workspace-wide setup, Next Pages Router, JavaScript-only apps and custom source roots follow manual setup until separately verified.
+
+Each CLI release bundles exact tested scaffold/framework/React/StyleX/primitive/manager combinations, their Node engine intersection and recognized configuration shapes. A new project selects a recipe instead of independently resolving every dependency to latest. Existing dependencies must meet declared peers and a tested recipe, including matching StyleX runtime/compiler versions. If compatibility requires upgrading existing framework, React or StyleX dependencies, refuse automatic apply and print the manual upgrade. Above-tested versions may remain advisory in `doctor` while blocking automatic initialization; unknown versions are incomplete. Check resolved versions after installation against the approved recipe.
+
+Setup/component descriptors own dependencies. Vite uses the StyleX runtime, unplugin and `unplugin`; Next uses the runtime, Babel/PostCSS plugins and TypeScript. Components install their primitive and shared registry dependencies transitively. `init` adds a pinned `ultima-design` dev dependency using the selected manager. Components, tokens and shared source still come through shadcn; no additional `@ultima/*` npm package or second installer is introduced.
+
+## File and edit contract
+
+| Files | New project | Existing project |
+| --- | --- | --- |
+| `package.json`, selected lockfile | Scaffold dependencies, approved Ultima dependencies and pinned CLI. | Add approved missing dependencies, preserving scripts and unrelated metadata. The selected manager owns lockfile updates. |
+| `components.json`, `ultima.vite.ts`, Next Babel/PostCSS config, marker CSS | Install registry setup assets and adapt the selected layout. | Create absent assets; preserve equivalent files. Propose syntax-aware additions to recognized shapes, preserving other plugins/options. Conflicting or computed shapes require manual repair. |
+| Root/application tsconfigs, `vite.config.ts` | Complete aliases; put `ultimaStylex()` before React. | Add only missing compatible entries, retaining comments and existing options. Never execute configuration to inspect it. |
+| CSS entry, resets, Next layout | Wire the marker once and layer the scaffold reset. | Show import/reset diffs. Move only recognized reset rules into `@layer reset`, preserving order and application/theme rules. Unknown CSS requires manual repair. Keep providers, metadata, mode attributes and font loading. |
+| Registry components/shared source | Install Button, Card and Dialog and their transitive dependencies through shadcn. | Install only missing items. Preserve existing source; edited, unstamped or incompatible collisions require consumer review outside automatic apply. Never pass blanket overwrite. |
+| Preview and route | Replace only the recognized scaffold example with the preview on `/`. | Next adds an unused `/ultima-preview` route. Vite adds `src/ultima-preview.tsx` and prints the exact import/render step for the consumer's application/router. Preserve existing pages and routing; collisions block creation. |
+| Theme artifacts, root documents | Use accepted Neutral/Tight base after its coupled rollout. Preserve the framework's README. | Preserve theme CSS, JSON draft, `DESIGN.md`, `AGENTS.md`, `CLAUDE.md`, README and rules files. Report theme/import state and unresolved brand/cascade work; never substitute Neutral automatically. |
+| Agent files | Delegate detected or explicitly selected harnesses to existing `install`. | Use the same reviewed delegation, retaining foreign hooks and external-installer skills. Edited managed skills and invalid hook JSON remain conflicts. |
+
+This command is a separate bounded-write exception in ADR 0005. `install` keeps its existing managed-skill/hook write set. `init` neither writes nor merges root guidance documents. Product-theme discovery, design-document handling, full-screen recipes, mode/portal packaging and lint policy remain with the other map questions. Report those requirements without settling them here.
+
+## Conflicts, idempotence and recovery
+
+Validate the complete inventory before application writes. Targets must stay inside the chosen application; refuse escaping symlinks and edits to inherited config outside it. Existing uncommitted changes may participate only through inspected hashes/diffs. Execute subprocesses with structured arguments and a fixed root.
+
+For a new project, apply in private staging, verify the scaffold matches its recipe, then publish into the absent destination after setup checks and build pass. Refuse an existing destination, including a race during apply. On failure retain the staging path and logs while leaving the requested destination absent. A separately scaffolded empty app uses the existing-project path.
+
+For an existing app, save original bytes and modes for the write inventory in a private recovery directory first. Journal operations, before/after hashes and subprocess outcomes. Inspect and pin registry payloads and transitive destinations before shadcn writes; reject unexpected targets or payload changes. Stop subsequent operations on failure/interruption. A rerun reconciles the journal with actual files, proposing only missing work and preserving intervening consumer edits.
+
+`init --rollback <run-id>` restores originals or removes created files only when the current hashes match this run's recorded outputs. Otherwise name the consumer edit and leave it for manual recovery. Retain failed subprocess logs. Package-manager effects cannot be an atomic file transaction: restore package/lockfile bytes where safe and print the exact reinstall command. Do not promise to restore arbitrary lifecycle-script effects or delete shared package caches. Successful reruns create no duplicate imports, plugins, dependencies, routes or hooks, and never replace edited installed source.
+
+## Finish state and checks
+
+The small preview contains a heading, a Card surface, a Button that changes visible state, and a named Dialog with focus restoration. Its arrangement uses StyleX/semantic tokens and fits a narrow viewport. It imports installed consumer source. Next retains a server page with the interactive preview behind a client boundary. New applications use system mode with the accepted dark fallback and documented explicit dark/light activation. Font loading remains consumer-owned. A persisted mode switch or custom theme is separate work. Completing the coupled Neutral/Tight base rollout is a prerequisite for recommending this entry point.
+
+Run the pinned local CLI's `doctor` and `check`, the recipe's typecheck and production build; retain each result. The generated new project must complete all of them. Existing application failures stay visible and prevent a completion claim. Result conventions remain: 0 for completed required setup/checks, 1 for failed checks or conflicts, 2 for invalid invocation, 3 for an incomplete run. A manual mounting/theme step or an unexecuted required check keeps the result incomplete, even when installation succeeded.
+
+Print created/edited/preserved files, resolved versions, recovery path, check results, and exact dev/production commands and preview URL. State whether the screen was mounted and whether browser checks ran. Every remaining manual step names its file, copyable edit/command and verification. After the printed Vite mount step, rerun `init` to verify setup and build. Harness selection uses `install`'s detection and repeatable override. With none detected, report skipped agent setup and the exact pinned install command; this does not block the application. Harness trust prompts stay the consumer's next action.
+
+Current managed hooks resolve the Git repository root before running the CLI. Delegate hook installation only when that root equals the selected application root. A fresh project without Git, or an application nested in another repository, skips hook setup and reports it explicitly. For a standalone fresh app, print `git init` as an optional consumer action followed by the selected manager's command to run the pinned CLI's `install --harness <name>`; never initialize Git on the consumer's behalf. Nested applications need a manual hook integration and cannot be reported as agent-ready. The new-project Codex example therefore records the harness choice but defers its hooks until this prerequisite is met. This keeps the existing hook contract unchanged.
+
+Ordinary initialization does not install a browser or derive rendered proof from static/build checks. Supported recipes require retained production-browser acceptance before publication. Reuse [Rendered consumer proof](consumer-proof.md) and [Consumer support](consumer-support.md), their shared 54-cell matrix and source/registry/tarball identity. The preview smoke supplements those fixtures, preserving the complete form/navigation/custom-theme scene. The six framework/layout/manager install paths below are bootstrap coverage, not six additional copies of the browser matrix. [Decide the adoption delivery order and first-screen acceptance test](https://github.com/frankieramirez/ultima/issues/731) owns ordering and the public-guidance exercise.
+
+## Implementation acceptance scenarios
+
+- New Vite, Next root and Next src apps reach the preview with npm and pnpm. Run all six paths using the packed CLI outside this workspace, retain exact lockfiles/versions and production artifacts, and verify interaction/paint in both modes using shared browser fixtures.
+- Browser checks assert root/control/Dialog paint, responsive fit, Button update, keyboard focus and Escape/restoration. Next hydrates without diagnostics. Seed missing CSS, wrong src extraction, unlayered reset and missing transitive source; each must fail observably.
+- Existing Vite preserves its router/page and prints the preview-mount step; both Next layouts add only the isolated route. Providers, metadata, fonts, mode/theme artifacts, root documents and foreign hooks survive except for inspected setup edits.
+- Compatible foreign plugins/registry entries survive apply. A rerun writes nothing, and consumer edits to installed source or preview survive. A framework-version change triggers replanning rather than migration.
+- Conflicting aliases/layouts, computed configs, unsupported recipes, multiple lockfiles and escaping paths fail before application writes. Manual repair followed by a fresh plan can proceed.
+- Cancellation/plan leave the project unchanged. Stale, tampered, unknown-version or changed-registry plans fail before writes. Noninteractive ambiguity and invalid invocation return their declared results.
+- Interrupt scaffolding, package installation, registry installation and config edits separately. Verify staging/recovery behavior, resume without duplicates and rollback matching outputs only. Intervening consumer changes remain intact with a named recovery action.
+- Cover detected/explicit/no harness, matching Git root, fresh app without Git, nested application root, edited managed skill, external-installer skill and invalid hook JSON. Preserve existing `install`/`uninstall` scope tests. Reports distinguish application readiness, deferred agent setup, static checks, build, browser and incomplete/manual outcomes.
+
+## Source checks for this decision
+
+Current setup descriptors/static assets, CLI source and smoke scripts establish the starting behavior. Official [Vite scaffolding documentation](https://vite.dev/guide/), [create-next-app options](https://nextjs.org/docs/app/api-reference/cli/create-next-app), [StyleX Vite React integration](https://stylexjs.com/docs/learn/installation/vite/vite-react) and [StyleX Next integration](https://stylexjs.com/docs/learn/installation/nextjs) were consulted October 7, 2026 for upstream entry points and compiler wiring. They do not certify a new Ultima recipe; executable proof and exact supported versions belong to implementation.

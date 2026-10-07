@@ -86,6 +86,10 @@ The library a component's interactive parts are built on: Base UI for the React 
 
 The universal registry item that prepares a project for Ultima: one per target (Vite, Next.js App Router). It installs `components.json`, the StyleX compiler config, and the namespace entry, and it never overwrites a file the consumer's scaffold already owns.
 
+## Project bootstrap
+
+The supported workflow that takes a new or existing application to its first working Ultima screen. The planned `init` command shows a plan before applying framework, registry and setup operations; the consumer owns the resulting application files. It is separate from the consumer CLI's managed skill and hook installation. [Consumer project bootstrap](docs/spec/consumer-setup.md) owns the contract.
+
 ## Hand step
 
 A step a consumer performs after installing a setup item, because the setup item cannot make it without overwriting a file the consumer owns: the tsconfig path alias, the plugin line in `vite.config.ts`, the stylesheet import in the Next.js layout, the layer around a reset. Each one is declared with the check `doctor` runs to prove it, or with the reason it cannot be proven.
