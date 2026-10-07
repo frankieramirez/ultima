@@ -398,6 +398,10 @@ Updating an existing consumer requires a visible review of its base token and th
 - `scripts/build-agent-guide.ts` adds a compact adoption section to `/llms.txt` from this contract, alongside the existing conventions and token names. The generated guide points agents to the install page for the full walkthrough.
 - `packages/cli/skill/ultima-design/SKILL.md` stays a workflow pointer: it tells agents to fetch `/llms.txt`, preserve an existing product brand, use Studio for a custom theme, and run the CLI and rendered checks. It does not copy token values or the full contract.
 
+## Complete-screen composition
+
+Decided on [Decide the complete-screen composition guide and recipe discovery](https://github.com/frankieramirez/ultima/issues/728). Status: accepted for implementation. The [composition guide contract](screen-composition.md) owns the bounded example inventory, source and discovery ownership, installed-consumer checks, and an empty-app implementation brief. Its proposed `/build-a-screen` and `/recipes` pages and consumer-copy projections remain to be built. Existing recipes retain their owning component pages and descriptors; existing blocks remain the installable complete screens.
+
 ## Consumer StyleX linting
 
 Decided on [Decide the StyleX linting contract for consumer projects](https://github.com/frankieramirez/ultima/issues/730). Status: accepted for implementation. The [consumer lint contract](consumer-lint.md) owns candidate compatibility, the consumer-owned flat-config recipe, severities, local/CI commands and installed-fixture proof. Setup guidance will offer the official StyleX plugin with `valid-styles` as an error, cleanup warnings and key sorting off. Doctor will advise about integration gaps without executing config code; `check` retains Ultima's policies. Compatibility and lint execution remain unverified until the named fixtures run.
