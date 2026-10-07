@@ -249,12 +249,13 @@ test('the mode control switches the theme', async () => {
   );
 });
 
-test('the article trail is a Breadcrumb landmark that links the section and marks the page current', async () => {
+test('a redesigned foundation page leads with its running head and carries no trail', async () => {
   const install = await mount('/install');
-  const installTrail = install.container.querySelector('nav[aria-label="Breadcrumb"]')!;
-  expect(installTrail.querySelector('[aria-current="page"]')?.textContent).toBe('Install');
-  await install.unmount();
+  await expect.element(install.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
+  expect(install.container.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
+});
 
+test('the article trail is a Breadcrumb landmark that links the section and marks the page current', async () => {
   const tokens = await mount('/tokens');
   const tokensTrail = tokens.container.querySelector('nav[aria-label="Breadcrumb"]')!;
   const docsLink = tokensTrail.querySelector('a[href="/install"]')!;
@@ -315,7 +316,7 @@ test('the logo returns to the editorial home page, which folds the menu rail awa
   const screen = await mount('/install');
   expect(menu().element()).toHaveAttribute('data-open');
   await userEvent.click(screen.getByRole('link', { name: 'Ultima home' }).element());
-  await expect.element(screen.getByRole('heading', { level: 1, name: /React components/ })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { level: 1, name: /A system for building interfaces/ })).toBeVisible();
   expect(menu().element()).toHaveAttribute('data-closed');
   await userEvent.click(
     screen
@@ -358,7 +359,7 @@ test('leaving the home page slides the menu rail open rather than snapping it', 
     });
     observer.observe(panel, { attributes: true });
   });
-  await userEvent.click(screen.getByRole('button', { name: 'Explore the components' }).element());
+  await userEvent.click(screen.getByRole('link', { name: 'Installation guide' }).element());
 
   const { transitions, width } = await opened;
   // Chromium names a logical property's transition by the physical one it resolves to.
@@ -462,6 +463,9 @@ for (const theme of ['dark', 'light'] as const) {
     prefer(theme);
     const screen = await mount('/');
     await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+    // The hero's entrance fades in on the first mount in a file; axe reads its end state.
+    const entrances = document.getAnimations().filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity);
+    await Promise.all(entrances.map((animation) => animation.finished));
 
     const results = await axe.run(document.body);
     expect(results.violations.map(describe)).toEqual([]);
@@ -563,14 +567,14 @@ test('the index stays right of the article and the menu scrolls without a visibl
 });
 
 for (const width of [390, 1024, 1440]) {
-  test(`the header logo stays aligned from home to the catalogue at ${width}px`, async () => {
+  test(`the header logo stays aligned from home to a component page at ${width}px`, async () => {
     await page.viewport(width, 844);
     onTestFinished(() => page.viewport(1280, 720));
     const screen = await mount('/');
     const logo = () => screen.getByRole('link', { name: 'Ultima home' }).element().getBoundingClientRect().left;
     const before = logo();
-    await userEvent.click(screen.getByRole('button', { name: 'Explore the components' }).element());
-    await expect.element(screen.getByRole('heading', { name: 'Components', level: 1 })).toBeVisible();
+    await userEvent.click(screen.getByRole('list', { name: 'Components' }).getByRole('link', { name: /Button$/ }).element());
+    await expect.element(screen.getByRole('heading', { name: 'Button', level: 1 })).toBeVisible();
     expect(logo()).toBe(before);
   });
 }

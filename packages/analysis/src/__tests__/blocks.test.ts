@@ -50,6 +50,26 @@ describe('block files', () => {
     assert.deepEqual(located(run({ [FILE]: fixture('blocks/valid.tsx') }), FILE), []);
   });
 
+  test("allow an engine only when a recipe in the block's descriptor imports it in its demos", () => {
+    const noRecipe = run({ [FILE]: fixture('blocks/engine.tsx') });
+    assert.deepEqual(
+      located(noRecipe, FILE).map(({ ruleId, line, target }) => [ruleId, line, target]),
+      [
+        ['ULT-IMPORT-001', 1, 'd3-array'],
+        ['ULT-IMPORT-001', 2, 'd3-scale'],
+        ['ULT-IMPORT-001', 3, 'd3-shape'],
+      ],
+    );
+    assert.match(noRecipe.diagnostics.find((d) => d.target === 'd3-scale')?.message ?? '', /names no recipe whose demos import it/);
+
+    const dashboardFile = 'packages/blocks/src/dashboard-01/fixture-region.tsx';
+    const followingChart = run({ [dashboardFile]: fixture('blocks/engine.tsx') });
+    assert.deepEqual(
+      located(followingChart, dashboardFile).map(({ ruleId, line, target }) => [ruleId, line, target]),
+      [['ULT-IMPORT-001', 3, 'd3-shape']],
+    );
+  });
+
   test("reject an import of another block's file", () => {
     const report = run({ [FILE]: "import { Region } from '../crm-01/region';\nexport function Other() { return <Region />; }\n", 'packages/blocks/src/crm-01/region.tsx': 'export function Region() { return null; }\n' });
     assert.deepEqual(

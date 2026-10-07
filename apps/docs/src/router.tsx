@@ -25,7 +25,7 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: Home,
-  staticData: { title: 'React components. Built with StyleX. Yours to change.' },
+  staticData: { title: 'A system for building interfaces.' },
 });
 
 const installRoute = createRoute({

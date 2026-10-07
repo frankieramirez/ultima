@@ -388,6 +388,11 @@ export const items: Record<string, RegistryItemDescription> = {
       "https://ultima.systems/r/tokens-css.json"
     ]
   },
+  "dashboard-01": {
+    "title": "Dashboard 01",
+    "description": "A store overview: workspace navigation, four key metrics, a revenue chart with its data table, top products and recent orders.",
+    "docs": "Render it from a route of your own: import { Dashboard01 } from '@/components/dashboard-01/dashboard-01'. It installs d3-scale and d3-array for the revenue chart. Replace the sample data in each region file with your own; Export, the workspace menu items and the navigation links have no handler of their own."
+  },
   "settings-01": {
     "title": "Settings 01",
     "description": "A Notifications settings page: a settings sidebar beside one form of switches, push choices and quiet hours, with an unsaved-changes bar.",

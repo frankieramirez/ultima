@@ -16,7 +16,9 @@
     "@base-ui/react": "^1.8.0",
     "@stylexjs/stylex": "^0.19.0",
     "@ultima/tokens": "workspace:*",
-    "@ultima/ui": "workspace:*"
+    "@ultima/ui": "workspace:*",
+    "d3-array": "^3.2.4",
+    "d3-scale": "^4.0.2"
   },
   "peerDependencies": {
     "react": ">=19",
@@ -24,6 +26,8 @@
   },
   "devDependencies": {
     "@stylexjs/unplugin": "^0.19.0",
+    "@types/d3-array": "^3.2.2",
+    "@types/d3-scale": "^4.0.9",
     "@types/node": "^26.5.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
