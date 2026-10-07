@@ -122,10 +122,14 @@ export const blocksOptimizerInclude = [
   "@base-ui/react/button",
   "@base-ui/react/checkbox",
   "@base-ui/react/checkbox-group",
+  "@base-ui/react/collapsible",
   "@base-ui/react/dialog",
   "@base-ui/react/field",
   "@base-ui/react/form",
   "@base-ui/react/input",
+  "@base-ui/react/menu",
+  "@base-ui/react/meter",
+  "@base-ui/react/select",
   "@base-ui/react/separator",
   "@base-ui/react/tabs",
   "@base-ui/react/toggle",
@@ -133,6 +137,8 @@ export const blocksOptimizerInclude = [
   "@base-ui/react/use-render",
   "@stylexjs/stylex",
   "axe-core",
+  "d3-array",
+  "d3-scale",
   "react-dom",
   "vitest-browser-react"
 ];

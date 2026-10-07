@@ -76,6 +76,8 @@ type Description = {
   description: string;
   docs: string;
   dependencies: string[];
+  /** Blocks only: the type packages of their engines. */
+  devDependencies?: string[];
   registryDependencies: string[];
   /** React items only: shadcn's own field, holding the item's catalogue group. */
   categories?: string[];
@@ -158,7 +160,7 @@ function describe(name: string): Description {
 }
 
 function item(name: string, type: string, files: HashedFile[]): RegistryItem {
-  const { title, description, docs, dependencies, registryDependencies, categories } = describe(name);
+  const { title, description, docs, dependencies, devDependencies = [], registryDependencies, categories } = describe(name);
   return {
     name,
     type,
@@ -166,6 +168,7 @@ function item(name: string, type: string, files: HashedFile[]): RegistryItem {
     description,
     ...(categories && { categories }),
     ...(dependencies.length > 0 && { dependencies }),
+    ...(devDependencies.length > 0 && { devDependencies }),
     ...(registryDependencies.length > 0 && { registryDependencies }),
     files: files.map(({ hash: _, ...file }) => file),
     docs,
