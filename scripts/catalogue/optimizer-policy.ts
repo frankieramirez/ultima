@@ -52,4 +52,24 @@ export const optimizerPolicy: OptimizerPolicy = {
       },
     ],
   },
+  blocks: {
+    add: [],
+    exclude: [
+      {
+        specifier: 'react',
+        reason: '@vitejs/plugin-react already prebundles react and its JSX runtimes',
+        source: 'packages/blocks/vitest.config.ts',
+      },
+      {
+        specifier: 'vitest',
+        reason: 'Vitest serves its own runtime to the browser; it is never prebundled',
+        source: 'packages/blocks/vitest.config.ts',
+      },
+      {
+        specifier: 'vitest/browser',
+        reason: 'Vitest serves its own runtime to the browser; it is never prebundled',
+        source: 'packages/blocks/vitest.config.ts',
+      },
+    ],
+  },
 };

@@ -472,3 +472,78 @@ describe('recipes', () => {
     assert.deepEqual(catalogue.recipes[0]?.registryDependencies, ['calendar']);
   });
 });
+
+describe('blocks', () => {
+  const BLOCK = 'registry/metadata/block/login-01.ts';
+  const block = (recipes: unknown[] = []) =>
+    descriptor('block', 'BlockDescriptor', {
+      id: 'login-01',
+      kind: 'block',
+      title: 'Login 01',
+      description: 'A login screen, for the fixture.',
+      contract: 'docs/spec/ultima.md#compound-components',
+      installDocs: "import { Login01 } from '@/components/login-01/login-01';",
+      primaryExport: 'Login01',
+      recipes,
+    });
+  const files = (overrides: Record<string, string | undefined> = {}) => ({
+    [BLOCK]: block(),
+    'packages/blocks/src/login-01/login-01.tsx': [
+      "import * as stylex from '@stylexjs/stylex';",
+      "import { space } from '@ultima/tokens/tokens.stylex';",
+      "import { Sidebar } from '@ultima/ui/sidebar';",
+      "import { Form } from './form';",
+      'export function Login01() { return <Sidebar.Root><Form /></Sidebar.Root>; }',
+    ].join('\n'),
+    'packages/blocks/src/login-01/form.tsx': [
+      "import { Form as BaseForm } from '@base-ui/react/form';",
+      "import { useState } from 'react';",
+      "import { Button } from '@ultima/ui/button';",
+      "import { Glyph } from './icons';",
+      'export function Form() { return <BaseForm><Button><Glyph /></Button></BaseForm>; }',
+    ].join('\n'),
+    'packages/blocks/src/login-01/icons.tsx': 'export function Glyph() { return <svg aria-hidden="true" />; }\n',
+    'packages/blocks/src/__tests__/login-01.test.tsx': "test('login-01', () => {});\n",
+    ...overrides,
+  });
+
+  test('derives its files entry first, its dependencies, its number and Built from in number order', () => {
+    const { catalogue, diagnostics } = load(files());
+    assert.deepEqual(diagnostics, []);
+    const [entry] = catalogue.blocks;
+    assert.deepEqual(entry?.files, ['login-01.tsx', 'form.tsx', 'icons.tsx']);
+    assert.deepEqual(entry?.dependencies, ['@base-ui/react', '@stylexjs/stylex']);
+    assert.deepEqual(entry?.registryDependencies, ['tokens', 'button', 'sidebar']);
+    assert.equal(entry?.number, '001');
+    assert.deepEqual(
+      entry?.builtFrom.map(({ id, number, kind }) => [id, number, kind]),
+      [
+        ['button', '001', 'component'],
+        ['sidebar', '004', 'component'],
+      ],
+    );
+    assert.ok(catalogue.registryItems.includes('login-01'));
+  });
+
+  test('lists the recipes it follows after its components, and rejects one that is not a recipe', () => {
+    const recipe = { id: 'data-table', root: { role: 'table', name: 'Orders' } };
+    const { catalogue } = load(files({ [BLOCK]: block([recipe]) }));
+    assert.deepEqual(catalogue.blocks[0]?.builtFrom.at(-1), { id: 'data-table', title: 'Data Table', number: '001', kind: 'recipe' });
+    expectDiagnostic(files({ [BLOCK]: block([{ id: 'chart', root: { role: 'img', name: 'Revenue' } }]) }), 'missing-reference', 'recipe "chart"');
+  });
+
+  test('requires its entry exporting the primary export, and its test', () => {
+    expectDiagnostic(files({ 'packages/blocks/src/login-01/login-01.tsx': 'export function Other() { return null; }\n' }), 'invalid-primary-export', 'no root component "Login01"');
+    expectDiagnostic(files({ 'packages/blocks/src/__tests__/login-01.test.tsx': undefined }), 'missing-file', 'packages/blocks/src/__tests__/login-01.test.tsx is missing');
+    expectDiagnostic(files({ 'packages/blocks/src/login-01/login-01.tsx': undefined }), 'missing-file', 'packages/blocks/src/login-01/login-01.tsx is missing');
+  });
+
+  test("reports a block folder no descriptor claims, and an import outside the block's own files", () => {
+    expectDiagnostic({ ...files(), 'packages/blocks/src/crm-01/crm-01.tsx': 'export function Crm01() { return null; }\n' }, 'source-without-metadata', 'packages/blocks/src/crm-01');
+    expectDiagnostic(
+      files({ 'packages/blocks/src/login-01/icons.tsx': "import { Other } from '../crm-01/other';\nexport function Glyph() { return <Other />; }\n" }),
+      'unresolved-import',
+      'packages/blocks/src/login-01/icons.tsx:1',
+    );
+  });
+});

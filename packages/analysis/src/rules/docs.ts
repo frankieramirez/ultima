@@ -13,8 +13,12 @@ import { reportUnresolved } from './tokens.ts';
 const RULE = 'docs/spec/agent-infrastructure.md#docs-controls-and-surfaces';
 const LINE = 'docs/spec/ultima.md#the-line-between-a-component-and-page-layout';
 
-/** Docs chrome and executable MDX pages. Demos keep native markup to show composition; tests are structural. */
-const KINDS: readonly SourceKind[] = ['docs', 'content'];
+const KINDS: readonly SourceKind[] = ['docs', 'content', 'block'];
+
+const SUBJECT: Partial<Record<SourceKind, { file: string; where: string }>> = {
+  block: { file: 'a block file', where: 'a block file' },
+};
+const subjectOf = (kind: SourceKind) => SUBJECT[kind] ?? { file: 'a docs file', where: 'docs chrome' };
 
 // ---------------------------------------------------------------------------------------------------
 // The policy, kept here as data so its fixtures can name each line.
@@ -108,8 +112,8 @@ export function checkDocs(context: Context): void {
     if (!parsed) continue;
     const imports = importMap(parsed);
     parsed.segments.forEach((segment, index) => {
-      checkSurfaces(context, parsed, segment);
-      checkControls(context, parsed, segment, index, imports);
+      checkSurfaces(context, parsed, segment, subjectOf(kind));
+      checkControls(context, parsed, segment, index, imports, subjectOf(kind));
     });
     for (const element of parsed.elements) checkMdxElement(context, parsed, element);
   }
@@ -136,7 +140,7 @@ function isReset(alternative: Pieces, paint: Paint): boolean {
   return text !== undefined && RESETS[paint].has(text.trim());
 }
 
-function checkSurfaces(context: Context, parsed: Parsed, segment: Segment): void {
+function checkSurfaces(context: Context, parsed: Parsed, segment: Segment, subject: { file: string }): void {
   const { file, shift } = segment;
   const evaluator = createEvaluator(context.scope, parsed.path, file);
   if (evaluator.bindings.namespaces.size === 0 && evaluator.bindings.calls.size === 0) return;
@@ -169,7 +173,7 @@ function checkSurfaces(context: Context, parsed: Parsed, segment: Segment): void
       ...(conditions.length > 0 && { selector: conditions.join(' ') }),
       expression: declaration.value.getText(file).replace(/\s+/g, ' '),
       message: surface
-        ? `${symbol}${where} declares ${property}, which paints a surface: a docs file may arrange and set type, and may not paint a background, border, shadow or radius.`
+        ? `${symbol}${where} declares ${property}, which paints a surface: ${subject.file} may arrange and set type, and may not paint a background, border, shadow or radius.`
         : `${symbol}${where} declares ${property}, which hides or repaints the native scrollbar without a component painting a replacement.`,
       repair: surface
         ? 'Compose the Ultima component that paints this surface, or add one to the catalogue. A recorded decision that authorizes this exact declaration goes in packages/analysis/exceptions.ts.'
@@ -306,7 +310,14 @@ export function attributeValue(attribute: ts.JsxAttribute): string | null | unde
 
 export const firstRole = (value: string) => value.trim().split(/\s+/)[0] ?? '';
 
-function checkControls(context: Context, parsed: Parsed, segment: Segment, index: number, imports: Map<string, Imported>): void {
+function checkControls(
+  context: Context,
+  parsed: Parsed,
+  segment: Segment,
+  index: number,
+  imports: Map<string, Imported>,
+  subject: { where: string },
+): void {
   const { file, shift } = segment;
   const attribute = parsed.attributes.find((entry) => entry.segment === index);
   const at = (node: ts.Node) => ({ parsed, start: node.getStart(file) + shift, end: node.getEnd() + shift });
@@ -322,7 +333,7 @@ function checkControls(context: Context, parsed: Parsed, segment: Segment, index
       target: `<${tag}>`,
       message: owner
         ? `A native <${tag}> is handed to ${owner} through render, and ${owner} does not resolve to an Ultima component, so nothing establishes the control's behavior and styles.`
-        : `A native <${tag}> is an application control built from a plain element in docs chrome.`,
+        : `A native <${tag}> is an application control built from a plain element in ${subject.where}.`,
       repair: `Render the Ultima control instead, or hand the <${tag}> to an Ultima component through its render prop.`,
       link: RULE,
     });

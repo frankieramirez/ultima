@@ -32,6 +32,8 @@ export type GuideComponent = { name: string; title: string; description: string;
 /** One catalogue group's components, alphabetical; groups come in display order. */
 export type GuideGroup = { label: string; components: GuideComponent[] };
 
+export type GuideBlock = { name: string; title: string; description: string; primaryExport: string; builtFrom: string[] };
+
 type TokensJson = { tokens: Record<string, { group: string }> };
 
 function escapeForRegExp(text: string): string {
@@ -191,6 +193,27 @@ function describeElement(element: GuideComponent): string {
   ].join('\n');
 }
 
+const BLOCKS_LEAD =
+  'A block installs one working screen, built from the components above, as several files under `components/<block>/` that you own from then on. Render its root component, which takes no props, from a route of your own. A control whose effect leaves the screen has no handler: that handler is yours to write.';
+
+function describeBlock(block: GuideBlock): string {
+  return [
+    `### ${block.title}`,
+    '',
+    block.description,
+    '',
+    '```bash',
+    `npx shadcn add @ultima/${block.name}`,
+    '```',
+    '',
+    '```tsx',
+    `import { ${block.primaryExport} } from '@/components/${block.name}/${block.name}';`,
+    '```',
+    '',
+    `Built from: ${block.builtFrom.join(', ')}.`,
+  ].join('\n');
+}
+
 function describeTokens(tokens: TokensJson['tokens']): string {
   const groups = new Map<string, string[]>();
   for (const [name, { group }] of Object.entries(tokens)) {
@@ -211,11 +234,13 @@ export function agentGuide({
   tokensJsonPath,
   groups,
   elements,
+  blocks = [],
 }: {
   specPath: string;
   tokensJsonPath: string;
   groups: GuideGroup[];
   elements: GuideComponent[];
+  blocks?: GuideBlock[];
 }): string {
   const spec = readFileSync(specPath, 'utf8');
   const { tokens } = JSON.parse(readFileSync(tokensJsonPath, 'utf8')) as TokensJson;
@@ -245,6 +270,7 @@ export function agentGuide({
     ...(elements.length === 0
       ? []
       : ['', '## Elements', '', ELEMENTS_LEAD, '', elements.map(describeElement).join('\n\n')]),
+    ...(blocks.length === 0 ? [] : ['', '## Blocks', '', BLOCKS_LEAD, '', blocks.map(describeBlock).join('\n\n')]),
     '',
     '## Tokens',
     '',

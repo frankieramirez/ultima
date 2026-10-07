@@ -13,12 +13,14 @@ const INFRA = 'docs/spec/agent-infrastructure.md';
 const BOUNDARIES = `${INFRA}#import-and-registry-boundaries`;
 const TARGETS = `${INFRA}#target-and-api-distinctions`;
 const ONE_FILE = 'docs/spec/ultima.md#one-file-per-component';
+const BLOCKS = 'docs/spec/ultima.md#sources-and-the-files-of-a-block';
 
 const LABEL: Record<SourceKind, string> = {
   'token-source': 'a token source',
   'react-component': 'a React component',
   'react-helper': 'a shared React helper',
   element: 'an element',
+  block: 'a block file',
   docs: 'docs application code',
   demo: 'a demo',
   content: 'an MDX page',
@@ -223,7 +225,17 @@ function productionVerdict(
     };
   }
   if (kind === 'react-helper' && target === 'react-helper') return undefined;
-  const allowedTargets: readonly SourceKind[] = kind === 'react-component' ? ['token-source', 'react-helper', 'react-component'] : ['token-source'];
+  if (kind === 'block' && target === 'block') {
+    if (resolution.via === 'relative' && item !== undefined && scope.itemOf(resolution.path) === item) return undefined;
+    return {
+      ruleId: 'ULT-IMPORT-001',
+      message: `a block file imports ${resolution.path}, outside its own block; each block installs alone, and only its own files come with it.`,
+      repair: 'Import the catalogue component through @ultima/ui/<name>, or copy what the block needs into its own folder.',
+      link: BLOCKS,
+    };
+  }
+  const allowedTargets: readonly SourceKind[] =
+    kind === 'react-component' || kind === 'block' ? ['token-source', 'react-helper', 'react-component'] : ['token-source'];
   if (!allowedTargets.includes(target)) {
     return {
       ruleId: 'ULT-IMPORT-001',
@@ -241,6 +253,7 @@ function productionVerdict(
     };
   }
   if (!staged) {
+    if (!scope.registry) return undefined;
     return {
       ruleId: 'ULT-IMPORT-001',
       message: `${LABEL[kind]} imports ${resolution.path}, a module no registry item stages.`,

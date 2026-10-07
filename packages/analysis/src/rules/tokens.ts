@@ -15,8 +15,7 @@ export const VALUES = `${INFRA}#values-and-runtime-styles`;
 export const GRAMMAR = `${INFRA}#value-grammar`;
 const TOKENS = 'docs/spec/ultima.md#tokens-in-component-code';
 
-/** "React and element component declarations": the component files, the shared helpers and the elements. */
-export const TOKEN_KINDS: readonly SourceKind[] = ['react-component', 'react-helper', 'element'];
+export const TOKEN_KINDS: readonly SourceKind[] = ['react-component', 'react-helper', 'element', 'block'];
 
 /** One declaration to judge, wherever it came from: a StyleX table or an inline style. */
 export type Judged = {

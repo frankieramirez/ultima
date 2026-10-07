@@ -1,0 +1,42 @@
+{
+  "name": "@ultima/blocks",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.tsx"
+  },
+  "scripts": {
+    "build": "echo \"@ultima/blocks: source-only, staged by the registry build\"",
+    "test": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"vitest run --reporter=verbose\"",
+    "typecheck": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"tsc -p tsconfig.json\""
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.8.0",
+    "@stylexjs/stylex": "^0.19.0",
+    "@ultima/tokens": "workspace:*",
+    "@ultima/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19"
+  },
+  "devDependencies": {
+    "@stylexjs/unplugin": "^0.19.0",
+    "@types/node": "^26.5.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vitest/browser-playwright": "^5.0.0",
+    "axe-core": "^4.13.0",
+    "playwright": "^1.63.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "typescript": "^5.9.3",
+    "unplugin": "^2.3.11",
+    "vite": "^8.2.2",
+    "vitest": "^5.0.0",
+    "vitest-browser-react": "^2.3.0"
+  }
+}

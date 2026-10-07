@@ -65,7 +65,7 @@ describe('the adapter registry', () => {
     assert.ok(discover(root, DISCOVERY['tooling-tests'] ?? []).includes('scripts/verification/adapters.test.ts'));
     assert.ok(discover(root, DISCOVERY['tokens-tests'] ?? []).every((path) => path.startsWith('packages/tokens/src/__tests__/')));
     assert.ok(discover(root, DISCOVERY['cli-tests'] ?? []).length > 0);
-    assert.deepEqual(typecheckPackages(root), ['packages/analysis', 'packages/cli', 'packages/elements', 'packages/tokens', 'packages/ui', 'apps/docs']);
+    assert.deepEqual(typecheckPackages(root), ['packages/analysis', 'packages/blocks', 'packages/cli', 'packages/elements', 'packages/tokens', 'packages/ui', 'apps/docs']);
   });
 });
 

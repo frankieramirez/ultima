@@ -8,6 +8,7 @@ export const OUTPUTS = {
   catalogue: 'apps/docs/src/generated/catalogue.ts',
   pages: 'apps/docs/src/generated/component-pages.ts',
   elements: 'apps/docs/src/generated/elements.ts',
+  blocks: 'apps/docs/src/generated/blocks.ts',
   barrel: BARREL,
   browser: 'scripts/generated/browser-dependencies.ts',
 } as const;
@@ -30,6 +31,7 @@ function registryProjection(catalogue: Catalogue): string {
     ...[...catalogue.react].sort((a, b) => ordinal(a.id, b.id)),
     ...catalogue.artifacts,
     ...[...catalogue.elements].sort((a, b) => ordinal(a.id, b.id)),
+    ...[...catalogue.blocks].sort((a, b) => ordinal(a.id, b.id)),
   ];
   const items = Object.fromEntries(
     installable.map((entry) => [
@@ -136,6 +138,46 @@ export const elements: readonly ElementEntry[] = ${data(elements)};
 `;
 }
 
+function blocksProjection(catalogue: Catalogue): string {
+  const imports = catalogue.blocks.map((entry) => `import { ${entry.primaryExport} } from '@ultima/blocks/${entry.id}/${entry.id}';`);
+  const entries = catalogue.blocks.map((entry) => {
+    const fields = data({
+      id: entry.id,
+      title: entry.title,
+      description: entry.description,
+      number: entry.number,
+      install: `npx shadcn add @ultima/${entry.id}`,
+      files: entry.files,
+      builtFrom: entry.builtFrom,
+    });
+    return `  ${fields.slice(0, -2).replaceAll('\n', '\n  ')},\n    "preview": ${entry.primaryExport}\n  }`;
+  });
+  return `${header('registry/metadata/block/ and packages/blocks/src/')}
+import type { ComponentType } from 'react';
+${imports.length > 0 ? `\n${imports.join('\n')}\n` : ''}
+/** A component the block imports, or a recipe it follows, numbered among its own kind. */
+export type BuiltFrom = { id: string; title: string; number: string; kind: 'component' | 'recipe' };
+
+export type BlockEntry = {
+  id: string;
+  title: string;
+  description: string;
+  /** The catalogue number, derived from id order among blocks. */
+  number: string;
+  install: string;
+  /** The files installed under \`components/<id>/\`, the entry first. */
+  files: readonly string[];
+  /** The components it imports in number order, then the recipes it follows. */
+  builtFrom: readonly BuiltFrom[];
+  /** The root component, which takes no props. */
+  preview: ComponentType;
+};
+
+/** In number order. */
+export const blocks: readonly BlockEntry[] = [${entries.length > 0 ? `\n${entries.join(',\n')},\n` : ''}];
+`;
+}
+
 function barrelProjection(catalogue: Catalogue): string {
   const byItem = new Map<string, string[]>();
   for (const entry of catalogue.exports.values()) {
@@ -158,6 +200,9 @@ export const uiOptimizerInclude = ${data(plan.include.ui)};
 
 /** apps/docs/vitest.config.ts: prebundled up front, since discovering one mid-run reloads the page. */
 export const docsOptimizerInclude = ${data(plan.include.docs)};
+
+/** packages/blocks/vitest.config.ts: prebundled up front, since discovering one mid-run reloads the page. */
+export const blocksOptimizerInclude = ${data(plan.include.blocks)};
 `;
 }
 
@@ -175,6 +220,7 @@ export function planOutputs(
     [OUTPUTS.catalogue, catalogueProjection(catalogue)],
     [OUTPUTS.pages, pagesProjection(catalogue)],
     [OUTPUTS.elements, elementsProjection(catalogue)],
+    [OUTPUTS.blocks, blocksProjection(catalogue)],
     [OUTPUTS.barrel, barrelProjection(catalogue)],
   ]);
   const barrel = new Map([...catalogue.exports.values()].map((entry) => [entry.name, `packages/ui/src/${entry.item}.tsx`]));
