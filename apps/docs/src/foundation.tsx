@@ -212,7 +212,7 @@ function H1(props: ComponentProps<'h1'>) {
 /** The number is generated content on a hidden span, so it stays out of the heading's name. */
 function H2({ children, ...props }: ComponentProps<'h2'>) {
   return (
-    <h2 {...props} {...stylex.props(headings.h2, foundationStyles.h2)}>
+    <h2 data-section {...props} {...stylex.props(headings.h2, foundationStyles.h2)}>
       <span aria-hidden {...stylex.props(foundationStyles.sectionNumber)} />
       {children}
     </h2>

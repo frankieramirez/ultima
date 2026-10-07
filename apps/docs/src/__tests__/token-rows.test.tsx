@@ -92,14 +92,14 @@ test('/tokens has the on-this-page rail and /palette, at full content width, doe
   const rail = tokens.getByRole('complementary', { name: 'On this page' });
   await expect.element(rail).toBeInTheDocument();
   expect(Array.from(rail.element().querySelectorAll('a'), (link) => link.textContent)).toEqual([
-    'Color',
-    'Space',
-    'Type',
-    'Radius',
-    'Shadow and filter',
-    'Motion',
-    'Pairings',
-    'Overriding',
+    '01Color',
+    '02Space',
+    '03Type',
+    '04Radius',
+    '05Shadow and filter',
+    '06Motion',
+    '07Pairings',
+    '08Overriding',
   ]);
   await tokens.unmount();
 

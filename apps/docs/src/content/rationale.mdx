@@ -1,18 +1,16 @@
 import { InfoIcon, ScalesIcon } from '@phosphor-icons/react';
 import { Code } from '@ultima/ui';
 
-import { Decision, Tradeoff } from '../decision';
+import { Decision, DecisionIndex, Records, Tradeoff } from '../decision';
 import { Callout } from '../foundation';
 
 # Rationale
 
 The choices that decide how Ultima is built. Each one had alternatives on the table. The ADRs record the verdict; this page is the reading version.
 
-<Decision
-  number="01"
-  title="StyleX"
-  record={{ label: 'ADR 0001 · StyleX-only styling', href: 'https://github.com/frankieramirez/ultima/blob/main/docs/adr/0001-stylex-only-styling.md' }}
-/>
+<DecisionIndex />
+
+<Decision title="StyleX" />
 
 <Tradeoff
   chose={[
@@ -28,11 +26,7 @@ One engine means one model to document.
 
 <Callout icon={<ScalesIcon />} title="What it costs">A StyleX compiler plugin in the consumer's bundler, which the setup item installs or explains. Tailwind-only projects can take the tokens CSS export. They cannot take the components.</Callout>
 
-<Decision
-  number="02"
-  title="Base UI"
-  record={{ label: 'ADR 0002 · Base UI primitives', href: 'https://github.com/frankieramirez/ultima/blob/main/docs/adr/0002-base-ui-primitives.md' }}
-/>
+<Decision title="Base UI" />
 
 <Tradeoff chose={['Every interactive component is built on Base UI.']} over={['Radix, the shadcn default. Radix is out of scope.']} />
 
@@ -42,11 +36,7 @@ One primitive vocabulary.
 
 <Callout icon={<ScalesIcon />} title="What it costs">v0's component list is bounded by what Base UI ships. Styling hooks have to compose with StyleX-generated props, which the Button and Card prototype verified before authoring conventions locked.</Callout>
 
-<Decision
-  number="03"
-  title="Registry-first"
-  record={{ label: 'ADR 0003 · Registry-first distribution', href: 'https://github.com/frankieramirez/ultima/blob/main/docs/adr/0003-registry-first-distribution.md' }}
-/>
+<Decision title="Registry-first" />
 
 <Tradeoff
   chose={[
@@ -64,7 +54,7 @@ The registry serves a moving latest with no versioned URLs: every served file ca
 
 <Callout icon={<ScalesIcon />} title="What it costs">There is no upgrade path beyond re-installing an item.</Callout>
 
-<Decision number="04" title="Dark-first" />
+<Decision title="Dark-first" />
 
 <Tradeoff
   chose={[
@@ -77,3 +67,5 @@ The registry serves a moving latest with no versioned URLs: every served file ca
 Light-first would have made the palette a translation of a light scale, which is how most ramps go wrong in dark. Best-effort light would have shipped pairings that fail AA the first time someone flipped the OS setting.
 
 Dark values are the `default` on every color token. Light values sit under `@media (prefers-color-scheme: light)`. `darkTheme` and `lightTheme` force a mode on a subtree. The header control on this site is the demonstration: dark, light, and system, persisted, with native controls following through `color-scheme`.
+
+<Records />

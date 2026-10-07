@@ -106,6 +106,8 @@ const styles = stylex.create({
 /** `number` is a heading's `data-index-number`, the section number a page shows beside it. */
 type Heading = { id: string; label: string; number?: string };
 
+const UNNUMBERED = '··';
+
 function slugify(value: string, used: Set<string>) {
   const base =
     value
@@ -144,7 +146,11 @@ export function DocumentLayout({
       Array.from(article.current.querySelectorAll('[id]'), (node) => node.id),
     );
     const next: Heading[] = [];
+    // A `data-section` heading is numbered by the page's CSS `section` counter, which script
+    // cannot read, so the rail counts the same headings in the same order.
+    let section = 0;
     article.current.querySelectorAll<HTMLElement>('h2').forEach((heading) => {
+      if (heading.hasAttribute('data-section')) heading.dataset.indexNumber = String(++section).padStart(2, '0');
       if (heading.closest('figure')) return;
       const label =
         heading.querySelector('[aria-label]')?.getAttribute('aria-label') ??
@@ -193,6 +199,7 @@ export function DocumentLayout({
   }, [headings]);
 
   const { pathname } = useLocation();
+  const numbered = headings.some(({ number }) => number);
 
   return (
     <main {...stylex.props(layoutStyles.gutter, styles.main, index && styles.edgePinned)}>
@@ -249,9 +256,9 @@ export function DocumentLayout({
                         aria-current={id === current ? 'location' : undefined}
                         style={id === current ? styles.current : undefined}
                       >
-                        {number && (
+                        {numbered && (
                           <span aria-hidden {...stylex.props(styles.indexNumber)}>
-                            {number}
+                            {number ?? UNNUMBERED}
                           </span>
                         )}
                         {label}

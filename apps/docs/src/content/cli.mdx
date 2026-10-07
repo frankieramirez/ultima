@@ -1,5 +1,6 @@
 import { WarningIcon } from '@phosphor-icons/react';
 
+import { InstallWrites, SkillRoutes } from '../cli-install';
 import { Callout } from '../foundation';
 
 # CLI
@@ -13,7 +14,11 @@ npm i -D ultima-design
 npx ultima-design install
 ```
 
-`install` writes into your repository, not a global harness directory: the `ultima-design` skill your agent reads, and one post-edit hook per detected harness. Everything it writes is a managed file it owns, rewrites on the next run, and removes with `uninstall`. The hooks run `check` on each file your agent edits and hand the findings back in the same turn.
+`install` writes into your repository, not a global harness directory, and only for the harnesses it detects:
+
+<InstallWrites />
+
+Everything it writes is a managed file it owns, rewrites on the next run, and removes with `uninstall`.
 
 ## Commands
 
@@ -30,16 +35,35 @@ npx ultima-design install
 
 ## In CI
 
-One step to copy:
+A workflow to copy. It installs your dependencies, then runs the two gates as their own steps:
 
-```bash title="Terminal"
-npx --no-install ultima-design doctor
-npx --no-install ultima-design check
+```yaml title=".github/workflows/ci.yml"
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  ultima:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Ultima setup
+        run: npx --no-install ultima-design doctor
+      - name: Ultima rules
+        run: npx --no-install ultima-design check
 ```
 
 Both commands gate: any nonzero exit fails the job. `doctor` runs first so a broken setup reports as itself rather than as a failed `check`. Add `--strict` to `check` when your team wants advisories to block, and `status --json` as a non-gating step when you want a drift report as a build artifact. `diff` is a reading tool, not a gate.
 
 ## Other skill installers
+
+Three routes install the same skill. Only the CLI adds the post-edit hooks and the checks.
+
+<SkillRoutes />
 
 You can install the consumer skill through [skills.sh](https://skills.sh/docs):
 
@@ -56,6 +80,6 @@ Or add the Ultima marketplace in Claude Code:
 
 These routes require access to the GitHub repository until it becomes public. The Claude plugin exposes `/ultima-design:ultima-design`.
 
-Both install the same skill shipped with the CLI. They install no hooks or CLI dependency; add `ultima-design` to your project's dev dependencies with `npm i -D ultima-design` to run its checks. Use the CLI installation above when you want a managed project skill and post-edit hooks together.
+Both install the same skill shipped with the CLI. They install no hooks or CLI dependency; add `ultima-design` to your project's dev dependencies with `npm i -D ultima-design` to run its checks.
 
-<Callout tone="warning" icon={<WarningIcon />} title="Avoid installing the skill through multiple routes in the same project.">Update or remove an externally installed skill through its installer. The CLI preserves unstamped skill files, so rerunning `ultima-design install` does not refresh a skills.sh copy.</Callout>
+<Callout tone="warning" icon={<WarningIcon />} title="Pick one route per project.">The CLI preserves unstamped skill files, so rerunning `ultima-design install` does not refresh a skills.sh copy. Update or remove an externally installed skill through its installer.</Callout>

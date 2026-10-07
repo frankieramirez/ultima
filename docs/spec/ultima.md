@@ -2282,15 +2282,19 @@ Decided on Docs site scope (ULT-14). The site at `apps/docs` is three things at 
 | Route | Holds |
 | --- | --- |
 | `/` | The pitch, a live demo strip, the two install commands |
-| `/install` | The canonical long-form install per target, with the reasoning |
-| `/cli` | The consumer CLI: what it is, the install, each command, the post-edit hooks, and the CI step |
+| `/install` | The canonical long-form install per target, with the reasoning, ending on where to go next: the components, Tokens, Theme Studio, the CLI and Blocks |
+| `/cli` | The consumer CLI: what it is, the install and the files it writes, each command, the post-edit hooks, the CI step, and the three routes to the skill compared |
 | `/tokens` | Every semantic token by group, live swatches in both modes, the tokens CSS export, and the APCA readout per semantic pairing |
 | `/palette` | The six scales, twelve steps, dark and light values, the step convention, and the WCAG gate results |
 | `/components` | The directory of the catalogue, one section per [catalogue group](#catalogue-groups), per [Components directory](#components-directory) |
 | `/components/<name>` | One page per catalogue component |
 | `/blocks` | Index of the blocks, per [Blocks](#blocks) |
 | `/blocks/<id>` | One page per block, with its framed preview at `/blocks/<id>/preview` |
-| `/rationale` | Why StyleX, why Base UI, why registry-first, why dark-first. Links the ADRs |
+| `/rationale` | Why StyleX, why Base UI, why registry-first, why dark-first, behind an index of those decisions. Links the ADRs, and lists every one of them |
+
+The content the October 2026 frames add to `/install`, `/cli` and `/rationale` is built only where it derives from facts the repository already holds, settled on [Number the foundation rails and add the frames' derived content](https://github.com/frankieramirez/ultima/issues/713). Each "where to go next" card restates what its page holds. The CLI's cards name the paths `install` writes, which are the ones in `packages/cli/src/install.ts`, and its route comparison restates [Skill](#skill): only the CLI route brings the hooks and the checks. The CI step is shown as a GitHub Actions workflow whose two gating steps are the commands under [CI](#ci). The Rationale's table of records is read from `docs/adr/` when the site builds, so a new ADR joins it without an edit, and the running head counts the decisions and the records. The frames' framework picker on `/install` and its "check your setup" transcript are not built: the picker would hide the per-target text the page owes both targets, and the transcript's output would be invented.
+
+The section index beside `/install`, `/cli`, `/elements`, `/tokens` and `/rationale` numbers its entries with each section's § number, as the component pages' index does. A section the page leaves unnumbered reads `··` there, as the Rationale's list of every record and a component page's Web component section do.
 
 `/install` is the long form the `docs` field of each setup item points at; the setup items print a short imperative list and nothing is installed into the consumer's repo as a README.
 
@@ -2929,7 +2933,7 @@ Decided on [Which events each harness hook fires on, what it runs, and what runs
 
 ### CI
 
-Decided on [Which events each harness hook fires on, what it runs, and what runs in CI](https://github.com/frankieramirez/ultima/issues/480). `install` writes no CI configuration. A workflow file is the consumer's own and is not a managed file. The docs site's CLI page shows one step to copy:
+Decided on [Which events each harness hook fires on, what it runs, and what runs in CI](https://github.com/frankieramirez/ultima/issues/480). `install` writes no CI configuration. A workflow file is the consumer's own and is not a managed file. The docs site's CLI page shows a workflow to copy, whose two gating steps run:
 
 ```sh
 npx --no-install ultima-design doctor
