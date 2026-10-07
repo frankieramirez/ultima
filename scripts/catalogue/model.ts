@@ -2,6 +2,7 @@ import { posix } from 'node:path';
 
 import type {
   ArtifactDescriptor,
+  BlockDescriptor,
   Descriptor,
   ElementDescriptor,
   Group,
@@ -87,6 +88,21 @@ export type SourceBundleEntry = SourceBundleDescriptor & Dependencies & { source
 /** What a consumer installs to run the recipe's demos: registry items and npm packages. */
 export type RecipeEntry = RecipeDescriptor & Dependencies;
 
+/** A component the block imports or a recipe it follows, with its catalogue number among its own kind. */
+export type BuiltFrom = { id: string; title: string; number: string; kind: 'component' | 'recipe' };
+
+export type BlockEntry = BlockDescriptor &
+  Dependencies & {
+    number: string;
+    /** `packages/blocks/src/<id>`. */
+    directory: string;
+    /** The block's file names, the entry `<id>.tsx` first, then alphabetically; each installs to `@components/<id>/<name>`. */
+    files: string[];
+    test: string;
+    /** The components it imports in number order, then the recipes it follows in number order. */
+    builtFrom: BuiltFrom[];
+  };
+
 export type Catalogue = {
   releases: Release[];
   /** In display order. */
@@ -99,6 +115,8 @@ export type Catalogue = {
   sourceBundles: SourceBundleEntry[];
   artifacts: ArtifactDescriptor[];
   recipes: RecipeEntry[];
+  /** In number order. */
+  blocks: BlockEntry[];
   /** The UI barrel's plan: each public name and the React item whose file exports it. */
   exports: Map<string, Export & { item: string }>;
   /** Every installable record. Recipes are never among them. */
@@ -115,6 +133,8 @@ const DEMOS = 'apps/docs/src/demos';
 const ELEMENT_SOURCE = 'packages/elements/src';
 const ELEMENT_TESTS = 'packages/elements/src/__tests__';
 const STATIC = 'registry/static';
+export const BLOCK_SOURCE = 'packages/blocks/src';
+const BLOCK_TESTS = 'packages/blocks/src/__tests__';
 export const BARREL = 'packages/ui/src/index.ts';
 
 const INVENTORIES = {
@@ -535,6 +555,59 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
     });
   }
 
+  const blocks: BlockEntry[] = [];
+  const blockNumbers = catalogueNumbers(ofKind('block').map((d) => d.id));
+  const recipeNumbers = catalogueNumbers(recipes.map((entry) => entry.id));
+  for (const descriptor of ofKind('block')) {
+    const path = pathOf(descriptor.id);
+    const directory = `${BLOCK_SOURCE}/${descriptor.id}`;
+    const entryFile = `${descriptor.id}.tsx`;
+    const test = `${BLOCK_TESTS}/${descriptor.id}.test.tsx`;
+    const listed = files.list(directory) ?? [];
+    for (const entry of listed) {
+      if (entry.directory || !entry.name.endsWith('.tsx')) report('path-outside', `${directory}/${entry.name}`, 'a block folder holds only its .tsx files');
+    }
+    const names = listed.filter((entry) => !entry.directory && entry.name.endsWith('.tsx')).map((entry) => entry.name);
+    if (!names.includes(entryFile)) report('missing-file', path, `${directory}/${entryFile} is missing`);
+    if (files.read(test) === undefined) report('missing-file', path, `${test} is missing`);
+    const ordered = [...names.filter((name) => name === entryFile), ...names.filter((name) => name !== entryFile).sort(ordinal)];
+    const sources = ordered.map((name) => `${directory}/${name}`);
+    const derived = sources.map((source) => {
+      const analysed = analyse(source);
+      if (source.endsWith(`/${entryFile}`) && analysed) {
+        const exported = exportsOf(analysed.file);
+        const primary = exported.exports.find((item) => item.name === descriptor.primaryExport);
+        if (!primary || primary.kind !== 'value' || primary.typeOnly || primary.declaration === 'import') {
+          report('invalid-primary-export', path, `${source} exports no root component "${descriptor.primaryExport}"`);
+        }
+      }
+      return installDependenciesOf(source, analysed?.imports ?? [], sources);
+    });
+    const registryDependencies = registryOrder(derived.flatMap((d) => d.registryDependencies));
+    const components = registryDependencies
+      .filter((id) => reactIds.has(id))
+      .map((id) => react.find((entry) => entry.id === id) as ReactEntry)
+      .map((entry): BuiltFrom => ({ id: entry.id, title: entry.title, number: entry.number, kind: 'component' }))
+      .sort((a, b) => ordinal(a.number, b.number));
+    const followed: BuiltFrom[] = [];
+    for (const { id } of descriptor.recipes) {
+      const recipe = recipes.find((entry) => entry.id === id);
+      if (!recipe) report('missing-reference', path, `recipe "${id}" is not a recipe descriptor`);
+      else followed.push({ id, title: recipe.title, number: recipeNumbers.get(id) as string, kind: 'recipe' });
+    }
+    blocks.push({
+      ...descriptor,
+      number: blockNumbers.get(descriptor.id) as string,
+      directory,
+      files: ordered,
+      test,
+      dependencies: [...new Set(derived.flatMap((d) => d.dependencies))].sort((a, b) => a.localeCompare(b)),
+      registryDependencies,
+      builtFrom: [...components, ...followed.sort((a, b) => ordinal(a.number, b.number))],
+    });
+  }
+  blocks.sort((a, b) => ordinal(a.number, b.number));
+
   const described = (ids: Set<string>, directory: string, suffix: string) => {
     for (const name of filesIn(directory, suffix)) {
       if (!ids.has(name.slice(0, -suffix.length))) {
@@ -545,6 +618,12 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
   described(reactIds, UI_SOURCE, '.tsx');
   described(reactIds, PAGES, '.mdx');
   described(new Set(ofKind('element').map((d) => d.id)), ELEMENT_SOURCE, '.element.ts');
+  const blockIds = new Set(ofKind('block').map((d) => d.id));
+  for (const entry of files.list(BLOCK_SOURCE) ?? []) {
+    if (entry.name === '__tests__') continue;
+    if (!entry.directory) report('path-outside', `${BLOCK_SOURCE}/${entry.name}`, 'packages/blocks/src/ holds one directory per block');
+    else if (!blockIds.has(entry.name)) report('source-without-metadata', `${BLOCK_SOURCE}/${entry.name}`, 'no block descriptor under registry/metadata/ claims it');
+  }
   const setupIds = new Set(ofKind('setup').map((d) => d.id));
   for (const entry of files.list(STATIC) ?? []) {
     if (entry.directory && !setupIds.has(entry.name)) {
@@ -559,6 +638,7 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
     ...sourceBundles.map((entry): [string, string[]] => [entry.id, entry.registryDependencies]),
     ...elements.map((entry): [string, string[]] => [entry.id, entry.registryDependencies]),
     ...setup.map((entry): [string, string[]] => [entry.id, entry.registryDependencies ?? []]),
+    ...blocks.map((entry): [string, string[]] => [entry.id, entry.registryDependencies]),
   ]);
   for (const [id, targets] of [...edges, ...recipes.map((r): [string, string[]] => [r.id, r.registryDependencies])]) {
     for (const target of targets) {
@@ -588,6 +668,7 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
       sourceBundles,
       artifacts: ofKind('artifact'),
       recipes,
+      blocks,
       exports: exportPlan,
       registryItems,
       componentRoutes: react.map((entry) => entry.id),

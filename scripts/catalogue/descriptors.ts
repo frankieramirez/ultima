@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { validateHandSteps } from '../../packages/cli/src/hand-steps.ts';
 import { lineOf, parse } from './source.ts';
 
-export const KINDS = ['react', 'element', 'setup', 'source-bundle', 'artifact', 'recipe'] as const;
+export const KINDS = ['react', 'element', 'setup', 'source-bundle', 'artifact', 'recipe', 'block'] as const;
 
 export type Kind = (typeof KINDS)[number];
 
@@ -216,6 +216,12 @@ const FIELDS: Record<Kind, Fields> = {
     section: { check: text },
     release: { check: text },
     demos: { check: list(text) },
+  },
+  block: {
+    ...common,
+    installDocs: { check: text },
+    primaryExport: { check: text },
+    recipes: { check: list(object({ id: { check: text }, root: { check: object({ role: { check: text }, name: { check: text } }) } })) },
   },
 };
 

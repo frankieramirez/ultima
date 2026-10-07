@@ -31,6 +31,7 @@ export function checkStyle(context: Context): void {
       checkImports(context, site, kind);
       checkInjection(context, site);
       inlineChecker(context, site).run();
+      if (kind === 'block') checkClassNames(context, site);
     }
     // An MDX page's own JSX: a style attribute, whose value is its own segment.
     const tables = esmStyleTables(parsed);
@@ -59,6 +60,23 @@ export function checkStyle(context: Context): void {
       }
     }
   }
+}
+
+// docs/spec/ultima.md#sources-and-the-files-of-a-block: a block has no style slot, so no className.
+function checkClassNames(context: Context, site: Site): void {
+  const { file } = site.segment;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxAttribute(node) && ['className', 'class'].includes(node.name.getText(file))) {
+      report(context, site, node, {
+        target: node.name.getText(file),
+        message: `A block file sets ${node.name.getText(file)}, a styling path outside StyleX.`,
+        repair: 'Spread stylex.props(...) onto a plain element, or pass StyleX styles to a component through its style slot.',
+        link: 'docs/spec/ultima.md#sources-and-the-files-of-a-block',
+      });
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
 }
 
 function report(context: Context, site: Site, node: ts.Node, fields: { target: string; message: string; repair: string; link?: string; selector?: string }): void {
