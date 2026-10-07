@@ -59,7 +59,7 @@ type PreviewMode = 'dark' | 'light' | 'compare';
 type PaneMode = 'dark' | 'light';
 
 type TokenReadout = { name: string; value: string }[];
-type Inspection = { anchor: HTMLElement; tokens: TokenReadout };
+type Inspection = { anchor: HTMLElement; name?: string; tokens: TokenReadout };
 
 const CARD_TOKENS = [
   '--ult-color-surface-raised',
@@ -310,7 +310,10 @@ const styles = stylex.create({
     minInlineSize: 0,
   },
   inspector: { maxWidth: 'min(28rem, var(--available-width))', maxHeight: 'var(--available-height)', overflow: 'auto', overflowWrap: 'anywhere' },
-  tokenRow: { display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
+  readoutHead: { display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'], justifyContent: 'space-between', paddingBlockEnd: space['--ult-space-2'] },
+  tokenRow: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-4'] },
+  tokenName: { flexGrow: 1, minInlineSize: 0 },
+  tokenSwatch: { blockSize: space['--ult-space-5'], inlineSize: space['--ult-space-5'], flexShrink: 0 },
   tokenValue: { color: color['--ult-color-text'] },
   hover: { backgroundColor: color['--ult-color-accent-hover'] },
   active: { backgroundColor: color['--ult-color-accent-active'] },
@@ -413,7 +416,7 @@ function PreviewPane({
   useLayoutEffect(() => setReadout(null), [inspect, scene]);
   useLayoutEffect(() => {
     setReadout((current) => current && current.anchor.isConnected
-      ? { anchor: current.anchor, tokens: resolvedTokens(current.anchor) }
+      ? inspection(current.anchor)
       : null);
   }, [table]);
 
@@ -425,6 +428,10 @@ function PreviewPane({
       .map((name) => ({ name, value: computed.getPropertyValue(name).trim() || '—' }));
   }
 
+  function inspection(anchor: HTMLElement): Inspection {
+    return { anchor, name: anchor.dataset.galleryExample, tokens: resolvedTokens(anchor) };
+  }
+
   function readTokens(event: FocusEvent<HTMLDivElement> | MouseEvent<HTMLDivElement>) {
     inspectTarget(event.target);
   }
@@ -433,7 +440,7 @@ function PreviewPane({
     if (!inspect) return;
     const target = element instanceof HTMLElement ? element.closest('[data-tokens]') : null;
     if (!(target instanceof HTMLElement) || !portal.current?.contains(target)) return;
-    setReadout((current) => current?.anchor === target ? current : { anchor: target, tokens: resolvedTokens(target) });
+    setReadout((current) => current?.anchor === target ? current : inspection(target));
   }
 
   function clearTokens(event: FocusEvent<HTMLDivElement>) {
@@ -471,9 +478,16 @@ function PreviewPane({
           <HoverCard.Positioner anchor={readout?.anchor} collisionBoundary={portal.current ?? undefined} side="bottom" align="start">
             <HoverCard.Popup aria-label="Inspected tokens" tabIndex={0} style={styles.inspector}>
               <div aria-label="Token readout" aria-live="polite" role="status" {...stylex.props(styles.readout)}>
+                {readout ? (
+                  <div {...stylex.props(styles.readoutHead)}>
+                    {readout.name ? <span {...stylex.props(styles.tokenValue)}>{readout.name}</span> : null}
+                    <span>{readout.tokens.length} {readout.tokens.length === 1 ? 'token' : 'tokens'}</span>
+                  </div>
+                ) : null}
                 {readout?.tokens.map((token) => (
-                  <div key={token.name} {...stylex.props(styles.tokenRow)}>
-                    <span>{token.name}</span>
+                  <div data-token={token.name} key={token.name} {...stylex.props(styles.tokenRow)}>
+                    {token.name.startsWith('--ult-color-') ? <SwatchChip style={styles.tokenSwatch} value={token.value} /> : null}
+                    <span {...stylex.props(styles.tokenName)}>{token.name}</span>
                     <span {...stylex.props(styles.tokenValue)}>{token.value}</span>
                   </div>
                 ))}

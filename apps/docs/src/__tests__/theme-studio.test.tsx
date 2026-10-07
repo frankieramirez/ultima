@@ -1,6 +1,6 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, resolveDraft, stockDraft, presetDraft, AUTOSAVE_KEY, draftFingerprint, serializeDraft } from '@ultima/tokens';
+import { colorScheme, resolveDraft, stockDraft, presetDraft, AUTOSAVE_KEY, draftFingerprint, PAIRINGS, serializeDraft } from '@ultima/tokens';
 import axe from 'axe-core';
 import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -356,6 +356,32 @@ test('the rail sits beside the preview, with persistent draft status below both'
   expect(editor.contains(screen.getByRole('button', { name: 'Reset theme' }).element())).toBe(false);
 });
 
+test('the editor rail runs picker, Shuffle, history, then the six groups, each header ordering lock, shuffle and reset', async () => {
+  const screen = await mount('/theme-studio');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' });
+  const sequence = [
+    editor.getByRole('combobox', { name: 'Complete theme' }),
+    editor.getByRole('button', { name: 'Shuffle', exact: true }),
+    editor.getByRole('button', { name: 'Undo', exact: true }),
+    editor.getByRole('button', { name: 'Redo', exact: true }),
+    ...['Color', 'Typography', 'Density', 'Shape', 'Elevation', 'Motion'].map((group) => editor.getByRole('heading', { name: group, level: 2 })),
+  ].map((locator) => locator.element());
+  for (let index = 1; index < sequence.length; index += 1) {
+    expect(sequence[index - 1]!.compareDocumentPosition(sequence[index]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  }
+  for (const group of ['Color', 'Typography', 'Density', 'Shape', 'Elevation', 'Motion']) {
+    const header = editor.getByRole('heading', { name: group, level: 2 }).element().closest('header')!;
+    const names = [...header.querySelectorAll('button')].map((button) => button.getAttribute('aria-label'));
+    expect(names.slice(0, 3)).toEqual([`Lock ${group}`, `Shuffle ${group}`, `Reset ${group}`]);
+    expect(header.querySelector('p')?.textContent).toBeTruthy();
+  }
+  const accent = editor.getByRole('group', { name: 'Accent fill' }).element();
+  const exact = editor.getByRole('button', { name: /^Set exact .* colors$/ }).element();
+  const color = editor.getByRole('heading', { name: 'Color', level: 2 }).element().closest('section')!;
+  expect(color.contains(accent)).toBe(true);
+  expect(color.contains(exact)).toBe(true);
+});
+
 test('the editor rail scrolls its groups without a visible scrollbar and never overflows horizontally', async () => {
   const screen = await mount('/theme-studio');
   const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
@@ -601,6 +627,27 @@ test('inspect tokens lists declared variables and resolved values per pane mode'
   expect(screen.getByRole('status', { name: 'Token readout' }).element().textContent).toContain(lightRaised);
 });
 
+test('hovering a gallery example names it and lists each token it reads, swatching colors in that pane\'s mode', async () => {
+  const screen = await mount('/theme-studio', false);
+  await userEvent.click(previewMode(screen, 'Light'));
+  await userEvent.click(screen.getByRole('button', { name: 'Inspect tokens', exact: true }));
+  const pane = screen.getByRole('region', { name: 'Light preview' }).element();
+  const example = pane.querySelector<HTMLElement>('[data-gallery-example="Create your workspace"]')!;
+  await userEvent.hover(example.querySelector('h3, p') ?? example);
+  const readout = screen.getByRole('status', { name: 'Token readout' });
+  await expect.element(readout.getByText('Create your workspace', { exact: true })).toBeVisible();
+  const names = example.dataset.tokens!.split(',');
+  await expect.element(readout.getByText(`${names.length} tokens`, { exact: true })).toBeVisible();
+  const light = resolveDraft(presetDraft('neutral')).light;
+  for (const name of names) {
+    const row = readout.element().querySelector<HTMLElement>(`[data-token="${name}"]`)!;
+    expect(row.textContent).toContain(getComputedStyle(example).getPropertyValue(name).trim());
+    const swatch = row.querySelector<HTMLElement>('[aria-hidden]');
+    if (name.startsWith('--ult-color-')) expect(getComputedStyle(swatch!).backgroundColor).toBe(paintedColor(light[name]!));
+    else expect(swatch).toBeNull();
+  }
+});
+
 test('inspect targets take keyboard focus and drive the readout on focus and blur', async () => {
   const screen = await mount('/theme-studio');
   await userEvent.click(screen.getByRole('tab', { name: 'Workspace', exact: true }));
@@ -726,6 +773,46 @@ test('the mobile editor keeps its header, selected group and footer inside the v
   const results = await axe.run(document.body);
   expect(results.violations.map((v) => v.id)).toEqual([]);
 });
+
+test('the mobile drawer offers the six groups as chips, one shown at a time, with the checks count', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/theme-studio');
+  await expect.element(screen.getByRole('button', { name: '98 of 98 pass', exact: true })).toBeVisible();
+  await userEvent.click(screen.getByRole('button', { name: 'Edit theme', exact: true }));
+  const drawer = screen.getByRole('dialog', { name: 'Edit theme' });
+  const chips = drawer.getByRole('group', { name: 'Theme groups' });
+  const items = [...chips.element().querySelectorAll<HTMLElement>('button')];
+  expect(items.map((item) => item.textContent)).toEqual(['Color', 'Typography', 'Density', 'Shape', 'Elevation', 'Motion']);
+  const bounds = drawer.element().getBoundingClientRect();
+  for (const item of items) {
+    expect(getComputedStyle(item).borderTopLeftRadius).not.toBe('0px');
+    expect(item.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+    expect(item.getBoundingClientRect().right).toBeLessThanOrEqual(bounds.right);
+  }
+  await userEvent.click(chips.getByRole('button', { name: 'Shape', exact: true }));
+  await expect.element(drawer.getByRole('heading', { name: 'Shape', level: 2 })).toBeVisible();
+  expect(drawer.getByRole('heading', { name: 'Color', level: 2 }).query()).toBeNull();
+  await expect.element(drawer.getByRole('region', { name: 'Token checks' }).getByText('98 of 98 pass', { exact: true })).toBeVisible();
+});
+
+for (const width of [1280, 390] as const) for (const mode of ['dark', 'light'] as const) {
+  test(`the studio with its checks footer passes axe in the ${mode} site mode at ${width}px`, async () => {
+    prefer(mode);
+    await page.viewport(width, width === 390 ? 844 : 720);
+    onTestFinished(() => page.viewport(1280, 720));
+    const screen = await mount('/theme-studio', false);
+    await expect.element(screen.getByRole('heading', { name: 'Theme Studio' })).toBeVisible();
+    if (width === 390) {
+      await userEvent.click(screen.getByRole('button', { name: 'Edit theme', exact: true }));
+      const drawer = screen.getByRole('dialog', { name: 'Edit theme' }).element();
+      await Promise.all(drawer.getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => {})));
+    }
+    await expect.element(checksFooter(screen)).toBeVisible();
+    const results = await axe.run(document.body);
+    expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.html).join(', ')}`)).toEqual([]);
+  });
+}
 
 test('guided controls write contracted draft parameters and the preview follows', async () => {
   const screen = await mount('/theme-studio');
@@ -1103,22 +1190,60 @@ test('unlinking splits modes per row, relinking writes dark to both, and reset c
   );
 });
 
-test('the token contrast panel reports every pairing per mode at full precision', async () => {
+function checksFooter(screen: Awaited<ReturnType<typeof mount>>) {
+  return screen.getByRole('region', { name: 'Token checks', exact: true });
+}
+
+function checkMarks(footer: Element) {
+  return [...footer.querySelectorAll<HTMLElement>('[data-check-mark]')];
+}
+
+test('the checks footer counts every manifest pairing in both modes, dark marks first, in an inert strip', async () => {
   const screen = await mount('/theme-studio');
-  await userEvent.click(screen.getByRole('button', { name: 'Pairing results' }));
+  const footer = checksFooter(screen);
+  const total = PAIRINGS.length * 2;
+  expect(total).toBe(98);
+  await expect.element(footer.getByText(`${total} of ${total} pass`, { exact: true })).toBeVisible();
 
-  const panel = screen.getByRole('region', { name: 'Token contrast' }).element();
-  expect(panel.querySelectorAll('li').length).toBe(49);
-  await expect.element(screen.getByText('All pairings pass')).toBeVisible();
+  const strip = footer.element().querySelector('[data-checks-strip]')!;
+  expect(strip).toHaveAttribute('aria-hidden', 'true');
+  expect(strip.querySelectorAll('button, a, input, select, textarea, [tabindex]').length).toBe(0);
+  const marks = checkMarks(footer.element());
+  expect(marks.length).toBe(total);
+  expect(marks.map((mark) => mark.dataset.mode)).toEqual([...PAIRINGS.map(() => 'dark'), ...PAIRINGS.map(() => 'light')]);
+  expect(marks.map((mark) => mark.dataset.pairing)).toEqual([...PAIRINGS, ...PAIRINGS].map((pair) => `${pair.foreground} on ${pair.background}`));
+  expect(marks.every((mark) => mark.dataset.pass === 'true')).toBe(true);
 
-  const pair = [...panel.querySelectorAll('li')].find((li) =>
-    li.textContent?.startsWith('text on surface ·'),
-  );
-  expect(pair).toBeDefined();
-  expect(pair!.textContent).toMatch(/min 4\.5:1/);
-  expect(pair!.textContent).toMatch(/Dark \d+(\.\d+)?:1 pass/);
-  expect(pair!.textContent).toMatch(/Light \d+(\.\d+)?:1 pass/);
+  await expect.element(screen.getByRole('button', { name: 'View draft report', exact: true })).toBeVisible();
+});
 
+test('a failing override applies marked, turns its marks to danger and changes the count', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const footer = checksFooter(screen).element();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
+  const text = screen.getByRole('textbox', { name: '--ult-color-text' });
+  await expect.element(text).toBeVisible();
+  await userEvent.clear(text.element());
+  await userEvent.type(text.element(), '#101011');
+
+  expect(readToken(pane, '--ult-color-text')).toBe('#101011');
+  expect(text.element()).toHaveAttribute('aria-invalid', 'true');
+  const marks = checkMarks(footer);
+  const textOnSurface = marks.find((mark) => mark.dataset.mode === 'dark' && mark.dataset.pairing === '--ult-color-text on --ult-color-surface')!;
+  expect(textOnSurface.dataset.pass).toBe('false');
+  expect(getComputedStyle(textOnSurface).backgroundColor).toBe(paintedColor(readToken(footer, '--ult-color-danger')));
+  const lightTextOnSurface = marks.find((mark) => mark.dataset.mode === 'light' && mark.dataset.pairing === '--ult-color-text on --ult-color-surface')!;
+  expect(lightTextOnSurface.dataset.pass).toBe('true');
+  expect(getComputedStyle(lightTextOnSurface).backgroundColor).toBe(paintedColor(readToken(footer, '--ult-color-success')));
+  const failing = marks.filter((mark) => mark.dataset.pass === 'false').length;
+  expect(failing).toBeGreaterThan(0);
+  await expect.element(checksFooter(screen).getByText(`${98 - failing} of 98 pass`, { exact: true })).toBeVisible();
+});
+
+test('the draft report lists every pairing per mode at full precision', async () => {
+  const screen = await mount('/theme-studio');
   await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
   const surface = screen.getByRole('textbox', { name: '--ult-color-surface' });
   await expect.element(surface).toBeVisible();
@@ -1128,35 +1253,21 @@ test('the token contrast panel reports every pairing per mode at full precision'
   await userEvent.clear(text.element());
   await userEvent.type(text.element(), '#000000');
 
-  const updated = [...panel.querySelectorAll('li')].find((li) =>
-    li.textContent?.startsWith('text on surface ·'),
-  );
-  expect(updated!.textContent).toContain('Dark 21:1 pass');
-  expect(updated!.textContent).toContain('Light 21:1 pass');
+  await userEvent.click(screen.getByRole('button', { name: 'View draft report', exact: true }));
+  const report = screen.getByRole('dialog', { name: "This draft's token checks" });
+  const panel = report.getByRole('region', { name: 'Token contrast' }).element();
+  expect(panel.querySelectorAll('li').length).toBe(49);
+  const pair = [...panel.querySelectorAll('li')].find((li) => li.textContent?.startsWith('text on surface ·'));
+  expect(pair!.textContent).toMatch(/min 4\.5:1/);
+  expect(pair!.textContent).toContain('Dark 21:1 pass');
+  expect(pair!.textContent).toContain('Light 21:1 pass');
 });
 
-test('a failing override applies marked, not blocked, and the row is flagged', async () => {
+test('the editor rail holds no inline validation panel', async () => {
   const screen = await mount('/theme-studio');
-  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
-  await userEvent.click(screen.getByRole('button', { name: 'Pairing results' }));
-  const panel = screen.getByRole('region', { name: 'Token contrast' }).element();
-
-  await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
-  const text = screen.getByRole('textbox', { name: '--ult-color-text' });
-  await expect.element(text).toBeVisible();
-  await userEvent.clear(text.element());
-  await userEvent.type(text.element(), '#101011');
-
-  expect(readToken(pane, '--ult-color-text')).toBe('#101011');
-  await expect.element(screen.getByText(/pairings? failing/)).toBeVisible();
-
-  const pair = [...panel.querySelectorAll('li')].find((li) =>
-    li.textContent?.startsWith('text on surface ·'),
-  );
-  expect(pair!.textContent).toMatch(/Dark [\d.]+:1 fail/);
-  expect(Number(pair!.textContent!.match(/Dark ([\d.]+):1/)?.[1])).toBeLessThan(4.5);
-  expect(pair!.textContent).toMatch(/Light [\d.]+:1 pass/);
-  expect(text.element()).toHaveAttribute('aria-invalid', 'true');
+  const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
+  expect(editor.querySelector('[aria-label="Token contrast"]')).toBeNull();
+  expect(editor.contains(checksFooter(screen).element())).toBe(false);
 });
 
 test('overrides pin resolved values through regeneration and group reset clears them', async () => {
@@ -1210,7 +1321,6 @@ test('the studio passes axe in its default dark preview', async () => {
   const screen = await mount('/theme-studio');
   await expect.element(screen.getByRole('heading', { name: 'Theme Studio' })).toBeVisible();
   await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
-  await userEvent.click(screen.getByRole('button', { name: 'Pairing results' }));
   await expect.element(screen.getByRole('textbox', { name: '--ult-color-accent' })).toBeVisible();
   const results = await axe.run(document.body);
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.html).join(', ')}`)).toEqual([]);

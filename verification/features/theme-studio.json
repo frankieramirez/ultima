@@ -15,6 +15,7 @@
   "sourceRoots": [
     "apps/docs/src/routes/theme-studio.tsx",
     "apps/docs/src/theme-studio-actions.tsx",
+    "apps/docs/src/theme-studio-checks.tsx",
     "apps/docs/src/theme-studio-draft.ts",
     "apps/docs/src/theme-studio-editor.tsx",
     "apps/docs/src/theme-studio-group.tsx",
@@ -39,7 +40,7 @@
   "supporting": [
     {
       "path": "apps/docs/src/__tests__/theme-studio.test.tsx",
-      "reason": "Layout, scenes, inspect, guided controls, shuffle and the linear history walk, including shuffle and redo."
+      "reason": "Layout, rail order, the checks footer, scenes, inspect, guided controls, shuffle and the linear history walk, including shuffle and redo."
     },
     {
       "path": "apps/docs/src/__tests__/theme-studio-export.test.tsx",

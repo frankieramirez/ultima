@@ -19,6 +19,7 @@ import { draftSummary, GROUPS, groupLabel } from '../theme-studio-draft';
 import { CompleteThemePicker, ThemeStudioEditor } from '../theme-studio-editor';
 import { ThemeStudioPreview } from '../theme-studio-preview';
 import { ThemeStudioShuffleBar } from '../theme-studio-shuffle';
+import { checksCount, draftChecks, ThemeStudioChecks } from '../theme-studio-checks';
 import { ThemeStudioValidation } from '../theme-studio-validation';
 import { TokenRows, type ModeOffenders } from '../theme-studio-token-row';
 
@@ -110,6 +111,7 @@ const styles = stylex.create({
     paddingBlock: space['--ult-space-4'],
     paddingInline: space['--ult-space-6'],
   },
+  statusActions: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: space['--ult-space-6'], marginInlineStart: 'auto' },
   statusCopy: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-1'] },
   announce: {
     clipPath: 'inset(50%)',
@@ -179,23 +181,23 @@ export function ThemeStudio() {
   } = store;
   const resolved = useMemo(() => resolveDraft(draft), [draft]);
   const pairings = useMemo(() => gate(resolved), [resolved]);
-  const failing = pairings.reduce((count, row) => count + Number(!row.dark.pass) + Number(!row.light.pass), 0);
+  const checks = useMemo(() => draftChecks(pairings), [pairings]);
 
   const offenders = useMemo<ModeOffenders>(() => {
     const dark = new Set<string>();
     const light = new Set<string>();
-    for (const result of pairings) for (const mode of ['dark', 'light'] as const) {
+    for (const result of checks.failures) for (const mode of ['dark', 'light'] as const) {
       if (!result[mode].pass) { (mode === 'dark' ? dark : light).add(result.foreground); (mode === 'dark' ? dark : light).add(result.background); }
     }
     return { dark, light };
-  }, [pairings]);
+  }, [checks]);
   const status = (
     <div {...stylex.props(styles.status)}>
-      <Button ref={reportTrigger} onClick={() => setReportOpen(true)} size="sm" variant="ghost" style={[docsStyles.square, styles.touch]}>
-        {failing ? `${failing} token checks failing` : `${pairings.length * 2} / ${pairings.length * 2} checks pass`} · View draft report
-      </Button>
-      <span {...stylex.props(styles.statusCopy, styles.footerInfo)}>Editing both modes · {draftSummary(draft)}</span>
-      {wide || editorOpen ? <Button onClick={() => store.commit((current) => resetDraft(current))} size="sm" variant="ghost" style={[docsStyles.square, styles.touch]}>Reset theme</Button> : null}
+      <ThemeStudioChecks checks={checks} onReport={() => setReportOpen(true)} reportRef={reportTrigger} />
+      <div {...stylex.props(styles.statusActions)}>
+        <span {...stylex.props(styles.statusCopy, styles.footerInfo)}>Editing both modes · {draftSummary(draft)}</span>
+        {wide || editorOpen ? <Button onClick={() => store.commit((current) => resetDraft(current))} size="sm" variant="ghost" style={[docsStyles.square, styles.touch]}>Reset theme</Button> : null}
+      </div>
     </div>
   );
 
@@ -244,7 +246,7 @@ export function ThemeStudio() {
       {wide ? status : (
         <Dialog.Root open={editorOpen} onOpenChange={setEditorOpen}>
           <div {...stylex.props(styles.status)}>
-            <Button ref={reportTrigger} onClick={() => setReportOpen(true)} size="sm" variant="ghost" style={styles.touch}>{failing ? `${failing} checks failing` : 'Token checks pass'}</Button>
+            <Button ref={reportTrigger} onClick={() => setReportOpen(true)} size="sm" variant="ghost" style={styles.touch}>{checksCount(checks)}</Button>
             <Dialog.Trigger render={<Button style={styles.edit} />}>Edit theme</Dialog.Trigger>
           </div>
           <Dialog.Portal container={shell}><Dialog.Backdrop forceRender /><Dialog.Viewport style={styles.drawerViewport}><Dialog.Popup style={styles.drawer}>
@@ -260,7 +262,7 @@ export function ThemeStudio() {
           <Dialog.Description style={styles.reportBody}>Declared token pairings in both modes. Check your rendered components too.</Dialog.Description>
           <div {...stylex.props(styles.reportBody)}>
             {repair ? <section aria-label="Repair token"><h2>Edit {repair.token.replace('--ult-color-', '')}</h2><TokenRows draft={draft} group="color" offenders={offenders} resolved={resolved} setDraft={(action) => store.commit(typeof action === 'function' ? action : () => action)} onlyToken={repair.token} focusToken={repair.token} focusRequest={repair.serial} /><Separator /></section> : null}
-            <ThemeStudioValidation results={pairings} expanded onEdit={(token) => setRepair((current) => ({ token, serial: (current?.serial ?? 0) + 1 }))} />
+            <ThemeStudioValidation checks={checks} onEdit={(token) => setRepair((current) => ({ token, serial: (current?.serial ?? 0) + 1 }))} />
           </div>
         </Dialog.Popup></Dialog.Viewport></Dialog.Portal>
       </Dialog.Root>
