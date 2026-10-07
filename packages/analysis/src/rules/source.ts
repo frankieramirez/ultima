@@ -18,8 +18,7 @@ const SCAFFOLD = `${INFRA}#scaffolding`;
 
 export { INCOMPLETE_MARKER };
 
-/** Kinds whose StyleX tables must sit at module scope: every component and element file, and the shared helpers. */
-const TABLE_KINDS: readonly SourceKind[] = ['react-component', 'react-helper', 'element'];
+const TABLE_KINDS: readonly SourceKind[] = ['react-component', 'react-helper', 'element', 'block'];
 /** Kinds a scaffold writes into, where a leftover marker means unfinished work. Tooling may print the marker. */
 const MARKER_KINDS: readonly SourceKind[] = [...PRODUCTION_KINDS, ...DOCS_KINDS, 'test', 'metadata'];
 const TABLE_CALLS = new Set(['create', 'keyframes']);
@@ -76,7 +75,13 @@ export function checkSource(context: Context): void {
 
     if (kind === 'react-component') {
       const parsed = context.source(path);
-      if (parsed) checkDirective(context, parsed);
+      if (parsed) checkDirective(context, parsed, "A React component file does not start with the 'use client' directive.");
+    }
+    // A Next.js server component that reaches a compound part such as `Avatar.Root` through a client reference gets undefined.
+    const block = kind === 'block' ? scope.itemOf(path) : undefined;
+    if (block !== undefined && path.endsWith(`/${block}/${block}.tsx`)) {
+      const parsed = context.source(path);
+      if (parsed) checkDirective(context, parsed, "A block's entry file does not start with the 'use client' directive, so a server route renders its compound parts as undefined.");
     }
     if (TABLE_KINDS.includes(kind)) {
       const parsed = context.source(path);
@@ -105,7 +110,7 @@ function checkMarker(context: Context, path: string): void {
   }
 }
 
-function checkDirective(context: Context, parsed: Parsed): void {
+function checkDirective(context: Context, parsed: Parsed, message: string): void {
   const file = (parsed.segments[0] as Parsed['segments'][number]).file;
   const first = file.statements[0];
   const directive =
@@ -117,7 +122,7 @@ function checkDirective(context: Context, parsed: Parsed): void {
     start: first ? first.getStart(file) : 0,
     end: first ? first.getEnd() : 0,
     target: 'use client',
-    message: "A React component file does not start with the 'use client' directive.",
+    message,
     repair: "Make 'use client'; the file's first statement.",
     link: ONE_FILE,
   });
