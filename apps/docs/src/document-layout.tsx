@@ -122,13 +122,11 @@ export function DocumentLayout({
   breadcrumb,
   index = true,
   rail: resourceRail,
-  onSectionNavigate,
 }: {
   children: ReactNode;
   breadcrumb: Crumb[];
   index?: boolean;
   rail?: ReactNode;
-  onSectionNavigate?: (id: string) => void;
 }) {
   const article = useRef<HTMLElement>(null);
   const [headings, setHeadings] = useState<Heading[]>([]);
@@ -247,7 +245,6 @@ export function DocumentLayout({
                     <li key={id}>
                       <TextLink
                         href={`#${id}`}
-                        onClick={() => onSectionNavigate?.(id)}
                         variant="muted"
                         aria-current={id === current ? 'location' : undefined}
                         style={id === current ? styles.current : undefined}

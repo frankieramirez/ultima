@@ -59,6 +59,17 @@ export const foundationStyles = stylex.create({
     marginBlockStart: '4.5rem',
     marginBlockEnd: space['--ult-space-7'],
   },
+  headingRow: {
+    alignItems: 'baseline',
+    columnGap: space['--ult-space-6'],
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  count: {
+    color: color['--ult-color-text-subtle'],
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-2'],
+  },
   sectionNumber: {
     '::before': {
       color: color['--ult-color-text-subtle'],
@@ -207,7 +218,17 @@ function H2({ children, ...props }: ComponentProps<'h2'>) {
     </h2>
   );
 }
-function P(props: ComponentProps<'p'>) {
+
+export function SectionHeading({ id, count, children }: { id?: string; count?: ReactNode; children: ReactNode }) {
+  return (
+    <div {...stylex.props(foundationStyles.headingRow)}>
+      <H2 id={id}>{children}</H2>
+      {count !== undefined && <span {...stylex.props(foundationStyles.count)}>{count}</span>}
+    </div>
+  );
+}
+
+export function P(props: ComponentProps<'p'>) {
   return <p {...props} {...stylex.props(foundationStyles.p)} />;
 }
 function Strong(props: ComponentProps<'strong'>) {
@@ -222,6 +243,27 @@ const components = {
   strong: Strong,
 } satisfies MDXComponents;
 
+export function FoundationLayout({ labels, children }: { labels: string[]; children: ReactNode }) {
+  return (
+    <DocumentLayout breadcrumb={[]}>
+      <div {...stylex.props(foundationStyles.root)}>
+        <RunningHead labels={labels} />
+        {children}
+        <FoundationPager />
+      </div>
+    </DocumentLayout>
+  );
+}
+
+export function FoundationTitle({ title, lede }: { title: string; lede: ReactNode }) {
+  return (
+    <>
+      <H1>{title}</H1>
+      <P>{lede}</P>
+    </>
+  );
+}
+
 export function Foundation({
   Content,
   labels,
@@ -230,12 +272,8 @@ export function Foundation({
   labels: string[];
 }) {
   return (
-    <DocumentLayout breadcrumb={[]}>
-      <div {...stylex.props(foundationStyles.root)}>
-        <RunningHead labels={labels} />
-        <Content components={components} />
-        <FoundationPager />
-      </div>
-    </DocumentLayout>
+    <FoundationLayout labels={labels}>
+      <Content components={components} />
+    </FoundationLayout>
   );
 }
