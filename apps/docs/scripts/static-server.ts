@@ -1,7 +1,8 @@
 /**
  * The owned static server for the production docs build, per Runner and build identity under Production
  * browser verification in docs/spec/agent-infrastructure.md. It binds loopback port 0, serves only files
- * inside the build root with their MIME type, falls back to `index.html` for an HTML navigation to a
+ * inside the build root with their MIME type, resolves an extensionless path to its `.html` file as
+ * Cloudflare Pages does, falls back to `index.html` for an HTML navigation to a
  * client-side route, and answers 404 for a missing asset, so a missing script can never load the app
  * shell as a successful response. A request that decodes outside the root is refused. The theme
  * registry route executes the built Cloudflare worker when that artifact is present.
@@ -68,16 +69,21 @@ export function resolveFile(root: string, pathname: string): string | null | 'ou
   const target = resolve(root, `.${decoded}`);
   const inside = relative(root, target);
   if (inside.startsWith('..') || isAbsolute(inside)) return 'outside';
-  let file = target;
-  try {
-    if (statSync(file).isDirectory()) file = join(file, 'index.html');
-    const real = realpathSync(file);
+  // Cloudflare Pages serves `name.html` for `/name` and `/name/`, after the exact file and `name/index.html`.
+  const candidates = [target, join(target, 'index.html')];
+  if (extname(decoded) === '' && inside !== '') candidates.push(`${target}.html`);
+  for (const file of candidates) {
+    let real: string;
+    try {
+      real = realpathSync(file);
+    } catch {
+      continue;
+    }
     const within = relative(realpathSync(root), real);
     if (within.startsWith('..') || isAbsolute(within)) return 'outside';
-    return statSync(real).isFile() ? real : null;
-  } catch {
-    return null;
+    if (statSync(real).isFile()) return real;
   }
+  return null;
 }
 
 /**

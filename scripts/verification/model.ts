@@ -129,7 +129,7 @@ export function itemSummaries(catalogue: Catalogue): ItemSummary[] {
   ];
 }
 
-function routePaths(file: ts.SourceFile): Set<string> {
+export function routePaths(file: ts.SourceFile): Set<string> {
   const paths = new Set<string>();
   const visit = (node: ts.Node) => {
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'createRoute') {

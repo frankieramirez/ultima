@@ -1,5 +1,5 @@
 /**
- * The production binding for elements.fixture-interactions: the built /elements.html fixture, a consumer
+ * The production binding for elements.fixture-interactions: the built /elements-gallery.html fixture, a consumer
  * of the served /elements/ultima.js bundle and /tokens.css. Each cell works in the section whose
  * data-theme matches its mode; the runner checks errors and failed requests across the whole page, and
  * axe runs on the whole document. The families come from the generated element catalogue, not a list here.
@@ -17,7 +17,7 @@ function selected(tab: Locator) {
 }
 
 export default productionScenario('elements.fixture-interactions', 'production', async ({ page, variant, openFixture, axe }) => {
-  await openFixture('/elements.html');
+  await openFixture('/elements-gallery.html');
   const section = page.getByRole('region', { name: variant.mode === 'dark' ? 'Dark' : 'Light', exact: true });
   await section.waitFor();
   assert.equal(await section.getAttribute('data-theme'), variant.mode, 'the cell works in the section for its mode');
@@ -33,7 +33,7 @@ export default productionScenario('elements.fixture-interactions', 'production',
   }
   const surface = await section.evaluate((element) => getComputedStyle(element).backgroundColor);
   await assertColor(page, surface, await shippedColor(page, '--ult-color-surface', variant.mode), `the ${variant.mode} section surface`);
-  await assertFits(page, section.getByRole('heading', { level: 2 }), `/elements.html at ${variant.viewport} width`);
+  await assertFits(page, section.getByRole('heading', { level: 2 }), `/elements-gallery.html at ${variant.viewport} width`);
   await axe('fixture with every element defined');
 
   // A button activates once per Enter and once per Space, in the accent fill.

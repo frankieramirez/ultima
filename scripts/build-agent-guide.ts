@@ -166,7 +166,7 @@ function describeComponent(component: GuideComponent): string {
 }
 
 const ELEMENTS_LEAD =
-  "Every element below is the same component as its React counterpart, compiled to a custom element for a host that cannot run React. A single-part component is one `ult-<item>` tag and a compound component is an `ult-<item>-<part>` family, one tag per part. Attributes stand in for props: each axis is an attribute carrying the React prop's values verbatim. Elements render into light DOM over `/tokens.css`, and the style slot is `part=` on the parts an element renders plus your own CSS. Serve one file per element from `/elements/`, or `/elements/ultima.js` for the set; `/elements.html` is the live example of every element in both modes.";
+  "Every element below is the same component as its React counterpart, compiled to a custom element for a host that cannot run React. A single-part component is one `ult-<item>` tag and a compound component is an `ult-<item>-<part>` family, one tag per part. Attributes stand in for props: each axis is an attribute carrying the React prop's values verbatim. Elements render into light DOM over `/tokens.css`, and the style slot is `part=` on the parts an element renders plus your own CSS. Serve one file per element from `/elements/`, or `/elements/ultima.js` for the set; `/elements-gallery.html` is the live example of every element in both modes.";
 
 function describeElement(element: GuideComponent): string {
   const axes = elementAxesOf(element);

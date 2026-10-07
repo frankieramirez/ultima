@@ -23,7 +23,7 @@ export type ProductionContext = {
   /** Navigates to a pathname on the run's own served build and waits for the app to be ready. */
   open(pathname: string): Promise<void>;
   /**
-   * Navigates to a checked-in static fixture, such as `/elements.html`, and waits for the document, the
+   * Navigates to a checked-in static fixture, such as `/elements-gallery.html`, and waits for the document, the
    * `main` landmark, `document.fonts.ready` and a definition for every `ult-*` tag the page uses. A fixture
    * consumes the built token CSS and loads no self-hosted face, so none is required.
    */

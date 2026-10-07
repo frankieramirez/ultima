@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "elements.fixture-interactions",
   "title": "The element fixture defines every family and its button, tabs and tooltip respond to the keyboard",
-  "intent": "On /elements.html the built bundle defines every ult-* tag, each catalogue family appears in the section matching the mode, and a button activates, Tabs select with the arrow keys and a Tooltip opens on focus and closes on Escape, painted in that section's tokens.",
+  "intent": "On /elements-gallery.html the built bundle defines every ult-* tag, each catalogue family appears in the section matching the mode, and a button activates, Tabs select with the arrow keys and a Tooltip opens on focus and closes on Escape, painted in that section's tokens.",
   "contract": "docs/spec/ultima.md#the-fixture-page-and-the-first-consumer",
   "aliases": [
     "ult-button",
@@ -34,14 +34,14 @@
   "routes": [
     {
       "kind": "static",
-      "file": "apps/docs/public/elements.html",
-      "pathname": "/elements.html"
+      "file": "apps/docs/public/elements-gallery.html",
+      "pathname": "/elements-gallery.html"
     }
   ],
   "fixtures": [
     {
       "name": "element fixture page",
-      "path": "apps/docs/public/elements.html",
+      "path": "apps/docs/public/elements-gallery.html",
       "reset": "fresh-context"
     },
     {
@@ -51,12 +51,12 @@
     }
   ],
   "preconditions": [
-    "The page is the built docs' /elements.html, loading /elements/ultima.js and /tokens.css; it sets no self-hosted face.",
+    "The page is the built docs' /elements-gallery.html, loading /elements/ultima.js and /tokens.css; it sets no self-hosted face.",
     "The page has a Dark and a Light section, each forcing its mode with data-theme; a cell works in the section that matches its mode and checks errors across the whole page."
   ],
   "steps": [
     {
-      "action": "Load /elements.html and wait for every ult-* tag it uses to be defined.",
+      "action": "Load /elements-gallery.html and wait for every ult-* tag it uses to be defined.",
       "expect": "Every catalogue element family appears in the mode's section, which paints that mode's surface."
     },
     {
