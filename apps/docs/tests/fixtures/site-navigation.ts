@@ -6,7 +6,7 @@
 export const siteNavigation = {
   version: 3,
   directLoads: [
-    { pathname: '/', heading: 'React components. Built with StyleX. Yours to change.' },
+    { pathname: '/', heading: 'A system for building interfaces.' },
     { pathname: '/install', heading: 'Install' },
     { pathname: '/components/button', heading: 'Button' },
   ],

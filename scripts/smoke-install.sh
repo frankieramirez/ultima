@@ -268,7 +268,7 @@ for (const dependency of item.registryDependencies ?? []) {
   }
 }
 const manifest = JSON.parse(readFileSync(join(process.env.APP, "package.json"), "utf8"));
-for (const name of item.dependencies ?? []) {
+for (const name of [...(item.dependencies ?? []), ...(item.devDependencies ?? [])]) {
   if (!manifest.dependencies?.[name] && !manifest.devDependencies?.[name]) missing.push(`the npm package ${name}`);
 }
 if (missing.length > 0) {

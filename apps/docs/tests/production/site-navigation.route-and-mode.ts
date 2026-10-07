@@ -79,6 +79,7 @@ export default productionScenario('site-navigation.route-and-mode', 'production'
   }
 
   await open('/');
+  await animationsSettle(page.getByRole('main'), 'the home page entrance');
   await axe('home page');
   await page.getByRole('main').getByRole('link', { name: homeLink.name, exact: true }).click();
   await arrived(page, homeLink.pathname, homeLink.heading, `following ${homeLink.name}`);

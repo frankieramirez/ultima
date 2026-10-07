@@ -525,6 +525,17 @@ describe('blocks', () => {
     assert.ok(catalogue.registryItems.includes('login-01'));
   });
 
+  test("installs the type package of a dependency that packages/blocks declares one for, as a dev dependency", () => {
+    assert.deepEqual(load(files()).catalogue.blocks[0]?.devDependencies, []);
+    const engine = {
+      'packages/blocks/src/login-01/icons.tsx': "import { scaleLinear } from 'd3-scale';\nexport function Glyph() { return <svg aria-hidden=\"true\" width={scaleLinear()(1)} />; }\n",
+      'packages/blocks/package.json': JSON.stringify({ name: '@ultima/blocks', dependencies: { 'd3-scale': '4' }, devDependencies: { '@types/d3-scale': '4', '@types/react': '19' } }),
+    };
+    const [entry] = load(files(engine)).catalogue.blocks;
+    assert.deepEqual(entry?.dependencies, ['@base-ui/react', '@stylexjs/stylex', 'd3-scale']);
+    assert.deepEqual(entry?.devDependencies, ['@types/d3-scale']);
+  });
+
   test('lists the recipes it follows after its components, and rejects one that is not a recipe', () => {
     const recipe = { id: 'data-table', root: { role: 'table', name: 'Orders' } };
     const { catalogue } = load(files({ [BLOCK]: block([recipe]) }));

@@ -14,6 +14,7 @@ const BOUNDARIES = `${INFRA}#import-and-registry-boundaries`;
 const TARGETS = `${INFRA}#target-and-api-distinctions`;
 const ONE_FILE = 'docs/spec/ultima.md#one-file-per-component';
 const BLOCKS = 'docs/spec/ultima.md#sources-and-the-files-of-a-block';
+const BLOCK_ENGINES = 'docs/spec/ultima.md#engines-in-a-block';
 
 const LABEL: Record<SourceKind, string> = {
   'token-source': 'a token source',
@@ -156,6 +157,15 @@ function productionVerdict(
       };
     }
     if (allows(scope.policy, kind, category.category, item)) return undefined;
+    if (category.category === 'engine' && kind === 'block') {
+      if (item !== undefined && scope.blockEngines?.(item).has(name)) return undefined;
+      return {
+        ruleId: 'ULT-IMPORT-001',
+        message: `a block file imports the engine "${name}", but its descriptor names no recipe whose demos import it.`,
+        repair: `Name the recipe this block follows in its descriptor's \`recipes\`, if one of that recipe's demos imports "${name}"; otherwise draw without the engine.`,
+        link: BLOCK_ENGINES,
+      };
+    }
     if (category.category === 'engine') {
       return {
         ruleId: 'ULT-IMPORT-001',

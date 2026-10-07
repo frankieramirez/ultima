@@ -1,8 +1,13 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
-import { expect, test } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { palette } from '@ultima/tokens';
+import { expect, onTestFinished, test } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
+import { GROUPS, components } from '../components';
+import { INSTALL_TARGETS } from '../install-commands';
+import { BAND_INK } from '../landing-scales';
+import { countInWords } from '../routes/home';
 import { routeTree } from '../router';
 
 function mount(path: string) {
@@ -10,68 +15,110 @@ function mount(path: string) {
   return render(<RouterProvider router={createRouter({ routeTree, history })} />);
 }
 
-test('the landing renders the workshop hero, specimen, and workbench sections', async () => {
+test('every count the landing shows matches the catalogue', async () => {
   const screen = await mount('/');
+  await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+  const count = components.length;
 
-  await expect.element(screen.getByRole('heading', { level: 1, name: /Yours to change/i })).toBeVisible();
-  await expect.element(screen.getByRole('button', { name: 'Explore the components' })).toBeVisible();
-  await expect.element(screen.getByRole('button', { name: 'Open Theme Studio' })).toHaveAttribute('href', '/theme-studio');
-  await expect.element(screen.getByRole('heading', { name: 'Meet the components.' })).toBeVisible();
-  await expect.element(screen.getByRole('region', { name: 'Component specimen' })).toBeVisible();
-  // The workbench sits below the fold of the shell's scroll panel, so it is present but not visible.
-  expect(screen.getByRole('heading', { name: /Start with one/i }).element()).toBeInTheDocument();
-  expect(screen.getByText('npx shadcn add @ultima/button').element()).toBeInTheDocument();
+  expect(screen.getByText(`${count} COMPONENTS / ${palette.length} SCALES / 2 MODES`).element()).toBeInTheDocument();
+  expect(screen.getByText(`${countInWords(count)} accessible React components`, { exact: false }).element()).toBeInTheDocument();
+  expect(screen.getByRole('list', { name: 'The six scales' }).getByRole('listitem').all()).toHaveLength(palette.length);
+
+  const filter = screen.getByRole('group', { name: 'Filter the index' });
+  expect(filter.getByRole('button', { name: `All ${count}` }).element()).toBeInTheDocument();
+  expect(screen.getByRole('list', { name: 'Components' }).getByRole('listitem').all()).toHaveLength(count);
+
+  for (const group of GROUPS) {
+    await userEvent.click(filter.getByRole('button', { name: group.label, exact: true }).element());
+    const shown = screen.getByRole('list', { name: 'Components' }).getByRole('listitem').all();
+    expect(shown).toHaveLength(components.filter((entry) => entry.group === group.id).length);
+  }
 });
 
-test('the hero mark paints around its text without breaking the line rhythm', async () => {
-  const screen = await mount('/');
-  const heading = screen.getByRole('heading', { level: 1, name: /Yours to change/i }).element();
-  const mark = [...heading.querySelectorAll('span')].find((span) => span.textContent === 'Yours to change.')!;
-  const style = getComputedStyle(mark);
+function contrast(a: string, b: string) {
+  const luminance = (hex: string) => {
+    const [r, g, bl] = [1, 3, 5].map((i) => {
+      const v = Number.parseInt(hex.slice(i, i + 2), 16) / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * bl!;
+  };
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi! + 0.05) / (lo! + 0.05);
+}
 
-  expect(style.marginBlockStart).toBe('0px');
-  expect(Number.parseFloat(style.marginInlineStart)).toBe(-Number.parseFloat(style.paddingInlineStart));
-  expect(Number.parseFloat(style.marginInlineEnd)).toBe(-Number.parseFloat(style.paddingInlineEnd));
+test('each band name clears 3:1 and its small text 4.5:1 on the band ground', () => {
+  for (const scale of palette) {
+    for (const mode of ['dark', 'light'] as const) {
+      const steps = scale[mode];
+      const ink = BAND_INK[scale.name][mode];
+      expect(contrast(steps[ink.name - 1]!, steps[1]!), `${scale.name} ${mode} name`).toBeGreaterThanOrEqual(3);
+      expect(contrast(steps[ink.muted - 1]!, steps[1]!), `${scale.name} ${mode} small text`).toBeGreaterThanOrEqual(4.5);
+    }
+  }
 });
 
-test('the specimen uses live components with the kit default radius', async () => {
-  const screen = await mount('/');
-  await userEvent.click(screen.getByRole('tab', { name: 'Usage' }));
-  await expect.element(screen.getByRole('tab', { name: 'Usage' })).toHaveAttribute('aria-selected', 'true');
-  const specimen = screen.getByRole('region', { name: 'Component specimen' });
-  expect(getComputedStyle(specimen.getByRole('button', { name: 'Solid', exact: true }).element()).borderRadius).toBe('10px');
+test('countInWords writes the catalogue count in words, and in digits past ninety-nine', () => {
+  expect(countInWords(54)).toBe('Fifty-four');
+  expect(countInWords(60)).toBe('Sixty');
+  expect(countInWords(13)).toBe('Thirteen');
+  expect(countInWords(100)).toBe('100');
 });
 
-test('the workbench tabs the two setup targets and copies the active pair', async () => {
+test('the hero copies the default target pair, which the guide documents', async () => {
   const written: string[] = [];
   Object.defineProperty(navigator, 'clipboard', {
     configurable: true,
     value: { writeText: (text: string) => (written.push(text), Promise.resolve()) },
   });
   const screen = await mount('/');
-  const list = screen.getByRole('tablist', { name: 'Setup target' });
-  expect(list.element()).toBeInTheDocument();
+  const hero = screen.getByRole('button', { name: 'Copy the Vite install commands' }).first();
+  await expect.element(hero).toBeVisible();
+  await userEvent.click(hero.element());
+  expect(written.at(-1)).toBe(INSTALL_TARGETS[0].commands.join('\n'));
+  await expect.element(screen.getByRole('link', { name: 'Installation guide' })).toHaveAttribute('href', '/install');
+  await expect.element(screen.getByRole('link', { name: 'Read the index' })).toHaveAttribute('href', '/#index');
+});
 
-  const vite = list.getByRole('tab', { name: 'Vite' });
-  const next = list.getByRole('tab', { name: 'Next.js' });
-  expect(vite.element()).toHaveAttribute('aria-selected', 'true');
-  const panel = () =>
-    document.getElementById(list.element().querySelector('[aria-selected="true"]')!.getAttribute('aria-controls')!)!;
-  expect(panel().textContent).toContain('https://ultima.systems/r/setup-vite.json');
-  expect(panel().querySelectorAll('pre code span').length).toBeGreaterThan(0);
+test('the plate follows the index and wears the previewed preset', async () => {
+  await page.viewport(1440, 900);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/');
+  const plate = screen.getByRole('region', { name: 'Dialog plate' });
+  await expect.element(plate).toBeVisible();
+  expect(plate.getByText('npx shadcn add @ultima/dialog').element()).toBeInTheDocument();
 
-  await userEvent.click(screen.getByRole('button', { name: 'Copy Vite install commands' }).element());
-  expect(written.at(-1)).toBe(
-    'npx shadcn add https://ultima.systems/r/setup-vite.json\nnpx shadcn add @ultima/button',
+  await userEvent.hover(screen.getByRole('link', { name: /Tooltip/ }).element());
+  const tooltip = screen.getByRole('region', { name: 'Tooltip plate' });
+  await expect.element(tooltip).toBeVisible();
+  expect(tooltip.getByText('npx shadcn add @ultima/tooltip').element()).toBeInTheDocument();
+
+  const stage = () => tooltip.element().querySelector<HTMLElement>('[data-preset]')!;
+  expect(stage().dataset.preset).toBe('neutral');
+  const neutral = stage().style.getPropertyValue('--ult-color-accent');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Preview as accent' }).element());
+  expect(screen.getByRole('group', { name: 'PREVIEW PRESET' }).getByRole('button', { name: 'Ultima' }).element()).toHaveAttribute(
+    'aria-pressed',
+    'true',
   );
+  expect(stage().dataset.preset).toBe('ultima');
+  expect(stage().style.getPropertyValue('--ult-color-accent')).not.toBe(neutral);
+});
 
-  await userEvent.click(next.element());
-  expect(next.element()).toHaveAttribute('aria-selected', 'true');
-  expect(panel().textContent).toContain('https://ultima.systems/r/setup-next.json');
-  expect(panel().querySelectorAll('pre code span').length).toBeGreaterThan(0);
-
-  await userEvent.click(screen.getByRole('button', { name: 'Copy Next.js install commands' }).element());
-  expect(written.at(-1)).toBe(
-    'npx shadcn add https://ultima.systems/r/setup-next.json\nnpx shadcn add @ultima/button',
-  );
+test('below the wide breakpoint the index folds to eight rows until asked', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/');
+  const rows = () =>
+    screen
+      .getByRole('list', { name: 'Components' })
+      .getByRole('listitem')
+      .all()
+      .filter((row) => getComputedStyle(row.element()).display !== 'none');
+  await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+  expect(rows()).toHaveLength(8);
+  await userEvent.click(screen.getByRole('button', { name: `Show all ${components.length} components` }).element());
+  expect(rows()).toHaveLength(components.length);
+  expect(document.documentElement.scrollWidth).toBe(document.documentElement.clientWidth);
 });

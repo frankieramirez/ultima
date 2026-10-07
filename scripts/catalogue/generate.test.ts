@@ -97,6 +97,19 @@ describe('the planned projections', () => {
     );
   });
 
+  test('name the primitive each component builds on from its imports', () => {
+    const text = outputs.get(OUTPUTS.catalogue) as string;
+    const primitives = Object.fromEntries(
+      [...text.matchAll(/"item": "([\w-]+)",[\s\S]*?"primitive": (null|\{[^}]*\})/g)].map(([, item, primitive]) => [item, JSON.parse(primitive as string)]),
+    );
+    assert.deepEqual(primitives, {
+      button: { library: 'base-ui', module: 'button' },
+      calendar: { library: 'zag', module: 'date-picker' },
+      'input-otp': { library: 'base-ui', module: 'otp-field' },
+      sidebar: null,
+    });
+  });
+
   test('read element values from the source table and keep the joined attribute presentation', () => {
     const text = outputs.get(OUTPUTS.elements) as string;
     assert.match(text, /"values": \[\n\s+"solid",\n\s+"outline"\n\s+\]/);

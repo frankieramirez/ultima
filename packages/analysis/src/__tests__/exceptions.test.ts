@@ -16,7 +16,7 @@ function exceptionFindings(report: ReturnType<typeof run>) {
     .map((diagnostic) => ({ exception: diagnostic.exception, line: diagnostic.start.line, message: diagnostic.message }));
 }
 
-const RECORDED = 38;
+const RECORDED = 40;
 
 describe('ULT-EXCEPTION-001', () => {
   test('the repository excepts only token, style and docs sites, each with its own authority', () => {
