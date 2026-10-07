@@ -181,6 +181,7 @@ test('Use closest passing value turns the pairing green in both modes and is one
   await expect.poll(count).toBe('98 of 98 pass');
   expect(marks().map((mark) => mark.dataset.pass)).toEqual(['true', 'true']);
   await expect.element(report.getByText('All pairings pass', { exact: true })).toBeVisible();
+  await expect.element(report.getByRole('heading', { name: 'Token contrast', exact: true })).toHaveFocus();
   const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
   expect(readToken(pane, '--ult-color-text-subtle')).toBe('#8e8e8e');
 
@@ -225,6 +226,7 @@ test('Reset to derived clears the target in both modes, and an unreachable fix i
   await expect.element(fix).toHaveAccessibleDescription('No lightness at this hue passes every pairing for text.');
 
   await userEvent.click(failure(report, 'text-subtle on surface · min 4.5:1').getByRole('button', { name: 'Reset to derived', exact: true }));
+  await expect.poll(() => document.activeElement?.closest('[aria-label="Failing pairings"]') !== null && document.activeElement?.hasAttribute('data-fix')).toBe(true);
   const stored = JSON.parse(localStorage.getItem(AUTOSAVE_KEY)!);
   expect(stored.overrides.dark['--ult-color-text-subtle']).toBeUndefined();
   expect(stored.overrides.light['--ult-color-text-subtle']).toBeUndefined();

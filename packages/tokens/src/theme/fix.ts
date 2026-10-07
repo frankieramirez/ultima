@@ -35,10 +35,19 @@ export function closestPassingValue(draft: ThemeDraft, pairing: Pairing, mode: C
   const target = fixTarget(draft, pairing);
   const reason = `No lightness at this hue passes every pairing for ${target.replace(/^--ult-color-/, '')}.`;
   const resolve = modeResolver(draft, mode);
-  const current = resolve(draft.overrides[mode])[target];
+  const before = resolve(draft.overrides[mode]);
+  const current = before[target];
   if (current === undefined || !/^#[0-9a-f]{6}$/i.test(current)) return { reason };
   const { L, C, h } = hexToOklch(current);
-  const checks = [pairing, ...PAIRINGS.filter((other) => !samePairing(other, pairing) && (other.foreground === target || other.background === target))];
+  // The target's own pairings must pass, and a derived on-color that follows the target must not break one that passed.
+  const checks = [
+    pairing,
+    ...PAIRINGS.filter(
+      (other) =>
+        !samePairing(other, pairing) &&
+        (other.foreground === target || other.background === target || ratio(before, other) >= other.minimum),
+    ),
+  ];
 
   const scoreByHex = new Map<string, number | null>();
   const scoreHex = (value: string): number | null => {
@@ -62,16 +71,26 @@ export function closestPassingValue(draft: ThemeDraft, pairing: Pairing, mode: C
   return { reason };
 }
 
-/** Writes the closest passing value in each mode where the pairing fails, as one draft. */
+/**
+ * Writes the closest passing value in each mode where the pairing fails, as one draft. A linked row
+ * whose one written mode lands on the other mode's resolved value pins that value too, so it stays linked.
+ */
 export function applyClosestPassingValue(draft: ThemeDraft, pairing: Pairing): { draft: ThemeDraft } | { reason: string } {
   const target = fixTarget(draft, pairing);
   const next: ThemeDraft = { ...draft, overrides: { dark: { ...draft.overrides.dark }, light: { ...draft.overrides.light } } };
+  const resolved = { dark: modeResolver(draft, 'dark')(draft.overrides.dark), light: modeResolver(draft, 'light')(draft.overrides.light) };
+  const written: ColorMode[] = [];
   for (const mode of ['dark', 'light'] as const) {
-    const resolved = modeResolver(draft, mode)(draft.overrides[mode]);
-    if (ratio(resolved, pairing) >= pairing.minimum) continue;
+    if (ratio(resolved[mode], pairing) >= pairing.minimum) continue;
     const result = closestPassingValue(draft, pairing, mode);
     if ('reason' in result) return result;
     next.overrides[mode][target] = result.value;
+    written.push(mode);
+  }
+  const [only] = written;
+  if (written.length === 1 && only && draft.overrides.dark[target] === draft.overrides.light[target]) {
+    const other = only === 'dark' ? 'light' : 'dark';
+    if (resolved[other][target] === next.overrides[only][target]) next.overrides[other][target] = resolved[other][target];
   }
   return { draft: next };
 }

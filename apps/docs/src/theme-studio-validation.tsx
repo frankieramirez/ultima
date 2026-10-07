@@ -4,7 +4,7 @@ import * as stylex from '@stylexjs/stylex';
 import { applyClosestPassingValue, fixTarget, type PairingResult, type ThemeDraft } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button } from '@ultima/ui';
-import { useId, useMemo } from 'react';
+import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { Kicker } from './page';
 import { failingPairings, type DraftChecks } from './theme-studio-checks';
@@ -138,18 +138,24 @@ function ModeResults({ result }: { result: PairingResult }) {
 
 function Failure({
   draft,
-  fix,
+  deferredDraft,
   onCommit,
   onEdit,
   result,
 }: {
   draft: ThemeDraft;
-  fix: ReturnType<typeof applyClosestPassingValue>;
+  /** The search reads a deferred draft, so a commit repaints the report before every failure is searched again. */
+  deferredDraft: ThemeDraft;
   onCommit: (edit: DraftEdit) => void;
   onEdit: (token: string) => void;
   result: PairingResult;
 }) {
   const noteId = useId();
+  const { foreground, background, minimum } = result;
+  const fix = useMemo(
+    () => applyClosestPassingValue(deferredDraft, { foreground, background, minimum }),
+    [deferredDraft, foreground, background, minimum],
+  );
   const target = fixTarget(draft, result);
   const overridden = draft.overrides.dark[target] !== undefined || draft.overrides.light[target] !== undefined;
   return (
@@ -161,6 +167,7 @@ function Failure({
       <div {...stylex.props(styles.fixes)}>
         <Button
           aria-describedby={noteId}
+          data-fix
           disabled={'reason' in fix}
           focusableWhenDisabled
           onClick={() =>
@@ -176,6 +183,7 @@ function Failure({
         </Button>
         {overridden ? (
           <Button
+            data-fix
             onClick={() => onCommit((current) => resetTokenOverride(current, target))}
             size="sm"
             variant="outline"
@@ -189,7 +197,7 @@ function Failure({
         </Button>
       </div>
       <p id={noteId} {...stylex.props(styles.fixNote)}>
-        {'reason' in fix ? fix.reason : fixNote(draft, fix.draft, target)}
+        {'reason' in fix ? fix.reason : fixNote(deferredDraft, fix.draft, target)}
       </p>
     </li>
   );
@@ -208,15 +216,24 @@ export function ThemeStudioValidation({
 }) {
   const failing = checks.failures.length;
   const passing = checks.results.filter((result) => !checks.failures.includes(result));
-  const fixes = useMemo(
-    () => new Map(checks.failures.map((result) => [pairingKey(result), applyClosestPassingValue(draft, result)])),
-    [draft, checks],
-  );
+  const deferredDraft = useDeferredValue(draft);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const failures = useRef<HTMLUListElement>(null);
+  // A fix or reset can unmount its own card; focus then moves to the card now at that place, or to the heading.
+  const [refocus, setRefocus] = useState<number | null>(null);
+  useEffect(() => {
+    if (refocus === null) return;
+    setRefocus(null);
+    const cards = [...(failures.current?.children ?? [])];
+    const card = cards[Math.min(refocus, cards.length - 1)];
+    if (card?.contains(document.activeElement)) return;
+    (card?.querySelector<HTMLElement>('[data-fix]') ?? heading.current)?.focus();
+  }, [refocus, checks]);
 
   return (
     <section aria-label="Token contrast" {...stylex.props(styles.root)}>
       <header {...stylex.props(styles.header)}>
-        <h2 {...stylex.props(styles.title)}>Token contrast</h2>
+        <h2 ref={heading} tabIndex={-1} {...stylex.props(styles.title)}>Token contrast</h2>
         <span {...stylex.props(styles.summary, failing > 0 && styles.summaryFailing)}>
           {failing === 0 ? 'All pairings pass' : `${failingPairings(checks)} failing`}
         </span>
@@ -234,13 +251,16 @@ export function ThemeStudioValidation({
       {failing > 0 ? (
         <>
           <Kicker tone="muted">Failing · {failing}</Kicker>
-          <ul aria-label="Failing pairings" {...stylex.props(styles.list)}>
-            {checks.failures.map((result) => (
+          <ul aria-label="Failing pairings" ref={failures} {...stylex.props(styles.list)}>
+            {checks.failures.map((result, index) => (
               <Failure
+                deferredDraft={deferredDraft}
                 draft={draft}
-                fix={fixes.get(pairingKey(result)) ?? { reason: '' }}
                 key={pairingKey(result)}
-                onCommit={onCommit}
+                onCommit={(edit) => {
+                  onCommit(edit);
+                  setRefocus(index);
+                }}
                 onEdit={onEdit}
                 result={result}
               />

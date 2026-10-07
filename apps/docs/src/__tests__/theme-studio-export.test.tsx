@@ -255,8 +255,11 @@ test('an invalid draft lists failing pairings and gates URL installs and downloa
   const failing = dialog.getByText(/--ult-color-text on --ult-color-surface:/).element();
   const acknowledgment = dialog.getByRole('checkbox', { name: /Export anyway/ }).element();
   expect(failing.compareDocumentPosition(acknowledgment) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  await userEvent.click(dialog.getByRole('button', { name: 'Check your application', exact: true }));
+  await expect.element(dialog.getByText(/npx ultima-design doctor/)).toBeVisible();
   const copies = () => dialog.getByRole('button', { name: 'Copy', exact: true }).elements();
-  expect(copies().length).toBeGreaterThan(0);
+  // The import fence and the doctor and check fence.
+  expect(copies().length).toBe(2);
   expect(dialog.getByRole('button', { name: 'Copy install command', exact: true }).element()).toBeDisabled();
   for (const copy of copies()) expect(copy).toBeDisabled();
   expect(dialog.element().textContent).not.toContain('/r/theme.json?theme=');
