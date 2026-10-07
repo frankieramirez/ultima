@@ -1,5 +1,6 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 
+import { useAnatomyReport } from './block-anatomy';
 import { BlockPage } from './block-page';
 import { ComponentPage } from './component-page';
 import { components } from './components';
@@ -120,8 +121,9 @@ const blockPreviewRoute = createRoute({
 
 function BlockPreviewPage() {
   const { id } = blockPreviewRoute.useParams();
-  const Block = blocks.find((entry) => entry.id === id)?.preview;
-  return Block ? <Block /> : <NotFound />;
+  const block = blocks.find((entry) => entry.id === id);
+  useAnatomyReport(block);
+  return block ? <block.preview /> : <NotFound />;
 }
 
 const rationaleRoute = createRoute({

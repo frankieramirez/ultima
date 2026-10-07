@@ -1,7 +1,7 @@
 /**
  * The production binding for blocks.preview: the /blocks index and its inert thumbnails, a card opened
- * from the keyboard, the block page's framed preview, its install command and narrow toggle, and every
- * other block's page, in the built docs.
+ * from the keyboard, the block page's framed preview, its install command, narrow toggle and Anatomy,
+ * and every other block's page, in the built docs.
  */
 import assert from 'node:assert/strict';
 
@@ -20,6 +20,38 @@ async function framedBlock(page: Page): Promise<{ element: Locator; frame: Frame
   assert.ok(frame, 'the preview iframe has a document');
   await frame.evaluate(() => document.fonts.ready.then(() => undefined));
   return { element, frame };
+}
+
+type Box = { left: number; top: number; right: number; bottom: number };
+type Drawing = { preview: Box; labels: (Box & { name: string })[]; inert: boolean | undefined } | null;
+
+function settledAnatomy(panel: Locator): Promise<Drawing> {
+  return panel.evaluate((node): Drawing => {
+    const overlay = node.querySelector('[data-anatomy-overlay]');
+    const labels = [...node.querySelectorAll<HTMLElement>('[data-anatomy-label]')];
+    const outlines = node.querySelectorAll('[data-anatomy-outline]').length;
+    if (!overlay || outlines === 0 || labels.length !== outlines || labels.some((label) => getComputedStyle(label).visibility !== 'visible')) return null;
+    const box = (element: Element): Box => {
+      const { left, top, right, bottom } = element.getBoundingClientRect();
+      return { left, top, right, bottom };
+    };
+    return { preview: box(overlay), labels: labels.map((label) => ({ name: label.dataset.anatomyLabel ?? '', ...box(label) })), inert: node.querySelector('iframe')?.inert };
+  });
+}
+
+async function assertAnatomy(panel: Locator, what: string) {
+  await eventually(async () => (await settledAnatomy(panel)) !== null, `${what}: every outline labelled`);
+  const drawn: Drawing = await settledAnatomy(panel);
+  assert.ok(drawn, `${what}: the drawing holds`);
+  const { preview, labels, inert } = drawn;
+  assert.equal(inert, true, `${what}: the framed block is inert`);
+  const inside = (label: Box) =>
+    label.left >= preview.left - 0.5 && label.top >= preview.top - 0.5 && label.right <= preview.right + 0.5 && label.bottom <= preview.bottom + 0.5;
+  const overlap = (a: Box, b: Box) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+  for (const [index, label] of labels.entries()) {
+    assert.ok(inside(label), `${what}: ${label.name} lies inside the preview`);
+    for (const other of labels.slice(index + 1)) assert.ok(!overlap(label, other), `${what}: ${label.name} and ${other.name} do not overlap`);
+  }
 }
 
 function frameWindow(frame: Frame) {
@@ -113,6 +145,15 @@ export default productionScenario('blocks.preview', 'production', async ({ page,
   assert.ok(atNarrow.scroll <= atNarrow.width + 1, `the block fits its ${atNarrow.width}px frame (it is ${atNarrow.scroll}px wide)`);
   await assertFits(page, element, `/blocks/${opened.id} with the narrow preview at ${variant.viewport} width`);
   await axe(`${opened.title} with the narrow preview`);
+
+  await main.getByRole('tab', { name: 'Anatomy', exact: true }).click();
+  const anatomy = main.getByRole('tabpanel', { name: 'Anatomy', exact: true });
+  await anatomy.getByRole('switch', { name: 'Label components', exact: true }).waitFor();
+  await assertAnatomy(anatomy, `${opened.title} Anatomy at the narrow preview`);
+  await axe(`${opened.title} with Anatomy open at the narrow preview`);
+  await main.getByRole('button', { name: 'Desktop', exact: true }).click();
+  await eventually(async () => (await anatomy.locator('iframe').getAttribute('width')) === String(desktop.width), 'the Anatomy frame widening to 1200');
+  await assertAnatomy(anatomy, `${opened.title} Anatomy at the desktop preview`);
 
   for (const href of pages.filter((href) => href !== `/blocks/${opened.id}`)) {
     await open(href);

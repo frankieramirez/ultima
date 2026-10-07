@@ -40,12 +40,12 @@ for (const width of [1440, 390])
       });
       await expect.element(dialog).toBeVisible();
       const input = dialog.getByRole('combobox', {
-        name: 'Search pages and components',
+        name: 'Search components, blocks and docs',
       });
       await userEvent.fill(input, 'aspect ratio');
       await expect
         .element(
-          dialog.getByRole('option', { name: 'Aspect Ratio', exact: true }),
+          dialog.getByRole('option', { name: /^Aspect Ratio A / }),
         )
         .toBeVisible();
       expect(

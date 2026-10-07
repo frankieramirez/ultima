@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode, type Ref } from 'react';
 
 import type { BlockEntry } from './generated/blocks';
 
@@ -34,9 +34,24 @@ const styles = stylex.create({
 /**
  * Frames `/blocks/<id>/preview` at a preview size, scaled down to fit the column. The block lays
  * out for the frame's own viewport, so a Sidebar reads the frame's width rather than the reader's
- * window. A thumbnail loads lazily and is `inert`, so nothing inside it is a tab stop.
+ * window. A thumbnail loads lazily and is `inert`, so nothing inside it is a tab stop. `children`
+ * draws over the frame at its scale, as Anatomy does.
  */
-export function BlockFrame({ block, size = 'desktop', thumbnail = false }: { block: BlockEntry; size?: PreviewSize; thumbnail?: boolean }) {
+export function BlockFrame({
+  block,
+  size = 'desktop',
+  thumbnail = false,
+  inert = thumbnail,
+  frameRef,
+  children,
+}: {
+  block: BlockEntry;
+  size?: PreviewSize;
+  thumbnail?: boolean;
+  inert?: boolean;
+  frameRef?: Ref<HTMLIFrameElement>;
+  children?: (scale: number) => ReactNode;
+}) {
   const stage = useRef<HTMLDivElement>(null);
   const [room, setRoom] = useState(0);
 
@@ -57,14 +72,16 @@ export function BlockFrame({ block, size = 'desktop', thumbnail = false }: { blo
     <div ref={stage} data-preview-size={size} {...stylex.props(styles.stage)}>
       <div {...stylex.props(styles.window(`${width * scale}px`, `${height * scale}px`))}>
         <iframe
+          ref={frameRef}
           src={`/blocks/${block.id}/preview`}
           title={`${block.title} preview`}
           width={width}
           height={height}
           loading={thumbnail ? 'lazy' : 'eager'}
-          inert={thumbnail}
+          inert={inert}
           {...stylex.props(styles.frame(scale))}
         />
+        {children && scale > 0 && children(scale)}
       </div>
     </div>
   );
