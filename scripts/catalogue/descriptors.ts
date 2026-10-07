@@ -66,7 +66,7 @@ export function readLiteral(path: string, text: string): { value?: unknown; prob
         at(statement, 'the default export is not checked with `satisfies`');
         value = literal(statement.expression);
       } else {
-        value = literal(statement.expression.expression);
+        value = literal(withoutAsConst(statement.expression.expression));
       }
       continue;
     }
@@ -74,6 +74,10 @@ export function readLiteral(path: string, text: string): { value?: unknown; prob
   }
   if (!exported) problems.push('no default export');
   return { value, problems };
+}
+
+function withoutAsConst(expression: ts.Expression): ts.Expression {
+  return ts.isAsExpression(expression) && ts.isConstTypeReference(expression.type) ? expression.expression : expression;
 }
 
 type Check = (value: unknown, where: string) => string[];
@@ -171,6 +175,7 @@ const FIELDS: Record<Kind, Fields> = {
     primaryExport: { check: text },
     release: { check: text },
     order: { check: integer },
+    group: { check: text },
     replaces: { check: replaces, optional: true },
   },
   element: {
@@ -220,4 +225,8 @@ export function shapeProblems(kind: Kind, value: unknown): string[] {
 
 export function releaseProblems(value: unknown): string[] {
   return list(object({ id: { check: text }, label: { check: text } }))(value, 'releases');
+}
+
+export function groupProblems(value: unknown): string[] {
+  return list(object({ id: { check: text }, label: { check: text } }))(value, 'groups');
 }

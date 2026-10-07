@@ -10,5 +10,6 @@ export default {
   primaryExport: 'ColorField',
   release: 'v0.2',
   order: 13,
+  group: 'forms',
   replaces: { elements: ['input[type=color]'] },
 } satisfies ReactDescriptor;

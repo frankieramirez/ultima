@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Resizable',
   release: 'v0.2',
   order: 22,
+  group: 'layout',
 } satisfies ReactDescriptor;

@@ -1,6 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router';
 
-import { components } from './components';
+import { GROUPS, componentsInGroup } from './components';
 
 export type NavLink = {
   label: string;
@@ -11,6 +11,7 @@ export type NavLink = {
 export type NavGroup = {
   label: string;
   links: NavLink[];
+  groups?: NavGroup[];
 };
 
 export const pages = [
@@ -25,14 +26,15 @@ export const pages = [
   { label: 'Components', to: '/components' },
 ] satisfies NavLink[];
 
-export const componentPages: NavLink[] = [...components].sort((a, b) => a.name.localeCompare(b.name)).map(({ name, item }) => ({
-  label: name, to: '/components/$name', params: { name: item },
+/** The catalogue groups in display order, each alphabetical. */
+export const componentGroups: NavGroup[] = GROUPS.map(({ id, label }) => ({
+  label,
+  links: componentsInGroup(id).map(({ name, item }) => ({ label: name, to: '/components/$name', params: { name: item } })),
 }));
+
+export const componentPages: NavLink[] = componentGroups.flatMap(({ links }) => links);
 
 export const navigation = [
   { label: 'Foundations', links: pages.filter(({ to }) => to !== '/components').sort((a, b) => a.label.localeCompare(b.label)) },
-  {
-    label: 'Components',
-    links: componentPages,
-  },
+  { label: 'Components', links: [], groups: componentGroups },
 ] satisfies NavGroup[];

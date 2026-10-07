@@ -6,7 +6,7 @@ import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import { RELEASES, components, componentsInRelease } from '../components';
+import { GROUPS, components } from '../components';
 import { componentPages, pages } from '../navigation';
 import { router, routeTree } from '../router';
 const NAVIGATION_STORAGE_KEY = 'ultima-navigation';
@@ -55,8 +55,27 @@ test('every destination in the menu is a route the router serves', () => {
   expect(destinations.filter((to) => !served.has(to))).toEqual([]);
 });
 
-test('the menu derives its alphabetical entries from the catalogue', () => {
-  expect(componentPages.map(({ params }) => params?.name)).toEqual([...components].sort((a,b) => a.name.localeCompare(b.name)).map(({ item }) => item));
+test('the menu derives its entries from the catalogue, by group and then alphabetically', () => {
+  const rank = (group: string) => GROUPS.findIndex(({ id }) => id === group);
+  const expected = [...components].sort((a, b) => rank(a.group) - rank(b.group) || a.name.localeCompare(b.name));
+  expect(componentPages.map(({ params }) => params?.name)).toEqual(expected.map(({ item }) => item));
+});
+
+test('the Components entry holds the six groups as labelled sub-lists that never collapse', async () => {
+  await mount('/components/sidebar');
+  await expect.element(menuLink('Sidebar')).toBeVisible();
+  const labels = Array.from(menuPanel().querySelectorAll('h4'), (heading) => heading.textContent);
+  expect(labels).toEqual(['Forms', 'Overlays', 'Data display', 'Navigation', 'Feedback', 'Layout']);
+  const navigation = menu().getByRole('heading', { name: 'Navigation', level: 4 }).element();
+  const list = navigation.nextElementSibling as HTMLElement;
+  expect(Array.from(list.querySelectorAll('a'), (link) => link.getAttribute('aria-label'))).toEqual([
+    'Breadcrumb',
+    'Navigation Menu',
+    'Pagination',
+    'Sidebar',
+    'Tabs',
+  ]);
+  expect(menuPanel().querySelectorAll('[aria-expanded]').length).toBe(0);
 });
 
 test('the header offers the workshop nav and hides the menu trigger on desktop', async () => {
@@ -248,7 +267,7 @@ test('the article trail is a Breadcrumb landmark that links the section and mark
   await expect.element(component.getByRole('heading', { name: 'Alert Dialog', level: 1 })).toBeVisible();
 });
 
-test('a direct load of a component page marks that link current in the flat catalogue', async () => {
+test('a direct load of a component page marks that link current in its group', async () => {
   await mount('/components/sidebar');
   await expect.element(menuLink('Sidebar')).toBeVisible();
 
@@ -284,12 +303,12 @@ test('a direct load leaves focus alone', async () => {
   expect(document.activeElement).toBe(document.body);
 });
 
-test('the flat catalogue follows the page links in keyboard order', async () => {
+test('the grouped catalogue follows the page links in keyboard order', async () => {
   await mount('/install');
   await expect.element(menuLink('Install')).toBeVisible();
   (menuLink('Tokens').element() as HTMLElement).focus();
   await userEvent.keyboard('{Tab}');
-  expect(document.activeElement).toBe(menuLink('Accordion').element());
+  expect(document.activeElement).toBe(menuLink('Button').element());
 });
 
 test('the logo returns to the editorial home page, which folds the menu rail away', async () => {

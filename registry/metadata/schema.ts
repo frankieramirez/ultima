@@ -1,6 +1,11 @@
 import type { HandStep } from '../../packages/cli/src/hand-steps.ts';
+import type groups from './groups.ts';
 
 export type Release = { id: string; label: string };
+
+export type Group = { id: string; label: string };
+
+export type GroupId = (typeof groups)[number]['id'];
 
 type Common = {
   /** Kebab-case, unique across every kind, and the descriptor's file name. */
@@ -22,6 +27,7 @@ export type ReactDescriptor = Common & {
   release: string;
   /** Unique within `release`; gaps are allowed. */
   order: number;
+  group: GroupId;
   /**
    * The native controls and interactive roles the component stands in for, which `check` reads as
    * ULT-APP-CONTROL-001. An element is a tag, or `input[type=<type>]` for one input type; an input

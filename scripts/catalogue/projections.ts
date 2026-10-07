@@ -81,20 +81,26 @@ export const setupItems = ${data(setupItems)} satisfies Record<string, SetupItem
 
 function catalogueProjection(catalogue: Catalogue): string {
   const releases = catalogue.releases.map((release) => release.id);
-  const labels = Object.fromEntries(catalogue.releases.map((release) => [release.id, release.label]));
-  const components = catalogue.react.map((entry) => ({
-    name: entry.title,
-    item: entry.id,
-    description: entry.docsDescription ?? entry.description,
-    release: entry.release,
-  }));
-  return `${header('registry/metadata/releases.ts and registry/metadata/react/')}
+  const rank = (group: string) => catalogue.groups.findIndex((entry) => entry.id === group);
+  const components = [...catalogue.react]
+    .sort((a, b) => rank(a.group) - rank(b.group) || ordinal(a.id, b.id))
+    .map((entry) => ({
+      name: entry.title,
+      item: entry.id,
+      number: entry.number,
+      group: entry.group,
+      description: entry.docsDescription ?? entry.description,
+      release: entry.release,
+    }));
+  return `${header('registry/metadata/groups.ts, registry/metadata/releases.ts and registry/metadata/react/')}
 import type { ComponentEntry } from '../components';
+
+/** In display order. */
+export const GROUPS = ${data(catalogue.groups)} as const;
 
 export const RELEASES = ${data(releases)} as const;
 
-export const RELEASE_LABELS: Record<(typeof RELEASES)[number], string> = ${data(labels)};
-
+/** By group, then alphabetically. \`number\` is the catalogue number, derived from id order. */
 export const components: ComponentEntry[] = ${data(components)};
 `;
 }

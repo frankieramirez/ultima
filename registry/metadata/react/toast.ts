@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Toast',
   release: 'v0.1',
   order: 10,
+  group: 'overlays',
 } satisfies ReactDescriptor;

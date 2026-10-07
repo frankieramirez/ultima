@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "catalogue.filter-and-demo",
   "title": "Filtering the catalogue narrows, empties and clears, and a demo's source copies exactly",
-  "intent": "The /components filter narrows the list, shows the empty state when nothing matches and clears back to the whole catalogue; a result opens from the keyboard with a visible focus ring; and on /components/button the live demo renders while its copy control writes the displayed source to the clipboard.",
+  "intent": "The /components directory sections the catalogue by group with counts and catalogue numbers; the filter narrows across every group, hides each group with no match, shows the empty state when nothing matches and clears back to the whole catalogue; a result opens from the keyboard with a visible focus ring; and on /components/button the live demo renders while its copy control writes the displayed source to the clipboard.",
   "contract": "docs/spec/ultima.md#page-set",
   "aliases": [
     "no results",
@@ -11,7 +11,10 @@
     "focus ring",
     "clipboard",
     "copy example source",
-    "live demo"
+    "live demo",
+    "groups",
+    "catalogue groups",
+    "catalogue number"
   ],
   "items": [
     "button",
@@ -51,17 +54,17 @@
     }
   ],
   "preconditions": [
-    "The search starts empty and the directory shows every component in one alphabetical list, without release groups, sort controls, or pagination.",
+    "The search starts empty and the directory shows every component in six group sections, Forms, Overlays, Data display, Navigation, Feedback and Layout, each alphabetical, without release groups, sort controls, or pagination.",
     "The context grants clipboard read and write to the served origin only."
   ],
   "steps": [
     {
       "action": "Open /components with an empty search.",
-      "expect": "Every component appears in one alphabetical list and the status gives the total count and A\u2013Z order."
+      "expect": "Every component appears once, in the six group sections in display order, each heading carrying its count, and the status gives the total count and A\u2013Z order."
     },
     {
       "action": "On /components, type dialog into Filter components.",
-      "expect": "The status counts fewer components than the whole catalogue, Dialog is listed, and every listed entry mentions dialog."
+      "expect": "The status counts fewer components than the whole catalogue, Dialog is listed, every listed entry mentions dialog, and only Overlays remains: every group without a match is hidden."
     },
     {
       "action": "Replace the query with one that matches nothing.",

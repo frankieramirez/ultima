@@ -10,5 +10,6 @@ export default {
   primaryExport: 'Button',
   release: 'v0',
   order: 1,
+  group: 'forms',
   replaces: { elements: ['button'], roles: ['button'] },
 } satisfies ReactDescriptor;

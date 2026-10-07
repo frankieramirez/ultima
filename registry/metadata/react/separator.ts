@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Separator',
   release: 'v0',
   order: 18,
+  group: 'layout',
 } satisfies ReactDescriptor;

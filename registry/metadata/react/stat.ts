@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Stat',
   release: 'v0',
   order: 7,
+  group: 'data-display',
 } satisfies ReactDescriptor;

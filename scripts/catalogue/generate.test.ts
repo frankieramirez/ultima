@@ -81,15 +81,20 @@ describe('the planned projections', () => {
     assert.equal(pages.match(/^import \w+Content from/gm)?.length, 4);
   });
 
-  test('order the docs catalogue by release, then order, with the visitor prose', () => {
+  test('order the docs catalogue by group, then alphabetically, with numbers and the visitor prose', () => {
     const text = outputs.get(OUTPUTS.catalogue) as string;
+    assert.match(text, /export const GROUPS = \[\n {2}\{\n {4}"id": "forms",\n {4}"label": "Forms"\n {2}\},\n {2}\{\n {4}"id": "navigation",\n {4}"label": "Navigation"\n {2}\}\n\] as const;/);
     assert.match(text, /export const RELEASES = \[\n {2}"v0",\n {2}"v0\.1"\n\] as const;/);
-    assert.deepEqual([...text.matchAll(/"item": "([\w-]+)"/g)].map((match) => match[1]), [
-      'button',
-      'sidebar',
-      'calendar',
-      'input-otp',
-    ]);
+    assert.doesNotMatch(text, /RELEASE_LABELS/);
+    assert.deepEqual(
+      [...text.matchAll(/"item": "([\w-]+)",\n {4}"number": "(\d+)",\n {4}"group": "([\w-]+)"/g)].map((match) => match.slice(1)),
+      [
+        ['button', '001', 'forms'],
+        ['calendar', '002', 'forms'],
+        ['input-otp', '003', 'forms'],
+        ['sidebar', '004', 'navigation'],
+      ],
+    );
   });
 
   test('read element values from the source table and keep the joined attribute presentation', () => {

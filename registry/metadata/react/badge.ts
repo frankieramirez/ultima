@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Badge',
   release: 'v0',
   order: 2,
+  group: 'data-display',
 } satisfies ReactDescriptor;

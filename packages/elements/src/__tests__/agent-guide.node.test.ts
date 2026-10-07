@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from 'vitest';
 
-import { agentGuide, type GuideComponent } from '../../../../scripts/build-agent-guide.ts';
+import { agentGuide, type GuideComponent, type GuideGroup } from '../../../../scripts/build-agent-guide.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 
@@ -16,13 +16,17 @@ function element(name: string): GuideComponent {
   };
 }
 
-function guide(elements: GuideComponent[]): string {
+function guide(elements: GuideComponent[], groups: GuideGroup[] = []): string {
   return agentGuide({
     specPath: join(root, 'docs/spec/ultima.md'),
     tokensJsonPath: join(root, 'packages/tokens/dist/tokens.json'),
-    components: [],
+    groups,
     elements,
   });
+}
+
+function component(name: string, title: string): GuideComponent {
+  return { name, title, description: `${title}, for the guide.`, source: readFileSync(join(root, 'packages/ui/src', `${name}.tsx`), 'utf8') };
 }
 
 test('emits an Elements section once an element item exists', () => {
@@ -52,4 +56,20 @@ test('emits no Elements heading while no element item exists', () => {
   const output = guide([]);
   expect(output).not.toContain('## Elements');
   expect(output).toContain('design system for React');
+});
+
+test('lists the components under one heading per group, in the order given', () => {
+  const output = guide([], [
+    { label: 'Forms', components: [component('button', 'Button'), component('input', 'Input')] },
+    { label: 'Feedback', components: [component('alert', 'Alert')] },
+  ]);
+  const components = output.slice(output.indexOf('\n## Components\n'), output.indexOf('\n## Tokens\n'));
+  expect([...components.matchAll(/^#{3,4} .+$/gm)].map(([line]) => line)).toEqual([
+    '### Forms',
+    '#### Button',
+    '#### Input',
+    '### Feedback',
+    '#### Alert',
+  ]);
+  expect(components).toContain('npx shadcn add @ultima/input');
 });

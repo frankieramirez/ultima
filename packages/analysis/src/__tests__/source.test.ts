@@ -94,6 +94,7 @@ describe('ULT-SOURCE-001', () => {
         primaryExport: 'Ribbon',
         release: 'v0.1',
         order: 99,
+        group: 'feedback',
       },
       brief: {
         primitive: { kind: 'native', element: 'div' },

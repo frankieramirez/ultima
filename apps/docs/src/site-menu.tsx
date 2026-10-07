@@ -32,6 +32,7 @@ const styles = stylex.create({
   close: { paddingInline: space['--ult-space-4'] },
   groupLabel: { fontFamily: font['--ult-font-mono'] },
   list: { paddingInlineStart: space['--ult-space-4'] },
+  subgroup: { paddingBlockEnd: 0, paddingInlineStart: space['--ult-space-4'] },
 });
 
 export function SiteMenu() {
@@ -50,17 +51,29 @@ export function SiteMenu() {
             {navigation.map((group) => (
               <Sidebar.Group key={group.label}>
                 <Sidebar.GroupLabel style={styles.groupLabel}>{group.label}</Sidebar.GroupLabel>
-                <Sidebar.List style={styles.list}>
-                  {group.links.map((link) => (
-                    <MenuLink key={link.label} link={link} />
-                  ))}
-                </Sidebar.List>
+                {group.links.length > 0 && <MenuList links={group.links} />}
+                {group.groups?.map((subgroup) => (
+                  <Sidebar.Group key={subgroup.label} style={styles.subgroup}>
+                    <Sidebar.GroupLabel render={<h4 />}>{subgroup.label}</Sidebar.GroupLabel>
+                    <MenuList links={subgroup.links} />
+                  </Sidebar.Group>
+                ))}
               </Sidebar.Group>
             ))}
           </ScrollArea.Content>
         </ScrollArea.Viewport>
       </ScrollArea.Root>
     </Sidebar.Panel>
+  );
+}
+
+function MenuList({ links }: { links: NavLink[] }) {
+  return (
+    <Sidebar.List style={styles.list}>
+      {links.map((link) => (
+        <MenuLink key={link.label} link={link} />
+      ))}
+    </Sidebar.List>
   );
 }
 

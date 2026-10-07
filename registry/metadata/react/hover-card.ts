@@ -10,4 +10,5 @@ export default {
   primaryExport: 'HoverCard',
   release: 'v0.2',
   order: 7,
+  group: 'overlays',
 } satisfies ReactDescriptor;
