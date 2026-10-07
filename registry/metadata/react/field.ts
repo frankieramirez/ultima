@@ -11,4 +11,5 @@ export default {
   release: 'v0.1',
   order: 1,
   group: 'forms',
+  elementless: ['Validity'],
 } satisfies ReactDescriptor;

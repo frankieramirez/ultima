@@ -11,4 +11,5 @@ export default {
   release: 'v0.2',
   order: 3,
   group: 'navigation',
+  elementless: ['Portal'],
 } satisfies ReactDescriptor;

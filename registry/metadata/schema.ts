@@ -34,6 +34,11 @@ export type ReactDescriptor = Common & {
    * with no `type` is `text`. The Base UI primitive it wraps is derived from its own imports.
    */
   replaces?: { elements?: string[]; roles?: string[] };
+  /**
+   * The parts that render no element of their own to outline: a context root, a portal, a handle, or
+   * a render-function part. The docs marks every other part for [Anatomy](../../docs/spec/ultima.md#anatomy).
+   */
+  elementless?: string[];
 };
 
 export type ElementAttribute = {

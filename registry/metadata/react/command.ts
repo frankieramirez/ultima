@@ -11,4 +11,5 @@ export default {
   release: 'v0.2',
   order: 15,
   group: 'overlays',
+  elementless: ['Root', 'Value', 'Portal', 'Collection'],
 } satisfies ReactDescriptor;

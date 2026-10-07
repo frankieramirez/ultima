@@ -12,4 +12,5 @@ export default {
   order: 13,
   group: 'forms',
   replaces: { elements: ['input[type=color]'] },
+  elementless: ['Portal'],
 } satisfies ReactDescriptor;
