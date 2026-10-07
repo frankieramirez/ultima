@@ -115,3 +115,18 @@ export const docsOptimizerInclude = [
   "react-hook-form",
   "vitest-browser-react"
 ];
+
+/** packages/blocks/vitest.config.ts: prebundled up front, since discovering one mid-run reloads the page. */
+export const blocksOptimizerInclude = [
+  "@base-ui/react/avatar",
+  "@base-ui/react/button",
+  "@base-ui/react/checkbox",
+  "@base-ui/react/checkbox-group",
+  "@base-ui/react/field",
+  "@base-ui/react/form",
+  "@base-ui/react/input",
+  "@base-ui/react/separator",
+  "@stylexjs/stylex",
+  "axe-core",
+  "vitest-browser-react"
+];

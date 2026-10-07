@@ -109,10 +109,30 @@ export type RecipeDescriptor = Common & {
   demos: string[];
 };
 
+/** A recipe a block follows, and the accessible query of the recipe's root inside the block. */
+export type BlockRecipe = {
+  /** A recipe descriptor's id. */
+  id: string;
+  root: { role: string; name: string };
+};
+
+/**
+ * One working screen, installed as several files under `@components/<id>/`. Its files, targets,
+ * dependencies, catalogue number and Built from list are derived from `packages/blocks/src/<id>/`.
+ */
+export type BlockDescriptor = Common & {
+  kind: 'block';
+  installDocs: string;
+  /** The root component the entry file `<id>.tsx` exports, checked against it. */
+  primaryExport: string;
+  recipes: BlockRecipe[];
+};
+
 export type Descriptor =
   | ReactDescriptor
   | ElementDescriptor
   | SetupDescriptor
   | SourceBundleDescriptor
   | ArtifactDescriptor
-  | RecipeDescriptor;
+  | RecipeDescriptor
+  | BlockDescriptor;

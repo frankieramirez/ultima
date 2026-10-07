@@ -113,10 +113,17 @@ function servedFiles(root: string, scope: ConsumerScope, items: CatalogueItem[])
     files.flatMap(({ path, target }) => {
       const name = basename(path);
       const hash = meta?.ultima?.files[name];
-      const at = target ? join(root, target.replace(/^~\//, '')) : folder[type] && join(folder[type], name);
+      const at = target ? targetPath(root, scope, target) : folder[type] && join(folder[type], name);
       return hash && at ? [{ item, name, installPath: at, hash }] : [];
     }),
   );
+}
+
+function targetPath(root: string, scope: ConsumerScope, target: string): string | undefined {
+  const aliased = /^@([a-z]+)\/(.+)$/.exec(target);
+  if (!aliased) return join(root, target.replace(/^~\//, ''));
+  const directory = scope.directories[aliased[1] as keyof ConsumerScope['directories']];
+  return directory === undefined ? undefined : join(directory, aliased[2] as string);
 }
 
 function installedCandidates(root: string, scope: ConsumerScope, served: Served[]): string[] {

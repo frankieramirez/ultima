@@ -19,7 +19,7 @@ import {
   withStamp,
 } from '../packages/cli/src/stamp.ts';
 import type { SetupDescriptor } from '../registry/metadata/schema.ts';
-import { agentGuide, type GuideComponent } from './build-agent-guide.ts';
+import { agentGuide, type GuideBlock, type GuideComponent } from './build-agent-guide.ts';
 import { ordinal } from './catalogue/browser.ts';
 import { diskFiles } from './catalogue/files.ts';
 import { formatDiagnostics, loadCatalogue } from './catalogue/model.ts';
@@ -103,6 +103,10 @@ const descriptions = new Map<string, Description>([
     entry.id,
     { ...entry, docs: entry.installDocs, dependencies: [], registryDependencies: entry.registryDependencies.map(registryUrl) },
   ]),
+  ...catalogue.blocks.map((entry): [string, Description] => [
+    entry.id,
+    { ...entry, docs: entry.installDocs, registryDependencies: entry.registryDependencies.map((id) => `@ultima/${id}`) },
+  ]),
 ]);
 
 async function stamped(item: string, text: string, scheme: 'c1' | 'b1') {
@@ -116,12 +120,13 @@ function meta(files: { path: string; hash: string }[]): Meta {
 
 async function stage(sources: StagedSource[]): Promise<Staged[]> {
   const staged: Staged[] = [];
-  for (const { source: path, item, staged: to, type } of sources) {
+  for (const { source: path, item, staged: to, type, target } of sources) {
     const source = readFileSync(join(root, path), 'utf8');
     const name = basename(path).replace(/\.tsx?$/, '');
     const { hash, text } = await stamped(item, rewriteImports(source, path), 'c1');
+    mkdirSync(dirname(join(REGISTRY_DIR, to)), { recursive: true });
     writeFileSync(join(REGISTRY_DIR, to), text);
-    staged.push({ name, file: { path: to, type, hash }, source });
+    staged.push({ name, file: { path: to, type, ...(target && { target }), hash }, source });
   }
   return staged;
 }
@@ -256,7 +261,8 @@ async function stageSources() {
   const of = (item: string) => all.filter((_, index) => (sources[index] as StagedSource).item === item);
   return {
     sources,
-    components: all.filter((_, index) => !['tokens', 'lib'].includes((sources[index] as StagedSource).item)),
+    components: all.filter((_, index) => (sources[index] as StagedSource).type === 'registry:ui'),
+    blocks: catalogue.blocks.map(({ id }) => of(id)),
     tokens: of('tokens'),
     lib: of('lib'),
     elements,
@@ -266,10 +272,11 @@ async function stageSources() {
 
 type Sources = Awaited<ReturnType<typeof stageSources>>;
 
-function describeRegistry({ sources, components, tokens, lib, elements, tokensCss }: Sources) {
+function describeRegistry({ sources, components, blocks, tokens, lib, elements, tokensCss }: Sources) {
   const staged = new Map([...components.map((entry): [string, HashedFile[]] => [entry.name, [entry.file]])]);
   staged.set('tokens', tokens.map((entry) => entry.file));
   staged.set('lib', lib.map((entry) => entry.file));
+  catalogue.blocks.forEach(({ id }, index) => staged.set(id, (blocks[index] ?? []).map((entry) => entry.file)));
   const registry = {
     $schema: 'https://ui.shadcn.com/schema/registry.json',
     name: 'ultima',
@@ -279,6 +286,7 @@ function describeRegistry({ sources, components, tokens, lib, elements, tokensCs
     meta: { ultima: { format: REGISTRY_FORMAT } },
     items: registryPlan(sources, elements).map(({ name, from }) => {
       if (from === 'setup') return setupItem(name);
+      if (from === 'block') return item(name, 'registry:block', staged.get(name) ?? []);
       if (from === 'element') return vendoredElementItem(name);
       if (from === 'artifact') {
         if (name === 'design-md') {
@@ -343,6 +351,15 @@ function publishExports({ components, elements, tokensCss }: Sources) {
         source: readFileSync(join(ELEMENTS_SRC, `${name}.element.ts`), 'utf8'),
       };
     }),
+    blocks: catalogue.blocks.map(
+      ({ id, title, description, primaryExport, builtFrom }): GuideBlock => ({
+        name: id,
+        title,
+        description,
+        primaryExport,
+        builtFrom: builtFrom.map((entry) => entry.title),
+      }),
+    ),
   });
   writeFileSync(join(PUBLIC_DIR, 'llms.txt'), guide);
 }

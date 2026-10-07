@@ -53,16 +53,16 @@ async function stamped(item: string, source: string, revision: string, local = v
   return withStamp(local, stampLine(item, revision, await contentHash(source, 'c1'), 'ts'));
 }
 
-type Item = { name: string; type?: string; files: Record<string, string>; content?: string };
+type Item = { name: string; type?: string; files: Record<string, string>; content?: string; targets?: Record<string, string> };
 
 async function serve(items: Item[], format: unknown = 1): Promise<string> {
   const catalogue = {
     name: 'ultima',
     meta: { ultima: { format } },
-    items: items.map(({ name, type = 'registry:ui', files }) => ({
+    items: items.map(({ name, type = 'registry:ui', files, targets }) => ({
       name,
       type,
-      files: Object.keys(files).map((file) => ({ path: `ultima/${type === 'registry:lib' ? 'lib' : 'ui'}/${file}`, type })),
+      files: Object.keys(files).map((file) => ({ path: `ultima/${type === 'registry:lib' ? 'lib' : 'ui'}/${file}`, type, ...(targets?.[file] && { target: targets[file] }) })),
       meta: { ultima: { revision: NEW, files } },
     })),
   };
@@ -155,6 +155,30 @@ describe('status', () => {
       served: await hash(next('Menu')),
     });
     expect(report.files.find(({ item }) => item === 'lib')?.installed).toBeNull();
+  });
+
+  it("finds a block's files under the components alias its targets name", async () => {
+    const entry = (name: string) => `import { Brand } from './brand';\n\nexport function ${name}() {\n  return <Brand />;\n}\n`;
+    const brand = "export function Brand() {\n  return null;\n}\n";
+    const registry = await serve([
+      {
+        name: 'sign-in-01',
+        type: 'registry:block',
+        files: { 'sign-in-01.tsx': await contentHash(entry('SignIn01'), 'c1'), 'brand.tsx': await contentHash(brand, 'c1') },
+        targets: { 'sign-in-01.tsx': '@components/sign-in-01/sign-in-01.tsx', 'brand.tsx': '@components/sign-in-01/brand.tsx' },
+      },
+    ]);
+    const root = project({
+      'components.json': JSON.stringify({ aliases: { components: '@/components', ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }),
+      'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
+      'src/components/sign-in-01/sign-in-01.tsx': await stamped('sign-in-01', entry('SignIn01'), NEW, entry('SignIn01')),
+      'src/components/sign-in-01/brand.tsx': await stamped('sign-in-01', brand, NEW, `${brand}// Ours now.\n`),
+    });
+    const { report } = await statusJson(root);
+    expect(report.files.map(({ item, file, state }) => [item, file, state])).toEqual([
+      ['sign-in-01', 'src/components/sign-in-01/brand.tsx', 'current'],
+      ['sign-in-01', 'src/components/sign-in-01/sign-in-01.tsx', 'current'],
+    ]);
   });
 
   it('takes the stamp over the file name', async () => {

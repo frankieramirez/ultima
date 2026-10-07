@@ -142,6 +142,7 @@ describe('the planned projections', () => {
     const stale: OptimizerPolicy = {
       ui: { add: [{ specifier: '@zag-js/react', reason: 'r', source: 's' }], exclude: policy.ui.exclude },
       docs: { add: policy.docs.add, exclude: [...policy.docs.exclude, { specifier: 'lodash', reason: 'r', source: 's' }] },
+      blocks: policy.blocks,
     };
     const found = planOutputs(memoryFiles(fixture()), stale).diagnostics;
     assert.deepEqual(found.map((d) => d.code), ['stale-policy', 'stale-policy']);
@@ -229,11 +230,14 @@ describe('generation on disk', () => {
       () => generate(root, { policy }),
       (error: GenerationError) => {
         assert.deepEqual(error.written, [OUTPUTS.registry, OUTPUTS.catalogue, OUTPUTS.pages]);
-        assert.match(error.message, /not written: apps\/docs\/src\/generated\/elements\.ts, packages\/ui\/src\/index\.ts, scripts\/generated\/browser-dependencies\.ts/);
+        assert.match(
+          error.message,
+          /not written: apps\/docs\/src\/generated\/elements\.ts, apps\/docs\/src\/generated\/blocks\.ts, packages\/ui\/src\/index\.ts, scripts\/generated\/browser-dependencies\.ts/,
+        );
         return true;
       },
     );
-    assert.deepEqual(check(root, policy).freshness.added, [OUTPUTS.elements, OUTPUTS.barrel, OUTPUTS.browser]);
+    assert.deepEqual(check(root, policy).freshness.added, [OUTPUTS.elements, OUTPUTS.blocks, OUTPUTS.barrel, OUTPUTS.browser]);
     assert.equal(existsSync(join(root, LOCK)), false);
   });
 });

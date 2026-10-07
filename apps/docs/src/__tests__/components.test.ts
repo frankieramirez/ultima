@@ -2,8 +2,9 @@ import { expect, test } from 'vitest';
 
 import { items } from '../../../../registry/items.config';
 import { GROUPS, components, componentsInGroup } from '../components';
+import { blocks } from '../generated/blocks';
 
-const NOT_A_COMPONENT = ['tokens', 'lib', 'setup-vite', 'setup-next', 'tokens-css', 'design-md'];
+const NOT_A_COMPONENT = ['tokens', 'lib', 'setup-vite', 'setup-next', 'tokens-css', 'design-md', ...blocks.map(({ id }) => id)];
 
 const pages = import.meta.glob('../content/components/*.mdx');
 const demos = import.meta.glob('../demos/*/*.tsx');

@@ -243,6 +243,7 @@ export const testPolicy: OptimizerPolicy = {
       { specifier: 'vitest', reason: 'Vitest serves it', source: 'apps/docs/vitest.config.ts' },
     ],
   },
+  blocks: { add: [], exclude: [] },
 };
 
 /** The valid fixture with its generated projections absent and the package manifests the optimizer reads. */
