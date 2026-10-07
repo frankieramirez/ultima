@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
+import { colorScheme, darkTheme, lightTheme, palette } from '@ultima/tokens';
 import { Card } from '@ultima/ui';
 import axe from 'axe-core';
 import { expect, onTestFinished, test, vi } from 'vitest';
@@ -11,125 +11,108 @@ import { tokenGroups } from '../token-data';
 import { describeToken } from '../token-roles';
 import { renderWithRouter } from './render-with-router';
 
-/** The row a token's name sits in: the `code` element's grid parent. */
 function rowOf(container: HTMLElement, name: string): HTMLElement {
-  const code = Array.from(container.querySelectorAll('code')).find(
-    (node) => node.textContent === name,
-  );
-  if (!code?.parentElement) throw new Error(`no row for ${name}`);
-  return code.parentElement;
+  const row = container.querySelector<HTMLElement>(`[data-token="${name}"]`);
+  if (!row) throw new Error(`no row for ${name}`);
+  return row;
 }
 
 function box(element: Element) {
   return element.getBoundingClientRect();
 }
 
+function parts(row: HTMLElement) {
+  const [swatch, name, dark, light, copy] = Array.from(row.children).map(box);
+  return { swatch: swatch!, name: name!, dark: dark!, light: light!, copy: copy! };
+}
+
 test('every token in every group has a purpose', () => {
-  const missing = tokenGroups
-    .flatMap((group) => group.tokens)
-    .filter((token) => !describeToken(token.name));
+  const missing = tokenGroups.flatMap((group) => group.tokens).filter((token) => !describeToken(token.name));
   expect(missing.map((token) => token.name)).toEqual([]);
 });
 
-test('a desktop row puts the purpose under its name and modes on the right', async () => {
+test('a desktop color row reads swatch, name, dark, light, copy on one line', async () => {
   await page.viewport(1440, 900);
   onTestFinished(() => page.viewport(1280, 720));
   const screen = await renderWithRouter(<TokensPage />);
-  await userEvent.click(screen.getByRole('button', { name: 'Expand all' }));
-  const row = rowOf(screen.container, '--ult-color-surface-raised');
-  const [name, purpose, dark, light, copy] = Array.from(row.children).map(box);
-  expect(purpose!.top).toBeGreaterThanOrEqual(name!.bottom);
-  expect(copy!.left).toBeGreaterThan(name!.right);
-  expect(dark!.left).toBeGreaterThan(copy!.right);
-  expect(light!.left).toBeGreaterThan(dark!.right);
-  expect(dark!.top).toBeLessThan(purpose!.bottom);
+  const { swatch, name, dark, light, copy } = parts(rowOf(screen.container, '--ult-color-surface-raised'));
+  expect(name.left).toBeGreaterThan(swatch.right);
+  expect(dark.left).toBeGreaterThan(name.right);
+  expect(light.left).toBeGreaterThan(dark.right);
+  expect(copy.left).toBeGreaterThan(light.right);
+  expect(Math.abs(dark.top + dark.height / 2 - (name.top + name.height / 2))).toBeLessThan(4);
 });
 
-test('a row stacks to three lines at 390px, the copy button beside the name', async () => {
+test('a color row at 390px keeps the copy button beside the name and puts the values under it', async () => {
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
   const screen = await renderWithRouter(<TokensPage />);
-  await userEvent.click(screen.getByRole('button', { name: 'Expand all' }));
-  const { container } = screen;
-
-  const row = rowOf(container, '--ult-color-surface-raised');
-  const [name, purpose, dark, light, copy] = Array.from(row.children).map(box);
-  expect(copy!.top).toBeLessThan(name!.bottom);
-  expect(copy!.left).toBeGreaterThan(name!.left);
-  expect(purpose!.top).toBeGreaterThanOrEqual(
-    Math.max(name!.bottom, copy!.bottom),
-  );
-  expect(dark!.top).toBeGreaterThanOrEqual(purpose!.bottom);
-  expect(light!.top).toBe(dark!.top);
-  expect(light!.left).toBeGreaterThan(dark!.right);
+  const { name, dark, light, copy } = parts(rowOf(screen.container, '--ult-color-surface-raised'));
+  expect(copy.left).toBeGreaterThan(name.right - 1);
+  expect(dark.top).toBeGreaterThanOrEqual(name.bottom);
+  expect(light.top).toBe(dark.top);
+  expect(light.left).toBeGreaterThan(dark.right);
 });
 
-test('each mode shows a swatch, value, and palette step', async () => {
+test('each color row shows the dark and the light value beside a split swatch', async () => {
   const screen = await renderWithRouter(<TokensPage />);
-  await userEvent.click(screen.getByRole('button', { name: 'Expand all' }));
-  const { container } = screen;
-
-  const row = rowOf(container, '--ult-color-surface-raised');
-  const titles = Array.from(row.querySelectorAll('[title]')).map((chip) =>
-    chip.getAttribute('title'),
-  );
-  expect(titles).toEqual(['mithril 2', 'mithril 2']);
-  expect(row.textContent).toContain('dark · mithril 2');
-  expect(row.textContent).toContain('light · mithril 2');
+  const row = rowOf(screen.container, '--ult-color-surface-raised');
+  const token = tokenGroups.flatMap((group) => group.tokens).find((entry) => entry.name === '--ult-color-surface-raised')!;
+  expect(row.textContent).toContain(`dark ${token.dark.value}`);
+  expect(row.textContent).toContain(`light ${token.light.value}`);
+  const halves = row.querySelectorAll('[aria-hidden] > span');
+  expect([...halves].map((half) => getComputedStyle(half).backgroundColor)).toHaveLength(2);
 });
 
-test('every row closes with a separator and ends in a copy button that copies its name', async () => {
+test('no scale name appears on /tokens, which /palette alone may show', async () => {
+  const screen = await renderWithRouter(<TokensPage />);
+  const text = screen.container.textContent ?? '';
+  for (const scale of palette) expect(text).not.toMatch(new RegExp(`\\b${scale.name}\\b`));
+});
+
+test('every token has a copy button that copies its name, and every row closes with a separator', async () => {
   const writeText = vi.fn(() => Promise.resolve());
-  Object.defineProperty(navigator, 'clipboard', {
-    configurable: true,
-    value: { writeText },
-  });
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
   const screen = await renderWithRouter(<TokensPage />);
 
-  await userEvent.click(screen.getByRole('button', { name: 'Expand all' }));
   for (const token of tokenGroups.flatMap((group) => group.tokens)) {
     const row = rowOf(screen.container, token.name);
-    expect(row.lastElementChild?.getAttribute('role')).toBe('separator');
-    const button = row.querySelector('button');
-    expect(button?.getAttribute('aria-label')).toBe(`Copy ${token.name}`);
+    expect(row.querySelector('button')?.getAttribute('aria-label')).toBe(`Copy ${token.name}`);
+    if (!['radius', 'shadow', 'filter'].includes(token.group)) {
+      expect(row.lastElementChild?.getAttribute('role')).toBe('separator');
+    }
   }
 
-  await userEvent.click(
-    screen.getByRole('button', { name: 'Copy --ult-space-4' }),
-  );
+  await userEvent.click(screen.getByRole('button', { name: 'Copy --ult-space-4' }));
   expect(writeText).toHaveBeenCalledWith('--ult-space-4');
 });
 
-test('/tokens has the on-this-page rail and /palette does not', async () => {
+test('/tokens has the on-this-page rail and /palette, at full content width, does not', async () => {
   const tokens = await renderWithRouter(<TokensPage />);
   const rail = tokens.getByRole('complementary', { name: 'On this page' });
   await expect.element(rail).toBeInTheDocument();
-  expect(
-    Array.from(
-      rail.element().querySelectorAll('a'),
-      (link) => link.textContent,
-    ),
-  ).toEqual([
+  expect(Array.from(rail.element().querySelectorAll('a'), (link) => link.textContent)).toEqual([
     'Color',
     'Space',
-    'Text',
-    'Font',
+    'Type',
     'Radius',
-    'Shadow',
-    'Filter',
+    'Shadow and filter',
     'Motion',
     'Pairings',
     'Overriding',
   ]);
   await tokens.unmount();
 
-  const palette = await renderWithRouter(<PalettePage />);
-  await expect
-    .element(palette.getByRole('heading', { level: 1, name: 'Palette' }))
-    .toBeVisible();
-  expect(
-    palette.getByRole('complementary', { name: 'On this page' }).query(),
-  ).toBeNull();
+  const palettePage = await renderWithRouter(<PalettePage />);
+  await expect.element(palettePage.getByRole('heading', { level: 1, name: 'Palette' })).toBeVisible();
+  expect(palettePage.getByRole('complementary', { name: 'On this page' }).query()).toBeNull();
+});
+
+test('the anchors that ultima check and older links point at still resolve', async () => {
+  const screen = await renderWithRouter(<TokensPage />);
+  for (const id of ['color', 'space', 'text', 'font', 'radius', 'shadow', 'filter', 'motion', 'pairings', 'overriding']) {
+    expect(screen.container.querySelector(`[id="${id}"]`), id).not.toBeNull();
+  }
 });
 
 test('the tokens page has no axe violations in either mode', async () => {
@@ -145,8 +128,7 @@ test('the tokens page has no axe violations in either mode', async () => {
     [darkTheme, colorScheme.dark],
     [lightTheme, colorScheme.light],
   ] as const) {
-    const classes =
-      stylex.props(theme, scheme).className?.split(/\s+/).filter(Boolean) ?? [];
+    const classes = stylex.props(theme, scheme).className?.split(/\s+/).filter(Boolean) ?? [];
     document.documentElement.classList.add(...classes);
     // Links transition their color, so a mode switch reads half-way through until it settles.
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -160,55 +142,43 @@ function describe(violation: axe.Result) {
   return `${violation.id}: ${violation.nodes.map((node) => node.html).join(', ')}`;
 }
 
-test('groups collapse independently and search opens matches then restores the prior state', async () => {
+test('search keeps only the sections with a match and restores the page when cleared', async () => {
   const screen = await renderWithRouter(<TokensPage />);
-  const radius = screen.getByRole('button', { name: 'Radius', exact: true });
-  const space = screen.getByRole('button', { name: 'Space', exact: true });
-  await expect.element(radius).toHaveAttribute('aria-expanded', 'false');
-  await userEvent.click(radius);
-  await expect.element(radius).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(space).toHaveAttribute('aria-expanded', 'false');
+  const status = screen.getByRole('status', { name: 'Token search results' });
   const input = screen.getByRole('textbox', { name: 'Search tokens' });
+
   await userEvent.fill(input, 'surface-raised');
-  await expect
-    .element(screen.getByRole('button', { name: 'Color', exact: true }))
-    .toHaveAttribute('aria-expanded', 'true');
-  await expect
-    .element(screen.getByRole('button', { name: 'Surfaces colors', exact: true }))
-    .toHaveAttribute('aria-expanded', 'true');
-  await expect
-    .poll(() =>
-      rowOf(screen.container, '--ult-color-surface-raised').checkVisibility(),
-    )
-    .toBe(true);
+  await expect.element(status).toHaveTextContent('1 tokens · 1 groups');
+  await expect.element(screen.getByRole('heading', { level: 2, name: 'Color' })).toBeVisible();
+  expect(screen.container.querySelector('#space')).toBeNull();
+  expect(screen.container.querySelector('#pairings')).toBeNull();
+
   await userEvent.fill(input, '');
-  await expect.element(radius).toHaveAttribute('aria-expanded', 'true');
-  await expect.element(space).toHaveAttribute('aria-expanded', 'false');
-  await userEvent.click(screen.getByRole('button', { name: 'Expand all' }));
-  await expect.element(space).toHaveAttribute('aria-expanded', 'true');
-  await userEvent.click(screen.getByRole('button', { name: 'Collapse all' }));
-  await expect.element(radius).toHaveAttribute('aria-expanded', 'false');
+  await expect.element(status).toHaveTextContent(`${tokenGroups.flatMap((group) => group.tokens).length} tokens · ${tokenGroups.length} groups`);
+  expect(screen.container.querySelector('#space')).not.toBeNull();
+
   await userEvent.fill(input, 'nothing-with-this-name');
-  await expect
-    .element(screen.getByRole('status', { name: 'Token search results' }))
-    .toHaveTextContent('0 tokens · 0 groups');
-  await expect
-    .element(
-      screen.getByText('No tokens match this search. Try a name or purpose.'),
-    )
-    .toBeVisible();
+  await expect.element(status).toHaveTextContent('0 tokens · 0 groups');
+  await expect.element(screen.getByText('No tokens match this search. Try a name or purpose.')).toBeVisible();
 });
 
-test('a table of contents link opens the target disclosure before navigation', async () => {
+test('a group tile jumps to its section, clearing a search that hides it', async () => {
   const screen = await renderWithRouter(<TokensPage />);
-  const radius = screen.getByRole('button', { name: 'Radius', exact: true });
-  await userEvent.click(
-    screen
-      .getByRole('complementary', { name: 'On this page' })
-      .getByRole('link', { name: 'Radius', exact: true }),
-  );
-  await expect.element(radius).toHaveAttribute('aria-expanded', 'true');
-  await expect
-    .poll(() => rowOf(screen.container, '--ult-radius-lg').checkVisibility())
-    .toBe(true);
+  await userEvent.fill(screen.getByRole('textbox', { name: 'Search tokens' }), 'radius');
+  expect(screen.container.querySelector('#motion')).toBeNull();
+
+  const tiles = screen.getByRole('navigation', { name: 'Token groups' });
+  await userEvent.click(tiles.getByRole('link', { name: /^Motion/ }));
+  await expect.element(screen.getByRole('textbox', { name: 'Search tokens' })).toHaveValue('');
+  expect(screen.container.querySelector('#motion')).not.toBeNull();
+});
+
+test('each step band of the convention table is its own row group with a rowgroup header', async () => {
+  const screen = await renderWithRouter(<PalettePage />);
+  await expect.element(screen.getByRole('heading', { level: 1, name: 'Palette' })).toBeVisible();
+  const table = screen.container.querySelector('#steps-caption')!.closest('table')!;
+  const bodies = [...table.tBodies];
+  expect(bodies.map((body) => body.rows[0]?.querySelector('th')?.getAttribute('scope'))).toEqual(Array(5).fill('rowgroup'));
+  expect(bodies.reduce((rows, body) => rows + body.rows.length - 1, 0)).toBe(12);
+  expect(table.querySelector('[scope="colgroup"]')).toBeNull();
 });
