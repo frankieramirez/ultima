@@ -1,5 +1,5 @@
 import { docsStyles } from './docs-style';
-import { ArrowUpRightIcon, ListIcon } from '@phosphor-icons/react';
+import { ArrowUpRightIcon, GithubLogoIcon, ListIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
@@ -28,7 +28,7 @@ const styles = stylex.create({
     alignItems: 'center',
     boxSizing: 'border-box',
     display: 'flex',
-    gap: { default: space['--ult-space-4'], [breakpoints.WIDE]: space['--ult-space-7'] },
+    gap: { default: space['--ult-space-4'], [breakpoints.DESKTOP]: space['--ult-space-7'] },
     flexGrow: 1,
     inlineSize: '100%',
     paddingBlock: space['--ult-space-4'],
@@ -65,6 +65,9 @@ const styles = stylex.create({
     display: { default: 'none', [breakpoints.DESKTOP]: 'inline-flex' },
     fontSize: text['--ult-text-4'],
   },
+  githubAlways: { display: 'inline-flex' },
+  githubMark: { display: { default: 'inline', [breakpoints.DESKTOP]: 'none' } },
+  githubLabel: { display: { default: 'none', [breakpoints.DESKTOP]: 'inline' } },
 });
 
 const LINKS = [
@@ -74,7 +77,8 @@ const LINKS = [
   { label: 'Documentation', to: '/install' },
 ] as const;
 
-export function Header() {
+/** `footer` says whether the route renders the footer, which carries GitHub where the header drops it. */
+export function Header({ footer }: { footer: boolean }) {
   return (
     <header {...stylex.props(styles.chrome)}>
       <div {...stylex.props(styles.bar)}>
@@ -94,8 +98,16 @@ export function Header() {
         </NavigationMenu.Root>
         <SiteSearch style={styles.search} />
         <ColorModeToggle style={styles.mode} />
-        <TextLink variant="muted" style={styles.github} href="https://github.com/frankieramirez/ultima">
-          GitHub <ArrowUpRightIcon aria-hidden />
+        <TextLink
+          variant="muted"
+          aria-label="GitHub"
+          style={[styles.github, !footer && styles.githubAlways]}
+          href="https://github.com/frankieramirez/ultima"
+        >
+          <GithubLogoIcon aria-hidden {...stylex.props(styles.githubMark)} />
+          <span {...stylex.props(styles.githubLabel)}>
+            GitHub <ArrowUpRightIcon aria-hidden />
+          </span>
         </TextLink>
         <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={[docsStyles.square, styles.trigger]} />}>
           <ListIcon aria-hidden />

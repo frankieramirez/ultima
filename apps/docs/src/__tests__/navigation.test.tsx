@@ -620,3 +620,19 @@ for (const theme of ['dark', 'light'] as const)
         const results = await axe.run(document.body);
         expect(results.violations.map(describe)).toEqual([]);
       });
+
+for (const width of [390, 768, 1440])
+  for (const path of ['/install', '/theme-studio'])
+    test(`${path} keeps a GitHub link at ${width}px`, async () => {
+      await page.viewport(width, 844);
+      onTestFinished(() => page.viewport(1280, 720));
+      const screen = await mount(path);
+      await expect.element(screen.getByRole('heading', { level: 1 }).first()).toBeVisible();
+
+      const github = [...document.querySelectorAll<HTMLElement>('a[href="https://github.com/frankieramirez/ultima"]')].filter(
+        (link) => link.checkVisibility() && link.getBoundingClientRect().width > 0,
+      );
+      expect(github.length).toBeGreaterThan(0);
+      for (const link of github) expect(link.getBoundingClientRect().right).toBeLessThanOrEqual(width);
+      expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
+    });
