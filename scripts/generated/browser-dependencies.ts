@@ -131,6 +131,7 @@ export const blocksOptimizerInclude = [
   "@base-ui/react/meter",
   "@base-ui/react/select",
   "@base-ui/react/separator",
+  "@base-ui/react/tabs",
   "@base-ui/react/toggle",
   "@base-ui/react/toggle-group",
   "@base-ui/react/use-render",
@@ -138,5 +139,6 @@ export const blocksOptimizerInclude = [
   "axe-core",
   "d3-array",
   "d3-scale",
+  "react-dom",
   "vitest-browser-react"
 ];

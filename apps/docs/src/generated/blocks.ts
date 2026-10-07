@@ -3,6 +3,7 @@
 
 import type { ComponentType } from 'react';
 
+import { Crm01 } from '@ultima/blocks/crm-01/crm-01';
 import { Dashboard01 } from '@ultima/blocks/dashboard-01/dashboard-01';
 import { SignIn01 } from '@ultima/blocks/sign-in-01/sign-in-01';
 
@@ -27,10 +28,95 @@ export type BlockEntry = {
 /** In number order. */
 export const blocks: readonly BlockEntry[] = [
   {
+    "id": "crm-01",
+    "title": "CRM 01",
+    "description": "A contact manager: workspace navigation, a searchable and filterable contact list, and the selected contact's record with its activity, notes and details.",
+    "number": "001",
+    "install": "npx shadcn add @ultima/crm-01",
+    "files": [
+      "crm-01.tsx",
+      "app-sidebar.tsx",
+      "contact-activity.tsx",
+      "contact-details.tsx",
+      "contact-header.tsx",
+      "contact-list.tsx",
+      "icons.tsx"
+    ],
+    "builtFrom": [
+      {
+        "id": "avatar",
+        "title": "Avatar",
+        "number": "005",
+        "kind": "component"
+      },
+      {
+        "id": "badge",
+        "title": "Badge",
+        "number": "006",
+        "kind": "component"
+      },
+      {
+        "id": "button",
+        "title": "Button",
+        "number": "008",
+        "kind": "component"
+      },
+      {
+        "id": "card",
+        "title": "Card",
+        "number": "011",
+        "kind": "component"
+      },
+      {
+        "id": "empty",
+        "title": "Empty",
+        "number": "023",
+        "kind": "component"
+      },
+      {
+        "id": "input-group",
+        "title": "Input Group",
+        "number": "028",
+        "kind": "component"
+      },
+      {
+        "id": "separator",
+        "title": "Separator",
+        "number": "041",
+        "kind": "component"
+      },
+      {
+        "id": "sidebar",
+        "title": "Sidebar",
+        "number": "042",
+        "kind": "component"
+      },
+      {
+        "id": "tabs",
+        "title": "Tabs",
+        "number": "049",
+        "kind": "component"
+      },
+      {
+        "id": "toggle-group",
+        "title": "Toggle Group",
+        "number": "053",
+        "kind": "component"
+      },
+      {
+        "id": "item",
+        "title": "Item",
+        "number": "005",
+        "kind": "recipe"
+      }
+    ],
+    "preview": Crm01
+  },
+  {
     "id": "dashboard-01",
     "title": "Dashboard 01",
     "description": "A store overview: workspace navigation, four key metrics, a revenue chart with its data table, top products and recent orders.",
-    "number": "001",
+    "number": "002",
     "install": "npx shadcn add @ultima/dashboard-01",
     "files": [
       "dashboard-01.tsx",
@@ -140,7 +226,7 @@ export const blocks: readonly BlockEntry[] = [
     "id": "sign-in-01",
     "title": "Sign-in 01",
     "description": "A split sign-in screen: a brand panel with a customer story beside an email and password form.",
-    "number": "002",
+    "number": "003",
     "install": "npx shadcn add @ultima/sign-in-01",
     "files": [
       "sign-in-01.tsx",
