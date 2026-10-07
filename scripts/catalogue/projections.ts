@@ -1,6 +1,6 @@
 import { type OptimizerPlan, type OptimizerPolicy, browserDependencies, ordinal } from './browser.ts';
 import type { Files } from './files.ts';
-import { BARREL, type Catalogue, type Diagnostic, loadCatalogue } from './model.ts';
+import { BARREL, type Catalogue, type Diagnostic, type ReactEntry, loadCatalogue } from './model.ts';
 
 /** Every path the generator owns. It writes these and nothing else. */
 export const OUTPUTS = {
@@ -79,6 +79,18 @@ export const setupItems = ${data(setupItems)} satisfies Record<string, SetupItem
 `;
 }
 
+const NON_COMPONENT_MODULES = new Set(['use-render', 'merge-props', 'direction-provider', 'csp-provider', 'react', 'core', 'types']);
+
+function primitiveOf(entry: ReactEntry): { library: 'base-ui' | 'zag'; module: string } | null {
+  const modules = entry.imports.flatMap(({ specifier, typeOnly }) => {
+    const match = /^@(base-ui)\/react\/([a-z-]+)$|^@zag-js\/([a-z-]+)$/.exec(specifier);
+    if (typeOnly || !match) return [];
+    const module = (match[2] ?? match[3]) as string;
+    return NON_COMPONENT_MODULES.has(module) ? [] : [{ library: match[1] ? ('base-ui' as const) : ('zag' as const), module }];
+  });
+  return modules.find(({ module }) => module === entry.id) ?? modules[0] ?? null;
+}
+
 function catalogueProjection(catalogue: Catalogue): string {
   const releases = catalogue.releases.map((release) => release.id);
   const rank = (group: string) => catalogue.groups.findIndex((entry) => entry.id === group);
@@ -91,6 +103,7 @@ function catalogueProjection(catalogue: Catalogue): string {
       group: entry.group,
       description: entry.docsDescription ?? entry.description,
       release: entry.release,
+      primitive: primitiveOf(entry),
     }));
   return `${header('registry/metadata/groups.ts, registry/metadata/releases.ts and registry/metadata/react/')}
 import type { ComponentEntry } from '../components';

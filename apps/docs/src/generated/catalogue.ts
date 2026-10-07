@@ -45,7 +45,11 @@ export const components: ComponentEntry[] = [
     "number": "008",
     "group": "forms",
     "description": "A button in three variants, three sizes, and two tones, on Base UI.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "button"
+    }
   },
   {
     "name": "Button Group",
@@ -53,7 +57,11 @@ export const components: ComponentEntry[] = [
     "number": "009",
     "group": "forms",
     "description": "A row of buttons joined as one control, with per-item variant and tone overrides.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "button"
+    }
   },
   {
     "name": "Calendar",
@@ -61,7 +69,11 @@ export const components: ComponentEntry[] = [
     "number": "010",
     "group": "forms",
     "description": "An inline day, month, and year grid for picking dates, on Zag.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "zag",
+      "module": "date-picker"
+    }
   },
   {
     "name": "Checkbox",
@@ -69,7 +81,11 @@ export const components: ComponentEntry[] = [
     "number": "012",
     "group": "forms",
     "description": "A checkbox with a check, a dash for mixed, and an optional group, on Base UI.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": {
+      "library": "base-ui",
+      "module": "checkbox"
+    }
   },
   {
     "name": "Color Field",
@@ -77,7 +93,11 @@ export const components: ComponentEntry[] = [
     "number": "015",
     "group": "forms",
     "description": "An opaque sRGB color control: a swatch trigger, a hex input, and a picker popover.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "input"
+    }
   },
   {
     "name": "Combobox",
@@ -85,7 +105,11 @@ export const components: ComponentEntry[] = [
     "number": "016",
     "group": "forms",
     "description": "A filterable input whose value is restricted to the item set, on Base UI.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": {
+      "library": "base-ui",
+      "module": "combobox"
+    }
   },
   {
     "name": "Date Picker",
@@ -93,7 +117,11 @@ export const components: ComponentEntry[] = [
     "number": "019",
     "group": "forms",
     "description": "A date input with a popup day, month, and year grid, on Zag.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "zag",
+      "module": "date-picker"
+    }
   },
   {
     "name": "Field",
@@ -101,7 +129,11 @@ export const components: ComponentEntry[] = [
     "number": "024",
     "group": "forms",
     "description": "A label, description, and error bound to one control, on Base UI.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": {
+      "library": "base-ui",
+      "module": "field"
+    }
   },
   {
     "name": "Fieldset",
@@ -109,7 +141,11 @@ export const components: ComponentEntry[] = [
     "number": "025",
     "group": "forms",
     "description": "A legend and related controls as a real fieldset, on Base UI.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": {
+      "library": "base-ui",
+      "module": "fieldset"
+    }
   },
   {
     "name": "Input",
@@ -117,7 +153,11 @@ export const components: ComponentEntry[] = [
     "number": "027",
     "group": "forms",
     "description": "A text input in three sizes, on Base UI.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "input"
+    }
   },
   {
     "name": "Input Group",
@@ -125,7 +165,11 @@ export const components: ComponentEntry[] = [
     "number": "028",
     "group": "forms",
     "description": "A field box holding an input with leading and trailing addons, in three sizes.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "input"
+    }
   },
   {
     "name": "Input OTP",
@@ -133,7 +177,11 @@ export const components: ComponentEntry[] = [
     "number": "029",
     "group": "forms",
     "description": "A one-time-code field of uniform square slots, on Base UI.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "otp-field"
+    }
   },
   {
     "name": "Native Select",
@@ -141,7 +189,11 @@ export const components: ComponentEntry[] = [
     "number": "032",
     "group": "forms",
     "description": "A styled native select: the platform popup, the mobile picker, and native optgroup and multiple.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "field"
+    }
   },
   {
     "name": "Radio Group",
@@ -149,7 +201,11 @@ export const components: ComponentEntry[] = [
     "number": "037",
     "group": "forms",
     "description": "A radio group with a filled-circle indicator, on Base UI.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": {
+      "library": "base-ui",
+      "module": "radio-group"
+    }
   },
   {
     "name": "Select",
@@ -157,7 +213,11 @@ export const components: ComponentEntry[] = [
     "number": "040",
     "group": "forms",
     "description": "A selection control in three sizes with keyboard navigation and typeahead, on Base UI.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "select"
+    }
   },
   {
     "name": "Slider",
@@ -165,7 +225,11 @@ export const components: ComponentEntry[] = [
     "number": "044",
     "group": "forms",
     "description": "A value picker with one thumb per value and an accent fill, on Base UI.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": {
+      "library": "base-ui",
+      "module": "slider"
+    }
   },
   {
     "name": "Switch",
@@ -173,7 +237,11 @@ export const components: ComponentEntry[] = [
     "number": "047",
     "group": "forms",
     "description": "An on-off toggle with a sliding thumb, on Base UI.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "switch"
+    }
   },
   {
     "name": "Textarea",
@@ -181,7 +249,11 @@ export const components: ComponentEntry[] = [
     "number": "050",
     "group": "forms",
     "description": "A multiline text field in three sizes, on Base UI.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": {
+      "library": "base-ui",
+      "module": "input"
+    }
   },
   {
     "name": "Toggle",
@@ -189,7 +261,11 @@ export const components: ComponentEntry[] = [
     "number": "052",
     "group": "forms",
     "description": "A two-state button in two variants and three sizes, on Base UI.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "toggle"
+    }
   },
   {
     "name": "Toggle Group",
@@ -197,7 +273,11 @@ export const components: ComponentEntry[] = [
     "number": "053",
     "group": "forms",
     "description": "A segmented group of toggle buttons with roving focus, on Base UI.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "toggle-group"
+    }
   },
   {
     "name": "Alert Dialog",
@@ -205,7 +285,11 @@ export const components: ComponentEntry[] = [
     "number": "003",
     "group": "overlays",
     "description": "A confirmation overlay that Escape closes and a backdrop click does not, on Base UI.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": {
+      "library": "base-ui",
+      "module": "alert-dialog"
+    }
   },
   {
     "name": "Command",
@@ -213,7 +297,11 @@ export const components: ComponentEntry[] = [
     "number": "017",
     "group": "overlays",
     "description": "A free-text action palette: an input that filters a list of actions, anchored or inline, on Base UI.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "autocomplete"
+    }
   },
   {
     "name": "Context Menu",
@@ -221,7 +309,11 @@ export const components: ComponentEntry[] = [
     "number": "018",
     "group": "overlays",
     "description": "A menu opened by right click or long press, anchored to the pointer rather than to a control.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "context-menu"
+    }
   },
   {
     "name": "Dialog",
@@ -229,7 +321,11 @@ export const components: ComponentEntry[] = [
     "number": "020",
     "group": "overlays",
     "description": "A modal overlay with a title, a description, and a close slot rendered by the caller.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "dialog"
+    }
   },
   {
     "name": "Drawer",
@@ -237,7 +333,11 @@ export const components: ComponentEntry[] = [
     "number": "021",
     "group": "overlays",
     "description": "An edge-anchored panel with swipe gestures, snap points, and the Android back gesture.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "drawer"
+    }
   },
   {
     "name": "Dropdown Menu",
@@ -245,7 +345,11 @@ export const components: ComponentEntry[] = [
     "number": "022",
     "group": "overlays",
     "description": "A keyboard-navigable menu with items, submenus, and selection controls, on Base UI.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "menu"
+    }
   },
   {
     "name": "Hover Card",
@@ -253,7 +357,11 @@ export const components: ComponentEntry[] = [
     "number": "026",
     "group": "overlays",
     "description": "A preview of where a link goes, opened by hovering or focusing the link itself.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "preview-card"
+    }
   },
   {
     "name": "Menubar",
@@ -261,7 +369,11 @@ export const components: ComponentEntry[] = [
     "number": "030",
     "group": "overlays",
     "description": "A persistent bar of menu titles, holding your own Dropdown Menus and sized to its triggers.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "menubar"
+    }
   },
   {
     "name": "Popover",
@@ -269,7 +381,11 @@ export const components: ComponentEntry[] = [
     "number": "035",
     "group": "overlays",
     "description": "An anchored panel of rich content, opened from a control and dismissed without blocking the page.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "popover"
+    }
   },
   {
     "name": "Toast",
@@ -277,7 +393,11 @@ export const components: ComponentEntry[] = [
     "number": "051",
     "group": "overlays",
     "description": "A stacked notification in six tones, queued from a manager, on Base UI.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": {
+      "library": "base-ui",
+      "module": "toast"
+    }
   },
   {
     "name": "Tooltip",
@@ -285,7 +405,11 @@ export const components: ComponentEntry[] = [
     "number": "054",
     "group": "overlays",
     "description": "A short overlay on hover or focus, labelled through aria-label on its trigger.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "tooltip"
+    }
   },
   {
     "name": "Accordion",
@@ -293,7 +417,11 @@ export const components: ComponentEntry[] = [
     "number": "001",
     "group": "data-display",
     "description": "Disclosure sections under one shared value, on Base UI, with the heading level left to you.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "accordion"
+    }
   },
   {
     "name": "Avatar",
@@ -301,7 +429,11 @@ export const components: ComponentEntry[] = [
     "number": "005",
     "group": "data-display",
     "description": "An image that falls back to whatever you put behind it, at whatever size you set.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "avatar"
+    }
   },
   {
     "name": "Badge",
@@ -309,7 +441,8 @@ export const components: ComponentEntry[] = [
     "number": "006",
     "group": "data-display",
     "description": "A small static label in two variants and six tones.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": null
   },
   {
     "name": "Card",
@@ -317,7 +450,8 @@ export const components: ComponentEntry[] = [
     "number": "011",
     "group": "data-display",
     "description": "A surface with a header, body, and footer for grouping related content.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": null
   },
   {
     "name": "Code",
@@ -325,7 +459,8 @@ export const components: ComponentEntry[] = [
     "number": "013",
     "group": "data-display",
     "description": "Monospaced code, inline in a sentence or as a block.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": null
   },
   {
     "name": "Collapsible",
@@ -333,7 +468,11 @@ export const components: ComponentEntry[] = [
     "number": "014",
     "group": "data-display",
     "description": "A disclosure that animates its panel open and closed, on Base UI.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "collapsible"
+    }
   },
   {
     "name": "Meter",
@@ -341,7 +480,11 @@ export const components: ComponentEntry[] = [
     "number": "031",
     "group": "data-display",
     "description": "A bounded measurement as a toned bar, on Base UI.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "meter"
+    }
   },
   {
     "name": "Stat",
@@ -349,7 +492,8 @@ export const components: ComponentEntry[] = [
     "number": "046",
     "group": "data-display",
     "description": "A single number with its label, for dashboards and summaries.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": null
   },
   {
     "name": "Table",
@@ -357,7 +501,8 @@ export const components: ComponentEntry[] = [
     "number": "048",
     "group": "data-display",
     "description": "A data table as native table parts, with an optional caption and scroll region.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": null
   },
   {
     "name": "Breadcrumb",
@@ -365,7 +510,8 @@ export const components: ComponentEntry[] = [
     "number": "007",
     "group": "navigation",
     "description": "A trail of links to the current page, with a swappable separator glyph.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": null
   },
   {
     "name": "Navigation Menu",
@@ -373,7 +519,11 @@ export const components: ComponentEntry[] = [
     "number": "033",
     "group": "navigation",
     "description": "A top-level navigation whose panels morph between one another, on two nav landmarks.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "navigation-menu"
+    }
   },
   {
     "name": "Pagination",
@@ -381,7 +531,8 @@ export const components: ComponentEntry[] = [
     "number": "034",
     "group": "navigation",
     "description": "A page window with truncation, disabled ends, and a pure function that computes the window.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": null
   },
   {
     "name": "Sidebar",
@@ -389,7 +540,8 @@ export const components: ComponentEntry[] = [
     "number": "042",
     "group": "navigation",
     "description": "A collapsible navigation panel with groups, nested lists, and an active-page indication.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": null
   },
   {
     "name": "Tabs",
@@ -397,7 +549,11 @@ export const components: ComponentEntry[] = [
     "number": "049",
     "group": "navigation",
     "description": "Tabbed sections in an underline or a segmented variant, on Base UI.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "tabs"
+    }
   },
   {
     "name": "Alert",
@@ -405,7 +561,8 @@ export const components: ComponentEntry[] = [
     "number": "002",
     "group": "feedback",
     "description": "A static in-page callout in six tones.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": null
   },
   {
     "name": "Empty",
@@ -413,7 +570,8 @@ export const components: ComponentEntry[] = [
     "number": "023",
     "group": "feedback",
     "description": "A centered placeholder for a collection with nothing in it.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": null
   },
   {
     "name": "Progress",
@@ -421,7 +579,11 @@ export const components: ComponentEntry[] = [
     "number": "036",
     "group": "feedback",
     "description": "A task completion bar in five tones, determinate or indeterminate, on Base UI.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": {
+      "library": "base-ui",
+      "module": "progress"
+    }
   },
   {
     "name": "Skeleton",
@@ -429,7 +591,8 @@ export const components: ComponentEntry[] = [
     "number": "043",
     "group": "feedback",
     "description": "A sunken placeholder that pulses while its content loads.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": null
   },
   {
     "name": "Spinner",
@@ -437,7 +600,8 @@ export const components: ComponentEntry[] = [
     "number": "045",
     "group": "feedback",
     "description": "A looping loading mark drawn in CSS, sized and colored by its surrounding text.",
-    "release": "v0.1"
+    "release": "v0.1",
+    "primitive": null
   },
   {
     "name": "Aspect Ratio",
@@ -445,7 +609,8 @@ export const components: ComponentEntry[] = [
     "number": "004",
     "group": "layout",
     "description": "A fixed-ratio box for media, with the box and the radius left to the style slot.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": null
   },
   {
     "name": "Resizable",
@@ -453,7 +618,11 @@ export const components: ComponentEntry[] = [
     "number": "038",
     "group": "layout",
     "description": "Panels with boundaries you drag or arrow, on Zag.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "zag",
+      "module": "splitter"
+    }
   },
   {
     "name": "Scroll Area",
@@ -461,7 +630,11 @@ export const components: ComponentEntry[] = [
     "number": "039",
     "group": "layout",
     "description": "A native scroll container with scrollbars you can see and a viewport a keyboard can reach.",
-    "release": "v0.2"
+    "release": "v0.2",
+    "primitive": {
+      "library": "base-ui",
+      "module": "scroll-area"
+    }
   },
   {
     "name": "Separator",
@@ -469,6 +642,10 @@ export const components: ComponentEntry[] = [
     "number": "041",
     "group": "layout",
     "description": "A horizontal or vertical divider between sections of content.",
-    "release": "v0"
+    "release": "v0",
+    "primitive": {
+      "library": "base-ui",
+      "module": "separator"
+    }
   }
 ];

@@ -263,8 +263,9 @@ test('the article trail is a Breadcrumb landmark that links the section and mark
   await tokens.unmount();
 
   const component = await mount('/components/alert-dialog');
-  expect(component.container.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
   await expect.element(component.getByRole('heading', { name: 'Alert Dialog', level: 1 })).toBeVisible();
+  // A component page's trail lives in the mobile Docs bar, out of sight above the breakpoint.
+  expect(component.container.querySelector('nav[aria-label="Breadcrumb"]')!.checkVisibility()).toBe(false);
 });
 
 test('a direct load of a component page marks that link current in its group', async () => {
