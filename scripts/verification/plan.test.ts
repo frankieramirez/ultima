@@ -514,7 +514,7 @@ describe('the release plan', () => {
       [],
       'every check has an execution adapter',
     );
-    assert.equal(checkOf(document, 'production-scenarios')?.cases.length, 28 + 4, 'the whole production matrix: the 28 decided cells plus blocks.preview');
+    assert.equal(checkOf(document, 'production-scenarios')?.cases.length, 28 + 4 + 12, 'the whole production matrix: the 28 decided cells plus blocks.preview and site-landing');
     assert.deepEqual(document.outcome.pending, [], 'no release obligation is pending once the matrix is registered');
     assert.equal(document.outcome.canPass, true);
   });

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "site-landing.without-field",
+  "title": "Without WebGL the landing has no field and the hero stands on its own",
+  "intent": "A browser with no WebGL gets no field and no fallback image: data-field is off, and the hero heading, copy and install commands are present, fit the page and raise no error.",
+  "contract": "docs/spec/ultima.md#landing-motion",
+  "aliases": ["no webgl", "fallback", "landing", "hero", "dot field off"],
+  "items": [],
+  "sources": ["apps/docs/src/dot-field.tsx", "apps/docs/src/routes/home.tsx"],
+  "demos": [],
+  "routes": [{ "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/" }],
+  "fixtures": [],
+  "preconditions": ["WebGL is removed from the browser context before the page loads, so a canvas offers no WebGL context."],
+  "steps": [
+    { "action": "Load /.", "expect": "The hero's data-field becomes off, and the hero holds no canvas." },
+    { "action": "Read the hero.", "expect": "Its heading, copy and install commands are visible, the document fits within one pixel, and the page logged no error." }
+  ],
+  "targets": [
+    { "target": "production", "variants": { "mode": ["dark", "light"], "viewport": ["desktop", "narrow"], "motion": ["normal"] }, "remove": ["webgl"] }
+  ]
+}

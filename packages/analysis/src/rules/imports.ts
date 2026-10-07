@@ -4,7 +4,7 @@
 import ts from 'typescript';
 
 import { importsOf } from '../../../../scripts/catalogue/source.ts';
-import { allows, categoryOf, packageName } from '../policy.ts';
+import { DESIGN_ASSETS, allows, categoryOf, packageName } from '../policy.ts';
 import { DOCS_KINDS, PRODUCTION_KINDS, type Resolution, type SourceKind } from '../scope.ts';
 import type { Parsed } from '../sources.ts';
 import type { Context } from './context.ts';
@@ -72,7 +72,7 @@ export function checkImports(context: Context): void {
         const resolution = scope.resolve(entry.specifier, path);
         const verdict = production
           ? productionVerdict(context, kind, item, path, resolution)
-          : docsVerdict(context, kind, resolution);
+          : docsVerdict(context, kind, path, resolution);
         if (verdict) context.report({ ...at, ...(symbol && { symbol }), ...verdict });
       }
     }
@@ -120,9 +120,19 @@ function unresolved(resolution: Extract<Resolution, { kind: 'unresolved' }>, kin
   };
 }
 
-function docsVerdict(context: Context, kind: SourceKind, resolution: Resolution): Verdict | undefined {
+function docsVerdict(context: Context, kind: SourceKind, from: string, resolution: Resolution): Verdict | undefined {
   if (resolution.kind === 'external') return undefined;
   if (resolution.kind === 'unresolved') return unresolved(resolution, kind);
+  if (resolution.path.startsWith('ultima-assets/')) {
+    const named = DESIGN_ASSETS.find(({ asset }) => asset === resolution.path);
+    if (named?.importer === from) return undefined;
+    return {
+      ruleId: 'ULT-IMPORT-001',
+      message: `${LABEL[kind]} imports the design asset ${resolution.path}, which no entry in the policy's design assets names for ${from}.`,
+      repair: 'Import a design asset only where an owning decision names it, and add that asset and importer to DESIGN_ASSETS with its spec link.',
+      link: named?.authority ?? BOUNDARIES,
+    };
+  }
   const target = context.scope.kindOf(resolution.path);
   if (target && DOCS_NEVER.includes(target)) {
     return {
