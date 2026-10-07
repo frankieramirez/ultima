@@ -260,11 +260,11 @@ describe('the old scanner against ULT-DOCS-001', () => {
       'apps/docs/src/routes/home.tsx borderInlineWidth',
       'apps/docs/src/routes/home.tsx borderRadius',
       'apps/docs/src/routes/home.tsx borderRadius',
+      'apps/docs/src/site-search.tsx backgroundColor',
       'apps/docs/src/site-search.tsx borderRadius',
       'apps/docs/src/site-search.tsx borderRadius',
       'apps/docs/src/site-search.tsx borderRadius',
-      'apps/docs/src/site-search.tsx borderRadius',
-      'apps/docs/src/site-search.tsx borderRadius',
+      'apps/docs/src/site-search.tsx borderWidth',
       'apps/docs/src/site-search.tsx borderWidth',
       'apps/docs/src/theme-studio-preview.tsx backgroundColor',
     ]);
