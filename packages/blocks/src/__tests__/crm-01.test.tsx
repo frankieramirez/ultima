@@ -1,6 +1,7 @@
 import { describe, expect, expectTypeOf, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
+import { Card } from '@ultima/ui/card';
 
 import descriptor from '../../../../registry/metadata/block/crm-01.ts';
 import { Crm01 } from '../crm-01/crm-01';
@@ -253,8 +254,20 @@ describe('4. the behavior the block wires', () => {
   });
 });
 
-test('5. it follows no recipe, so no recipe contract applies in place', () => {
-  expect(descriptor.recipes).toEqual([]);
+test('5. the Item recipe holds in place: one Deals list inside a Card, with static rows', async () => {
+  expect(descriptor.recipes).toEqual([{ id: 'item', root: { role: 'list', name: 'Deals' } }]);
+  const screen = await render(<Crm01 />);
+  await userEvent.click(screen.getByRole('tab', { name: 'Deals' }));
+
+  for (const { root } of descriptor.recipes) {
+    expect(await screen.getByRole(root.role as 'list', { name: root.name, exact: true }).all()).toHaveLength(1);
+  }
+  const list = screen.getByRole('list', { name: 'Deals', exact: true }).element();
+  const card = (await render(<Card.Root />)).container.firstElementChild as HTMLElement;
+  expect(list.parentElement?.className).toBe(card.className);
+  const rows = list.querySelectorAll(':scope > li');
+  expect(rows.length).toBeGreaterThan(0);
+  for (const row of rows) expect(row.querySelectorAll('a, button, input, select, textarea, [tabindex], [role]')).toHaveLength(0);
 });
 
 test('6. the root takes no props', () => {

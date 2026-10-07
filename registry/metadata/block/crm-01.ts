@@ -9,5 +9,5 @@ export default {
   installDocs:
     "Render it from a route of your own: import { Crm01 } from '@/components/crm-01/crm-01'. Search, the filter, the selection, the note composer and Log activity are wired; Add contact and the navigation links have no handler of their own, and Email and Call are mailto: and tel: links.",
   primaryExport: 'Crm01',
-  recipes: [],
+  recipes: [{ id: 'item', root: { role: 'list', name: 'Deals' } }],
 } satisfies BlockDescriptor;

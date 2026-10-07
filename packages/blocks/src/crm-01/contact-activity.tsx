@@ -187,7 +187,7 @@ export function ContactActivity({ contact, tab, onTabChange, composerRef, onAddN
             <Tabs.Panel value="deals" style={styles.panel}>
               {contact.deal ? (
                 <Card.Root>
-                  <ul {...stylex.props(styles.rows)}>
+                  <ul aria-label="Deals" {...stylex.props(styles.rows)}>
                     <li {...stylex.props(styles.row)}>
                       <span {...stylex.props(styles.stack)}>
                         <span {...stylex.props(styles.title)}>{contact.deal.name}</span>

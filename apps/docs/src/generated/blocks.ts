@@ -102,6 +102,12 @@ export const blocks: readonly BlockEntry[] = [
         "title": "Toggle Group",
         "number": "053",
         "kind": "component"
+      },
+      {
+        "id": "item",
+        "title": "Item",
+        "number": "005",
+        "kind": "recipe"
       }
     ],
     "preview": Crm01
