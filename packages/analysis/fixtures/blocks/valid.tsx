@@ -36,6 +36,9 @@ export function Region() {
           {['UTC', 'Europe/Oslo'].map((zone) => (
             <option key={zone}>{zone}</option>
           ))}
+          <optgroup label="Asia">
+            <option>Asia/Tokyo</option>
+          </optgroup>
         </NativeSelect.Select>
       </NativeSelect.Root>
     </section>

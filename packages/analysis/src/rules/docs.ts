@@ -289,13 +289,38 @@ export function renderOwner(element: ts.Node, attribute: Parsed['attributes'][nu
   return undefined;
 }
 
-function jsxParentTag(element: ts.Node): string | undefined {
-  for (let parent = element.parent; parent; parent = parent.parent) {
-    if (ts.isJsxElement(parent)) return tagText(parent.openingElement.tagName);
-    if (passes(parent) || ts.isCallExpression(parent) || (ts.isJsxExpression(parent) && !ts.isJsxAttribute(parent.parent))) continue;
+/**
+ * The JSX element an option sits in, through a `.map` callback, a condition and any `<optgroup>`. A call
+ * that takes the option itself, such as `wrap(<option />)`, may render it anywhere, so it ends the walk.
+ */
+function optionList(element: ts.Node): string | undefined {
+  let current = element;
+  for (let parent = element.parent; parent; current = parent, parent = parent.parent) {
+    if (ts.isJsxElement(parent)) {
+      const tag = tagText(parent.openingElement.tagName);
+      if (tag === 'optgroup') continue;
+      return tag;
+    }
+    if (ts.isCallExpression(parent)) {
+      const callback = ts.isArrowFunction(current) || ts.isFunctionExpression(current);
+      if (callback && parent.arguments.some((argument) => argument === current)) continue;
+      return undefined;
+    }
+    if (passes(parent) || (ts.isJsxExpression(parent) && !ts.isJsxAttribute(parent.parent))) continue;
     return undefined;
   }
   return undefined;
+}
+
+/** `NativeSelect.Select`, named or as a namespace's `NativeSelect` member: the one Ultima part whose children are native options. */
+function isNativeSelect(context: Context, parsed: Parsed, tag: string, imports: Map<string, Imported>): boolean {
+  const parts = tag.split('.');
+  const binding = imports.get(parts[0] as string);
+  if (!binding || parts.at(-1) !== 'Select') return false;
+  const namespace = binding.imported === '*';
+  const name = namespace ? parts[1] : binding.imported;
+  if (name !== 'NativeSelect' || parts.length !== (namespace ? 3 : 2)) return false;
+  return isUltimaComponent(context, parsed, tag, imports);
 }
 
 export function attributeNamed(attributes: ts.JsxAttributes, name: string): ts.JsxAttribute | undefined {
@@ -334,8 +359,8 @@ function checkControls(
   const nativeControl = (node: ts.Node, tagNode: ts.Node, tag: string) => {
     const owner = renderOwner(node, attribute);
     if (owner && isUltimaComponent(context, parsed, owner, imports)) return;
-    const select = tag === 'option' ? jsxParentTag(node) : undefined;
-    if (select && isUltimaComponent(context, parsed, select, imports)) return;
+    const list = tag === 'option' ? optionList(node) : undefined;
+    if (list && isNativeSelect(context, parsed, list, imports)) return;
     const symbol = topLevelName(node);
     context.report({
       ruleId: 'ULT-DOCS-002',
