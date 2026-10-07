@@ -30,6 +30,7 @@ const MATRIX: [scenario: string, viewports: string[], motion: string[]][] = [
 ];
 
 const CAPABILITY_REMOVALS: Record<string, string[]> = { 'site-landing.without-field': ['webgl'] };
+const CAPABILITY_REQUIREMENTS: Record<string, string[]> = { 'site-landing.dot-field': ['webgl'] };
 
 const REQUIRED = MATRIX.flatMap(([scenario, viewports, motions]) =>
   BOTH.flatMap((mode) =>
@@ -212,13 +213,15 @@ describe('the repository', () => {
     }
   });
 
-  test('removes a platform capability only where a scenario declares it', () => {
-    const removed = Object.fromEntries(
-      model.scenarios
-        .map((s) => [s.id, s.targets.find((t) => t.target === 'production')?.remove ?? []] as const)
-        .filter(([, capabilities]) => capabilities.length > 0),
-    );
-    assert.deepEqual(removed, CAPABILITY_REMOVALS);
+  test('requires or removes a platform capability only where a scenario declares it', () => {
+    const declared = (key: 'require' | 'remove') =>
+      Object.fromEntries(
+        model.scenarios
+          .map((s) => [s.id, s.targets.find((t) => t.target === 'production')?.[key] ?? []] as const)
+          .filter(([, capabilities]) => capabilities.length > 0),
+      );
+    assert.deepEqual(declared('remove'), CAPABILITY_REMOVALS);
+    assert.deepEqual(declared('require'), CAPABILITY_REQUIREMENTS);
   });
 
   test('keeps each pilot scenario registered in its existing Vitest suite', () => {

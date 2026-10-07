@@ -2,7 +2,8 @@
  * The production binding for site-landing.dot-field, per Landing motion's Proof paragraph in
  * docs/spec/ultima.md: the hero shows before the field, the canvas is decorative and fits the hero, and
  * the field runs, paints and settles, or holds one still frame under reduced motion. The cell runs on
- * the software WebGL the runner enables at launch; a cell that finds no WebGL fails.
+ * the software-WebGL browser the runner launches for the WebGL its record requires; a cell that finds
+ * no WebGL fails.
  */
 import assert from 'node:assert/strict';
 import { gzipSync } from 'node:zlib';
@@ -78,7 +79,7 @@ export default productionScenario('site-landing.dot-field', 'production', async 
 
   await open('/');
   const webgl = await page.evaluate(() => document.createElement('canvas').getContext('webgl') !== null);
-  assert.ok(webgl, 'this cell needs WebGL from the software renderer the runner enables at launch, and does not pass through the fallback');
+  assert.ok(webgl, 'this cell needs WebGL from the software-WebGL browser the runner launches, and does not pass through the fallback');
 
   const hero = page.locator('[data-hero]');
   const field = hero.locator('[data-field]');
@@ -111,7 +112,7 @@ export default productionScenario('site-landing.dot-field', 'production', async 
     const hero = element.closest('[data-hero]')?.getBoundingClientRect();
     return {
       hidden: element.getAttribute('aria-hidden'),
-      wrapperHidden: element.parentElement?.getAttribute('aria-hidden'),
+      wrapperHidden: element.closest('[data-field]')?.getAttribute('aria-hidden'),
       tabindex: element.getAttribute('tabindex'),
       tabIndex: element.tabIndex,
       pointerEvents: style.pointerEvents,

@@ -35,21 +35,26 @@ export const COLOR_ROLES = {
 
 export type Rgb = [number, number, number];
 
-/** The three colour uniforms, read from `element`'s computed `site` tokens as 0–1 channels. */
+/**
+ * The three colour uniforms, read from `element`'s computed `site` tokens as 0–1 channels. Null when a
+ * token is empty or not a colour, so the field never paints a colour no token produced.
+ */
 export function fieldColors(element: Element): Record<keyof typeof COLOR_ROLES, Rgb> | null {
   const style = getComputedStyle(element);
+  const values = Object.values(COLOR_ROLES).map((token) => style.getPropertyValue(token).trim());
+  if (values.some((value) => !CSS.supports('color', value))) return null;
   const probe = document.createElement('canvas');
   probe.width = probe.height = 1;
   const context = probe.getContext('2d', { willReadFrequently: true });
   if (!context) return null;
-  const read = (token: string): Rgb => {
+  const [u_bg, u_dim, u_bright] = values.map((value): Rgb => {
     context.clearRect(0, 0, 1, 1);
-    context.fillStyle = style.getPropertyValue(token).trim();
+    context.fillStyle = value;
     context.fillRect(0, 0, 1, 1);
     const [r = 0, g = 0, b = 0] = context.getImageData(0, 0, 1, 1).data;
     return [r / 255, g / 255, b / 255];
-  };
-  return { u_bg: read(COLOR_ROLES.u_bg), u_dim: read(COLOR_ROLES.u_dim), u_bright: read(COLOR_ROLES.u_bright) };
+  }) as [Rgb, Rgb, Rgb];
+  return { u_bg, u_dim, u_bright };
 }
 
 /** The shader's clock, in seconds, after `elapsed` ms of drift: full speed, then eased to rest over the last second. */
@@ -91,6 +96,11 @@ export function createLoop(draw: (frame: Frame) => void, report: (state: FieldSt
       pending = null;
     }
   };
+  const paint = () => {
+    dirty = false;
+    draw({ time: reduced ? 0 : driftSeconds(elapsed), glow: reduced ? 0 : glow, x, y });
+    report(reduced ? 'still' : elapsed >= DRIFT_MS ? 'settled' : 'running');
+  };
   const tick = (now: number) => {
     pending = null;
     if (!wanted()) return;
@@ -99,9 +109,7 @@ export function createLoop(draw: (frame: Frame) => void, report: (state: FieldSt
     last = now;
     if (!reduced) elapsed = Math.min(DRIFT_MS, elapsed + step);
     if (leaving) glow = Math.max(0, glow - step / Math.max(1, fadeMs()));
-    dirty = false;
-    draw({ time: reduced ? 0 : driftSeconds(elapsed), glow: reduced ? 0 : glow, x, y });
-    report(reduced ? 'still' : elapsed >= DRIFT_MS ? 'settled' : 'running');
+    paint();
     schedule();
   };
   const set = (change: () => void) => {
@@ -115,6 +123,8 @@ export function createLoop(draw: (frame: Frame) => void, report: (state: FieldSt
     setOnScreen: (value: boolean) => set(() => (onScreen = value)),
     setReduced: (value: boolean) => set(() => ((reduced = value), (dirty = true))),
     redraw: () => set(() => (dirty = true)),
+    /** Draws the current frame now, without advancing the drift: a resized canvas starts cleared. */
+    paintNow: () => set(() => !stopped && paint()),
     /** Skips the drift, for a restored context, which draws once at rest. */
     settle: () => set(() => ((elapsed = DRIFT_MS), (dirty = true))),
     pointer: (atX: number, atY: number) =>
@@ -190,14 +200,18 @@ function startField(canvas: HTMLCanvasElement, report: (state: FieldState) => vo
   let loop = begin();
 
   const resize = new ResizeObserver(([entry]) => {
-    if (!entry) return;
-    canvas.width = Math.max(1, Math.round(entry.contentRect.width));
-    canvas.height = Math.max(1, Math.round(entry.contentRect.height));
-    loop.redraw();
+    const width = Math.max(1, Math.round(entry?.contentRect.width ?? canvas.width));
+    const height = Math.max(1, Math.round(entry?.contentRect.height ?? canvas.height));
+    if (width === canvas.width && height === canvas.height) return;
+    canvas.width = width;
+    canvas.height = height;
+    loop.paintNow();
   });
   const visible = new IntersectionObserver(([entry]) => loop.setOnScreen(entry?.isIntersecting ?? true));
   const tokens = new MutationObserver(() => {
-    colors = fieldColors(canvas);
+    const next = fieldColors(canvas);
+    if (!next) return;
+    colors = next;
     loop.redraw();
   });
   const onVisibility = () => loop.setHidden(document.hidden);
@@ -242,6 +256,7 @@ function startField(canvas: HTMLCanvasElement, report: (state: FieldState) => vo
     hero.removeEventListener('pointerleave', onLeave);
     canvas.removeEventListener('webglcontextlost', onLost);
     canvas.removeEventListener('webglcontextrestored', onRestored);
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
   };
 }
 
@@ -257,22 +272,41 @@ const styles = stylex.create({
     transitionProperty: 'opacity',
   },
   shown: { opacity: 1 },
+  host: { blockSize: '100%' },
 });
 
+/**
+ * The field. Each start gets a canvas of its own, because stopping loses the WebGL context, and a lost
+ * context cannot draw for the next start.
+ */
 export function DotField({ onState }: { onState: (state: FieldState) => void }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
+  const host = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement | null>(null);
   const [state, setState] = useState<FieldState>('loading');
-  const [absent, setAbsent] = useState(false);
 
   useEffect(() => {
-    if (!canvas.current) return;
-    const stop = startField(canvas.current, setState);
-    if (stop) return stop;
-    setState('off');
-    setAbsent(true);
+    if (!host.current) return;
+    const element = document.createElement('canvas');
+    element.setAttribute('aria-hidden', 'true');
+    element.className = stylex.props(styles.canvas).className ?? '';
+    host.current.append(element);
+    const stop = startField(element, setState);
+    if (!stop) {
+      element.remove();
+      setState('off');
+      return;
+    }
+    canvas.current = element;
+    return () => {
+      stop();
+      element.remove();
+      canvas.current = null;
+    };
   }, []);
-  useEffect(() => onState(state), [onState, state]);
+  useEffect(() => {
+    if (canvas.current) canvas.current.className = stylex.props(styles.canvas, state !== 'loading' && state !== 'off' && styles.shown).className ?? '';
+    onState(state);
+  }, [onState, state]);
 
-  if (absent) return null;
-  return <canvas ref={canvas} aria-hidden {...stylex.props(styles.canvas, state !== 'loading' && state !== 'off' && styles.shown)} />;
+  return <div ref={host} {...stylex.props(styles.host)} />;
 }

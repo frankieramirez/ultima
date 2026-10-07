@@ -255,7 +255,7 @@ const PRINCIPLES = [
 
 let heroEnteredThisDocument = false;
 
-function FieldUnavailable({ onState }: { onState: (state: FieldState) => void }) {
+function FieldUnavailable({ onState }: { onState: (state: FieldState) => void }): ReactNode {
   useEffect(() => onState('off'), [onState]);
   return null;
 }

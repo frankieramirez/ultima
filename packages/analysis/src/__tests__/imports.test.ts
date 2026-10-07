@@ -99,6 +99,9 @@ describe('ULT-IMPORT-001', () => {
     assert.deepEqual(withImport(field, "import again from '../../../ultima-assets/shaders/dot-field.glsl?raw';"), []);
     only(CHROME, "import shader from '../../../ultima-assets/shaders/dot-field.glsl?raw';", 'ULT-IMPORT-001');
     only(field, "import logo from '../../../ultima-assets/ultima-logo-dark.png';", 'ULT-IMPORT-001');
+    const links = (path: string, statement: string) => run({ [path]: `${statement}\n${source(path)}` }).diagnostics.find((d) => d.file === path)?.link;
+    assert.equal(links(CHROME, "import shader from '../../../ultima-assets/shaders/dot-field.glsl?raw';"), 'docs/spec/ultima.md#landing-motion', 'a named asset links its own decision');
+    assert.equal(links(field, "import logo from '../../../ultima-assets/ultima-logo-dark.png';"), 'docs/spec/agent-infrastructure.md#import-and-registry-boundaries', 'an unnamed asset links the import boundaries');
   });
 
   test('lets the docs application read generated wiring, recipe engines and icon sets', () => {

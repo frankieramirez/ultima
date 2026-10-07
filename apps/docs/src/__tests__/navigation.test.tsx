@@ -323,7 +323,7 @@ test('the logo returns to the editorial home page, which folds the menu rail awa
   expect(menu().element()).toHaveAttribute('data-open');
   await userEvent.click(screen.getByRole('link', { name: 'Ultima home' }).element());
   await expect.element(screen.getByRole('heading', { level: 1, name: /A system for building interfaces/ })).toBeVisible();
-  expect(menu().element()).toHaveAttribute('data-closed');
+  expect(menuPanel()).toHaveAttribute('data-closed');
   await userEvent.click(
     screen
       .getByRole('navigation', { name: 'Site', exact: true })
@@ -331,7 +331,10 @@ test('the logo returns to the editorial home page, which folds the menu rail awa
       .element(),
   );
   await expect.element(screen.getByRole('main').getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
-  expect(menu().element()).toHaveAttribute('data-open');
+  // The rail slides open from folded, and on its first frame it is still hidden, so it reaches the
+  // accessibility tree a frame after the route; wait for it rather than read that frame.
+  expect(menuPanel()).toHaveAttribute('data-open');
+  await expect.element(menu()).toBeVisible();
 });
 
 for (const theme of ['dark', 'light'] as const) {

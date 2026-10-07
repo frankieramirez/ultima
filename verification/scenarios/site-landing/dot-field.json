@@ -14,7 +14,7 @@
   ],
   "fixtures": [],
   "preconditions": [
-    "The browser has WebGL, on Chromium's software renderer, enabled at launch.",
+    "The cell runs in the browser the runner launches with Chromium's software WebGL.",
     "The browser context reports the variant's motion preference before the page loads."
   ],
   "steps": [
@@ -25,6 +25,6 @@
     { "action": "Under reduced motion, wait for the field and capture the hero twice, a frame apart.", "expect": "data-field is still, and the two captures are identical." }
   ],
   "targets": [
-    { "target": "production", "variants": { "mode": ["dark", "light"], "viewport": ["desktop", "narrow"], "motion": ["normal", "reduced"] } }
+    { "target": "production", "variants": { "mode": ["dark", "light"], "viewport": ["desktop", "narrow"], "motion": ["normal", "reduced"] }, "require": ["webgl"] }
   ]
 }

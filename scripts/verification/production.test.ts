@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 import { type BuildManifest, createManifest, hashBuild, manifestProblems, readManifest } from '../../apps/docs/scripts/build-manifest.ts';
 import { BUILD_MANIFEST, productionAdapter } from '../../apps/docs/scripts/production-adapter.ts';
-import { CHROMIUM_ARGS, type Cell, type RunnerOptions, installedAxe, runCells } from '../../apps/docs/scripts/production-runner.ts';
+import { SOFTWARE_WEBGL_ARGS, type Cell, type RunnerOptions, installedAxe, runCells } from '../../apps/docs/scripts/production-runner.ts';
 import { internal, launchChromium, selectCells } from '../../apps/docs/scripts/production.ts';
 import { IDENTITY_PATH, isNavigation, resolveFile, startStaticServer, verifyIdentity } from '../../apps/docs/scripts/static-server.ts';
 import { productionPlan, runStandalone } from '../../apps/docs/scripts/test-production.ts';
@@ -346,7 +346,7 @@ describe('the runner', () => {
     assert.deepEqual(result.cells[1]?.permissions, []);
   });
 
-  test('a declared removal takes WebGL away before load in that cell only, and the run records the software renderer', async () => {
+  test('a declared removal takes WebGL away before load, and only cells that require WebGL get the software-WebGL browser', async () => {
     const webgl = (expected: boolean): Cell['run'] => async ({ page, open, axe }) => {
       await open('/');
       const found = await page.evaluate(() => ({
@@ -357,13 +357,44 @@ describe('the runner', () => {
       assert.deepEqual(found, { canvas: expected, offscreen: expected, flat: true });
       await axe('probed');
     };
+    const launched: string[] = [];
+    const launch = async () => (launched.push('default'), launchChromium());
+    const launchWebgl = async () => (launched.push('webgl'), launchChromium(SOFTWARE_WEBGL_ARGS));
     const without = { ...cell('fixture.without@production[a]', webgl(false)), remove: ['webgl' as const] };
-    const { result } = await runOn(site(), [without, cell('fixture.with@production[b]', webgl(true))], { launchArgs: CHROMIUM_ARGS });
+    const needs = { ...cell('fixture.needs@production[b]', webgl(true)), require: ['webgl' as const] };
+    const { result } = await runOn(site(), [without, needs], { launch, launchWebgl, webglArgs: SOFTWARE_WEBGL_ARGS });
     assert.equal(result.cells[0]?.status, 'passed', result.cells[0]?.failure?.message ?? '');
     assert.equal(result.cells[1]?.status, 'passed', result.cells[1]?.failure?.message ?? '');
     assert.deepEqual(result.cells.map((c) => c.removed), [['webgl'], []]);
-    assert.deepEqual(result.browser.args, CHROMIUM_ARGS);
-    assert.match(result.browser.webgl ?? '', /SwiftShader/, 'WebGL runs on the software renderer enabled at launch');
+    assert.deepEqual(launched, ['default', 'webgl']);
+    assert.deepEqual(result.webgl?.args, SOFTWARE_WEBGL_ARGS);
+    assert.match(result.webgl?.renderer ?? '', /SwiftShader/, 'WebGL runs on the software renderer enabled at launch');
+    assert.deepEqual(result.cells.map((c) => c.renderer), [null, result.webgl?.renderer]);
+
+    launched.length = 0;
+    const plain = await runOn(site(), [cell('fixture.paint@production[c]', painted)], { launch, launchWebgl });
+    assert.equal(plain.result.cells[0]?.status, 'passed');
+    assert.deepEqual(launched, ['default'], 'no cell requires WebGL, so no software-WebGL browser starts');
+    assert.equal(plain.result.webgl, null);
+  });
+
+  test('a software-WebGL browser that cannot start leaves its cells incomplete and is still closed', async () => {
+    let closed = false;
+    const launchWebgl = async () => {
+      const browser = await launchChromium(SOFTWARE_WEBGL_ARGS);
+      browser.on('disconnected', () => (closed = true));
+      browser.newPage = async () => {
+        throw new Error('no page for the renderer probe');
+      };
+      return browser;
+    };
+    const needs = { ...cell('fixture.needs@production[a]', painted), require: ['webgl' as const] };
+    const { result } = await runOn(site(), [needs, cell('fixture.paint@production[b]', painted)], { launchWebgl });
+    assert.equal(result.cells[0]?.failure?.kind, 'incomplete');
+    assert.match(result.cells[0]?.failure?.message ?? '', /software-WebGL browser could not start: no page for the renderer probe/);
+    assert.equal(result.cells[1]?.status, 'passed', 'cells in the default browser still run');
+    assert.equal(result.status, 'incomplete');
+    assert.ok(closed, 'the browser whose probe failed is closed');
   });
 
   test('a browser that cannot launch leaves every cell incomplete with the reason', async () => {
@@ -397,11 +428,14 @@ describe('the internal entry', () => {
     assert.match(problems.join(), /mode=sepia\] is expected but no registered production scenario declares it/);
   });
 
-  test('carries the capability a scenario declares removed onto each of its cells', async () => {
+  test('carries the capabilities a scenario requires or removes onto each of its cells', async () => {
     const landing = (id: string, mode: string) => `site-landing.${id}@production[mode=${mode},viewport=narrow,motion=normal]`;
     const { cells, problems } = await selectCells(ROOT, [landing('without-field', 'dark'), landing('dot-field', 'light')]);
     assert.deepEqual(problems, []);
-    assert.deepEqual(cells.map((c) => [c.scenario, c.remove]), [['site-landing.without-field', ['webgl']], ['site-landing.dot-field', []]]);
+    assert.deepEqual(cells.map((c) => [c.scenario, c.require, c.remove]), [
+      ['site-landing.without-field', [], ['webgl']],
+      ['site-landing.dot-field', ['webgl'], []],
+    ]);
   });
 
   test('refuses a stale or foreign manifest before any browser starts', async () => {

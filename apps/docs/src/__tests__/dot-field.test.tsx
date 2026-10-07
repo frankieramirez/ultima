@@ -1,7 +1,8 @@
+import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { resolveDraft } from '@ultima/tokens';
 import type { CSSProperties } from 'react';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, onTestFinished, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 
 import {
@@ -16,6 +17,7 @@ import {
   fieldColors,
   shaderDefaults,
 } from '../dot-field';
+import { routeTree } from '../router';
 import { siteDraft } from '../site-theme-draft';
 import { siteTheme } from '../theme';
 import shader from '../../../../ultima-assets/shaders/dot-field.glsl?raw';
@@ -50,6 +52,20 @@ describe('colour', () => {
       </div>,
     );
     expect(fieldColors(screen.getByTestId('field').element())?.u_bright).toEqual([1, 0, 0]);
+  });
+
+  test.each([
+    ['empty', 'initial'],
+    ['not a colour', 'not-a-colour'],
+  ])('reads no colours when a token is %s, rather than keeping a stale one', async (_, value) => {
+    const screen = await render(
+      <div {...stylex.props(siteTheme.dark)}>
+        <div style={{ '--ult-color-highlight-border': value } as CSSProperties}>
+          <canvas data-testid="field" />
+        </div>
+      </div>,
+    );
+    expect(fieldColors(screen.getByTestId('field').element())).toBeNull();
   });
 
   test("takes geometry and motion from the shader's @default annotations and never its hex colours", () => {
@@ -182,6 +198,16 @@ describe('stops', () => {
     expect(pending()).toBe(false);
   });
 
+  test('paints a resized canvas at once, without advancing the drift or asking for a frame', () => {
+    const { loop, draws, advance, pending } = harness();
+    advance(DRIFT_MS + 500);
+    const rest = draws.length;
+    loop.paintNow();
+    expect(draws).toHaveLength(rest + 1);
+    expect(draws.at(-1)!.time).toBe(driftSeconds(DRIFT_MS));
+    expect(pending()).toBe(false);
+  });
+
   test('when stopped', () => {
     const { loop, draws, advance, pending } = harness();
     advance(500);
@@ -191,5 +217,22 @@ describe('stops', () => {
     advance(1000);
     expect(draws).toHaveLength(before);
     expect(pending()).toBe(false);
+  });
+});
+
+describe('load', () => {
+  test('a visitor sending Save-Data gets no field, and the hero still renders', async () => {
+    Object.defineProperty(navigator, 'connection', { configurable: true, value: { saveData: true } });
+    onTestFinished(() => {
+      delete (navigator as { connection?: unknown }).connection;
+    });
+    const history = createMemoryHistory({ initialEntries: ['/'] });
+    const screen = await render(<RouterProvider router={createRouter({ routeTree, history })} />);
+    await expect.element(screen.getByRole('heading', { level: 1, name: 'A system for building interfaces.' })).toBeVisible();
+    const field = document.querySelector('[data-hero] [data-field]');
+    await expect.poll(() => field?.getAttribute('data-field')).toBe('off');
+    await new Promise((resolve) => requestIdleCallback(() => requestAnimationFrame(resolve)));
+    expect(field?.getAttribute('data-field')).toBe('off');
+    expect(field?.querySelector('canvas')).toBeNull();
   });
 });

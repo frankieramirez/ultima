@@ -8,8 +8,9 @@
  * application code; its page scripts read state, record the storage a cell began with and run the
  * installed axe, and remove a platform capability a scenario's record declares removed.
  *
- * WebGL runs on Chromium's software renderer, which `CHROMIUM_ARGS` enables at launch and the report
- * records with the renderer the browser answered with.
+ * Cells whose record requires WebGL run in a second browser launched with Chromium's software renderer
+ * (`SOFTWARE_WEBGL_ARGS`); every other cell runs in a browser launched without it. The report records
+ * that browser's arguments and the renderer it answered with, and the renderer on each such cell.
  *
  * A cell passes only when its binding returned, at least one axe check ran clean and the page raised no
  * error, failed same-origin request or console error. An assertion, axe violation or page error is a
@@ -42,7 +43,7 @@ export type Limits = typeof LIMITS;
 export const VIEWPORTS = { desktop: { width: 1280, height: 720 }, narrow: { width: 390, height: 844 } } as const;
 
 /** Chromium's software WebGL, enabled at launch rather than left to a deprecated automatic fallback. */
-export const CHROMIUM_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
+export const SOFTWARE_WEBGL_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
 
 /** The self-hosted face the shell sets its text in; a fallback font is not a ready page. */
 export const REQUIRED_FACE = 'Figtree';
@@ -59,6 +60,8 @@ export type Cell = {
   run: ProductionScenario['run'];
   /** Capabilities the scenario's record declares removed before load. */
   remove?: Capability[];
+  /** Capabilities the scenario's record requires, which pick the browser the cell runs in. */
+  require?: Capability[];
 };
 
 export type CellStatus = 'passed' | 'failed' | 'timed_out' | 'cancelled' | 'not_run';
@@ -86,6 +89,8 @@ export type CellResult = {
   permissions: string[];
   /** Platform capabilities removed from this cell's context before load. */
   removed: Capability[];
+  /** For a cell that requires WebGL, the renderer of the software-WebGL browser it ran in. */
+  renderer: string | null;
   /** Run-relative evidence: a settled screenshot for a pass; trace, screenshot, DOM and ARIA snapshot for a failure. */
   artifacts: { kind: 'screenshot' | 'trace' | 'dom' | 'aria'; path: string; label: string }[];
   missingArtifacts: { kind: string; reason: string }[];
@@ -100,8 +105,10 @@ export type RunnerOptions = {
   /** Revision label stamped on every image's record. */
   revision: string;
   launch: () => Promise<Browser>;
-  /** The arguments `launch` starts the browser with, recorded in the result. */
-  launchArgs?: readonly string[];
+  /** Launches the browser for cells that require WebGL; only called when a selected cell does. */
+  launchWebgl?: () => Promise<Browser>;
+  /** The arguments `launchWebgl` starts its browser with, recorded in the result. */
+  webglArgs?: readonly string[];
   axeSource: string;
   limits?: Partial<Limits>;
   signal?: AbortSignal;
@@ -110,14 +117,9 @@ export type RunnerOptions = {
 
 export type RunnerResult = {
   status: 'passed' | 'failed' | 'incomplete' | 'cancelled';
-  browser: {
-    version: string | null;
-    launch: 'launched' | 'failed';
-    error: string | null;
-    args: string[];
-    /** The WebGL renderer a blank page in this browser reports, or null when it has no WebGL. */
-    webgl: string | null;
-  };
+  browser: { version: string | null; launch: 'launched' | 'failed'; error: string | null };
+  /** The software-WebGL browser, when a selected cell requires WebGL; `renderer` is what a blank page reports. */
+  webgl: { version: string | null; launch: 'launched' | 'failed'; error: string | null; args: string[]; renderer: string | null } | null;
   limits: Limits;
   cells: CellResult[];
   durationMs: number;
@@ -155,6 +157,7 @@ function blank(cell: Cell): CellResult {
     failedRequests: [],
     permissions: [],
     removed: [],
+    renderer: null,
     artifacts: [],
     missingArtifacts: [],
   };
@@ -214,10 +217,10 @@ export async function runCells(options: RunnerOptions): Promise<RunnerResult> {
   const limits: Limits = { ...LIMITS, ...options.limits };
   const progress = options.onProgress ?? (() => {});
   const results = options.cells.map(blank);
-  const args = [...(options.launchArgs ?? [])];
   const result: RunnerResult = {
     status: 'incomplete',
-    browser: { version: null, launch: 'failed', error: null, args, webgl: null },
+    browser: { version: null, launch: 'failed', error: null },
+    webgl: null,
     limits,
     cells: results,
     durationMs: 0,
@@ -230,7 +233,7 @@ export async function runCells(options: RunnerOptions): Promise<RunnerResult> {
   let browser: Browser;
   try {
     browser = await options.launch();
-    result.browser = { version: browser.version(), launch: 'launched', error: null, args, webgl: await webglRenderer(browser) };
+    result.browser = { version: browser.version(), launch: 'launched', error: null };
   } catch (error) {
     result.browser.error = `the browser could not launch: ${message(error)}`;
     for (const cell of results) cell.failure = { kind: 'incomplete', message: result.browser.error };
@@ -241,6 +244,25 @@ export async function runCells(options: RunnerOptions): Promise<RunnerResult> {
   browser.on('disconnected', () => {
     crashed ??= 'the browser disconnected';
   });
+  let webglBrowser: Browser | null = null;
+  /** The software-WebGL browser, launched on first need; null when it could not launch or report its renderer. */
+  const softwareWebgl = async (): Promise<Browser | null> => {
+    if (result.webgl) return result.webgl.error ? null : webglBrowser;
+    result.webgl = { version: null, launch: 'failed', error: null, args: [...(options.webglArgs ?? [])], renderer: null };
+    try {
+      webglBrowser = await (options.launchWebgl ?? options.launch)();
+      webglBrowser.on('disconnected', () => {
+        crashed ??= 'the software-WebGL browser disconnected';
+      });
+      result.webgl.version = webglBrowser.version();
+      result.webgl.launch = 'launched';
+      result.webgl.renderer = await webglRenderer(webglBrowser);
+      return webglBrowser;
+    } catch (error) {
+      result.webgl.error = `the software-WebGL browser could not start: ${message(error)}`;
+      return null;
+    }
+  };
 
   try {
     for (const [index, cell] of options.cells.entries()) {
@@ -258,15 +280,29 @@ export async function runCells(options: RunnerOptions): Promise<RunnerResult> {
         record.failure = { kind: 'incomplete', message: `the production matrix deadline of ${limits.matrixMs}ms expired before this cell started` };
         continue;
       }
+      let host = browser;
+      if (cell.require?.includes('webgl')) {
+        const software = await softwareWebgl();
+        if (!software) {
+          record.status = 'failed';
+          record.failure = { kind: 'incomplete', message: result.webgl?.error ?? 'the software-WebGL browser is unavailable' };
+          continue;
+        }
+        host = software;
+        record.renderer = result.webgl?.renderer ?? null;
+      }
       progress(`production: ${cell.caseId} started`);
-      await runCell(browser, cell, record, { ...options, limits, rel, cellMs: Math.min(limits.cellMs, remaining), crashed: () => crashed });
+      await runCell(host, cell, record, { ...options, limits, rel, cellMs: Math.min(limits.cellMs, remaining), crashed: () => crashed });
       progress(`production: ${cell.caseId} ${record.status}${record.failure ? `: ${record.failure.message}` : ''}`);
     }
   } finally {
-    try {
-      await within(browser.close(), limits.teardownMs, () => new Error('the browser did not close in time'));
-    } catch (error) {
-      result.closeErrors.push(message(error));
+    for (const owned of [browser, webglBrowser]) {
+      if (!owned) continue;
+      try {
+        await within(owned.close(), limits.teardownMs, () => new Error('the browser did not close in time'));
+      } catch (error) {
+        result.closeErrors.push(message(error));
+      }
     }
   }
   result.durationMs = performance.now() - started;

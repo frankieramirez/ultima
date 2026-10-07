@@ -124,12 +124,13 @@ function docsVerdict(context: Context, kind: SourceKind, from: string, resolutio
   if (resolution.kind === 'external') return undefined;
   if (resolution.kind === 'unresolved') return unresolved(resolution, kind);
   if (resolution.path.startsWith('ultima-assets/')) {
-    if (DESIGN_ASSETS.some(({ asset, importer }) => asset === resolution.path && importer === from)) return undefined;
+    const named = DESIGN_ASSETS.find(({ asset }) => asset === resolution.path);
+    if (named?.importer === from) return undefined;
     return {
       ruleId: 'ULT-IMPORT-001',
       message: `${LABEL[kind]} imports the design asset ${resolution.path}, which no entry in the policy's design assets names for ${from}.`,
       repair: 'Import a design asset only where an owning decision names it, and add that asset and importer to DESIGN_ASSETS with its spec link.',
-      link: DESIGN_ASSETS[0]?.authority ?? BOUNDARIES,
+      link: named?.authority ?? BOUNDARIES,
     };
   }
   const target = context.scope.kindOf(resolution.path);
