@@ -357,6 +357,10 @@ Updating an existing consumer requires a visible review of its base token and th
 - `scripts/build-agent-guide.ts` adds a compact adoption section to `/llms.txt` from this contract, alongside the existing conventions and token names. The generated guide points agents to the install page for the full walkthrough.
 - `packages/cli/skill/ultima-design/SKILL.md` stays a workflow pointer: it tells agents to fetch `/llms.txt`, preserve an existing product brand, use Studio for a custom theme, and run the CLI and rendered checks. It does not copy token values or the full contract.
 
+## Complete-screen composition
+
+Decided on [Decide the complete-screen composition guide and recipe discovery](https://github.com/frankieramirez/ultima/issues/728). Status: accepted for implementation. The [composition guide contract](screen-composition.md) owns the bounded example inventory, source and discovery ownership, installed-consumer checks, and an empty-app implementation brief. Its proposed `/build-a-screen` and `/recipes` pages and consumer-copy projections remain to be built. Existing recipes retain their owning component pages and descriptors; existing blocks remain the installable complete screens.
+
 ## Palette
 
 Decided on The palette (ULT-10). Six scales, twelve steps each, a dark and a light value per step, generated in OKLCH and committed as hex. The reference generator is `packages/tokens/scripts/palette.py`; the v0 build ports it into the tokens package and must reproduce these values exactly.

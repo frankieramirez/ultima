@@ -66,6 +66,10 @@ A release checklist entry satisfied by a documented composition rather than by a
 
 An arrangement of components a docs page prints so a consumer can copy it, where no checklist entry is being satisfied. It has no registry item, no mapping to record, and no checks of its own, which is the whole difference between it and a **Recipe**: a recipe answers for an entry, a documented composition answers for a question the entry's own page leaves open. An avatar group is the first: negative inline spacing, a ring through the `style` slot, and an overflow count that is a plain `Avatar.Root`.
 
+## Screen example
+
+A copyable teaching example that explains how to compose a responsive consumer application from installed Ultima items and local StyleX. It has an executable consumer check under the [composition guide contract](docs/spec/screen-composition.md), while remaining outside the recipe checklist and installable catalogue. Existing recipes and blocks keep their own identities and source owners when a lesson uses them.
+
 ## Block
 
 A registry item that installs one working screen, built from catalogue components, as several files in its own folder under the consumer's components alias. The consumer renders it from their own route and owns it from then on. A block is not a component, so it has no barrel export, `style` slot or contract row, and it is not a **Recipe**, because it installs. It meets every contract of the components and recipes it uses, and it may carry the **Engine** of a recipe it follows. Dashboard 01 is the first.
