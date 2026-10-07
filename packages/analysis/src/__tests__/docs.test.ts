@@ -233,6 +233,12 @@ describe('the old scanner against ULT-DOCS-001', () => {
 
     // Resets remove a property rather than paint with it (`0`, `none`, `transparent`, `null`).
     assert.deepEqual(minus(counted(oldFound), counted(newFound)), [
+      'apps/docs/src/block-frame.tsx borderWidth',
+      'apps/docs/src/block-page.tsx backgroundColor',
+      'apps/docs/src/block-page.tsx backgroundColor',
+      'apps/docs/src/block-page.tsx borderRadius',
+      'apps/docs/src/block-page.tsx borderRadius',
+      'apps/docs/src/block-page.tsx borderWidth',
       'apps/docs/src/catalogue-preview.tsx borderRadius',
       'apps/docs/src/catalogue-preview.tsx borderWidth',
       'apps/docs/src/demo.tsx backgroundColor',

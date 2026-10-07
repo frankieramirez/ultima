@@ -4,7 +4,7 @@ import { useRender } from '@base-ui/react/use-render';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps, PlainProps } from '@ultima/ui/lib/component';
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
 const styles = stylex.create({
   root: {
@@ -67,9 +67,13 @@ type TableCaptionProps = PlainProps<'caption'>;
 
 function useOverflows(element: HTMLDivElement | null): boolean {
   const [overflows, setOverflows] = useState(false);
-  useEffect(() => {
+  // Measured in layout, before paint: a ResizeObserver reports only after the next layout, which
+  // would leave an overflowing region out of the tab order for its first frame.
+  useLayoutEffect(() => {
     if (!element) return;
-    const observer = new ResizeObserver(() => setOverflows(element.scrollWidth > element.clientWidth));
+    const measure = () => setOverflows(element.scrollWidth > element.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
     observer.observe(element);
     if (element.firstElementChild) observer.observe(element.firstElementChild);
     return () => observer.disconnect();

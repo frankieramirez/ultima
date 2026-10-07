@@ -623,7 +623,7 @@ test('the open drawer leads with the wordmark and its close control over a rule'
 });
 
 for (const theme of ['dark', 'light'] as const)
-  for (const width of [390, 768, 1280, 1440, 1920])
+  for (const width of [390, 768, 1024, 1280, 1440, 1920])
     test(`the chrome never scrolls sideways at ${width}px in ${theme}`, async () => {
       await page.viewport(width, 844);
       onTestFinished(() => page.viewport(1280, 720));

@@ -1,5 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { createRef } from 'react';
+import { flushSync } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
@@ -239,6 +241,22 @@ test('the scroll region is a tab stop only while its content overflows', async (
   expect(fitting.scrollWidth).toBe(fitting.clientWidth);
   await expect.element(screen.getByTestId('scroll')).toHaveAttribute('tabindex', '0');
   await expect.element(screen.getByTestId('fitting')).toHaveAttribute('tabindex', '-1');
+});
+
+test('an overflowing scroll region is a tab stop from its first commit, before any resize is observed', () => {
+  const host = document.body.appendChild(document.createElement('div'));
+  const root = createRoot(host);
+  try {
+    flushSync(() => root.render(<><ScrollingTable /><FittingTable /></>));
+    const scroll = host.querySelector<HTMLElement>('[data-testid="scroll"]')!;
+    const fitting = host.querySelector<HTMLElement>('[data-testid="fitting"]')!;
+    expect(scroll.scrollWidth).toBeGreaterThan(scroll.clientWidth);
+    expect(scroll.tabIndex).toBe(0);
+    expect(fitting.tabIndex).toBe(-1);
+  } finally {
+    root.unmount();
+    host.remove();
+  }
 });
 
 test('a focused scroll region scrolls with the arrow keys', async () => {

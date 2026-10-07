@@ -47,6 +47,8 @@ export const uiOptimizerInclude = [
   "@zag-js/react",
   "@zag-js/splitter",
   "axe-core",
+  "react-dom",
+  "react-dom/client",
   "vitest-browser-react"
 ];
 

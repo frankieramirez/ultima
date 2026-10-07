@@ -18,6 +18,8 @@ export type BlockEntry = {
   /** The catalogue number, derived from id order among blocks. */
   number: string;
   install: string;
+  /** How to render it and what to replace, from the descriptor. */
+  installDocs: string;
   /** The files installed under `components/<id>/`, the entry first. */
   files: readonly string[];
   /** The components it imports in number order, then the recipes it follows. */
@@ -34,6 +36,7 @@ export const blocks: readonly BlockEntry[] = [
     "description": "A contact manager: workspace navigation, a searchable and filterable contact list, and the selected contact's record with its activity, notes and details.",
     "number": "001",
     "install": "npx shadcn add @ultima/crm-01",
+    "installDocs": "Render it from a route of your own: import { Crm01 } from '@/components/crm-01/crm-01'. Search, the filter, the selection, the note composer and Log activity are wired; Add contact and the navigation links have no handler of their own, and Email and Call are mailto: and tel: links.",
     "files": [
       "crm-01.tsx",
       "app-sidebar.tsx",
@@ -119,6 +122,7 @@ export const blocks: readonly BlockEntry[] = [
     "description": "A store overview: workspace navigation, four key metrics, a revenue chart with its data table, top products and recent orders.",
     "number": "002",
     "install": "npx shadcn add @ultima/dashboard-01",
+    "installDocs": "Render it from a route of your own: import { Dashboard01 } from '@/components/dashboard-01/dashboard-01'. It installs d3-scale and d3-array for the revenue chart. Replace the sample data in each region file with your own; Export, the workspace menu items and the navigation links have no handler of their own.",
     "files": [
       "dashboard-01.tsx",
       "app-sidebar.tsx",
@@ -229,6 +233,7 @@ export const blocks: readonly BlockEntry[] = [
     "description": "A Notifications settings page: a settings sidebar beside one form of switches, push choices and quiet hours, with an unsaved-changes bar.",
     "number": "003",
     "install": "npx shadcn add @ultima/settings-01",
+    "installDocs": "Render it from a route of your own: import { Settings01 } from '@/components/settings-01/settings-01'. Saving only moves the current values into the block's saved state; persist them from the submit handler in notifications-form.tsx. The sidebar links have no handler of their own.",
     "files": [
       "settings-01.tsx",
       "icons.tsx",
@@ -305,6 +310,7 @@ export const blocks: readonly BlockEntry[] = [
     "description": "A split sign-in screen: a brand panel with a customer story beside an email and password form.",
     "number": "004",
     "install": "npx shadcn add @ultima/sign-in-01",
+    "installDocs": "Render it from a route of your own: import { SignIn01 } from '@/components/sign-in-01/sign-in-01'. Replace the signIn stub in sign-in-form.tsx with your authentication call; the GitHub and SSO buttons and the links have no handler of their own.",
     "files": [
       "sign-in-01.tsx",
       "brand-panel.tsx",

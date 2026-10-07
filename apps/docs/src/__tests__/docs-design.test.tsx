@@ -164,7 +164,7 @@ test('the chrome sits above scrolled tab labels', async () => {
       group.querySelectorAll('a'),
       (link) => link.textContent?.trim() ?? '',
     );
-    expect(labels.every((label) => /^--[a-z]+(?:-[a-z]+)*$/.test(label))).toBe(
+    expect(labels.every((label) => /^--[a-z0-9]+(?:-[a-z0-9]+)*$/.test(label))).toBe(
       true,
     );
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b)));

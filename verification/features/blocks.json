@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "blocks",
+  "title": "Block pages and the Blocks index",
+  "summary": "The /blocks index with a lazy, inert thumbnail per block, each block's page with its framed preview, desktop and narrow toggle, install command, file tree, sources and Built from, and the bare /blocks/<id>/preview route the frames load, in Neutral.",
+  "knowledge": "proposed",
+  "aliases": ["blocks", "block page", "block preview", "thumbnail", "iframe", "framed preview", "narrow toggle", "built from", "file tree", "install command"],
+  "contract": "docs/spec/ultima.md#docs-routes",
+  "items": [],
+  "sourceRoots": [
+    "apps/docs/src/routes/blocks.tsx",
+    "apps/docs/src/block-page.tsx",
+    "apps/docs/src/block-frame.tsx",
+    "apps/docs/src/generated/blocks.ts"
+  ],
+  "extraDependencies": [],
+  "supporting": [
+    {
+      "path": "apps/docs/src/__tests__/blocks.test.tsx",
+      "reason": "Mounts the real route tree in a browser: every block's card and page, the frame's scale and narrow toggle, Neutral on a preview's portals in both modes, and axe on /blocks and /blocks/sign-in-01 in both modes at both widths."
+    }
+  ]
+}
