@@ -262,7 +262,23 @@ Success, warning and danger keep the current green, amber and red role assignmen
 
 Both Neutral and Ultima must pass every declared token pairing in dark and light before shipping. Dark remains the default design target, with the existing system preference and explicit `data-theme` behavior. Neutral changes palette choice, not mode selection. Focus visibility, interaction states and reduced motion remain required in both modes.
 
-Ultima's docs and Studio editor chrome explicitly apply their own theme. They cannot obtain their brand by making consumer token exports branded. Studio preview boundaries and their portal containers follow the active draft. New consumer-facing base tokens, CSS/JSON exports, registry token dependencies and element defaults must agree on Neutral when the change ships. Demos that choose another theme identify it explicitly.
+Ultima's docs and Studio editor chrome explicitly apply their own theme, [`site`](#the-docs-site-theme). They cannot obtain their brand by making consumer token exports branded. Studio preview boundaries and their portal containers follow the active draft. New consumer-facing base tokens, CSS/JSON exports, registry token dependencies and element defaults must agree on Neutral when the change ships. Demos that choose another theme identify it explicitly.
+
+### The docs site theme
+
+Decided on [Decide the docs site's chrome theme](https://github.com/frankieramirez/ultima/issues/642). Status: accepted for implementation. The docs chrome still applies `darkTheme` and `lightTheme` today.
+
+The docs chrome wears **`site`**: Neutral's surfaces, text, borders, accent and status, with Ultima's mana on action and highlight. Its definition is a draft, Neutral preset revision 1 with the mana seed of Ultima preset revision 1, resolved by recipe 2. Taking the seed rather than the resolved values keeps the contrast tokens on Neutral's neutral steps and needs no brand pin. The draft's generated dark and light values are the only source of `site` values; none are hand-written.
+
+`site` is docs-only. The docs app owns the definition and applies its generated dark and light themes on `<html>` through the site's existing color-mode control, as it applies `darkTheme` and `lightTheme` today. It is not a preset: it stays out of the Studio picker and `THEME_PRESETS`, `tokens.css`, `tokens.json`, the registry and element defaults. A consumer reaches mana by selecting Ultima or building a custom draft, never by inheriting the docs' theme.
+
+`site` follows Neutral's accent by reference. When Neutral's accent changes, as [Decide Neutral's accent shade](https://github.com/frankieramirez/ultima/issues/643) may change it, `site` changes with it and is re-gated. Where the redesign's frames paint a value that differs from the generated one, such as the slightly tinted light text `#181a24` against Neutral's `#1b1b1b`, the generated value wins.
+
+`site` passes all 49 declared pairings in each mode at full precision, the bar a shipped preset meets, with no acknowledgment available. The docs test suite resolves the draft and runs the same `gate()` in both modes, and fails when the generated themes are stale against the recipe. With today's Neutral accent every pairing passes; the lowest mana pairing is `highlight-contrast` on `highlight` at 4.57 in light.
+
+Inside the chrome, every surface that shows components as a consumer gets them applies an explicit theme boundary that is also its portal container. Component demos, block previews and anatomy views apply Neutral. A Studio preview pane applies the active draft. The Studio header, rail, toolbar, footer and dialogs are chrome and wear `site` in the site's current mode.
+
+The Ultima preset has no special role on the site. It is an explicit opt-in preset in Studio and the preset docs, and the source of `site`'s mana seed.
 
 ### Existing consumers and saved drafts
 
@@ -279,7 +295,7 @@ An empty Studio session starts with Neutral. Opening a valid saved draft takes p
 - A new Vite or Next consumer installs Button without choosing a theme. Its accent button and focus ring are neutral, and a danger action keeps the danger role.
 - A product with an existing green identity adopts that identity through a custom theme. An agent preserves the supplied brand and uses Neutral only when no project theme has been chosen; selecting Ultima requires an explicit choice.
 - A user opens a pre-change indigo/cyan draft or a customized v1 share link. Preview and regenerated exports retain the old resolved values. A separate fresh session begins with Neutral.
-- Ultima's docs use the Ultima preset while a Studio preview shows Neutral. A portalled control in the preview receives Neutral from that preview's theme boundary.
+- Ultima's docs chrome uses `site` while a component demo applies Neutral and a Studio preview applies the active draft. A portalled control in a demo or a preview receives that boundary's theme, never `site`.
 
 Implementation must capture pre-change stock and customized v1 fixtures, including per-mode overrides and omitted values that use resolver defaults. Compare every resolved token before and after import, autosave restore, shared-link restore and export. Reject unknown recipe identities. Verify Neutral through both the Python reference generator and runtime recipe, then prove the pairing gate, compiled StyleX/CSS parity and rendered focus/interaction behavior in both modes. These are required future checks, not evidence produced by this decision.
 
