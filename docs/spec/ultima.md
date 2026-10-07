@@ -2051,7 +2051,132 @@ The component rule stands: no test asserts a color value.
 
 ### Per-block notes
 
-Each block's regions, landmarks, data and wired behavior are written here before its build ticket opens, one subsection per block. The four notes are pending.
+Each block's regions, landmarks, data and wired behavior are written here before its build ticket opens, one subsection per block. Decided on [Write the contracts for the four blocks](https://github.com/frankieramirez/ultima/issues/653). The notes were written against the thumbnails in `ultima-assets/blocks/`, and where a note and a frame disagree, the note wins and the frame is redrawn.
+
+**Rules every block follows.**
+
+- **Wired and unwired controls.** A control whose effect stays on the screen is wired by the block, tested under proof item 4, and listed in its note. A control whose effect leaves the screen (export, email, a call, OAuth, switching workspace, a page that doesn't exist) is still the real catalogue control, but the block gives it no handler. That handler is the consumer's to write. Navigation links take hash `href`s such as `#orders`, which stay inside the preview iframe and are obvious to replace. Email and phone values are `mailto:` and `tel:` links. A block never fakes an effect, such as a toast that pretends an export ran.
+- **Glyphs.** [Iconography](#iconography) applies with one change. A block has no single component file, so its glyphs live as inline SVG in a private `icons.tsx` inside the block's folder, drawn on the same 24×24 geometry. No block declares an icon package. The placeholder logo, a filled rounded square, is one of those glyphs. Every glyph next to visible text is `aria-hidden`.
+- **The breakpoint.** A block's narrow layout switches at Sidebar's `48rem`. A block with a Sidebar reads it through `useSidebar().isMobile` in JavaScript. A file whose CSS needs the same query declares `const DESKTOP = '@media (min-width: 48rem)'` at module level, the same string Sidebar uses, under the Principles exception for media conditions. Its narrow layout is the default style, and the desktop layout sits under `DESKTOP`.
+- **Sample data.** Data lives in the file that renders it. Data shared between regions lives in the entry file, which owns the state and passes it down. Names, companies and amounts are the frames' own. Counts shown to the reader come from the sample, never from a made-up total, so filtering never contradicts a number on screen.
+- **Avatars.** An `Avatar` beside its person's visible name is `aria-hidden`, so the initials aren't read twice.
+- **Headings and landmarks.** Each block has exactly one `h1` and one `main`. A block never uses `aside` inside `main`, because axe's `landmark-complementary-is-top-level` rule rejects it. Regions inside `main` are `section`s named by their heading.
+
+#### CRM 01
+
+Catalogue number 001. A contact manager for the workspace "Halcyon": navigation, a filterable contact list, and the selected contact's record.
+
+| File | Region |
+| --- | --- |
+| `crm-01.tsx` | `Crm01`: `Sidebar.Root`, the two-pane layout, the contacts, and the selection, filter and search state |
+| `app-sidebar.tsx` | The workspace navigation |
+| `contact-list.tsx` | The list pane: heading, count, add button, search, filter and rows |
+| `contact-header.tsx` | The record's identity row and its actions |
+| `contact-activity.tsx` | The note composer, the timeline, and the Notes, Deals and Files panels |
+| `contact-details.tsx` | The Details card |
+| `icons.tsx` | Glyphs |
+
+**Landmarks.** A `nav` from `Sidebar.Panel` named "Workspace", then `main`. Inside `main`, the list pane is a `section` whose `h1` reads "Contacts", followed by the count. The record is a `section` named by its `h2`, the contact's name. The Details card's title is an `h3`.
+
+**Components.** Sidebar holds Inbox (`Badge` 8), Contacts (current), Companies, Deals (`Badge` 24), Tasks and Reports. A link with a count is named by its text and count, for example "Deals, 24", through `aria-label`. The add button is an icon `Button` named "Add contact" and stays unwired. Search is an `InputGroup` with a search glyph and a `type="search"` `Input` named "Search contacts". The filter chips are a single-select `ToggleGroup` named "Filter contacts" with All, Leads, Customers and Churned. The rows are a vertical single-select `ToggleGroup` named "Contacts". Each item holds an `Avatar`, the name, the company, the last-touch time and a status `Badge` (Customer success, Lead neutral, At risk warning, Churned danger). Each item is named by the contact's name through `aria-labelledby`, with the company and status as its description. The record header has an `Avatar`, the name, a status `Badge` and the title and company line. Email and Call are outline `Button`s rendered as `mailto:` and `tel:` links, and Log activity is a solid `Button`. The record body is underline `Tabs`: Activity, Deals, Notes and Files. The composer is a `Form` holding an `InputGroup` named "Add a note about <first name>", with one trailing icon `Button` named "Add note". The frame's mention and attach buttons are dropped. The timeline is an `ol` named "Activity". Each entry has a decorative glyph, a title, a body and a meta line, and the rail between glyphs is a vertical `Separator`. Deals lists the contact's deals as rows in the [Item](#item) arrangement inside a `Card`. Notes lists the contact's notes newest first. Files is an `Empty` reading "No files yet". Details is a `Card` titled "Details" holding a `dl` of Email, Phone, Owner (an `Avatar` and name), Deal value and Tags (neutral `Badge`s), with `Separator`s between the rows.
+
+**Data.** Seven contacts from the frame. Mara Lindqvist carries the frame's four activity entries, the Fjord renewal deal and three tags. The other six each carry one activity entry and one deal at most.
+
+**Wired behavior (proof item 4).**
+
+1. Search filters the rows by name or company, case-insensitive. The filter narrows by status, and the two combine. The count shows how many rows match. When nothing matches, the list shows an `Empty` reading "No contacts match".
+2. Selecting a row shows that contact's record. When the filter or search hides the selected contact, the record stays on screen. In both single-select `ToggleGroup`s, pressing the pressed item again does nothing, so one value is always selected.
+3. Submitting the composer with text adds a note entry at the top of the timeline and the Notes panel, attributed to "Ada Kim" at "Just now", and clears the field. Submitting it empty does nothing.
+4. Log activity moves focus to the composer and selects the Activity tab.
+
+**Narrow width.** `Sidebar` becomes its mobile menu, and the list pane's heading row gains its `Sidebar.Trigger`. The list and the record don't share the screen. Selecting a row shows the record with a ghost `Button` named "Back to contacts" above it, and focus moves to the record's `h2`. Back returns to the list and focuses the selected row. At desktop width the Details card sits beside the activity, and it wraps below once the pane is too narrow. No breakpoint is involved, because the wrap comes from flex layout.
+
+**Frames to redraw.** `P4hdt`: the composer has one "Add note" button, the count reads 7, and the list header has the Sidebar trigger only at narrow width, so the desktop frame doesn't change there.
+
+#### Dashboard 01
+
+Catalogue number 002. A store overview for the workspace "Northwind".
+
+| File | Region |
+| --- | --- |
+| `dashboard-01.tsx` | `Dashboard01`: `Sidebar.Root`, the content layout, and the range and order-search state |
+| `app-sidebar.tsx` | The workspace switcher, the navigation and the signed-in user |
+| `page-header.tsx` | The top bar: trigger, title, search, range and Export |
+| `stat-row.tsx` | The four stats |
+| `revenue-chart.tsx` | The revenue chart, its period control and its data disclosure |
+| `top-products.tsx` | The top-products list |
+| `recent-orders.tsx` | The recent-orders table |
+| `icons.tsx` | Glyphs |
+
+**Landmarks.** A `nav` from `Sidebar.Panel` named "Workspace", then `main`. The top bar is a `header` inside `main`, so it is not a banner, and it holds the `h1` "Overview". The stat row is a `section` named "Key metrics" through `aria-label`. Revenue, Top products and Recent orders are `section`s, each named by its `Card.Title` rendered as an `h2`.
+
+**Components.** The workspace switcher is a `DropdownMenu` whose trigger shows the logo, "Northwind" and "Pro plan". It lists Northwind as the checked radio item and a "Create workspace" item, both unwired. The navigation lists Overview (current), Orders (`Badge` 12, named "Orders, 12"), Products, Customers, Analytics and Campaigns, then a second list with Settings and Help. The signed-in user's `Avatar`, name and email are static text, not a control. The top bar has `Sidebar.Trigger` at both widths, so desktop gets collapse for free. Search is an `InputGroup` with a search glyph and a `type="search"` `Input` named "Search orders". The range is a `Select` named "Date range", with a calendar glyph, offering Last 7 days, Last 30 days (the default) and Last 90 days. Export is an outline `Button`, unwired. Each stat is a `Card` holding a `Stat`. Its label keeps Stat's uppercase style, and the frame's mixed case is redrawn. The delta is a subtle `Badge` toned by meaning, not by sign: success when the change is good, warning when it is bad, so a rising refund rate is warning. The "vs. previous N days" caption follows the range. The chart follows [Chart](#chart) as written: a `scaleBand` and `scaleLinear` bar chart, `aria-hidden`, every mark in `--ult-color-accent`, with no highlighted last bar. The period control is a single-select `ToggleGroup` named "Chart period", offering Day, Week and Month. The frame's Tabs label is wrong, because nothing switches panels. Below the chart a `Collapsible` with a ghost `Button` trigger reads "Show data" when closed and "Hide data" when open. Its panel holds a `Table` with the caption "Revenue by <period>" and Period and Revenue columns. Top products is a list of five `Meter`s, one per product, each with `Meter.Label` set to the product, `max` 10,000, and `Meter.Value` formatted as whole US dollars. Recent orders is a `Table` with Order (mono type), Customer, Status (`Badge`: Paid success, Pending warning, Refunded danger), Total and Date columns, plus a "View all" link to `#orders`.
+
+**Data.** For each range, four stats and five products. For the chart, 14 days, 12 weeks and 12 months of revenue. For recent orders, eight orders, #3014 to #3021, newest first, the first four from the frame. The Last 30 days values are the frame's.
+
+**Wired behavior (proof item 4).**
+
+1. The range `Select` changes the four stat values, their deltas and captions, and the five products. It doesn't change the chart or the orders.
+2. The period `ToggleGroup` changes the chart's window and its subtitle ("Daily, last 14 days", "Weekly, last 12 weeks", "Monthly, last 12 months"), and changes the disclosed `Table` to the same rows. Pressing the pressed item again does nothing.
+3. "Show data" opens and closes the `Table`, and its label follows the state.
+4. Search filters the orders by order number or customer name, case-insensitive. When nothing matches, a single row spanning every column reads "No orders match".
+
+**Narrow width.** `Sidebar` becomes its mobile menu. The top bar wraps into two rows: the trigger and title above, then search at full width with the range and Export below. The stat row becomes a two-by-two grid. The chart and Top products stack, and the orders `Table` scrolls inline in its own container.
+
+**Frames to redraw.** `SzoSN`, `vyn3r` and `WAxrI`: uppercase stat labels, uniform accent bars, the "Show data" disclosure under the chart, the `Sidebar.Trigger` in the top bar, the period control labelled Toggle Group, search labelled Input Group, the range labelled Select, and the catalogue number 002.
+
+#### Settings 01
+
+Catalogue number 003. The Notifications page of an account's settings.
+
+| File | Region |
+| --- | --- |
+| `settings-01.tsx` | `Settings01`: `Sidebar.Root`, the layout, `Toast.Provider`, and the saved and current form values |
+| `settings-sidebar.tsx` | "Back to app", the "Settings" title and the section navigation |
+| `notifications-form.tsx` | The page heading, the three fieldsets and the unsaved-changes bar |
+| `icons.tsx` | Glyphs |
+
+**Landmarks.** A `nav` from `Sidebar.Panel` named "Settings". It holds a "Back to app" link to `#app`, the "Settings" text, and the links Profile, Account, Notifications (current), Billing, Team, Security and API keys. Then `main`, with the `h1` "Notifications" and its description. Each group is a `Fieldset` named by its `Fieldset.Legend`, with the group's description joined by `aria-describedby`.
+
+**Components.** The whole page is one Base UI `Form`. Email is a `Fieldset` whose controls sit in a `Card`. Each row is a `Field` with a `Switch`, where `Field.Label` is the row title and `Field.Description` its line: Product updates, Weekly digest and Mentions start on, Marketing starts off. Push is a `RadioGroup` in a `Fieldset` with Everything, Mentions and replies (the default) and Nothing, each with a description. Quiet hours is a `Fieldset` with three `Field`s, each a `NativeSelect`: From and To list every half hour from 00:00 to 23:30 (defaults 22:00 and 07:30), and Time zone lists a short sample of zones (default Europe/Oslo). Discard is an outline `Button`, and Save changes is a solid `Button` of `type="submit"`.
+
+**Wired behavior (proof item 4).**
+
+1. The form keeps saved values and current values. Any difference makes the form dirty, and changing a control back to its saved value makes it clean again.
+2. The bar at the foot of `main` always holds a `role="status"` `aria-atomic="true"` region, per [Live regions](#live-regions). While the form is dirty, the region reads "You have unsaved changes" and the bar shows Discard and Save changes. While it is clean, the region is empty and the buttons are not rendered.
+3. Discard puts back the saved values.
+4. Submitting makes the current values the saved ones, which empties the region, and shows a `Toast` titled "Notification settings saved".
+
+**Narrow width.** `Sidebar` becomes its mobile menu. `main` gains a top row with `Sidebar.Trigger` and the text "Settings". Each fieldset's legend and description sit above its controls, not beside them. The bar stays pinned to the bottom of the viewport at full width.
+
+**Frames to redraw.** None at desktop width. The time and time-zone controls already read as `NativeSelect`.
+
+#### Sign-in 01
+
+Catalogue number 004. A split sign-in screen with no Sidebar.
+
+| File | Region |
+| --- | --- |
+| `sign-in-01.tsx` | `SignIn01`: the two-column layout |
+| `brand-panel.tsx` | The logo, the name and the testimonial |
+| `sign-in-form.tsx` | The heading, the form and the `signIn` stub |
+| `icons.tsx` | Glyphs |
+
+**Landmarks.** An `aside` named "Customer story" at the top level, then `main` with the `h1` "Sign in to Northwind". The DOM order matches the visual order, and the `aside` holds nothing focusable. The testimonial is a `figure` with a `blockquote` and a `figcaption` holding an `Avatar`, the name and the role.
+
+**Components.** The form is a Base UI `Form`. Email is a `Field` with an `Input` of `type="email"`, `required` and `autoComplete="username"`. Password is a `Field` with an `Input` of `type="password"`, `required` and `autoComplete="current-password"`. A "Forgot password?" link to `#forgot-password` sits beside the label, outside the label element. "Keep me signed in" is a `Checkbox` in a `Field`. Sign in is a full-width solid `Button` of `type="submit"`. "or" sits between two horizontal `Separator`s. GitHub and SSO are outline `Button`s with glyphs and stay unwired. "No account? Create one" links to `#sign-up`. Between the columns is a vertical `Separator`. The frame's dot texture is dropped, because painting a surface isn't a block's job.
+
+**Wired behavior (proof item 4).**
+
+1. Each rule is declared once, as a native constraint. Submitting the form empty shows a `Field.Error` on Email and on Password and moves focus to Email. That move comes from `Form`, so this item asserts the block's wiring, not the primitive. A malformed email shows Email's type error.
+2. A valid submit calls `signIn({ email, password, remember })` from `sign-in-form.tsx`. That stub resolves to `{}` and is the consumer's to replace. While the call is pending, Sign in is disabled and reads "Signing in". When it settles, the button returns to normal.
+3. If `signIn` resolves with `{ errors }`, the form passes them to `Form`'s `errors` prop, so a backend's field errors show in the matching `Field.Error`. The stub never returns errors, so the test injects a rejected credential by mocking the stub.
+
+**Narrow width.** The `aside` shows only the logo and name, as a row above the form, and the testimonial is hidden with `display: none` by default and shown under `DESKTOP`. The vertical `Separator` is hidden too. The form spans the viewport inside the page gutter.
+
+**Frames to redraw.** `qtcCM`: the dot texture is removed, and the column divider is a `Separator`.
+
+**Narrow frames.** None of the four blocks needs a narrow frame before its build. The narrow layouts above are the contract, and proof items 1 to 3 at 390×844, together with the block page's narrow toggle, are what check them.
 
 ## Mana report adoption
 
