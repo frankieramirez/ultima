@@ -1,10 +1,9 @@
-import { docsStyles } from './docs-style';
 import { breakpoints } from './breakpoints.stylex';
-import { CaretDownIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
-import type { PairingResult } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Collapsible } from '@ultima/ui';
+import { Button } from '@ultima/ui';
+
+import type { DraftChecks } from './theme-studio-checks';
 
 const styles = stylex.create({
   touch: { minBlockSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null } },
@@ -31,9 +30,6 @@ const styles = stylex.create({
   },
   summaryFailing: {
     color: color['--ult-color-danger-text'],
-  },
-  icon: {
-    paddingInline: space['--ult-space-4'],
   },
   list: {
     display: 'flex',
@@ -80,50 +76,39 @@ function shortName(token: string): string {
   return token.replace(/^--ult-color-/, '');
 }
 
-export function ThemeStudioValidation({ results, expanded = false, onEdit }: {
-  results: PairingResult[]; expanded?: boolean; onEdit?: (token: string) => void;
-}) {
-  const failing = results.filter((result) => !result.dark.pass || !result.light.pass).length;
-  const ordered = [...results].sort((a, b) => Number(!b.dark.pass || !b.light.pass) - Number(!a.dark.pass || !a.light.pass));
+export function ThemeStudioValidation({ checks, onEdit }: { checks: DraftChecks; onEdit: (token: string) => void }) {
+  const failing = checks.failures.length;
+  const ordered = [...checks.failures, ...checks.results.filter((result) => !checks.failures.includes(result))];
 
   return (
-    <Collapsible.Root open={expanded ? true : undefined}>
-      <section aria-label="Token contrast" {...stylex.props(styles.root)}>
-        <header {...stylex.props(styles.header)}>
-          <h2 {...stylex.props(styles.title)}>Token contrast</h2>
-          <span {...stylex.props(styles.summary, failing > 0 && styles.summaryFailing)}>
-            {failing === 0 ? 'All pairings pass' : `${failing} pairing${failing === 1 ? '' : 's'} failing`}
-          </span>
-          {!expanded ? <Collapsible.Trigger
-            render={<Button aria-label="Pairing results" size="sm" style={[docsStyles.square, styles.icon]} variant="ghost" />}
-          >
-            <CaretDownIcon aria-hidden />
-          </Collapsible.Trigger> : null}
-        </header>
-        <Collapsible.Panel>
-          <ul {...stylex.props(styles.list)}>
-            {ordered.map((result) => (
-              <li key={`${result.foreground}|${result.background}`} {...stylex.props(styles.pair)}>
-                <span {...stylex.props(styles.pairName)}>
-                  {shortName(result.foreground)} on {shortName(result.background)} · min {result.minimum}:1
+    <section aria-label="Token contrast" {...stylex.props(styles.root)}>
+      <header {...stylex.props(styles.header)}>
+        <h2 {...stylex.props(styles.title)}>Token contrast</h2>
+        <span {...stylex.props(styles.summary, failing > 0 && styles.summaryFailing)}>
+          {failing === 0 ? 'All pairings pass' : `${failing} pairing${failing === 1 ? '' : 's'} failing`}
+        </span>
+      </header>
+      <ul {...stylex.props(styles.list)}>
+        {ordered.map((result) => (
+          <li key={`${result.foreground}|${result.background}`} {...stylex.props(styles.pair)}>
+            <span {...stylex.props(styles.pairName)}>
+              {shortName(result.foreground)} on {shortName(result.background)} · min {result.minimum}:1
+            </span>
+            {checks.failures.includes(result) ? <Button size="sm" variant="outline" style={styles.touch} onClick={() => onEdit(result.foreground)}>Edit {shortName(result.foreground)}</Button> : null}
+            <span {...stylex.props(styles.pairModes)}>
+              {(['dark', 'light'] as const).map((mode) => (
+                <span
+                  key={mode}
+                  {...stylex.props(styles.modeResult, !result[mode].pass && styles.modeFailing)}
+                >
+                  {mode === 'dark' ? 'Dark' : 'Light'} {formatRatio(result[mode].ratio)}:1{' '}
+                  {result[mode].pass ? 'pass' : 'fail'}
                 </span>
-                {onEdit && (!result.dark.pass || !result.light.pass) ? <Button size="sm" variant="outline" style={styles.touch} onClick={() => onEdit(result.foreground)}>Edit {shortName(result.foreground)}</Button> : null}
-                <span {...stylex.props(styles.pairModes)}>
-                  {(['dark', 'light'] as const).map((mode) => (
-                    <span
-                      key={mode}
-                      {...stylex.props(styles.modeResult, !result[mode].pass && styles.modeFailing)}
-                    >
-                      {mode === 'dark' ? 'Dark' : 'Light'} {formatRatio(result[mode].ratio)}:1{' '}
-                      {result[mode].pass ? 'pass' : 'fail'}
-                    </span>
-                  ))}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Collapsible.Panel>
-      </section>
-    </Collapsible.Root>
+              ))}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
