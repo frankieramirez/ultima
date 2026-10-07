@@ -422,6 +422,10 @@ The eight items every component build ticket ships as its test file: every combi
 
 The theme studio's color input for one palette scale: a hue and a saturation factor on the recipe's chroma peak, settable from a picked color or as sliders. One set of seeds generates both color modes, and the stock palette's pinned brand values do not carry into a generated theme.
 
+## Accent fill
+
+The theme studio's choice of where the accent roles get their color: `hue` reads the accent scale, and `ink` reads the neutral scale, so the accent fill is the text color, as shadcn's primary is. Ink adds two generated hover and active steps beside neutral step 12, and the focus ring stays on the accent scale. Neutral revision 2 uses ink.
+
 ## Token override
 
 A manual semantic-token value set in the theme studio. It pins the token's resolved value in one color mode, detaches it from derivation, and survives regeneration and Shuffle until reset. Editing both modes at once is the default; a token can be unlinked per mode.

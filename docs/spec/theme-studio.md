@@ -16,12 +16,32 @@ Ship four complete presets. Their IDs are stable and lowercase; names are displa
 
 | ID and label | Neutral, accent, action scale seeds as `(hue, saturation)` | Typography | Density, shape, elevation, motion |
 | --- | --- | --- | --- |
-| `neutral` · Neutral | Achromatic mithril, arcane, and mana (`saturation: 0`); generator chooses contrast-safe lightness | Existing Ultima font stacks, 16px base, stock scale, default leading/tracking | `1`, `default`, `1`, `1` |
+| `neutral` · Neutral | Achromatic mithril, arcane, and mana (`saturation: 0`); generator chooses contrast-safe lightness. Revision 2 adds the Ink accent fill (see [Neutral revision 2](#neutral-revision-2)) | Existing Ultima font stacks, 16px base, stock scale, default leading/tracking | `1`, `default`, `1`, `1` |
 | `ultima` · Ultima | Existing stock mithril `(276, 1)`, arcane `(275, 1)`, mana `(204, 1)`, including its legacy brand pins | Existing Ultima font stacks, 16px base, stock scale, default leading/tracking | `1`, `default`, `1`, `1` |
 | `grove` · Grove | Mithril `(145, 0.15)`, arcane `(140, 0.8)`, mana `(75, 0.75)` | `Georgia, 'Times New Roman', Times, serif`; system mono stack; 16px base, `1.2` scale, loose leading, default tracking | `1.25`, `round`, `0.5`, `1.5` |
 | `cinder` · Cinder | Mithril `(32, 0.15)`, arcane `(28, 0.85)`, mana `(45, 0.75)` | `'Segoe UI', 'Helvetica Neue', Arial, sans-serif`; system mono stack; 16px base, `1.125` scale, compact leading/tracking | `0.75`, `sharp`, `1.5`, `0.6` |
 
 The system mono stack is `ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`. Neutral is the fresh consumer and empty-session default; Ultima remains an explicit choice for the original indigo/cyan appearance. Grove and Cinder provide green/earthy and warm/copper directions with different typography, density, shape, elevation, and motion. Action and highlight continue to share mana, and status colors keep their semantic meaning. These are full themes, not color swatches or suggested combinations. The current recipe passes all declared token pairings for Grove and Cinder with these seeds; Recipe 2 resolves Neutral without brand pins; all four revision-1 presets pass the 49-pair gate in both modes. Recipe 1 remains frozen for legacy v1 drafts.
+
+### Neutral revision 2
+
+Decided on [Decide Neutral's accent shade](https://github.com/frankieramirez/ultima/issues/643). Status: decided, not yet implemented. Neutral revision 2 is revision 1 with the accent fill set to Ink, so its accent is the text color as shadcn's primary is. Every other field stays the same as revision 1.
+
+**Accent fill** is a new guided Color field with two values: `hue` reads the accent roles from the arcane scale as before, and `ink` reads them from the mithril scale. Any preset or custom draft can set it. Ink maps accent and accent-text to mithril step 12, accent-subtle to step 3, and accent-border to step 7. Hover and active are two generated mithril steps at step 12's lightness offset by −0.06 and −0.11 in dark mode and +0.08 and +0.14 in light mode, at mithril's hue and step-12 chroma. Accent-contrast is chosen by the generator as for every role. The focus ring stays on arcane step 9 under both fills. The field needs draft document version 3; version-2 drafts decode as `hue`. The Ink steps are reachable only from a version-3 draft with `ink`, so Recipe 2's output for every existing draft is unchanged and no recipe revision is added. Color Shuffle rerolls scale seeds only and never changes the accent fill.
+
+Generated Neutral revision 2 values, all 49 pairings passing in each mode (weakest accent pairing 10.68):
+
+| Token | Dark | Light |
+| --- | --- | --- |
+| `accent` | `#e8e8e8` | `#1b1b1b` |
+| `accent-hover` | `#d4d4d4` | `#2e2e2e` |
+| `accent-active` | `#c4c4c4` | `#3d3d3d` |
+| `accent-subtle` | `#1e1e1e` | `#f2f2f2` |
+| `accent-border` | `#4d4d4d` | `#b7b7b7` |
+| `accent-text` | `#e8e8e8` | `#1b1b1b` |
+| `accent-contrast` | `#0e0e0e` | `#fdfdfd` |
+
+Revision 1 stays resolvable with its grey accent (`#9e9e9e` dark, `#717171` light). Fresh sessions and the preset picker select revision 2. Saved, shared, downloaded, and registry-item revision-1 drafts keep their values and Reset to revision 1; moving one to revision 2 is an explicit selection recorded as a history entry. The registry's default theme file moves to revision 2 when regenerated. The redesign frames draw Neutral's accent with Ultima's tinted mithril 12 (`#e7e8e9`, `#181a24`); the build uses the generated values above.
 
 ### Identity, selection, and recovery
 
@@ -69,7 +89,7 @@ Six guided groups: color, typography, density, shape, elevation, and motion. Eve
 
 A token stays derived until it is overridden. The step convention derives role states, subtle backgrounds, borders, and text variants from the generated scales. The generator picks each `-contrast` on-color by its mithril1-or-mithril12 rule, `border-focus` follows the accent scale's step 9, and `surface-overlay` follows `surface-raised` at its fixed per-mode alpha and is not directly editable. An override pins the resolved value in that mode and survives regeneration and Shuffle until reset. Each token row shows its overridden state, and each group resets as a whole.
 
-Color. Each of the six scales takes a scale seed: a hue from 0 to 359 and a saturation factor from 0 to 150 percent of the recipe's per-mode chroma peak, set from a picked sRGB color or edited as sliders. Lightness tables and per-step chroma fractions stay recipe internals, and the two brand pins apply to the stock palette only. The action and highlight roles share the mana scale, so one seed moves both; they diverge only through token overrides. Studio controls label each scale by role (Neutral, Accent, Action, Success, Warning, Danger) while the palette names are unchanged (amended on [#234](https://github.com/frankieramirez/ultima/issues/234)). Exact color overrides accept opaque sRGB values only, since alpha compositing has no contract yet.
+Color. Each of the six scales takes a scale seed: a hue from 0 to 359 and a saturation factor from 0 to 150 percent of the recipe's per-mode chroma peak, set from a picked sRGB color or edited as sliders. Lightness tables and per-step chroma fractions stay recipe internals, and the two brand pins apply to the stock palette only. The action and highlight roles share the mana scale, so one seed moves both; they diverge only through token overrides. Studio controls label each scale by role (Neutral, Accent, Action, Success, Warning, Danger) while the palette names are unchanged (amended on [#234](https://github.com/frankieramirez/ultima/issues/234)). Exact color overrides accept opaque sRGB values only, since alpha compositing has no contract yet. The accent fill (`hue` or `ink`) chooses whether the accent roles read arcane or the neutral scale ([Neutral revision 2](#neutral-revision-2)).
 
 Typography. Family controls cover `sans` and `mono` through preset stacks and a custom stack field; a theme never loads a face, so a custom stack declares names only. Base size sets `text` step 5 within 14 to 18 px. A scale preset is either Ultima's stock proportions or a geometric ratio of 1.125, 1.2, 1.25, or 1.333 applied around the base; derived steps round to 0.25 px and ship in rem. Leading and tracking offer compact, default, and loose presets that remap the existing `leading-*` and `tracking-*` tokens. Weights have no guided control and remain reachable as overrides.
 
