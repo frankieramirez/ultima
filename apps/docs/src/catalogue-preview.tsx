@@ -50,6 +50,7 @@ import ToastPreview from './demos/toast/stacked';
 import TogglePreview from './demos/toggle/basic';
 import ToggleGroupPreview from './demos/toggle-group/basic';
 import TooltipPreview from './demos/tooltip/button';
+import { NeutralBoundary } from './neutral-boundary';
 
 const previews = new Map<string, ComponentType>([
   ['button-group', ButtonGroupPreview],
@@ -224,10 +225,9 @@ export function CataloguePreview({ item }: { item: string }) {
   const Preview = previews.get(item);
   return (
     <Card.Root aria-hidden inert data-component-preview style={styles.sample}>
-      <div {...stylex.props(styles.contents)}>
+      <NeutralBoundary style={styles.contents}>
         {compactSample(item) ?? (Preview && <Preview />)}
-
-      </div>
+      </NeutralBoundary>
     </Card.Root>
   );
 }

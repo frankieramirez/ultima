@@ -10,7 +10,7 @@ import type { Page } from 'playwright';
 
 import { productionScenario } from '../../../../scripts/verification/production.ts';
 import { catalogue } from '../fixtures/catalogue.ts';
-import { assertFits, assertFocusRing, isFocused, shippedLength } from '../support/production.ts';
+import { assertFits, assertFocusRing, isFocused, shippedLength, siteColor } from '../support/production.ts';
 
 const { broadQuery, broadMatch, emptyQuery, emptyHeading, openQuery, open: result, demo, copyLabel } = catalogue;
 
@@ -78,7 +78,7 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   assert.equal(await entry.count(), 1, `${result.name} is listed once`);
   for (let press = 0; press < 12 && !(await isFocused(entry)); press += 1) await page.keyboard.press('Tab');
   assert.ok(await isFocused(entry), `Tab reaches the ${result.name} entry`);
-  await assertFocusRing(page, entry, variant.mode, `the focused ${result.name} entry`);
+  await assertFocusRing(page, entry, siteColor('--ult-color-border-focus', variant.mode), `the focused ${result.name} entry`);
   await page.keyboard.press('Enter');
   await page.waitForURL((url) => url.pathname === result.pathname, { waitUntil: 'commit' });
   await main.getByRole('heading', { level: 1, name: result.name, exact: true }).waitFor();

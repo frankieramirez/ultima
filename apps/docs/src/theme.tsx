@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
+import { colorScheme } from '@ultima/tokens';
 import { space } from '@ultima/tokens/tokens.stylex';
 import {
   createContext,
@@ -14,6 +14,13 @@ import {
 
 import { readStored, writeStored } from './storage';
 import { shell } from './shell.stylex';
+import { neutralDark, neutralLight, siteDark, siteLight } from './site-themes';
+
+export type Scheme = 'dark' | 'light';
+
+export const siteTheme = { dark: siteDark, light: siteLight } as const;
+
+export const neutralTheme = { dark: neutralDark, light: neutralLight } as const;
 
 export const THEME_STORAGE_KEY = 'ultima-theme';
 export type ThemePreference = 'dark' | 'light' | 'system';
@@ -38,10 +45,8 @@ const styles = stylex.create({
   },
 });
 
-function themeProps(preference: ThemePreference) {
-  if (preference === 'dark') return stylex.props(darkTheme, colorScheme.dark, styles.scrollPad);
-  if (preference === 'light') return stylex.props(lightTheme, colorScheme.light, styles.scrollPad);
-  return stylex.props(colorScheme.system, styles.scrollPad);
+function themeProps(preference: ThemePreference, scheme: Scheme) {
+  return stylex.props(siteTheme[scheme], colorScheme[preference], styles.scrollPad);
 }
 
 export function useTheme() {
@@ -56,17 +61,20 @@ function subscribeToScheme(onChange: () => void) {
   return () => query.removeEventListener('change', onChange);
 }
 
-function readSystemScheme(): 'dark' | 'light' {
+function readSystemScheme(): Scheme {
   return window.matchMedia(LIGHT_QUERY).matches ? 'light' : 'dark';
 }
 
-function serverScheme(): 'dark' | 'light' {
+function serverScheme(): Scheme {
   return 'dark';
 }
 
 /** The color scheme on screen: the stored preference, or the system's answer when the preference is `system`. */
-export function useResolvedScheme(): 'dark' | 'light' {
-  const { preference } = useTheme();
+export function useResolvedScheme(): Scheme {
+  return useSchemeFor(useTheme().preference);
+}
+
+function useSchemeFor(preference: ThemePreference): Scheme {
   const system = useSyncExternalStore(subscribeToScheme, readSystemScheme, serverScheme);
   return preference === 'system' ? system : preference;
 }
@@ -79,9 +87,11 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
     writeStored(THEME_STORAGE_KEY, next);
   }, []);
 
+  const scheme = useSchemeFor(preference);
+
   useLayoutEffect(() => {
     const el = document.documentElement;
-    const applied = themeProps(preference);
+    const applied = themeProps(preference, scheme);
     const previousClass = el.getAttribute('class');
     const previousInline = el.getAttribute('style');
     if (applied.className) el.setAttribute('class', applied.className);
@@ -94,7 +104,7 @@ export function ThemeRoot({ children }: { children: ReactNode }) {
       if (previousInline === null) el.removeAttribute('style');
       else el.setAttribute('style', previousInline);
     };
-  }, [preference]);
+  }, [preference, scheme]);
 
   const value = useMemo(() => ({ preference, setPreference }), [preference, setPreference]);
 

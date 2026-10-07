@@ -1,11 +1,11 @@
 import { ArrowUpRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Accordion, Badge, Button, Card, Separator, Tabs } from '@ultima/ui';
 
 import { breakpoints } from './breakpoints.stylex';
+import { NeutralBoundary } from './neutral-boundary';
 import { TextLink } from './text-link';
 import { useResolvedScheme } from './theme';
 import { headings } from './typography';
@@ -162,12 +162,7 @@ export default function Specimen() {
   ];
   return (
     <>
-      <div
-        {...stylex.props(
-          dark ? lightTheme : darkTheme,
-          dark ? colorScheme.light : colorScheme.dark,
-        )}
-      >
+      <NeutralBoundary mode={dark ? 'light' : 'dark'}>
         <Card.Root
           role="region"
           aria-label="Component specimen"
@@ -197,7 +192,7 @@ export default function Specimen() {
             </div>
           ))}
         </Card.Root>
-      </div>
+      </NeutralBoundary>
       <div {...stylex.props(styles.invitation)}>
         <div {...stylex.props(styles.note)}>
           <h3 {...stylex.props(headings.h3, styles.noteHeading)}>

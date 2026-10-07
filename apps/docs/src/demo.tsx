@@ -7,6 +7,7 @@ import { breakpoints } from './breakpoints.stylex';
 import { CopyButton } from './copy-button';
 import { docsStyles } from './docs-style';
 import { HighlightedCode } from './highlighted-code';
+import { NeutralBoundary } from './neutral-boundary';
 
 const styles = stylex.create({
   figure: {
@@ -77,9 +78,9 @@ export function Demo({
           </div>
         </div>
         <Tabs.Panel value="preview" keepMounted style={styles.preview}>
-          <div data-component-preview {...stylex.props(styles.previewInner)}>
+          <NeutralBoundary data-component-preview style={styles.previewInner}>
             <Component />
-          </div>
+          </NeutralBoundary>
         </Tabs.Panel>
         <Tabs.Panel value="code" style={styles.code}>
           <HighlightedCode code={source} lang={lang} style={styles.source} />

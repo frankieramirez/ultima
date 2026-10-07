@@ -7,7 +7,7 @@
 import assert from 'node:assert/strict';
 
 import { productionScenario } from '../../../../scripts/verification/production.ts';
-import { assertColor, assertFits, focusSettlesInside, settles, shippedColor } from '../support/production.ts';
+import { assertColor, assertFits, focusSettlesInside, neutralColor, settles } from '../support/production.ts';
 
 export default productionScenario('dialog.keyboard-dismissal', 'production', async ({ page, variant, open, axe }) => {
   await open('/components/dialog');
@@ -39,14 +39,14 @@ export default productionScenario('dialog.keyboard-dismissal', 'production', asy
       width: box.width,
     };
   });
-  await assertColor(page, parts.background, await shippedColor(page, '--ult-color-surface-raised', variant.mode), 'the popup background');
+  await assertColor(page, parts.background, neutralColor('--ult-color-surface-raised', variant.mode), 'the popup background');
   assert.equal(parts.viewportPosition, 'fixed', 'the dialog viewport is fixed to the window');
   assert.equal(parts.overflow, 'auto', 'the popup scrolls its own overflow');
   assert.ok(parts.inside && parts.width > 0, 'the popup lies inside the window');
   await settles(backdrop, 'opacity', '1', 'the backdrop finishes fading in');
   const backdropStyle = await backdrop.evaluate((element) => ({ position: getComputedStyle(element).position, background: getComputedStyle(element).backgroundColor }));
   assert.equal(backdropStyle.position, 'fixed', 'the backdrop covers the window');
-  await assertColor(page, backdropStyle.background, await shippedColor(page, '--ult-color-surface-overlay', variant.mode), 'the backdrop');
+  await assertColor(page, backdropStyle.background, neutralColor('--ult-color-surface-overlay', variant.mode), 'the backdrop');
   await axe('open dialog');
 
   const tabbable = await dialog.locator('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])').count();
@@ -68,7 +68,7 @@ export default productionScenario('dialog.keyboard-dismissal', 'production', asy
   const ring = await close.evaluate((element) => ({ style: getComputedStyle(element).outlineStyle, width: getComputedStyle(element).outlineWidth, color: getComputedStyle(element).outlineColor }));
   assert.equal(ring.style, 'solid', 'the focused Close button draws a solid ring');
   assert.ok(Number.parseFloat(ring.width) > 0, 'the focus ring has width');
-  await assertColor(page, ring.color, await shippedColor(page, '--ult-color-border-focus', variant.mode), 'the focus ring');
+  await assertColor(page, ring.color, neutralColor('--ult-color-border-focus', variant.mode), 'the focus ring');
 
   await page.keyboard.press('Escape');
   await dialog.waitFor({ state: 'detached' });

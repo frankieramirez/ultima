@@ -1,6 +1,6 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, lightTheme, resolveDraft, stockDraft, presetDraft, AUTOSAVE_KEY, draftFingerprint, serializeDraft } from '@ultima/tokens';
+import { colorScheme, resolveDraft, stockDraft, presetDraft, AUTOSAVE_KEY, draftFingerprint, serializeDraft } from '@ultima/tokens';
 import axe from 'axe-core';
 import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -10,7 +10,7 @@ import { scenario } from '../../../../scripts/verification/register.ts';
 import { draftHistory } from '../../tests/fixtures/theme-studio-history';
 import { MENU_LABEL } from '../site-menu';
 import { routeTree } from '../router';
-import { THEME_STORAGE_KEY } from '../theme';
+import { THEME_STORAGE_KEY, siteTheme } from '../theme';
 import { MONO_PRESETS, SANS_PRESETS } from '../theme-studio-draft';
 import '../styles.css';
 
@@ -158,14 +158,14 @@ test('a palette source is separate from the generated role colors and exact over
   await expect.element(screen.getByRole('textbox', { name: '--ult-color-accent', exact: true })).toHaveFocus();
 });
 
-const stock = {
-  dark: stylex.props(darkTheme, colorScheme.dark),
-  light: stylex.props(lightTheme, colorScheme.light),
+const siteModes = {
+  dark: stylex.props(siteTheme.dark, colorScheme.dark),
+  light: stylex.props(siteTheme.light, colorScheme.light),
 };
 
-const themeClasses = (mode: keyof typeof stock) => stock[mode].className?.split(/\s+/).filter(Boolean) ?? [];
+const themeClasses = (mode: keyof typeof siteModes) => siteModes[mode].className?.split(/\s+/).filter(Boolean) ?? [];
 
-function prefer(mode: keyof typeof stock) {
+function prefer(mode: keyof typeof siteModes) {
   const root = document.documentElement;
   root.classList.remove(...themeClasses('dark'), ...themeClasses('light'));
   root.classList.add(...themeClasses(mode));
@@ -185,9 +185,9 @@ function readSurface(el: Element) {
   return readToken(el, '--ult-color-surface');
 }
 
-function stockValue(mode: keyof typeof stock, token: '--ult-color-accent' | '--ult-color-surface') {
+function siteValue(mode: keyof typeof siteModes, token: '--ult-color-accent' | '--ult-color-surface') {
   const probe = document.createElement('div');
-  probe.className = stock[mode].className ?? '';
+  probe.className = siteModes[mode].className ?? '';
   document.body.append(probe);
   const value = getComputedStyle(probe).getPropertyValue(token).trim();
   probe.remove();
@@ -225,10 +225,10 @@ for (const mode of ['dark', 'light'] as const) {
     const screen = await mount('/theme-studio');
 
     const header = screen.container.querySelector('header')!;
-    expect(readSurface(header)).toBe(stockValue(mode, '--ult-color-surface'));
+    expect(readSurface(header)).toBe(siteValue(mode, '--ult-color-surface'));
 
     const subBar = screen.getByRole('heading', { name: 'Theme Studio' }).element().parentElement!;
-    expect(readSurface(subBar)).toBe(stockValue(mode, '--ult-color-surface'));
+    expect(readSurface(subBar)).toBe(siteValue(mode, '--ult-color-surface'));
   });
 }
 
@@ -240,7 +240,7 @@ test('changing the site mode updates studio chrome while keeping the draft previ
   const draftSurface = readSurface(preview);
   for (const mode of ['light', 'dark'] as const) {
     await userEvent.click(screen.getByRole('group', { name: 'Color mode', exact: true }).getByRole('button', { name: mode === 'light' ? 'Light' : 'Dark', exact: true }));
-    expect(readSurface(editor)).toBe(stockValue(mode, '--ult-color-surface'));
+    expect(readSurface(editor)).toBe(siteValue(mode, '--ult-color-surface'));
     expect(getComputedStyle(editor).colorScheme).toBe(mode);
     expect(readSurface(preview)).toBe(draftSurface);
     expect(getComputedStyle(preview).colorScheme).toBe('dark');
@@ -699,8 +699,8 @@ test('editor chrome keeps the stock site mode when the preview is light', async 
 
   const editor = screen.getByRole('complementary', { name: 'Theme editor' }).element();
   const pane = screen.getByRole('region', { name: 'Light preview' }).element();
-  expect(readSurface(editor)).toBe(stockValue('dark', '--ult-color-surface'));
-  expect(readSurface(pane)).not.toBe(stockValue('dark', '--ult-color-surface'));
+  expect(readSurface(editor)).toBe(siteValue('dark', '--ult-color-surface'));
+  expect(readSurface(pane)).not.toBe(siteValue('dark', '--ult-color-surface'));
   expect(readAccent(pane)).toBe(resolveDraft(presetDraft('neutral')).light['--ult-color-accent']);
 });
 

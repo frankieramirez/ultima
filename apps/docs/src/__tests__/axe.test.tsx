@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
+import { colorScheme } from '@ultima/tokens';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Card } from '@ultima/ui';
 import axe from 'axe-core';
@@ -7,6 +7,9 @@ import type { ComponentType } from 'react';
 import { beforeAll, expect, onTestFinished, test } from 'vitest';
 import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
+
+import { NeutralBoundary } from '../neutral-boundary';
+import { siteTheme } from '../theme';
 
 const demos = import.meta.glob<{ default: ComponentType }>('../demos/**/*.tsx', { eager: true });
 
@@ -32,9 +35,9 @@ const styles = stylex.create({
 });
 
 const modes = [
-  { name: 'dark', theme: darkTheme, scheme: colorScheme.dark },
-  { name: 'light', theme: lightTheme, scheme: colorScheme.light },
-];
+  { name: 'dark', theme: siteTheme.dark, scheme: colorScheme.dark },
+  { name: 'light', theme: siteTheme.light, scheme: colorScheme.light },
+] as const;
 
 function themeDocument(mode: (typeof modes)[number]) {
   const classes = stylex.props(mode.theme, mode.scheme).className?.split(/\s+/).filter(Boolean) ?? [];
@@ -55,7 +58,9 @@ for (const [path, module] of Object.entries(demos)) {
       await render(
         <main>
           <Card.Root style={styles.stage}>
-            <Demo />
+            <NeutralBoundary mode={mode.name}>
+              <Demo />
+            </NeutralBoundary>
           </Card.Root>
         </main>,
       );
