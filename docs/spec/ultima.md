@@ -2756,6 +2756,72 @@ ADR 0005 keeps shared guidance hosted on these surfaces:
 
 `/llms.txt` is generated build output beside `/tokens.css`, not a hand-written file and not a route. It leads with the Principles section, then the component list with each component's import and the props Ultima adds, under one heading per [catalogue group](#catalogue-groups), then the semantic token names. It is generated from this specification and the registry manifest, so no convention gets a third place to be updated.
 
+#### Discover and maintain the product theme
+
+Decided on [Decide how agents discover and maintain a product theme](https://github.com/frankieramirez/ultima/issues/727). Status: accepted for implementation. The current pointer skill, guide generator, design-document exporters and CLI do not implement this workflow. [Theme adoption](#theme-adoption) remains the application contract; this subsection owns discovery, reconciliation and safe updates.
+
+Before the first UI edit, identify the consumer application root and read its applicable project instructions and design documents. In a monorepo, use the task's application root and record any inherited product guidance. Discover the theme separately for each root or subtree affected by the task; several themes can be intentional.
+
+| Input, in discovery order | Authority and use |
+| --- | --- |
+| Explicit user instructions and applicable project instructions | Define the requested outcome and authorization. A theme-change request can revise existing choices within its stated scope. |
+| Local `DESIGN.md` and any design document named by the project | Consumer-authored prose records product intent. Generated token tables describe their recorded source and may be stale. A document's filename does not establish freshness. |
+| Entry/layout imports, CSS cascade, applied StyleX themes, mode selection and portal containers | Establish which theme is wired to each affected boundary. Static imports identify candidates; production computed values establish what renders. Unimported exports remain candidates. |
+| Associated draft JSON | Editable source for regenerating the linked exports, after parsing its exact document, recipe and preset revision. A draft takes regeneration authority only when its association with the active theme is established. |
+| Installed token source and consumer overrides | Establish available names, local defaults and deliberate edits. A custom override can explain a difference from a draft. Installed source takes precedence over the latest hosted default when describing the local application. |
+| Hosted conventions, catalogue and token reference | Define Ultima's APIs and technical constraints. They do not select the consumer's brand or prove the values of an installed copy. |
+
+Report the application and boundary, document paths, active import paths, candidate draft, versions and any conflict before changing theme values. Distinguish product intent, editable source, generated output and observed rendering. Modification time and the short Studio fingerprint cannot settle a conflict. A newer draft beside an older active stylesheet requires establishing whether the draft is a pending change or the stylesheet contains deliberate edits.
+
+Fetch the configured registry host's `/llms.txt` once per task when available. If it cannot be fetched, use guidance already available to the session, local documents and installed source for work whose contract is known. Report unavailable guidance and registry comparisons; leave API choices requiring missing information unresolved. The pinned local CLI's `doctor` and `check` remain usable offline. `status` and `diff` still require the hosted registry; their failure does not justify replacing a theme or calling registry freshness verified. Prefer `npx --no-install ultima-design` when running the pinned CLI offline.
+
+**Resolve conflicts within the task's authority.** A request to edit a screen permits using its existing tokens and repairing a demonstrably broken import within that scope. It does not choose a new brand, migrate a saved preset, discard a hand edit, or replace a root document. Honor an explicit theme-change request already supplied. Otherwise resolve observable facts first, then ask only when intent remains ambiguous. Report any required choice while continuing independent screen work that preserves the current theme.
+
+| Situation | Repair |
+| --- | --- |
+| Draft and active exports agree; generated document is stale | Regenerate the document's identified generated region from that exact draft, preserving consumer prose. Review the diff. |
+| Generated CSS was hand-edited or a separate override changes its values | Preserve the edit and compare it with the draft in both modes. If the task authorizes retaining it and the draft format can represent it, encode the exact values as overrides and regenerate to a temporary destination first. Preserve a deliberate separate override when it has another scope or cannot be represented. Resolve unexplained conflicts before replacing files. |
+| Existing brand, no Studio draft | Inventory current semantic roles, fonts, density, shape, modes and scope from local source and rendering. Continue using them. When adoption is requested, create a custom draft with representable exact overrides and compare its resolved values with the inventory. Record unsupported choices separately; avoid inferring generation seeds from output colors. |
+| Active theme exists, `DESIGN.md` is missing | Continue UI work using confirmed local source. Offer a document only when the task calls for one; a missing optional document does not mean the product needs Neutral. |
+| Draft missing or its version/recipe/preset cannot be resolved | Preserve the active exports. Report the missing or unsupported source and recover the original draft or a compatible resolver. Creating a replacement custom draft is a product-owned recovery choice. Never reset or migrate implicitly. |
+| Multiple documents or drafts disagree | Follow explicit scope and source links. Trace each imported theme to its boundary. Ask which source expresses intended changes only when existing instructions and evidence cannot settle it. |
+| Default `design-md` describes values different from locally installed tokens | Treat it as a default-source document, compare against the installed source, and revise its generated region or document the consumer override. Do not fetch current defaults and substitute them into the product. |
+
+For example, a Vite entry imports `../ultima-theme.css`, a nearby draft produces the same values, and `DESIGN.md` still lists an earlier font stack. Regenerate only its confirmed generated content from that draft and retain the product's typography rationale outside the region. If the stylesheet instead contains a deliberate changed action color, first reconcile that value with the draft; a screen-edit task can keep using the active color while that product choice remains unresolved. An unimported Grove export beside those files has no authority over this boundary.
+
+**Update a linked theme as one reviewed change.** Parse and retain the complete draft, including locks, overrides, recipe and preset identity. Apply the authorized edit to that draft, resolve dark and light, and run the declared contrast pairings. A user-owned failing draft follows Studio's explicit acknowledgment contract; an agent cannot supply that acknowledgment for an unresolved product decision. Generate the draft and every linked output in temporary files, including the design document's generated region and the CSS or StyleX path the app uses. Compare changed values and review the complete diff before replacing the known outputs. Preserve mode activation, reduced-motion rules, font responsibilities and portal scope. Updating unrelated exports is outside the task's scope; name any known unrefreshed copy in the report.
+
+Consumer prose outside a marked generated region stays byte-for-byte intact. Changes inside that region are consumer edits too: compare its recorded content digest before regenerating, and reconcile differences first. Legacy documents without markers need a targeted patch that preserves their prose; do not treat the entire file as replaceable. The serializers' full document download remains available, and shadcn reinstall still replaces whole files through its overwrite flow. An agent stages and merges the reviewed generated content rather than accepting whole-document replacement during ordinary maintenance. The CLI never writes or merges a root document.
+
+Run local `doctor` and `check` as appropriate, then verify the changed theme in a production build at its root, a control and a portalled control in both explicit modes and system mode, including reduced motion and loaded faces. Static parity and a zero CLI exit cannot establish rendered adoption. The existing [consumer proof](consumer-proof.md) and [support](consumer-support.md) contracts own the broader matrices; reuse their fixtures.
+
+**Deterministic freshness belongs in the CLI.** Plan an opt-in, read-only `npx ultima-design doctor --theme` extension; ordinary `doctor` remains setup-only. It uses local files and a compatible bundled resolver, shares the exporters' provenance and comparison code, and never fetches the registry. It reports per boundary and artifact with paths, source identity, compared scope/modes, actual differences and a repair. Missing optional drafts/documents receive `unlinked`; several statically resolved themes receive separate rows. Dynamic imports, ambiguous associations, unknown versions and unsupported expressions receive `incomplete`, rather than a guessed theme.
+
+The report states `match` only for a supported linked draft and outputs whose resolved token values, selectors, mode/reduced-motion behavior and generated-document content match. `mismatch` identifies known differences, without guessing whether they were intentional. Compare all themeable groups in both modes, retaining duplicate declaration order, scope and cascade effects; equivalent formatting may be ignored. A matching header or fingerprint is insufficient. Tokens outside the draft's themeable groups remain installed-source facts and cannot be certified by a draft comparison. Legacy headers can match only through complete supported content comparison; otherwise the relation stays incomplete. Default-source documents require comparison with the locally installed token source, not the CLI's current default table.
+
+`doctor --theme` keeps the existing setup diagnostics and exit precedence: a known linked mismatch is a blocking finding (exit 1), an incomplete requested comparison exits 3 unless another blocking finding exists, and an invalid invocation exits 2. An `unlinked` row is informational and can accompany exit 0; it explicitly establishes no draft freshness. JSON includes each row's state and coverage, so consumers cannot interpret the overall exit as proof that every theme has a draft. Theme findings belong to a distinct diagnostic family from setup findings. Theme analysis stays out of post-edit hooks and ordinary `check`. Until the extension ships, use the discovery and comparison steps above and report their manual coverage; do not instruct consumers to run the planned flag.
+
+**Guidance ownership and implementation consumers.** The specification owns this workflow. `scripts/build-agent-guide.ts` must publish a compact version derived from it in `/llms.txt`, covering precedence, conflicts, safe updates, offline work and diagnostics. The authored pointer skill at `packages/cli/skill/ultima-design/SKILL.md` gains a short ordered step to read project design guidance and trace the active local theme before UI edits, followed by the hosted workflow link. Its prose allowance expands to this discovery pointer and the offline branch, while token values and detailed repairs remain hosted. Keep the existing size and literal guards. CLI install and external skill installers continue their existing update ownership.
+
+`packages/tokens/src/theme/export.ts` owns draft-bound CSS, StyleX, registry and design-document provenance; `packages/tokens/scripts/build-tokens.ts` owns the compiled-default design artifact. The [Studio amendment](theme-studio.md#agent-maintenance-and-export-provenance) specifies their future markers and compatibility. `packages/cli/src/doctor.ts` owns opt-in local diagnostics. The install page and setup-item prose link the hosted workflow rather than copying it. Regenerate registry files, default design output and `/llms.txt` through their builders when implementation lands. The separately tracked [obsolete documentation claim](https://github.com/frankieramirez/ultima/issues/724) remains its own defect.
+
+**Required verification scenarios for implementation.** These are acceptance cases, not reports of checks run by this decision session.
+
+| Scenario | Required observation |
+| --- | --- |
+| Explicit task changes a brand role while old `DESIGN.md` prose disagrees | The scoped user choice controls; unrelated prose and theme values survive. |
+| Draft, imported CSS and generated document agree | Full local comparison matches; a production control and portal use those values. |
+| Only a draft changed, or only an export changed | Comparison reports mismatch and preserves both until intent is resolved. |
+| Hand-edited CSS retains the original header | Actual values reveal the difference; neither fingerprint nor header yields a false match. |
+| Design prose added outside a generated region; region later refreshed | Consumer bytes survive; a hand edit inside the region triggers reconciliation. |
+| Legacy document lacks markers, or default document differs from installed tokens | A targeted repair preserves prose and uses the correct local source. |
+| Branded application has no draft or document | Existing appearance survives; missing optional artifacts report unlinked. |
+| Two themes apply to separate boundaries; an unrelated draft sits beside them | Association follows imports and scope; the unrelated draft never becomes authoritative. |
+| Dynamic association or unsupported source version | Report incomplete with paths and reason; preserve the active theme. |
+| Legacy v1/v2 draft reopened by a newer tool | Every resolved token and preset identity survives; migration remains explicit. |
+| Network unavailable with pinned local CLI | Local discovery and checks run; hosted lookup remains unverified. |
+| Regeneration changes cascade, reduced motion, fonts or portal inheritance | Production assertions catch the regression using the existing installed-consumer fixture. |
+
 ### The authoring skill
 
 A component-authoring skill exists, named `forge`, and it lives in this repository at `skills/forge/SKILL.md` rather than in mana.
@@ -2843,6 +2909,8 @@ An invalid invocation is decided before anything runs. After that, an establishe
 Decided on [What doctor verifies per setup target](https://github.com/frankieramirez/ultima/issues/470). `doctor` proves that the hand steps under [What the consumer still does by hand](#what-the-consumer-still-does-by-hand) landed. It reports and never writes: every repair is printed as the exact edit, and applying it is the consumer's job.
 
 **Scope.** Setup only. `doctor` does not inspect installed registry items, which belong to `status`; the one exception is the literal `./@/` directory, because that is the symptom of a failed setup rather than of an item. It runs in the current directory, or in `--cwd <dir>`, which must hold a `package.json`, and it does not walk workspaces.
+
+The accepted [product-theme workflow](#discover-and-maintain-the-product-theme) adds an opt-in `--theme` report in a future implementation. It compares local linked theme artifacts and leaves ordinary setup checks and remote registry drift ownership unchanged. The flag is not currently available.
 
 **Finding the target.** Each setup item is identified by the files it installs: `ultima.vite.ts` for Vite, `app/ultima.css` with `babel.config.js` for Next.js, with `rsc` in `components.json` confirming it. `--target vite|next` replaces detection. No target found is one blocking finding whose repair is the setup command from Entry point. Both found without `--target` is a usage error.
 
@@ -2961,6 +3029,8 @@ Decided on [What the consumer skill says and how it is versioned](https://github
 7. **Reading results.** Exits 0, 1, 2 and 3 as the output contract under [Package and engine](#package-and-engine) defines them: 1 means fix the findings, 2 means fix the command, 3 means fix the project, and that a finding's repair and link are the next thing to read.
 
 **What may be prose.** A line in the skill is allowed only when it is one of: the trigger description, the order of steps, a CLI command line, the meaning of an exit code, or a one-sentence imperative that names the `check` rule IDs enforcing it and links its docs anchor. Every imperative is therefore something `check` already enforces, and the skill states nothing the CLI cannot verify. Token names, component names, prop names, and values stay on `/llms.txt`. A test in `packages/cli` fails the build when the skill contains an `--ult-` token name, a catalogue item name other than inside `@ultima/<item>`, a color literal, or more than 80 lines.
+
+The [product-theme workflow](#discover-and-maintain-the-product-theme) amends this allowance for a short local discovery pointer and an offline branch. Update the authored skill and its guards when implementing that workflow; detailed precedence and repair guidance remain generated from the specification.
 
 **Commands always name the package.** The skill spells every command `npx ultima-design`, never `npx ultima`. The `bin` is `ultima`, but where the CLI is not installed, `npx ultima` fetches an unrelated package with that name.
 
