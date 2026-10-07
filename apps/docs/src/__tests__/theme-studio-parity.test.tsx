@@ -187,7 +187,7 @@ for (const { name, draft } of CORPUS) {
     const css = toCss(draft);
     const tables = resolveDraft(draft);
     const screen = await render(
-      <ThemeStudioPreview mode="compare" onModeChange={() => {}} tables={tables} />,
+      <ThemeStudioPreview identity={name} mode="compare" onModeChange={() => {}} tables={tables} />,
     );
     const panes: Record<Mode, Element> = {
       dark: screen.getByRole('region', { name: 'Dark preview' }).element(),

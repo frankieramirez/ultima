@@ -16,6 +16,7 @@ import { Alert, Button, Dialog, Separator } from '@ultima/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { breakpoints } from '../breakpoints.stylex';
+import { Kicker } from '../page';
 import { downloadDraft, StudioActions, useStudioDraft } from '../theme-studio-actions';
 import { draftSummary, GROUPS, groupLabel } from '../theme-studio-draft';
 import { CompleteThemePicker, ThemeStudioEditor } from '../theme-studio-editor';
@@ -82,11 +83,11 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     flexShrink: { default: 1, [breakpoints.RAIL]: 0 },
-    gap: space['--ult-space-8'],
-    inlineSize: { default: '100%', [breakpoints.RAIL]: '20rem' },
+    gap: { default: space['--ult-space-5'], [breakpoints.RAIL]: space['--ult-space-8'] },
+    inlineSize: { default: '100%', [breakpoints.RAIL]: '22.5rem' },
     minBlockSize: 0,
     overflow: 'hidden',
-    paddingBlockStart: space['--ult-space-8'],
+    paddingBlockStart: { default: 0, [breakpoints.RAIL]: space['--ult-space-8'] },
     paddingBlockEnd: 0,
     paddingInline: space['--ult-space-6'],
     flexGrow: { default: 1, [breakpoints.RAIL]: 0 },
@@ -134,6 +135,16 @@ const styles = stylex.create({
   report: { blockSize: '100%', display: 'flex', flexDirection: 'column', inlineSize: '100%', maxHeight: '100%', maxWidth: { default: '100%', [breakpoints.RAIL]: '32.5rem' }, overflow: 'hidden', padding: 0 },
   reportBody: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-6'], overflow: 'auto', paddingBlockEnd: space['--ult-space-8'], paddingInline: space['--ult-space-6'], minBlockSize: 0 },
   reportNote: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-2'], margin: 0 },
+  railHead: { alignItems: 'baseline', display: 'flex', flexShrink: 0, flexWrap: 'wrap', gap: space['--ult-space-4'], justifyContent: 'space-between' },
+  identity: {
+    fontSize: text['--ult-text-6'],
+    fontWeight: font['--ult-font-weight-medium'],
+    letterSpacing: font['--ult-font-tracking-tight'],
+    lineHeight: font['--ult-font-leading-none'],
+    margin: 0,
+  },
+  caps: { textTransform: 'uppercase' },
+  railTop: { display: 'flex', flexDirection: 'column', flexShrink: 0, gap: space['--ult-space-5'] },
 });
 
 function ExhaustionNotice({ report }: { report: ShuffleExhaustion }) {
@@ -186,6 +197,8 @@ export function ThemeStudio() {
   const resolved = useMemo(() => resolveDraft(draft), [draft]);
   const pairings = useMemo(() => gate(resolved), [resolved]);
   const checks = useMemo(() => draftChecks(pairings), [pairings]);
+  const identity = useMemo(() => `${presetLabel(draft)}${isPresetEdited(draft) ? ' · Edited' : ''}`, [draft]);
+  const locked = Object.values(draft.locks).filter(Boolean).length;
 
   const status = (
     <div {...stylex.props(styles.status)}>
@@ -199,11 +212,17 @@ export function ThemeStudio() {
 
   const editor = (
     <aside aria-label="Theme editor" {...stylex.props(styles.editor)}>
-      <CompleteThemePicker commit={store.commit} draft={draft} />
+      <div {...stylex.props(styles.railTop)}>
+        <div {...stylex.props(styles.railHead)}>
+          <p data-draft-identity {...stylex.props(styles.identity)}>{identity}</p>
+          <Kicker data-rail-counts style={styles.caps}>{GROUPS.length} groups · {locked} locked</Kicker>
+        </div>
+        <CompleteThemePicker commit={store.commit} draft={draft} />
+      </div>
       {notice !== null ? <Alert.Root tone="warning"><Alert.Title>Autosave notice</Alert.Title><Alert.Description>{notice}</Alert.Description><Button onClick={dismissNotice} size="sm" variant="ghost">Dismiss</Button></Alert.Root> : null}
       <ThemeStudioShuffleBar canRedo={store.canRedo} canUndo={store.canUndo} fingerprint={store.fingerprint} onRedo={store.redo} onShuffle={() => store.shuffle('global')} onUndo={store.undo} onVariationChange={store.setVariation} variation={store.variation} />
       {store.exhaustion ? <ExhaustionNotice report={store.exhaustion} /> : null}
-      <div {...stylex.props(styles.groups)}><ThemeStudioEditor commit={store.commit} draft={draft} group={group} onGroupChange={setGroup} onShuffleGroup={store.shuffle} offenders={checks.offenders} resolved={resolved} update={store.update} /></div>
+      <div {...stylex.props(styles.groups)}><ThemeStudioEditor commit={store.commit} draft={draft} group={group} onGroupChange={setGroup} onShuffleGroup={store.shuffle} offenders={checks.offenders} pairings={checks.results.length} resolved={resolved} update={store.update} /></div>
     </aside>
   );
 
@@ -238,7 +257,7 @@ export function ThemeStudio() {
       ) : null}
       <div {...stylex.props(styles.body)}>
         {wide ? editor : null}
-        <ThemeStudioPreview mode={mode} onModeChange={setMode} tables={resolved} />
+        <ThemeStudioPreview identity={identity} mode={mode} onModeChange={setMode} tables={resolved} />
       </div>
       {wide ? status : (
         <Dialog.Root open={editorOpen} onOpenChange={setEditorOpen}>
@@ -257,7 +276,7 @@ export function ThemeStudio() {
         <Dialog.Portal container={shell}><Dialog.Backdrop forceRender /><Dialog.Viewport style={styles.sheetViewport}><Dialog.Popup style={[docsStyles.square, styles.report]} finalFocus={reportTrigger}>
           <div {...stylex.props(styles.dialogHeader)}><Dialog.Title>Draft report</Dialog.Title><Dialog.Close render={<Button aria-label="Close draft report" variant="ghost" style={styles.close} />}><XIcon aria-hidden /></Dialog.Close></div>
           <div {...stylex.props(styles.reportBody)}>
-            <Dialog.Description style={styles.reportNote}>{presetLabel(draft)}{isPresetEdited(draft) ? ' · Edited' : ''} · token contrast, WCAG 2.2 AA. Declared token pairings in both modes; check your rendered components too.</Dialog.Description>
+            <Dialog.Description style={styles.reportNote}>{identity} · token contrast, WCAG 2.2 AA. Declared token pairings in both modes; check your rendered components too.</Dialog.Description>
             {repair ? <section aria-label="Repair token"><h2>Edit {repair.token.replace('--ult-color-', '')}</h2><TokenRows draft={draft} group="color" offenders={checks.offenders} resolved={resolved} setDraft={(action) => store.commit(typeof action === 'function' ? action : () => action)} onlyToken={repair.token} focusToken={repair.token} focusRequest={repair.serial} /><Separator /></section> : null}
             <ThemeStudioValidation checks={checks} draft={draft} onCommit={store.commit} onEdit={(token) => setRepair((current) => ({ token, serial: (current?.serial ?? 0) + 1 }))} />
             <p {...stylex.props(styles.reportNote)}>A failing draft can still be exported once you acknowledge its failures. This checks token contrast only.</p>
