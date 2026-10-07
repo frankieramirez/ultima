@@ -120,7 +120,11 @@ A file the consumer CLI writes into a consumer's repository and refreshes on eve
 
 ## Consumer skill
 
-The skill `install` writes into a consumer's repository, named `ultima-design`. It is a managed file that versions with the CLI. It says when to fetch `/llms.txt` and which CLI command to run at each step, and each imperative in it is one that `check` enforces. It is not `forge`, the contributor skill, and it is not mana's `ultima` audit skill.
+The skill `install` writes into a consumer's repository, named `ultima-design`. It is a managed file that versions with the CLI. It says when to fetch `/llms.txt` and which CLI command to run at each step. The accepted product-theme workflow adds a local discovery pointer and an offline branch; detailed conventions stay hosted. It is not `forge`, the contributor skill, and it is not mana's `ultima` audit skill.
+
+## Active product theme
+
+The theme an application applies at a particular document or subtree boundary. Imports, cascade, mode selection and portal scope determine it; a nearby draft or design document alone cannot establish it. A linked compatible draft is its editable source for regeneration, while consumer-authored design prose records product intent.
 
 ## Consumer scope
 

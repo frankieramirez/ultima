@@ -199,6 +199,20 @@ Theme Studio derives `DESIGN.md` from the same resolved draft as its CSS and Sty
 
 The `design-md` registry item installs a default document generated from the compiled StyleX token values. It is an explicit, consumer-owned design artifact. It does not replace the hosted conventions or the `ultima-design` skill. This is the exception to ADR 0005's root-document rule, recorded in that ADR's 2026-09-29 amendment.
 
+#### Agent maintenance and export provenance
+
+Decided on [Decide how agents discover and maintain a product theme](https://github.com/frankieramirez/ultima/issues/727). Status: accepted for implementation; current exports have the short fingerprint header and whole-document format. The [consumer agent workflow](ultima.md#discover-and-maintain-the-product-theme) owns discovery and repairs.
+
+Future exports retain the existing draft format and resolved values. Add versioned provenance comments to CSS and StyleX and a delimited generated region to `DESIGN.md`. Record the exporter version, document version, recipe version, preset id/revision when present, source kind and a SHA-256 digest of a canonical serialization of the complete draft. Define and version that serialization once in the shared codec; presentation formatting cannot change identity. Keep the short fingerprint for display. It cannot establish freshness or reconstruct the draft.
+
+Use `<!-- ultima-theme:generated:start v1 -->` and `<!-- ultima-theme:generated:end -->` to delimit the document's generated content, with source metadata and a generated-content digest inside the region. Define that content digest over the region's content excluding the digest field itself. Values, font responsibility, contrast warning and source identity belong inside it. Consumer prose outside it belongs to the product. The compiled-default document uses the same region convention with source kind `compiled-default` and a digest of the complete resolved default tables in both modes; it must never claim a Studio draft identity.
+
+Source paths are consumer-local associations: trace imports and any explicit project links, and compare contents. Studio cannot know a file's final path after installation. A source digest proves which draft an artifact records; comparing its actual content proves whether edits have changed it. Identical short fingerprints and copied headers cannot establish parity.
+
+Serializers emit complete files for download and registry installation. Agent maintenance extracts the generated region, checks for consumer edits and applies a reviewed targeted patch. Existing shadcn overwrite behavior remains available when the consumer explicitly accepts replacing whole files. The consumer CLI stays read-only and never manages a root document.
+
+Existing CSS, StyleX and design documents remain usable. A legacy file with no strong provenance receives content comparison when a supported draft can be associated; absence of metadata alone never triggers a reinstall. Adding provenance to an export does not migrate its draft version, recipe, preset revision or token values. Malformed, unknown or unsupported sources remain unresolved and keep their existing exports. Legacy unmarked documents require prose-preserving targeted edits. Verification must cover retained consumer prose, edited generated regions, copied headers, canonical digest stability and unchanged v1/v2 resolved values in both modes.
+
 ### Studio support components and compositions
 
 Decided on [#217](https://github.com/frankieramirez/ultima/issues/217).
