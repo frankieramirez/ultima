@@ -50,7 +50,29 @@ const icons: IconProps = { color: 'currentColor', size: '1em', weight: 'regular'
 /** The skip link's target: the region past the header and the menu, on every route. */
 const CONTENT_ID = 'main';
 
+declare module '@tanstack/react-router' {
+  interface StaticDataRouteOption {
+    /** The route renders alone, with no chrome, in Neutral on `<html>`: a block preview, for framing. */
+    bare?: boolean;
+  }
+}
+
 export function Root() {
+  const bare = useRouterState({ select: (state) => state.matches.some(({ staticData }) => staticData.bare) });
+  const title = useRouterState({ select: (state) => documentTitle(state.matches) });
+
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+
+  if (bare) {
+    return (
+      <ThemeRoot theme="neutral">
+        <Outlet />
+      </ThemeRoot>
+    );
+  }
+
   return (
     <ThemeRoot>
       <IconContext.Provider value={icons}>
@@ -67,12 +89,7 @@ function Shell() {
   const pathname = useRouterState({
     select: (state) => state.resolvedLocation?.pathname ?? state.location.pathname,
   });
-  const title = useRouterState({ select: (state) => documentTitle(state.matches) });
   const focused = useRef(pathname);
-
-  useEffect(() => {
-    document.title = title;
-  }, [title]);
 
   useEffect(() => {
     if (focused.current === pathname) return;

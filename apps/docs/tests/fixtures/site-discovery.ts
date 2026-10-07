@@ -4,7 +4,7 @@
  * fixture it ran.
  */
 export const siteDiscovery = {
-  version: 3,
+  version: 4,
   /** A route and the document.title it serves, one per shape the router knows. */
   titles: [
     { pathname: '/', title: 'A system for building interfaces. - Ultima' },
@@ -15,6 +15,8 @@ export const siteDiscovery = {
     { pathname: '/rationale', title: 'Rationale - Ultima' },
     { pathname: '/theme-studio', title: 'Theme Studio - Ultima' },
     { pathname: '/components', title: 'Components - Ultima' },
+    { pathname: '/blocks', title: 'Blocks - Ultima' },
+    { pathname: '/blocks/sign-in-01', title: 'Sign-in 01 - Ultima' },
     { pathname: '/components/button', title: 'Button - Ultima' },
   ],
   /** Both not-found shapes: a path no route knows and a component name the catalogue lacks. */

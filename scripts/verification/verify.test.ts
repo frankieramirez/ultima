@@ -35,8 +35,9 @@ describe('pnpm verify list', () => {
     assert.equal(exit, 0);
     assert.equal(document.schemaVersion, 1);
     assert.equal(document.status, 'discovered');
-    assert.deepEqual(document.features.map((f: { id: string }) => f.id), ['catalogue', 'dialog', 'elements', 'motion', 'site-discovery', 'site-landing', 'site-navigation', 'theme-studio']);
+    assert.deepEqual(document.features.map((f: { id: string }) => f.id), ['blocks', 'catalogue', 'dialog', 'elements', 'motion', 'site-discovery', 'site-landing', 'site-navigation', 'theme-studio']);
     assert.deepEqual(document.scenarios.map((s: { id: string }) => s.id), [
+      'blocks.preview',
       'catalogue.filter-and-demo',
       'dialog.keyboard-dismissal',
       'elements.fixture-interactions',
@@ -174,7 +175,7 @@ describe('pnpm verify describe', () => {
     const { exit, document } = json(['describe', 'scenario', 'dialog.escape']);
     assert.equal(exit, 2);
     assert.equal(document.status, 'usage-error');
-    assert.match(document.message, /available: catalogue\.filter-and-demo, dialog\.keyboard-dismissal, .*, theme-studio\.pane-boundaries$/);
+    assert.match(document.message, /available: blocks\.preview, catalogue\.filter-and-demo, dialog\.keyboard-dismissal, .*, theme-studio\.pane-boundaries$/);
     assert.equal(json(['describe', 'feature', 'studio']).exit, 2);
     assert.equal(json(['describe', 'item', 'dialog']).exit, 2);
   });

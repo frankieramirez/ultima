@@ -1,14 +1,21 @@
 import { expect, test } from 'vitest';
 
 import { components } from '../components';
+import { blocks } from '../generated/blocks';
 import { router } from '../router';
+
+/** A route's pages: a param route lists every item it serves, and a block preview exists only to be framed. */
+function pagesOf(path: string): string[] {
+  if (path === '/components/$name') return components.map(({ item }) => `/components/${item}`);
+  if (path === '/blocks/$id') return blocks.map(({ id }) => `/blocks/${id}`);
+  if (path === '/blocks/$id/preview') return [];
+  return [path];
+}
 
 test('the sitemap lists exactly the routes the router serves', async () => {
   const sitemap = await (await fetch('/sitemap.xml')).text();
   const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
-  const served = Object.keys(router.routesByPath).flatMap((path) =>
-    path === '/components/$name' ? components.map(({ item }) => `/components/${item}`) : [path],
-  );
+  const served = Object.keys(router.routesByPath).flatMap(pagesOf);
   expect(locations.slice().sort()).toEqual(served.map((path) => `https://ultima.systems${path}`).sort());
 });
 

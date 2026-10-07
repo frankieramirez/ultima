@@ -29,6 +29,7 @@ export function themeDocument(mode: (typeof themes)[number]) {
 }
 
 export async function violations(target: axe.ElementContext = document.body): Promise<string[]> {
-  const results = await axe.run(target);
+  // WCAG 2.2's target-size is off in axe by default; a block's controls must meet it.
+  const results = await axe.run(target, { rules: { 'target-size': { enabled: true } } });
   return results.violations.map((violation) => `${violation.id}: ${violation.nodes.map((node) => node.html).join(', ')}`);
 }

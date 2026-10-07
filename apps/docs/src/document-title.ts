@@ -1,4 +1,5 @@
 import { components } from './components';
+import { blocks } from './generated/blocks';
 
 declare module '@tanstack/react-router' {
   interface StaticDataRouteOption {
@@ -14,6 +15,10 @@ export const NOT_FOUND_TITLE = 'Lost in the aether';
 
 export function componentTitle(params: Record<string, string>): string {
   return components.find(({ item }) => item === params.name)?.name ?? NOT_FOUND_TITLE;
+}
+
+export function blockTitle(params: Record<string, string>): string {
+  return blocks.find(({ id }) => id === params.id)?.title ?? NOT_FOUND_TITLE;
 }
 
 type TitleMatch = {

@@ -57,10 +57,13 @@ const styles = stylex.create({
     justifyContent: 'space-between',
   },
   aside: {
+    alignItems: 'center',
     color: color['--ult-color-text-muted'],
+    display: 'inline-flex',
     fontSize: text['--ult-text-2'],
     fontWeight: font['--ult-font-weight-medium'],
     lineHeight: font['--ult-font-leading-none'],
+    minBlockSize: space['--ult-space-8'],
     textDecorationLine: { default: 'none', ':hover': 'underline' },
   },
   remember: {

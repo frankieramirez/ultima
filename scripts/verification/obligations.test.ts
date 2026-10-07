@@ -1,6 +1,7 @@
 /**
  * The required production obligations, written out independently of the records they protect: the
- * 40-cell matrix under Validation and coverage in docs/spec/agent-infrastructure.md. A contract test,
+ * matrix under Validation and coverage in docs/spec/agent-infrastructure.md, the 28 decided cells plus
+ * each scenario added since. A contract test,
  * never a discovery source. Removing a target, a light/narrow variant or a binding, repeating a variant,
  * or skipping or doubling a cell fails here; a new required scenario joins the cases on its own.
  */
@@ -27,6 +28,7 @@ const MATRIX: [scenario: string, viewports: string[], motion: string[]][] = [
   ['site-discovery.discovery-surface', ['desktop'], ['normal']],
   ['site-landing.dot-field', ['desktop', 'narrow'], ['normal', 'reduced']],
   ['site-landing.without-field', ['desktop', 'narrow'], ['normal']],
+  ['blocks.preview', ['desktop', 'narrow'], ['normal']],
 ];
 
 const CAPABILITY_REMOVALS: Record<string, string[]> = { 'site-landing.without-field': ['webgl'] };
@@ -104,10 +106,10 @@ const complete = (): Declared =>
   Object.fromEntries(MATRIX.map(([id, viewports, motions]) => [id, { mode: [...BOTH], viewport: [...viewports], motion: [...motions] }]));
 
 describe('the production obligations', () => {
-  test('are 40 cells across ten scenarios', () => {
-    assert.equal(MATRIX.length, 10);
-    assert.equal(REQUIRED.length, 40);
-    assert.equal(new Set(REQUIRED).size, 40);
+  test('are the 28 decided cells plus 4 for blocks.preview and 12 for site-landing, across eleven scenarios', () => {
+    assert.equal(MATRIX.length, 11);
+    assert.equal(REQUIRED.length, 28 + 4 + 12);
+    assert.equal(new Set(REQUIRED).size, 28 + 4 + 12);
   });
 
   test('a model registering the whole matrix covers exactly those cells', () => {
@@ -201,7 +203,7 @@ describe('the repository', () => {
   const files = repositoryFiles(root);
   const { model, diagnostics } = loadVerification(files, loadCatalogue(diskFiles(root)).catalogue);
 
-  test('registers exactly the 40 required production cells', () => {
+  test('registers exactly the required production cells', () => {
     assert.deepEqual(diagnostics, []);
     assert.deepEqual(coverage(casesFor(model, 'production')), { missing: [], unexpected: [] });
   });
