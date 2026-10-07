@@ -17,20 +17,27 @@ import { casesFor, loadVerification, repositoryFiles } from './model.ts';
 import { judge } from './run.ts';
 
 const BOTH = ['dark', 'light'];
-const MATRIX: [scenario: string, viewports: string[], motion: string][] = [
-  ['site-navigation.route-and-mode', ['desktop', 'narrow'], 'normal'],
-  ['catalogue.filter-and-demo', ['desktop', 'narrow'], 'normal'],
-  ['dialog.keyboard-dismissal', ['desktop', 'narrow'], 'normal'],
-  ['theme-studio.draft-history', ['desktop', 'narrow'], 'normal'],
-  ['theme-studio.pane-boundaries', ['desktop'], 'normal'],
-  ['elements.fixture-interactions', ['desktop', 'narrow'], 'normal'],
-  ['motion.reduced-loop', ['desktop', 'narrow'], 'reduced'],
-  ['site-discovery.discovery-surface', ['desktop'], 'normal'],
-  ['blocks.preview', ['desktop', 'narrow'], 'normal'],
+const MATRIX: [scenario: string, viewports: string[], motion: string[]][] = [
+  ['site-navigation.route-and-mode', ['desktop', 'narrow'], ['normal']],
+  ['catalogue.filter-and-demo', ['desktop', 'narrow'], ['normal']],
+  ['dialog.keyboard-dismissal', ['desktop', 'narrow'], ['normal']],
+  ['theme-studio.draft-history', ['desktop', 'narrow'], ['normal']],
+  ['theme-studio.pane-boundaries', ['desktop'], ['normal']],
+  ['elements.fixture-interactions', ['desktop', 'narrow'], ['normal']],
+  ['motion.reduced-loop', ['desktop', 'narrow'], ['reduced']],
+  ['site-discovery.discovery-surface', ['desktop'], ['normal']],
+  ['site-landing.dot-field', ['desktop', 'narrow'], ['normal', 'reduced']],
+  ['site-landing.without-field', ['desktop', 'narrow'], ['normal']],
+  ['blocks.preview', ['desktop', 'narrow'], ['normal']],
 ];
 
-const REQUIRED = MATRIX.flatMap(([scenario, viewports, motion]) =>
-  BOTH.flatMap((mode) => viewports.map((viewport) => `${scenario}@production[mode=${mode},viewport=${viewport},motion=${motion}]`)),
+const CAPABILITY_REMOVALS: Record<string, string[]> = { 'site-landing.without-field': ['webgl'] };
+const CAPABILITY_REQUIREMENTS: Record<string, string[]> = { 'site-landing.dot-field': ['webgl'] };
+
+const REQUIRED = MATRIX.flatMap(([scenario, viewports, motions]) =>
+  BOTH.flatMap((mode) =>
+    viewports.flatMap((viewport) => motions.map((motion) => `${scenario}@production[mode=${mode},viewport=${viewport},motion=${motion}]`)),
+  ),
 );
 
 function coverage(actual: string[]) {
@@ -96,13 +103,13 @@ function registered(declared: Declared) {
 }
 
 const complete = (): Declared =>
-  Object.fromEntries(MATRIX.map(([id, viewports, motion]) => [id, { mode: [...BOTH], viewport: [...viewports], motion: [motion] }]));
+  Object.fromEntries(MATRIX.map(([id, viewports, motions]) => [id, { mode: [...BOTH], viewport: [...viewports], motion: [...motions] }]));
 
 describe('the production obligations', () => {
-  test('are the 28 decided cells plus 4 for blocks.preview, across nine scenarios', () => {
-    assert.equal(MATRIX.length, 9);
-    assert.equal(REQUIRED.length, 28 + 4);
-    assert.equal(new Set(REQUIRED).size, 28 + 4);
+  test('are the 28 decided cells plus 4 for blocks.preview and 12 for site-landing, across eleven scenarios', () => {
+    assert.equal(MATRIX.length, 11);
+    assert.equal(REQUIRED.length, 28 + 4 + 12);
+    assert.equal(new Set(REQUIRED).size, 28 + 4 + 12);
   });
 
   test('a model registering the whole matrix covers exactly those cells', () => {
@@ -206,6 +213,17 @@ describe('the repository', () => {
       const slot = model.scenarios.find((s) => s.id === id)?.bindings.find((b) => b.target === 'production');
       assert.equal(slot?.binding?.path, `apps/docs/tests/production/${id}.ts`, id);
     }
+  });
+
+  test('requires or removes a platform capability only where a scenario declares it', () => {
+    const declared = (key: 'require' | 'remove') =>
+      Object.fromEntries(
+        model.scenarios
+          .map((s) => [s.id, s.targets.find((t) => t.target === 'production')?.[key] ?? []] as const)
+          .filter(([, capabilities]) => capabilities.length > 0),
+      );
+    assert.deepEqual(declared('remove'), CAPABILITY_REMOVALS);
+    assert.deepEqual(declared('require'), CAPABILITY_REQUIREMENTS);
   });
 
   test('keeps each pilot scenario registered in its existing Vitest suite', () => {
