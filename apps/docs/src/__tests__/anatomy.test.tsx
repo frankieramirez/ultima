@@ -106,10 +106,12 @@ async function settledLabels(panel: HTMLElement, visible: string[]) {
 
 const tabbed = components.filter(hasAnatomyTab);
 
-test('the tab reaches every compound page outside the overlays, and Dialog through its open anatomy demo', () => {
+test('the tab reaches every compound page outside the overlays, and each overlay but single-part Menubar through its open anatomy demo', () => {
   expect(tabbed.length).toBeGreaterThan(30);
-  expect(tabbed.some((entry) => entry.item === 'dialog')).toBe(true);
-  expect(tabbed.filter((entry) => entry.group === 'overlays').map((entry) => entry.item)).toEqual(['dialog']);
+  const overlays = components.filter((entry) => entry.group === 'overlays').map((entry) => entry.item);
+  expect(tabbed.filter((entry) => entry.group === 'overlays').map((entry) => entry.item)).toEqual(overlays.filter((item) => item !== 'menubar'));
+  expect(overlays).toContain('menubar');
+  expect(anatomyTabs.menubar?.parts).toEqual(['Menubar']);
 });
 
 for (const entry of tabbed) {
@@ -140,6 +142,14 @@ for (const entry of tabbed) {
         const legend = [...panel.querySelectorAll('ol[aria-label="Parts"] > li')].map((item) => item.childNodes[1]?.textContent);
         expect(legend).toEqual([...parts.keys()]);
         for (const part of parts.keys()) expect(anatomyTabs[entry.item]?.parts).toContain(part);
+
+        if (entry.group === 'overlays') {
+          expect(stage.contains(document.activeElement), 'the open overlay takes no focus').toBe(false);
+          for (let step = 0; step < 4; step += 1) {
+            await userEvent.tab();
+            expect(stage.contains(document.activeElement), 'Tab passes the stage by').toBe(false);
+          }
+        }
 
         const results = await axe.run(panel.closest('figure') as HTMLElement);
         expect(results.violations.map((violation) => `${violation.id}: ${violation.nodes.map((node) => node.html).join(', ')}`)).toEqual([]);
@@ -236,6 +246,15 @@ test('the Anatomy stage applies Neutral, and the open dialog sits inside it', as
   expect(boundary).not.toBeNull();
   expect(boundary?.contains(stage.querySelector('[data-anatomy-part="Popup"]'))).toBe(true);
   expect(panel.querySelector('[data-anatomy-overlay]')?.closest('[data-theme-boundary]')).toBeNull();
+});
+
+test('a popup Base UI has yet to position never grows the stage', async () => {
+  const { panel } = await openAnatomy(1440, 'popover');
+  await settledLabels(panel, ['Trigger', 'Positioner', 'Popup', 'Arrow', 'Title', 'Description', 'Close']);
+  const stage = panel.querySelector('[inert]') as HTMLElement;
+  const demo = stage.firstElementChild as HTMLElement;
+  const { paddingTop, paddingBottom } = getComputedStyle(stage);
+  expect(Math.round(stage.clientHeight)).toBe(Math.round(demo.offsetHeight + parseFloat(paddingTop) + parseFloat(paddingBottom)));
 });
 
 test('the stage gives back the room a stack took once a new width no longer needs it', async () => {

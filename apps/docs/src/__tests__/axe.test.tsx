@@ -11,7 +11,12 @@ import { render } from 'vitest-browser-react';
 import { ThemeBoundary } from '../theme-boundary';
 import { siteTheme } from '../theme';
 
-const demos = import.meta.glob<{ default: ComponentType }>('../demos/**/*.tsx', { eager: true });
+/**
+ * An overlay's `anatomy.tsx` holds its popup open and only ever shows inside the Anatomy tab's inert
+ * stage, where anatomy.test.tsx runs axe over it. Mounted bare, an open menu's focus guards and a
+ * toast's hover-only Close read as focusable content under `aria-hidden`.
+ */
+const demos = import.meta.glob<{ default: ComponentType }>(['../demos/**/*.tsx', '!../demos/**/anatomy.tsx'], { eager: true });
 
 /**
  * One browser serves every file, so the pointer arrives wherever the file before this one left it.

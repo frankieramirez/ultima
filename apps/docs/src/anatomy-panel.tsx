@@ -59,7 +59,8 @@ const styles = stylex.create({
 
 type Measured = { size: AnatomySize; parts: [part: string, box: AnatomyBox | null][] };
 
-function measure(stage: HTMLElement, item: string): Measured {
+/** `null` while a part sits past the stage's foot: a popup Base UI has yet to position, which a later style write moves. */
+function measure(stage: HTMLElement, item: string): Measured | null {
   const origin = stage.getBoundingClientRect();
   const parts = new Map<string, AnatomyBox | null>();
   for (const node of stage.querySelectorAll<HTMLElement>(`[data-anatomy-item="${item}"]`)) {
@@ -67,6 +68,7 @@ function measure(stage: HTMLElement, item: string): Measured {
     if (parts.get(part) != null) continue;
     const rect = node.getBoundingClientRect();
     const visible = rect.width > 0 && rect.height > 0;
+    if (visible && rect.top >= origin.bottom) return null;
     parts.set(part, visible ? { x: rect.left - origin.left, y: rect.top - origin.top, width: rect.width, height: rect.height } : null);
   }
   return { size: { width: origin.width, height: origin.height }, parts: [...parts] };
@@ -90,6 +92,7 @@ export function AnatomyPanel({ item, component: Component }: { item: string; com
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         const next = measure(node, item);
+        if (!next) return;
         // A new width lays the demo out again, so the stage gives back any room an earlier stack took.
         if (width !== undefined && width !== next.size.width) setReach(0);
         width = next.size.width;
