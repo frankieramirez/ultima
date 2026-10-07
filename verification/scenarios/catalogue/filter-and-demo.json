@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "catalogue.filter-and-demo",
   "title": "Filtering the catalogue narrows, empties and clears, and a demo's source copies exactly",
-  "intent": "The /components directory sections the catalogue by group with counts and catalogue numbers; the filter narrows across every group, hides each group with no match, shows the empty state when nothing matches and clears back to the whole catalogue; a result opens from the keyboard with a visible focus ring; and on /components/button the live demo renders while its copy control writes the displayed source to the clipboard.",
-  "contract": "docs/spec/ultima.md#page-set",
+  "intent": "The /components directory sections the catalogue by group with counts and catalogue numbers; the filter narrows across every group, hides each group with no match, shows the empty state when nothing matches and clears back to the whole catalogue; a group chip and the HTML element switch intersect with it, and the list view keeps the entries without their previews; a result opens from the keyboard with a visible focus ring; and on /components/button the live demo renders while its copy control writes the displayed source to the clipboard.",
+  "contract": "docs/spec/ultima.md#components-directory",
   "aliases": [
     "no results",
     "clear filters",
@@ -14,7 +14,11 @@
     "live demo",
     "groups",
     "catalogue groups",
-    "catalogue number"
+    "catalogue number",
+    "group chips",
+    "html element switch",
+    "grid",
+    "list view"
   ],
   "items": [
     "button",
@@ -73,6 +77,10 @@
     {
       "action": "Press the empty state's Clear filters.",
       "expect": "The query is empty, focus is back in Filter components and the status counts the whole catalogue."
+    },
+    {
+      "action": "Press the Overlays chip, turn on Has an HTML element, switch to List, then press Clear filters and switch back to Grid.",
+      "expect": "Only Overlays remains and every entry left ships an element; List keeps those entries without previews; Clear filters restores the whole catalogue with the switch off and List still pressed; Grid shows a preview per entry."
     },
     {
       "action": "Type button, press Tab until the Button entry has focus, then press Enter.",
