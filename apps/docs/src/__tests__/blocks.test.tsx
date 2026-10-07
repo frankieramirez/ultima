@@ -65,11 +65,11 @@ test('each index thumbnail frames its preview route lazily and inert, so none is
   const links = screen.getByRole('list', { name: 'Blocks' }).getByRole('link').elements();
   links[0]!.focus();
   const stops = [document.activeElement];
-  for (let press = 0; press < blocks.length; press++) {
+  for (let press = 1; press < blocks.length; press++) {
     await userEvent.keyboard('{Tab}');
     stops.push(document.activeElement);
   }
-  expect(stops).toEqual([...links, screen.getByRole('link', { name: 'Suggest a block' }).element()]);
+  expect(stops).toEqual(links);
 });
 
 describe.each(blocks)('$title', (block) => {

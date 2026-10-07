@@ -56,6 +56,7 @@ const styles = stylex.create({
     },
     fontWeight: { default: font['--ult-font-weight-regular'], ':is([data-active], [aria-current="page"])': font['--ult-font-weight-semibold'] },
     textDecorationLine: { default: 'none', ':is([data-active], [aria-current="page"])': 'underline' },
+    paddingInline: { default: space['--ult-space-2'], [breakpoints.DESKTOP]: space['--ult-space-3'] },
     textDecorationThickness: border.focus,
     textUnderlineOffset: space['--ult-space-3'],
   },

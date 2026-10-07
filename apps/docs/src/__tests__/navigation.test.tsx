@@ -89,6 +89,7 @@ test('the header offers the workshop nav and hides the menu trigger on desktop',
   await expect.element(site.getByRole('link', { name: 'Components' })).toBeVisible();
   expect([...site.element().querySelectorAll('a')].map((link) => link.textContent)).toEqual([
     'Components',
+    'Blocks',
     'Tokens',
     'Studio',
     'Documentation',

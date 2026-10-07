@@ -1,4 +1,4 @@
-import { ArrowRightIcon, ArrowUpRightIcon } from '@phosphor-icons/react';
+import { ArrowRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
@@ -12,7 +12,6 @@ import { blocks, type BlockEntry } from '../generated/blocks';
 import { TextLink } from '../text-link';
 
 const HEADING_FONT = 'Space Grotesk, Figtree, ui-sans-serif, system-ui, sans-serif';
-const SUGGEST = 'https://github.com/frankieramirez/ultima/issues/new';
 
 const FACTS = [
   { label: 'Install', value: 'one command per block' },
@@ -150,26 +149,6 @@ const styles = stylex.create({
   prompt: { color: color['--ult-color-text-subtle'], userSelect: 'none' },
   command: { color: color['--ult-color-text'], flexGrow: 1, minInlineSize: 0, overflowWrap: 'anywhere' },
   count: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-1'], marginInlineStart: 'auto' },
-  request: {
-    alignItems: 'center',
-    columnGap: space['--ult-space-7'],
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingBlock: space['--ult-space-7'],
-    paddingInline: space['--ult-space-7'],
-    rowGap: space['--ult-space-5'],
-  },
-  requestCopy: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-2'] },
-  requestTitle: {
-    color: color['--ult-color-text'],
-    fontFamily: HEADING_FONT,
-    fontSize: text['--ult-text-6'],
-    fontWeight: font['--ult-font-weight-medium'],
-    margin: 0,
-  },
-  suggest: { color: color['--ult-color-text'], fontSize: text['--ult-text-4'], fontWeight: font['--ult-font-weight-medium'], gap: space['--ult-space-3'] },
-  requestNote: { color: color['--ult-color-text-muted'], fontSize: text['--ult-text-4'], margin: 0 },
 });
 
 export function componentCount(block: BlockEntry) {
@@ -250,16 +229,6 @@ export function BlocksPage() {
           <BlockCard key={block.id} block={block} />
         ))}
       </ul>
-      <Card.Root style={styles.request}>
-        <div {...stylex.props(styles.requestCopy)}>
-          <h2 {...stylex.props(styles.requestTitle)}>Missing a pattern?</h2>
-          <p {...stylex.props(styles.requestNote)}>Blocks grow from what people build. Tell us which page you keep rebuilding.</p>
-        </div>
-        <TextLink variant="muted" href={SUGGEST} style={styles.suggest}>
-          Suggest a block
-          <ArrowUpRightIcon aria-hidden />
-        </TextLink>
-      </Card.Root>
     </DocumentLayout>
   );
 }
