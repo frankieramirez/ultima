@@ -35,10 +35,21 @@ const styles = stylex.create({
     whiteSpace: 'nowrap',
   },
   icon: { paddingInline: space['--ult-space-4'] },
+  number: {
+    color: color['--ult-color-text-subtle'],
+    flexShrink: 0,
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-2'],
+    letterSpacing: font['--ult-font-tracking-wide'],
+    lineHeight: font['--ult-font-leading-none'],
+    paddingBlockStart: space['--ult-space-3'],
+    paddingInlineEnd: space['--ult-space-3'],
+  },
 });
 
 export function ThemeStudioGroup({
   label,
+  number,
   active,
   overrideRequest,
   summary,
@@ -50,6 +61,7 @@ export function ThemeStudioGroup({
   panel,
 }: {
   label: string;
+  number: number;
   active: boolean;
   overrideRequest?: number;
   summary: string;
@@ -70,6 +82,7 @@ export function ThemeStudioGroup({
     <Collapsible.Root open={open} onOpenChange={setOpen}>
       <div {...stylex.props(styles.root)}>
         <header {...stylex.props(styles.header)}>
+          <span aria-hidden data-group-number {...stylex.props(styles.number)}>{String(number).padStart(2, '0')}</span>
           <div {...stylex.props(styles.heading)}>
             <h2 id={titleId} {...stylex.props(styles.title)}>
               {label}

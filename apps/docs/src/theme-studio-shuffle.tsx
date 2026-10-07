@@ -4,15 +4,16 @@ import { ArrowUUpLeftIcon, ArrowUUpRightIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import type { ShuffleVariation } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Select } from '@ultima/ui';
-import { useContext } from 'react';
-import { StudioPortalContext } from './theme-studio-context';
+import { Button, ToggleGroup } from '@ultima/ui';
+import { useId } from 'react';
 
 import { Kicker } from './page';
+import { keepOne } from './theme-studio-draft';
+
 const OPTIONS = [
-  { value: 'subtle', label: 'Subtle', description: 'Small changes to your current theme.' },
   { value: 'broad', label: 'Broad', description: 'Explore new color, spacing and type combinations.' },
-];
+  { value: 'subtle', label: 'Subtle', description: 'Small changes to your current theme.' },
+] as const;
 
 const styles = stylex.create({
   touch: { minBlockSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null }, minInlineSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null } },
@@ -22,9 +23,7 @@ const styles = stylex.create({
   icon: { paddingInline: space['--ult-space-4'] },
   fingerprint: { marginInlineStart: 'auto' },
   action: { flexGrow: 1 },
-  variation: { minInlineSize: '6rem' },
-  choice: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-1'], paddingBlock: space['--ult-space-3'] },
-  hint: { color: color['--ult-color-text-muted'], fontSize: text['--ult-text-4'], lineHeight: font['--ult-font-leading-normal'], margin: 0 },
+  railOnlyHint: { color: color['--ult-color-text-subtle'], display: { default: 'none', [breakpoints.RAIL]: 'block' }, fontSize: text['--ult-text-2'], lineHeight: font['--ult-font-leading-snug'], margin: 0 },
 });
 
 export function ThemeStudioShuffleBar({
@@ -46,20 +45,28 @@ export function ThemeStudioShuffleBar({
   onVariationChange: (variation: ShuffleVariation) => void;
   variation: ShuffleVariation;
 }) {
-  const container = useContext(StudioPortalContext);
+  const hintId = useId();
   return (
     <div {...stylex.props(styles.bar)}>
       <div {...stylex.props(styles.row)}>
         <Button onClick={onShuffle} variant="outline" style={[docsStyles.square, styles.touch, styles.action]}>Shuffle</Button>
-        <Select.Root items={OPTIONS} value={variation} onValueChange={(next) => { if (next) onVariationChange(next as ShuffleVariation); }}>
-          <Select.Trigger aria-label="Shuffle variation" style={[docsStyles.square, styles.touch, styles.variation]}><Select.Value /><Select.Icon /></Select.Trigger>
-          <Select.Portal container={container}><Select.Positioner><Select.Popup>
-            <Select.List>{OPTIONS.map((option) => <Select.Item key={option.value} value={option.value}>
-              <Select.ItemIndicator /><Select.ItemText><span {...stylex.props(styles.choice)}><span>{option.label}</span><span {...stylex.props(styles.hint)}>{option.description}</span></span></Select.ItemText>
-            </Select.Item>)}</Select.List>
-          </Select.Popup></Select.Positioner></Select.Portal>
-        </Select.Root>
+        <ToggleGroup.Root
+          aria-describedby={hintId}
+          aria-label="Shuffle variation"
+          onValueChange={(next, eventDetails) => {
+            const selected = keepOne(next, () => eventDetails.cancel());
+            if (selected) onVariationChange(selected as ShuffleVariation);
+          }}
+          value={[variation]}
+        >
+          {OPTIONS.map((option) => (
+            <ToggleGroup.Item key={option.value} value={option.value} style={[docsStyles.square, styles.touch]}>
+              {option.label}
+            </ToggleGroup.Item>
+          ))}
+        </ToggleGroup.Root>
       </div>
+      <p id={hintId} {...stylex.props(styles.railOnlyHint)}>{OPTIONS.find((option) => option.value === variation)?.description}</p>
       <div {...stylex.props(styles.row)}>
         <div {...stylex.props(styles.history)}>
           <Button aria-label="Undo" disabled={!canUndo} onClick={onUndo} size="sm" style={[docsStyles.square, styles.icon, styles.touch]} variant="ghost"><ArrowUUpLeftIcon aria-hidden /></Button>

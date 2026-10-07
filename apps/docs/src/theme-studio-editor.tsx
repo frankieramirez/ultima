@@ -3,9 +3,7 @@ import { StudioPortalContext } from './theme-studio-context';
 import * as stylex from '@stylexjs/stylex';
 import {
   generateScales,
-  isPresetEdited,
   presetDraft,
-  presetLabel,
   shapePresets,
   THEME_DRAFT_VERSION,
   THEME_PRESETS,
@@ -33,7 +31,7 @@ import {
   Toggle,
   ToggleGroup,
 } from '@ultima/ui';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useId, useMemo, useState } from 'react';
 
 import { breakpoints } from './breakpoints.stylex';
 import {
@@ -52,6 +50,7 @@ import { ThemeStudioGroup } from './theme-studio-group';
 import type { DraftEdit } from './theme-studio-store';
 import { TokenRows, type ModeOffenders } from './theme-studio-token-row';
 import { PresetPreview } from './theme-studio-preview';
+import { Kicker } from './page';
 
 const styles = stylex.create({
   touch: { minBlockSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null }, minInlineSize: { default: space['--ult-space-11'], [breakpoints.RAIL]: null } },
@@ -117,16 +116,21 @@ const styles = stylex.create({
   preset: { display: 'flex', flexWrap: 'wrap' },
   group: { display: { default: 'none', [breakpoints.RAIL]: 'flex' }, flexDirection: 'column', flexShrink: 0 },
   groupActive: { display: 'flex' },
+  railFoot: { display: { default: 'none', [breakpoints.RAIL]: 'block' } },
   divider: { marginBlockEnd: space['--ult-space-8'] },
   stack: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-6'] },
   row: { alignItems: 'center', display: 'flex', gap: space['--ult-space-4'] },
-  themeTrigger: { inlineSize: '100%', minBlockSize: space['--ult-space-11'], justifyContent: 'space-between' },
-  themeOption: { gridTemplateColumns: 'auto minmax(0, 1fr) auto', gap: space['--ult-space-5'], minBlockSize: space['--ult-space-12'], paddingBlock: space['--ult-space-5'], paddingInline: space['--ult-space-6'] },
-  themeCopy: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-1'], minInlineSize: 0 },
-  themePopup: { inlineSize: 'min(24rem, var(--available-width))' },
-  themeName: { gridColumn: 'auto', fontSize: text['--ult-text-5'] },
-  themeIndicator: { gridColumn: 'auto' },
-  themeHint: { color: color['--ult-color-text-muted'], fontSize: text['--ult-text-4'], lineHeight: font['--ult-font-leading-normal'], margin: 0, padding: space['--ult-space-6'] },
+  picker: { display: 'flex', flexDirection: 'column', flexShrink: 0, gap: space['--ult-space-4'] },
+  caps: { textTransform: 'uppercase' },
+  presets: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' },
+  presetChip: {
+    alignItems: 'stretch',
+    flexDirection: 'column',
+    gap: space['--ult-space-3'],
+    minInlineSize: 0,
+    paddingBlock: space['--ult-space-4'],
+    paddingInline: space['--ult-space-4'],
+  },
   role: {
     flexShrink: 0,
     fontSize: text['--ult-text-3'],
@@ -137,38 +141,27 @@ const styles = stylex.create({
 });
 
 export function CompleteThemePicker({ draft, commit }: { draft: ThemeDraft; commit: (edit: DraftEdit) => void }) {
-  const container = useContext(StudioPortalContext);
-  const identity = `${presetLabel(draft)}${isPresetEdited(draft) ? ' · Edited' : ''}`;
+  const labelId = useId();
   return (
-    <Select.Root
-      items={THEME_PRESETS.map((preset) => ({ label: preset.label, value: preset.id }))}
-      value={draft.version === THEME_DRAFT_VERSION ? (draft.preset?.id ?? null) : null}
-      onValueChange={(id) => { if (id) commit(() => presetDraft(id as ThemePresetId)); }}
-    >
-      <Select.Trigger aria-label="Complete theme" style={[docsStyles.square, styles.themeTrigger]}>
-        <span>{identity}</span><Select.Icon />
-      </Select.Trigger>
-      <Select.Portal container={container}>
-        <Select.Positioner>
-          <Select.Popup style={styles.themePopup}>
-            <Select.List>
-              {THEME_PRESETS.map((preset) => (
-                <Select.Item key={preset.id} value={preset.id} style={styles.themeOption}>
-                  <PresetPreview id={preset.id} />
-                  <span {...stylex.props(styles.themeCopy)}>
-                    <Select.ItemText style={styles.themeName}>{preset.label}</Select.ItemText>
-                    <span {...stylex.props(styles.roleNote)}>{preset.description}</span>
-                  </span>
-                  <Select.ItemIndicator style={styles.themeIndicator} />
-                </Select.Item>
-              ))}
-            </Select.List>
-            <Separator />
-            <p {...stylex.props(styles.themeHint)}>Applies a complete theme. Undo restores your draft.</p>
-          </Select.Popup>
-        </Select.Positioner>
-      </Select.Portal>
-    </Select.Root>
+    <div {...stylex.props(styles.picker)}>
+      <Kicker id={labelId} style={styles.caps}>Start from a preset</Kicker>
+      <ToggleGroup.Root
+        aria-labelledby={labelId}
+        onValueChange={(next, eventDetails) => {
+          const selected = keepOne(next, () => eventDetails.cancel());
+          if (selected) commit(() => presetDraft(selected as ThemePresetId));
+        }}
+        style={styles.presets}
+        value={draft.version === THEME_DRAFT_VERSION && draft.preset ? [draft.preset.id] : []}
+      >
+        {THEME_PRESETS.map((preset) => (
+          <ToggleGroup.Item key={preset.id} value={preset.id} style={[docsStyles.square, styles.touch, styles.presetChip]}>
+            <PresetPreview id={preset.id} />
+            {preset.label}
+          </ToggleGroup.Item>
+        ))}
+      </ToggleGroup.Root>
+    </div>
   );
 }
 
@@ -609,11 +602,13 @@ export function ThemeStudioEditor({
   onShuffleGroup,
   resolved,
   offenders,
+  pairings,
   update,
   commit,
 }: {
   draft: ThemeDraft;
   group: GroupLabel;
+  pairings: number;
   onGroupChange: (group: GroupLabel) => void;
   onShuffleGroup: (group: GroupId) => void;
   resolved: ResolvedDraft;
@@ -652,6 +647,7 @@ export function ThemeStudioEditor({
                 {index > 0 ? <Separator style={styles.divider} /> : null}
                 <ThemeStudioGroup
                   label={item.label}
+                  number={index + 1}
                   active={group === item.label}
                   overrideRequest={item.id === 'color' ? requestedToken?.serial : undefined}
                   locked={draft.locks[item.id]}
@@ -716,6 +712,10 @@ export function ThemeStudioEditor({
                 </ThemeStudioGroup>
               </section>
             ))}
+            <div {...stylex.props(styles.railFoot)}>
+              <Separator style={styles.divider} />
+              <p {...stylex.props(styles.roleNote)}>Shuffle redraws every unlocked group and keeps a draft only if all {pairings} pairings pass in both modes.</p>
+            </div>
           </ScrollArea.Content>
         </ScrollArea.Viewport>
       </ScrollArea.Root>
