@@ -272,6 +272,7 @@ const styles = stylex.create({
     transitionProperty: 'opacity',
   },
   shown: { opacity: 1 },
+  still: { transitionProperty: 'none' },
   host: { blockSize: '100%' },
 });
 
@@ -304,7 +305,8 @@ export function DotField({ onState }: { onState: (state: FieldState) => void }) 
     };
   }, []);
   useEffect(() => {
-    if (canvas.current) canvas.current.className = stylex.props(styles.canvas, state !== 'loading' && state !== 'off' && styles.shown).className ?? '';
+    const shown = state !== 'loading' && state !== 'off';
+    if (canvas.current) canvas.current.className = stylex.props(styles.canvas, shown && styles.shown, state === 'still' && styles.still).className ?? '';
     onState(state);
   }, [onState, state]);
 
