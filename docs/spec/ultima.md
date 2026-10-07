@@ -1916,6 +1916,8 @@ The setup items are universal `registry:item`s, so the first command installs in
 
 ### Setup items
 
+The planned [consumer project bootstrap](consumer-setup.md), decided on [Decide the supported project bootstrap experience](https://github.com/frankieramirez/ultima/issues/726), adds `ultima-design init` as the guided entry for new and existing supported projects. Its command journey, supported layouts, edit/recovery contract and acceptance scenarios are accepted for implementation. The direct registry path and hand steps below remain usable; setup items retain their existing ownership rule.
+
 There is one setup item per target, and a setup item never overwrites a file the consumer's scaffold owns.
 
 **Vite.** Installs `components.json` and `ultima.vite.ts` at the project root. `ultima.vite.ts` exports `ultimaStylex()`, the StyleX unplugin preconfigured with `useCSSLayers: true`, `runtimeInjection: false`, the `unstable_moduleResolution` root, and the `@/` alias. The consumer adds two lines to their own `vite.config.ts`: the import, and `ultimaStylex()` first in `plugins`. Shipping our own `vite.config.ts` would destroy theirs, which the prototype did and a real project cannot accept. `dependencies`: `@stylexjs/stylex`. `devDependencies`: `@stylexjs/unplugin`, `unplugin`.
@@ -2775,6 +2777,8 @@ The audit skill gets no Ultima-aware branch: no import, no special case, no lens
 Charted on [Map: A consumer CLI for Ultima](https://github.com/frankieramirez/ultima/issues/467), published as `ultima-design`. Each subsection is written when its ticket closes.
 
 ### Install
+
+The planned [consumer project bootstrap](consumer-setup.md) owns separately reviewed application setup. `install` continues to write only the managed agent files specified below.
 
 Decided on [Whether install writes into the consumer's repository, and the ADR 0005 amendment](https://github.com/frankieramirez/ultima/issues/474). `install` exists, and it writes into the consumer's repository, never into global harness directories. Codex and Copilot hooks can only be delivered to the project, and a project install keeps the CLI's version in the consumer's lockfile.
 
