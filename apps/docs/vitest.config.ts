@@ -22,7 +22,7 @@ export default defineConfig({
   plugins: [
     themeRegistryPlugin(),
     demoUiPlugin(),
-    { enforce: 'pre', ...mdx({ remarkPlugins: [remarkGfm, remarkFenceTitle] }) },
+    { enforce: 'pre', ...mdx({ mdExtensions: [], remarkPlugins: [remarkGfm, remarkFenceTitle] }) },
     // Registered before stylex.vite so its middleware gates the dev CSS endpoint.
     stylexConstsWarmup(['/src/breakpoints.stylex.ts']),
     stylex.vite(stylexOptions({ dev: true })),

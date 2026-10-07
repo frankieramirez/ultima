@@ -101,6 +101,7 @@ export const docsOptimizerInclude = [
   "@tanstack/highlight/languages/shell",
   "@tanstack/highlight/languages/ts",
   "@tanstack/highlight/languages/tsx",
+  "@tanstack/highlight/languages/yaml",
   "@tanstack/react-router",
   "@tanstack/react-table",
   "@zag-js/date-picker",

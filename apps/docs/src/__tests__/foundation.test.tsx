@@ -7,6 +7,9 @@ import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import { setupItems } from '../../../../registry/items.config';
+import installSource from '../../../../packages/cli/src/install.ts?raw';
+import { INSTALL_WRITES } from '../cli-install';
+import { pages } from '../navigation';
 import { routeTree } from '../router';
 import { THEME_STORAGE_KEY } from '../theme';
 import '../styles.css';
@@ -111,4 +114,109 @@ test('the CLI commands table marks status and diff as the only network commands'
     'npx ultima-design status',
     'npx ultima-design diff <item>',
   ]);
+});
+
+async function railOf(path: string) {
+  await page.viewport(1440, 900);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount(path);
+  const rail = screen.getByRole('complementary', { name: 'On this page' });
+  await expect.element(rail).toBeInTheDocument();
+  return [...rail.element().querySelectorAll('li')].map((item) => item.textContent?.replace(/^(\d+|··)/, '$1 '));
+}
+
+const RAILS: Record<string, string[]> = {
+  '/install': [
+    '01 Commands',
+    '02 What the setup item installs',
+    '03 Steps you still do by hand',
+    '04 Tokens without StyleX',
+    '05 Web components',
+    '06 For an agent',
+    '07 Theme adoption',
+    '08 Where to go next',
+  ],
+  '/cli': ['01 Install', '02 Commands', '03 In CI', '04 Other skill installers'],
+  '/elements': ['01 Install', '02 How an element reads', '03 Styling', '04 The catalogue'],
+  '/rationale': ['01 StyleX', '02 Base UI', '03 Registry-first', '04 Dark-first', '·· Every decision record'],
+};
+
+for (const [path, expected] of Object.entries(RAILS)) {
+  test(`${path} numbers its section index`, async () => {
+    expect(await railOf(path)).toEqual(expected);
+  });
+}
+
+test('/tokens numbers its section index', async () => {
+  const rail = await railOf('/tokens');
+  expect(rail.length).toBeGreaterThan(0);
+  expect(rail.map((entry) => entry?.slice(0, 2))).toEqual(rail.map((_, index) => String(index + 1).padStart(2, '0')));
+  expect(rail.at(-1)).toBe(`${String(rail.length).padStart(2, '0')} Overriding`);
+});
+
+for (const path of ['/install', '/cli', '/elements', '/tokens']) {
+  test(`${path} gives each § heading the number its rail entry shows`, async () => {
+    await railOf(path);
+    const counted = [...document.querySelectorAll<HTMLElement>('[data-document-article] h2')].filter((heading) =>
+      getComputedStyle(heading).counterIncrement.startsWith('section'),
+    );
+    expect(counted.length).toBeGreaterThan(0);
+    expect(counted.map((heading) => heading.dataset.indexNumber)).toEqual(
+      counted.map((_, index) => String(index + 1).padStart(2, '0')),
+    );
+  });
+}
+
+const adrFiles = Object.keys(import.meta.glob('../../../../docs/adr/*.md')).map((path) => path.slice(path.lastIndexOf('/') + 1));
+
+test('the Rationale lists every ADR in docs/adr/ and counts them in its running head', async () => {
+  const screen = await mount('/rationale');
+  const table = screen.getByRole('table');
+  await expect.element(table).toBeVisible();
+  const rows = [...table.element().querySelectorAll('tbody tr')];
+  expect(adrFiles.length).toBeGreaterThan(0);
+  expect(rows.map((row) => row.querySelector('td')?.textContent)).toEqual(adrFiles.map((file) => `ADR ${file.slice(0, 4)}`));
+  expect(rows.map((row) => row.querySelector('a')?.getAttribute('href')?.split('/').at(-1))).toEqual(adrFiles);
+  expect(rows.every((row) => ['Accepted', 'Amended'].includes(row.querySelector('td:last-child')?.textContent ?? ''))).toBe(true);
+  expect(document.querySelector('main')?.textContent).toContain(`4 decisions · ${adrFiles.length} records`);
+});
+
+test('the Rationale index jumps to each decision', async () => {
+  const screen = await mount('/rationale');
+  await expect.element(screen.getByRole('heading', { name: 'StyleX', level: 2 })).toBeVisible();
+  const decisions = [...document.querySelectorAll<HTMLElement>('h2[data-index-number]')];
+  const jumps = [...document.querySelectorAll('main ol a[href^="#"]')].map((link) => link.getAttribute('href'));
+  expect(jumps).toEqual(decisions.map((heading) => `#${heading.id}`));
+});
+
+test('the CLI names the files install writes, as packages/cli writes them', async () => {
+  const screen = await mount('/cli');
+  await expect.element(screen.getByRole('heading', { name: 'The ultima-design skill' })).toBeVisible();
+  const shown = [...document.querySelectorAll('main dd')].map((path) => path.textContent);
+  const paths = INSTALL_WRITES.flatMap(({ files }) => files.map(({ path }) => path));
+  expect(shown).toEqual(paths);
+  for (const path of paths) expect(installSource).toContain(`'${path.replace(/\/SKILL\.md$/, '')}'`);
+  expect(installSource).toContain("'SKILL.md'");
+});
+
+test('the CI workflow on the CLI page runs the two gates', async () => {
+  const screen = await mount('/cli');
+  await expect.element(screen.getByRole('heading', { name: 'In CI' })).toBeVisible();
+  const text = document.querySelector('main')?.textContent ?? '';
+  expect(text).toContain('run: npx --no-install ultima-design doctor');
+  expect(text).toContain('run: npx --no-install ultima-design check');
+});
+
+test('Install ends with cards to the pages a reader goes next', async () => {
+  const screen = await mount('/install');
+  await expect.element(screen.getByRole('heading', { name: 'Where to go next' })).toBeVisible();
+  const links = [...document.querySelectorAll('main h3 a')].map((link) => [link.textContent, link.getAttribute('href')]);
+  expect(links).toEqual([
+    ['Components', '/components'],
+    ['Tokens', '/tokens'],
+    ['Theme Studio', '/theme-studio'],
+    ['CLI', '/cli'],
+    ['Blocks', '/blocks'],
+  ]);
+  for (const [, href] of links) expect(pages.map(({ to }) => to)).toContain(href);
 });
