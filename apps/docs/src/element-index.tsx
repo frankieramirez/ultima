@@ -41,15 +41,20 @@ const styles = stylex.create({
     marginBlock: space['--ult-space-6'],
     padding: 0,
   },
-  link: { color: color['--ult-color-text'], display: 'block', textDecoration: 'none' },
-  card: { overflow: 'hidden' },
-  body: {
+  card: { overflow: 'hidden', position: 'relative' },
+  /** The link's box stretches over the whole card, so the inert preview above it is clickable too. */
+  link: {
     alignItems: 'center',
+    color: color['--ult-color-text'],
     display: 'flex',
     gap: space['--ult-space-4'],
     justifyContent: 'space-between',
-    paddingBlock: space['--ult-space-5'],
-    paddingInline: space['--ult-space-5'],
+    // The card clips its corners; a 4px margin leaves room for the focus ring and its offset.
+    margin: space['--ult-space-2'],
+    paddingBlock: space['--ult-space-4'],
+    paddingInline: space['--ult-space-4'],
+    textDecoration: 'none',
+    '::after': { content: '""', inset: 0, position: 'absolute' },
   },
   name: { alignItems: 'baseline', display: 'flex', gap: space['--ult-space-4'], minInlineSize: 0 },
   number: { color: color['--ult-color-text-subtle'], fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-1'] },
@@ -93,23 +98,21 @@ export function ElementIndex() {
         const entry = components.find((component) => component.item === element.item);
         return (
           <li key={element.item}>
-            <TextLink
-              variant="muted"
-              render={<Link to="/components/$name" params={{ name: element.item }} hash="web-component" />}
-              style={styles.link}
-            >
-              <Card.Root style={styles.card}>
-                <CataloguePreview item={element.item} />
-                <Separator />
-                <span {...stylex.props(styles.body)}>
-                  <span {...stylex.props(styles.name)}>
-                    {entry && <span {...stylex.props(styles.number)}>{entry.number}</span>}
-                    <span {...stylex.props(styles.tag)}>{`<${element.tag}>`}</span>
-                  </span>
-                  <ArrowUpRightIcon aria-hidden {...stylex.props(styles.arrow)} />
+            <Card.Root style={styles.card}>
+              <CataloguePreview item={element.item} />
+              <Separator />
+              <TextLink
+                variant="muted"
+                render={<Link to="/components/$name" params={{ name: element.item }} hash="web-component" />}
+                style={styles.link}
+              >
+                <span {...stylex.props(styles.name)}>
+                  {entry && <span {...stylex.props(styles.number)}>{entry.number}</span>}
+                  <span {...stylex.props(styles.tag)}>{`<${element.tag}>`}</span>
                 </span>
-              </Card.Root>
-            </TextLink>
+                <ArrowUpRightIcon aria-hidden {...stylex.props(styles.arrow)} />
+              </TextLink>
+            </Card.Root>
           </li>
         );
       })}

@@ -243,9 +243,17 @@ const components = {
   strong: Strong,
 } satisfies MDXComponents;
 
-export function FoundationLayout({ labels, children }: { labels: string[]; children: ReactNode }) {
+export function FoundationLayout({
+  labels,
+  index = true,
+  children,
+}: {
+  labels: string[];
+  index?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <DocumentLayout breadcrumb={[]}>
+    <DocumentLayout breadcrumb={[]} index={index}>
       <div {...stylex.props(foundationStyles.root)}>
         <RunningHead labels={labels} />
         {children}

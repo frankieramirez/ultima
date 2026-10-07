@@ -87,7 +87,7 @@ test('every token has a copy button that copies its name, and every row closes w
   expect(writeText).toHaveBeenCalledWith('--ult-space-4');
 });
 
-test('the rails list the numbered sections of /tokens and /palette', async () => {
+test('/tokens has the on-this-page rail and /palette, at full content width, does not', async () => {
   const tokens = await renderWithRouter(<TokensPage />);
   const rail = tokens.getByRole('complementary', { name: 'On this page' });
   await expect.element(rail).toBeInTheDocument();
@@ -104,13 +104,8 @@ test('the rails list the numbered sections of /tokens and /palette', async () =>
   await tokens.unmount();
 
   const palettePage = await renderWithRouter(<PalettePage />);
-  const paletteRail = palettePage.getByRole('complementary', { name: 'On this page' });
-  await expect.element(paletteRail).toBeInTheDocument();
-  expect(Array.from(paletteRail.element().querySelectorAll('a'), (link) => link.textContent)).toEqual([
-    'Scales',
-    'Step convention',
-    'Contrast gate',
-  ]);
+  await expect.element(palettePage.getByRole('heading', { level: 1, name: 'Palette' })).toBeVisible();
+  expect(palettePage.getByRole('complementary', { name: 'On this page' }).query()).toBeNull();
 });
 
 test('the anchors that ultima check and older links point at still resolve', async () => {
@@ -176,4 +171,14 @@ test('a group tile jumps to its section, clearing a search that hides it', async
   await userEvent.click(tiles.getByRole('link', { name: /^Motion/ }));
   await expect.element(screen.getByRole('textbox', { name: 'Search tokens' })).toHaveValue('');
   expect(screen.container.querySelector('#motion')).not.toBeNull();
+});
+
+test('each step band of the convention table is its own row group with a rowgroup header', async () => {
+  const screen = await renderWithRouter(<PalettePage />);
+  await expect.element(screen.getByRole('heading', { level: 1, name: 'Palette' })).toBeVisible();
+  const table = screen.container.querySelector('#steps-caption')!.closest('table')!;
+  const bodies = [...table.tBodies];
+  expect(bodies.map((body) => body.rows[0]?.querySelector('th')?.getAttribute('scope'))).toEqual(Array(5).fill('rowgroup'));
+  expect(bodies.reduce((rows, body) => rows + body.rows.length - 1, 0)).toBe(12);
+  expect(table.querySelector('[scope="colgroup"]')).toBeNull();
 });

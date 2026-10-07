@@ -83,6 +83,13 @@ test('the Elements page is in the menu and links every element to its section', 
     .toHaveAttribute('aria-current', 'page');
   const links = screen.container.querySelectorAll('article a[href$="#web-component"]');
   expect(links.length).toBe(elements.length);
+  // Each preview sits beside its link, never inside it, and the link's ::after still covers the card.
+  for (const link of links) {
+    expect(link.querySelector('button, [data-component-preview]')).toBeNull();
+    expect(link.parentElement?.querySelector('[data-component-preview]')).not.toBeNull();
+    expect(getComputedStyle(link, '::after').position).toBe('absolute');
+  }
   await userEvent.click(links[0] as HTMLElement);
   await expect.element(page.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
 });
+

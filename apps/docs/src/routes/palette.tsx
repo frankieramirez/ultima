@@ -36,7 +36,13 @@ const STEP_CONVENTION = [
   'the hue as text, 4.5:1 against steps 1 to 3',
 ];
 
-const STEP_BANDS: Record<number, string> = { 1: 'Backgrounds', 3: 'Components', 6: 'Borders', 9: 'Solids', 12: 'Text' };
+const BANDS = [
+  { label: 'Backgrounds', steps: [0, 1] },
+  { label: 'Components', steps: [2, 3, 4] },
+  { label: 'Borders', steps: [5, 6, 7] },
+  { label: 'Solids', steps: [8, 9, 10] },
+  { label: 'Text', steps: [11] },
+];
 
 const SAMPLE_SCALES = ['arcane', 'verdant', 'ruin'];
 
@@ -140,7 +146,9 @@ const closest = contrast
 export function PalettePage() {
   const scheme = useResolvedScheme();
   return (
-    <FoundationLayout labels={[`${palette.length} scales · ${STEPS} steps · 2 modes`, 'Generated in OKLCH']}>
+    <FoundationLayout
+      index={false}
+      labels={[`${palette.length} scales · ${STEPS} steps · 2 modes`, 'Generated in OKLCH']}>
       <FoundationTitle
         title="Palette"
         lede="Six scales, twelve steps each, a dark and a light value per step, generated in OKLCH and committed as hex. A step number means the same thing in both modes and in every scale; the ramp carries the inversion, so a semantic token resolves to one step number and not two."
@@ -215,17 +223,15 @@ export function PalettePage() {
                 <Table.HeadCell>Meaning</Table.HeadCell>
               </Table.Row>
             </Table.Head>
-            <Table.Body>
-              {STEP_CONVENTION.map((meaning, index) => (
-                <Fragment key={meaning}>
-                  {STEP_BANDS[index + 1] && (
-                    <Table.Row>
-                      <Table.HeadCell colSpan={3} scope="colgroup" style={styles.band}>
-                        {STEP_BANDS[index + 1]}
-                      </Table.HeadCell>
-                    </Table.Row>
-                  )}
-                  <Table.Row>
+            {BANDS.map((band) => (
+              <Table.Body key={band.label}>
+                <Table.Row>
+                  <Table.HeadCell colSpan={3} scope="rowgroup" style={styles.band}>
+                    {band.label}
+                  </Table.HeadCell>
+                </Table.Row>
+                {band.steps.map((index) => (
+                  <Table.Row key={index}>
                     <Table.Cell style={[styles.numeric, styles.mono]}>{String(index + 1).padStart(2, '0')}</Table.Cell>
                     <Table.Cell>
                       <span {...stylex.props(styles.chips)}>
@@ -235,11 +241,11 @@ export function PalettePage() {
                         })}
                       </span>
                     </Table.Cell>
-                    <Table.Cell>{meaning}</Table.Cell>
+                    <Table.Cell>{STEP_CONVENTION[index]}</Table.Cell>
                   </Table.Row>
-                </Fragment>
-              ))}
-            </Table.Body>
+                ))}
+              </Table.Body>
+            ))}
           </Table.Root>
         </Table.Scroll>
         <Callout icon={<InfoIcon />} title="This deviates from Radix Colors on purpose.">
