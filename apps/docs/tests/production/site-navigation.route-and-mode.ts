@@ -9,7 +9,7 @@ import type { Page } from 'playwright';
 
 import { productionScenario } from '../../../../scripts/verification/production.ts';
 import { siteNavigation } from '../fixtures/site-navigation.ts';
-import { animationsSettle, assertColor, assertFits, focusSettlesInside, isFocused, shippedColor } from '../support/production.ts';
+import { animationsSettle, assertColor, assertFits, focusSettlesInside, isFocused, siteColor } from '../support/production.ts';
 
 const { directLoads, componentLoad, homeLink, destination, menu, componentGroups, colorMode } = siteNavigation;
 
@@ -49,7 +49,7 @@ async function current(page: Page, scope: 'Site' | 'Ultima', name: string) {
     assert.equal(active.decoration, 'underline');
     assert.equal(active.thickness, '2px');
     const mode = await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme) as 'dark' | 'light';
-    await assertColor(page, active.color, await shippedColor(page, '--ult-color-accent-text', mode), 'the active header link');
+    await assertColor(page, active.color, siteColor('--ult-color-accent-text', mode), 'the active header link');
   }
 }
 
@@ -58,7 +58,7 @@ async function painted(page: Page, mode: 'dark' | 'light', what: string) {
     background: getComputedStyle(element).backgroundColor,
     scheme: getComputedStyle(document.documentElement).colorScheme,
   }));
-  await assertColor(page, header.background, await shippedColor(page, '--ult-color-surface', mode), `${what}: the header surface`);
+  await assertColor(page, header.background, siteColor('--ult-color-surface', mode), `${what}: the header surface`);
   assert.equal(header.scheme, mode, `${what}: the document's color-scheme`);
 }
 

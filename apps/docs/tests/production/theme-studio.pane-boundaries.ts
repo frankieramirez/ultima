@@ -11,7 +11,7 @@ import type { Locator, Page } from 'playwright';
 import { productionScenario } from '../../../../scripts/verification/production.ts';
 import { draftHistory } from '../fixtures/theme-studio-history.ts';
 import { paneBoundaries } from '../fixtures/theme-studio-panes.ts';
-import { animationsSettle, assertColor, assertFits, isFocused, sameColor, shippedColor } from '../support/production.ts';
+import { animationsSettle, assertColor, assertFits, isFocused, sameColor, siteColor } from '../support/production.ts';
 
 const { panes, scene, overlays } = paneBoundaries;
 const { densityGroup, editedDensity, stockSpace1 } = draftHistory;
@@ -41,9 +41,9 @@ export default productionScenario('theme-studio.pane-boundaries', 'production', 
   const editor = page.getByRole('complementary', { name: 'Theme editor' });
   const header = page.getByRole('banner');
   const headerBefore = await header.evaluate((element) => getComputedStyle(element).backgroundColor);
-  await assertColor(page, headerBefore, await shippedColor(page, '--ult-color-surface', variant.mode), `the site header in ${variant.mode} mode`);
+  await assertColor(page, headerBefore, siteColor('--ult-color-surface', variant.mode), `the site header in ${variant.mode} mode`);
   const editorBefore = await tokens(editor, EDITOR_TOKENS);
-  await assertColor(page, editorBefore['--ult-color-surface'] ?? '', await shippedColor(page, '--ult-color-surface', variant.mode), 'the editor surface');
+  await assertColor(page, editorBefore['--ult-color-surface'] ?? '', siteColor('--ult-color-surface', variant.mode), 'the editor surface');
 
   const modes = page.getByRole('group', { name: 'Preview color mode' });
   await modes.getByRole('button', { name: 'Compare', exact: true }).click();

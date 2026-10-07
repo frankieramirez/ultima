@@ -11,6 +11,7 @@ import { defineConfig } from 'vitest/config';
 
 import { docsOptimizerInclude } from '../../scripts/generated/browser-dependencies.ts';
 import { stylexConstsWarmup, stylexOptions } from '../../stylex.options.ts';
+import { demoUiPlugin } from './scripts/demo-ui-plugin.ts';
 import { themeRegistryPlugin } from './scripts/theme-registry-plugin.ts';
 
 const tokensDir = join(dirname(fileURLToPath(import.meta.url)), '../../packages/tokens');
@@ -19,6 +20,7 @@ const tokensRequire = createRequire(join(tokensDir, 'package.json'));
 export default defineConfig({
   plugins: [
     themeRegistryPlugin(),
+    demoUiPlugin(),
     { enforce: 'pre', ...mdx({ remarkPlugins: [remarkGfm] }) },
     // Registered before stylex.vite so its middleware gates the dev CSS endpoint.
     stylexConstsWarmup(['/src/breakpoints.stylex.ts']),

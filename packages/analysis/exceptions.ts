@@ -114,6 +114,16 @@ export default [
     authority: 'docs/spec/ultima.md#painted-declarations-the-docs-keeps',
   },
   {
+    id: 'theme-boundary-applies-a-named-preset',
+    rule: 'ULT-STYLE-001',
+    path: 'apps/docs/src/theme-boundary.tsx',
+    symbol: 'ThemeBoundary',
+    target: 'style',
+    count: 1,
+    reason: "A boundary for a preset other than Neutral applies that preset's resolved --ult-* table inline, as the landing plate and Studio's preview pane do, so its portalled popups wear the preset too.",
+    authority: 'docs/spec/ultima.md#the-docs-site-theme',
+  },
+  {
     id: 'landing-scale-band-wears-its-scale',
     rule: 'ULT-STYLE-001',
     path: 'apps/docs/src/landing-scales.tsx',

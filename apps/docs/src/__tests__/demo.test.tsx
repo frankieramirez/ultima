@@ -33,7 +33,7 @@ test('Preview is the default; switching to Code shows the exact source and prese
     .toBeVisible();
 });
 
-test('the toolbar copies the source from either tab and leaves demo radii at Ultima defaults', async () => {
+test("the toolbar copies the source from either tab and the demo wears Neutral's Tight radii", async () => {
   const written: string[] = [];
   Object.defineProperty(navigator, 'clipboard', {
     configurable: true,
@@ -48,12 +48,12 @@ test('the toolbar copies the source from either tab and leaves demo radii at Ult
     getComputedStyle(
       screen.getByRole('button', { name: 'Clicked 0' }).element(),
     ).borderRadius,
-  ).toBe('10px');
+  ).toBe('4px');
   expect(
     getComputedStyle(
       screen.getByRole('textbox', { name: 'Example input' }).element(),
     ).borderRadius,
-  ).toBe('10px');
+  ).toBe('4px');
   await userEvent.click(copy);
   expect(written.at(-1)).toBe(SOURCE);
   await userEvent.click(screen.getByRole('tab', { name: 'Code' }));

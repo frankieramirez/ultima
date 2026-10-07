@@ -736,7 +736,7 @@ function Examples({ sections, value }: { sections: Section[]; value: string }) {
   const more = sections.length - EXAMPLES_SHOWN_BEFORE_FOLD;
   return (
     <section ref={group} aria-labelledby="examples">
-      <SectionHead id="examples" value={value} label="Examples" note="Each example is a file you can copy whole." />
+      <SectionHead id="examples" value={value} label="Examples" note="Each example is a file you can copy whole. Shown in Neutral, the default theme." />
       {runs}
       {more > 0 && (
         <Button variant="outline" aria-expanded={open} onClick={() => setOpen(!open)} style={styles.more}>

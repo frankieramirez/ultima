@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"pnpm -w run registry:build && vitest run --reporter=verbose\"",
     "typecheck": "node --experimental-strip-types ../../scripts/catalogue/preflight.ts \"tsc -p tsconfig.json\"",
-    "test:production": "node --experimental-strip-types scripts/production.ts"
+    "test:production": "node --experimental-strip-types scripts/production.ts",
+    "themes:generate": "node --experimental-strip-types scripts/site-themes.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
