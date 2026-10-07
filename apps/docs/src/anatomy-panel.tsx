@@ -59,7 +59,11 @@ const styles = stylex.create({
 
 type Measured = { size: AnatomySize; parts: [part: string, box: AnatomyBox | null][] };
 
-function measure(stage: HTMLElement, item: string): Measured {
+/** Frames to wait for a popup Base UI has yet to position, which it first places past the stage's foot. */
+const SETTLE_FRAMES = 5;
+
+/** `null` when `settling` and a part starts past the stage's foot, so the caller tries again next frame. */
+function measure(stage: HTMLElement, item: string, settling: boolean): Measured | null {
   const origin = stage.getBoundingClientRect();
   const parts = new Map<string, AnatomyBox | null>();
   for (const node of stage.querySelectorAll<HTMLElement>(`[data-anatomy-item="${item}"]`)) {
@@ -67,6 +71,7 @@ function measure(stage: HTMLElement, item: string): Measured {
     if (parts.get(part) != null) continue;
     const rect = node.getBoundingClientRect();
     const visible = rect.width > 0 && rect.height > 0;
+    if (settling && visible && rect.top >= origin.bottom) return null;
     parts.set(part, visible ? { x: rect.left - origin.left, y: rect.top - origin.top, width: rect.width, height: rect.height } : null);
   }
   return { size: { width: origin.width, height: origin.height }, parts: [...parts] };
@@ -86,15 +91,22 @@ export function AnatomyPanel({ item, component: Component }: { item: string; com
     if (!node) return;
     let frame = 0;
     let width: number | undefined;
+    let deferred = 0;
     const update = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        const next = measure(node, item);
+        for (const target of node.querySelectorAll(`[data-anatomy-item="${item}"]`)) resize.observe(target);
+        const next = measure(node, item, deferred < SETTLE_FRAMES);
+        if (!next) {
+          deferred += 1;
+          update();
+          return;
+        }
+        deferred = 0;
         // A new width lays the demo out again, so the stage gives back any room an earlier stack took.
         if (width !== undefined && width !== next.size.width) setReach(0);
         width = next.size.width;
         setMeasured((current) => (JSON.stringify(current) === JSON.stringify(next) ? current : next));
-        for (const target of node.querySelectorAll(`[data-anatomy-item="${item}"]`)) resize.observe(target);
       });
     };
     const resize = new ResizeObserver(update);
