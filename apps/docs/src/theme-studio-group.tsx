@@ -76,15 +76,6 @@ export function ThemeStudioGroup({
             </h2>
             <p {...stylex.props(styles.summary)}>{summary}</p>
           </div>
-          <Button
-            aria-label={`Shuffle ${label}`}
-            onClick={onShuffle}
-            size="sm"
-            style={[docsStyles.square, styles.icon, styles.touch]}
-            variant="ghost"
-          >
-            <ShuffleIcon aria-hidden />
-          </Button>
           <Toggle
             aria-label={`Lock ${label}`}
             onPressedChange={onLock}
@@ -95,6 +86,15 @@ export function ThemeStudioGroup({
           >
             <LockSimpleIcon aria-hidden />
           </Toggle>
+          <Button
+            aria-label={`Shuffle ${label}`}
+            onClick={onShuffle}
+            size="sm"
+            style={[docsStyles.square, styles.icon, styles.touch]}
+            variant="ghost"
+          >
+            <ShuffleIcon aria-hidden />
+          </Button>
           <Button
             aria-label={`Reset ${label}`}
             onClick={onReset}

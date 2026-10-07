@@ -52,7 +52,6 @@ import { SwatchChip } from './swatch';
 import { ThemeStudioGroup } from './theme-studio-group';
 import type { DraftEdit } from './theme-studio-store';
 import { TokenRows, type ModeOffenders } from './theme-studio-token-row';
-import { ThemeStudioValidation } from './theme-studio-validation';
 import { PresetPreview } from './theme-studio-preview';
 
 const styles = stylex.create({
@@ -61,8 +60,10 @@ const styles = stylex.create({
     display: { default: 'flex', [breakpoints.RAIL]: 'none' },
     flexDirection: 'row',
     flexShrink: 0,
-    overflow: 'auto',
+    flexWrap: 'wrap',
+    gap: space['--ult-space-3'],
   },
+  chip: { paddingInline: space['--ult-space-6'] },
   groups: { flexGrow: 1, minBlockSize: 0, minInlineSize: 0 },
   groupsContent: {
     // Base UI's ScrollArea.Content writes `min-width: fit-content` inline, so a wide input would
@@ -588,7 +589,7 @@ function familyLabel(stack: string, presets: readonly { label: string; value: st
 function summarize(group: GroupId, draft: ThemeDraft): string {
   switch (group) {
     case 'color':
-      return 'Six seeds, one gate.';
+      return `${optionLabel(ACCENT_FILL_OPTIONS, draft.accentFill ?? 'hue')} · ${draft.color.arcane.hue}°`;
     case 'typography':
       return `${familyLabel(draft.typography.sans, SANS_PRESETS)} / ${familyLabel(draft.typography.mono, MONO_PRESETS)}`;
     case 'density':
@@ -650,7 +651,7 @@ export function ThemeStudioEditor({
         value={[group]}
       >
         {GROUPS.map((item) => (
-          <ToggleGroup.Item key={item.id} value={item.label} style={[docsStyles.square, styles.touch]}>
+          <ToggleGroup.Item key={item.id} value={item.label} style={[styles.touch, styles.chip]}>
             {item.label}
           </ToggleGroup.Item>
         ))}
@@ -731,7 +732,6 @@ export function ThemeStudioEditor({
                 </ThemeStudioGroup>
               </section>
             ))}
-            <ThemeStudioValidation results={results} />
           </ScrollArea.Content>
         </ScrollArea.Viewport>
       </ScrollArea.Root>
