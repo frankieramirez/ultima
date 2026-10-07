@@ -169,7 +169,12 @@ function blocksProjection(catalogue: Catalogue): string {
       install: `npx shadcn add @ultima/${entry.id}`,
       installDocs: entry.installDocs,
       files: entry.files,
-      builtFrom: entry.builtFrom,
+      builtFrom: entry.builtFrom.map((used) => {
+        if (used.kind === 'component') return used;
+        const recipe = catalogue.recipes.find((candidate) => candidate.id === used.id);
+        const root = entry.recipes.find((followed) => followed.id === used.id)?.root;
+        return { ...used, page: recipe?.page, section: recipe?.section, root };
+      }),
     });
     return `  ${fields.slice(0, -2).replaceAll('\n', '\n  ')},\n    "preview": ${entry.primaryExport}\n  }`;
   });
@@ -177,7 +182,17 @@ function blocksProjection(catalogue: Catalogue): string {
 import type { ComponentType } from 'react';
 ${imports.length > 0 ? `\n${imports.join('\n')}\n` : ''}
 /** A component the block imports, or a recipe it follows, numbered among its own kind. */
-export type BuiltFrom = { id: string; title: string; number: string; kind: 'component' | 'recipe' };
+export type BuiltFrom = { id: string; title: string; number: string } & (
+  | { kind: 'component' }
+  | {
+      kind: 'recipe';
+      /** The component page and section that document the recipe. */
+      page: string;
+      section: string;
+      /** The accessible query of the recipe's root in the block, which Anatomy outlines. */
+      root: { role: string; name: string };
+    }
+);
 
 export type BlockEntry = {
   id: string;

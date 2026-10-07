@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "blocks.preview",
-  "title": "A block card opens from the keyboard, its framed preview copies and narrows, and every block page passes",
-  "intent": "The /blocks index lists every block in number order with thumbnails that are lazy, inert and never a tab stop; a card opens from the keyboard with a visible focus ring; the block page's framed preview reaches its block in Neutral, its install command copies exactly, and the narrow toggle lays the block out at 390 pixels inside the frame without widening the page; and every other block's page frames its block, fits and passes axe; the framed block follows the page's color mode even when storage refuses writes; and every block's preview route passes axe on its own.",
+  "title": "A block card opens from the keyboard, its framed preview copies, narrows and draws its Anatomy, and every block page passes",
+  "intent": "The /blocks index lists every block in number order with thumbnails that are lazy, inert and never a tab stop; a card opens from the keyboard with a visible focus ring; the block page's framed preview reaches its block in Neutral, its install command copies exactly, and the narrow toggle lays the block out at 390 pixels inside the frame without widening the page; Anatomy over the inert frame labels its components with no two labels overlapping, all inside the preview, at the narrow and desktop widths; and every other block's page frames its block, fits and passes axe; the framed block follows the page's color mode even when storage refuses writes; and every block's preview route passes axe on its own.",
   "contract": "docs/spec/ultima.md#docs-routes",
   "aliases": [
     "blocks index",
@@ -14,13 +14,16 @@
     "narrow",
     "copy install command",
     "clipboard",
-    "neutral"
+    "neutral",
+    "anatomy",
+    "label components"
   ],
   "items": [],
   "sources": [
     "apps/docs/src/routes/blocks.tsx",
     "apps/docs/src/block-page.tsx",
-    "apps/docs/src/block-frame.tsx"
+    "apps/docs/src/block-frame.tsx",
+    "apps/docs/src/block-anatomy.tsx"
   ],
   "demos": [],
   "routes": [
@@ -79,6 +82,10 @@
     {
       "action": "Press Narrow.",
       "expect": "The frame's document lays out at 390 by 844 and fits its own width; the page fits its window and axe passes."
+    },
+    {
+      "action": "Open the Anatomy tab, then press Desktop.",
+      "expect": "At each width the framed block is inert, every outline has one label, every label lies inside the preview and no two labels overlap; axe passes with the panel open."
     },
     {
       "action": "Open every other block's page from its card's link.",
