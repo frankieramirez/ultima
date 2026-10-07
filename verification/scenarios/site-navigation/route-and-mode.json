@@ -19,6 +19,7 @@
   "routes": [
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/" },
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/install" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/elements" },
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/tokens" },
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/components/$name" }
   ],
@@ -38,7 +39,7 @@
     "At 48rem and wider the header carries the Site links and the Color mode control; below it the header has the Toggle navigation button and the footer carries Color mode."
   ],
   "steps": [
-    { "action": "Load /, /install and /components/button directly.", "expect": "Each shows its own level-one heading and fits the window width within one pixel. At desktop width the menu's Components entry holds the six catalogue groups as labelled sub-lists that do not collapse, and Button is its current page." },
+    { "action": "Load /, /install, /elements, /elements/ and /components/button directly.", "expect": "Each shows its own level-one heading in the docs app, never a static page named for the route, and fits the window width within one pixel. At desktop width the menu's Components entry holds the six catalogue groups as labelled sub-lists that do not collapse, and Button is its current page." },
     { "action": "On /, follow the Installation guide link.", "expect": "The URL is /install, the heading is Install, and Documentation in the desktop header or Install in the narrow menu is the current page. The active desktop link has semibold accent text and a 2px underline in both modes." },
     { "action": "Narrow only: focus Toggle navigation, press Enter, then press Escape.", "expect": "The Ultima menu opens with focus inside it, holding the same six group sub-lists, and Escape closes it with focus back on Toggle navigation." },
     { "action": "Follow the Tokens link: the header's at desktop width, the reopened menu's at narrow width.", "expect": "The URL is /tokens, the heading is Tokens, and the narrow menu has closed." },
