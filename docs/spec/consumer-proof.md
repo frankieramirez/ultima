@@ -19,6 +19,10 @@ Use the same draft and scene for four delivery checks:
 
 Keep the existing Studio preview/CSS/StyleX parity corpus for stock, shuffled, overridden and acknowledged failing user drafts. The integrated proof uses a shipped passing draft and tests actual installation, extracted production CSS, alias resolution, cascade, portals and hydration. Preset revisions also follow [the complete preset release bar](theme-studio.md#release-bar-and-consumer-guidance): every shipped preset must pass its own two-mode pairing and installed-consumer parity checks. Reuse this fixture and its assertions rather than multiplying application scaffolds for each preset.
 
+## StyleX lint proof
+
+The [consumer lint contract](consumer-lint.md), decided on [Decide the StyleX linting contract for consumer projects](https://github.com/frankieramirez/ultima/issues/730), adds official StyleX lint to the same installed Vite and Next root/src fixtures. Run the project's local lint command once per immutable layout build before production compilation, alongside packed CLI doctor/check. Retain effective-config probes, exact plugin/ESLint/parser versions, file coverage and positive/negative diagnostics. Prove absent-config setup, preservation of existing rules/ignores and offline execution. Static doctor detection is not an executed lint pass. Reuse this result across browser/mode cells; the 54-cell browser matrix and rendered obligations stay unchanged. This addition is pending implementation.
+
 ## Browser pass conditions
 
 Run the shared scene in production browsers, using the 54-cell cross-engine matrix and its framework/element split settled on [the browser-support decision](https://github.com/frankieramirez/ultima/issues/618). This fixture supplies the Vite and Next cells; the element lifecycle cells keep their own light-DOM fixture. A cell passes only when all applicable assertions below pass in both dark and light. The system-preference check additionally changes the emulated preference without an explicit attribute, then forces each explicit mode to show that it overrides the preference.
