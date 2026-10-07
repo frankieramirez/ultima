@@ -106,10 +106,11 @@ function reducedMotionRules(element: Element): CSSStyleRule[] {
 test('the overriding examples carry their file label and the site copy button', async () => {
   const screen = await renderWithRouter(<TokensPage />);
   const fences = Array.from(screen.container.querySelectorAll('pre')).filter((pre) =>
-    /createTheme|:root/.test(pre.textContent ?? ''),
+    /createTheme|:root|stylex\.props/.test(pre.textContent ?? ''),
   );
-  expect(fences.length).toBe(2);
-  for (const label of ['theme.css', 'brand.stylex.ts']) {
+  expect(fences.length).toBe(3);
+  expect(fences[1]?.textContent).toContain("from '@/lib/tokens.stylex'");
+  for (const label of ['theme.css', 'brand.ts', 'brand-boundary.tsx']) {
     await expect.element(screen.getByText(label, { exact: true })).toBeVisible();
     await expect.element(screen.getByRole('button', { name: `Copy ${label}` })).toBeVisible();
   }

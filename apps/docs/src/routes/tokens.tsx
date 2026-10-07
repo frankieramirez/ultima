@@ -172,12 +172,20 @@ const OVERRIDE_CSS = `:root {
 }`;
 
 const OVERRIDE_STYLEX = `import * as stylex from '@stylexjs/stylex';
-import { color } from '@ultima/tokens/tokens.stylex';
+import { color } from '@/lib/tokens.stylex';
 
 export const brand = stylex.createTheme(color, {
   '--ult-color-accent': '#7c5cff',
   '--ult-color-accent-hover': '#8f74ff',
 });`;
+
+const APPLY_STYLEX = `import * as stylex from '@stylexjs/stylex';
+import type { ReactNode } from 'react';
+import { brand } from './brand';
+
+export function BrandBoundary({ children }: { children: ReactNode }) {
+  return <div {...stylex.props(brand)}>{children}</div>;
+}`;
 
 function capitalize(group: string): string {
   return group.charAt(0).toUpperCase() + group.slice(1);
@@ -314,11 +322,25 @@ export function TokensPage() {
         <SectionHeading id="overriding">Overriding</SectionHeading>
         <P>
           A token is a custom property with the name you see above, so a consumer that reads the CSS export re-skins
-          with plain CSS on the root. A consumer compiling with StyleX gets the same result from{' '}
-          <Code>createTheme</Code>, which returns a class to put on any subtree.
+          with plain CSS on the root.
         </P>
         <Fence code={OVERRIDE_CSS} lang="css" title="theme.css" />
-        <Fence code={OVERRIDE_STYLEX} lang="ts" title="brand.stylex.ts" />
+        <P>
+          A consumer compiling with StyleX gets the same result from <Code>createTheme</Code> on the installed{' '}
+          <Code>@/lib/tokens.stylex</Code>. Keep the theme in an ordinary module: StyleX reserves{' '}
+          <Code>.stylex.ts</Code> files for <Code>defineVars</Code> and <Code>defineConsts</Code>.
+        </P>
+        <Fence code={OVERRIDE_STYLEX} lang="ts" title="brand.ts" />
+        <P>
+          Pass the theme to <Code>stylex.props</Code> on the element whose subtree it should reach.
+        </P>
+        <Fence code={APPLY_STYLEX} lang="tsx" title="brand-boundary.tsx" />
+        <P>
+          A theme replaces its group rather than adding to it. The variables <Code>brand</Code> leaves out take their
+          defaults from the definition, not the values of a theme above it, and when two <Code>color</Code> themes
+          land on the same element, the last one wins. To change a few tokens of a complete theme, such as a Studio
+          export, edit a copy of that theme's group.
+        </P>
       </section>
     </FoundationLayout>
   );
