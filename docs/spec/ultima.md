@@ -2150,7 +2150,7 @@ Catalogue number 003. The Notifications page of an account's settings.
 
 **Narrow width.** `Sidebar` becomes its mobile menu. `main` gains a top row with `Sidebar.Trigger` and the text "Settings". Each fieldset's legend and description sit above its controls, not beside them. The bar stays pinned to the bottom of the viewport at full width.
 
-**Frames to redraw.** None at desktop width. The time and time-zone controls already read as `NativeSelect`.
+**Frames to redraw.** `mmMDx`: the "Allow calls from my team during quiet hours" row is removed, because Quiet hours holds the three `Field`s above. The time and time-zone controls already read as `NativeSelect`.
 
 #### Sign-in 01
 
