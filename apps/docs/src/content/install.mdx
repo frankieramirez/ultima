@@ -56,7 +56,7 @@ The `docs` field on each setup item prints the same list at install. This page a
 
 **Why resets need a layer.** Every StyleX rule sits in a cascade layer, so an unlayered reset such as create-next-app's `* { padding: 0 }` beats component styles, including a Button's own padding.
 
-```css
+```css title="src/index.css · app/globals.css"
 @layer reset {
   *,
   *::before,
@@ -94,7 +94,7 @@ The skill directs your agent to [`/llms.txt`](/llms.txt) before UI work and to C
 
 [Theme Studio](/theme-studio) generates a theme for an existing Ultima application. Download the registry file, then run:
 
-```sh
+```sh title="Terminal"
 npx shadcn add ./ultima-theme.registry.json
 ```
 
@@ -104,21 +104,21 @@ To start with Ultima's default design document on its own, run `npx shadcn add @
 
 Import the stylesheet after your application's StyleX output. For Vite, in `src/main.tsx`:
 
-```tsx
+```tsx title="src/main.tsx"
 import './index.css';
 import '../ultima-theme.css';
 ```
 
 For Next.js, in `app/layout.tsx`:
 
-```tsx
+```tsx title="app/layout.tsx"
 import './ultima.css';
 import '../ultima-theme.css';
 ```
 
 For Next.js with `src/app/layout.tsx`:
 
-```tsx
+```tsx title="src/app/layout.tsx"
 import './ultima.css';
 import '../../ultima-theme.css';
 ```

@@ -120,7 +120,7 @@ const styles = stylex.create({
   },
   fileTab: { flexShrink: 0, fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-2'] },
   source: { position: 'relative' },
-  sourceCode: { backgroundColor: 'transparent', borderRadius: 0, borderWidth: 0, padding: space['--ult-space-7'] },
+  sourceCode: { backgroundColor: 'transparent', borderRadius: 0, borderWidth: 0 },
   loading: { color: color['--ult-color-text-muted'], fontSize: text['--ult-text-3'], margin: 0, padding: space['--ult-space-7'] },
   details: {
     display: 'grid',
@@ -264,8 +264,9 @@ function Code({ block }: { block: BlockEntry }) {
       </Tabs.List>
       {block.files.map((name) => (
         <Tabs.Panel key={name} value={name} style={styles.source}>
+          <HighlightedCode code={loaded[name] ?? ''} lang="tsx" lineNumbers style={styles.sourceCode} />
+          {/* After the code: the Scroll Area is positioned too, and the later sibling paints on top. */}
           <CopyButton text={loaded[name] ?? ''} ariaLabel={`Copy ${name}`} floating />
-          <HighlightedCode code={loaded[name] ?? ''} lang="tsx" style={styles.sourceCode} />
         </Tabs.Panel>
       ))}
     </Tabs.Root>

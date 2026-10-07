@@ -12,6 +12,7 @@ import { defineConfig } from 'vitest/config';
 import { docsOptimizerInclude } from '../../scripts/generated/browser-dependencies.ts';
 import { stylexConstsWarmup, stylexOptions } from '../../stylex.options.ts';
 import { demoUiPlugin } from './scripts/demo-ui-plugin.ts';
+import { remarkFenceTitle } from './scripts/remark-fence-title.ts';
 import { themeRegistryPlugin } from './scripts/theme-registry-plugin.ts';
 
 const tokensDir = join(dirname(fileURLToPath(import.meta.url)), '../../packages/tokens');
@@ -21,7 +22,7 @@ export default defineConfig({
   plugins: [
     themeRegistryPlugin(),
     demoUiPlugin(),
-    { enforce: 'pre', ...mdx({ remarkPlugins: [remarkGfm] }) },
+    { enforce: 'pre', ...mdx({ remarkPlugins: [remarkGfm, remarkFenceTitle] }) },
     // Registered before stylex.vite so its middleware gates the dev CSS endpoint.
     stylexConstsWarmup(['/src/breakpoints.stylex.ts']),
     stylex.vite(stylexOptions({ dev: true })),

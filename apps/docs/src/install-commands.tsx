@@ -37,7 +37,7 @@ export function InstallCommands() {
       </Tabs.List>
       {INSTALL_TARGETS.map((target) => (
         <Tabs.Panel key={target.value} value={target.value} style={styles.panel}>
-          <Fence code={target.commands.join('\n')} lang="bash" />
+          <Fence code={target.commands.join('\n')} lang="bash" title="Terminal" />
         </Tabs.Panel>
       ))}
     </Tabs.Root>
