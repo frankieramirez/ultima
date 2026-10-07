@@ -341,6 +341,47 @@ The root CSS theme reaches the document and Base UI's default portals under `<bo
 
 The export carries font stacks but loads no font files. Load each chosen face in the application or accept the documented fallback. The exported CSS includes the fixed `prefers-reduced-motion` collapse values; preserve that block when moving or bundling the file. The StyleX path must retain the equivalent reduced-motion values in the compiled output.
 
+### Mode and scope packaging
+
+Decided on [Decide how to package theme mode and portal recipes](https://github.com/frankieramirez/ultima/issues/729). Status: accepted for implementation. Two optional copy-source catalogue items package the behavior above: `theme-mode` for the document's mode and `theme-scope` for a subtree theme. Neither is a provider an app must mount. A consumer that only imports the CSS theme and never switches modes installs neither, and the docs app's `ThemeRoot` and `ThemeBoundary` stay docs-only references rather than consumer files.
+
+**`theme-mode`** is one file, `theme-mode.tsx`, with no dependency beyond React. Its public API:
+
+- `type ThemeMode = 'dark' | 'light' | 'system'`.
+- `themeModeScript(storageKey?)` returns the pre-hydration script as a string, and `ThemeModeScript` renders it as an inline `<script>` for Next.js. The script reads the stored mode inside `try`, sets `data-theme` on `<html>` for `dark` or `light`, and leaves the attribute absent for `system`, a missing value, an unknown value, or storage that throws.
+- `setThemeMode(mode, storageKey?)` writes the attribute and then storage. A write that throws still changes the attribute, so the mode holds for the session.
+- `useThemeMode(storageKey?)` returns `{ mode, resolved, setMode }` through `useSyncExternalStore`. `resolved` is the scheme on screen, and follows `prefers-color-scheme` changes while `mode` is `system`. It also follows `storage` events from other tabs. Its server snapshot is `{ mode: 'system', resolved: null }`, so a mode control renders its resolved state after hydration and never mismatches the server markup.
+- The default storage key is `ultima-theme-mode`. A consumer passes its own key to all three calls, or edits the copied file.
+
+System mode needs no script after load: the CSS theme's `prefers-color-scheme` block already follows the system once the attribute is absent. The item needs a root CSS theme with `[data-theme]` blocks, the Studio `ultima-theme.css` or a vendored `tokens.css`. The compiled StyleX token defaults respond only to the media query, so `setThemeMode` without one of those files has no visible effect. The item's page says so, and `doctor` reports `theme-mode` installed without a root CSS theme imported.
+
+For Vite, the page prints the script for `index.html`'s `<head>`, before the module script, and a test asserts it equals `themeModeScript()`. For Next.js, `app/layout.tsx` or `src/app/layout.tsx` renders `<ThemeModeScript />` first inside `<head>` and puts `suppressHydrationWarning` on `<html>`, because the script changes that element's attributes before React hydrates. The two Next.js layouts differ only in the import path to the copied file.
+
+**`theme-scope`** is one file, `theme-scope.tsx`, with `theme-mode` as its registry dependency. `ThemeScope` renders a `div` that applies a complete mode theme and that mode's `color-scheme`, and makes itself the portal container for the controls inside:
+
+- `theme` takes `{ dark, light }` arrays of StyleX themes, the shape of `ultimaTheme` in the Studio `ultima-theme.stylex.ts`.
+- `mode?: 'dark' | 'light'` pins a mode. Without it the scope follows `useThemeMode().resolved`, using dark until hydration resolves it.
+- `style` is the usual StyleX slot, applied after the theme. No `className`.
+- `useThemeScopeContainer()` returns the nearest scope's element: `undefined` outside every scope, `null` until the element mounts, then the element. A portalled control inside a scope passes it to its part, `<Select.Portal container={useThemeScopeContainer()}>`. Base UI waits on `null`. The Date Picker's Zag portal takes a ref and falls back to `<body>` while it is empty, so the page shows that one case rendering nothing until the element exists and then passing `{ current: element }`.
+
+Catalogue components keep their portal props and default to `<body>`. They do not read the scope's context; a consumer passes the container. Changing every portalled component to read a shared context is a broader component contract left for a demonstrated need.
+
+Nested scopes resolve to the nearest: the inner element's custom properties win by inheritance, and `useThemeScopeContainer()` returns the inner element, so a popup opened inside it mounts inside it. A popup that is already open stays where it mounted. A portal that omits the container leaves the scope and reads the document theme; that is the failure the page names first.
+
+`theme` must hold every themeable group for its mode, which the Studio export always supplies. A same-group StyleX theme replaces the whole group, so a missing key falls back to the compiled base default, never to the root CSS theme or an outer scope. `ThemeScope` does not merge partial themes. A tweak goes into the draft and a re-export. The exported motion group carries the `prefers-reduced-motion` values, so applying it whole keeps reduced motion. The font group carries stacks only; loading faces stays the consumer's job, as above.
+
+A document-wide theme stays the root CSS file. `ThemeScope` is for a subtree that differs from the document, such as a preview, an embedded widget, or a second brand. Putting it around the whole app does not theme portals that skip the container, so the page does not present it as a document-wide alternative.
+
+Acceptance for the build:
+
+- First paint. In a production Vite build and a production Next.js build, for each of `app/` and `src/app/`, with stored `light`, stored `dark`, nothing stored, and storage that throws: the first frame's `<html>` `data-theme` and computed `color-scheme` match the expected mode, and there is no hydration warning.
+- Mode changes. `setMode` changes computed `--ult-*` values on the root, a control, and an open portalled popup without a reload. Switching to `system` removes the attribute. Emulating a `prefers-color-scheme` change while in `system` updates `resolved` and the computed values. A second tab follows through `storage`.
+- Open popups. A Select and a Dialog opened inside a `ThemeScope` mount inside its element and read its values. With the container omitted they mount under `<body>` and read the document theme. The test asserts both, so the documented failure stays true.
+- Scope inheritance. An inner scope with the other mode overrides an outer one for its content and its popups. An omitted key in a hand-made partial theme falls back to the base default, which documents why partial themes are refused.
+- Consumer customization. A custom storage key works across the script, `setThemeMode` and the hook. A `style` override on `ThemeScope` wins over its theme. Reduced motion collapses durations inside a scope. A consumer's loaded font face renders inside a scope whose stack names it.
+
+The docs app may rebuild `ThemeBoundary` on `ThemeScope` once it ships. That is a follow-up, not part of this acceptance.
+
 ### Check the installed result
 
 Run `npx ultima-design doctor` after the setup hand steps, then `npx ultima-design check` after applying the theme. A zero exit proves the checks those commands perform. It does not prove that a browser used the generated theme. In a production build of the consumer, inspect computed `--ult-*` values and `color-scheme` on the app root, an Ultima control, and a portalled control in dark, light, and system mode. Compare representative values with the exported CSS and the Studio preview, then exercise focus, hover, active, and reduced-motion states. Check loaded font faces when the draft names external fonts. The rendered-consumer matrix belongs to [Decide the rendered consumer proof required for a production recommendation](https://github.com/frankieramirez/ultima/issues/617).
