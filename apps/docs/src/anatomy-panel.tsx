@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Separator, Switch } from '@ultima/ui';
-import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react';
 
 import { AnatomyOverlay, type AnatomyBox, type AnatomyEntry, type AnatomySize } from './anatomy';
 import { breakpoints } from './breakpoints.stylex';
@@ -77,6 +77,60 @@ function measure(stage: HTMLElement, item: string, settling: boolean): Measured 
   return { size: { width: origin.width, height: origin.height }, parts: [...parts] };
 }
 
+/** A legend row: the number its label shows below `WIDE`, its name, and whether the preview shows it. */
+export type LegendEntry = { key: string; number: string; name: ReactNode; shown: boolean; tabbable: boolean };
+
+export function AnatomyControls({
+  switchLabel,
+  legendLabel,
+  labelled,
+  onLabelledChange,
+  emphasis,
+  onEmphasis,
+  entries,
+}: {
+  switchLabel: string;
+  legendLabel: string;
+  labelled: boolean;
+  onLabelledChange: (labelled: boolean) => void;
+  emphasis: string | null;
+  onEmphasis: (key: string | null) => void;
+  entries: LegendEntry[];
+}) {
+  return (
+    <>
+      <Separator />
+      <div {...stylex.props(styles.controls)}>
+        <label {...stylex.props(styles.toggle)}>
+          <Switch.Root checked={labelled} onCheckedChange={onLabelledChange}>
+            <Switch.Thumb />
+          </Switch.Root>
+          {switchLabel}
+        </label>
+        <ol aria-label={legendLabel} {...stylex.props(styles.legend)}>
+          {entries.map((entry) => (
+            <li
+              key={entry.key}
+              tabIndex={entry.tabbable ? 0 : undefined}
+              onMouseEnter={() => onEmphasis(entry.key)}
+              onMouseLeave={() => onEmphasis(null)}
+              onFocus={() => onEmphasis(entry.key)}
+              onBlur={() => onEmphasis(null)}
+              {...stylex.props(styles.entry, emphasis === entry.key && styles.active)}
+            >
+              <span aria-hidden {...stylex.props(styles.number)}>
+                {entry.number}
+              </span>
+              {entry.name}
+              {!entry.shown && <span {...stylex.props(styles.absent)}>not shown at this width</span>}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </>
+  );
+}
+
 const ordinal = (index: number) => String(index + 1).padStart(2, '0');
 
 export function AnatomyPanel({ item, component: Component }: { item: string; component: ComponentType }) {
@@ -148,34 +202,15 @@ export function AnatomyPanel({ item, component: Component }: { item: string; com
           <AnatomyOverlay entries={entries} size={measured.size} labelled={labelled} emphasis={emphasis} onPlace={grow} />
         )}
       </div>
-      <Separator />
-      <div {...stylex.props(styles.controls)}>
-        <label {...stylex.props(styles.toggle)}>
-          <Switch.Root checked={labelled} onCheckedChange={setLabelled}>
-            <Switch.Thumb />
-          </Switch.Root>
-          Label parts
-        </label>
-        <ol aria-label="Parts" {...stylex.props(styles.legend)}>
-          {entries.map((entry) => (
-            <li
-              key={entry.key}
-              tabIndex={0}
-              onMouseEnter={() => setEmphasis(entry.key)}
-              onMouseLeave={() => setEmphasis(null)}
-              onFocus={() => setEmphasis(entry.key)}
-              onBlur={() => setEmphasis(null)}
-              {...stylex.props(styles.entry, emphasis === entry.key && styles.active)}
-            >
-              <span aria-hidden {...stylex.props(styles.number)}>
-                {entry.short}
-              </span>
-              {entry.label}
-              {entry.box === null && <span {...stylex.props(styles.absent)}>not shown at this width</span>}
-            </li>
-          ))}
-        </ol>
-      </div>
+      <AnatomyControls
+        switchLabel="Label parts"
+        legendLabel="Parts"
+        labelled={labelled}
+        onLabelledChange={setLabelled}
+        emphasis={emphasis}
+        onEmphasis={setEmphasis}
+        entries={entries.map((entry) => ({ key: entry.key, number: entry.short, name: entry.label, shown: entry.box !== null, tabbable: true }))}
+      />
     </>
   );
 }

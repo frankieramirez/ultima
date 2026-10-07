@@ -535,10 +535,10 @@ export default [
     id: 'anatomy-legend-entry-takes-focus',
     rule: 'ULT-DOCS-REVIEW-001',
     path: 'apps/docs/src/anatomy-panel.tsx',
-    symbol: 'AnatomyPanel',
+    symbol: 'AnatomyControls',
     target: '<li>',
     count: 1,
-    reason: 'A legend entry takes focus so a keyboard reader can emphasise its outline; it has no action, so it is not a widget.',
+    reason: "A component page's legend entry takes focus so a keyboard reader can emphasise its outline; it has no action, so it is not a widget. A block page's entry holds a link and takes no focus itself.",
     authority: 'docs/spec/ultima.md#anatomy',
   },
 ] satisfies ArchitectureException[];
