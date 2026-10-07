@@ -50,12 +50,16 @@ const menuLink = (name: string) => menu().getByRole('link', { name, exact: true 
 /** A menu link's text without its `aria-hidden` catalogue number. */
 const plainText = (link: Element) =>
   Array.from(link.childNodes, (node) => (node instanceof Element && node.hasAttribute('aria-hidden') ? '' : node.textContent)).join('');
-/** Where a menu link's name starts, past its number column. */
-function nameLeft(link: Element) {
+/** Where a menu entry's content starts: its number when it has one, else its name. */
+function startEdge(node: Element) {
   const range = document.createRange();
-  range.selectNodeContents(link.lastChild!);
+  range.selectNodeContents(node.querySelector('[aria-hidden="true"]') ?? node);
   return range.getBoundingClientRect().left;
 }
+
+/** The headings, foundation names and catalogue numbers in `scope` that miss the 24px edge. */
+const offEdge = (scope: Element) =>
+  Array.from(scope.querySelectorAll('h3, a'), (node) => [node.textContent, startEdge(node)]).filter(([, left]) => left !== 24);
 
 beforeEach(() => {
   localStorage.removeItem(NAVIGATION_STORAGE_KEY);
@@ -95,15 +99,13 @@ test('component and block entries lead with their generated number, and foundati
   }
   for (const { label } of pages.filter(({ to }) => to !== '/components' && to !== '/blocks')) {
     const link = menuLink(label).element();
-    expect(link.querySelector('[aria-hidden="true"]')?.textContent, label).toBe('');
+    expect(link.querySelector('[aria-hidden]'), label).toBeNull();
     expect(link.textContent).toBe(label);
   }
-  const links = Array.from(menuPanel().querySelectorAll('a'));
-  expect(new Set(links.map(nameLeft)).size).toBe(1);
-  expect(nameLeft(links[0]!)).toBeGreaterThan(links[0]!.querySelector('[aria-hidden="true"]')!.getBoundingClientRect().left);
+  expect(offEdge(menuPanel())).toEqual([]);
 });
 
-test('the open drawer fits every numbered entry at 390 without overflow', async () => {
+test('the open drawer fits every entry at 390 flush with the edge and without overflow', async () => {
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
 
@@ -112,11 +114,12 @@ test('the open drawer fits every numbered entry at 390 without overflow', async 
   const popup = screen.getByRole('dialog', { name: MENU_LABEL });
   await expect.element(popup).toBeVisible();
 
-  const panel = popup.element().getBoundingClientRect();
   const links = Array.from(popup.element().querySelectorAll('a'));
   expect(links.length).toBe(pages.length - 2 + components.length + blocks.length);
   const oneLine = links.find((link) => link.textContent === 'Home')!.getBoundingClientRect().height;
-  expect(new Set(links.map(nameLeft)).size).toBe(1);
+  // The drawer slides in from the inline start, so its entries reach the edge when it settles.
+  await expect.poll(() => offEdge(popup.element())).toEqual([]);
+  const panel = popup.element().getBoundingClientRect();
   for (const link of links) {
     const box = link.getBoundingClientRect();
     expect(link.scrollWidth, plainText(link)).toBeLessThanOrEqual(link.clientWidth);

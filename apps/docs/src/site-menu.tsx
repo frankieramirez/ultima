@@ -53,7 +53,6 @@ const styles = stylex.create({
     flexShrink: 0,
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-1'],
-    inlineSize: '3ch',
   },
 });
 
@@ -103,9 +102,11 @@ function MenuLink({ link: { label, number, ...destination } }: { link: NavLink }
   return (
     <Sidebar.Item>
       <Sidebar.Link render={<Link {...destination} activeOptions={{ exact: true }} />}>
-        <span aria-hidden {...stylex.props(styles.number)}>
-          {number}
-        </span>
+        {number && (
+          <span aria-hidden {...stylex.props(styles.number)}>
+            {number}
+          </span>
+        )}
         {label}
       </Sidebar.Link>
     </Sidebar.Item>
