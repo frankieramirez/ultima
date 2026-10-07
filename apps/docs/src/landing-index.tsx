@@ -116,7 +116,7 @@ function Plate({ entry, preset }: { entry: ComponentEntry; preset: Preset }) {
       <Separator />
       <div data-preset={preset} {...stylex.props(styles.stage, colorScheme[mode])} style={vars}>
         <div {...stylex.props(styles.stageInner)}>
-          <CataloguePreview item={entry.item} />
+          <CataloguePreview item={entry.item} preset={preset} />
         </div>
       </div>
       <Separator />

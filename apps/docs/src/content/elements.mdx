@@ -1,13 +1,22 @@
-import { Fence } from '../prose';
-import { ElementIndex } from '../element-index';
+import { WarningIcon } from '@phosphor-icons/react';
+
+import { ElementIndex, InstallPath, UseCases } from '../element-index';
+import { elements } from '../elements';
+import { Callout, SectionHeading } from '../foundation';
 
 # Elements
 
-Nine components also ship as custom elements, for a host that cannot run React: a static page, a server-rendered template, a report, a CMS block. Each is the same component compiled for the platform, so it reads the same tokens, takes the same axes, and passes the same contrast gate.
+Nine components also ship as custom elements, for a host that cannot run React. Each is the same component compiled for the platform, so it reads the same tokens, takes the same axes, and passes the same contrast gate.
 
-## Install
+<UseCases>{['a static page', 'a server-rendered template', 'a report', 'a CMS block']}</UseCases>
 
-Two paths, one build. A host that runs the shadcn CLI vendors the element as a registry item beside the tokens stylesheet it depends on:
+<SectionHeading count="2 paths">Install</SectionHeading>
+
+Two paths, one build.
+
+<InstallPath number={1} title="With the shadcn CLI">
+
+A host that runs the shadcn CLI vendors the element as a registry item beside the tokens stylesheet it depends on:
 
 ```bash
 npx shadcn add @ultima/ult-button
@@ -19,6 +28,10 @@ npx shadcn add @ultima/ult-button
 <ult-button variant="solid" tone="accent">Save</ult-button>
 ```
 
+</InstallPath>
+
+<InstallPath number={2} title="With no tooling">
+
 A host that runs no tooling loads the served file from this site. One file per element, or the whole set in one:
 
 ```html
@@ -26,7 +39,9 @@ A host that runs no tooling loads the served file from this site. One file per e
 <script type="module" src="https://ultima.systems/elements/ultima.js"></script>
 ```
 
-The file is a vendored artifact rather than copy-source: a reinstall overwrites it and local edits are forfeit. The served URL always carries the latest build; pinning means vendoring the file.
+</InstallPath>
+
+<Callout tone="warning" icon={<WarningIcon />} title="The file is a vendored artifact rather than copy-source.">A reinstall overwrites it and local edits are forfeit. The served URL always carries the latest build; pinning means vendoring the file.</Callout>
 
 ## How an element reads
 
@@ -45,7 +60,7 @@ ult-tabs-tab [part="tab"][data-selected] { font-weight: 600; }
 
 Interactive elements run on Zag.js, bundled inside the file, so nothing is installed alongside it.
 
-## The catalogue
+<SectionHeading count={elements.length}>The catalogue</SectionHeading>
 
 Every element has a **Web component** section on its component page with a live example, its markup, and its attributes. The [gallery](/elements.html) renders all nine in both color modes on one static page.
 

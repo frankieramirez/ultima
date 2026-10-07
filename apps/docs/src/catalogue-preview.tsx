@@ -1,5 +1,6 @@
 import { InfoIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
+import type { ThemePresetId } from '@ultima/tokens';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Accordion, Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card } from '@ultima/ui';
 import type { ComponentType } from 'react';
@@ -50,6 +51,7 @@ import ToastPreview from './demos/toast/stacked';
 import TogglePreview from './demos/toggle/basic';
 import ToggleGroupPreview from './demos/toggle-group/basic';
 import TooltipPreview from './demos/tooltip/button';
+import { ThemeBoundary } from './theme-boundary';
 
 const previews = new Map<string, ComponentType>([
   ['button-group', ButtonGroupPreview],
@@ -220,14 +222,13 @@ const styles = stylex.create({
   contents: { display: 'flex', justifyContent: 'center', inlineSize: '100%', maxInlineSize: '100%', pointerEvents: 'none', minInlineSize: 0 },
 });
 
-export function CataloguePreview({ item }: { item: string }) {
+export function CataloguePreview({ item, preset }: { item: string; preset?: ThemePresetId }) {
   const Preview = previews.get(item);
   return (
     <Card.Root aria-hidden inert data-component-preview style={styles.sample}>
-      <div {...stylex.props(styles.contents)}>
+      <ThemeBoundary preset={preset} style={styles.contents}>
         {compactSample(item) ?? (Preview && <Preview />)}
-
-      </div>
+      </ThemeBoundary>
     </Card.Root>
   );
 }

@@ -86,6 +86,7 @@ Sidebar has no axis. Every part takes `render` and the `style` slot.
 | `Root` | `mobileOpen`, `defaultMobileOpen`, `onMobileOpenChange` | `boolean`, `boolean`, `(open: boolean) => void` | `defaultMobileOpen` is `false` | The mobile menu, below `48rem`. |
 | `Close` | — | — | — | Renders `null` above the breakpoint. |
 | `Panel` | `aria-label` or `aria-labelledby` | `string` | — | Required, as a union. The type rejects an unnamed panel. |
+| `Panel` | `container` | `Dialog.Portal`'s `container` | `<body>` | Where the mobile menu portals below the breakpoint, such as inside a scoped theme. |
 | `Link` | `active` | `boolean` | `false` | Emits `aria-current="page"` and `data-active`. |
 | every part | `render` | `ReactElement \| function` | — | Base UI's render prop, through `useRender`. |
 | every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |

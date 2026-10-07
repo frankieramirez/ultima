@@ -5,13 +5,13 @@ import remarkGfm from 'remark-gfm';
 import { defineConfig } from 'vite';
 
 import { stylexConstsWarmup, stylexOptions } from '../../stylex.options.ts';
-import { anatomyPlugin } from './scripts/anatomy-plugin.ts';
+import { demoUiPlugin } from './scripts/demo-ui-plugin.ts';
 import { themeRegistryPlugin } from './scripts/theme-registry-plugin.ts';
 
 export default defineConfig(({ mode }) => ({
   plugins: [
     themeRegistryPlugin(),
-    anatomyPlugin(),
+    demoUiPlugin(),
     { enforce: 'pre', ...mdx({ remarkPlugins: [remarkGfm] }) },
     // Registered before stylex.vite so its middleware gates the dev CSS endpoint.
     stylexConstsWarmup(['/src/breakpoints.stylex.ts']),

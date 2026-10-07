@@ -3,7 +3,6 @@ import type { ComponentProps, ReactNode } from 'react';
 import * as stylex from '@stylexjs/stylex';
 import type { StyleXStyles } from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Separator } from '@ultima/ui';
 import { DocumentLayout, type Crumb } from './document-layout';
 import { headings } from './typography';
 
@@ -44,50 +43,22 @@ export function Page({
   lede,
   breadcrumb = [{ label: 'Install', to: '/install' }, { label: title }],
   index = true,
-  onSectionNavigate,
   children,
 }: {
   title: string;
   lede: ReactNode;
   breadcrumb?: Crumb[];
   index?: boolean;
-  onSectionNavigate?: (id: string) => void;
   children?: ReactNode;
 }) {
   return (
-    <DocumentLayout
-      breadcrumb={breadcrumb}
-      index={index}
-      onSectionNavigate={onSectionNavigate}
-    >
+    <DocumentLayout breadcrumb={breadcrumb} index={index}>
       <div {...stylex.props(styles.page)}>
         <h1 {...stylex.props(headings.h1)}>{title}</h1>
         <p {...stylex.props(styles.lede)}>{lede}</p>
         {children}
       </div>
     </DocumentLayout>
-  );
-}
-
-export function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section>
-      <Separator style={headings.rule} />
-      {/* The id is the anchor `ultima check` links a finding to, such as /tokens#color. */}
-      <h2
-        id={title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}
-        {...stylex.props(headings.h2)}
-      >
-        {title}
-      </h2>
-      {children}
-    </section>
   );
 }
 

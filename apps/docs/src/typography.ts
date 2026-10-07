@@ -35,7 +35,4 @@ export const headings = stylex.create({
     marginTop: space['--ult-space-8'],
     marginBottom: space['--ult-space-4'],
   },
-  rule: {
-    marginTop: space['--ult-space-11'],
-  },
 });

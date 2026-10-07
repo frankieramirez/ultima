@@ -1,6 +1,6 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
+import { colorScheme, resolveDraft } from '@ultima/tokens';
 import axe from 'axe-core';
 import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -11,7 +11,8 @@ import { componentPages, pages } from '../navigation';
 import { router, routeTree } from '../router';
 const NAVIGATION_STORAGE_KEY = 'ultima-navigation';
 import { TextLink } from '../text-link';
-import { THEME_STORAGE_KEY } from '../theme';
+import { siteDraft } from '../site-theme-draft';
+import { THEME_STORAGE_KEY, siteTheme } from '../theme';
 import { MENU_LABEL } from '../site-menu';
 // axe resolves a text contrast against the nearest painted ancestor, and the application's ground
 // is on `body` rather than on a component, so without this the shell is measured over nothing.
@@ -23,9 +24,12 @@ function mount(path: string) {
 }
 
 const modes = {
-  dark: stylex.props(darkTheme, colorScheme.dark),
-  light: stylex.props(lightTheme, colorScheme.light),
+  dark: stylex.props(siteTheme.dark, colorScheme.dark),
+  light: stylex.props(siteTheme.light, colorScheme.light),
 };
+
+const focusHex = resolveDraft(siteDraft()).dark['--ult-color-border-focus']!;
+const focusRing = `rgb(${[1, 3, 5].map((at) => parseInt(focusHex.slice(at, at + 2), 16)).join(', ')})`;
 
 const themeClasses = (mode: keyof typeof modes) => modes[mode].className?.split(/\s+/).filter(Boolean) ?? [];
 
@@ -132,7 +136,7 @@ test('every site link shows the same focus ring', async () => {
       const style = getComputedStyle(focused);
       expect(style.outlineStyle).toBe('solid');
       expect(style.outlineWidth).toBe('2px');
-      expect(style.outlineColor).toBe('rgb(131, 148, 255)');
+      expect(style.outlineColor).toBe(focusRing);
       targets.delete(focused);
     }
   }
@@ -174,7 +178,7 @@ test('the inline link shows the same focus ring', async () => {
   const style = getComputedStyle(link);
   expect(style.outlineStyle).toBe('solid');
   expect(style.outlineWidth).toBe('2px');
-  expect(style.outlineColor).toBe('rgb(131, 148, 255)');
+  expect(style.outlineColor).toBe(focusRing);
 });
 
 test.each(['dark', 'light'] as const)('the current header link has a clear underline and weight in %s mode', async (mode) => {
@@ -249,19 +253,20 @@ test('the mode control switches the theme', async () => {
   );
 });
 
-test('a redesigned foundation page leads with its running head and carries no trail', async () => {
-  const install = await mount('/install');
-  await expect.element(install.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
-  expect(install.container.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
-});
+for (const path of ['/install', '/elements', '/tokens', '/palette']) {
+  test(`the redesigned foundation page ${path} leads with its running head and carries no trail`, async () => {
+    const screen = await mount(path);
+    await expect.element(screen.getByRole('heading', { level: 1 })).toBeVisible();
+    expect(screen.container.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
+  });
+}
 
-test('the article trail is a Breadcrumb landmark that links the section and marks the page current', async () => {
-  const tokens = await mount('/tokens');
-  const tokensTrail = tokens.container.querySelector('nav[aria-label="Breadcrumb"]')!;
-  const docsLink = tokensTrail.querySelector('a[href="/install"]')!;
-  expect(docsLink.textContent).toBe('Documentation');
-  expect(tokensTrail.querySelector('[aria-current="page"]')?.textContent).toBe('Tokens');
-  await tokens.unmount();
+test('the article trail is a Breadcrumb landmark that marks the page current', async () => {
+  const lost = await mount('/lost-in-the-suite');
+  await expect.element(lost.getByRole('heading', { name: 'Lost in the aether', level: 1 })).toBeVisible();
+  const trail = lost.container.querySelector('nav[aria-label="Breadcrumb"]')!;
+  expect(trail.querySelector('[aria-current="page"]')?.textContent).toBe('Not Found');
+  await lost.unmount();
 
   const component = await mount('/components/alert-dialog');
   await expect.element(component.getByRole('heading', { name: 'Alert Dialog', level: 1 })).toBeVisible();

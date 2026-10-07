@@ -13,7 +13,7 @@ import {
 } from "@ultima/tokens/tokens.stylex";
 import { Dialog } from "@ultima/ui/dialog";
 import type { PartProps } from "@ultima/ui/lib/component";
-import type { MouseEvent as ReactMouseEvent } from "react";
+import type { ComponentProps, MouseEvent as ReactMouseEvent } from "react";
 import {
   createContext,
   use,
@@ -260,8 +260,10 @@ type SidebarRootProps = PartProps<useRender.ComponentProps<"div">> & {
   onMobileOpenChange?: (open: boolean) => void;
 };
 
-type SidebarPanelProps = PartProps<useRender.ComponentProps<"nav">> &
-  ({ "aria-label": string } | { "aria-labelledby": string });
+type SidebarPanelProps = PartProps<useRender.ComponentProps<"nav">> & {
+  /** Where the mobile menu portals below the breakpoint, passed to `Dialog.Portal`. */
+  container?: ComponentProps<typeof Dialog.Portal>["container"];
+} & ({ "aria-label": string } | { "aria-labelledby": string });
 
 type SidebarPanelName = { "aria-label"?: string; "aria-labelledby"?: string };
 
@@ -349,7 +351,7 @@ function Root({
   );
 }
 
-function Panel({ ref, render, style, id, ...props }: SidebarPanelProps) {
+function Panel({ ref, render, style, id, container, ...props }: SidebarPanelProps) {
   const { state, panelId } = useRoot("Sidebar.Panel");
   const {
     "aria-label": label,
@@ -375,7 +377,7 @@ function Panel({ ref, render, style, id, ...props }: SidebarPanelProps) {
   if (!state.isMobile) return nav;
 
   return (
-    <Dialog.Portal>
+    <Dialog.Portal container={container}>
       <Dialog.Backdrop />
       <Dialog.Viewport style={mobile.viewport}>
         <Dialog.Popup

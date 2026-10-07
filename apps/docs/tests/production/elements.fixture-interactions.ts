@@ -56,7 +56,7 @@ export default productionScenario('elements.fixture-interactions', 'production',
   await page.keyboard.press('Tab');
   await eventually(() => isFocused(save), 'Tab returns to Save');
   await animationsSettle(save, 'Save settles');
-  await assertFocusRing(page, save, variant.mode, 'the focused Save button');
+  await assertFocusRing(page, save, await shippedColor(page, '--ult-color-border-focus', variant.mode), 'the focused Save button');
   const fill = await save.evaluate((button) => ({ background: getComputedStyle(button).backgroundColor, color: getComputedStyle(button).color }));
   await assertColor(page, fill.background, await shippedColor(page, '--ult-color-accent', variant.mode), 'the solid accent fill');
   await assertColor(page, fill.color, await shippedColor(page, '--ult-color-accent-contrast', variant.mode), 'the solid accent text');
@@ -80,7 +80,7 @@ export default productionScenario('elements.fixture-interactions', 'production',
   await eventually(() => isFocused(overview), 'ArrowRight skips the disabled Archive tab and wraps to Overview');
   await page.keyboard.press('Enter');
   await eventually(async () => (await selected(overview)) === 'true', 'Enter selects Overview again');
-  await assertFocusRing(page, overview, variant.mode, 'the focused Overview tab');
+  await assertFocusRing(page, overview, await shippedColor(page, '--ult-color-border-focus', variant.mode), 'the focused Overview tab');
 
   // A tooltip opens on keyboard focus, paints the raised surface and closes on Escape.
   const copy = section.getByRole('button', { name: 'Copied to clipboard', exact: true });

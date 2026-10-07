@@ -10,7 +10,7 @@ import type { Page } from 'playwright';
 
 import { productionScenario } from '../../../../scripts/verification/production.ts';
 import { catalogue } from '../fixtures/catalogue.ts';
-import { assertFits, assertFocusRing, isFocused, shippedLength } from '../support/production.ts';
+import { assertFits, assertFocusRing, isFocused, neutralLength, shippedLength, siteColor } from '../support/production.ts';
 
 const { groups, broadQuery, broadMatch, broadGroups, emptyQuery, emptyHeading, openQuery, open: result, demo, copyLabel } = catalogue;
 
@@ -100,7 +100,7 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   assert.equal(await entry.count(), 1, `${result.name} is listed once`);
   for (let press = 0; press < 12 && !(await isFocused(entry)); press += 1) await page.keyboard.press('Tab');
   assert.ok(await isFocused(entry), `Tab reaches the ${result.name} entry`);
-  await assertFocusRing(page, entry, variant.mode, `the focused ${result.name} entry`);
+  await assertFocusRing(page, entry, siteColor('--ult-color-border-focus', variant.mode), `the focused ${result.name} entry`);
   await page.keyboard.press('Enter');
   await page.waitForURL((url) => url.pathname === result.pathname, { waitUntil: 'commit' });
   await main.getByRole('heading', { level: 1, name: result.name, exact: true }).waitFor();
@@ -127,5 +127,5 @@ export default productionScenario('catalogue.filter-and-demo', 'production', asy
   const liveButton = figure.getByRole('button', { name: demo.control, exact: true });
   await liveButton.waitFor({ state: 'visible' });
   const previewRadius = await liveButton.evaluate((element) => parseFloat(getComputedStyle(element).borderTopLeftRadius));
-  assert.equal(previewRadius, await shippedLength(page, '--ult-radius-md', variant.mode), 'the live demo retains the default Ultima radius');
+  assert.equal(previewRadius, neutralLength('--ult-radius-md', variant.mode), "the live demo wears Neutral's Tight radius");
 });

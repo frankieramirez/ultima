@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
-import { palette } from '@ultima/tokens';
+import { palette, presetDraft, resolveDraft } from '@ultima/tokens';
 import { expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
@@ -94,8 +94,10 @@ test('the plate follows the index and wears the previewed preset', async () => {
   expect(tooltip.getByText('npx shadcn add @ultima/tooltip').element()).toBeInTheDocument();
 
   const stage = () => tooltip.element().querySelector<HTMLElement>('[data-preset]')!;
+  const boundaryAccent = () => getComputedStyle(stage().querySelector('[data-theme-boundary]')!).getPropertyValue('--ult-color-accent').trim();
   expect(stage().dataset.preset).toBe('neutral');
-  const neutral = stage().style.getPropertyValue('--ult-color-accent');
+  const scheme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  expect(boundaryAccent()).toBe(resolveDraft(presetDraft('neutral'))[scheme]['--ult-color-accent']);
 
   await userEvent.click(screen.getByRole('button', { name: 'Preview as accent' }).element());
   expect(screen.getByRole('group', { name: 'PREVIEW PRESET' }).getByRole('button', { name: 'Ultima' }).element()).toHaveAttribute(
@@ -103,7 +105,8 @@ test('the plate follows the index and wears the previewed preset', async () => {
     'true',
   );
   expect(stage().dataset.preset).toBe('ultima');
-  expect(stage().style.getPropertyValue('--ult-color-accent')).not.toBe(neutral);
+  expect(stage().querySelector('[data-theme-boundary]')!.getAttribute('data-theme-boundary')).toBe('ultima');
+  expect(boundaryAccent()).toBe(resolveDraft(presetDraft('ultima'))[scheme]['--ult-color-accent']);
 });
 
 test('below the wide breakpoint the index folds to eight rows until asked', async () => {

@@ -34,6 +34,9 @@ function prefer(mode: keyof typeof modes) {
 const FOUNDATIONS = [
   { path: '/install', title: 'Install', place: '02', previous: 'Home', next: 'CLI' },
   { path: '/cli', title: 'CLI', place: '03', previous: 'Install', next: 'Elements' },
+  { path: '/elements', title: 'Elements', place: '04', previous: 'CLI', next: 'Tokens' },
+  { path: '/tokens', title: 'Tokens', place: '05', previous: 'Elements', next: 'Palette' },
+  { path: '/palette', title: 'Palette', place: '06', previous: 'Tokens', next: 'Rationale' },
   { path: '/rationale', title: 'Rationale', place: '07', previous: 'Palette', next: 'Studio' },
 ];
 

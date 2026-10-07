@@ -379,6 +379,24 @@ describe('below the breakpoint', () => {
     await expect.element(screen.getByRole('link', { name: 'Tokens' })).toBeVisible();
   });
 
+  test('the mobile menu portals into the container the panel is given', async () => {
+    function Contained() {
+      const [container, setContainer] = useState<HTMLDivElement | null>(null);
+      return (
+        <div ref={setContainer} data-testid="container">
+          <Sidebar.Root defaultMobileOpen>
+            <Sidebar.Panel aria-label="Docs" container={container} />
+          </Sidebar.Root>
+        </div>
+      );
+    }
+
+    const screen = await render(<Contained />);
+    const dialog = screen.getByRole('dialog', { name: 'Docs' });
+    await expect.element(dialog).toBeVisible();
+    expect(screen.getByTestId('container').element().contains(dialog.element())).toBe(true);
+  });
+
   test('useSidebar reports the narrow viewport', async () => {
     function Readout() {
       const { isMobile } = useSidebar();
