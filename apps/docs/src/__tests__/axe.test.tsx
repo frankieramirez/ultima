@@ -14,6 +14,27 @@ import { siteTheme } from '../theme';
 const demos = import.meta.glob<{ default: ComponentType }>('../demos/**/*.tsx', { eager: true });
 
 /**
+ * An overlay's `anatomy.tsx` holds its popup open, and mounted here, outside the Anatomy tab's inert
+ * stage, two `aria-hidden` focusables of Base UI's own appear: the focus guards around an open menu,
+ * and a toast's Close until its stack is hovered or focused. Only those nodes leave the
+ * `aria-hidden-focus` rule, and only for these modules.
+ */
+const BASE_UI_HIDDEN_FOCUSABLE = '[data-base-ui-focus-guard], [data-anatomy-item="toast"][data-anatomy-part="Close"]';
+
+function withoutBaseUiHiddenFocusables(violations: axe.Result[]): axe.Result[] {
+  return violations
+    .map((violation) =>
+      violation.id === 'aria-hidden-focus'
+        ? {
+            ...violation,
+            nodes: violation.nodes.filter((node) => !document.querySelector(String(node.target[0]))?.matches(BASE_UI_HIDDEN_FOCUSABLE)),
+          }
+        : violation,
+    )
+    .filter((violation) => violation.nodes.length > 0);
+}
+
+/**
  * One browser serves every file, so the pointer arrives wherever the file before this one left it.
  * Base UI opens a Tooltip as soon as its trigger renders under a resting pointer and both tooltip
  * demos set `delay={0}`, so a pointer parked over the top left made the sweep scan an open popup.
@@ -65,8 +86,9 @@ for (const [path, module] of Object.entries(demos)) {
         </main>,
       );
 
-      const results = await axe.run(document.body);
-      expect(results.violations.map(describe)).toEqual([]);
+      const { violations } = await axe.run(document.body);
+      const kept = name.endsWith('/anatomy') ? withoutBaseUiHiddenFocusables(violations) : violations;
+      expect(kept.map(describe)).toEqual([]);
     });
   }
 }
