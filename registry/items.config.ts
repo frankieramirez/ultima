@@ -388,10 +388,20 @@ export const items: Record<string, RegistryItemDescription> = {
       "https://ultima.systems/r/tokens-css.json"
     ]
   },
+  "crm-01": {
+    "title": "CRM 01",
+    "description": "A contact manager: workspace navigation, a searchable and filterable contact list, and the selected contact's record with its activity, notes and details.",
+    "docs": "Render it from a route of your own: import { Crm01 } from '@/components/crm-01/crm-01'. Search, the filter, the selection, the note composer and Log activity are wired; Add contact and the navigation links have no handler of their own, and Email and Call are mailto: and tel: links."
+  },
   "dashboard-01": {
     "title": "Dashboard 01",
     "description": "A store overview: workspace navigation, four key metrics, a revenue chart with its data table, top products and recent orders.",
     "docs": "Render it from a route of your own: import { Dashboard01 } from '@/components/dashboard-01/dashboard-01'. It installs d3-scale and d3-array for the revenue chart. Replace the sample data in each region file with your own; Export, the workspace menu items and the navigation links have no handler of their own."
+  },
+  "settings-01": {
+    "title": "Settings 01",
+    "description": "A Notifications settings page: a settings sidebar beside one form of switches, push choices and quiet hours, with an unsaved-changes bar.",
+    "docs": "Render it from a route of your own: import { Settings01 } from '@/components/settings-01/settings-01'. Saving only moves the current values into the block's saved state; persist them from the submit handler in notifications-form.tsx. The sidebar links have no handler of their own."
   },
   "sign-in-01": {
     "title": "Sign-in 01",
