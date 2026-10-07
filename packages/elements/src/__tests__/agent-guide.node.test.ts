@@ -48,6 +48,15 @@ test('names both render targets in the opening paragraph', () => {
   expect(output).toContain('custom elements');
 });
 
+test('names the opt-in DESIGN.md as consumer-owned for both render targets', () => {
+  for (const output of [guide([]), guide([element('ult-button')])]) {
+    expect(output).not.toContain('installs no documentation');
+    expect(output).toContain('`DESIGN.md`');
+    expect(output).toContain('`design-md`');
+    expect(output).toContain('`ultima-design` pointer skill');
+  }
+});
+
 test('an element with no axes declares no axis attributes', () => {
   expect(guide([element('ult-card')])).toContain('No axis attributes.');
 });

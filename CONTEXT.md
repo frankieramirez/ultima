@@ -40,7 +40,7 @@ The generated companion to the tokens CSS export: every semantic token with its 
 
 ## Agent guide
 
-The generated Markdown at `/llms.txt`: Ultima's principles, conventions, component list, and token names at one fetchable URL. It is how a consumer's agent learns the system, because Ultima installs no documentation into a consumer's repository.
+The generated Markdown at `/llms.txt`: Ultima's principles, conventions, component list, and token names at one fetchable URL. It is how a consumer's agent learns the system: shared conventions stay hosted there. The consumer CLI manages only the `ultima-design` pointer skill and hook entries, which point at it and write no root documents. A `DESIGN.md` reaches a consumer's root only through an explicit install of a Theme Studio theme item or the `design-md` item, and the consumer owns and updates it with their theme.
 
 ## Agent surface
 
@@ -181,6 +181,10 @@ The line `/tokens` renders per semantic token. Settled on [#372](https://github.
 ## Page layout
 
 The docs-local side of the line between an Ultima component and the site's own chrome. Page layout arranges content and sets type and flow spacing. It never builds a control from plain elements and never paints a surface, meaning a background, a border, a shadow, or a radius. Anything that does one of those comes from a component, or becomes one. A control here is anything the user reaches with a keyboard, so a tabbable scroll region counts even though it presses nothing. A third prong arrived with Scroll Area: page layout may rely on a native scrollbar and may not hide one without painting a replacement, since the first two prongs are about building something badly and this one is about removing something the platform already gave you. The site's shell scrolls the document rather than an inner region: the header, menu panel, and on-this-page index are sticky, and the footer flows after content, resting at the viewport bottom only on a short page. Theme Studio keeps its own fixed-height app shell.
+
+## Theme scope
+
+A subtree of a consumer's app that wears a complete theme other than the document's, in one mode, and is the portal container for the popups opened inside it. The consumer-facing counterpart of the docs' theme boundary. A popup whose portal skips the scope reads the document theme. Settled on [#729](https://github.com/frankieramirez/ultima/issues/729).
 
 ## Site theme
 
