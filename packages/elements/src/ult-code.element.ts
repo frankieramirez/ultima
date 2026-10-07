@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, radius, relativeText, space, text } from '@ultima/tokens/tokens.stylex';
 
 const styles = stylex.create({
   root: {
@@ -7,7 +7,6 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-mono'],
-    fontSize: text['--ult-text-4'],
     margin: 0,
   },
 });
@@ -15,6 +14,7 @@ const styles = stylex.create({
 const variants = stylex.create({
   inline: {
     borderRadius: radius['--ult-radius-sm'],
+    fontSize: relativeText.code,
     paddingBlock: space['--ult-space-1'],
     paddingInline: space['--ult-space-2'],
   },
@@ -23,6 +23,7 @@ const variants = stylex.create({
     borderRadius: 0,
     borderStyle: 'solid',
     borderWidth: border.hairline,
+    fontSize: text['--ult-text-4'],
     lineHeight: font['--ult-font-leading-normal'],
     overflowWrap: 'anywhere',
     padding: space['--ult-space-7'],

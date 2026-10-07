@@ -92,7 +92,7 @@ The grammar `ULT-TOKEN-001` applies, as delivered on [Enforce token and styling 
 | `outline-offset` | `outlineOffset` | `border` constants, zero |
 | `border` | `border`, `outline` and the side shorthands | `border` constants, `color` tokens, zero, line-style keywords |
 | `shadow` | `boxShadow`, `textShadow` | `shadow` tokens; a ring from zero, `border` constants and `color` tokens; `none`, `inset` |
-| `font-size` | `fontSize` | `text` tokens |
+| `font-size` | `fontSize` | `text` tokens, `relativeText` constants |
 | `font-weight` | `fontWeight` | font weight tokens |
 | `line-height` | `lineHeight` | font leading tokens, `normal` |
 | `letter-spacing` | `letterSpacing`, `wordSpacing` | font tracking tokens, zero, `normal` |
