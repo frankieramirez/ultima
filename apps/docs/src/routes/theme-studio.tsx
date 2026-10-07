@@ -4,6 +4,8 @@ import { XIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import {
   gate,
+  isPresetEdited,
+  presetLabel,
   resolveDraft,
   SHUFFLE_ATTEMPT_LIMIT,
   resetDraft,
@@ -21,7 +23,7 @@ import { ThemeStudioPreview } from '../theme-studio-preview';
 import { ThemeStudioShuffleBar } from '../theme-studio-shuffle';
 import { checksCount, draftChecks, ThemeStudioChecks } from '../theme-studio-checks';
 import { ThemeStudioValidation } from '../theme-studio-validation';
-import { TokenRows, type ModeOffenders } from '../theme-studio-token-row';
+import { TokenRows } from '../theme-studio-token-row';
 
 const MODES = ['dark', 'light', 'compare'] as const;
 const RAIL_QUERY = '(min-width: 52.5rem)';
@@ -128,8 +130,10 @@ const styles = stylex.create({
   drawer: { blockSize: 'min(44rem, calc(100dvh - 5rem))', display: 'flex', flexDirection: 'column', inlineSize: '100%', maxInlineSize: '100%', minBlockSize: 0, overflow: 'hidden', padding: 0 },
   dialogHeader: { alignItems: 'center', display: 'flex', gap: space['--ult-space-5'], justifyContent: 'space-between', padding: space['--ult-space-6'], flexShrink: 0 },
   close: { minBlockSize: space['--ult-space-11'], minInlineSize: space['--ult-space-11'] },
-  report: { inlineSize: '100%', maxInlineSize: '48rem', display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 },
-  reportBody: { overflow: 'auto', padding: space['--ult-space-6'], minBlockSize: 0 },
+  sheetViewport: { padding: 0, placeItems: 'stretch end' },
+  report: { blockSize: '100%', display: 'flex', flexDirection: 'column', inlineSize: '100%', maxHeight: '100%', maxWidth: { default: '100%', [breakpoints.RAIL]: '32.5rem' }, overflow: 'hidden', padding: 0 },
+  reportBody: { display: 'flex', flexDirection: 'column', gap: space['--ult-space-6'], overflow: 'auto', paddingBlockEnd: space['--ult-space-8'], paddingInline: space['--ult-space-6'], minBlockSize: 0 },
+  reportNote: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-2'], margin: 0 },
 });
 
 function ExhaustionNotice({ report }: { report: ShuffleExhaustion }) {
@@ -183,14 +187,6 @@ export function ThemeStudio() {
   const pairings = useMemo(() => gate(resolved), [resolved]);
   const checks = useMemo(() => draftChecks(pairings), [pairings]);
 
-  const offenders = useMemo<ModeOffenders>(() => {
-    const dark = new Set<string>();
-    const light = new Set<string>();
-    for (const result of checks.failures) for (const mode of ['dark', 'light'] as const) {
-      if (!result[mode].pass) { (mode === 'dark' ? dark : light).add(result.foreground); (mode === 'dark' ? dark : light).add(result.background); }
-    }
-    return { dark, light };
-  }, [checks]);
   const status = (
     <div {...stylex.props(styles.status)}>
       <ThemeStudioChecks checks={checks} onReport={() => setReportOpen(true)} reportRef={reportTrigger} />
@@ -207,7 +203,7 @@ export function ThemeStudio() {
       {notice !== null ? <Alert.Root tone="warning"><Alert.Title>Autosave notice</Alert.Title><Alert.Description>{notice}</Alert.Description><Button onClick={dismissNotice} size="sm" variant="ghost">Dismiss</Button></Alert.Root> : null}
       <ThemeStudioShuffleBar canRedo={store.canRedo} canUndo={store.canUndo} fingerprint={store.fingerprint} onRedo={store.redo} onShuffle={() => store.shuffle('global')} onUndo={store.undo} onVariationChange={store.setVariation} variation={store.variation} />
       {store.exhaustion ? <ExhaustionNotice report={store.exhaustion} /> : null}
-      <div {...stylex.props(styles.groups)}><ThemeStudioEditor commit={store.commit} draft={draft} group={group} onGroupChange={setGroup} onShuffleGroup={store.shuffle} resolved={resolved} results={pairings} update={store.update} /></div>
+      <div {...stylex.props(styles.groups)}><ThemeStudioEditor commit={store.commit} draft={draft} group={group} onGroupChange={setGroup} onShuffleGroup={store.shuffle} offenders={checks.offenders} resolved={resolved} update={store.update} /></div>
     </aside>
   );
 
@@ -221,6 +217,7 @@ export function ThemeStudio() {
         </span>
         <div {...stylex.props(styles.actions)}>
           <StudioActions
+            checks={checks}
             draft={draft}
             onCancelPending={cancelPending}
             onConfirmPending={confirmPending}
@@ -246,7 +243,7 @@ export function ThemeStudio() {
       {wide ? status : (
         <Dialog.Root open={editorOpen} onOpenChange={setEditorOpen}>
           <div {...stylex.props(styles.status)}>
-            <Button ref={reportTrigger} onClick={() => setReportOpen(true)} size="sm" variant="ghost" style={styles.touch}>{checksCount(checks)}</Button>
+            <Button aria-label={`${checksCount(checks)}. View draft report`} ref={reportTrigger} onClick={() => setReportOpen(true)} size="sm" variant="ghost" style={styles.touch}>{checksCount(checks)}</Button>
             <Dialog.Trigger render={<Button style={styles.edit} />}>Edit theme</Dialog.Trigger>
           </div>
           <Dialog.Portal container={shell}><Dialog.Backdrop forceRender /><Dialog.Viewport style={styles.drawerViewport}><Dialog.Popup style={styles.drawer}>
@@ -257,12 +254,13 @@ export function ThemeStudio() {
         </Dialog.Root>
       )}
       <Dialog.Root open={reportOpen} onOpenChange={(open) => { setReportOpen(open); if (!open) setRepair(null); }}>
-        <Dialog.Portal container={shell}><Dialog.Backdrop forceRender /><Dialog.Viewport><Dialog.Popup style={styles.report} finalFocus={reportTrigger}>
-          <div {...stylex.props(styles.dialogHeader)}><Dialog.Title>This draft's token checks</Dialog.Title><Dialog.Close render={<Button aria-label="Close draft report" variant="ghost" style={styles.close} />}><XIcon aria-hidden /></Dialog.Close></div>
-          <Dialog.Description style={styles.reportBody}>Declared token pairings in both modes. Check your rendered components too.</Dialog.Description>
+        <Dialog.Portal container={shell}><Dialog.Backdrop forceRender /><Dialog.Viewport style={styles.sheetViewport}><Dialog.Popup style={[docsStyles.square, styles.report]} finalFocus={reportTrigger}>
+          <div {...stylex.props(styles.dialogHeader)}><Dialog.Title>Draft report</Dialog.Title><Dialog.Close render={<Button aria-label="Close draft report" variant="ghost" style={styles.close} />}><XIcon aria-hidden /></Dialog.Close></div>
           <div {...stylex.props(styles.reportBody)}>
-            {repair ? <section aria-label="Repair token"><h2>Edit {repair.token.replace('--ult-color-', '')}</h2><TokenRows draft={draft} group="color" offenders={offenders} resolved={resolved} setDraft={(action) => store.commit(typeof action === 'function' ? action : () => action)} onlyToken={repair.token} focusToken={repair.token} focusRequest={repair.serial} /><Separator /></section> : null}
-            <ThemeStudioValidation checks={checks} onEdit={(token) => setRepair((current) => ({ token, serial: (current?.serial ?? 0) + 1 }))} />
+            <Dialog.Description style={styles.reportNote}>{presetLabel(draft)}{isPresetEdited(draft) ? ' · Edited' : ''} · token contrast, WCAG 2.2 AA. Declared token pairings in both modes; check your rendered components too.</Dialog.Description>
+            {repair ? <section aria-label="Repair token"><h2>Edit {repair.token.replace('--ult-color-', '')}</h2><TokenRows draft={draft} group="color" offenders={checks.offenders} resolved={resolved} setDraft={(action) => store.commit(typeof action === 'function' ? action : () => action)} onlyToken={repair.token} focusToken={repair.token} focusRequest={repair.serial} /><Separator /></section> : null}
+            <ThemeStudioValidation checks={checks} draft={draft} onCommit={store.commit} onEdit={(token) => setRepair((current) => ({ token, serial: (current?.serial ?? 0) + 1 }))} />
+            <p {...stylex.props(styles.reportNote)}>A failing draft can still be exported once you acknowledge its failures. This checks token contrast only.</p>
           </div>
         </Dialog.Popup></Dialog.Viewport></Dialog.Portal>
       </Dialog.Root>

@@ -9,11 +9,9 @@ import {
   createRegistryUrl,
   draftFingerprint,
   encodeFragment,
-  gate,
   parseDraft,
   presetLabel,
   isPresetEdited,
-  resolveDraft,
   restoreAutosave,
   saveAutosave,
   serializeDraft,
@@ -32,6 +30,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { CopyButton } from './copy-button';
 import { Fence } from './prose';
 import { readStored } from './storage';
+import { failingPairings, type DraftChecks } from './theme-studio-checks';
 import { useStudioDraft as useStoreDraft } from './theme-studio-store';
 import { headings } from './typography';
 
@@ -302,6 +301,7 @@ export function useStudioDraft(): ReturnType<typeof useStoreDraft> & {
 }
 
 export function StudioActions({
+  checks,
   draft,
   onOpenFile,
   pending,
@@ -310,6 +310,7 @@ export function StudioActions({
   refusal,
   onDismissRefusal,
 }: {
+  checks: DraftChecks;
   draft: ThemeDraft;
   onOpenFile: (file: File) => Promise<void>;
   pending: PendingLoad | null;
@@ -346,7 +347,7 @@ export function StudioActions({
       <Button onClick={() => setDialog('export')} size="sm" style={[docsStyles.square, styles.touch]}>
         Export theme
       </Button>
-      <ExportDialog draft={draft} onClose={() => setDialog(null)} open={dialog === 'export'} />
+      <ExportDialog checks={checks} draft={draft} onClose={() => setDialog(null)} open={dialog === 'export'} />
       <ShareDialog draft={draft} onClose={() => setDialog(null)} open={dialog === 'share'} />
       <AlertDialog.Root
         onOpenChange={(open) => {
@@ -395,10 +396,12 @@ export function StudioActions({
 }
 
 function ExportDialog({
+  checks,
   draft,
   open,
   onClose,
 }: {
+  checks: DraftChecks;
   draft: ThemeDraft;
   open: boolean;
   onClose: () => void;
@@ -410,7 +413,7 @@ function ExportDialog({
   const acknowledged = acknowledgedDraft === acknowledgementKey;
   const [framework, setFramework] = useState('Vite');
   const importExample = framework === 'Vite' ? "// src/main.tsx\nimport './index.css';\nimport '../ultima-theme.css';" : framework === 'Next app' ? "// app/layout.tsx\nimport './ultima.css';\nimport '../ultima-theme.css';" : "// src/app/layout.tsx\nimport './ultima.css';\nimport '../../ultima-theme.css';";
-  const failures = gate(resolveDraft(draft)).filter((row) => !row.dark.pass || !row.light.pass);
+  const { failures } = checks;
   const shippedFailure = failures.length > 0 && draft.preset != null && !isPresetEdited(draft);
   const gated = failures.length > 0 && (shippedFailure || !acknowledged);
   const [installUrl, setInstallUrl] = useState<{ draft: string; url: string | null; reason: 'too-long' | 'encoding-failed' | null } | null>(null);
@@ -467,14 +470,13 @@ function ExportDialog({
             </div>
             <div {...stylex.props(styles.exportBody, styles.stack)}>
               <Dialog.Description style={styles.exportCopy}>Install {presetLabel(draft)}{isPresetEdited(draft) ? ' · Edited' : ''} in your application.</Dialog.Description>
-              {failures.length === 0 ? <Alert.Root tone="success"><Alert.Title style={styles.exportCopy}>All {gate(resolveDraft(draft)).length * 2} token checks pass</Alert.Title></Alert.Root> : null}
+              {failures.length === 0 ? <Alert.Root tone="success"><Alert.Title style={styles.exportCopy}>All {checks.totalChecks} token checks pass</Alert.Title></Alert.Root> : null}
               {failures.length > 0 ? (
                 <>
                   <Alert.Root tone="warning">
                     <Alert.Title>Fails token-contrast pairings</Alert.Title>
                     <Alert.Description>
-                      This draft fails {failures.length} pairing
-                      {failures.length === 1 ? '' : 's'}. Exported artifacts record the failure.
+                      This draft fails {failingPairings(checks)}, {checks.totalChecks - checks.passedChecks} of {checks.totalChecks} token checks. Exported artifacts record the failure.
                     </Alert.Description>
                   </Alert.Root>
                   <ul {...stylex.props(styles.pairings)}>
@@ -524,7 +526,7 @@ function ExportDialog({
                     <ToggleGroup.Root aria-label="Installation framework" value={[framework]} onValueChange={(next, details) => { if (next[0]) setFramework(next[0]); else details.cancel(); }} style={styles.framework}>
                       {['Vite', 'Next app', 'Next src/app'].map((name) => <ToggleGroup.Item key={name} value={name} style={[docsStyles.square, styles.touch, styles.exportCopy]}>{name}</ToggleGroup.Item>)}
                     </ToggleGroup.Root>
-                    <Fence code={importExample} lang="tsx" />
+                    <Fence code={importExample} disabled={gated} lang="tsx" />
                     <p {...stylex.props(styles.note, styles.exportCopy)}>Load the theme after the application's StyleX output.</p>
                     <p {...stylex.props(styles.note, styles.exportCopy)}>Set <Code>data-theme</Code> on html to <Code>dark</Code> or <Code>light</Code>. For System mode, remove data-theme from html.</p>
                   </section>
@@ -533,7 +535,7 @@ function ExportDialog({
                       <Accordion.Header><Accordion.Trigger style={styles.exportCopy}>Check your application</Accordion.Trigger></Accordion.Header>
                       <Accordion.Panel>
                         <div {...stylex.props(styles.stack)}>
-                          <Fence code={'npx ultima-design doctor\nnpx ultima-design check'} lang="shell" />
+                          <Fence code={'npx ultima-design doctor\nnpx ultima-design check'} disabled={gated} lang="shell" />
                           <p {...stylex.props(styles.note, styles.exportCopy)}>Verify a rendered control and an open popup in dark, light and system mode. Check keyboard focus and reduced motion. Token checks and command success alone do not prove browser parity.</p>
                         </div>
                       </Accordion.Panel>

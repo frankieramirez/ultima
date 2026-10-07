@@ -75,6 +75,8 @@ export {
 } from './theme/autosave';
 export type { AutosaveResult, StorageLike } from './theme/autosave';
 export { gate, PAIRINGS } from './theme/gate';
+export { applyClosestPassingValue, closestPassingValue, fixTarget } from './theme/fix';
+export type { ClosestPassingValue } from './theme/fix';
 export type { Pairing, PairingModeResult, PairingResult } from './theme/gate';
 export { createRng, shuffleDraft, SHUFFLE_ATTEMPT_LIMIT } from './theme/shuffle';
 export type {
