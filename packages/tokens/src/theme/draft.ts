@@ -1,15 +1,17 @@
 import type { ColorMode } from '../palette.ts';
 import {
   contrastRatio,
+  generateInkStates,
   generateScales,
   RECIPE_VERSION,
+  type InkStates,
   SCALE_NAMES,
   STOCK_SEEDS,
   type ScaleName,
   type ScaleSeeds,
 } from './recipe.ts';
 
-export const THEME_DRAFT_VERSION = 2;
+export const THEME_DRAFT_VERSION = 3;
 
 export const THEME_PRESETS = [
   { id: 'neutral', label: 'Neutral', description: 'Achromatic · balanced' },
@@ -19,20 +21,23 @@ export const THEME_PRESETS = [
 ] as const;
 
 export type ThemePresetId = (typeof THEME_PRESETS)[number]['id'];
-export type ThemePresetOrigin = { id: ThemePresetId; revision: 1 };
+export type ThemePresetRevision = 1 | 2;
+export type ThemePresetOrigin = { id: ThemePresetId; revision: ThemePresetRevision };
 
 export type GuidedGroup = 'color' | 'typography' | 'density' | 'shape' | 'elevation' | 'motion';
 
 export type TypeScale = 'stock' | 1.125 | 1.2 | 1.25 | 1.333;
 export type MeasurePreset = 'compact' | 'default' | 'loose';
 export type DensityFactor = 0.75 | 1 | 1.25;
-export type ShapePreset = 'sharp' | 'default' | 'round';
+export type ShapePreset = 'sharp' | 'default' | 'soft' | 'round';
+export type AccentFill = 'hue' | 'ink';
 
 export type TokenTable = Record<string, string>;
 
 export type ThemeDraft = {
-  version: 1 | typeof THEME_DRAFT_VERSION;
+  version: 1 | 2 | typeof THEME_DRAFT_VERSION;
   preset?: ThemePresetOrigin | null;
+  accentFill?: AccentFill;
   recipeVersion: number;
   color: ScaleSeeds;
   typography: {
@@ -73,10 +78,34 @@ const TRACKING: Record<MeasurePreset, Record<string, string>> = {
   loose: { tightest: '-0.03em', tighter: '-0.02em', tight: '-0.01em', normal: '0.01em', wide: '0.1em', wider: '0.18em' },
 };
 
-const RADIUS: Record<ShapePreset, Record<'xs' | 'sm' | 'md' | 'lg', number>> = {
+type RadiusTable = Partial<Record<ShapePreset, Record<'xs' | 'sm' | 'md' | 'lg', number>>>;
+
+const RADIUS: RadiusTable = {
+  sharp: { xs: 0, sm: 0, md: 0, lg: 0 },
+  default: { xs: 1, sm: 2, md: 4, lg: 6 },
+  soft: { xs: 2, sm: 4, md: 10, lg: 12 },
+  round: { xs: 6, sm: 10, md: 16, lg: 24 },
+};
+
+const RADIUS_V1_V2: RadiusTable = {
   sharp: { xs: 0, sm: 2, md: 4, lg: 6 },
   default: { xs: 2, sm: 4, md: 10, lg: 12 },
   round: { xs: 6, sm: 10, md: 16, lg: 24 },
+};
+
+function radiusTable(version: ThemeDraft['version']): RadiusTable {
+  return version === THEME_DRAFT_VERSION ? RADIUS : RADIUS_V1_V2;
+}
+
+export function shapePresets(version: ThemeDraft['version']): ShapePreset[] {
+  return Object.keys(radiusTable(version)) as ShapePreset[];
+}
+
+const REVISION_2_SHAPES: Record<ThemePresetId, ShapePreset> = {
+  neutral: 'default',
+  ultima: 'soft',
+  grove: 'round',
+  cinder: 'sharp',
 };
 
 const SHADOW_LAYERS: Record<ColorMode, Record<'sm' | 'md' | 'lg', [number, number]>> = {
@@ -136,7 +165,11 @@ function snapMs(ms: number): string {
   return `${Math.round(ms / 10) * 10}ms`;
 }
 
-function colorTable(scales: ReturnType<typeof generateScales>, mode: ColorMode): TokenTable {
+function colorTable(
+  scales: ReturnType<typeof generateScales>,
+  mode: ColorMode,
+  ink: Record<ColorMode, InkStates> | null,
+): TokenTable {
   const m = (scale: ScaleName, n: number) => step(scales, scale, mode, n);
   const table: TokenTable = {
     '--ult-color-surface': m('mithril', 1),
@@ -163,6 +196,15 @@ function colorTable(scales: ReturnType<typeof generateScales>, mode: ColorMode):
     table[`--ult-color-${role}-subtle`] = m(scale, 3);
     table[`--ult-color-${role}-border`] = m(scale, 7);
     table[`--ult-color-${role}-text`] = m(scale, 12);
+  }
+
+  if (ink) {
+    table['--ult-color-accent'] = m('mithril', 12);
+    table['--ult-color-accent-hover'] = ink[mode].hover;
+    table['--ult-color-accent-active'] = ink[mode].active;
+    table['--ult-color-accent-subtle'] = m('mithril', 3);
+    table['--ult-color-accent-border'] = m('mithril', 7);
+    table['--ult-color-accent-text'] = m('mithril', 12);
   }
 
   assignContrast(table);
@@ -209,7 +251,7 @@ function nonColorTable(draft: ThemeDraft, mode: ColorMode): TokenTable {
     table[`--ult-font-tracking-${name}`] = value;
   }
 
-  for (const [name, value] of Object.entries(RADIUS[draft.shape])) {
+  for (const [name, value] of Object.entries(radiusTable(draft.version)[draft.shape] ?? {})) {
     table[`--ult-radius-${name}`] = `${value}px`;
   }
   table['--ult-radius-full'] = '9999px';
@@ -277,11 +319,13 @@ export function stockDraft(): ThemeDraft {
   };
 }
 
-export function presetDraft(id: ThemePresetId): ThemeDraft {
+/** A preset id gives its current revision 2; `{ id, revision: 1 }` gives the version-2 definition. */
+export function presetDraft(preset: ThemePresetId | ThemePresetOrigin): ThemeDraft {
+  const { id, revision }: ThemePresetOrigin = typeof preset === 'string' ? { id: preset, revision: 2 } : preset;
   const draft = stockDraft();
-  draft.version = THEME_DRAFT_VERSION;
+  draft.version = revision === 1 ? 2 : THEME_DRAFT_VERSION;
   draft.recipeVersion = 2;
-  draft.preset = { id, revision: 1 };
+  draft.preset = { id, revision };
   if (id === 'neutral') {
     for (const scale of ['mithril', 'arcane', 'mana'] as const) draft.color[scale].saturation = 0;
   }
@@ -302,11 +346,20 @@ export function presetDraft(id: ThemePresetId): ThemeDraft {
     draft.elevation = grove ? 0.5 : 1.5;
     draft.motion = grove ? 1.5 : 0.6;
   }
+  if (revision === 2) {
+    draft.shape = REVISION_2_SHAPES[id];
+    draft.accentFill = id === 'neutral' ? 'ink' : 'hue';
+  }
   return draft;
 }
 
+export function presetRevision(version: 2 | typeof THEME_DRAFT_VERSION): ThemePresetRevision {
+  return version === 2 ? 1 : 2;
+}
+
 export function resetDraft(draft: ThemeDraft): ThemeDraft {
-  return draft.version === 1 ? stockDraft() : presetDraft(draft.preset?.id ?? 'neutral');
+  if (draft.version === 1) return stockDraft();
+  return presetDraft(draft.preset ?? { id: 'neutral', revision: presetRevision(draft.version) });
 }
 
 export function presetLabel(draft: ThemeDraft): string {
@@ -316,13 +369,14 @@ export function presetLabel(draft: ThemeDraft): string {
 
 export function isPresetEdited(draft: ThemeDraft): boolean {
   const baseline = resetDraft(draft);
-  return (['color', 'typography', 'density', 'shape', 'elevation', 'motion', 'overrides', 'locks'] as const)
+  return (['color', 'accentFill', 'typography', 'density', 'shape', 'elevation', 'motion', 'overrides', 'locks'] as const)
     .some((key) => JSON.stringify(draft[key]) !== JSON.stringify(baseline[key]));
 }
 
 export function resolveDraft(draft: ThemeDraft): ResolvedDraft {
   const scales = generateScales(draft.color, draft.recipeVersion, draft.preset?.id === 'ultima');
+  const ink = draft.accentFill === 'ink' ? generateInkStates(draft.color.mithril) : null;
   const resolve = (mode: ColorMode): TokenTable =>
-    applyOverrides({ ...colorTable(scales, mode), ...nonColorTable(draft, mode) }, draft.overrides[mode], mode);
+    applyOverrides({ ...colorTable(scales, mode, ink), ...nonColorTable(draft, mode) }, draft.overrides[mode], mode);
   return { dark: resolve('dark'), light: resolve('light') };
 }

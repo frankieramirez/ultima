@@ -94,6 +94,7 @@ export function resetGroup(draft: ThemeDraft, group: GuidedGroup): ThemeDraft {
   switch (group) {
     case 'color':
       next.color = stock.color;
+      if (stock.accentFill) next.accentFill = stock.accentFill;
       break;
     case 'typography':
       next.typography = stock.typography;

@@ -144,6 +144,23 @@ export function generateScales(seeds: ScaleSeeds, recipeVersion = RECIPE_VERSION
   return out;
 }
 
+export type InkStates = { hover: string; active: string };
+
+const INK_OFFSETS: Record<ColorMode, { hover: number; active: number }> = {
+  dark: { hover: -0.06, active: -0.11 },
+  light: { hover: 0.08, active: 0.14 },
+};
+
+export function generateInkStates(seed: ScaleSeed): Record<ColorMode, InkStates> {
+  const states = (mode: ColorMode): InkStates => {
+    const lightness = L_TOP.mithril[mode][3] ?? 0;
+    const chroma = PEAK.mithril[mode] * seed.saturation * (CF_OVR.mithril?.[mode]?.[11] ?? 0);
+    const { hover, active } = INK_OFFSETS[mode];
+    return { hover: oklchToHex(lightness + hover, chroma, seed.hue), active: oklchToHex(lightness + active, chroma, seed.hue) };
+  };
+  return { dark: states('dark'), light: states('light') };
+}
+
 export function srgbToLin(c: number): number {
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 }

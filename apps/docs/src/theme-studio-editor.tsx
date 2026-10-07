@@ -6,9 +6,12 @@ import {
   isPresetEdited,
   presetDraft,
   presetLabel,
+  shapePresets,
+  THEME_DRAFT_VERSION,
   THEME_PRESETS,
   type ThemePresetId,
   seedFromSrgb,
+  type AccentFill,
   type DensityFactor,
   type MeasurePreset,
   type PairingResult,
@@ -139,7 +142,7 @@ export function CompleteThemePicker({ draft, commit }: { draft: ThemeDraft; comm
   return (
     <Select.Root
       items={THEME_PRESETS.map((preset) => ({ label: preset.label, value: preset.id }))}
-      value={draft.preset?.id ?? null}
+      value={draft.version === THEME_DRAFT_VERSION ? (draft.preset?.id ?? null) : null}
       onValueChange={(id) => { if (id) commit(() => presetDraft(id as ThemePresetId)); }}
     >
       <Select.Trigger aria-label="Complete theme" style={[docsStyles.square, styles.themeTrigger]}>
@@ -254,17 +257,23 @@ function PresetGroup({
   value,
   options,
   onChange,
+  description,
+  disabled,
 }: {
   label: string;
   value: string;
   options: readonly { label: string; value: string }[];
   onChange: (value: string) => void;
+  description?: string;
+  disabled?: boolean;
 }) {
   return (
     <Field.Root name={label}>
       <Field.Label>{label}</Field.Label>
+      {description ? <Field.Description>{description}</Field.Description> : null}
       <ToggleGroup.Root
         aria-label={label}
+        disabled={disabled}
         onValueChange={(next, eventDetails) => {
           const selected = keepOne(next, () => eventDetails.cancel());
           if (selected) onChange(selected);
@@ -281,6 +290,11 @@ function PresetGroup({
     </Field.Root>
   );
 }
+
+const ACCENT_FILL_OPTIONS: { label: string; value: AccentFill }[] = [
+  { label: 'Hue', value: 'hue' },
+  { label: 'Ink', value: 'ink' },
+];
 
 const EXACT_ROLE_TOKENS: Record<ScaleName, string> = { mithril: '--ult-color-surface', arcane: '--ult-color-accent', mana: '--ult-color-action', verdant: '--ult-color-success', ember: '--ult-color-warning', ruin: '--ult-color-danger' };
 
@@ -368,8 +382,20 @@ function ColorControls({
     }));
   };
 
+  const inkable = draft.version === THEME_DRAFT_VERSION;
+
   return (
     <div {...stylex.props(styles.stack)}>
+      <PresetGroup
+        description={inkable
+          ? 'Ink fills accents from the Neutral scale. Focus rings stay on Accent.'
+          : 'Ink needs a version 3 draft. Choose a complete theme to use it.'}
+        disabled={!inkable}
+        label="Accent fill"
+        onChange={(value) => commit((current) => ({ ...current, accentFill: value as AccentFill }))}
+        options={ACCENT_FILL_OPTIONS}
+        value={draft.accentFill ?? 'hue'}
+      />
       <div aria-label="Color roles" role="group" {...stylex.props(styles.swatches)}>
         {(Object.keys(SCALE_ROLES) as ScaleName[]).map((name) => (
           <Toggle
@@ -540,6 +566,7 @@ const DENSITY_OPTIONS = [
 const SHAPE_OPTIONS = [
   { label: 'Sharp', value: 'sharp' },
   { label: 'Default', value: 'default' },
+  { label: 'Soft', value: 'soft' },
   { label: 'Round', value: 'round' },
 ] as const;
 const ELEVATION_OPTIONS = [
@@ -681,7 +708,7 @@ export function ThemeStudioEditor({
                     <PresetGroup
                       label="Shape preset"
                       onChange={(value) => commit((current) => ({ ...current, shape: value as ShapePreset }))}
-                      options={SHAPE_OPTIONS}
+                      options={SHAPE_OPTIONS.filter((option) => shapePresets(draft.version).includes(option.value))}
                       value={draft.shape}
                     />
                   ) : null}
