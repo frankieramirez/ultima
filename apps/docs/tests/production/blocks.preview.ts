@@ -30,8 +30,22 @@ function frameWindow(frame: Frame) {
   }));
 }
 
+/** The mode the frame's document resolves and the Neutral surface it paints, read from its root. */
+function frameMode(frame: Frame) {
+  return frame.evaluate(() => {
+    const root = getComputedStyle(document.documentElement);
+    return { scheme: root.colorScheme, surface: root.getPropertyValue('--ult-color-surface').trim() };
+  });
+}
+
 export default productionScenario('blocks.preview', 'production', async ({ page, variant, open, grantClipboard, axe }) => {
   await grantClipboard();
+  // Storage that refuses every write: the frame must still follow the page's mode.
+  await page.addInitScript(() => {
+    Storage.prototype.setItem = () => {
+      throw new DOMException('storage is blocked', 'SecurityError');
+    };
+  });
   await open('/blocks');
   const main = page.getByRole('main');
   await main.getByRole('heading', { level: 1, name: 'Blocks', exact: true }).waitFor();
@@ -78,6 +92,15 @@ export default productionScenario('blocks.preview', 'production', async ({ page,
   assert.notEqual(neutralColor('--ult-color-action', variant.mode), siteColor('--ult-color-action', variant.mode), 'Neutral and site differ in action');
   assert.equal(action, neutralColor('--ult-color-action', variant.mode), "the preview document's root wears Neutral");
 
+  // The page's Color mode control moves the frame with it, though storage takes no write.
+  const other = variant.mode === 'dark' ? 'light' : 'dark';
+  const control = page.getByRole('group', { name: 'Color mode' }).locator('visible=true');
+  for (const [mode, label] of [[other, other === 'dark' ? 'Dark' : 'Light'], [variant.mode, variant.mode === 'dark' ? 'Dark' : 'Light']] as const) {
+    await control.getByRole('button', { name: label, exact: true }).click();
+    await eventually(async () => (await frameMode(frame)).scheme === mode, `the framed block following the page to ${mode}`);
+    assert.equal((await frameMode(frame)).surface, neutralColor('--ult-color-surface', mode), `the framed block paints Neutral's ${mode} surface`);
+  }
+
   const copy = main.getByRole('button', { name: copyLabel, exact: true });
   await copy.click();
   await main.getByRole('status').filter({ hasText: 'Copied' }).first().waitFor();
@@ -93,8 +116,14 @@ export default productionScenario('blocks.preview', 'production', async ({ page,
 
   for (const href of pages.filter((href) => href !== `/blocks/${opened.id}`)) {
     await open(href);
-    const other = await framedBlock(page);
-    await assertFits(page, other.element, `${href} at ${variant.viewport} width`);
+    const framed = await framedBlock(page);
+    await assertFits(page, framed.element, `${href} at ${variant.viewport} width`);
     await axe(href);
+  }
+
+  // The runner's axe reaches the top document only, so each preview route is checked as its own page.
+  for (const href of pages) {
+    await open(`${href}/preview`);
+    await axe(`${href}/preview`);
   }
 });

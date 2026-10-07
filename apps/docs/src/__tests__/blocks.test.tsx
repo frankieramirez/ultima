@@ -5,11 +5,13 @@ import { describe, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
+import { BlockPage } from '../block-page';
 import { components } from '../components';
 import { blocks } from '../generated/blocks';
 import { routeTree } from '../router';
 import { neutralDraft, siteDraft } from '../site-theme-draft';
 import { THEME_STORAGE_KEY } from '../theme';
+import { renderWithRouter } from './render-with-router';
 // axe resolves a text contrast against the nearest painted ancestor, and the ground is on `body`.
 import '../styles.css';
 
@@ -108,6 +110,14 @@ describe.each(blocks)('$title', (block) => {
       expect(shown?.textContent).toBe(raw[`../../../../packages/blocks/src/${block.id}/${file}`]);
     }
   });
+});
+
+test('a source that fails to load says so rather than loading forever', async () => {
+  const [block] = blocks;
+  const screen = await renderWithRouter(<BlockPage block={{ ...block!, files: [...block!.files, 'missing.tsx'] }} />);
+  await userEvent.click(screen.getByRole('tab', { name: 'Code' }));
+  await expect.element(screen.getByText('The source could not be loaded.')).toBeVisible();
+  expect(screen.getByText('Loading the source…').query()).toBeNull();
 });
 
 test('the narrow toggle lays the block out at 390 inside the frame, and the desktop frame scales to the column', async () => {

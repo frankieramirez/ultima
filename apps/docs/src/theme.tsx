@@ -76,6 +76,38 @@ export function useResolvedScheme(): Scheme {
   return useSchemeFor(useTheme().preference);
 }
 
+/** The framing page's root, when a same-origin page frames this document; `null` otherwise. */
+function framingRoot(): HTMLElement | null {
+  try {
+    return window.parent !== window ? window.parent.document.documentElement : null;
+  } catch {
+    return null;
+  }
+}
+
+function subscribeToFramer(onChange: () => void) {
+  const root = framingRoot();
+  if (!root) return () => {};
+  const observer = new MutationObserver(onChange);
+  observer.observe(root, { attributes: true, attributeFilter: ['class', 'style'] });
+  const query = window.matchMedia(LIGHT_QUERY);
+  query.addEventListener('change', onChange);
+  return () => {
+    observer.disconnect();
+    query.removeEventListener('change', onChange);
+  };
+}
+
+/** The mode the framing page resolved, read from its root's `color-scheme`, so no storage write is needed to follow it. */
+function readFramerScheme(): Scheme | null {
+  const root = framingRoot();
+  const scheme = root && root.ownerDocument.defaultView?.getComputedStyle(root).colorScheme;
+  return scheme === 'dark' || scheme === 'light' ? scheme : null;
+}
+
+const unframed = () => null;
+const ignore = () => () => {};
+
 function useSchemeFor(preference: ThemePreference): Scheme {
   const system = useSyncExternalStore(subscribeToScheme, readSystemScheme, serverScheme);
   return preference === 'system' ? system : preference;
@@ -102,11 +134,15 @@ export function ThemeRoot({ children, theme = 'site' }: { children: ReactNode; t
     writeStored(THEME_STORAGE_KEY, next);
   }, []);
 
-  const scheme = useSchemeFor(preference);
+  // A framed block preview takes the framing page's mode, which holds even when storage refuses writes.
+  const framed = theme === 'neutral';
+  const framer = useSyncExternalStore(framed ? subscribeToFramer : ignore, framed ? readFramerScheme : unframed, unframed);
+  const effective = framer ?? preference;
+  const scheme = useSchemeFor(effective);
 
   useLayoutEffect(() => {
     const el = document.documentElement;
-    const applied = themeProps(preference, scheme, theme);
+    const applied = themeProps(effective, scheme, theme);
     const previousClass = el.getAttribute('class');
     const previousInline = el.getAttribute('style');
     if (applied.className) el.setAttribute('class', applied.className);
@@ -119,9 +155,9 @@ export function ThemeRoot({ children, theme = 'site' }: { children: ReactNode; t
       if (previousInline === null) el.removeAttribute('style');
       else el.setAttribute('style', previousInline);
     };
-  }, [preference, scheme, theme]);
+  }, [effective, scheme, theme]);
 
-  const value = useMemo(() => ({ preference, setPreference }), [preference, setPreference]);
+  const value = useMemo(() => ({ preference: effective, setPreference }), [effective, setPreference]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

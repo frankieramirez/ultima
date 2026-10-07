@@ -2,9 +2,20 @@
   "schemaVersion": 1,
   "id": "blocks.preview",
   "title": "A block card opens from the keyboard, its framed preview copies and narrows, and every block page passes",
-  "intent": "The /blocks index lists every block in number order with thumbnails that are lazy, inert and never a tab stop; a card opens from the keyboard with a visible focus ring; the block page's framed preview reaches its block in Neutral, its install command copies exactly, and the narrow toggle lays the block out at 390 pixels inside the frame without widening the page; and every other block's page frames its block, fits and passes axe.",
+  "intent": "The /blocks index lists every block in number order with thumbnails that are lazy, inert and never a tab stop; a card opens from the keyboard with a visible focus ring; the block page's framed preview reaches its block in Neutral, its install command copies exactly, and the narrow toggle lays the block out at 390 pixels inside the frame without widening the page; and every other block's page frames its block, fits and passes axe; the framed block follows the page's color mode even when storage refuses writes; and every block's preview route passes axe on its own.",
   "contract": "docs/spec/ultima.md#docs-routes",
-  "aliases": ["blocks index", "block card", "thumbnail", "inert", "lazy", "framed preview", "narrow", "copy install command", "clipboard", "neutral"],
+  "aliases": [
+    "blocks index",
+    "block card",
+    "thumbnail",
+    "inert",
+    "lazy",
+    "framed preview",
+    "narrow",
+    "copy install command",
+    "clipboard",
+    "neutral"
+  ],
   "items": [],
   "sources": [
     "apps/docs/src/routes/blocks.tsx",
@@ -13,9 +24,21 @@
   ],
   "demos": [],
   "routes": [
-    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/blocks" },
-    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/blocks/$id" },
-    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/blocks/$id/preview" }
+    {
+      "kind": "application",
+      "definition": "apps/docs/src/router.tsx",
+      "pathname": "/blocks"
+    },
+    {
+      "kind": "application",
+      "definition": "apps/docs/src/router.tsx",
+      "pathname": "/blocks/$id"
+    },
+    {
+      "kind": "application",
+      "definition": "apps/docs/src/router.tsx",
+      "pathname": "/blocks/$id/preview"
+    }
   ],
   "fixtures": [
     {
@@ -25,7 +48,8 @@
     }
   ],
   "preconditions": [
-    "The context grants clipboard read and write to the served origin only."
+    "The context grants clipboard read and write to the served origin only.",
+    "Storage refuses every write, so the frame can follow the page's mode only through the page itself."
   ],
   "steps": [
     {
@@ -45,6 +69,10 @@
       "expect": "The frame's document lays out at 1200 pixels, its main landmark is visible, and its root computes Neutral's values rather than site's."
     },
     {
+      "action": "Press the other mode in the Color mode control, then the cell's own mode again.",
+      "expect": "Each time the framed block's root resolves that mode and paints Neutral's surface for it."
+    },
+    {
       "action": "Press Copy install command.",
       "expect": "The clipboard holds exactly npx shadcn add @ultima/sign-in-01."
     },
@@ -55,15 +83,27 @@
     {
       "action": "Open every other block's page from its card's link.",
       "expect": "Each frames its block, the page fits and axe passes."
+    },
+    {
+      "action": "Open every block's /blocks/<id>/preview directly.",
+      "expect": "Axe passes on the block alone, since the page's axe check never enters a frame."
     }
   ],
   "targets": [
     {
       "target": "production",
       "variants": {
-        "mode": ["dark", "light"],
-        "viewport": ["desktop", "narrow"],
-        "motion": ["normal"]
+        "mode": [
+          "dark",
+          "light"
+        ],
+        "viewport": [
+          "desktop",
+          "narrow"
+        ],
+        "motion": [
+          "normal"
+        ]
       }
     }
   ]

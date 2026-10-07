@@ -207,8 +207,9 @@ const styles = stylex.create({
 
 const plural = (count: number, word: string) => `${count} ${count === 1 ? word : `${word}s`}`;
 
-function useSources(block: BlockEntry): Record<string, string> | null {
-  const [loaded, setLoaded] = useState<Record<string, string> | null>(null);
+/** The block's files as `?raw` text, `'failed'` when one cannot load, or `null` while they load. */
+function useSources(block: BlockEntry): Record<string, string> | 'failed' | null {
+  const [loaded, setLoaded] = useState<Record<string, string> | 'failed' | null>(null);
   useEffect(() => {
     let live = true;
     Promise.all(
@@ -217,9 +218,14 @@ function useSources(block: BlockEntry): Record<string, string> | null {
         if (!load) throw new Error(`packages/blocks/src/${block.id}/${file} is not a block source`);
         return [file, await load()] as const;
       }),
-    ).then((entries) => {
-      if (live) setLoaded(Object.fromEntries(entries));
-    });
+    ).then(
+      (entries) => {
+        if (live) setLoaded(Object.fromEntries(entries));
+      },
+      () => {
+        if (live) setLoaded('failed');
+      },
+    );
     return () => {
       live = false;
     };
@@ -244,6 +250,7 @@ function Code({ block }: { block: BlockEntry }) {
   const loaded = useSources(block);
   const [file, setFile] = useState<string | number>(block.files[0] ?? '');
   if (!loaded) return <p {...stylex.props(styles.loading)}>Loading the source…</p>;
+  if (loaded === 'failed') return <p {...stylex.props(styles.loading)}>The source could not be loaded.</p>;
   return (
     <Tabs.Root value={file} onValueChange={setFile}>
       <Tabs.List aria-label="Files" style={styles.files}>
