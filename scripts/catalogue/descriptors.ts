@@ -177,6 +177,7 @@ const FIELDS: Record<Kind, Fields> = {
     order: { check: integer },
     group: { check: text },
     replaces: { check: replaces, optional: true },
+    elementless: { check: list(pattern(/^[A-Z][A-Za-z]*$/, 'a part name')), optional: true },
   },
   element: {
     ...common,

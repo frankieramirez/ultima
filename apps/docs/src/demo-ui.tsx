@@ -1,9 +1,9 @@
-import * as ui from '@ultima/ui';
+import * as ui from './generated/anatomy';
 import { useContext, type ComponentType, type RefObject } from 'react';
 
 import { BoundaryPortalContext } from './theme-boundary';
 
-export * from '@ultima/ui';
+export * from './generated/anatomy';
 
 type Portalled = { Portal: ComponentType<never> };
 

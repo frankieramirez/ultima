@@ -40,7 +40,7 @@ const CLASSES: readonly [RegExp, SourceKind][] = [
   [/^apps\/[^/]+\/tests\//, 'test'],
   [/\.d\.ts$/, 'declarations'],
   [/^packages\/ui\/src\/index\.ts$/, 'generated'],
-  [/^apps\/docs\/src\/generated\/[^/]+\.ts$/, 'generated'],
+  [/^apps\/docs\/src\/generated\/(anatomy\/)?[^/]+\.tsx?$/, 'generated'],
   [/^scripts\/generated\/[^/]+\.ts$/, 'generated'],
   [/^registry\/items\.config\.ts$/, 'generated'],
   [/^packages\/tokens\/src\/.+\.ts$/, 'token-source'],

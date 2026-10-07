@@ -23,6 +23,7 @@ import {
   importsOf,
   mdxImports,
   parse,
+  partsOf,
   registeredTags,
   stringTable,
 } from './source.ts';
@@ -74,6 +75,10 @@ export type ReactEntry = ReactDescriptor &
     exports: Export[];
     imports: Import[];
     number: string;
+    /** The parts that render an element, in source order, which the docs marks for Anatomy. */
+    parts: string[];
+    /** `<demos>/anatomy.tsx`, the open overlay the Anatomy tab renders in place of the first demo, when present. */
+    anatomyDemo: string | null;
   };
 
 export type ElementEntry = Omit<ElementDescriptor, 'attributes'> & {
@@ -381,8 +386,21 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
         report('invalid-primary-export', path, `${entry.source} exports no root function or namespace "${descriptor.primaryExport}"`);
       }
     }
+    const local = exported.exports.find((item) => item.name === descriptor.primaryExport)?.local;
+    const parts = analysed && local ? partsOf(analysed.file, local) : undefined;
+    const isFunctionComponent = parts?.length === 1 && parts[0] === local;
+    const declared = isFunctionComponent ? [descriptor.primaryExport] : (parts ?? []);
+    const elementless = descriptor.elementless ?? [];
+    for (const name of elementless) {
+      if (!declared.includes(name)) {
+        report('invalid-descriptor', path, `elementless names "${name}", which is not a part of ${descriptor.primaryExport}`);
+      }
+    }
+    const anatomyDemo = `${entry.demos}/anatomy.tsx`;
     react.push({
       ...entry,
+      parts: declared.filter((name) => !elementless.includes(name)),
+      anatomyDemo: files.read(anatomyDemo) === undefined ? null : anatomyDemo,
       exports: exported.exports,
       imports: analysed?.imports ?? [],
       ...installDependenciesOf(entry.source, analysed?.imports ?? []),

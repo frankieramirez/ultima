@@ -12,4 +12,5 @@ export default {
   order: 9,
   group: 'overlays',
   replaces: { roles: ['alertdialog'] },
+  elementless: ['Root', 'Portal', 'Handle'],
 } satisfies ReactDescriptor;
