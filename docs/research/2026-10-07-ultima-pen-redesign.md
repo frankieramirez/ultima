@@ -50,6 +50,19 @@ Section labels on the canvas number the groups.
 
 Shared components: `jtyo2` and `ZHs9g` are the site header with and without the appearance control, `n4ZINm` holds the button variants (`l2yJUo`, `xSOGe`, `Li60t`), and the block layouts above are reusable so the index thumbnails and block pages stay in sync. Supporting assets live under `ultima-assets/`: the dot-field shader at `shaders/dot-field.glsl` (the `@time` and `@mouse` uniforms drive drift and the cursor glow) and the block thumbnails under `blocks/`.
 
+### Redrawn to match the contracts
+
+[Redraw the frames the decisions changed](https://github.com/frankieramirez/ultima/issues/685) redrew these frames in place, so every frame ID above still holds. Where a frame and a contract disagreed, the frame now follows the contract.
+
+- **Blocks.** `SzoSN` has uppercase stat labels, one accent fill on every bar, the "Show data" disclosure, a Sidebar trigger, an outline Export, and layers named Toggle Group, Input Group and Select. `P4hdt` has one "Add note" button and a count of 7. `mmMDx` drops the quiet-hours calls row. `qtcCM` drops the dot texture and divides its columns with a Separator. The thumbnails under `ultima-assets/blocks/` are re-exported from these four.
+- **Block numbers.** CRM 01 is 001, Dashboard 01 002, Settings 01 003 and Sign-in 01 004. `exLBC` orders its cards that way, and global search (`CekIX`, `t1aKl`) lists blocks in the same order.
+- **Block pages.** `vyn3r` and `WAxrI` carry number 002, the title "Dashboard 01", the descriptor's description, the eight files under `components/dashboard-01/`, Built from in number order with the Chart recipe, a desktop and narrow toggle, and an Anatomy tab. `WAxrI` draws one outline and one label per Built from entry, as title and number with no merged labels, and puts the "Label components" switch and the legend under the preview.
+- **Components directory.** `E9XvL` orders its groups Forms, Overlays, Data display, Navigation, Feedback and Layout, and sorts each group alphabetically.
+- **Docs menu.** Every docs sidebar and the mobile drawer `ujW5F` list Foundations, then the components under their six group labels, with no item numbers. The drawer is 256px on `surface`, with no search field and no theme row.
+- **Component pages.** `iFNgl`, `P8O8AQ`, `zD2M1` and `Ha4tu` drop the Playground, Tokens it reads and the rail links. The Button frames end with the full Web component section in place of the "Using plain HTML?" card.
+- **Landing.** `dFeVc`, `cxfxc`, `RctCT` and `lXbco` drop "Components ship in Neutral" and "DEFAULT · NEUTRAL" for the shipped lede and "IN USE · THIS SITE". The plate head shows the component's group, and a mobile index row opens its component page.
+- **Foundations.** `RVlBc` drops its rail and uses the full content width. `Y7tMFs` drops the Values and Copy as toggles, the role ramp grid and the preset callouts, lists all 52 color tokens as rows with both generated values, and gains the Pairings section. `S8UHQ` drops the React and HTML comparison, the prop-mapping table and the fact cards for the shipped prose.
+
 ### Decisions made while designing
 
 These came from the maintainer during the design session and stand unless a ticket amends them.
