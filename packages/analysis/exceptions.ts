@@ -244,7 +244,7 @@ export default [
     expression: "color['--ult-color-success']",
     count: 1,
     reason: 'The checks footer paints one mark per pairing per mode; a passing mark is success.',
-    authority: 'docs/spec/theme-studio.md#theme-studio-layout-and-live-preview',
+    authority: 'docs/spec/theme-studio.md#studio-support-components-and-compositions',
   },
   {
     id: 'studio-checks-mark-fail-background-color',
@@ -255,7 +255,18 @@ export default [
     expression: "color['--ult-color-danger']",
     count: 1,
     reason: 'The checks footer paints one mark per pairing per mode; a failing mark is danger.',
-    authority: 'docs/spec/theme-studio.md#theme-studio-layout-and-live-preview',
+    authority: 'docs/spec/theme-studio.md#studio-support-components-and-compositions',
+  },
+  {
+    id: 'studio-report-failure-background-color',
+    rule: 'ULT-DOCS-001',
+    path: 'apps/docs/src/theme-studio-validation.tsx',
+    symbol: 'styles.failure',
+    target: 'backgroundColor',
+    expression: "color['--ult-color-danger-subtle']",
+    count: 1,
+    reason: 'The draft report paints each failing pairing on the danger-subtle surface, apart from the passing list.',
+    authority: 'docs/spec/theme-studio.md#studio-support-components-and-compositions',
   },
   {
     id: 'swatch-chip-border-color',

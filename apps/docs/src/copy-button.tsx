@@ -50,6 +50,7 @@ function glyph(status: CopyStatus) {
 export function CopyButton({
   text,
   ariaLabel,
+  disabled,
   variant = 'ghost',
   floating = false,
   children,
@@ -57,6 +58,7 @@ export function CopyButton({
 }: {
   text: string;
   ariaLabel?: string;
+  disabled?: boolean;
   variant?: ButtonVariant;
   /** Pin the icon button to the top and inline-end corner of a `position: relative` code block. */
   floating?: boolean;
@@ -86,6 +88,7 @@ export function CopyButton({
     <>
       <Button
         aria-label={label === 'Copy failed' ? 'Copy failed' : (ariaLabel ?? (children ? undefined : 'Copy'))}
+        disabled={disabled}
         onClick={copy}
         size="sm"
         style={[docsStyles.square, !children && styles.icon, !children && floating && styles.floating, style]}

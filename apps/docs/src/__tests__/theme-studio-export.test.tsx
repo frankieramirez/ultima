@@ -252,10 +252,17 @@ test('an invalid draft lists failing pairings and gates URL installs and downloa
   const dialog = screen.getByRole('dialog');
   await expect.element(dialog.getByRole('heading', { name: /token-contrast pairings/i })).toBeVisible();
   await expect.element(dialog.getByText(/--ult-color-text on --ult-color-surface:/)).toBeVisible();
+  const failing = dialog.getByText(/--ult-color-text on --ult-color-surface:/).element();
+  const acknowledgment = dialog.getByRole('checkbox', { name: /Export anyway/ }).element();
+  expect(failing.compareDocumentPosition(acknowledgment) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  const copies = () => dialog.getByRole('button', { name: 'Copy', exact: true }).elements();
+  expect(copies().length).toBeGreaterThan(0);
   expect(dialog.getByRole('button', { name: 'Copy install command', exact: true }).element()).toBeDisabled();
+  for (const copy of copies()) expect(copy).toBeDisabled();
   expect(dialog.element().textContent).not.toContain('/r/theme.json?theme=');
   await userEvent.click(dialog.getByRole('checkbox', { name: /Export anyway/ }));
   await expect.element(dialog.getByRole('button', { name: 'Copy install command', exact: true })).toBeEnabled();
+  for (const copy of copies()) expect(copy).toBeEnabled();
   expect(dialog.element().textContent).toContain('/r/theme.json?theme=');
   await userEvent.click(dialog.getByRole('checkbox', { name: /Export anyway/ }));
 

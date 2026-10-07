@@ -5,29 +5,45 @@ import * as stylex from '@stylexjs/stylex';
 import type { ColorMode, PairingResult } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button } from '@ultima/ui';
-import { useId, type ReactNode, type Ref } from 'react';
+import { useId, type Ref } from 'react';
 
 import { Kicker } from './page';
+import type { ModeOffenders } from './theme-studio-token-row';
 
 const MODES: readonly ColorMode[] = ['dark', 'light'];
 
 export type CheckMark = { mode: ColorMode; pairing: PairingResult; pass: boolean };
 
-export type DraftChecks = { results: PairingResult[]; total: number; passed: number; marks: CheckMark[]; failures: PairingResult[] };
+export type DraftChecks = {
+  results: PairingResult[];
+  totalChecks: number;
+  passedChecks: number;
+  marks: CheckMark[];
+  failures: PairingResult[];
+  offenders: ModeOffenders;
+};
 
 export function draftChecks(results: PairingResult[]): DraftChecks {
   const marks = MODES.flatMap((mode) => results.map((pairing) => ({ mode, pairing, pass: pairing[mode].pass })));
+  const offenders = { dark: new Set<string>(), light: new Set<string>() };
+  for (const mark of marks) if (!mark.pass) offenders[mark.mode].add(mark.pairing.foreground).add(mark.pairing.background);
   return {
     results,
-    total: marks.length,
-    passed: marks.filter((mark) => mark.pass).length,
+    totalChecks: marks.length,
+    passedChecks: marks.filter((mark) => mark.pass).length,
     marks,
     failures: results.filter((pairing) => !pairing.dark.pass || !pairing.light.pass),
+    offenders,
   };
 }
 
+export function failingPairings(checks: DraftChecks): string {
+  const count = checks.failures.length;
+  return `${count} pairing${count === 1 ? '' : 's'}`;
+}
+
 export function checksCount(checks: DraftChecks): string {
-  return `${checks.passed} of ${checks.total} pass`;
+  return `${checks.passedChecks} of ${checks.totalChecks} pass`;
 }
 
 const styles = stylex.create({
@@ -72,17 +88,15 @@ const styles = stylex.create({
 
 export function ThemeStudioChecks({
   checks,
-  children,
   onReport,
   reportRef,
 }: {
   checks: DraftChecks;
-  children?: ReactNode;
   onReport: () => void;
   reportRef?: Ref<HTMLButtonElement>;
 }) {
   const countId = useId();
-  const failing = checks.passed < checks.total;
+  const failing = checks.passedChecks < checks.totalChecks;
   const Icon = failing ? WarningCircleIcon : CheckCircleIcon;
   return (
     <section aria-label="Token checks" {...stylex.props(styles.root)}>
@@ -115,7 +129,6 @@ export function ThemeStudioChecks({
       <Button aria-describedby={countId} onClick={onReport} ref={reportRef} size="sm" variant="ghost" style={[docsStyles.square, styles.touch]}>
         View draft report
       </Button>
-      {children}
     </section>
   );
 }

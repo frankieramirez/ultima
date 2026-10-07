@@ -119,7 +119,7 @@ test('the draft report names the working failure and focuses its editable token'
   localStorage.setItem(AUTOSAVE_KEY, serializeDraft(draft));
   const screen = await mount('/theme-studio');
   await userEvent.click(screen.getByRole('button', { name: /View draft report/ }));
-  const report = screen.getByRole('dialog', { name: "This draft's token checks" });
+  const report = screen.getByRole('dialog', { name: 'Draft report' });
   await expect.element(report.getByText('text on surface · min 4.5:1', { exact: true })).toBeVisible();
   await userEvent.click(report.getByRole('button', { name: 'Edit text', exact: true }).first());
   await expect.element(report.getByRole('textbox', { name: '--ult-color-text dark', exact: true })).toHaveFocus();
@@ -141,6 +141,125 @@ test('the draft report names the working failure and focuses its editable token'
   await expect.element(report).not.toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: /View draft report/ }));
   await expect.element(report.getByRole('region', { name: 'Repair token' })).not.toBeInTheDocument();
+});
+
+function failingSubtle() {
+  const draft = presetDraft('neutral');
+  draft.overrides.dark['--ult-color-text-subtle'] = '#555555';
+  draft.overrides.light['--ult-color-text-subtle'] = '#bbbbbb';
+  return draft;
+}
+
+async function openReport(screen: Awaited<ReturnType<typeof mount>>) {
+  await userEvent.click(screen.getByRole('button', { name: 'View draft report', exact: true }));
+  const report = screen.getByRole('dialog', { name: 'Draft report' });
+  await expect.element(report).toBeVisible();
+  await Promise.all(report.element().getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => {})));
+  return report;
+}
+
+function failure(report: ReturnType<Awaited<ReturnType<typeof mount>>['getByRole']>, name: string) {
+  return report.getByRole('list', { name: 'Failing pairings' }).getByRole('listitem').filter({ hasText: name });
+}
+
+test('Use closest passing value turns the pairing green in both modes and is one Undo step', async () => {
+  localStorage.setItem(AUTOSAVE_KEY, serializeDraft(failingSubtle()));
+  const screen = await mount('/theme-studio', false);
+  const footer = checksFooter(screen);
+  await expect.element(footer.getByText('90 of 98 pass', { exact: true })).toBeVisible();
+  const hiddenFooter = footer.element();
+  const count = () => hiddenFooter.querySelector('p')?.textContent;
+  const marks = () => checkMarks(hiddenFooter).filter((mark) => mark.dataset.pairing === '--ult-color-text-subtle on --ult-color-surface');
+  expect(marks().map((mark) => mark.dataset.pass)).toEqual(['false', 'false']);
+
+  const report = await openReport(screen);
+  const item = failure(report, 'text-subtle on surface · min 4.5:1');
+  await expect.element(item.getByText('Sets text-subtle to #8e8e8e in dark and #696969 in light.', { exact: true })).toBeVisible();
+  await expect.element(item.getByRole('button', { name: 'Reset to derived', exact: true })).toBeVisible();
+  await userEvent.click(item.getByRole('button', { name: 'Use closest passing value', exact: true }));
+
+  await expect.poll(count).toBe('98 of 98 pass');
+  expect(marks().map((mark) => mark.dataset.pass)).toEqual(['true', 'true']);
+  await expect.element(report.getByText('All pairings pass', { exact: true })).toBeVisible();
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  expect(readToken(pane, '--ult-color-text-subtle')).toBe('#8e8e8e');
+
+  await userEvent.keyboard('{Escape}');
+  await expect.element(report).not.toBeInTheDocument();
+  await expect.element(screen.getByRole('button', { name: 'View draft report', exact: true })).toHaveFocus();
+  await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
+  await expect.element(footer.getByText('90 of 98 pass', { exact: true })).toBeVisible();
+  expect(readToken(pane, '--ult-color-text-subtle')).toBe('#555555');
+  await expect.element(screen.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
+});
+
+test('a derived target fixes only its failing mode and offers no reset', async () => {
+  const draft = presetDraft('neutral');
+  draft.color.ruin = { hue: 270, saturation: 1.5 };
+  localStorage.setItem(AUTOSAVE_KEY, serializeDraft(draft));
+  const screen = await mount('/theme-studio', false);
+  const hiddenFooter = checksFooter(screen).element();
+  const report = await openReport(screen);
+  const item = failure(report, 'danger-contrast on danger · min 4.5:1');
+  await expect.element(item).toBeVisible();
+  expect(item.getByRole('button', { name: 'Reset to derived' }).query()).toBeNull();
+  await expect.element(item.getByText('Sets danger-contrast to #fefefe in light.', { exact: true })).toBeVisible();
+  await userEvent.click(item.getByRole('button', { name: 'Use closest passing value', exact: true }));
+  await expect.poll(() => hiddenFooter.querySelector('p')?.textContent).toBe('98 of 98 pass');
+  const stored = JSON.parse(localStorage.getItem(AUTOSAVE_KEY)!);
+  expect(stored.overrides.dark['--ult-color-danger-contrast']).toBeUndefined();
+  expect(stored.overrides.light['--ult-color-danger-contrast']).toBe('#fefefe');
+});
+
+test('Reset to derived clears the target in both modes, and an unreachable fix is disabled with its reason', async () => {
+  const draft = failingSubtle();
+  draft.overrides.dark['--ult-color-text'] = '#3a3a3a';
+  draft.overrides.dark['--ult-color-surface-hover'] = '#7c7c7c';
+  localStorage.setItem(AUTOSAVE_KEY, serializeDraft(draft));
+  const screen = await mount('/theme-studio', false);
+  const report = await openReport(screen);
+
+  const stuck = failure(report, 'text on surface-hover · min 4.5:1');
+  const fix = stuck.getByRole('button', { name: 'Use closest passing value', exact: true });
+  await expect.element(fix).toHaveAttribute('aria-disabled', 'true');
+  await expect.element(fix).toHaveAccessibleDescription('No lightness at this hue passes every pairing for text.');
+
+  await userEvent.click(failure(report, 'text-subtle on surface · min 4.5:1').getByRole('button', { name: 'Reset to derived', exact: true }));
+  const stored = JSON.parse(localStorage.getItem(AUTOSAVE_KEY)!);
+  expect(stored.overrides.dark['--ult-color-text-subtle']).toBeUndefined();
+  expect(stored.overrides.light['--ult-color-text-subtle']).toBeUndefined();
+  expect(report.getByRole('list', { name: 'Failing pairings' }).getByText(/^text-subtle on surface ·/).query()).toBeNull();
+});
+
+for (const mode of ['dark', 'light'] as const) {
+  test(`the open draft report passes axe in the ${mode} site mode and returns focus to its trigger`, async () => {
+    prefer(mode);
+    const draft = failingSubtle();
+    draft.overrides.dark['--ult-color-text'] = '#3a3a3a';
+    draft.overrides.dark['--ult-color-surface-hover'] = '#7c7c7c';
+    localStorage.setItem(AUTOSAVE_KEY, serializeDraft(draft));
+    const screen = await mount('/theme-studio', false);
+    const report = await openReport(screen);
+    await expect.element(report.getByRole('button', { name: 'Use closest passing value' }).first()).toBeVisible();
+    const results = await axe.run(report.element());
+    expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.html).join(', ')}`)).toEqual([]);
+    await userEvent.click(report.getByRole('button', { name: 'Close draft report', exact: true }));
+    await expect.element(report).not.toBeInTheDocument();
+    await expect.element(screen.getByRole('button', { name: 'View draft report', exact: true })).toHaveFocus();
+  });
+}
+
+test('the gallery-bar count names the draft report it opens and takes focus back', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/theme-studio', false);
+  const trigger = screen.getByRole('button', { name: '98 of 98 pass. View draft report', exact: true });
+  await userEvent.click(trigger);
+  const report = screen.getByRole('dialog', { name: 'Draft report' });
+  await expect.element(report).toBeVisible();
+  await userEvent.keyboard('{Escape}');
+  await expect.element(report).not.toBeInTheDocument();
+  await expect.element(trigger).toHaveFocus();
 });
 
 test('a palette source is separate from the generated role colors and exact overrides', async () => {
@@ -778,7 +897,7 @@ test('the mobile drawer offers the six groups as chips, one shown at a time, wit
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
   const screen = await mount('/theme-studio');
-  await expect.element(screen.getByRole('button', { name: '98 of 98 pass', exact: true })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: '98 of 98 pass. View draft report', exact: true })).toBeVisible();
   await userEvent.click(screen.getByRole('button', { name: 'Edit theme', exact: true }));
   const drawer = screen.getByRole('dialog', { name: 'Edit theme' });
   const chips = drawer.getByRole('group', { name: 'Theme groups' });
@@ -1254,7 +1373,7 @@ test('the draft report lists every pairing per mode at full precision', async ()
   await userEvent.type(text.element(), '#000000');
 
   await userEvent.click(screen.getByRole('button', { name: 'View draft report', exact: true }));
-  const report = screen.getByRole('dialog', { name: "This draft's token checks" });
+  const report = screen.getByRole('dialog', { name: 'Draft report' });
   const panel = report.getByRole('region', { name: 'Token contrast' }).element();
   expect(panel.querySelectorAll('li').length).toBe(49);
   const pair = [...panel.querySelectorAll('li')].find((li) => li.textContent?.startsWith('text on surface ·'));

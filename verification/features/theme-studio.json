@@ -40,11 +40,11 @@
   "supporting": [
     {
       "path": "apps/docs/src/__tests__/theme-studio.test.tsx",
-      "reason": "Layout, rail order, the checks footer, scenes, inspect, guided controls, shuffle and the linear history walk, including shuffle and redo."
+      "reason": "Layout, rail order, the checks footer, the draft report and its fixes, scenes, inspect, guided controls, shuffle and the linear history walk, including shuffle and redo."
     },
     {
       "path": "apps/docs/src/__tests__/theme-studio-export.test.tsx",
-      "reason": "URL installation, registry and individual downloads, share links and autosave recovery."
+      "reason": "URL installation, registry and individual downloads, the failing-draft acknowledgment gate, share links and autosave recovery."
     },
     {
       "path": "apps/docs/src/__tests__/theme-studio-parity.test.tsx",
