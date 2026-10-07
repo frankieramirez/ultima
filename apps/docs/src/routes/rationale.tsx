@@ -1,11 +1,6 @@
-import { Prose } from '../prose';
+import { Foundation } from '../foundation';
 import Content from '../content/rationale.mdx';
 
 export function RationalePage() {
-  return (
-    <Prose
-      Content={Content}
-      breadcrumb={[{ label: 'Install', to: '/install' }, { label: 'Rationale' }]}
-    />
-  );
+  return <Foundation Content={Content} labels={['4 decisions', 'The reading version']} />;
 }

@@ -1,37 +1,79 @@
+import { InfoIcon, ScalesIcon } from '@phosphor-icons/react';
+import { Code } from '@ultima/ui';
+
+import { Decision, Tradeoff } from '../decision';
+import { Callout } from '../foundation';
+
 # Rationale
 
 The choices that decide how Ultima is built. Each one had alternatives on the table. The ADRs record the verdict; this page is the reading version.
 
-## StyleX
+<Decision
+  number="01"
+  title="StyleX"
+  record={{ label: 'ADR 0001 · StyleX-only styling', href: 'https://github.com/frankieramirez/ultima/blob/main/docs/adr/0001-stylex-only-styling.md' }}
+/>
 
-[ADR 0001](https://github.com/frankieramirez/ultima/blob/main/docs/adr/0001-stylex-only-styling.md). Components are authored in StyleX. Tokens are StyleX variables. A build step emits the same tokens as CSS custom properties for consumers that cannot run StyleX.
+<Tradeoff
+  chose={[
+    'Components are authored in StyleX.',
+    'Tokens are StyleX variables. A build step emits the same tokens as CSS custom properties for consumers that cannot run StyleX.',
+  ]}
+  over={['Tailwind', 'A mixed system: StyleX components with a Tailwind escape hatch']}
+/>
 
-Tailwind was the obvious other path. The author works in it daily, and shadcn's registry plus most public libraries assume it. A mixed system (StyleX components with a Tailwind escape hatch) would have felt familiar to shadcn users. It would also have carried two styling models, two token sources, and two sets of conventions for an agent to learn.
+Tailwind was the obvious other path. The author works in it daily, and shadcn's registry plus most public libraries assume it. A mixed system would have felt familiar to shadcn users. It would also have carried two styling models, two token sources, and two sets of conventions for an agent to learn.
 
-One engine means one model to document. The cost is a StyleX compiler plugin in the consumer's bundler, which the setup item installs or explains. Tailwind-only projects can take the tokens CSS export. They cannot take the components.
+One engine means one model to document.
 
-## Base UI
+<Callout icon={<ScalesIcon />} title="What it costs">A StyleX compiler plugin in the consumer's bundler, which the setup item installs or explains. Tailwind-only projects can take the tokens CSS export. They cannot take the components.</Callout>
 
-[ADR 0002](https://github.com/frankieramirez/ultima/blob/main/docs/adr/0002-base-ui-primitives.md). Every interactive component is built on Base UI. Radix is out of scope.
+<Decision
+  number="02"
+  title="Base UI"
+  record={{ label: 'ADR 0002 · Base UI primitives', href: 'https://github.com/frankieramirez/ultima/blob/main/docs/adr/0002-base-ui-primitives.md' }}
+/>
 
-Interactive pieces need accessible, unstyled primitives for focus, keyboard behavior, and ARIA. Radix is the shadcn default. Base UI is the MUI-backed library shadcn/ui and others are moving toward, and it is the primitive named in the work Ultima is modeled on.
+<Tradeoff chose={['Every interactive component is built on Base UI.']} over={['Radix, the shadcn default. Radix is out of scope.']} />
 
-One primitive vocabulary. v0's component list is bounded by what Base UI ships. Styling hooks have to compose with StyleX-generated props, which the Button and Card prototype verified before authoring conventions locked.
+Interactive pieces need accessible, unstyled primitives for focus, keyboard behavior, and ARIA. Base UI is the MUI-backed library shadcn/ui and others are moving toward, and it is the primitive named in the work Ultima is modeled on.
 
-## Registry-first
+One primitive vocabulary.
 
-[ADR 0003](https://github.com/frankieramirez/ultima/blob/main/docs/adr/0003-registry-first-distribution.md). Consumers install from Ultima's hosted registry with the shadcn CLI and own the installed code. A published npm package for tokens waits until a consumer needs it.
+<Callout icon={<ScalesIcon />} title="What it costs">v0's component list is bounded by what Base UI ships. Styling hooks have to compose with StyleX-generated props, which the Button and Card prototype verified before authoring conventions locked.</Callout>
 
-The other options were an npm package, a copy-source registry, or both. An npm package would have given an upgrade path and a version number. It would also have kept the source behind a dependency, which fights the point of handing code to a coding agent to edit.
+<Decision
+  number="03"
+  title="Registry-first"
+  record={{ label: 'ADR 0003 · Registry-first distribution', href: 'https://github.com/frankieramirez/ultima/blob/main/docs/adr/0003-registry-first-distribution.md' }}
+/>
 
-There is no upgrade path beyond re-installing an item. The registry serves a moving latest with no versioned URLs: every served file carries an item stamp, and possession is the pin. Hosting the registry is why the docs site is a v0 deliverable.
+<Tradeoff
+  chose={[
+    "Consumers install from Ultima's hosted registry with the shadcn CLI and own the installed code.",
+    'A published npm package for tokens waits until a consumer needs it.',
+  ]}
+  over={['An npm package', 'Both an npm package and a copy-source registry']}
+/>
 
-`npx shadcn init` is not the entry. `init` refuses a project without Tailwind on disk. The command is `npx shadcn add` of a per-target setup item. The decision in the ADR stands; only the command changed.
+An npm package would have given an upgrade path and a version number. It would also have kept the source behind a dependency, which fights the point of handing code to a coding agent to edit.
 
-## Dark-first
+The registry serves a moving latest with no versioned URLs: every served file carries an item stamp, and possession is the pin. Hosting the registry is why the docs site is a v0 deliverable.
 
-Dark is the default and the design target. Light is a full peer: every semantic token, every contrast check, and every demo exists in both modes.
+<Callout icon={<InfoIcon />} title={<><Code>npx shadcn init</Code> is not the entry.</>}>`init` refuses a project without Tailwind on disk. The command is `npx shadcn add` of a per-target setup item. The decision in the ADR stands; only the command changed.</Callout>
 
-The alternatives were light-first (the usual default for a new system) and dark-only with light as best effort. Light-first would have made the palette a translation of a light scale, which is how most ramps go wrong in dark. Best-effort light would have shipped pairings that fail AA the first time someone flipped the OS setting.
+<Callout icon={<ScalesIcon />} title="What it costs">There is no upgrade path beyond re-installing an item.</Callout>
+
+<Decision number="04" title="Dark-first" />
+
+<Tradeoff
+  chose={[
+    'Dark is the default and the design target.',
+    'Light is a full peer: every semantic token, every contrast check, and every demo exists in both modes.',
+  ]}
+  over={['Light-first, the usual default for a new system', 'Dark-only, with light as best effort']}
+/>
+
+Light-first would have made the palette a translation of a light scale, which is how most ramps go wrong in dark. Best-effort light would have shipped pairings that fail AA the first time someone flipped the OS setting.
 
 Dark values are the `default` on every color token. Light values sit under `@media (prefers-color-scheme: light)`. `darkTheme` and `lightTheme` force a mode on a subtree. The header control on this site is the demonstration: dark, light, and system, persisted, with native controls following through `color-scheme`.
