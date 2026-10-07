@@ -42,6 +42,28 @@ test('the block variant wraps long lines instead of scrolling', async () => {
   expect(pre).not.toHaveAttribute('tabindex');
 });
 
+test('inline code sizes to the text around it, and the block keeps text step 4', async () => {
+  const screen = await render(
+    <>
+      {[11, 13, 16, 24].map((px) => (
+        <p key={px} data-testid={`at-${px}`} style={{ fontSize: `${px}px` }}>
+          Set <Code>variant</Code> here.
+        </p>
+      ))}
+      <div style={{ fontSize: '11px' }}>
+        <Code variant="block" data-testid="block">block</Code>
+      </div>
+    </>,
+  );
+  for (const px of [11, 13, 16, 24]) {
+    const parent = screen.getByTestId(`at-${px}`).element();
+    const code = parent.querySelector('code') as Element;
+    const ratio = parseFloat(getComputedStyle(code).fontSize) / parseFloat(getComputedStyle(parent).fontSize);
+    expect(ratio).toBeCloseTo(0.875, 3);
+  }
+  expect(getComputedStyle(screen.getByTestId('block').element()).fontSize).toBe('14px');
+});
+
 test('tabbing through either variant focuses nothing inside it', async () => {
   const screen = await render(
     <div data-testid="wrap">

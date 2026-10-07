@@ -273,3 +273,25 @@ test('paging to another component lays its plates out as a fresh load does', asy
   expect(afterPaging.length).toBeGreaterThan(0);
   expect(afterPaging).toEqual(widths());
 });
+
+for (const width of [1440, 390]) {
+  test(`inline code sizes to its plate caption, body prose and table cell at ${width}`, async () => {
+    const screen = await at(width, '/components/calendar');
+    const article = document.querySelector('article')!;
+    const places = {
+      caption: article.querySelector('figcaption code'),
+      prose: [...article.querySelectorAll('p code')].find((code) => !code.closest('figcaption')),
+      cell: article.querySelector('td code'),
+    };
+    const size = (node: Element) => parseFloat(getComputedStyle(node).fontSize);
+    for (const [place, code] of Object.entries(places)) {
+      expect(code, place).toBeTruthy();
+      expect(size(code!) / size(code!.parentElement!), place).toBeGreaterThan(0.86);
+      expect(size(code!) / size(code!.parentElement!), place).toBeLessThan(0.89);
+    }
+    await userEvent.click(screen.getByRole('tab', { name: 'Code' }).first());
+    const blocks = [...article.querySelectorAll('pre')];
+    expect(blocks.length).toBeGreaterThan(0);
+    for (const block of blocks) expect(getComputedStyle(block).fontSize).toBe('14px');
+  });
+}

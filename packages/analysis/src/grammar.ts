@@ -21,7 +21,8 @@ export type Family =
   | 'easing'
   | 'border'
   | 'z'
-  | 'display';
+  | 'display'
+  | 'relative-text';
 
 /** Semantic `defineVars` families, by key prefix. Longest prefix first. */
 const VAR_FAMILIES: readonly [string, Family][] = [
@@ -39,7 +40,7 @@ const VAR_FAMILIES: readonly [string, Family][] = [
 ];
 
 /** Compile-time constant groups a component may read, by export name: docs/spec/ultima.md, Token groups in v0. */
-const CONSTANT_GROUPS: Record<string, Family> = { easing: 'easing', border: 'border', z: 'z', display: 'display' };
+const CONSTANT_GROUPS: Record<string, Family> = { easing: 'easing', border: 'border', z: 'z', display: 'display', relativeText: 'relative-text' };
 
 /** A palette scale's steps: `stylex.defineConsts` keyed `dark1`..`light12`. Nothing outside the tokens package reads one. */
 const PALETTE_STEP = /^(dark|light)\d+$/;
@@ -193,7 +194,7 @@ export const CATEGORIES: Readonly<Record<CategoryId, Category>> = {
     dimensioned: true,
     source: 'a shadow token, or a ring built from border constants and color tokens',
   },
-  'font-size': { id: 'font-size', noun: 'a font size', families: ['text'], keywords: [], dimensioned: true, source: 'a text token' },
+  'font-size': { id: 'font-size', noun: 'a font size', families: ['text', 'relative-text'], keywords: [], dimensioned: true, source: 'a text token or a relativeText constant' },
   'font-weight': { id: 'font-weight', noun: 'a font weight', families: ['font-weight'], keywords: [], source: 'a font weight token' },
   'line-height': { id: 'line-height', noun: 'a line height', families: ['font-leading'], keywords: ['normal'], source: 'a font leading token' },
   'letter-spacing': { id: 'letter-spacing', noun: 'a letter spacing', families: ['font-tracking'], keywords: ['normal'], zero: true, dimensioned: true, source: 'a font tracking token' },

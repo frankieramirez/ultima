@@ -147,6 +147,15 @@ describe('ULT-TOKEN-001', () => {
     assert.deepEqual([found[0]?.ruleId, found[0]?.target], ['ULT-TOKEN-001', 'paddingInline']);
   });
 
+  test('takes the relativeText constant for a font size and nowhere else', () => {
+    const code = 'packages/ui/src/code.tsx';
+    assert.deepEqual(located(run(), code), []);
+    const padded = source(code).replace("paddingInline: space['--ult-space-2']", 'paddingInline: relativeText.code');
+    assert.notEqual(padded, source(code));
+    const found = located(run({ [code]: padded }), code);
+    assert.deepEqual(found.map(({ ruleId, symbol, target }) => [ruleId, symbol, target]), [['ULT-TOKEN-001', 'variants.inline', 'paddingInline']]);
+  });
+
   test('treats aliases of the StyleX import and of a token group as the same reads', () => {
     const button = 'packages/ui/src/button.tsx';
     const renamed = source(button)

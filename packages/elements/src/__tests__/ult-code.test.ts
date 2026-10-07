@@ -97,6 +97,20 @@ test('the block variant wraps long lines instead of scrolling', () => {
   expect(pre).not.toHaveAttribute('tabindex');
 });
 
+test('inline code sizes to the text around it, and the block keeps text step 4', () => {
+  for (const px of [11, 13, 16, 24]) {
+    const parent = document.createElement('p');
+    parent.style.fontSize = `${px}px`;
+    document.body.appendChild(parent);
+    const code = inner(mount({}, 'variant', parent));
+    expect(parseFloat(getComputedStyle(code).fontSize) / px).toBeCloseTo(0.875, 3);
+  }
+  const small = document.createElement('div');
+  small.style.fontSize = '11px';
+  document.body.appendChild(small);
+  expect(getComputedStyle(inner(mount({ variant: 'block' }, 'block', small))).fontSize).toBe('14px');
+});
+
 test('the code is queryable by its text', async () => {
   mount({}, 'npm run build');
   await expect.element(page.getByText('npm run build')).toBeVisible();

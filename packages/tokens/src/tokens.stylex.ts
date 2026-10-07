@@ -334,6 +334,10 @@ export const z = stylex.defineConsts({
   toast: 60,
 });
 
+export const relativeText = stylex.defineConsts({
+  code: '0.875em',
+});
+
 export const display = stylex.defineConsts({
   section: '1.625rem',
   headline: 'clamp(2rem, 4vw, 2.75rem)',

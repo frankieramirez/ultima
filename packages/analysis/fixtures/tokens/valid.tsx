@@ -1,7 +1,7 @@
 'use client';
 
 import * as stylex from '@stylexjs/stylex';
-import { border, color, easing, font, motion, radius, shadow, space, text, z } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, relativeText, shadow, space, text, z } from '@ultima/tokens/tokens.stylex';
 
 // Every structural category of the value grammar, and token reads through supported expressions.
 const VERTICAL = ':is([data-orientation="vertical"])';
@@ -51,6 +51,7 @@ const styles = stylex.create({
   hidden: { clipPath: 'inset(50%)', height: '1px', overflow: 'hidden', position: 'absolute', whiteSpace: 'nowrap', width: '1px' },
   thumb: (x: number) => ({ insetInlineStart: `${x}%` }),
   icon: { blockSize: '1em' },
+  code: { fontSize: relativeText.code },
 });
 
 function Separator({ x, style }: import('@ultima/ui/lib/component').PlainProps<'div'> & { x: number }) {
@@ -59,6 +60,7 @@ function Separator({ x, style }: import('@ultima/ui/lib/component').PlainProps<'
       <svg viewBox="0 0 24 24" {...stylex.props(styles.icon)} />
       <span {...stylex.props(styles.glyph)} />
       <span {...stylex.props(styles.hidden)} />
+      <code {...stylex.props(styles.code)} />
     </div>
   );
 }
