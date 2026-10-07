@@ -20,6 +20,7 @@ import {
 } from '../packages/cli/src/stamp.ts';
 import type { SetupDescriptor } from '../registry/metadata/schema.ts';
 import { agentGuide, type GuideComponent } from './build-agent-guide.ts';
+import { ordinal } from './catalogue/browser.ts';
 import { diskFiles } from './catalogue/files.ts';
 import { formatDiagnostics, loadCatalogue } from './catalogue/model.ts';
 import { registryUrl } from './catalogue/projections.ts';
@@ -53,6 +54,7 @@ type RegistryItem = {
   type: string;
   title: string;
   description: string;
+  categories?: string[];
   dependencies?: string[];
   devDependencies?: string[];
   registryDependencies?: string[];
@@ -69,12 +71,29 @@ const files = diskFiles(root);
 const { catalogue, diagnostics } = loadCatalogue(files);
 if (diagnostics.length > 0) throw new Error(`the catalogue under registry/metadata/ is invalid:\n${formatDiagnostics(diagnostics)}`);
 
-type Description = { title: string; description: string; docs: string; dependencies: string[]; registryDependencies: string[] };
+type Description = {
+  title: string;
+  description: string;
+  docs: string;
+  dependencies: string[];
+  registryDependencies: string[];
+  /** React items only: shadcn's own field, holding the item's catalogue group. */
+  categories?: string[];
+};
 
 const descriptions = new Map<string, Description>([
-  ...[...catalogue.sourceBundles, ...catalogue.react].map((entry): [string, Description] => [
+  ...catalogue.sourceBundles.map((entry): [string, Description] => [
     entry.id,
     { ...entry, docs: entry.installDocs, registryDependencies: entry.registryDependencies.map((id) => `@ultima/${id}`) },
+  ]),
+  ...catalogue.react.map((entry): [string, Description] => [
+    entry.id,
+    {
+      ...entry,
+      docs: entry.installDocs,
+      registryDependencies: entry.registryDependencies.map((id) => `@ultima/${id}`),
+      categories: [entry.group],
+    },
   ]),
   ...catalogue.artifacts.map((entry): [string, Description] => [
     entry.id,
@@ -134,12 +153,13 @@ function describe(name: string): Description {
 }
 
 function item(name: string, type: string, files: HashedFile[]): RegistryItem {
-  const { title, description, docs, dependencies, registryDependencies } = describe(name);
+  const { title, description, docs, dependencies, registryDependencies, categories } = describe(name);
   return {
     name,
     type,
     title,
     description,
+    ...(categories && { categories }),
     ...(dependencies.length > 0 && { dependencies }),
     ...(registryDependencies.length > 0 && { registryDependencies }),
     files: files.map(({ hash: _, ...file }) => file),
@@ -304,10 +324,16 @@ function publishExports({ components, elements, tokensCss }: Sources) {
   const guide = agentGuide({
     specPath: SPEC,
     tokensJsonPath: join(TOKENS_DIST, 'tokens.json'),
-    components: components.map(({ name, source }): GuideComponent => {
-      const { title, description } = describe(name);
-      return { name, title, description, source };
-    }),
+    groups: catalogue.groups.map(({ id, label }) => ({
+      label,
+      components: components
+        .filter(({ name }) => catalogue.react.find((entry) => entry.id === name)?.group === id)
+        .sort((a, b) => ordinal(a.name, b.name))
+        .map(({ name, source }): GuideComponent => {
+          const { title, description } = describe(name);
+          return { name, title, description, source };
+        }),
+    })),
     elements: elements.map((name): GuideComponent => {
       const { title, description } = describe(name);
       return {

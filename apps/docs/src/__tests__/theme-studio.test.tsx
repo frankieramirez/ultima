@@ -1,6 +1,6 @@
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
-import { colorScheme, darkTheme, lightTheme, resolveDraft, stockDraft, presetDraft, AUTOSAVE_KEY, serializeDraft } from '@ultima/tokens';
+import { colorScheme, darkTheme, lightTheme, resolveDraft, stockDraft, presetDraft, AUTOSAVE_KEY, draftFingerprint, serializeDraft } from '@ultima/tokens';
 import axe from 'axe-core';
 import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
@@ -17,6 +17,10 @@ import '../styles.css';
 /** The Studio's pane-mode switch, apart from the site header's color-mode switch. */
 function previewMode(screen: Awaited<ReturnType<typeof mount>>, name: 'Dark' | 'Light') {
   return screen.getByRole('group', { name: 'Preview color mode' }).getByRole('button', { name }).element();
+}
+
+async function selectHueFill(screen: Awaited<ReturnType<typeof mount>>) {
+  await userEvent.click(screen.getByRole('group', { name: 'Accent fill' }).getByRole('button', { name: 'Hue', exact: true }));
 }
 
 async function mount(path: string, expandGroups = true) {
@@ -142,6 +146,7 @@ test('the draft report names the working failure and focuses its editable token'
 test('a palette source is separate from the generated role colors and exact overrides', async () => {
   const screen = await mount('/theme-studio');
   const pane = screen.getByRole('region', { name: 'Dark preview' });
+  await selectHueFill(screen);
   const source = screen.getByRole('textbox', { name: 'Accent hex', exact: true });
   await userEvent.fill(source, '#224466');
   await userEvent.keyboard('{Enter}');
@@ -733,6 +738,7 @@ test('guided controls write contracted draft parameters and the preview follows'
   );
   expect(readToken(pane, '--ult-space-1')).toBe('0.09375rem');
 
+  await selectHueFill(screen);
   const saturation = screen.getByRole('slider', { name: 'Accent saturation' });
   saturation.element().focus();
   await userEvent.keyboard('{ArrowRight}');
@@ -783,6 +789,62 @@ test('group lock and reset live on the draft', async () => {
   expect(
     screen.getByRole('group', { name: 'Density preset' }).getByRole('button', { name: 'Cosy' }).element(),
   ).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('Accent fill switches the accent roles between Ink and the Accent hue, and the focus ring stays on Accent', async () => {
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const ink = resolveDraft(presetDraft('neutral'));
+  const hue = resolveDraft({ ...presetDraft('neutral'), accentFill: 'hue' });
+  const fill = screen.getByRole('group', { name: 'Accent fill' });
+  await expect.element(fill.getByRole('button', { name: 'Ink', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  expect(readAccent(pane)).toBe('#e8e8e8');
+  await userEvent.click(fill.getByRole('button', { name: 'Hue', exact: true }));
+  expect(readAccent(pane)).toBe(hue.dark['--ult-color-accent']);
+  expect(readToken(pane, '--ult-color-border-focus')).toBe(ink.dark['--ult-color-border-focus']);
+  await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
+  expect(readAccent(pane)).toBe('#e8e8e8');
+});
+
+test('the Shape control lists four presets on a version-3 draft and three on a version-2 draft', async () => {
+  const shapes = (screen: Awaited<ReturnType<typeof mount>>) =>
+    [...screen.getByRole('group', { name: 'Shape preset' }).element().querySelectorAll('button')].map((button) => button.textContent);
+  const fresh = await mount('/theme-studio');
+  expect(shapes(fresh)).toEqual(['Sharp', 'Default', 'Soft', 'Round']);
+  await fresh.unmount();
+
+  localStorage.setItem(AUTOSAVE_KEY, serializeDraft(presetDraft({ id: 'grove', revision: 1 })));
+  const saved = await mount('/theme-studio');
+  await expect.element(saved.getByRole('combobox', { name: 'Complete theme' })).toHaveTextContent('Grove');
+  expect(shapes(saved)).toEqual(['Sharp', 'Default', 'Round']);
+  for (const button of saved.getByRole('group', { name: 'Accent fill' }).element().querySelectorAll('button')) {
+    expect(button).toHaveAttribute('data-disabled');
+  }
+});
+
+test('selecting a preset moves a version-2 draft to revision 2 in one entry and Undo restores it exactly', async () => {
+  const saved = presetDraft({ id: 'neutral', revision: 1 });
+  saved.overrides.dark['--ult-color-text'] = '#f0f0f0';
+  localStorage.setItem(AUTOSAVE_KEY, serializeDraft(saved));
+  const screen = await mount('/theme-studio');
+  const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
+  const fingerprint = screen.getByText(/^seed [0-9a-f]{6}$/);
+  await expect.element(fingerprint).toHaveTextContent(`seed ${draftFingerprint(saved)}`);
+  expect(readAccent(pane)).toBe('#9e9e9e');
+  await userEvent.click(screen.getByRole('button', { name: 'Reset theme', exact: true }));
+  expect(readAccent(pane)).toBe('#9e9e9e');
+  expect(localStorage.getItem(AUTOSAVE_KEY)).toBe(serializeDraft(presetDraft({ id: 'neutral', revision: 1 })));
+  await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
+
+  await userEvent.click(screen.getByRole('combobox', { name: 'Complete theme' }));
+  await userEvent.click(screen.getByRole('option', { name: /Neutral/ }));
+  expect(readAccent(pane)).toBe('#e8e8e8');
+  await expect.element(fingerprint).toHaveTextContent(`seed ${draftFingerprint(presetDraft('neutral'))}`);
+  expect(localStorage.getItem(AUTOSAVE_KEY)).toBe(serializeDraft(presetDraft('neutral')));
+  await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
+  await expect.element(fingerprint).toHaveTextContent(`seed ${draftFingerprint(saved)}`);
+  expect(localStorage.getItem(AUTOSAVE_KEY)).toBe(serializeDraft(saved));
+  expect(screen.getByRole('button', { name: 'Undo', exact: true }).element()).toHaveAttribute('data-disabled');
 });
 
 test('the shuffle bar carries shuffle, variation, undo, redo, and the state fingerprint', async () => {
@@ -1101,6 +1163,7 @@ test('overrides pin resolved values through regeneration and group reset clears 
   const screen = await mount('/theme-studio');
   const pane = screen.getByRole('region', { name: 'Dark preview' }).element();
   const stock = resolveDraft(presetDraft('neutral'));
+  await selectHueFill(screen);
 
   await userEvent.click(screen.getByRole('button', { name: 'Color token overrides' }));
   const accent = screen.getByRole('textbox', { name: '--ult-color-accent' });

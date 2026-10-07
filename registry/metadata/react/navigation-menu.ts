@@ -10,4 +10,5 @@ export default {
   primaryExport: 'NavigationMenu',
   release: 'v0.2',
   order: 3,
+  group: 'navigation',
 } satisfies ReactDescriptor;

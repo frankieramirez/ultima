@@ -4,10 +4,13 @@
  * changes so a report names the fixture it ran.
  */
 export const catalogue = {
-  version: 1,
+  version: 2,
+  groups: ['Forms', 'Overlays', 'Data display', 'Navigation', 'Feedback', 'Layout'],
   /** Matches more than one entry by name or description, and not the whole catalogue. */
   broadQuery: 'dialog',
   broadMatch: 'Dialog',
+  /** The only group with a match for `broadQuery`; every other group is hidden. */
+  broadGroups: ['Overlays'],
   /** Matches nothing. */
   emptyQuery: 'zzzz no such part',
   emptyHeading: 'No components match these filters',

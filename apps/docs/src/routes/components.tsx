@@ -7,7 +7,7 @@ import { useRef, useState } from 'react';
 
 import { breakpoints } from '../breakpoints.stylex';
 import { CataloguePreview } from '../catalogue-preview';
-import { components } from '../components';
+import { GROUPS, components } from '../components';
 import { docsStyles } from '../docs-style';
 import { DocumentLayout } from '../document-layout';
 import { TextLink } from '../text-link';
@@ -57,6 +57,18 @@ const styles = stylex.create({
     fontSize: text['--ult-text-3'],
     margin: 0,
   },
+  group: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: space['--ult-space-5'],
+    marginTop: space['--ult-space-10'],
+  },
+  groupMark: {
+    color: color['--ult-color-text-subtle'],
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-3'],
+    fontWeight: font['--ult-font-weight-regular'],
+  },
   list: { listStyle: 'none', padding: 0, margin: 0 },
   row: {
     display: 'grid',
@@ -77,6 +89,16 @@ const styles = stylex.create({
     gap: space['--ult-space-5'],
     textDecoration: 'none',
     minInlineSize: 0,
+  },
+  number: {
+    color: color['--ult-color-text-subtle'],
+    fontFamily: font['--ult-font-mono'],
+    fontSize: text['--ult-text-2'],
+  },
+  name: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: space['--ult-space-4'],
   },
   copy: {
     display: 'flex',
@@ -115,7 +137,6 @@ export function ComponentsPage() {
       .toLowerCase()
       .includes(term),
   );
-  matches.sort((a, b) => a.name.localeCompare(b.name));
   const filtered = query !== '';
   const clear = () => {
     setQuery('');
@@ -210,31 +231,60 @@ export function ComponentsPage() {
           </Button>
         </Empty.Root>
       )}
-      <ul {...stylex.props(styles.list)}>
-        {matches.map((entry) => (
-          <li key={entry.item}>
-            <Separator />
-            <div {...stylex.props(styles.row)}>
-              <CataloguePreview item={entry.item} />
-              <TextLink
-                variant="muted"
-                render={
-                  <Link to="/components/$name" params={{ name: entry.item }} />
-                }
-                style={styles.link}
-              >
-                <div {...stylex.props(styles.copy)}>
-                  <span {...stylex.props(styles.title)}>{entry.name}</span>
-                  <span {...stylex.props(styles.description)}>
-                    {summaries[entry.item] ?? entry.description}
-                  </span>
-                </div>
-                <ArrowUpRightIcon aria-hidden {...stylex.props(styles.arrow)} />
-              </TextLink>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {GROUPS.map((group, index) => {
+        const entries = matches.filter((entry) => entry.group === group.id);
+        if (entries.length === 0) return null;
+        const heading = `group-${group.id}`;
+        return (
+          <section key={group.id} aria-labelledby={heading}>
+            <h2 id={heading} {...stylex.props(headings.h2, styles.group)}>
+              <span aria-hidden {...stylex.props(styles.groupMark)}>
+                § {String(index + 1).padStart(2, '0')}
+              </span>{' '}
+              {group.label}{' '}
+              <span {...stylex.props(styles.groupMark)}>{entries.length}</span>
+            </h2>
+            <ul {...stylex.props(styles.list)}>
+              {entries.map((entry) => (
+                <li key={entry.item}>
+                  <Separator />
+                  <div {...stylex.props(styles.row)}>
+                    <CataloguePreview item={entry.item} />
+                    <TextLink
+                      variant="muted"
+                      render={
+                        <Link
+                          to="/components/$name"
+                          params={{ name: entry.item }}
+                        />
+                      }
+                      style={styles.link}
+                    >
+                      <div {...stylex.props(styles.copy)}>
+                        <span {...stylex.props(styles.name)}>
+                          <span {...stylex.props(styles.number)}>
+                            {entry.number}
+                          </span>{' '}
+                          <span {...stylex.props(styles.title)}>
+                            {entry.name}
+                          </span>
+                        </span>
+                        <span {...stylex.props(styles.description)}>
+                          {summaries[entry.item] ?? entry.description}
+                        </span>
+                      </div>
+                      <ArrowUpRightIcon
+                        aria-hidden
+                        {...stylex.props(styles.arrow)}
+                      />
+                    </TextLink>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
     </DocumentLayout>
   );
 }

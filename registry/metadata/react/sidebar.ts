@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Sidebar',
   release: 'v0',
   order: 15,
+  group: 'navigation',
 } satisfies ReactDescriptor;

@@ -108,12 +108,11 @@ for (const width of [1440, 1920])
       .element()
       .getBoundingClientRect().left;
     expect(logo).toBe(24);
-    for (const node of [
-      menu.querySelector('h3')!,
-      menu.querySelector('a')!,
-      menu.querySelector('a[aria-current="page"]')!,
-    ])
+    for (const node of [menu.querySelector('h3')!, menu.querySelector('a')!])
       expect(textLeft(node)).toBe(24);
+    const subgroup = textLeft(menu.querySelector('h4')!);
+    expect(subgroup).toBeGreaterThan(24);
+    expect(textLeft(menu.querySelector('a[aria-current="page"]')!)).toBe(subgroup);
     expect(
       Math.round(
         width -

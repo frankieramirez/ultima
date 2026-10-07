@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Alert',
   release: 'v0.1',
   order: 8,
+  group: 'feedback',
 } satisfies ReactDescriptor;

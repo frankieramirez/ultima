@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Code',
   release: 'v0',
   order: 8,
+  group: 'data-display',
 } satisfies ReactDescriptor;

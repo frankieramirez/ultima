@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Avatar',
   release: 'v0.2',
   order: 10,
+  group: 'data-display',
 } satisfies ReactDescriptor;

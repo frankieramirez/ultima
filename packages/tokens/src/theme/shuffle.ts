@@ -1,9 +1,9 @@
 import {
   resolveDraft,
+  shapePresets,
   type DensityFactor,
   type GuidedGroup,
   type MeasurePreset,
-  type ShapePreset,
   type ThemeDraft,
   type TypeScale,
 } from './draft.ts';
@@ -28,7 +28,6 @@ export type ShuffleResult =
 const GROUPS: GuidedGroup[] = ['color', 'typography', 'density', 'shape', 'elevation', 'motion'];
 
 const DENSITIES: DensityFactor[] = [0.75, 1, 1.25];
-const SHAPES: ShapePreset[] = ['sharp', 'default', 'round'];
 const TYPE_SCALES: TypeScale[] = ['stock', 1.125, 1.2, 1.25, 1.333];
 const MEASURES: MeasurePreset[] = ['compact', 'default', 'loose'];
 const SIZE_STEPS = [-1, -0.5, 0.5, 1];
@@ -126,9 +125,11 @@ function applyGroup(
       draft.density =
         variation === 'broad' ? pick(rng, DENSITIES) : adjacent(rng, DENSITIES, draft.density);
       break;
-    case 'shape':
-      draft.shape = variation === 'broad' ? pick(rng, SHAPES) : adjacent(rng, SHAPES, draft.shape);
+    case 'shape': {
+      const shapes = shapePresets(draft.version);
+      draft.shape = variation === 'broad' ? pick(rng, shapes) : adjacent(rng, shapes, draft.shape);
       break;
+    }
     case 'elevation':
       draft.elevation = drawFactor(rng, variation, draft.elevation, 0, 2);
       break;

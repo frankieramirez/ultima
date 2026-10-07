@@ -29,6 +29,9 @@ const AXES = [
 
 export type GuideComponent = { name: string; title: string; description: string; source: string };
 
+/** One catalogue group's components, alphabetical; groups come in display order. */
+export type GuideGroup = { label: string; components: GuideComponent[] };
+
 type TokensJson = { tokens: Record<string, { group: string }> };
 
 function escapeForRegExp(text: string): string {
@@ -142,7 +145,7 @@ function exportedName({ name, source }: GuideComponent): string {
 function describeComponent(component: GuideComponent): string {
   const axes = axesOf(component);
   return [
-    `### ${component.title}`,
+    `#### ${component.title}`,
     '',
     component.description,
     '',
@@ -206,12 +209,12 @@ function htmlTagsIn(markdown: string): string[] {
 export function agentGuide({
   specPath,
   tokensJsonPath,
-  components,
+  groups,
   elements,
 }: {
   specPath: string;
   tokensJsonPath: string;
-  components: GuideComponent[];
+  groups: GuideGroup[];
   elements: GuideComponent[];
 }): string {
   const spec = readFileSync(specPath, 'utf8');
@@ -238,7 +241,7 @@ export function agentGuide({
     '',
     '## Components',
     '',
-    components.map(describeComponent).join('\n\n'),
+    groups.map(({ label, components }) => [`### ${label}`, ...components.map(describeComponent)].join('\n\n')).join('\n\n'),
     ...(elements.length === 0
       ? []
       : ['', '## Elements', '', ELEMENTS_LEAD, '', elements.map(describeElement).join('\n\n')]),

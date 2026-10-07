@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Spinner',
   release: 'v0.1',
   order: 13,
+  group: 'feedback',
 } satisfies ReactDescriptor;

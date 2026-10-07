@@ -70,6 +70,7 @@ function reactRequest(overrides: Record<string, unknown> = {}, brief: Record<str
       primaryExport: 'Ribbon',
       release: 'v0.1',
       order: 3,
+      group: 'forms',
       ...overrides,
     },
     brief: {
@@ -200,6 +201,11 @@ describe('preconditions', () => {
     rejects(reactRequest({ contract: 'docs/spec/ultima.md#no-such-heading' }), /broken-anchor .* has no heading #no-such-heading/);
     rejects(reactRequest({ id: 'banner' }), /descriptor\.id "banner" contradicts the command's "ribbon"/);
     rejects(reactRequest({ summary: 'x' }), /descriptor\.summary is not a known field/);
+  });
+
+  test('requires a catalogue group and never assigns one', () => {
+    rejects(reactRequest({ group: undefined }), /descriptor\.group is missing: one of forms, navigation/);
+    rejects(reactRequest({ group: 'widgets' }), /descriptor\.group "widgets" is not one of forms, navigation/);
   });
 
   test('detects id, path, export and order collisions before writing', () => {

@@ -10,5 +10,6 @@ export default {
   primaryExport: 'Dialog',
   release: 'v0',
   order: 10,
+  group: 'overlays',
   replaces: { elements: ['dialog'], roles: ['dialog'] },
 } satisfies ReactDescriptor;

@@ -10,5 +10,6 @@ export default {
   primaryExport: 'Menubar',
   release: 'v0.2',
   order: 8,
+  group: 'overlays',
   replaces: { roles: ['menubar'] },
 } satisfies ReactDescriptor;

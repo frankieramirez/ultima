@@ -1,17 +1,22 @@
-import { RELEASES, components } from './generated/catalogue';
+import { GROUPS, RELEASES, components } from './generated/catalogue';
 
-export { RELEASE_LABELS, RELEASES, components } from './generated/catalogue';
+export { GROUPS, RELEASES, components } from './generated/catalogue';
+
+export type ComponentGroup = (typeof GROUPS)[number]['id'];
 
 export type ComponentRelease = (typeof RELEASES)[number];
 
 export type ComponentEntry = {
   name: string;
   item: string;
+  /** The catalogue number, three digits in id order. */
+  number: string;
+  group: ComponentGroup;
   description: string;
-  /** Docs-only. The index sections by this field; the menu stays a flat catalogue in release order. */
   release: ComponentRelease;
 };
 
-export function componentsInRelease(release: ComponentRelease): ComponentEntry[] {
-  return components.filter((entry) => entry.release === release);
+/** One group's entries, alphabetical. */
+export function componentsInGroup(group: ComponentGroup): ComponentEntry[] {
+  return components.filter((entry) => entry.group === group);
 }

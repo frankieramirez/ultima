@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Toggle',
   release: 'v0.2',
   order: 12,
+  group: 'forms',
 } satisfies ReactDescriptor;

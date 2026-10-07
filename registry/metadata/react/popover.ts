@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Popover',
   release: 'v0.2',
   order: 4,
+  group: 'overlays',
 } satisfies ReactDescriptor;
