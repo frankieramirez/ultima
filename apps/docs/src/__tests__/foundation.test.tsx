@@ -68,6 +68,19 @@ for (const { path, title, place, previous, next } of FOUNDATIONS) {
   }
 }
 
+test('a trailing slash still finds the page in the site order', async () => {
+  const screen = await mount('/install/');
+  await expect.element(screen.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
+  expect(document.querySelector('main')?.textContent).toContain('Foundations · 02');
+  const pager = screen.getByRole('navigation', { name: 'Previous and next page' });
+  expect([...pager.element().querySelectorAll('a')].map((link) => link.textContent)).toEqual(['PreviousHome', 'NextCLI']);
+});
+
+test('the section number stays out of the heading name', async () => {
+  const screen = await mount('/install');
+  await expect.element(screen.getByRole('heading', { name: 'Commands', exact: true, level: 2 })).toBeVisible();
+});
+
 test('each hand step says whether doctor checks it, from the setup item', async () => {
   const screen = await mount('/install');
   await expect.element(screen.getByRole('heading', { name: 'Steps you still do by hand' })).toBeVisible();

@@ -51,6 +51,8 @@ const styles = stylex.create({
     gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.WIDE]: 'minmax(0, 1fr) auto minmax(0, 1fr)' },
     marginBlock: space['--ult-space-8'],
   },
+  narrowOnly: { display: { default: 'block', [breakpoints.WIDE]: 'none' } },
+  wideOnly: { display: { default: 'none', [breakpoints.WIDE]: 'block' } },
   side: {
     display: 'flex',
     flexDirection: 'column',
@@ -123,7 +125,8 @@ export function Tradeoff({ chose, over }: { chose: ReactNode[]; over: ReactNode[
           ))}
         </ul>
       </div>
-      <Separator orientation="vertical" />
+      <Separator style={styles.narrowOnly} />
+      <Separator orientation="vertical" style={styles.wideOnly} />
       <div {...stylex.props(styles.side)}>
         <p {...stylex.props(foundationStyles.label)}>Over</p>
         <ul {...stylex.props(styles.options)}>

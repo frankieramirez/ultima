@@ -58,6 +58,8 @@ export const foundationStyles = stylex.create({
     lineHeight: font['--ult-font-leading-none'],
     marginBlockStart: '4.5rem',
     marginBlockEnd: space['--ult-space-7'],
+  },
+  sectionNumber: {
     '::before': {
       color: color['--ult-color-text-subtle'],
       content: '"§ " counter(section, decimal-leading-zero)',
@@ -106,9 +108,15 @@ export const foundationStyles = stylex.create({
   pagerArrow: { color: color['--ult-color-text-muted'], flexShrink: 0, fontSize: text['--ult-text-7'] },
 });
 
-export function RunningHead({ labels }: { labels: string[] }) {
+/** The router keeps a trailing slash, and the host serves `/install/` as readily as `/install`. */
+function usePageIndex() {
   const { pathname } = useLocation();
-  const pageNumber = pages.findIndex(({ to }) => to === pathname) + 1;
+  const path = pathname.replace(/\/+$/, '') || '/';
+  return pages.findIndex(({ to }) => to === path);
+}
+
+export function RunningHead({ labels }: { labels: string[] }) {
+  const pageNumber = usePageIndex() + 1;
   return (
     <>
       <div {...stylex.props(foundationStyles.runningHead)}>
@@ -125,8 +133,7 @@ export function RunningHead({ labels }: { labels: string[] }) {
 }
 
 export function FoundationPager() {
-  const { pathname } = useLocation();
-  const place = pages.findIndex(({ to }) => to === pathname);
+  const place = usePageIndex();
   const previous = pages[place - 1];
   const next = pages[place + 1];
   return (
@@ -191,8 +198,14 @@ export function Columns({ children }: { children: ReactNode }) {
 function H1(props: ComponentProps<'h1'>) {
   return <h1 {...props} {...stylex.props(headings.h1, foundationStyles.title)} />;
 }
-function H2(props: ComponentProps<'h2'>) {
-  return <h2 {...props} {...stylex.props(headings.h2, foundationStyles.h2)} />;
+/** The number is generated content on a hidden span, so it stays out of the heading's name. */
+function H2({ children, ...props }: ComponentProps<'h2'>) {
+  return (
+    <h2 {...props} {...stylex.props(headings.h2, foundationStyles.h2)}>
+      <span aria-hidden {...stylex.props(foundationStyles.sectionNumber)} />
+      {children}
+    </h2>
+  );
 }
 function P(props: ComponentProps<'p'>) {
   return <p {...props} {...stylex.props(foundationStyles.p)} />;
