@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: light)" srcset="apps/docs/public/brand/ultima-logo-light.svg">
-    <img src="apps/docs/public/brand/ultima-logo-dark.svg" alt="--ultima: wordmark" width="420">
+    <img src="apps/docs/public/brand/ultima-logo-dark.svg" alt="Ultima wordmark" width="420">
   </picture>
 </p>
 
@@ -135,7 +135,7 @@ Read the [principles](docs/spec/ultima.md#principles) before changing anything. 
 
 ## Brand
 
-The wordmark is `--ultima:` in IBM Plex Mono SemiBold, with a compact `u:` mark for icons. The identity uses neutral ink and paper; color belongs to the components and themes. [Brand guidelines](docs/brand.md) cover the SVG and PNG exports, social image, avatar, and regeneration command.
+The Compact wordmark uses custom lowercase lettering, with a squared `u` for icons. The wordmark uses ink and paper; browser and app icons add a cyan background. [Brand guidelines](docs/brand.md) cover the SVG and PNG exports, social image, avatar, and regeneration command.
 
 ## Related
 

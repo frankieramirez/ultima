@@ -35,7 +35,7 @@ const styles = stylex.create({
     paddingInlineStart: { default: shell.narrowEdge, [breakpoints.WIDE]: shell.edge },
     paddingInlineEnd: { default: space['--ult-space-4'], [breakpoints.WIDE]: shell.edge },
   },
-  brandLogo: { display: 'block', height: text['--ult-text-5'], width: 'auto' },
+  brandLogo: { display: 'block', height: text['--ult-text-8'], width: 'auto' },
   search: { marginInlineStart: { default: 'auto', [breakpoints.WIDE]: 0 } },
   trigger: {
     height: space['--ult-space-10'],
@@ -83,7 +83,7 @@ export function Header({ footer }: { footer: boolean }) {
     <header {...stylex.props(styles.chrome)}>
       <div {...stylex.props(styles.bar)}>
         <TextLink variant="muted" render={<Link to="/" aria-label="Ultima home" />}>
-          <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
+          <BrandLogo alt="" style={styles.brandLogo} />
         </TextLink>
         <NavigationMenu.Root aria-label="Site" style={styles.links}>
           <NavigationMenu.List>

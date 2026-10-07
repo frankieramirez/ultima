@@ -1,21 +1,21 @@
 # Ultima brand
 
-Ultima gives developers React components they install as source. Its identity should feel at home beside their own work. The wordmark keeps the syntax of a CSS custom property, `--ultima:`, and the compact `u:` mark keeps the initial and colon when the full name will not fit.
+The Compact identity uses a custom lowercase `ultima` wordmark and a squared `u` mark. The separated `l` and `t` preserve readability at header sizes.
 
 ## Color and typography
 
-The primary identity is monochrome: ink `#171717` and paper `#FAFAF9`. Use the dark logo on dark backgrounds and the light logo on light backgrounds. A pure-white version is available for production contexts that require white artwork. Keep every character the same color, including the punctuation.
+The wordmark uses ink `#0d0e0e` and paper `#eeeeea`. Use the dark logo on dark backgrounds and the light logo on light backgrounds. A pure-white version is available. Cyan `#31c6d2` is the background for browser and platform icons.
 
-The wordmark uses IBM Plex Mono SemiBold with squared punctuation. The exported lettering is outlined SVG, so it needs no installed font. Site prose and controls use Figtree; docs headings use Space Grotesk; technical text uses IBM Plex Mono. Figtree retains its [OFL license](../apps/docs/public/fonts/Figtree-OFL.txt); Space Grotesk retains its [OFL license](../apps/docs/public/fonts/SpaceGrotesk-OFL.txt); IBM Plex retains its [OFL license](../apps/docs/public/fonts/OFL.txt). Existing exported brand artwork keeps its original lettering.
+The wordmark is custom path artwork, with no font dependency. Site prose and controls use Figtree; headings use Space Grotesk; technical text and social-card captions use IBM Plex. Their bundled OFL licenses remain in `apps/docs/public/fonts/`.
 
-Blue remains available through the component palette. It is not required for brand recognition. Component states and theme previews keep their semantic colors; the brand does not redefine those tokens.
+These colors belong to the brand artwork. Component states and theme previews keep their semantic tokens.
 
 ## Usage
 
 - Use the full wordmark in the site header, README, and any introduction to Ultima. Write “Ultima” in prose.
 - Reserve the compact mark for favicons, app icons, and avatars. Use the square avatar asset when a service applies its own circle or rounded mask.
-- Leave at least one lowercase letter-height of space around the wordmark. The compact exports include their own padding; do not crop it away.
-- Keep the wordmark at least 100 CSS pixels wide. Use the compact mark below that size. Check raster exports at their final display size.
+- Leave at least half a lowercase letter-height of space around the wordmark. The compact exports include their own padding; do not crop it away.
+- Use a 24 CSS pixel height for the site header and mobile menu. Preserve the 714:197 aspect ratio. The wordmark has been inspected at 16, 20, 24 and 32 pixels high; prefer the compact mark when the full name cannot fit.
 - Preserve proportions. Do not recolor individual characters, add shadows or outlines, or place the mark on a busy image.
 - The social card introduces the product with “React components. Your source.” and the site address. Keep practical product language alongside the name.
 
@@ -47,4 +47,4 @@ python3 -m venv .scratch/brand-venv
 .scratch/brand-venv/bin/python scripts/build-brand.py
 ```
 
-CairoSVG also requires the system Cairo library. The generator uses the bundled fonts, produces vector outlines and raster exports from the same geometry, and writes provenance into PNG metadata. Edit the generator rather than its output. After regeneration, inspect the board and share image, then verify the site header in both modes at desktop and mobile widths.
+CairoSVG also requires the system Cairo library. The generator holds the custom wordmark paths, uses the bundled fonts for social-card captions, and produces vector and raster exports from the same geometry. It writes provenance into PNG metadata. Edit the generator rather than its output. After regeneration, inspect the board and share image, then verify the site header in both modes at desktop and mobile widths.

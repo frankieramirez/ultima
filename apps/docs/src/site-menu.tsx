@@ -39,7 +39,7 @@ const styles = stylex.create({
     paddingInlineEnd: space['--ult-space-4'],
     paddingInlineStart: shell.narrowEdge,
   },
-  wordmark: { display: 'block', height: text['--ult-text-4'], width: 'auto' },
+  wordmark: { display: 'block', height: text['--ult-text-8'], width: 'auto' },
   close: { height: space['--ult-space-10'], inlineSize: space['--ult-space-10'], paddingInline: 0 },
   scroll: { flexGrow: 1, minBlockSize: 0 },
   content: {
@@ -57,7 +57,7 @@ export function SiteMenu() {
       <div {...stylex.props(styles.frame)}>
         <div {...stylex.props(styles.head)}>
           <div {...stylex.props(styles.headBar)}>
-            <BrandLogo alt="" width={140} height={20} style={styles.wordmark} />
+            <BrandLogo alt="" style={styles.wordmark} />
             <Sidebar.Close
               render={<Button variant="ghost" aria-label="Close navigation" style={[docsStyles.square, styles.close]} />}
             >
