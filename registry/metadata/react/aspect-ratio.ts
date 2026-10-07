@@ -10,4 +10,5 @@ export default {
   primaryExport: 'AspectRatio',
   release: 'v0.2',
   order: 14,
+  group: 'layout',
 } satisfies ReactDescriptor;

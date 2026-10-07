@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Card',
   release: 'v0',
   order: 3,
+  group: 'data-display',
 } satisfies ReactDescriptor;

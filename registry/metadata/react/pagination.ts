@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Pagination',
   release: 'v0.2',
   order: 2,
+  group: 'navigation',
 } satisfies ReactDescriptor;

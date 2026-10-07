@@ -10,4 +10,5 @@ export default {
   primaryExport: 'ContextMenu',
   release: 'v0.2',
   order: 6,
+  group: 'overlays',
 } satisfies ReactDescriptor;

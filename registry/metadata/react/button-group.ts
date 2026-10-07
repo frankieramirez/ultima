@@ -11,4 +11,5 @@ export default {
   primaryExport: 'ButtonGroup',
   release: 'v0.2',
   order: 18,
+  group: 'forms',
 } satisfies ReactDescriptor;

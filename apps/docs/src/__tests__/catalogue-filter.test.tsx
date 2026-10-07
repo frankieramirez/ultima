@@ -7,7 +7,7 @@ import axe from 'axe-core';
 import { beforeEach, expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
-import { components } from '../components';
+import { GROUPS, components, componentsInGroup } from '../components';
 import { routeTree } from '../router';
 import { THEME_STORAGE_KEY } from '../theme';
 import '../styles.css';
@@ -26,18 +26,31 @@ function mount() {
     />,
   );
 }
-const alphabetic = [...components].sort((a, b) => a.name.localeCompare(b.name));
 const entries = (main: Element) =>
   Array.from(main.querySelectorAll('ul > li a[href^="/components/"]')).map(
     (link) => link.getAttribute('href'),
   );
 
-test('the directory is one complete alphabetical list without release distinctions or pagination', async () => {
+const sections = (main: Element) =>
+  Array.from(main.querySelectorAll('section h2'), (heading) => heading.textContent);
+
+test('the directory sections the catalogue by group, alphabetical within each, numbered, without releases or pagination', async () => {
   const screen = await mount();
   const main = screen.getByRole('main');
-  expect(entries(main.element())).toEqual(
-    alphabetic.map((entry) => `/components/${entry.item}`),
-  );
+  expect(sections(main.element())).toEqual([
+    '§ 01 Forms 20',
+    '§ 02 Overlays 11',
+    '§ 03 Data display 9',
+    '§ 04 Navigation 5',
+    '§ 05 Feedback 5',
+    '§ 06 Layout 4',
+  ]);
+  for (const { id, label } of GROUPS) {
+    const section = main.getByRole('region', { name: `${label} ${componentsInGroup(id).length}` });
+    expect(entries(section.element())).toEqual(componentsInGroup(id).map((entry) => `/components/${entry.item}`));
+  }
+  await expect.element(main.getByRole('link', { name: /^008 Button Trigger / })).toBeVisible();
+  await expect.element(main.getByRole('link', { name: /^048 Table / })).toBeVisible();
   await expect
     .element(main.getByRole('status'))
     .toHaveTextContent(`${components.length} components · A–Z`);
@@ -49,6 +62,15 @@ test('the directory is one complete alphabetical list without release distinctio
       .query(),
   ).toBeNull();
   expect(main.getByRole('combobox', { name: 'Sort order' }).query()).toBeNull();
+});
+
+test('the filter searches every group and hides each group with no match', async () => {
+  const screen = await mount();
+  const main = screen.getByRole('main');
+  await userEvent.fill(main.getByRole('searchbox', { name: 'Filter components' }), 'dialog');
+  await expect.element(main.getByRole('status')).toHaveTextContent('2 components · A–Z');
+  expect(sections(main.element())).toEqual(['§ 02 Overlays 2']);
+  expect(entries(main.element())).toEqual(['/components/alert-dialog', '/components/dialog']);
 });
 
 test('search combines names and descriptions, empty results clear with focus, and a result opens', async () => {
@@ -63,7 +85,7 @@ test('search combines names and descriptions, empty results clear with focus, an
     .element(main.getByRole('status'))
     .toHaveTextContent(`${matches.length} components · A–Z`);
   await expect
-    .element(main.getByRole('link', { name: /^Button Trigger / }))
+    .element(main.getByRole('link', { name: /^008 Button Trigger / }))
     .toBeVisible();
   await expect
     .element(
@@ -88,7 +110,7 @@ test('search combines names and descriptions, empty results clear with focus, an
   await expect.element(input).toHaveValue('');
   await expect.element(input).toHaveFocus();
   await userEvent.fill(input, 'button');
-  await userEvent.click(main.getByRole('link', { name: /^Button Trigger / }));
+  await userEvent.click(main.getByRole('link', { name: /^008 Button Trigger / }));
   await expect
     .element(main.getByRole('heading', { name: 'Button', level: 1 }))
     .toBeVisible();
@@ -97,7 +119,7 @@ test('search combines names and descriptions, empty results clear with focus, an
 test('search finds an entry near the end of the complete catalogue', async () => {
   const screen = await mount();
   const main = screen.getByRole('main');
-  const last = alphabetic.at(-1)!;
+  const last = components.at(-1)!;
   await userEvent.fill(
     main.getByRole('searchbox', { name: 'Filter components' }),
     last.name,
@@ -105,7 +127,7 @@ test('search finds an entry near the end of the complete catalogue', async () =>
   expect(entries(main.element())).toContain(`/components/${last.item}`);
   await userEvent.click(main.getByRole('button', { name: 'Clear filters' }));
   expect(entries(main.element())).toEqual(
-    alphabetic.map((entry) => `/components/${entry.item}`),
+    components.map((entry) => `/components/${entry.item}`),
   );
 });
 
@@ -116,7 +138,7 @@ test('search includes full descriptions alongside the displayed summaries', asyn
   for (const query of ['  ToNeS  ', 'solid, outline, or ghost']) {
     await userEvent.fill(input, query);
     await expect
-      .element(main.getByRole('link', { name: /^Button Trigger / }))
+      .element(main.getByRole('link', { name: /^008 Button Trigger / }))
       .toBeVisible();
   }
 });

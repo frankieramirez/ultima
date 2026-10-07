@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Field',
   release: 'v0.1',
   order: 1,
+  group: 'forms',
 } satisfies ReactDescriptor;

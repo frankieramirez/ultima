@@ -10,5 +10,6 @@ export default {
   primaryExport: 'Collapsible',
   release: 'v0',
   order: 16,
+  group: 'data-display',
   replaces: { elements: ['details', 'summary'] },
 } satisfies ReactDescriptor;

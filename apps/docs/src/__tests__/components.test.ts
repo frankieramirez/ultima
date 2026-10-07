@@ -1,20 +1,57 @@
 import { expect, test } from 'vitest';
 
 import { items } from '../../../../registry/items.config';
-import { RELEASES, components, componentsInRelease } from '../components';
+import { GROUPS, components, componentsInGroup } from '../components';
 
 const NOT_A_COMPONENT = ['tokens', 'lib', 'setup-vite', 'setup-next', 'tokens-css', 'design-md'];
 
 const pages = import.meta.glob('../content/components/*.mdx');
 const demos = import.meta.glob('../demos/*/*.tsx');
 
-test('the catalogue lists each release as one contiguous run, in release order', () => {
-  expect(components.every((entry) => RELEASES.includes(entry.release))).toBe(true);
-  expect(RELEASES.every((release) => componentsInRelease(release).length > 0)).toBe(true);
-  expect(RELEASES.flatMap((release) => componentsInRelease(release).map(({ item }) => item))).toEqual(
-    components.map(({ item }) => item),
-  );
+test('the catalogue lists each group as one contiguous alphabetical run, in display order', () => {
+  expect(GROUPS.flatMap(({ id }) => componentsInGroup(id).map(({ item }) => item))).toEqual(components.map(({ item }) => item));
+  for (const { id } of GROUPS) {
+    const names = componentsInGroup(id).map(({ name }) => name);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+  }
   expect(new Set(components.map(({ item }) => item)).size).toBe(components.length);
+});
+
+test('the six groups hold the counts the Components directory frame shows', () => {
+  expect(Object.fromEntries(GROUPS.map(({ label, id }) => [label, componentsInGroup(id).length]))).toEqual({
+    Forms: 20,
+    Overlays: 11,
+    'Data display': 9,
+    Navigation: 5,
+    Feedback: 5,
+    Layout: 4,
+  });
+});
+
+test('catalogue numbers follow id order, padded to three digits', () => {
+  const numbers = Object.fromEntries(components.map(({ name, number }) => [name, number]));
+  expect(numbers).toMatchObject({
+    Avatar: '005',
+    Button: '008',
+    Card: '011',
+    'Date Picker': '019',
+    Input: '027',
+    Meter: '031',
+    Sidebar: '042',
+    Stat: '046',
+    Table: '048',
+    Tabs: '049',
+  });
+});
+
+test('each React registry record carries its group as categories, and /llms.txt has one heading per group', async () => {
+  for (const { item, group } of components) {
+    const record = (await (await fetch(`/r/${item}.json`)).json()) as { categories?: string[] };
+    expect(record.categories, item).toEqual([group]);
+  }
+  const guide = await (await fetch('/llms.txt')).text();
+  const section = guide.slice(guide.indexOf('\n## Components\n'), guide.indexOf('\n## ', guide.indexOf('\n## Components\n') + 1));
+  expect([...section.matchAll(/^### (.+)$/gm)].map((match) => match[1])).toEqual(GROUPS.map(({ label }) => label));
 });
 
 test('the catalogue and the registry manifest name the same components', () => {

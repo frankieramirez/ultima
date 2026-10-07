@@ -1792,7 +1792,7 @@ The counts are the frame's, 20, 11, 9, 5, 5 and 4. Where a component could sit i
 
 **Within a group, components are alphabetical**, on the directory and in the menu alike, which is the order the site already ships and the order [catalogue numbers](#what-a-block-is) follow. The `/components` directory renders one section per group, its heading carrying the group's count. The filter searches across every group and hides a group with no match. In the menu, the Components entry holds the six groups as labelled sub-lists, and they don't collapse: a group is a heading in the list, not a disclosure.
 
-**`release` stays, and nothing a visitor sees is sectioned by it.** It still names which section of this specification holds an item's contract, and with `order` it still fixes the registry manifest's order. The release disclosures planned in ULT-85, and the release sections of the index that replaced them, are superseded. When nothing reads the docs projection's release labels any more, `RELEASE_LABELS` and `componentsInRelease` leave it.
+**`release` stays, and nothing a visitor sees is sectioned by it.** It still names which section of this specification holds an item's contract, and with `order` it still fixes the registry manifest's order. The release disclosures planned in ULT-85, and the release sections of the index that replaced them, are superseded. Nothing reads the docs projection's release labels any more, so `RELEASE_LABELS` and `componentsInRelease` have left it, and `componentsInGroup` serves the directory and the menu.
 
 ### Placement in the consumer
 

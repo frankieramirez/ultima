@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Command',
   release: 'v0.2',
   order: 15,
+  group: 'overlays',
 } satisfies ReactDescriptor;

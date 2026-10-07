@@ -23,6 +23,7 @@ const REPAIR: Record<string, string> = {
   'broken-anchor': 'Point the contract at an existing specification heading.',
   'duplicate-order': 'Give the item an order no other item in its group holds.',
   'unknown-release': 'Use a release defined in registry/metadata/releases.ts.',
+  'unknown-group': 'Use a catalogue group defined in registry/metadata/groups.ts.',
   'path-outside': 'Keep every path inside the directory the descriptor owns.',
   'source-without-metadata': 'Add the descriptor that claims the file, or remove the file.',
   'invalid-primary-export': 'Export the root function or namespace the descriptor names as primaryExport.',

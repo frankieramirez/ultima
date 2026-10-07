@@ -4,13 +4,15 @@ import type {
   ArtifactDescriptor,
   Descriptor,
   ElementDescriptor,
+  Group,
   ReactDescriptor,
   RecipeDescriptor,
   Release,
   SetupDescriptor,
   SourceBundleDescriptor,
 } from '../../registry/metadata/schema.ts';
-import { KINDS, type Kind, readLiteral, releaseProblems, shapeProblems } from './descriptors.ts';
+import { KINDS, type Kind, groupProblems, readLiteral, releaseProblems, shapeProblems } from './descriptors.ts';
+import { ordinal } from './browser.ts';
 import type { Files } from './files.ts';
 import {
   type Export,
@@ -31,6 +33,7 @@ export type DiagnosticCode =
   | 'duplicate-id'
   | 'duplicate-order'
   | 'unknown-release'
+  | 'unknown-group'
   | 'broken-anchor'
   | 'path-outside'
   | 'missing-file'
@@ -62,7 +65,15 @@ export type Dependencies = {
 };
 
 export type ReactEntry = ReactDescriptor &
-  Dependencies & { source: string; page: string; test: string; demos: string; exports: Export[]; imports: Import[] };
+  Dependencies & {
+    source: string;
+    page: string;
+    test: string;
+    demos: string;
+    exports: Export[];
+    imports: Import[];
+    number: string;
+  };
 
 export type ElementEntry = Omit<ElementDescriptor, 'attributes'> & {
   source: string;
@@ -78,6 +89,8 @@ export type RecipeEntry = RecipeDescriptor & Dependencies;
 
 export type Catalogue = {
   releases: Release[];
+  /** In display order. */
+  groups: Group[];
   /** In docs order: release position, then `order`. */
   react: ReactEntry[];
   /** In docs family order. */
@@ -129,6 +142,14 @@ function registryOrder(ids: Iterable<string>): string[] {
   return [...new Set(ids)].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
 }
 
+/**
+ * The catalogue number of each id: its position in code-unit id order, padded to three digits. It is a
+ * display ordinal that shifts when an item is added, never an identity. Each kind numbers separately.
+ */
+export function catalogueNumbers(ids: readonly string[]): Map<string, string> {
+  return new Map([...ids].sort(ordinal).map((id, index) => [id, String(index + 1).padStart(3, '0')]));
+}
+
 function isSafeRepositoryPath(path: string): boolean {
   return path !== '' && !path.startsWith('/') && !path.includes('\\') && posix.normalize(path) === path && !path.startsWith('..');
 }
@@ -163,28 +184,34 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
     return base;
   };
 
-  const releasesPath = `${METADATA}/releases.ts`;
-  const releasesText = files.read(releasesPath);
-  let releases: Release[] = [];
-  if (releasesText === undefined) report('missing-file', releasesPath, 'the release definitions are missing');
-  else {
-    const { value, problems } = readLiteral(releasesPath, releasesText);
-    for (const problem of problems) report('not-data', releasesPath, problem);
-    const shape = problems.length === 0 ? releaseProblems(value) : [];
-    for (const problem of shape) report('invalid-descriptor', releasesPath, problem);
-    if (problems.length === 0 && shape.length === 0) releases = value as Release[];
-  }
+  const definitions = <T extends { id: string }>(name: 'release' | 'group', check: (value: unknown) => string[]): T[] => {
+    const path = `${METADATA}/${name}s.ts`;
+    const text = files.read(path);
+    let defined: T[] = [];
+    if (text === undefined) report('missing-file', path, `the ${name} definitions are missing`);
+    else {
+      const { value, problems } = readLiteral(path, text);
+      for (const problem of problems) report('not-data', path, problem);
+      const shape = problems.length === 0 ? check(value) : [];
+      for (const problem of shape) report('invalid-descriptor', path, problem);
+      if (problems.length === 0 && shape.length === 0) defined = value as T[];
+    }
+    defined.forEach(({ id }, index) => {
+      if (defined.findIndex((entry) => entry.id === id) !== index) report('duplicate-id', path, `${name} "${id}" is defined twice`);
+    });
+    return defined;
+  };
+  const releases = definitions<Release>('release', releaseProblems);
   const releaseIds = releases.map((release) => release.id);
-  releaseIds.forEach((id, index) => {
-    if (releaseIds.indexOf(id) !== index) report('duplicate-id', releasesPath, `release "${id}" is defined twice`);
-  });
+  const groups = definitions<Group>('group', groupProblems);
+  const groupIds = groups.map((group) => group.id);
 
   const loaded: { path: string; descriptor: Descriptor }[] = [];
   for (const entry of files.list(METADATA) ?? []) {
     const path = `${METADATA}/${entry.name}`;
     if (!entry.directory) {
-      if (entry.name !== 'schema.ts' && entry.name !== 'releases.ts') {
-        report('unexpected-descriptor', path, 'metadata holds schema.ts, releases.ts and one directory per kind');
+      if (!['schema.ts', 'releases.ts', 'groups.ts'].includes(entry.name)) {
+        report('unexpected-descriptor', path, 'metadata holds schema.ts, releases.ts, groups.ts and one directory per kind');
       }
       continue;
     }
@@ -300,11 +327,16 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
 
   const releaseRank = (release: string) => releaseIds.indexOf(release);
   const react: ReactEntry[] = [];
+  const numbers = catalogueNumbers(ofKind('react').map((d) => d.id));
   for (const descriptor of ofKind('react')) {
     const path = pathOf(descriptor.id);
     if (!releaseIds.includes(descriptor.release)) report('unknown-release', path, `release "${descriptor.release}" is not defined`);
+    if (!(groupIds as string[]).includes(descriptor.group)) {
+      report('unknown-group', path, `group "${descriptor.group}" is not defined in ${METADATA}/groups.ts`);
+    }
     const entry = {
       ...descriptor,
+      number: numbers.get(descriptor.id) as string,
       source: `${UI_SOURCE}/${descriptor.id}.tsx`,
       page: `${PAGES}/${descriptor.id}.mdx`,
       test: `${UI_TESTS}/${descriptor.id}.test.tsx`,
@@ -549,6 +581,7 @@ export function loadCatalogue(files: Files): { catalogue: Catalogue; diagnostics
   return {
     catalogue: {
       releases,
+      groups,
       react,
       elements,
       setup: setup.sort((a, b) => a.id.localeCompare(b.id)),

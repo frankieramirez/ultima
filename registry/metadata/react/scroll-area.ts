@@ -10,5 +10,6 @@ export default {
   primaryExport: 'ScrollArea',
   release: 'v0.2',
   order: 11,
+  group: 'layout',
   replaces: { roles: ['scrollbar'] },
 } satisfies ReactDescriptor;

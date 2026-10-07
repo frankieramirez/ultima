@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Table',
   release: 'v0',
   order: 4,
+  group: 'data-display',
 } satisfies ReactDescriptor;

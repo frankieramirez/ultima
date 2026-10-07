@@ -10,4 +10,5 @@ export default {
   primaryExport: 'Accordion',
   release: 'v0.2',
   order: 9,
+  group: 'data-display',
 } satisfies ReactDescriptor;

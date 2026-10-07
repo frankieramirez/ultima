@@ -10,4 +10,5 @@ export default {
   primaryExport: 'InputOTP',
   release: 'v0.2',
   order: 20,
+  group: 'forms',
 } satisfies ReactDescriptor;

@@ -143,7 +143,7 @@ const DESCRIPTOR_TYPES: Record<ScaffoldKind, string> = {
 };
 
 const FIELD_ORDER: Record<ScaffoldKind, string[]> = {
-  react: ['id', 'kind', 'title', 'description', 'docsDescription', 'contract', 'installDocs', 'primaryExport', 'release', 'order'],
+  react: ['id', 'kind', 'title', 'description', 'docsDescription', 'contract', 'installDocs', 'primaryExport', 'release', 'order', 'group'],
   element: ['id', 'kind', 'title', 'description', 'contract', 'installDocs', 'reactItem', 'order', 'registryDependencies', 'tags', 'attributes', 'example'],
   recipe: ['id', 'kind', 'title', 'description', 'contract', 'page', 'section', 'release', 'demos'],
 };
@@ -301,7 +301,16 @@ export function requestProblems(kind: ScaffoldKind, id: string, request: unknown
       );
     }
   }
-  problems.push(...shape.filter((problem) => !['descriptor.order is missing', 'descriptor.release is missing'].includes(problem)));
+  if (kind === 'react') {
+    const groups = groupIds(files);
+    if (descriptor.group === undefined) problems.push(`descriptor.group is missing: one of ${groups.join(', ')}`);
+    else if (!groups.includes(descriptor.group as string)) {
+      problems.push(`descriptor.group ${JSON.stringify(descriptor.group)} is not one of ${groups.join(', ')}`);
+    }
+  }
+  problems.push(
+    ...shape.filter((problem) => !['descriptor.order is missing', 'descriptor.release is missing', 'descriptor.group is missing'].includes(problem)),
+  );
   problems.push(...briefProblems(kind, brief, descriptor));
 
   if (kind === 'react' && isText(descriptor.primaryExport) && !PASCAL.test(descriptor.primaryExport)) {
@@ -322,6 +331,10 @@ export function requestProblems(kind: ScaffoldKind, id: string, request: unknown
 
 function releaseIds(files: Files): string[] {
   return loadCatalogue(files).catalogue.releases.map((release) => release.id);
+}
+
+function groupIds(files: Files): string[] {
+  return loadCatalogue(files).catalogue.groups.map((group) => group.id);
 }
 
 function appendPosition(files: Files, kind: 'react' | 'element', release: string | undefined): number | undefined {
