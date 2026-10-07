@@ -7,6 +7,9 @@ import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import { components } from '../components';
+import { componentPages } from '../generated/component-pages';
+import { proseComponents } from '../prose';
+import { renderWithRouter } from './render-with-router';
 import { routeTree } from '../router';
 import { THEME_STORAGE_KEY } from '../theme';
 // axe resolves a text contrast against the nearest painted ancestor, and the ground is on `body`.
@@ -82,7 +85,12 @@ test('the sections are numbered, the examples are plates, and the rail lists the
     expect(text(heading.previousElementSibling)).toBe(value);
   }
   const rail = screen.getByRole('complementary', { name: 'On this page' }).element();
-  expect([...rail.querySelectorAll('a')].map(text)).toEqual(['Examples', 'Props', 'Accessibility', 'Web component']);
+  expect([...rail.querySelectorAll('a')].map((link) => [text(link.querySelector('[aria-hidden]')), link.lastChild?.textContent])).toEqual([
+    ['01', 'Examples'],
+    ['02', 'Props'],
+    ['03', 'Accessibility'],
+    ['', 'Web component'],
+  ]);
 
   const plates = [...article.querySelectorAll('figure')].filter((figure) => figure.querySelector('h3'));
   expect(plates.map((figure) => text(figure.querySelector('h3')))).toEqual(['Variants', 'Sizes', 'Tones', 'Disabled']);
@@ -199,3 +207,69 @@ for (const mode of ['dark', 'light'] as const)
         const results = await axe.run(document.body);
         expect(results.violations.map(({ id, nodes }) => `${id}: ${nodes.map(({ html }) => html).join(', ')}`)).toEqual([]);
       });
+
+test('a prose section between the examples stands as its own numbered section, never folded', async () => {
+  const screen = await at(390, '/components/accordion');
+  const article = document.querySelector('article')!;
+  expect([...article.querySelectorAll('h2')].map(text)).toEqual([
+    'Examples',
+    'The heading level is yours',
+    'Panel content padding',
+    'Explicit values',
+    'Which disclosure, where',
+    'Props',
+    'Accessibility',
+  ]);
+  const examples = screen.getByRole('heading', { level: 2, name: 'Examples' }).element().closest('section')!;
+  const titles = [...examples.querySelectorAll('h3')].filter((heading) => !heading.closest('[data-component-preview]'));
+  expect(titles.map(text)).toEqual(['The trigger is the control', 'A caret', 'Controlled']);
+  expect(screen.getByRole('button', { name: /more example/ }).query()).toBeNull();
+  await expect.element(screen.getByRole('heading', { level: 2, name: 'Which disclosure, where' })).toBeVisible();
+  expect(text(screen.getByRole('heading', { level: 2, name: 'Panel content padding' }).element().previousElementSibling)).toBe('§ 03');
+});
+
+test('a prose section before the first example leads the page', async () => {
+  await at(1440, '/components/table');
+  const headings = [...document.querySelectorAll('article h2')].map(text);
+  expect(headings.slice(0, 2)).toEqual(['Anatomy', 'Examples']);
+  const rail = document.querySelector('aside[aria-label="On this page"]')!;
+  expect([...rail.querySelectorAll('a')].map((link) => link.lastChild?.textContent)).toContain('Anatomy');
+});
+
+test('every paragraph a component page authors at the top level reaches the rendered article', async () => {
+  const missing: string[] = [];
+  for (const { item } of components) {
+    const Content = componentPages[item]!;
+    const authored = await renderWithRouter(<div data-authored><Content components={proseComponents} /></div>);
+    await expect.element(authored.getByRole('heading', { level: 1 }).first()).toBeVisible();
+    const paragraphs = [...document.querySelectorAll('[data-authored] > p')].map(text);
+    await authored.unmount();
+    expect(paragraphs.length).toBeGreaterThan(0);
+
+    const screen = await mount(`/components/${item}`);
+    await expect.element(screen.getByRole('main').getByRole('heading', { level: 1 }).first()).toBeVisible();
+    const article = text(document.querySelector('article'));
+    for (const paragraph of paragraphs) if (!article.includes(paragraph)) missing.push(`${item}: ${paragraph.slice(0, 60)}`);
+    await screen.unmount();
+  }
+  expect(missing).toEqual([]);
+});
+
+test('paging to another component lays its plates out as a fresh load does', async () => {
+  const widths = () =>
+    [...document.querySelectorAll('article figure')]
+      .filter((figure) => figure.querySelector('h3'))
+      .map((figure) => Math.round(figure.getBoundingClientRect().width));
+  const paged = await at(1440, '/components/tabs');
+  await userEvent.click(paged.getByRole('navigation', { name: 'Previous and next components' }).getByRole('link', { name: /Next/ }));
+  await expect.element(paged.getByRole('heading', { level: 1, name: 'Textarea' })).toBeVisible();
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  const afterPaging = widths();
+  await paged.unmount();
+
+  const fresh = await mount('/components/textarea');
+  await expect.element(fresh.getByRole('heading', { level: 1, name: 'Textarea' })).toBeVisible();
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  expect(afterPaging.length).toBeGreaterThan(0);
+  expect(afterPaging).toEqual(widths());
+});

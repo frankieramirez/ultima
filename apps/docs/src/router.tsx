@@ -84,7 +84,7 @@ function ComponentNamePage() {
 
   if (!component || !Content) return <NotFound />;
 
-  return <ComponentPage entry={component} Content={Content} />;
+  return <ComponentPage key={component.item} entry={component} Content={Content} />;
 }
 
 const rationaleRoute = createRoute({

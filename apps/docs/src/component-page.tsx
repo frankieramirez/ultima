@@ -191,6 +191,7 @@ const styles = stylex.create({
     fontWeight: font['--ult-font-weight-regular'],
     gap: space['--ult-space-3'],
   },
+  introduction: { marginBlockStart: { default: space['--ult-space-6'], [breakpoints.WIDE]: space['--ult-space-7'] } },
   installNote: {
     color: color['--ult-color-text-muted'],
     fontSize: text['--ult-text-4'],
@@ -415,6 +416,8 @@ function sectionsOf(blocks: Block[]): { intro: Block[]; sections: Section[] } {
 }
 
 const MAX_PLATE_CAPTION_PARAGRAPHS = 2;
+const INSTALL = 'Install';
+const PROPS = 'Props';
 const PROP_LIST_COLUMNS = ['Prop', 'Type', 'Notes'];
 
 const number = (value: number) => String(value).padStart(2, '0');
@@ -593,7 +596,7 @@ function SectionHead({ id, value, label, note }: { id: string; value: string; la
         <span aria-hidden {...stylex.props(styles.sectionNumber)}>
           § {value}
         </span>
-        <h2 id={id} {...stylex.props(styles.h2)}>
+        <h2 id={id} data-index-number={value} {...stylex.props(styles.h2)}>
           {label}
         </h2>
       </div>
@@ -864,29 +867,52 @@ function Pager({ entry }: { entry: ComponentEntry }) {
   );
 }
 
+const hasDemo = (section: Section) => section.blocks.some((block) => block.type === Demo);
+
+type Part = { kind: 'examples'; sections: Section[] } | { kind: 'section'; section: Section };
+
+/**
+ * The sections in page order. Sections with a demo between Install and Props gather under
+ * Examples, where the first one stood; a prose section before them leads, and the rest follow.
+ */
+function partsOf(sections: Section[]): Part[] {
+  const install = sections.findIndex((section) => section.label === INSTALL);
+  const props = sections.findIndex((section) => section.label === PROPS);
+  const body = sections.slice(install + 1, props === -1 ? undefined : props);
+  const examples = body.filter(hasDemo);
+  const leading = examples.length > 0 ? body.slice(0, body.indexOf(examples[0]!)) : body;
+  const trailing = body.filter((section) => !hasDemo(section) && !leading.includes(section));
+  return [
+    ...leading.map((section) => ({ kind: 'section' as const, section })),
+    ...(examples.length > 0 ? [{ kind: 'examples' as const, sections: examples }] : []),
+    ...[...trailing, ...(props === -1 ? [] : sections.slice(props))].map((section) => ({ kind: 'section' as const, section })),
+  ];
+}
+
 export function ComponentPage({ entry, Content }: { entry: ComponentEntry; Content: MdxContent }) {
   const { intro, sections } = sectionsOf(blocksOf(Content));
   const titleBlock = intro.find((block) => block.type === H1);
   const lede = intro.find((block) => block.type === P);
-  const install = sections.find((section) => section.label === 'Install');
-  const props = sections.findIndex((section) => section.label === 'Props');
-  const first = install ? sections.indexOf(install) + 1 : 0;
-  const examples = sections.slice(first, props === -1 ? undefined : props);
-  const rest = props === -1 ? [] : sections.slice(props);
+  const introduction = intro.filter((block) => block !== titleBlock && block !== lede);
+  const install = sections.find((section) => section.label === INSTALL);
 
-  const webComponent = rest.flatMap((section) => section.blocks).find((block) => block.type === WebComponent);
-  const majors = rest.map((section) => ({ ...section, blocks: section.blocks.filter((block) => block !== webComponent) }));
+  const webComponent = sections.flatMap((section) => section.blocks).find((block) => block.type === WebComponent);
+  const parts = partsOf(sections).map((part) =>
+    part.kind === 'section'
+      ? { ...part, section: { ...part.section, blocks: part.section.blocks.filter((block) => block !== webComponent) } }
+      : part,
+  );
   const index = [
-    ...(examples.length > 0 ? [{ id: 'examples', label: 'Examples' }] : []),
-    ...majors.map(({ id, label }) => ({ id, label })),
+    ...parts.map((part) => (part.kind === 'examples' ? { id: 'examples', label: 'Examples' } : part.section)),
     ...(webComponent ? [{ id: 'web-component', label: 'Web component' }] : []),
-  ] satisfies Entry[];
+  ].map(({ id, label }) => ({ id, label })) satisfies Entry[];
 
   return (
     <DocumentLayout breadcrumb={[]}>
       <div {...stylex.props(styles.root)}>
         <DocsBar entry={entry} sections={index} />
         <TitleBlock entry={entry} title={titleBlock?.props.children ?? entry.name} lede={lede?.props.children} />
+        {introduction.length > 0 && <div {...stylex.props(styles.introduction)}>{introduction}</div>}
         {install?.blocks.map((block) =>
           block.type === Pre ? (
             <InstallCommand key={block.key} command={nodeText(block.props.children).trim()} />
@@ -898,24 +924,27 @@ export function ComponentPage({ entry, Content }: { entry: ComponentEntry; Conte
             block
           ),
         )}
-        {examples.length > 0 && <Examples sections={examples} value={number(1)} />}
-        {majors.map((section, at) => (
-          <section key={section.id} aria-labelledby={section.id}>
-            <SectionHead id={section.id} value={number(at + (examples.length > 0 ? 2 : 1))} label={section.heading.props.children} />
-            {section.blocks.map((block) => {
-              if (section.label === 'Accessibility' && block.type === Ul && canTitleNotes(block))
-                return <Notes key={block.key} list={block} />;
-              const rows = block.type === Table ? propRowsOf(block) : undefined;
-              if (!rows) return block;
-              return (
-                <Fragment key={block.key}>
-                  <div {...stylex.props(styles.propTable)}>{block}</div>
-                  <PropList rows={rows} />
-                </Fragment>
-              );
-            })}
-          </section>
-        ))}
+        {parts.map((part, at) => {
+          if (part.kind === 'examples') return <Examples key="examples" sections={part.sections} value={number(at + 1)} />;
+          const { section } = part;
+          return (
+            <section key={section.id} aria-labelledby={section.id}>
+              <SectionHead id={section.id} value={number(at + 1)} label={section.heading.props.children} />
+              {section.blocks.map((block) => {
+                if (section.label === 'Accessibility' && block.type === Ul && canTitleNotes(block))
+                  return <Notes key={block.key} list={block} />;
+                const rows = block.type === Table ? propRowsOf(block) : undefined;
+                if (!rows) return block;
+                return (
+                  <Fragment key={block.key}>
+                    <div {...stylex.props(styles.propTable)}>{block}</div>
+                    <PropList rows={rows} />
+                  </Fragment>
+                );
+              })}
+            </section>
+          );
+        })}
         {webComponent && <section {...stylex.props(styles.webComponent)}>{webComponent}</section>}
         <Pager entry={entry} />
       </div>
