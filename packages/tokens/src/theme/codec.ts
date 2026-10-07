@@ -1,12 +1,14 @@
 import {
   THEME_DRAFT_VERSION,
   THEME_PRESETS,
+  presetRevision,
   resolveDraft,
+  shapePresets,
   stockDraft,
+  type AccentFill,
   type DensityFactor,
   type GuidedGroup,
   type MeasurePreset,
-  type ShapePreset,
   type ThemeDraft,
   type TokenTable,
   type TypeScale,
@@ -22,7 +24,7 @@ export type DraftParseResult =
 
 const GUIDED_GROUPS: GuidedGroup[] = ['color', 'typography', 'density', 'shape', 'elevation', 'motion'];
 const MEASURES: MeasurePreset[] = ['compact', 'default', 'loose'];
-const SHAPES: ShapePreset[] = ['sharp', 'default', 'round'];
+const ACCENT_FILLS: AccentFill[] = ['hue', 'ink'];
 const DENSITIES: DensityFactor[] = [0.75, 1, 1.25];
 const TYPE_SCALES: TypeScale[] = ['stock', 1.125, 1.2, 1.25, 1.333];
 const SHUFFLE_KEYS = [...GUIDED_GROUPS, 'global'] as const;
@@ -302,7 +304,7 @@ export function parseDraft(input: string): DraftParseResult {
 
   if (!isRecord(raw)) return fail('malformed', 'Draft must be an object.');
   if (!isFiniteNumber(raw.version)) return fail('malformed', 'Draft is missing a version.');
-  if (raw.version !== 1 && raw.version !== THEME_DRAFT_VERSION) {
+  if (raw.version !== 1 && raw.version !== 2 && raw.version !== THEME_DRAFT_VERSION) {
     return fail('unknown-version', `Draft version ${raw.version} is not supported.`);
   }
   if (!isFiniteNumber(raw.recipeVersion)) return fail('malformed', 'Draft is missing a recipe version.');
@@ -311,15 +313,20 @@ export function parseDraft(input: string): DraftParseResult {
     return fail('unknown-version', `Recipe version ${raw.recipeVersion} is not supported for draft version ${raw.version}.`);
   }
 
+  const version = raw.version;
   let preset: ThemePresetOrigin | null = null;
-  if (raw.version === THEME_DRAFT_VERSION && raw.preset !== null) {
+  if (version !== 1 && raw.preset !== null) {
     if (!isRecord(raw.preset)) return fail('malformed', 'Draft must declare a preset origin or null.');
+    const revision = presetRevision(version);
     const id = raw.preset.id;
     const definition = THEME_PRESETS.find((item) => item.id === id);
-    if (!definition || raw.preset.revision !== 1) {
-      return fail('unknown-version', `Preset ${String(raw.preset.id)} revision ${String(raw.preset.revision)} is not supported.`);
+    if (!definition || raw.preset.revision !== revision) {
+      return fail('unknown-version', `Preset ${String(raw.preset.id)} revision ${String(raw.preset.revision)} is not supported for draft version ${version}.`);
     }
-    preset = { id: definition.id, revision: 1 };
+    preset = { id: definition.id, revision };
+  }
+  if (version === THEME_DRAFT_VERSION && !isOneOf(raw.accentFill, ACCENT_FILLS)) {
+    return fail('malformed', 'Draft accent fill must be hue or ink.');
   }
 
   const color = parseColor(raw.color);
@@ -333,7 +340,7 @@ export function parseDraft(input: string): DraftParseResult {
   if (!locks || !shuffleSeeds) {
     return fail('malformed', 'Draft is missing required fields.');
   }
-  if (!isOneOf(raw.density, DENSITIES) || !isOneOf(raw.shape, SHAPES)) {
+  if (!isOneOf(raw.density, DENSITIES) || !isOneOf(raw.shape, shapePresets(version))) {
     return fail('malformed', 'Draft density or shape is not a known preset.');
   }
   if (!inRange(raw.elevation, 0, 2) || !inRange(raw.motion, 0.5, 2)) {
@@ -343,7 +350,7 @@ export function parseDraft(input: string): DraftParseResult {
   return {
     ok: true,
     draft: {
-      version: raw.version,
+      version,
       recipeVersion: raw.recipeVersion,
       color,
       typography,
@@ -354,7 +361,8 @@ export function parseDraft(input: string): DraftParseResult {
       overrides,
       locks,
       shuffleSeeds,
-      ...(raw.version === THEME_DRAFT_VERSION ? { preset } : {}),
+      ...(version !== 1 ? { preset } : {}),
+      ...(version === THEME_DRAFT_VERSION ? { accentFill: raw.accentFill as AccentFill } : {}),
     },
   };
 }

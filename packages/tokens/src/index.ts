@@ -38,10 +38,12 @@ export {
   THEME_PRESETS,
   presetDraft,
   resetDraft,
+  shapePresets,
   presetLabel,
   isPresetEdited,
 } from './theme/draft';
 export type {
+  AccentFill,
   DensityFactor,
   GuidedGroup,
   MeasurePreset,
@@ -52,6 +54,7 @@ export type {
   TypeScale,
   ThemePresetId,
   ThemePresetOrigin,
+  ThemePresetRevision,
 } from './theme/draft';
 export {
   decodeFragment,

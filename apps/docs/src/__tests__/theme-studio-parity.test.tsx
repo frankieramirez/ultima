@@ -90,7 +90,7 @@ function failingDraft(): ThemeDraft {
 }
 
 const CORPUS: { name: string; draft: ThemeDraft }[] = [
-  ...THEME_PRESETS.map(({ id, label }) => ({ name: `the ${label} preset revision 1`, draft: presetDraft(id) })),
+  ...THEME_PRESETS.flatMap(({ id, label }) => ([1, 2] as const).map((revision) => ({ name: `the ${label} preset revision ${revision}`, draft: presetDraft({ id, revision }) }))),
   { name: 'the stock draft', draft: stockDraft() },
   { name: 'a seeded broad shuffle', draft: shuffledDraft() },
   { name: 'guided parameters at their edges', draft: guidedDraft() },
