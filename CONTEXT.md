@@ -158,9 +158,13 @@ The line `/tokens` renders per semantic token. Settled on [#372](https://github.
 
 The docs-local side of the line between an Ultima component and the site's own chrome. Page layout arranges content and sets type and flow spacing. It never builds a control from plain elements and never paints a surface, meaning a background, a border, a shadow, or a radius. Anything that does one of those comes from a component, or becomes one. A control here is anything the user reaches with a keyboard, so a tabbable scroll region counts even though it presses nothing. A third prong arrived with Scroll Area: page layout may rely on a native scrollbar and may not hide one without painting a replacement, since the first two prongs are about building something badly and this one is about removing something the platform already gave you. The site's shell scrolls the document rather than an inner region: the header, menu panel, and on-this-page index are sticky, and the footer flows after content, resting at the viewport bottom only on a short page. Theme Studio keeps its own fixed-height app shell.
 
+## Site theme
+
+The docs chrome's own theme, `site`: Neutral with Ultima's mana on action and highlight. It is docs-only, never a preset or a consumer export, and it ends at every theme boundary that shows components as a consumer gets them: demos and block previews in Neutral, Studio previews in the active draft. Settled on [#642](https://github.com/frankieramirez/ultima/issues/642).
+
 ## Studio chrome
 
-The theme studio's own application surface: the workbench sub-bar, editor rail, group headers, shuffle bar, validation and inspector panels, and the preview scaffold. It is not page layout, so it may paint surfaces, but every keyboard-reachable control in it is a catalogue component. Its fixed appearance is Ultima's stock dark theme pinned on the editor subtree, beginning at the sub-bar; the shared site header above it is site chrome and follows the user's color-mode preference. The draft theme applies only inside the preview panes, whose boundary is also the per-pane portal container.
+The theme studio's own application surface: the workbench sub-bar, editor rail, group headers, shuffle bar, validation and inspector panels, and the preview scaffold. It is not page layout, so it may paint surfaces, but every keyboard-reachable control in it is a catalogue component. It wears the site theme in the site's current color mode, like the shared site header above it. The draft theme applies only inside the preview panes, whose boundary is also the per-pane portal container.
 
 ## Preview canvas
 
