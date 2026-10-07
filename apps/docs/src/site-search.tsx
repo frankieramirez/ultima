@@ -1,6 +1,7 @@
 import { ArrowUpRightIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useNavigate } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
+import type { StyleXStyles } from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, Command, Dialog, ScrollArea, Separator } from '@ultima/ui';
 import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
@@ -16,7 +17,8 @@ const styles = stylex.create({
   trigger: {
     borderRadius: 0,
     justifyContent: { default: 'center', [breakpoints.DESKTOP]: 'space-between' },
-    inlineSize: { default: '2rem', [breakpoints.DESKTOP]: '16.25rem' },
+    height: { default: space['--ult-space-10'], [breakpoints.DESKTOP]: space['--ult-space-9'] },
+    inlineSize: { default: space['--ult-space-10'], [breakpoints.DESKTOP]: '16.25rem' },
     fontSize: text['--ult-text-4'],
     color: color['--ult-color-text-muted'],
     paddingInline: { default: space['--ult-space-2'], [breakpoints.DESKTOP]: space['--ult-space-5'] },
@@ -87,7 +89,7 @@ const isMac =
   typeof navigator !== 'undefined' &&
   /Mac|iPhone|iPad/i.test(navigator.userAgent);
 
-export function SiteSearch() {
+export function SiteSearch({ style }: { style?: StyleXStyles }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
@@ -162,7 +164,7 @@ export function SiteSearch() {
             aria-label="Search Ultima"
             variant="outline"
             size="sm"
-            style={styles.trigger}
+            style={[styles.trigger, style]}
           />
         }
       >

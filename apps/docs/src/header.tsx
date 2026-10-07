@@ -3,18 +3,23 @@ import { ArrowUpRightIcon, ListIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, NavigationMenu, Sidebar } from '@ultima/ui';
+import { Button, NavigationMenu, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
 import { breakpoints } from './breakpoints.stylex';
 import { ColorModeToggle } from './color-mode-toggle';
-import { layoutStyles } from './layout';
+import { shell } from './shell.stylex';
 import { SiteSearch } from './site-search';
 import { TextLink } from './text-link';
 
 const styles = stylex.create({
   chrome: {
     backgroundColor: color['--ult-color-surface'],
+    blockSize: { default: shell.narrowChromeBlock, [breakpoints.WIDE]: shell.chromeBlock },
+    boxSizing: 'border-box',
+    display: 'flex',
+    flexDirection: 'column',
+    flexShrink: 0,
     insetBlockStart: 0,
     position: 'sticky',
     zIndex: 2,
@@ -24,13 +29,20 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     display: 'flex',
     gap: { default: space['--ult-space-4'], [breakpoints.WIDE]: space['--ult-space-7'] },
+    flexGrow: 1,
     inlineSize: '100%',
-    blockSize: space['--ult-space-12'],
     paddingBlock: space['--ult-space-4'],
+    paddingInlineStart: { default: shell.narrowEdge, [breakpoints.WIDE]: shell.edge },
+    paddingInlineEnd: { default: space['--ult-space-4'], [breakpoints.WIDE]: shell.edge },
   },
   brandLogo: { display: 'block', height: text['--ult-text-5'], width: 'auto' },
-  cluster: { display: 'flex', alignItems: 'center', gap: space['--ult-space-4'] },
-  trigger: { display: { default: 'inline-flex', [breakpoints.WIDE]: 'none' }, paddingInline: space['--ult-space-4'] },
+  search: { marginInlineStart: { default: 'auto', [breakpoints.WIDE]: 0 } },
+  trigger: {
+    height: space['--ult-space-10'],
+    display: { default: 'inline-flex', [breakpoints.WIDE]: 'none' },
+    inlineSize: space['--ult-space-10'],
+    paddingInline: 0,
+  },
   links: {
     alignItems: 'center',
     display: { default: 'none', [breakpoints.WIDE]: 'flex' },
@@ -50,8 +62,8 @@ const styles = stylex.create({
   // The footer's copy serves narrow viewports; this one covers the Studio, which renders no footer.
   mode: { display: { default: 'none', [breakpoints.WIDE]: 'inline-flex' }, flexShrink: 0 },
   github: {
+    display: { default: 'none', [breakpoints.DESKTOP]: 'inline-flex' },
     fontSize: text['--ult-text-4'],
-    marginInlineStart: 'auto',
   },
 });
 
@@ -65,15 +77,10 @@ const LINKS = [
 export function Header() {
   return (
     <header {...stylex.props(styles.chrome)}>
-      <div {...stylex.props(layoutStyles.gutter, styles.bar)}>
-        <div {...stylex.props(styles.cluster)}>
-          <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={[docsStyles.square, styles.trigger]} />}>
-            <ListIcon aria-hidden />
-          </Sidebar.Trigger>
-          <TextLink variant="muted" render={<Link to="/" aria-label="Ultima home" />}>
-            <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
-          </TextLink>
-        </div>
+      <div {...stylex.props(styles.bar)}>
+        <TextLink variant="muted" render={<Link to="/" aria-label="Ultima home" />}>
+          <BrandLogo alt="" width={140} height={20} style={styles.brandLogo} />
+        </TextLink>
         <NavigationMenu.Root aria-label="Site" style={styles.links}>
           <NavigationMenu.List>
             {LINKS.map((link) => (
@@ -85,12 +92,16 @@ export function Header() {
             ))}
           </NavigationMenu.List>
         </NavigationMenu.Root>
-        <SiteSearch />
+        <SiteSearch style={styles.search} />
         <ColorModeToggle style={styles.mode} />
         <TextLink variant="muted" style={styles.github} href="https://github.com/frankieramirez/ultima">
           GitHub <ArrowUpRightIcon aria-hidden />
         </TextLink>
+        <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={[docsStyles.square, styles.trigger]} />}>
+          <ListIcon aria-hidden />
+        </Sidebar.Trigger>
       </div>
+      <Separator />
     </header>
   );
 }

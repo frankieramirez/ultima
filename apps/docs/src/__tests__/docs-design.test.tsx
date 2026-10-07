@@ -75,7 +75,73 @@ for (const width of [1440, 390])
         .toHaveFocus();
     });
 
-test('the chrome has no dividers and sits above scrolled tab labels', async () => {
+function textLeft(node: Element) {
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  return range.getBoundingClientRect().left;
+}
+
+for (const width of [1440, 1920])
+  test(`the chrome pins to the viewport edges around an 840px column at ${width}px`, async () => {
+    await page.viewport(width, 900);
+    onTestFinished(() => page.viewport(1280, 720));
+    const screen = await mount();
+    await expect
+      .element(screen.getByRole('heading', { name: 'Button', level: 1 }))
+      .toBeVisible();
+
+    const header = screen.getByRole('banner').element();
+    const rule = header.querySelector('[role="separator"]');
+    expect(rule).not.toBeNull();
+    expect(rule!.getBoundingClientRect().width).toBe(width);
+
+    const menu = screen.getByRole('navigation', { name: 'Ultima' }).element();
+    const panel = menu.getBoundingClientRect();
+    expect(panel.left).toBe(0);
+    expect(getComputedStyle(menu).borderInlineEndWidth).toBe('1px');
+    expect(
+      Math.abs(panel.top - rule!.getBoundingClientRect().bottom),
+    ).toBeLessThanOrEqual(1);
+
+    const logo = screen
+      .getByRole('link', { name: 'Ultima home' })
+      .element()
+      .getBoundingClientRect().left;
+    expect(logo).toBe(24);
+    for (const node of [
+      menu.querySelector('h3')!,
+      menu.querySelector('a')!,
+      menu.querySelector('a[aria-current="page"]')!,
+    ])
+      expect(textLeft(node)).toBe(24);
+    expect(
+      Math.round(
+        width -
+          header
+            .querySelector('a[href*="github"]')!
+            .getBoundingClientRect().right,
+      ),
+    ).toBe(24);
+
+    const search = screen.getByRole('button', { name: 'Search Ultima' }).element();
+    expect(getComputedStyle(search).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(menu.querySelector('input')).toBeNull();
+
+    const rail = screen
+      .getByRole('complementary', { name: 'On this page' })
+      .element();
+    const index = rail.getBoundingClientRect();
+    expect(Math.round(width - index.right)).toBe(24);
+    expect(rail.querySelector('[role="separator"], hr')).toBeNull();
+
+    const article = document.querySelector('article')!.getBoundingClientRect();
+    expect(article.width).toBe(840);
+    expect(
+      Math.abs(article.left - panel.right - (index.left - article.right)),
+    ).toBeLessThanOrEqual(1);
+  });
+
+test('the chrome sits above scrolled tab labels', async () => {
   await page.viewport(1440, 900);
   onTestFinished(() => {
     window.scrollTo(0, 0);
@@ -83,15 +149,7 @@ test('the chrome has no dividers and sits above scrolled tab labels', async () =
   });
   const screen = await mount();
   const header = screen.getByRole('banner').element();
-  expect(header.querySelector('hr, [role="separator"]')).toBeNull();
   const menu = screen.getByRole('navigation', { name: 'Ultima' }).element();
-  expect(getComputedStyle(menu).borderInlineEndWidth).toBe('0px');
-  expect(
-    screen
-      .getByRole('complementary', { name: 'On this page' })
-      .element()
-      .querySelector('[role="separator"], hr'),
-  ).toBeNull();
   const tab = screen
     .getByRole('main')
     .getByRole('tab', { name: 'Preview', exact: true })

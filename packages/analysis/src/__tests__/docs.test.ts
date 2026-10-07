@@ -250,7 +250,6 @@ describe('the old scanner against ULT-DOCS-001', () => {
       'apps/docs/src/routes/tokens.tsx borderRadius',
       'apps/docs/src/routes/tokens.tsx borderRadius',
       'apps/docs/src/routes/tokens.tsx borderRadius',
-      'apps/docs/src/site-menu.tsx borderInlineEndWidth',
       'apps/docs/src/site-search.tsx borderRadius',
       'apps/docs/src/site-search.tsx borderRadius',
       'apps/docs/src/site-search.tsx borderRadius',
