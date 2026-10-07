@@ -11,7 +11,7 @@ import type { OptimizerPolicy } from './browser.ts';
 import { type Files, diskFiles } from './files.ts';
 import { formatDiagnostics as format, loadCatalogue } from './model.ts';
 import { optimizerPolicy } from './optimizer-policy.ts';
-import { GENERATED_DIRECTORIES, HEADER_MARK, OUTPUTS, planOutputs } from './projections.ts';
+import { GENERATED_DIRECTORIES, HEADER_MARK, planOutputs } from './projections.ts';
 
 const POLICY = 'scripts/catalogue/optimizer-policy.ts';
 export const LOCK = '.catalogue-generate.lock';
@@ -48,7 +48,7 @@ function freshnessOf(files: Files, outputs: Map<string, string>): Freshness {
     else if (current !== text) report.changed.push(path);
   }
   for (const directory of GENERATED_DIRECTORIES) {
-    for (const entry of files.list(directory) ?? []) {
+    for (const entry of (files.list(directory) ?? []).filter((item) => !item.directory)) {
       const path = `${directory}/${entry.name}`;
       if (!outputs.has(path)) report.stale.push(path);
     }
@@ -60,7 +60,7 @@ function freshnessOf(files: Files, outputs: Map<string, string>): Freshness {
 export function check(root: string, policy: OptimizerPolicy = optimizerPolicy) {
   const files = diskFiles(root);
   const { outputs, diagnostics } = planOutputs(files, policy);
-  return { diagnostics, freshness: freshnessOf(files, outputs) };
+  return { diagnostics, freshness: freshnessOf(files, outputs), paths: [...outputs.keys()].sort() };
 }
 
 export class GenerationError extends Error {
@@ -148,7 +148,7 @@ function main(argv: string[]) {
 
   if (command === 'check') {
     if (argv.length > 2 || (argv[1] !== undefined && argv[1] !== '--json')) throw new GenerationError('usage: generate.ts check [--json]');
-    const { diagnostics, freshness } = check(root);
+    const { diagnostics, freshness, paths } = check(root);
     if (argv[1] === '--json') {
       // One document for verification adapters: every output compared, and each finding by kind.
       const files = repositoryFiles(root);
@@ -159,9 +159,7 @@ function main(argv: string[]) {
         schemaVersion: 1,
         command: 'catalogue:check',
         status: diagnostics.length > 0 || verification.length > 0 ? 'invalid' : stale ? 'stale' : 'fresh',
-        outputs: Object.values(OUTPUTS)
-          .sort()
-          .map((path) => ({ path, state: drift.get(path) ?? 'fresh' })),
+        outputs: paths.map((path) => ({ path, state: drift.get(path) ?? 'fresh' })),
         stale: freshness.stale,
         catalogue: diagnostics.map((diagnostic) => format([diagnostic])),
         featureMap: verification.map((diagnostic) => formatVerificationDiagnostics([diagnostic])),
@@ -182,7 +180,7 @@ function main(argv: string[]) {
       console.error(`catalogue: the generated wiring is stale; run \`pnpm catalogue:generate\` (remove a stale path by hand)\n${lines.join('\n')}`);
     }
     if (diagnostics.length > 0 || verification.length > 0 || lines.length > 0) return 1;
-    console.log(`catalogue: ${Object.keys(OUTPUTS).length} generated files are fresh; the feature map is valid`);
+    console.log(`catalogue: ${paths.length} generated files are fresh; the feature map is valid`);
     return 0;
   }
 

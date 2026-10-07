@@ -12,4 +12,5 @@ export default {
   order: 17,
   group: 'forms',
   replaces: { elements: ['input[type=date]'] },
+  elementless: ['Portal'],
 } satisfies ReactDescriptor;

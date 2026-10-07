@@ -201,6 +201,29 @@ export function exportsOf(file: ts.SourceFile): { exports: Export[]; problems: S
   return { exports, problems };
 }
 
+/**
+ * The parts a component exports under `name`: the capitalised keys of a module-scope `const name = { … }`,
+ * in source order, or `[name]` for a component declared as one function. Undefined for anything else.
+ */
+export function partsOf(file: ts.SourceFile, name: string): string[] | undefined {
+  for (const statement of file.statements) {
+    if (ts.isFunctionDeclaration(statement) && statement.name?.text === name) return [name];
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(declaration.name) || declaration.name.text !== name) continue;
+      if (!declaration.initializer || !ts.isObjectLiteralExpression(declaration.initializer)) return undefined;
+      return declaration.initializer.properties.flatMap((property) =>
+        (ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property)) &&
+        ts.isIdentifier(property.name) &&
+        /^[A-Z]/.test(property.name.text)
+          ? [property.name.text]
+          : [],
+      );
+    }
+  }
+  return undefined;
+}
+
 /** A module-scope `const NAME = ['a', 'b'] as const` read as its strings, or undefined. */
 export function stringTable(file: ts.SourceFile, name: string): string[] | undefined {
   for (const statement of file.statements) {

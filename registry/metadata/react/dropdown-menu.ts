@@ -12,4 +12,5 @@ export default {
   order: 11,
   group: 'overlays',
   replaces: { roles: ['menu', 'menuitem', 'menuitemcheckbox', 'menuitemradio'] },
+  elementless: ['Root', 'Portal', 'SubmenuRoot'],
 } satisfies ReactDescriptor;

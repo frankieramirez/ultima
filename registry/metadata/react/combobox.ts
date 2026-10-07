@@ -12,4 +12,5 @@ export default {
   order: 6,
   group: 'forms',
   replaces: { roles: ['combobox'] },
+  elementless: ['Root', 'Value', 'Portal', 'Collection'],
 } satisfies ReactDescriptor;
