@@ -20,6 +20,7 @@ export type ConsumerLayout = typeof CONSUMER_LAYOUTS[number];
 export const DELIVERY_PATHS = ['css', 'stylex-subtree', 'registry', 'cli'] as const;
 export type DeliveryPath = typeof DELIVERY_PATHS[number];
 export const consumerCases = (layout: ConsumerLayout, path: DeliveryPath = 'css') => (path === 'registry' ? ['css-reference-', '', ...registryPresets().map((id) => `${id}-`)] : ['']).flatMap((preset) => ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${layout}/${path}/chromium/${preset}${mode}`));
+export const modeCases = (layout: ConsumerLayout) => ['light', 'dark', 'missing', 'throwing'].flatMap((stored) => ['dark', 'light'].map((system) => `${layout}/theme-mode/chromium/${stored}-${system}`));
 export const CONSUMER_CASES = consumerCases('vite');
 /** The fixture prefix and mode of a cell id, the inverse of `consumerCases`. */
 export function consumerCell(id: string): { fixture: string; mode: string | undefined } {
@@ -42,6 +43,7 @@ export type ConsumerReport = {
   status: 'passed' | 'failed' | 'incomplete';
   layout: ConsumerLayout;
   deliveryPath: DeliveryPath;
+  exercise?: 'theme-mode';
   source: {
     head: string | null;
     manifest: Manifest;
@@ -71,8 +73,11 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
   const problems: string[] = [];
   if (report.schemaVersion !== 1 || !CONSUMER_LAYOUTS.includes(report.layout) || !DELIVERY_PATHS.includes(report.deliveryPath) || (layout && report.layout !== layout) || (path && report.deliveryPath !== path)) problems.push('unknown consumer-proof schema or parameters');
   if (!['passed', 'failed', 'incomplete'].includes(report.status)) problems.push('unknown consumer-proof status');
-  const all = consumerCases(report.layout, report.deliveryPath);
-  if (report.selectedCase && !all.includes(report.selectedCase)) problems.push('unknown selected consumer case');
+  if (report.exercise !== undefined && report.exercise !== 'theme-mode') problems.push('unknown consumer exercise');
+  if (report.exercise === 'theme-mode' && report.deliveryPath !== 'css') problems.push('theme-mode requires CSS delivery');
+  if (report.exercise === 'theme-mode' && !['theme-mode', 'popover'].every((item) => report.installedItems?.includes(item))) problems.push('theme-mode installed source inventory is incomplete');
+  const all = report.exercise === 'theme-mode' ? modeCases(report.layout) : consumerCases(report.layout, report.deliveryPath);
+  if (report.selectedCase && (report.exercise !== undefined || !all.includes(report.selectedCase))) problems.push('unknown selected consumer case');
   const expected = report.selectedCase ? [report.selectedCase] : all;
   const same = (values: unknown, wanted = expected) => Array.isArray(values) && values.length === wanted.length && new Set(values).size === values.length && wanted.every((id) => values.includes(id));
   const prerequisites = report.prerequisites ?? [];

@@ -30,6 +30,9 @@ export type CheckId = `${ConsumerCheckBase}-${'stylex-subtree' | 'registry' | 'c
   | 'consumer-proof'
   | 'consumer-proof-next-app'
   | 'consumer-proof-next-src'
+  | 'consumer-mode-vite'
+  | 'consumer-mode-next-app'
+  | 'consumer-mode-next-src'
   | 'production-scenarios';
 
 /**
@@ -366,6 +369,17 @@ const BASE_CHECKS: readonly CheckDefinition[] = [
     selector: 'none',
     adapter: { status: 'available', since: '#750 (Next src generated CSS and hydration)' },
   },
+  ...(['vite', 'next-app', 'next-src'] as const).map((layout): CheckDefinition => ({
+    id: `consumer-mode-${layout}`,
+    title: `Installed theme-mode: ${layout} first paint, hydration, persistence and popup inheritance`,
+    argv: ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', layout, '--delivery-path', 'css', '--exercise', 'theme-mode'],
+    cwd: '.',
+    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', 'fresh external scaffold', 'shadcn setup, theme-mode, popover and theme installation', 'npm run build', 'Chromium pre-hydration first paint with module scripts held, lifecycle and cross-tab storage'],
+    prerequisites: ['registry-build'], after: READ_FIRST,
+    locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
+    needs: ['network', 'loopback-port', 'chromium'], deadlineSeconds: 900,
+    scope: 'scoped', selector: 'none', adapter: { status: 'available', since: '#754 (theme-mode)' },
+  })),
   {
     id: 'production-scenarios',
     title: 'Production browser scenarios against the built docs',
@@ -413,6 +427,7 @@ export const DEFAULT_DEADLINE_SECONDS = 5400;
  * mapped check is in the release plan, so a new CI obligation cannot go unplanned.
  */
 export const CI_OBLIGATIONS: readonly { workflow: string; command: string; checks?: CheckId[]; preparation?: string }[] = [
+  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise theme-mode --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-mode-vite', 'consumer-mode-next-app', 'consumer-mode-next-src'] },
   { workflow: 'ci.yml', command: 'pnpm install --frozen-lockfile', preparation: 'dependency installation from the lockfile' },
   { workflow: 'ci.yml', command: 'pnpm catalogue:check', checks: ['catalogue-freshness'] },
   { workflow: 'ci.yml', command: 'pnpm check:architecture', checks: ['architecture'] },

@@ -135,7 +135,8 @@ describe('the public part inventory', () => {
   const category = (name: string) => inventory.find((entry) => entry.name === name)?.category;
 
   test('covers every component file and classifies every public export', () => {
-    assert.deepEqual(context.diagnostics, []);
+    // The one raw site is ThemeModeScript's nonvisual <script>, excepted as theme-mode-script-no-style-slot.
+    assert.deepEqual(context.diagnostics.map((diagnostic) => [diagnostic.ruleId, diagnostic.file, diagnostic.symbol]), [['ULT-API-001', 'packages/ui/src/theme-mode.tsx', 'ThemeModeScript']]);
     assert.deepEqual([...new Set(inventory.map((entry) => entry.file))].sort(), [...components].sort());
     assert.ok(inventory.every((entry) => !['unresolved', 'undetermined'].includes(entry.category)));
   });

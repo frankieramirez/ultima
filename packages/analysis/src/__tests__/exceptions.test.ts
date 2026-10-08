@@ -16,15 +16,15 @@ function exceptionFindings(report: ReturnType<typeof run>) {
     .map((diagnostic) => ({ exception: diagnostic.exception, line: diagnostic.start.line, message: diagnostic.message }));
 }
 
-const RECORDED = 50;
+const RECORDED = 51;
 
 describe('ULT-EXCEPTION-001', () => {
-  test('the repository excepts only token, style and docs sites, each with its own authority', () => {
+  test('the repository excepts only token, style, docs and the theme-mode script API sites, each with its own authority', () => {
     const report = run();
     const ids = [...source(EXCEPTIONS).matchAll(/\bid: '([a-z0-9-]+)'/g)].map((match) => match[1]);
     const rules = [...source(EXCEPTIONS).matchAll(/\brule: '([A-Z0-9-]+)'/g)].map((match) => match[1]);
     assert.equal(ids.length, RECORDED);
-    assert.deepEqual([...new Set(rules)].sort(), ['ULT-DOCS-001', 'ULT-DOCS-002', 'ULT-DOCS-REVIEW-001', 'ULT-STYLE-001', 'ULT-TOKEN-001']);
+    assert.deepEqual([...new Set(rules)].sort(), ['ULT-API-001', 'ULT-DOCS-001', 'ULT-DOCS-002', 'ULT-DOCS-REVIEW-001', 'ULT-STYLE-001', 'ULT-TOKEN-001']);
     assert.equal(report.counts.excepted, ids.length);
     assert.deepEqual(report.diagnostics, []);
   });
@@ -93,7 +93,7 @@ describe('ULT-EXCEPTION-001', () => {
     const returned = report.diagnostics.filter((diagnostic) => diagnostic.severity === 'blocking');
     const advisory = report.diagnostics.filter((diagnostic) => diagnostic.severity === 'advisory');
     assert.equal(returned.length + advisory.length, RECORDED);
-    assert.ok(returned.every((diagnostic) => ['ULT-TOKEN-001', 'ULT-STYLE-001', 'ULT-DOCS-001', 'ULT-DOCS-002'].includes(diagnostic.ruleId)));
+    assert.ok(returned.every((diagnostic) => ['ULT-TOKEN-001', 'ULT-STYLE-001', 'ULT-DOCS-001', 'ULT-DOCS-002', 'ULT-API-001'].includes(diagnostic.ruleId)));
     assert.equal(report.status, 'violations');
   });
 });

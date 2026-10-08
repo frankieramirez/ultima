@@ -549,6 +549,7 @@ const consumerProofAdapter: Adapter = {
     const { cliReportProblems } = await import('../consumer-delivery.ts');
     const { parseDraft } = await import('../../packages/tokens/src/theme/codec.ts');
     const { resolveDraft } = await import('../../packages/tokens/src/theme/draft.ts');
+    const modeValidator = context.check.argv.includes('--exercise') ? await import('../consumer-mode.ts') : undefined;
     const output = join(context.artifacts, context.check.id);
     const reportPath = join(output, 'report.json');
     const { process } = await logged(context, [...context.check.argv, '--output', output]);
@@ -565,6 +566,8 @@ const consumerProofAdapter: Adapter = {
         const pathIndex = context.check.argv.indexOf('--delivery-path');
         const path = pathIndex < 0 ? undefined : context.check.argv[pathIndex + 1] as DeliveryPath;
         const problems = consumerReportProblems(report, layout, path);
+        const modeExercise = context.check.argv.includes('--exercise');
+        if (modeExercise !== (report.exercise === 'theme-mode')) problems.push('consumer exercise differs from the registered command');
         const selectedIndex = context.check.argv.indexOf('--case');
         if (report.selectedCase !== (selectedIndex < 0 ? undefined : context.check.argv[selectedIndex + 1])) problems.push('consumer-proof changed the requested cell coverage');
         if (problems.length) return { verdict: 'incomplete', executed: [], reason: problems.join('; ') };
@@ -572,6 +575,13 @@ const consumerProofAdapter: Adapter = {
         for (const row of [...(report.prerequisites ?? []), ...report.cases]) {
           if (isAbsolute(row.snapshot) || relative(output, join(output, row.snapshot)).startsWith('..') || !existsSync(join(output, row.snapshot))) return { verdict: 'incomplete', executed: [], reason: `missing values snapshot: ${row.id}` };
           const snapshot = JSON.parse(readFileSync(join(output, row.snapshot), 'utf8'));
+          if (modeExercise) {
+            const issues = modeValidator!.modeSnapshotProblems(snapshot, row.status === 'passed');
+            const html = join(output, `${row.id.split('/').at(-1)}.server.html`);
+            if (snapshot.id !== row.id || JSON.stringify(snapshot.failures) !== JSON.stringify(row.failures) || issues.length || !existsSync(html)) return { verdict: 'incomplete', executed: [], reason: `invalid theme-mode snapshot: ${row.id}: ${issues.join('; ')}` };
+            artifacts.push(html, join(output, row.snapshot));
+            continue;
+          }
           const option = (flag: string) => { const index = context.check.argv.indexOf(flag); return index < 0 ? undefined : context.check.argv[index + 1]; };
           const reproduceArgv = consumerReproduction(report.layout, report.deliveryPath, row.id, { preset: option('--preset'), fault: option('--fault') });
           if (JSON.stringify(snapshot.reproduceArgv) !== JSON.stringify(reproduceArgv) || snapshot.reproduce !== reproduceArgv.join(' ')) return { verdict: 'incomplete', executed: [], reason: `invalid reproduction parameters: ${row.id}` };
@@ -728,5 +738,8 @@ export const ADAPTERS: Adapters = {
   'consumer-proof-next-app': consumerProofAdapter,
   'consumer-proof-next-src': consumerProofAdapter,
   ...Object.fromEntries((['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src'] as const).flatMap((base) => (['stylex-subtree', 'registry', 'cli'] as const).map((path) => [`${base}-${path}`, consumerProofAdapter]))),
+  'consumer-mode-vite': consumerProofAdapter,
+  'consumer-mode-next-app': consumerProofAdapter,
+  'consumer-mode-next-src': consumerProofAdapter,
   'production-scenarios': productionAdapter,
 };

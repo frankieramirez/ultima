@@ -10,8 +10,9 @@ import { presetDraft, resolveDraft, stockDraft, type ThemeDraft } from '../packa
 import { gate } from '../packages/tokens/src/theme/gate.ts';
 import { shuffleDraft } from '../packages/tokens/src/theme/shuffle.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
-import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
+import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, modeCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
 import { THEME_PRESETS } from '../packages/tokens/src/theme/draft.ts';
+import { modeProof, modeScene } from './consumer-mode.ts';
 import { installScene, isSceneFault, SCENE_FAULTS, SCENE_ITEMS } from './consumer-scene.ts';
 import { browserConditions } from './consumer-browser.ts';
 import { consumerValues } from './consumer-values.ts';
@@ -39,8 +40,8 @@ export function proofDraft(): ThemeDraft {
   return draft;
 }
 
-export const PROOF_FAULTS = ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', ...SCENE_FAULTS] as const;
-export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; case?: string; preset?: 'ultima'; fault?: typeof PROOF_FAULTS[number] };
+export const PROOF_FAULTS = ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', 'mode-script', ...SCENE_FAULTS] as const;
+export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; case?: string; preset?: 'ultima'; exercise?: 'theme-mode'; fault?: typeof PROOF_FAULTS[number] };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
 export type BaseStyles = { height: string; display: string; radius: string; background: string; focusColor: string; focusStyle: string; focusVisible: boolean; danger: string };
@@ -97,6 +98,8 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   if (options.fault === 'partial-group' && options.deliveryPath !== 'stylex-subtree') throw new Error('partial-group requires stylex-subtree');
   if (options.fault === 'src-extraction' && options.layout !== 'next-src') throw new Error('src-extraction requires next-src');
   if (options.fault === 'hydration-mismatch' && options.layout === 'vite') throw new Error('hydration-mismatch requires Next');
+  if (options.exercise && (options.exercise !== 'theme-mode' || options.deliveryPath !== 'css')) throw new Error('theme-mode requires CSS delivery');
+  if (options.exercise && options.case) throw new Error('theme-mode runs every mode case; --case selects a rendered consumer cell');
   if (options.case && !consumerCases(options.layout, options.deliveryPath).includes(options.case)) throw new Error(`unknown consumer cell: ${options.case}`);
   const isNext = options.layout !== 'vite';
   const src = options.layout === 'next-src';
@@ -116,7 +119,8 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     schemaVersion: 1, status: 'incomplete', layout: options.layout, deliveryPath: options.deliveryPath,
     source: { head: source.head, manifest: source.manifest, registryManifestHash: null, cliTarballDigest: null, draftDigest: null, draftFingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion },
     command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: [setupItem, ...SCENE_ITEMS, 'tokens', 'lib', 'ultima-theme'],
-    expected: options.case ? [options.case] : consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {}, ...(options.case ? { selectedCase: options.case } : {}),
+    ...(options.exercise && { exercise: options.exercise }),
+    expected: options.exercise === 'theme-mode' ? modeCases(options.layout) : options.case ? [options.case] : consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {}, ...(options.case ? { selectedCase: options.case } : {}),
   };
   const execute: Run = async (cwd, command, args) => {
     await appendFile(join(output, 'commands.log'), `${JSON.stringify({ cwd, command, args })}\n`);
@@ -166,6 +170,13 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     components.registries['@ultima'] = `${registry.url}/r/{name}.json`;
     await writeFile(componentsPath, `${JSON.stringify(components, null, 2)}\n`);
     await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', ...SCENE_ITEMS.map((item) => `@ultima/${item}`), '--yes']);
+    if (options.exercise === 'theme-mode') {
+      await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/popover', '@ultima/theme-mode', '--yes']);
+      report.installedItems.push('popover', 'theme-mode');
+      const installedMode = join(app, src || !isNext ? 'src/components/ui/theme-mode.tsx' : 'components/ui/theme-mode.tsx');
+      const registeredMode = JSON.parse(await readFile(join(work, 'registry/r/theme-mode.json'), 'utf8'));
+      assert.equal(await readFile(installedMode, 'utf8'), registeredMode.files[0].content, 'installed theme-mode must be the exact registry payload, including its version marker');
+    }
     let themeUrl = `${registry.url}/r/proof-theme.json`;
     if (options.preset === 'ultima') {
       const publicUrl = await ultimaPresetUrl();
@@ -188,6 +199,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     const subtree = options.deliveryPath === 'stylex-subtree';
     if (subtree) await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace(/import ['"]\.\.\/+(?:\.\.\/)?ultima-theme\.css['"];?/, ''));
     await installScene(app, options.layout, subtree, options.fault === 'partial-group', isSceneFault(options.fault) ? options.fault : undefined);
+    if (options.exercise === 'theme-mode') await modeScene(app, options.layout, execute, options.fault);
     await execute(app, 'npm', ['install', '-D', tarball]);
     const fixtures = [...(options.deliveryPath === 'registry' ? [{ name: 'css-reference', draft }] : []), { name: '', draft }, ...(options.deliveryPath === 'registry' ? THEME_PRESETS.map((preset) => ({ name: preset.id, draft: presetDraft(preset.id) })) : [])];
     const cssReference = new Map<string, Awaited<ReturnType<typeof consumerValues>>>();
@@ -255,7 +267,8 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       const production = isNext ? await serveNext(app, join(fixtureOutput, 'server.log')) : await serveRegistry(join(app, 'dist'), true, join(fixtureOutput, 'server.log'));
       servers.push(production);
       const tables = options.preset === 'ultima' && (!fixture.name || fixture.name === 'css-reference' || fixture.name === 'ultima') ? frozen : resolveDraft(draft);
-      const ids = ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${options.layout}/${options.deliveryPath}/chromium/${fixture.name ? `${fixture.name}-` : ''}${mode}`);
+      if (options.exercise === 'theme-mode') await modeProof(browser, production.url, report, fixtureOutput, tables);
+      const ids = options.exercise === 'theme-mode' ? [] : ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${options.layout}/${options.deliveryPath}/chromium/${fixture.name ? `${fixture.name}-` : ''}${mode}`);
       for (const id of ids) {
         if (options.case && id !== options.case && !prerequisites.includes(id)) continue;
         const mode = id.endsWith('-dark') ? 'dark' : 'light';
@@ -352,6 +365,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     else if (flag === '--delivery-path' && DELIVERY_PATHS.includes(value as DeliveryPath)) options.deliveryPath = value as DeliveryPath;
     else if (flag === '--output' && value) options.output = value;
     else if (flag === '--case' && value) options.case = value;
+    else if (flag === '--exercise' && value === 'theme-mode') options.exercise = value;
     else if (flag === '--preset' && value === 'ultima') options.preset = value;
     else if (flag === '--base-styles' && value) baseApp = resolve(value);
     else if (flag === '--fault' && PROOF_FAULTS.includes(value as typeof PROOF_FAULTS[number])) options.fault = value as typeof PROOF_FAULTS[number];

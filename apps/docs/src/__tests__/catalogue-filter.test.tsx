@@ -44,7 +44,7 @@ test('the directory sections the catalogue by group, alphabetical within each, n
     '§ 03 Data display 9',
     '§ 04 Navigation 5',
     '§ 05 Feedback 5',
-    '§ 06 Layout 4',
+    '§ 06 Layout 5',
   ]);
   for (const { id, label } of GROUPS) {
     const section = main.getByRole('region', { name: `${label} ${componentsInGroup(id).length}` });

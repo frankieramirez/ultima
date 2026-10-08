@@ -258,7 +258,7 @@ export const components: ComponentEntry[] = [
   {
     "name": "Toggle",
     "item": "toggle",
-    "number": "052",
+    "number": "053",
     "group": "forms",
     "description": "A two-state button in two variants and three sizes, on Base UI.",
     "release": "v0.2",
@@ -270,7 +270,7 @@ export const components: ComponentEntry[] = [
   {
     "name": "Toggle Group",
     "item": "toggle-group",
-    "number": "053",
+    "number": "054",
     "group": "forms",
     "description": "A segmented group of toggle buttons with roving focus, on Base UI.",
     "release": "v0",
@@ -390,7 +390,7 @@ export const components: ComponentEntry[] = [
   {
     "name": "Toast",
     "item": "toast",
-    "number": "051",
+    "number": "052",
     "group": "overlays",
     "description": "A stacked notification in six tones, queued from a manager, on Base UI.",
     "release": "v0.1",
@@ -402,7 +402,7 @@ export const components: ComponentEntry[] = [
   {
     "name": "Tooltip",
     "item": "tooltip",
-    "number": "054",
+    "number": "055",
     "group": "overlays",
     "description": "A short overlay on hover or focus, labelled through aria-label on its trigger.",
     "release": "v0",
@@ -647,5 +647,14 @@ export const components: ComponentEntry[] = [
       "library": "base-ui",
       "module": "separator"
     }
+  },
+  {
+    "name": "Theme Mode",
+    "item": "theme-mode",
+    "number": "051",
+    "group": "layout",
+    "description": "Persist a document mode before hydration and follow system preference changes.",
+    "release": "v0.2",
+    "primitive": null
   }
 ];

@@ -520,6 +520,14 @@ export {
   type TextareaSize,
 } from './textarea';
 export {
+  type ThemeMode,
+  themeModeScript,
+  type ThemeModeScriptProps,
+  ThemeModeScript,
+  setThemeMode,
+  useThemeMode,
+} from './theme-mode';
+export {
   Toast,
   type ToastViewportProps,
   type ToastRootProps,
