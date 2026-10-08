@@ -27,6 +27,8 @@ export type CheckId =
   | 'docs-build'
   | 'consumer-smoke'
   | 'consumer-proof'
+  | 'consumer-proof-next-app'
+  | 'consumer-proof-next-src'
   | 'production-scenarios';
 
 /**
@@ -334,6 +336,36 @@ export const CHECKS: readonly CheckDefinition[] = [
     adapter: { status: 'available', since: '#749 (Vite and generated CSS)' },
   },
   {
+    id: 'consumer-proof-next-app',
+    title: 'Installed Next root app paint and hydration, generated CSS and Chromium',
+    argv: ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', 'next-app', '--delivery-path', 'css'],
+    cwd: '.',
+    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', 'pnpm pack', 'fresh external Next scaffold', 'shadcn setup, scene and generated theme installation', 'packed CLI doctor and check', 'npm run build', 'next start', 'Chromium server/hydrated content, mode, errors, assets and computed paint'],
+    prerequisites: ['registry-build'],
+    after: READ_FIRST,
+    locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
+    needs: ['network', 'loopback-port', 'chromium'],
+    deadlineSeconds: 900,
+    scope: 'scoped',
+    selector: 'none',
+    adapter: { status: 'available', since: '#750 (Next root generated CSS and hydration)' },
+  },
+  {
+    id: 'consumer-proof-next-src',
+    title: 'Installed Next src/app paint and hydration, generated CSS and Chromium',
+    argv: ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', 'next-src', '--delivery-path', 'css'],
+    cwd: '.',
+    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', 'pnpm pack', 'fresh external Next src scaffold', 'shadcn setup and src marker move, scene and generated theme installation', 'packed CLI doctor and check', 'npm run build', 'next start', 'Chromium server/hydrated content, mode, errors, assets and computed paint'],
+    prerequisites: ['registry-build'],
+    after: READ_FIRST,
+    locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
+    needs: ['network', 'loopback-port', 'chromium'],
+    deadlineSeconds: 900,
+    scope: 'scoped',
+    selector: 'none',
+    adapter: { status: 'available', since: '#750 (Next src generated CSS and hydration)' },
+  },
+  {
     id: 'production-scenarios',
     title: 'Production browser scenarios against the built docs',
     argv: ['pnpm', '--filter', '@ultima/docs', 'test:production'],
@@ -407,4 +439,7 @@ export const CI_OBLIGATIONS: readonly { workflow: string; command: string; check
   { workflow: 'smoke-install.yml', command: 'pnpm exec playwright install --with-deps chromium', preparation: 'Chromium for production consumer styles' },
   { workflow: 'smoke-install.yml', command: 'mkdir -p "$RUNNER_TEMP/smoke"', preparation: 'the TMPDIR the consumer apps land in' },
   { workflow: 'smoke-install.yml', command: 'TMPDIR="$RUNNER_TEMP/smoke" ./scripts/smoke-install.sh --keep', checks: ['consumer-smoke'] },
+  { workflow: 'consumer-proof.yml', command: 'pnpm install --frozen-lockfile', preparation: 'dependency installation from the lockfile' },
+  { workflow: 'consumer-proof.yml', command: 'pnpm exec playwright install --with-deps chromium', preparation: 'Chromium for installed consumer paint and hydration' },
+  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src'] },
 ];
