@@ -5,6 +5,7 @@ import { Button, Input } from '@ultima/ui';
 import { useState } from 'react';
 
 import { Demo } from '../demo';
+import { recipeSources } from '../generated/recipes';
 
 function Example() {
   const [count, setCount] = useState(0);
@@ -17,6 +18,44 @@ function Example() {
 }
 const SOURCE =
   'export default function Example() {\n  return <Button>Solid</Button>;\n}';
+
+test('projected code, clipboard and download share exact bytes for every bundled file', async () => {
+  const source = recipeSources['apps/docs/src/demos/table/data-table-sorting.tsx']!;
+  const written: string[] = [];
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+    writeText: (value: string) => (written.push(value), Promise.resolve()),
+  } });
+  const screen = await render(<Demo component={Example} source={source} />);
+  await userEvent.click(screen.getByRole('tab', { name: 'Code', exact: true }));
+  for (const file of source.files) {
+    if (source.files.length > 1) await userEvent.click(screen.getByRole('tab', { name: file.path, exact: true }));
+    expect(screen.container.querySelector('pre')?.textContent).toBe(file.content);
+    await userEvent.click(screen.getByRole('button', { name: 'Copy example source' }));
+    const download = screen.getByRole('button', { name: 'Download source' }).element();
+    expect(decodeURIComponent(download.getAttribute('href')!.split(',').slice(1).join(','))).toBe(file.content);
+    expect(download.getAttribute('download')).toBe(file.path.split('/').at(-1));
+    expect(written.at(-1)).toBe(file.content);
+    expect(file.content).not.toMatch(/from ['"]@ultima\//);
+  }
+});
+
+test('a bundle exposes every local dependency with matching clipboard and download bytes', async () => {
+  const main = recipeSources['apps/docs/src/demos/code/typography.tsx']!;
+  const local = { source: 'fixture/helper.ts', path: 'examples/helper.ts', content: 'export const helper = true;\n' };
+  const source = { ...main, files: [...main.files, local] };
+  const written: string[] = [];
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+    writeText: (value: string) => (written.push(value), Promise.resolve()),
+  } });
+  const screen = await render(<Demo component={Example} source={source} />);
+  await userEvent.click(screen.getByRole('tab', { name: 'Code', exact: true }));
+  await userEvent.click(screen.getByRole('tab', { name: local.path, exact: true }));
+  expect(screen.container.querySelector('pre')?.textContent).toBe(local.content);
+  await userEvent.click(screen.getByRole('button', { name: 'Copy example source' }));
+  expect(written).toEqual([local.content]);
+  const download = screen.getByRole('button', { name: 'Download source' }).element();
+  expect(decodeURIComponent(download.getAttribute('href')!.split(',').slice(1).join(','))).toBe(local.content);
+});
 
 test('Preview is the default; switching to Code shows the exact source and preserves live state', async () => {
   const screen = await render(<Demo component={Example} source={SOURCE} />);

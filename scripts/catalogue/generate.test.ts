@@ -220,6 +220,14 @@ describe('the planned projections', () => {
 });
 
 describe('generation on disk', () => {
+  test('unresolved consumer-copy exports fail generation before writing outputs', () => {
+    const files = fixture();
+    files['apps/docs/src/demos/button/sorting.tsx'] += "\nimport { Missing } from '@ultima/tokens/tokens.stylex';";
+    const root = onDisk(files);
+    const before = snapshot(root);
+    assert.throws(() => generate(root, { policy }), /exports no "Missing"/);
+    assert.deepEqual(snapshot(root), before);
+  });
   test('writes every projection with all of them absent, then repeats with zero diff', () => {
     const root = onDisk(fixture());
     const planned = [...planOutputs(memoryFiles(fixture()), policy).outputs.keys()];
@@ -296,7 +304,7 @@ describe('generation on disk', () => {
         assert.deepEqual(error.written, [OUTPUTS.registry, OUTPUTS.catalogue, OUTPUTS.pages]);
         assert.match(
           error.message,
-          /not written: apps\/docs\/src\/generated\/elements\.ts, apps\/docs\/src\/generated\/blocks\.ts, apps\/docs\/src\/generated\/anatomy-tabs\.ts, .*, packages\/ui\/src\/index\.ts, scripts\/generated\/browser-dependencies\.ts/,
+          /not written: apps\/docs\/src\/generated\/elements\.ts, apps\/docs\/src\/generated\/blocks\.ts, apps\/docs\/src\/generated\/anatomy-tabs\.ts, .*, packages\/ui\/src\/index\.ts, apps\/docs\/src\/generated\/recipes\.ts, scripts\/generated\/browser-dependencies\.ts/,
         );
         return true;
       },
@@ -309,6 +317,7 @@ describe('generation on disk', () => {
       OUTPUTS.anatomyBarrel,
       ...anatomy,
       OUTPUTS.barrel,
+      OUTPUTS.recipes,
       OUTPUTS.browser,
     ]);
     assert.equal(existsSync(join(root, LOCK)), false);

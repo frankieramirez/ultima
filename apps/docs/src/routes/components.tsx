@@ -38,6 +38,7 @@ const GROUP_SUMMARIES: Record<ComponentGroup, string> = {
 };
 
 const RESOURCES = [
+  { title: 'Recipes', to: '/recipes', description: 'Copy compositions with their dependencies' },
   { title: 'Installation', to: '/install', description: 'Add your first component' },
   { title: 'Theme Studio', to: '/theme-studio', description: 'Make the components your own' },
   { title: 'Tokens', to: '/tokens', description: 'The values behind the UI' },

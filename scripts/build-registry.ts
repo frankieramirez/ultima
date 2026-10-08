@@ -23,6 +23,7 @@ import { markedFiles } from './catalogue/anatomy-guard.ts';
 import { agentGuide, type GuideBlock, type GuideComponent } from './build-agent-guide.ts';
 import { ordinal } from './catalogue/browser.ts';
 import { diskFiles } from './catalogue/files.ts';
+import { compositionProjection } from './catalogue/compositions.ts';
 import { formatDiagnostics, loadCatalogue } from './catalogue/model.ts';
 import { registryUrl } from './catalogue/projections.ts';
 import { type StagedSource, registryPlan, stagedSources, stagedSpecifier } from './catalogue/staging.ts';
@@ -333,9 +334,12 @@ function shadcnBuild() {
 function publishExports({ components, elements, tokensCss }: Sources) {
   writeFileSync(join(PUBLIC_DIR, 'tokens.css'), tokensCss.text);
   copyFileSync(join(TOKENS_DIST, 'tokens.json'), join(PUBLIC_DIR, 'tokens.json'));
+  const composition = compositionProjection(files, catalogue);
+  if (composition.diagnostics.length > 0) throw new Error(formatDiagnostics(composition.diagnostics));
   const guide = agentGuide({
     specPath: SPEC,
     tokensJsonPath: join(TOKENS_DIST, 'tokens.json'),
+    recipes: composition.recipes,
     groups: catalogue.groups.map(({ id, label }) => ({
       label,
       components: components
