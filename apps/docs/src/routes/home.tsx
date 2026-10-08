@@ -21,6 +21,7 @@ import { TextLink } from '../text-link';
 import { useResolvedScheme } from '../theme';
 
 const HEADING_FONT = 'Space Grotesk, Figtree, ui-sans-serif, system-ui, sans-serif';
+const ASIDE_WIDTH_FITTING_SETUP_COMMAND = '32.5rem';
 
 const DEFAULT_SETUP = INSTALL_TARGETS[0];
 
@@ -90,7 +91,7 @@ const styles = stylex.create({
     flexDirection: 'column',
     flexShrink: 0,
     gap: { default: space['--ult-space-7'], [breakpoints.DESKTOP]: '1.75rem' },
-    inlineSize: { default: '100%', [breakpoints.DESKTOP]: '21.25rem' },
+    inlineSize: { default: '100%', [breakpoints.DESKTOP]: '21.25rem', [breakpoints.INDEX]: ASIDE_WIDTH_FITTING_SETUP_COMMAND },
   },
   aim: {
     color: color['--ult-color-text-muted'],
