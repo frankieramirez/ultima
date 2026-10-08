@@ -526,6 +526,67 @@ export function compareVersions(a: string, b: string): number {
 
 const SCRIPTS = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'];
 
+export function themeModeWithoutRootTheme(root: string, entries: string[]): string | undefined {
+  const aliases = aliasConfig(root);
+  let ui: string;
+  try {
+    ui = JSON.parse(readFileSync(join(root, 'components.json'), 'utf8')).aliases.ui;
+    if (typeof ui !== 'string') return;
+  } catch { return; }
+  const item = resolveImport(`${ui}/theme-mode`, join(root, 'entry.ts'), false, root, aliases);
+  if (!item) return;
+  const seen = new Set<string>();
+  const modes = new Set<string>();
+  const follow = (specifier: string, from: string, css: boolean) => {
+    const path = resolveImport(specifier, from, css, root, aliases);
+    if (path) visit(path);
+  };
+  const visit = (path: string): void => {
+    if (seen.has(path)) return;
+    seen.add(path);
+    let text: string;
+    try { text = readFileSync(path, 'utf8'); } catch { return; }
+    if (extname(path) === '.css') {
+      try {
+        const sheet = postcss.parse(text);
+        sheet.walkAtRules(/^import$/i, (rule) => {
+          const { specifier } = importParams(rule.params);
+          if (specifier) follow(specifier, path, true);
+        });
+        sheet.walkRules((rule) => {
+          if (rule.parent?.type === 'rule') return;
+          for (let parent: postcss.Node | undefined = rule.parent; parent; parent = parent.parent) {
+            if (parent.type === 'rule' || (parent.type === 'atrule' && ['scope', 'container'].includes((parent as AtRule).name.toLowerCase()))) return;
+          }
+          const declarations = rule.nodes.filter((node) => node.type === 'decl');
+          if (!declarations.some((node) => node.prop.startsWith('--ult-')) || !declarations.some((node) => node.prop === 'color-scheme')) return;
+          selectorParser((selectors) => {
+            selectors.each((selector) => {
+              const nodes = selector.nodes;
+              if (nodes.some((node) => !(node.type === 'attribute' && node.attribute === 'data-theme' && node.operator === '=') && !(node.type === 'tag' && node.value === 'html') && !(node.type === 'pseudo' && node.value === ':root'))) return;
+              for (const node of nodes) if (node.type === 'attribute' && node.attribute === 'data-theme' && node.operator === '=' && (node.value === 'dark' || node.value === 'light')) modes.add(node.value);
+            });
+          }).processSync(rule.selector);
+        });
+      } catch { /* A broken stylesheet cannot prove a root theme. */ }
+    } else if (SCRIPTS.includes(extname(path))) {
+      const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
+      for (const statement of source.statements) {
+        if (ts.isImportDeclaration(statement) && !statement.importClause?.isTypeOnly && ts.isStringLiteral(statement.moduleSpecifier)) follow(statement.moduleSpecifier.text, path, false);
+        if (ts.isExportDeclaration(statement) && !statement.isTypeOnly && statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier)) follow(statement.moduleSpecifier.text, path, false);
+      }
+    } else if (extname(path) === '.html') {
+      for (const link of text.matchAll(/<(link|script)\b[^>]*>/gi)) {
+        const attributes = Object.fromEntries([...link[0].matchAll(/([\w-]+)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/g)].map(([, key = '', value = '']) => [key.toLowerCase(), value.replace(/^["']|["']$/g, '')]));
+        if (attributes.rel === 'stylesheet' && attributes.href && !isRemoteHref(attributes.href)) follow(attributes.href.startsWith('/') ? `.${attributes.href}` : attributes.href, path, true);
+        if (link[1]?.toLowerCase() === 'script' && attributes.type === 'module' && attributes.src && !isRemoteHref(attributes.src)) follow(attributes.src.startsWith('/') ? `.${attributes.src}` : attributes.src, path, false);
+      }
+    }
+  };
+  for (const path of entries.flatMap((entry) => expandEntry(entry, root))) visit(path);
+  return modes.has('dark') && modes.has('light') ? undefined : relative(root, item).split(sep).join('/');
+}
+
 type ImportSite = { file: string; start: Position; end: Position; specifier: string; fromStylesheet: boolean };
 
 function layeredResets(entries: string[], context: StepContext): Diagnostic[] {

@@ -54,6 +54,7 @@ import SwitchContent from '../content/components/switch.mdx';
 import TableContent from '../content/components/table.mdx';
 import TabsContent from '../content/components/tabs.mdx';
 import TextareaContent from '../content/components/textarea.mdx';
+import ThemeModeScriptContent from '../content/components/theme-mode.mdx';
 import ToastContent from '../content/components/toast.mdx';
 import ToggleContent from '../content/components/toggle.mdx';
 import ToggleGroupContent from '../content/components/toggle-group.mdx';
@@ -110,6 +111,7 @@ export const componentPages: Record<string, ComponentType<{ components?: MDXComp
   "table": TableContent,
   "tabs": TabsContent,
   "textarea": TextareaContent,
+  "theme-mode": ThemeModeScriptContent,
   "toast": ToastContent,
   "toggle": ToggleContent,
   "toggle-group": ToggleGroupContent,

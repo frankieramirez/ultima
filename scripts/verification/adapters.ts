@@ -540,6 +540,7 @@ const reporterFlags = (destination: string) => ['--test-reporter=spec', '--test-
 
 const consumerProofAdapter: Adapter = {
   run: (context) => evidenced(context, async () => {
+    const modeValidator = context.check.argv.includes('--exercise') ? await import('../consumer-mode.ts') : undefined;
     const output = join(context.artifacts, context.check.id);
     const reportPath = join(output, 'report.json');
     const { process } = await logged(context, [...context.check.argv, '--output', output]);
@@ -554,10 +555,19 @@ const consumerProofAdapter: Adapter = {
         const layoutIndex = context.check.argv.indexOf('--layout');
         const layout = layoutIndex < 0 ? undefined : context.check.argv[layoutIndex + 1] as ConsumerLayout;
         const problems = consumerReportProblems(report, layout);
+        const modeExercise = context.check.argv.includes('--exercise');
+        if (modeExercise !== (report.exercise === 'theme-mode')) problems.push('consumer exercise differs from the registered command');
         if (problems.length) return { verdict: 'incomplete', executed: [], reason: problems.join('; ') };
         for (const row of report.cases) {
           if (isAbsolute(row.snapshot) || relative(output, join(output, row.snapshot)).startsWith('..') || !existsSync(join(output, row.snapshot))) return { verdict: 'incomplete', executed: [], reason: `missing values snapshot: ${row.id}` };
           const snapshot = JSON.parse(readFileSync(join(output, row.snapshot), 'utf8'));
+          if (modeExercise) {
+            const issues = modeValidator!.modeSnapshotProblems(snapshot, row.status === 'passed');
+            const html = join(output, `${row.id.split('/').at(-1)}.server.html`);
+            if (snapshot.id !== row.id || JSON.stringify(snapshot.failures) !== JSON.stringify(row.failures) || issues.length || !existsSync(html)) return { verdict: 'incomplete', executed: [], reason: `invalid theme-mode snapshot: ${row.id}: ${issues.join('; ')}` };
+            artifacts.push(html, join(output, row.snapshot));
+            continue;
+          }
           const names = ['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'];
           const variables = names.every((name) => {
             const value = snapshot?.variables?.[`--ult-color-${name}`];
@@ -663,5 +673,8 @@ export const ADAPTERS: Adapters = {
   'consumer-proof': consumerProofAdapter,
   'consumer-proof-next-app': consumerProofAdapter,
   'consumer-proof-next-src': consumerProofAdapter,
+  'consumer-mode-vite': consumerProofAdapter,
+  'consumer-mode-next-app': consumerProofAdapter,
+  'consumer-mode-next-src': consumerProofAdapter,
   'production-scenarios': productionAdapter,
 };

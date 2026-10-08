@@ -1,0 +1,60 @@
+import { Demo } from '../../demo';
+import Mode from '../../demos/theme-mode/mode';
+import modeSource from '../../demos/theme-mode/mode?raw';
+
+# Theme Mode
+
+Persist an explicit document mode before hydration. The copied file depends only on React and uses `useSyncExternalStore`; install it when your app needs a mode control.
+
+## Install
+
+```bash
+npx shadcn add @ultima/theme-mode
+```
+
+Import a **root CSS theme with `[data-theme]` blocks**, either Studio's `ultima-theme.css` or the vendored `tokens.css`. Keep it after the extracted StyleX rules. Compiled StyleX token defaults only follow the system media query: setting `data-theme` without the root CSS file has no visible effect. `ultima doctor` advises when the item is installed without that import.
+
+## Vite
+
+Put this script in `index.html`'s `<head>`, before the module script. It is the output of `themeModeScript()` with the default storage key.
+
+```html
+<script>(()=>{let m;try{m=localStorage.getItem("ultima-theme-mode")}catch{}const r=document.documentElement;if(m==='dark'||m==='light')r.setAttribute('data-theme',m);else r.removeAttribute('data-theme')})()</script>
+```
+
+## Next.js
+
+In `app/layout.tsx`, render the script first inside `<head>`. `suppressHydrationWarning` belongs on `<html>` because the script changes its attributes before hydration.
+
+```tsx
+  import { ThemeModeScript } from '@/components/ui/theme-mode';
+  import './ultima.css';
+  import '../ultima-theme.css';
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head><ThemeModeScript /></head>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+For `src/app/layout.tsx`, the same `@/components/ui/theme-mode` import resolves under `src/`. A relative import is `../components/ui/theme-mode` in both layouts, pointing into `components/` or `src/components/` respectively. The root theme import becomes `../../ultima-theme.css`.
+
+## Mode control
+
+`useThemeMode()` returns `{ mode, resolved, setMode }`. `mode` is `dark`, `light`, or `system`; `resolved` is the scheme on screen. On the server it returns `{ mode: 'system', resolved: null }`, so render a neutral label until hydration resolves it. System mode removes `data-theme` and follows preference changes. Storage events keep other tabs in step.
+
+<Demo component={Mode} source={modeSource} />
+
+The docs app keeps its own theme control. This example is copyable source; the item changes `<html>` in the consumer that installs it.
+
+## Storage and CSP
+
+The default key is `ultima-theme-mode`. For a custom key, pass the same string to `themeModeScript('my-mode')` (Vite) or `<ThemeModeScript storageKey="my-mode" />` (Next), `setThemeMode(mode, 'my-mode')`, and `useThemeMode('my-mode')`.
+
+Unknown or missing storage values and storage that throws leave the script in system mode. `setThemeMode` changes the attribute before writing storage, so a failed write still holds for the session. Use `setThemeMode` when switching outside React.
+
+`ThemeModeScript` accepts `nonce` for an inline-script CSP. For Vite, authorize the exact inline script with your nonce or hash. The storage key is escaped for safe embedding in an HTML script.

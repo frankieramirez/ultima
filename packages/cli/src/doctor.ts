@@ -8,7 +8,7 @@ import ts from 'typescript';
 import { setupItems } from '../../../registry/items.config.ts';
 import { type Diagnostic, SPEC, type Unsupported } from './diagnostic.ts';
 import type { HandStep } from './hand-steps.ts';
-import { type SupportedRanges, checkStep, jsonPosition } from './setup.ts';
+import { type SupportedRanges, checkStep, jsonPosition, themeModeWithoutRootTheme } from './setup.ts';
 
 export type Target = 'vite' | 'next';
 
@@ -83,6 +83,13 @@ function checkTarget(root: string, target: Target): { diagnostics: Diagnostic[];
     diagnostics.push(...result.diagnostics);
     if (result.unsupported) unsupported.push(result.unsupported);
   }
+  const modeFile = themeModeWithoutRootTheme(root, target === 'vite' ? ['index.html', 'src/main.*'] : ['app/layout.*', 'src/app/layout.*']);
+  if (modeFile) diagnostics.push({
+    ruleId: 'ULT-THEME-001', severity: 'advisory', file: modeFile,
+    message: 'theme-mode is installed without an imported root CSS theme with dark and light [data-theme] blocks.',
+    repair: 'Import tokens.css or a Studio ultima-theme.css after the extracted StyleX rules in the entry point. Compiled token defaults alone do not follow data-theme.',
+    link: `${SPEC}#mode-and-scope-packaging`,
+  });
   return { diagnostics, unsupported };
 }
 

@@ -45,6 +45,29 @@ describe('detectTarget', () => {
 });
 
 describe('ultima doctor', () => {
+  for (const target of ['vite', 'next'] as const) {
+    it(`advises only for installed theme-mode without an imported root theme in ${target}`, async () => {
+      const root = smoke(target);
+      const file = target === 'vite' ? 'src/components/ui/theme-mode.tsx' : 'components/ui/theme-mode.tsx';
+      const entry = target === 'vite' ? 'src/main.tsx' : 'app/layout.tsx';
+      const advisory = async () => (await doctorJson(root)).report.diagnostics.filter((row) => row.ruleId === 'ULT-THEME-001');
+      expect(await advisory()).toEqual([]);
+      write(root, file, 'export function useThemeMode() {}');
+      expect(await advisory()).toMatchObject([{ severity: 'advisory', file }]);
+      const theme = '[data-theme="dark"]{--ult-color-surface:black;color-scheme:dark}[data-theme="light"]{--ult-color-surface:white;color-scheme:light}';
+      write(root, 'theme.css', theme);
+      expect(await advisory()).toHaveLength(1);
+      write(root, entry, "import '../theme-entry.css';");
+      write(root, 'theme-entry.css', '@import "./theme.css" layer(theme);');
+      expect(await advisory()).toEqual([]);
+      write(root, 'theme.css', theme.replaceAll('[data-theme=', '.subtree[data-theme='));
+      expect(await advisory()).toHaveLength(1);
+      for (const missing of [theme.replace('[data-theme="light"]', '[data-theme="other"]'), `@scope (.subtree) { ${theme} }`, theme.replaceAll('[data-theme=', '[data-other][data-theme=')]) {
+        write(root, 'theme.css', missing);
+        expect(await advisory()).toHaveLength(1);
+      }
+    });
+  }
   it('passes the smoke-install Vite project and names the target', async () => {
     const { code, report } = await doctorJson(smoke('vite'));
     expect(report).toMatchObject({ command: 'doctor', target: 'vite', diagnostics: [] });

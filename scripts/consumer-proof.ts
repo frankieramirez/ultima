@@ -11,7 +11,8 @@ import { toCss, toRegistryItem } from '../packages/tokens/src/theme/export.ts';
 import { gate } from '../packages/tokens/src/theme/gate.ts';
 import { shuffleDraft } from '../packages/tokens/src/theme/shuffle.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
-import { CONSUMER_LAYOUTS, consumerCases, type ConsumerLayout, type ConsumerReport } from './consumer-report.ts';
+import { CONSUMER_LAYOUTS, consumerCases, modeCases, type ConsumerLayout, type ConsumerReport } from './consumer-report.ts';
+import { modeProof, modeScene } from './consumer-mode.ts';
 import { browserErrors, hydrationProblems, hydrationState, nextFault, nextScene, serveNext, setupNext, type HydrationEvidence } from './consumer-next.ts';
 import { hashSource } from './verification/source.ts';
 
@@ -29,7 +30,7 @@ export function proofDraft(): ThemeDraft {
   return draft;
 }
 
-export type ProofOptions = { layout: ConsumerLayout; deliveryPath: 'css'; output?: string; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' };
+export type ProofOptions = { layout: ConsumerLayout; deliveryPath: 'css'; output?: string; exercise?: 'theme-mode'; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' | 'mode-script' };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
 export type BaseStyles = { height: string; display: string; radius: string; background: string; focusColor: string; focusStyle: string; focusVisible: boolean; danger: string };
@@ -99,7 +100,8 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     schemaVersion: 1, status: 'incomplete', layout: options.layout, deliveryPath: options.deliveryPath,
     source: { head: source.head, manifest: source.manifest, registryManifestHash: null, cliTarballDigest: null, draftDigest: null, draftFingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion },
     command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: [setupItem, 'button', 'badge', 'tokens', 'lib', 'ultima-theme'],
-    expected: consumerCases(options.layout), executed: [], cases: [], errors: [],
+    ...(options.exercise && { exercise: options.exercise }),
+    expected: options.exercise === 'theme-mode' ? modeCases(options.layout) : consumerCases(options.layout), executed: [], cases: [], errors: [],
   };
   const execute: Run = async (cwd, command, args) => {
     await appendFile(join(output, 'commands.log'), `${JSON.stringify({ cwd, command, args })}\n`);
@@ -149,6 +151,13 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     components.registries['@ultima'] = `${registry.url}/r/{name}.json`;
     await writeFile(componentsPath, `${JSON.stringify(components, null, 2)}\n`);
     await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/button', '@ultima/badge', '--yes']);
+    if (options.exercise === 'theme-mode') {
+      await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/theme-mode', '@ultima/popover', '--yes']);
+      report.installedItems.push('theme-mode', 'popover');
+      const installedMode = join(app, src || !isNext ? 'src/components/ui/theme-mode.tsx' : 'components/ui/theme-mode.tsx');
+      const registeredMode = JSON.parse(await readFile(join(work, 'registry/r/theme-mode.json'), 'utf8'));
+      assert.equal(await readFile(installedMode, 'utf8'), registeredMode.files[0].content, 'installed theme-mode must be the exact registry payload, including its version marker');
+    }
     const item = join(work, 'registry/r/proof-theme.json');
     await writeFile(item, toRegistryItem(draft));
     await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', `${registry.url}/r/proof-theme.json`, '--yes']);
@@ -173,6 +182,7 @@ export default function App() {
       assert.ok(main.includes("import './index.css'"));
       await writeFile(mainPath, main.replace("import './index.css'", "import './index.css'\nimport '../ultima-theme.css'"));
     }
+    if (options.exercise === 'theme-mode') await modeScene(app, options.layout, execute, options.fault);
     await execute(app, 'npm', ['install', '-D', tarball]);
     for (const command of ['doctor', 'check']) await execute(app, 'npx', ['--no-install', 'ultima-design', command]);
     if (options.fault === 'theme-import') await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace(/import ['"]\.\.\/+(?:\.\.\/)?ultima-theme\.css['"];?/, ''));
@@ -188,7 +198,8 @@ export default function App() {
     browser = await chromium.launch({ headless: true });
     report.versions.chromium = browser.version();
     const tables = resolveDraft(draft);
-    for (const id of report.expected) {
+    if (options.exercise === 'theme-mode') await modeProof(browser, production.url, report, output, tables);
+    for (const id of options.exercise === 'theme-mode' ? [] : report.expected) {
       const mode = id.endsWith('-dark') ? 'dark' : 'light';
       const explicit = id.includes('/explicit-');
       const contextOptions = { reducedMotion: 'no-preference' as const, colorScheme: explicit ? (mode === 'dark' ? 'light' as const : 'dark' as const) : mode as 'dark' | 'light' };
@@ -287,8 +298,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (flag === '--layout' && CONSUMER_LAYOUTS.includes(value as ConsumerLayout)) options.layout = value as ConsumerLayout;
     else if (flag === '--delivery-path' && value === 'css') options.deliveryPath = value;
     else if (flag === '--output' && value) options.output = value;
+    else if (flag === '--exercise' && value === 'theme-mode') options.exercise = value;
     else if (flag === '--base-styles' && value) baseApp = resolve(value);
-    else if (flag === '--fault' && (value === 'theme-import' || value === 'stylex-extraction' || value === 'src-extraction' || value === 'hydration-mismatch')) options.fault = value;
+    else if (flag === '--fault' && (value === 'theme-import' || value === 'stylex-extraction' || value === 'src-extraction' || value === 'hydration-mismatch' || value === 'mode-script')) options.fault = value;
     else throw new Error(`unsupported argument ${flag} ${value ?? ''}`);
   }
   if (baseApp) {

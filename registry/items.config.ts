@@ -286,6 +286,11 @@ export const items: Record<string, RegistryItemDescription> = {
     "description": "A multiline text field in three sizes, on Base UI.",
     "docs": "import { Textarea } from '@/components/ui/textarea';\n\n<label htmlFor=\"bio\">Biography</label>\n<Textarea id=\"bio\" size=\"md\" />"
   },
+  "theme-mode": {
+    "title": "Theme Mode",
+    "description": "Persist a document mode before hydration and follow system preference changes.",
+    "docs": "Import a root CSS theme with [data-theme] blocks. See https://ultima.systems/components/theme-mode for the Vite head script and Next layout usage."
+  },
   "toast": {
     "title": "Toast",
     "description": "A stacked notification in six tones, queued from a manager, on Base UI.",

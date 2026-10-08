@@ -28,7 +28,7 @@ const AXES = [
   { suffix: 'Tone', prop: 'tone' },
 ];
 
-export type GuideComponent = { name: string; title: string; description: string; source: string };
+export type GuideComponent = { name: string; title: string; description: string; source: string; primaryExport?: string };
 
 /** One catalogue group's components, alphabetical; groups come in display order. */
 export type GuideGroup = { label: string; components: GuideComponent[] };
@@ -128,7 +128,8 @@ function elementAxesOf({ name, source }: GuideComponent): { prop: string; values
   });
 }
 
-function exportedName({ name, source }: GuideComponent): string {
+function exportedName({ name, source, primaryExport }: GuideComponent): string {
+  if (primaryExport) return primaryExport;
   const list = /\bexport\s*\{([\s\S]*?)\}/.exec(source);
   if (!list) throw new Error(`${name}.tsx has no export list`);
   const values = (list[1] as string)

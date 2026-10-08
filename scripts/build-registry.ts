@@ -347,7 +347,7 @@ function publishExports({ components, elements, tokensCss }: Sources) {
         .sort((a, b) => ordinal(a.name, b.name))
         .map(({ name, source }): GuideComponent => {
           const { title, description } = describe(name);
-          return { name, title, description, source };
+          return { name, title, description, source, primaryExport: catalogue.react.find((entry) => entry.id === name)!.primaryExport };
         }),
     })),
     elements: elements.map((name): GuideComponent => {
