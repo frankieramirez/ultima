@@ -155,7 +155,7 @@ describe('named scopes', () => {
     assert.match(document.selection.items[1]?.reasons.join() ?? '', /sorting\.tsx/, 'the recipe whose demo composes Button');
     assert.equal(checkOf(document, 'elements-tests')?.scope, 'whole');
     assert.match(checkOf(document, 'elements-tests')?.reasons.join() ?? '', /ult-button.*parity/);
-    for (const id of ['registry-build', 'docs-build', 'consumer-smoke', 'production-scenarios']) assert.ok(checkIds(document).includes(id), id);
+    for (const id of ['registry-build', 'docs-build', 'consumer-smoke', 'consumer-proof', 'production-scenarios']) assert.ok(checkIds(document).includes(id), id);
     assert.deepEqual(checkOf(document, 'ui-tests')?.cases, ['button.press@ui-vitest[default]']);
     assert.equal(checkOf(document, 'production-scenarios')?.cases.length, 4);
     assert.deepEqual(checkOf(document, 'ui-tests')?.argv.slice(-2), ['src/__tests__/button.test.tsx', 'src/__tests__/sidebar.test.tsx']);
@@ -177,7 +177,7 @@ describe('named scopes', () => {
     const { document } = planOf(['component', 'setup-vite'], directory);
     assertPlanned(document);
     assert.equal(document.scope, 'scoped');
-    for (const id of ['registry-build', 'consumer-smoke']) assert.ok(checkIds(document).includes(id), id);
+    for (const id of ['registry-build', 'consumer-smoke', 'consumer-proof']) assert.ok(checkIds(document).includes(id), id);
     assert.ok(!checkIds(document).includes('ui-tests'));
   });
 

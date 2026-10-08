@@ -55,6 +55,7 @@ describe('pnpm verify list', () => {
       ['list', 'describe', 'component', 'feature', 'changed', 'release'],
     );
     assert.ok(document.checks.some((c: { id: string; adapter: { status: string } }) => c.id === 'production-scenarios' && c.adapter.status === 'available'));
+    assert.ok(document.checks.some((c: { id: string; adapter: { status: string } }) => c.id === 'consumer-proof' && c.adapter.status === 'available'));
   });
 
   test('derives the same model twice', () => assert.deepEqual(json(['list']).document, json(['list']).document));
