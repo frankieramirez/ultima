@@ -18,6 +18,7 @@ import { ultimaPresetUrl } from '../apps/docs/src/ultima-preset.ts';
 import { themeRegistry } from '../apps/docs/server/theme-registry.ts';
 import { contentHash, stampLine, withStamp } from '../packages/cli/src/stamp.ts';
 import { BASE_THEME_MARKER } from '../packages/cli/src/base-theme.ts';
+import { installedThemeProof } from './consumer-theme.ts';
 
 export function proofDraft(): ThemeDraft {
   const shuffled = shuffleDraft(stockDraft(), 'global', 'broad', 20260920);
@@ -192,6 +193,7 @@ export default function App() {
     }
     await execute(app, 'npm', ['install', '-D', tarball]);
     for (const command of ['doctor', 'check']) await execute(app, 'npx', ['--no-install', 'ultima-design', command]);
+    await installedThemeProof(app, output, execute);
     if (options.preset === 'ultima') {
       await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/tokens-css', '--yes']);
       const lib = isNext && !src ? 'lib' : 'src/lib';

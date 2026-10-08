@@ -13,6 +13,10 @@ UI work in a repository whose `components.json` names an `@ultima` registry: add
 
 Before the first UI edit of a task, fetch `/llms.txt` from the host that `registries["@ultima"]` names in `components.json`, normally `https://ultima.systems/llms.txt`.
 
+First read applicable project instructions and local design guidance, then trace active entry/layout imports and theme boundaries. Preserve existing intent and unlinked themes; use [the theme workflow](https://ultima.systems/llms.txt#discover-and-maintain-the-product-theme).
+
+For local freshness, run `npx ultima-design doctor --theme`. Offline, prefer the pinned `npx --no-install ultima-design doctor --theme` and available local guidance; hosted `status`/`diff` remain unverified. Static matches do not prove rendering.
+
 ## 3. Learn what is installed
 
 Before adding an item or editing an installed one, run:

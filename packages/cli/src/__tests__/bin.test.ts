@@ -6,7 +6,10 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { edit, editComponents, project, smoke } from './fixtures.ts';
+import { edit, editComponents, project, smoke, snapshot, write } from './fixtures.ts';
+import { stockDraft } from '../../../tokens/src/theme/draft.ts';
+import { serializeDraft } from '../../../tokens/src/theme/codec.ts';
+import { toCss, toDesignMd } from '../../../tokens/src/theme/export.ts';
 
 const cli = join(dirname(fileURLToPath(import.meta.url)), '../../dist/cli.js');
 
@@ -70,6 +73,27 @@ describe('the built binary', () => {
     expect(ultima('install', '--cwd', root, '--harness', 'claude').status).toBe(0);
     const { version } = JSON.parse(readFileSync(join(dirname(cli), '../package.json'), 'utf8'));
     expect(readFileSync(join(root, '.claude/skills/ultima-design/SKILL.md'), 'utf8')).toContain(`ultima-design: ${version} sha256:`);
+  });
+
+  it.each(['vite', 'next'] as const)('completes linked --theme comparison in %s with network denied and tree unchanged', (target) => {
+    const offline = join(mkdtempSync(join(tmpdir(), 'ultima-theme-offline-')), 'offline.mjs');
+    writeFileSync(offline, [
+      "import dns from 'node:dns';", "import net from 'node:net';", "import http from 'node:http';", "import https from 'node:https';",
+      'const refuse = () => { process.stderr.write("network request\\n"); process.exit(99); };',
+      'net.Socket.prototype.connect = refuse; dns.lookup = refuse; http.request = refuse; https.request = refuse; globalThis.fetch = refuse;',
+    ].join('\n'));
+    const root = smoke(target);
+    const draft = stockDraft();
+    write(root, 'ultima-theme.css', toCss(draft));
+    write(root, 'ultima-theme.json', serializeDraft(draft));
+    write(root, 'DESIGN.md', toDesignMd(draft));
+    edit(root, target === 'vite' ? 'src/main.tsx' : 'app/layout.tsx', (text) => `import '../ultima-theme.css';\n${text}`);
+    const before = snapshot(root);
+    const result = spawnSync(process.execPath, ['--import', offline, cli, 'doctor', '--theme', '--json', '--cwd', root], { encoding: 'utf8' });
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout).theme.rows.find((row: { artifact: string }) => row.artifact === 'css').state).toBe('match');
+    expect(snapshot(root)).toEqual(before);
   });
 
   it('exits 2 on an unknown flag', () => {

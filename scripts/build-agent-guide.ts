@@ -306,6 +306,10 @@ export function agentGuide({
     '## CLI',
     '',
     section(spec, 'Agent guide'),
+    '',
+    '## Discover and maintain the product theme',
+    '',
+    section(spec, 'Discover and maintain the product theme').split('**Required verification scenarios for implementation.**')[0]!.trim(),
   ].join('\n')}\n`;
 
   const tags = htmlTagsIn(guide);
