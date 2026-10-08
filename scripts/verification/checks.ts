@@ -10,7 +10,8 @@
  * scenarios (#462, the full matrix since #463), which wait on `docs-build`.
  */
 
-export type CheckId =
+export type ConsumerCheckBase = 'consumer-proof' | 'consumer-proof-next-app' | 'consumer-proof-next-src';
+export type CheckId = `${ConsumerCheckBase}-${'stylex-subtree' | 'registry' | 'cli'}`
   | 'architecture'
   | 'catalogue-freshness'
   | 'typecheck'
@@ -83,7 +84,7 @@ const FRESHNESS: CheckId[] = ['catalogue-freshness'];
 const READ_FIRST: CheckId[] = ['architecture', 'catalogue-freshness'];
 
 /** In plan order: the global static checks first, then suites, builds, installation and production. */
-export const CHECKS: readonly CheckDefinition[] = [
+const BASE_CHECKS: readonly CheckDefinition[] = [
   {
     id: 'architecture',
     title: 'Architecture and metadata',
@@ -385,6 +386,11 @@ export const CHECKS: readonly CheckDefinition[] = [
   },
 ];
 
+export const CHECKS: readonly CheckDefinition[] = [...BASE_CHECKS, ...(['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src'] as const).flatMap((base) => {
+  const css = BASE_CHECKS.find((check) => check.id === base)!;
+  return (['stylex-subtree', 'registry', 'cli'] as const).map((path): CheckDefinition => ({ ...css, id: `${base}-${path}`, title: `${css.title.replace(/generated CSS/i, path)} (${path})`, argv: [...css.argv.slice(0, -1), path], adapter: { status: 'available', since: '#751 (compiled subtree, registry presets and packed CLI)' } }));
+})];
+
 /**
  * Release obligations no check can satisfy yet. While any remain, a release plan cannot pass and a release
  * run ends incomplete whatever its checks report. #463 emptied it when the 26 required production cells
@@ -441,5 +447,5 @@ export const CI_OBLIGATIONS: readonly { workflow: string; command: string; check
   { workflow: 'smoke-install.yml', command: 'TMPDIR="$RUNNER_TEMP/smoke" ./scripts/smoke-install.sh --keep', checks: ['consumer-smoke'] },
   { workflow: 'consumer-proof.yml', command: 'pnpm install --frozen-lockfile', preparation: 'dependency installation from the lockfile' },
   { workflow: 'consumer-proof.yml', command: 'pnpm exec playwright install --with-deps chromium', preparation: 'Chromium for installed consumer paint and hydration' },
-  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src'] },
+  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path "${{ matrix.delivery-path }}" --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src', ...(['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src'] as const).flatMap((base) => (['stylex-subtree', 'registry', 'cli'] as const).map((path): CheckId => `${base}-${path}`))] },
 ];
