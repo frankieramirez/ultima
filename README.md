@@ -23,6 +23,8 @@ Ultima has no version number. The registry serves the latest build, and every in
 
 ## Install
 
+Choose a theme in [Theme Studio](https://ultima.systems/theme-studio), then follow the [install walkthrough](https://ultima.systems/install#theme-adoption): install the registry item, apply the export after StyleX, and check a production build in both modes and system mode. A fresh project can keep Neutral. Preserve an existing brand in an authorized custom draft; review local design guidance and the active theme before replacing files.
+
 Vite:
 
 ```bash

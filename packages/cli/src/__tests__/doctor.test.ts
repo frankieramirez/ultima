@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import type { Diagnostic } from '../diagnostic.ts';
 import { detectTarget } from '../doctor.ts';
 import { run } from '../run.ts';
+import { setupItems } from '../../../../registry/items.config.ts';
 import { edit, editComponents, installed, project, smoke, snapshot, write } from './fixtures.ts';
 
 type DoctorReport = { target: string | null; diagnostics: Diagnostic[]; unsupported: { step: string; reason: string }[] };
@@ -78,6 +79,20 @@ describe('ultima doctor', () => {
     const { code, report } = await doctorJson(smoke('next'));
     expect(report).toMatchObject({ command: 'doctor', target: 'next', diagnostics: [] });
     expect(code).toBe(0);
+  });
+
+  it.each(['vite', 'next'] as const)('reports theme hand steps as unverified for %s while retaining setup-only success', async (target) => {
+    const { code, report } = await doctorJson(smoke(target));
+    const manual = setupItems[`setup-${target}`].handSteps.filter((step) => step.unverifiable);
+    expect(code).toBe(0);
+    expect(report.diagnostics).toEqual([]);
+    expect(report.unsupported).toEqual(manual.map((step) => ({ step: step.prose, reason: step.unverifiable })));
+    expect(report.unsupported).toEqual(expect.arrayContaining([
+      { step: expect.stringContaining('preserve an existing brand'), reason: expect.stringContaining('project evidence') },
+      { step: expect.stringContaining('production cascade'), reason: expect.stringContaining('not the production theme cascade') },
+    ]));
+    const text = (await run(['doctor', '--cwd', smoke(target)])).stdout;
+    for (const { prose } of manual) expect(text).toContain(prose);
   });
 
   it('passes the production registry root', async () => {
@@ -361,9 +376,9 @@ describe('the Vite hand steps', () => {
 
   it('lists the CSP nonce as unsupported, never as a pass', async () => {
     const { report } = await doctorJson(smoke('vite'));
-    expect(report.unsupported).toEqual([
+    expect(report.unsupported).toEqual(expect.arrayContaining([
       { step: expect.stringContaining('CSPProvider'), reason: 'The headers are set at runtime or by the host.' },
-    ]);
+    ]));
     const text = ((await run(['doctor', '--cwd', smoke('vite')]))).stdout;
     expect(text).toContain('Unsupported analysis:');
     expect(text).toContain('No findings.');

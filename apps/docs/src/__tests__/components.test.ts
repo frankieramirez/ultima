@@ -63,6 +63,17 @@ test('the catalogue and the registry manifest name the same components', () => {
   expect([...manifest].sort()).toEqual(components.map(({ item }) => item).sort());
 });
 
+test('the generated agent guide publishes local theme discovery and offline freshness within its size limit', async () => {
+  const guide = await (await fetch('/llms.txt')).text();
+  expect(guide).toContain('## Discover and maintain the product theme');
+  expect(guide).toContain('npx ultima-design doctor --theme');
+  expect(guide).toContain('npx --no-install ultima-design');
+  expect(guide).toContain('Consumer prose outside a marked generated region stays byte-for-byte intact');
+  expect(guide).toContain('source identity, compared scope/modes, actual differences and a repair');
+  expect(guide).not.toContain('The flag is not currently available');
+  expect(new TextEncoder().encode(guide).length).toBeLessThanOrEqual(64 * 1024);
+});
+
 test('every catalogue entry has a documentation page and at least one example', () => {
   const documented = Object.keys(pages).map((path) => path.replace(/^.*\/(.+)\.mdx$/, '$1'));
   expect(documented.sort()).toEqual(components.map(({ item }) => item).sort());

@@ -21,6 +21,7 @@ export async function nextScene(app: string, src: boolean): Promise<void> {
   await writeFile(join(folder, 'layout.tsx'), `import { cookies } from 'next/headers';
 import './globals.css';
 import './ultima.css';
+export const metadata = { title: 'Installed consumer proof' };
 import '${src ? '../../' : '../'}ultima-theme.css';
 export const instant = false;
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -97,14 +98,25 @@ export function hydrationProblems(evidence: HydrationEvidence): string[] {
   return failures;
 }
 
-export function browserErrors(page: Page): string[] {
+export type BrowserLog = { console: { type: string; text: string }[]; pageErrors: string[]; failedRequests: { url: string; required: boolean; failure?: unknown; status?: number }[] };
+const required = (type: string) => ['document', 'script', 'stylesheet', 'font'].includes(type);
+/** Returns the page and required-asset errors; with a `log`, also retains every console message, page error and failed request. */
+export function browserErrors(page: Page, log?: BrowserLog): string[] {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(`page error: ${error.message}`));
+  page.on('pageerror', (error) => { log?.pageErrors.push(String(error)); errors.push(`page error: ${error.message}`); });
   page.on('console', (message) => {
+    log?.console.push({ type: message.type(), text: message.text() });
     if (message.type() === 'error' || /hydration|hydrating|did not match|server rendered/i.test(message.text())) errors.push(`console ${message.type()}: ${message.text()}`);
   });
-  page.on('requestfailed', (request) => { if (['document', 'script', 'stylesheet', 'font'].includes(request.resourceType())) errors.push(`required asset failed: ${request.url()}: ${request.failure()?.errorText}`); });
-  page.on('response', (response) => { if (response.status() >= 400 && ['document', 'script', 'stylesheet', 'font'].includes(response.request().resourceType())) errors.push(`required asset HTTP ${response.status()}: ${response.url()}`); });
+  page.on('requestfailed', (request) => {
+    log?.failedRequests.push({ url: request.url(), required: required(request.resourceType()), failure: request.failure() });
+    if (required(request.resourceType())) errors.push(`required asset failed: ${request.url()}: ${request.failure()?.errorText}`);
+  });
+  page.on('response', (response) => {
+    if (response.status() < 400) return;
+    log?.failedRequests.push({ url: response.url(), required: required(response.request().resourceType()), status: response.status() });
+    if (required(response.request().resourceType())) errors.push(`required asset HTTP ${response.status()}: ${response.url()}`);
+  });
   return errors;
 }
 

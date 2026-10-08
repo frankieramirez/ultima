@@ -248,6 +248,15 @@ function htmlTagsIn(markdown: string): string[] {
   return [...prose.matchAll(/<\/?[A-Za-z][^>]*>/g)].map((match) => match[0]);
 }
 
+function themeDiscovery(spec: string): string {
+  const workflow = section(spec, 'Discover and maintain the product theme');
+  const boundary = '**Guidance ownership and implementation consumers.**';
+  if (!workflow.includes(boundary)) throw new Error('Theme discovery has no guidance ownership boundary');
+  return workflow.slice(0, workflow.indexOf(boundary)).split('\n\n')
+    .filter((paragraph) => !paragraph.startsWith('Decided on ') && !paragraph.startsWith('For example, '))
+    .join('\n\n').trim();
+}
+
 export function agentGuide({
   specPath,
   tokensJsonPath,
@@ -276,6 +285,28 @@ export function agentGuide({
     '## Install',
     '',
     section(spec, 'Entry point'),
+    '',
+    '## Theme adoption',
+    '',
+    'Choose a theme in [Theme Studio](https://ultima.systems/theme-studio); follow the [install walkthrough](https://ultima.systems/install#theme-adoption) to install, apply and check it.',
+    '',
+    '### Choose and export',
+    '',
+    section(spec, 'Choose and export'),
+    '',
+    '### Apply to Vite and Next.js',
+    '',
+    section(spec, 'Apply to Vite and Next.js'),
+    '',
+    '### Check the installed result',
+    '',
+    section(spec, 'Check the installed result'),
+    '',
+    '## Discover and maintain the product theme',
+    '',
+    themeDiscovery(spec),
+    '',
+    'Report the paths and manual comparison coverage you verified. Ordinary `doctor` checks setup; it does not certify theme freshness or rendered adoption.',
     '',
     '## Principles',
     '',
@@ -307,6 +338,7 @@ export function agentGuide({
     '## CLI',
     '',
     section(spec, 'Agent guide'),
+    '',
   ].join('\n')}\n`;
 
   const tags = htmlTagsIn(guide);

@@ -29,6 +29,27 @@ describe('the consumer skill', () => {
     expect(SKILL).toMatch(/npx ultima-design status/);
   });
 
+  it('discovers the local theme before installed-item work without selecting a brand', () => {
+    expect(SKILL.indexOf('## 3. Discover the local theme')).toBeLessThan(SKILL.indexOf('Learn what is installed'));
+    for (const pointer of ['project instructions', 'DESIGN.md', 'application root', 'inherited guidance', 'entry/layout imports', 'portal containers', 'installed source', 'Preserve an existing product brand', 'authorized custom theme', 'https://ultima.systems/llms.txt#discover-and-maintain-the-product-theme']) {
+      expect(SKILL).toContain(pointer);
+    }
+    expect(SKILL).toContain('npx ultima-design doctor --theme');
+    expect(SKILL).toContain('npx --no-install ultima-design doctor --theme');
+    expect(SKILL).toContain('Static matches do not prove rendering');
+  });
+
+  it('keeps local checks usable offline without claiming registry freshness', () => {
+    expect(SKILL).toContain('npx --no-install ultima-design doctor');
+    expect(SKILL).toContain('npx --no-install ultima-design check');
+    expect(SKILL).toContain('leave unknown API choices unresolved');
+    expect(SKILL).toContain('`status` and `diff` need the registry');
+    expect(SKILL).toContain('unavailable comparisons do not prove freshness');
+    expect(SKILL).toContain('When the registry is available, before adding an item');
+    expect(SKILL).toContain('Offline, use `npx --no-install` for the checks below');
+    expect(SKILL).toContain('A zero CLI exit cannot prove the theme rendered');
+  });
+
   it.each([
     ['a token name', 'Read `--ult-color-accent` for the accent.', 'token name'],
     ['an item name', 'Wrap it in a Button.', 'item name'],
