@@ -8,7 +8,9 @@
     ".": "./src/index.ts",
     "./tokens.stylex": "./src/tokens.stylex.ts",
     "./tokens.json": "./dist/tokens.json",
-    "./gate": "./src/theme/gate.ts"
+    "./gate": "./src/theme/gate.ts",
+    "./theme/compare": "./src/theme/compare.ts",
+    "./theme/provenance": "./src/theme/provenance.ts"
   },
   "scripts": {
     "build": "node --experimental-strip-types scripts/build-tokens.ts",
@@ -16,6 +18,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@noble/hashes": "1.8.0",
     "@stylexjs/stylex": "^0.19.0"
   },
   "devDependencies": {

@@ -1,6 +1,7 @@
 import { draftFingerprint, serializeDraft } from './codec.ts';
 import { presetLabel, resolveDraft, type ResolvedDraft, type ThemeDraft, type TokenTable } from './draft.ts';
 import { gate } from './gate.ts';
+import { defaultProvenance, draftProvenance, generatedRegion, provenanceComment, type ThemeProvenance } from './provenance.ts';
 
 export const STUDIO_VERSION = 1;
 
@@ -25,7 +26,7 @@ function pairingFailed(draft: ThemeDraft): boolean {
 }
 
 function comments(draft: ThemeDraft): string {
-  const lines = [`/* ${artifactHeader(draft)} */`];
+  const lines = [`/* ${artifactHeader(draft)} */`, provenanceComment(draftProvenance(draft))];
   if (pairingFailed(draft)) lines.push('/* Source draft failed token-contrast pairings. */');
   return lines.join('\n');
 }
@@ -124,7 +125,7 @@ function markdownValue(value: string): string {
   return value.replace(/\s+/g, ' ').replace(/[\\`*_\[\]|]/g, '\\$&');
 }
 
-function designDocument(tables: ResolvedDraft, title: string, header: string, intro: string, warning: boolean): string {
+function designDocument(tables: ResolvedDraft, title: string, header: string, intro: string, warning: boolean, provenance: ThemeProvenance): string {
   const rows = (group: Group) => tokenNames(tables.dark, group).map((name) =>
     `| \`${name}\` | ${markdownValue(tables.dark[name] ?? '')} | ${markdownValue(tables.light[name] ?? '')} |`,
   );
@@ -134,6 +135,7 @@ function designDocument(tables: ResolvedDraft, title: string, header: string, in
     ...rows(group),
   ].join('\n');
   const sections = [
+    provenanceComment(provenance, 'markdown'),
     `<!-- ${header} -->`,
     ...(warning ? ['> This source draft failed token-contrast pairings. Review the colors before use.'] : []),
     `# Design System: ${title}`,
@@ -157,7 +159,7 @@ function designDocument(tables: ResolvedDraft, title: string, header: string, in
     table('motion'),
     table('filter'),
   ];
-  return `${sections.join('\n\n')}\n`;
+  return `${generatedRegion(`${sections.join('\n\n')}\n`)}\n`;
 }
 
 export function toDesignMd(draft: ThemeDraft): string {
@@ -167,6 +169,7 @@ export function toDesignMd(draft: ThemeDraft): string {
     artifactHeader(draft),
     'This document describes an Ultima theme. In Theme Studio, `ultima-theme.json` is the editable draft and the CSS and StyleX exports carry the values applications render. Regenerate this file after changing the theme.',
     pairingFailed(draft),
+    draftProvenance(draft),
   );
 }
 
@@ -177,6 +180,7 @@ export function toDefaultDesignMd(tables: ResolvedDraft): string {
     'Ultima default design tokens. Generated from the compiled StyleX token values.',
     'This document describes the default Ultima token values. The token CSS and StyleX sources determine what applications render. If you change the theme in Theme Studio, export a new DESIGN.md for those values.',
     false,
+    defaultProvenance(tables),
   );
 }
 
@@ -188,6 +192,7 @@ export function toRegistryItem(draft: ThemeDraft): string {
       type: 'registry:item',
       title: 'Ultima theme',
       description: artifactHeader(draft),
+      meta: { ultimaTheme: draftProvenance(draft) },
       files: [
         {
           path: 'ultima-theme.css',
