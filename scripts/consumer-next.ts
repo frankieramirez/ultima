@@ -109,7 +109,10 @@ export function browserErrors(page: Page): string[] {
 }
 
 export async function nextFault(app: string, src: boolean, fault?: string): Promise<void> {
-  if (fault === 'stylex-extraction' || fault === 'src-extraction') {
+  if (fault === 'stylex-extraction') {
+    await writeFile(join(app, 'postcss.config.js'), 'module.exports = { plugins: {} };\n');
+  }
+  if (fault === 'src-extraction') {
     const path = join(app, 'postcss.config.js');
     const config = await readFile(path, 'utf8');
     assert.ok(config.includes("include: ['**/*.{js,jsx,ts,tsx}']"));

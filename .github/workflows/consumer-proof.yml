@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         layout: [vite, next-app, next-src]
-        exercise: [css, theme-mode]
+        delivery-path: [css, stylex-subtree, registry, cli]
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -29,15 +29,37 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - name: Production installed consumer
-        if: ${{ matrix.exercise == 'css' }}
-        run: node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --output "$RUNNER_TEMP/consumer-proof"
+        run: node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path "${{ matrix.delivery-path }}" --output "$RUNNER_TEMP/consumer-proof"
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: consumer-proof-${{ matrix.layout }}-${{ matrix.delivery-path }}
+          path: ${{ runner.temp }}/consumer-proof
+          if-no-files-found: error
+          retention-days: 90
+
+  theme-mode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        layout: [vite, next-app, next-src]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
       - name: Production installed theme mode
-        if: ${{ matrix.exercise == 'theme-mode' }}
         run: node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise theme-mode --output "$RUNNER_TEMP/consumer-proof"
       - if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: consumer-proof-${{ matrix.layout }}-${{ matrix.exercise }}
+          name: consumer-proof-${{ matrix.layout }}-theme-mode
           path: ${{ runner.temp }}/consumer-proof
           if-no-files-found: error
           retention-days: 90

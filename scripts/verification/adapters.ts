@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { createManifest, hashBuild } from '../../apps/docs/scripts/build-manifest.ts';
 import { BUILD_MANIFEST, BUILD_ROOT, productionAdapter } from '../../apps/docs/scripts/production-adapter.ts';
 import { diskFiles } from '../catalogue/files.ts';
-import { consumerReportProblems, type ConsumerLayout, type ConsumerReport } from '../consumer-report.ts';
+import { consumerReportProblems, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from '../consumer-report.ts';
 import { hydrationProblems, type HydrationEvidence } from '../consumer-next.ts';
 import { loadCatalogue } from '../catalogue/model.ts';
 import { CI_OBLIGATIONS, type CheckId } from './checks.ts';
@@ -88,6 +88,11 @@ const CONFIGURATION: Partial<Record<CheckId, string[]>> = {
   'consumer-proof-next-app': ['scripts/consumer-proof.ts', 'scripts/consumer-next.ts', 'scripts/consumer-helpers.ts', 'scripts/consumer-report.ts', 'package.json', 'scripts/build-registry.ts', 'registry/static/setup-next/babel.config.js', 'registry/static/setup-next/postcss.config.js', 'registry/static/setup-next/app/ultima.css'],
   'consumer-proof-next-src': ['scripts/consumer-proof.ts', 'scripts/consumer-next.ts', 'scripts/consumer-helpers.ts', 'scripts/consumer-report.ts', 'package.json', 'scripts/build-registry.ts', 'registry/static/setup-next/babel.config.js', 'registry/static/setup-next/postcss.config.js', 'registry/static/setup-next/app/ultima.css'],
 };
+
+for (const base of ['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src'] as const) {
+  CONFIGURATION[base]!.push('scripts/consumer-scene.ts', 'scripts/consumer-values.ts', 'scripts/consumer-delivery.ts');
+  for (const path of ['stylex-subtree', 'registry', 'cli'] as const) CONFIGURATION[`${base}-${path}`] = CONFIGURATION[base];
+}
 
 /**
  * Where each suite's runner finds its tests, as the runner's own configuration states it: Vitest's
@@ -540,6 +545,9 @@ const reporterFlags = (destination: string) => ['--test-reporter=spec', '--test-
 
 const consumerProofAdapter: Adapter = {
   run: (context) => evidenced(context, async () => {
+    const { cliReportProblems } = await import('../consumer-delivery.ts');
+    const { parseDraft } = await import('../../packages/tokens/src/theme/codec.ts');
+    const { resolveDraft } = await import('../../packages/tokens/src/theme/draft.ts');
     const modeValidator = context.check.argv.includes('--exercise') ? await import('../consumer-mode.ts') : undefined;
     const output = join(context.artifacts, context.check.id);
     const reportPath = join(output, 'report.json');
@@ -554,10 +562,13 @@ const consumerProofAdapter: Adapter = {
         catch { return { verdict: 'incomplete', executed: [], reason: 'consumer-proof wrote no readable report' }; }
         const layoutIndex = context.check.argv.indexOf('--layout');
         const layout = layoutIndex < 0 ? undefined : context.check.argv[layoutIndex + 1] as ConsumerLayout;
-        const problems = consumerReportProblems(report, layout);
+        const pathIndex = context.check.argv.indexOf('--delivery-path');
+        const path = pathIndex < 0 ? undefined : context.check.argv[pathIndex + 1] as DeliveryPath;
+        const problems = consumerReportProblems(report, layout, path);
         const modeExercise = context.check.argv.includes('--exercise');
         if (modeExercise !== (report.exercise === 'theme-mode')) problems.push('consumer exercise differs from the registered command');
         if (problems.length) return { verdict: 'incomplete', executed: [], reason: problems.join('; ') };
+        const cssReference = new Map<string, string>();
         for (const row of report.cases) {
           if (isAbsolute(row.snapshot) || relative(output, join(output, row.snapshot)).startsWith('..') || !existsSync(join(output, row.snapshot))) return { verdict: 'incomplete', executed: [], reason: `missing values snapshot: ${row.id}` };
           const snapshot = JSON.parse(readFileSync(join(output, row.snapshot), 'utf8'));
@@ -575,21 +586,47 @@ const consumerProofAdapter: Adapter = {
           });
           const paint = ['root', 'control', 'status'].every((part) => ['backgroundColor', 'color'].every((property) => typeof snapshot?.expected?.[part]?.[property] === 'string' && (row.status !== 'passed' || snapshot.actual?.[part]?.[property] === snapshot.expected[part][property])));
           if (snapshot?.id !== row.id || !variables || !paint || !snapshot.actual || JSON.stringify(snapshot.failures) !== JSON.stringify(row.failures)) return { verdict: 'incomplete', executed: [], reason: `invalid values snapshot: ${row.id}` };
+          if (report.deliveryPath !== 'css') {
+            const draftName = row.id.split('/').at(-1)!.replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '');
+            const draftPath = join(output, draftName, 'ultima-theme.json');
+            if (!existsSync(draftPath)) return { verdict: 'incomplete', executed: [], reason: `missing installed draft: ${row.id}` };
+            const draft = parseDraft(readFileSync(draftPath, 'utf8'));
+            if (!draft.ok) return { verdict: 'incomplete', executed: [], reason: `invalid installed draft: ${row.id}` };
+            const tokens = Object.keys(resolveDraft(draft.draft).dark);
+            const complete = ['variables', 'controlVariables', 'portalVariables'].every((part) => tokens.every((token) => typeof snapshot[part]?.[token]?.expected === 'string' && typeof snapshot[part]?.[token]?.actual === 'string' && (row.status !== 'passed' || snapshot[part][token].actual === snapshot[part][token].expected)));
+            const portal = ['backgroundColor', 'color'].every((key) => typeof snapshot.expected?.portal?.[key] === 'string' && typeof snapshot.actual?.portal?.[key] === 'string' && (row.status !== 'passed' || snapshot.expected.portal[key] === snapshot.actual.portal[key]));
+            if (!complete || !portal || snapshot.deliveryPath !== report.deliveryPath || (report.deliveryPath === 'stylex-subtree' && row.status === 'passed' && (!snapshot.portal?.inContainer || snapshot.portal.documentSurface === snapshot.portal.subtreeSurface))) return { verdict: 'incomplete', executed: [], reason: `incomplete delivery evidence: ${row.id}` };
+            if (report.deliveryPath === 'registry') {
+              const mode = row.id.split('/').at(-1)!.replace(/^css-reference-/, '');
+              const values = JSON.stringify([snapshot.actual, ...['variables', 'controlVariables', 'portalVariables'].map((part) => tokens.map((token) => [token, snapshot[part][token].actual]))]);
+              if (draftName === 'css-reference') cssReference.set(mode, values);
+              else if (!draftName && row.status === 'passed' && cssReference.get(mode) !== values) return { verdict: 'incomplete', executed: [], reason: `registry differs from direct CSS evidence: ${row.id}` };
+            }
+          }
           if (report.layout !== 'vite') {
             const evidence = snapshot.hydration as HydrationEvidence | undefined;
             if (!evidence?.server?.attributes || !evidence.hydrated?.attributes || !Array.isArray(evidence.errors) || typeof evidence.ready !== 'boolean' || (row.status === 'passed' && hydrationProblems(evidence).length)) return { verdict: 'incomplete', executed: [], reason: `invalid hydration snapshot: ${row.id}` };
-            const extraction = snapshot.extraction;
-            if (!extraction?.expected || !extraction.actual || !['height', 'radius', 'display'].every((key) => typeof extraction.expected[key] === 'string' && typeof extraction.actual[key] === 'string' && (row.status !== 'passed' || extraction.actual[key] === extraction.expected[key]))) return { verdict: 'incomplete', executed: [], reason: `invalid extraction snapshot: ${row.id}` };
             const html = join(output, `${row.id.split('/').at(-1)}.server.html`);
-            if (!existsSync(html) || !readFileSync(html, 'utf8').includes('<main>')) return { verdict: 'incomplete', executed: [], reason: `missing server HTML: ${row.id}` };
+            if (!existsSync(html) || !/<main[\s>]/.test(readFileSync(html, 'utf8'))) return { verdict: 'incomplete', executed: [], reason: `missing server HTML: ${row.id}` };
             artifacts.push(html);
           }
+          if (report.layout !== 'vite' || report.deliveryPath !== 'css') {
+            const extraction = snapshot.extraction;
+            if (!extraction?.expected || !extraction.actual || !['height', 'radius', 'display'].every((key) => typeof extraction.expected[key] === 'string' && typeof extraction.actual[key] === 'string' && (row.status !== 'passed' || extraction.actual[key] === extraction.expected[key]))) return { verdict: 'incomplete', executed: [], reason: `invalid extraction snapshot: ${row.id}` };
+          }
           artifacts.push(join(output, row.snapshot));
+        }
+        if (report.deliveryPath === 'cli') for (const command of ['doctor', 'check'] as const) {
+          const file = report.cliReports?.[command];
+          if (!file || isAbsolute(file) || relative(output, join(output, file)).startsWith('..') || !existsSync(join(output, file))) return { verdict: 'incomplete', executed: [], reason: `missing packed CLI ${command} report` };
+          const problems = cliReportProblems(JSON.parse(readFileSync(join(output, file), 'utf8')), command, report.layout);
+          if (problems.length) return { verdict: 'incomplete', executed: [], reason: problems.join('; ') };
+          artifacts.push(join(output, file));
         }
         if (report.source.manifest.digest !== context.identity.manifest.digest || report.source.head !== context.identity.head) return { verdict: 'incomplete', executed: [], reason: 'consumer-proof did not test the captured source identity' };
         const expectedExit = report.status === 'passed' ? 0 : report.status === 'failed' ? 1 : 2;
         if (process.exitCode !== expectedExit || report.status === 'incomplete') return { verdict: 'incomplete', expected: report.expected, executed: report.executed, reason: `consumer-proof ${report.status}, exit ${process.exitCode}: ${report.errors.join('; ')}` };
-        return { verdict: report.status === 'passed' ? 'passed' : 'validation-failure', expected: report.expected, executed: report.executed, failures: report.cases.flatMap((row) => row.failures.map((failure) => `${row.id}: ${failure}`)), reason: `consumer-proof ${report.status}: ${report.executed.length} installed ${report.layout}/CSS Chromium cases` };
+        return { verdict: report.status === 'passed' ? 'passed' : 'validation-failure', expected: report.expected, executed: report.executed, failures: report.cases.flatMap((row) => row.failures.map((failure) => `${row.id}: ${failure}`)), reason: `consumer-proof ${report.status}: ${report.executed.length} installed ${report.layout}/${report.deliveryPath} Chromium cases` };
       },
     };
   }),
@@ -673,6 +710,7 @@ export const ADAPTERS: Adapters = {
   'consumer-proof': consumerProofAdapter,
   'consumer-proof-next-app': consumerProofAdapter,
   'consumer-proof-next-src': consumerProofAdapter,
+  ...Object.fromEntries((['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src'] as const).flatMap((base) => (['stylex-subtree', 'registry', 'cli'] as const).map((path) => [`${base}-${path}`, consumerProofAdapter]))),
   'consumer-mode-vite': consumerProofAdapter,
   'consumer-mode-next-app': consumerProofAdapter,
   'consumer-mode-next-src': consumerProofAdapter,

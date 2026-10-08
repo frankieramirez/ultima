@@ -30,6 +30,15 @@ test('theme-mode requires eight first-paint cases per layout and cannot satisfy 
   }
 });
 
+test('the mode exercise preserves its CSS-only identity alongside every legacy delivery path', () => {
+  const report = { layout: 'vite', exercise: 'theme-mode', installedItems: ['theme-mode', 'popover'] };
+  const message = 'theme-mode requires CSS delivery';
+  assert.ok(!consumerReportProblems({ ...report, deliveryPath: 'css' }).includes(message));
+  for (const deliveryPath of ['stylex-subtree', 'registry', 'cli']) {
+    assert.ok(consumerReportProblems({ ...report, deliveryPath }).includes(message));
+  }
+});
+
 test('mode snapshots reject fabricated first paint, lost tokens, lifecycle, SSR and hydration errors', () => {
   const state = (mode: string, attribute: string | null) => ({ mode, attribute, resolved: mode, colorScheme: mode, extraction: { display: 'inline-flex' }, variables: Object.fromEntries(['root', 'control', 'popup'].map((part) => [part, Object.fromEntries(Array.from({ length: 6 }, (_, i) => [i, { expected: 'value', actual: 'value' }]))])) });
   const snapshot = { id: modeCases('next-app')[0], expectedMode: 'light', firstPaint: { attribute: 'light', scheme: 'light', hydrated: false }, serverHtml: 'light-dark.server.html', serverSnapshot: { mode: 'system', resolved: 'pending' }, transitions: [state('light', 'light'), state('light', 'light'), state('dark', 'dark'), state('dark', null), state('light', null), state('dark', 'dark')], crossTab: true, errors: [], failures: [] };
