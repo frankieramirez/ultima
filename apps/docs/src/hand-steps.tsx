@@ -15,6 +15,7 @@ const styles = stylex.create({
     fontSize: text['--ult-text-5'],
     lineHeight: 1.65,
     listStyleType: 'decimal-leading-zero',
+    overflowWrap: 'anywhere',
     marginBlock: space['--ult-space-5'],
     paddingInlineStart: space['--ult-space-9'],
   },

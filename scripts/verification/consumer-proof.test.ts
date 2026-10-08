@@ -22,6 +22,7 @@ import { manifestOf } from './source.ts';
 import { CONSUMER_RULES } from '../../packages/analysis/src/consumer.ts';
 import { themeProofProblems, themeSnapshot } from '../consumer-theme.ts';
 import type { ThemeRow } from '../../packages/cli/src/doctor-theme.ts';
+import { setupItems } from '../../registry/items.config.ts';
 
 test('installed theme receipt requires complete linked CSS/document proof and retains tree contents', async () => {
   const row: Omit<ThemeRow, 'artifact'> = { family: 'theme', boundary: 'src/main.tsx', state: 'match', paths: { artifact: 'ultima-theme.css', draft: 'ultima-theme.json', imports: [] }, source: null, differences: [], reason: 'fixture', repair: 'fixture', coverage: { contentMatches: true, modes: ['dark', 'light'], groups: [], scopes: [], rendering: 'not-evaluated' } };
@@ -134,13 +135,36 @@ test('theme delivery requires an actual shadcn command and verifies both files a
 });
 
 test('packed CLI evidence rejects success exits with missing scope, incomplete diagnostics or unsupported doctor steps', () => {
-  const doctor = { command: 'doctor', target: 'vite', diagnostics: [], unsupported: [] };
+  const unsupported = setupItems['setup-vite'].handSteps.filter((step) => step.unverifiable)
+    .map((step) => ({ step: step.prose, reason: step.unverifiable }));
+  const doctor = { command: 'doctor', target: 'vite', diagnostics: [], unsupported };
   const check = { command: 'check', status: 'clean', counts: { errors: 0, incomplete: 0 }, scopes: [{ kind: 'app', files: 3 }], rules: CONSUMER_RULES.map((id) => ({ id, status: 'blocking' })), diagnostics: [], unsupported: [] };
   assert.deepEqual(cliReportProblems(doctor, 'doctor', 'vite'), []);
   assert.deepEqual(cliReportProblems(check, 'check', 'vite'), []);
   assert.ok(cliReportProblems(doctor, 'doctor', 'next-app').length);
   assert.ok(cliReportProblems({ ...doctor, unsupported: [{ step: 'missing' }] }, 'doctor', 'vite').length);
   for (const change of [{ scopes: [] }, { rules: [] }, { rules: check.rules.slice(1) }, { rules: check.rules.map((row) => ({ ...row, status: 'skipped' })) }, { status: 'incomplete' }, { diagnostics: [{}] }, { diagnostics: [{ severity: 'incomplete' }] }, { counts: { errors: 0, incomplete: 1 } }]) assert.ok(cliReportProblems({ ...check, ...change }, 'check', 'vite').length);
+});
+
+test('doctor consumer proof requires exactly the source-bound manual inventory for each layout', () => {
+  for (const layout of CONSUMER_LAYOUTS) {
+    const target = layout === 'vite' ? 'vite' : 'next';
+    const steps = setupItems[`setup-${target}`].handSteps;
+    const unsupported = steps.filter((step) => step.unverifiable)
+      .map((step) => ({ step: step.prose, reason: step.unverifiable }));
+    const doctor = { command: 'doctor', target, diagnostics: [], unsupported };
+    assert.deepEqual(cliReportProblems(doctor, 'doctor', layout), []);
+    const checked = steps.find((step) => step.assertion)!;
+    for (const changed of [
+      [], unsupported.slice(1), [...unsupported, unsupported[0]], [...unsupported].reverse(),
+      [{ ...unsupported[0], reason: 'unknown reason' }, ...unsupported.slice(1)],
+      [...unsupported, { step: 'unknown step', reason: 'unsupported' }],
+      [...unsupported, { step: checked.prose, reason: 'skip a real setup assertion' }],
+    ]) assert.ok(cliReportProblems({ ...doctor, unsupported: changed }, 'doctor', layout).length);
+    for (const diagnostics of [[{ severity: 'blocking' }], [{ severity: 'incomplete' }]]) {
+      assert.ok(cliReportProblems({ ...doctor, diagnostics }, 'doctor', layout).length);
+    }
+  }
 });
 
 function report(): ConsumerReport {
@@ -318,6 +342,8 @@ test('Next adapters require SSR HTML, completed hydration and token-derived extr
 
 test('delivery adapters reject missing group, portal and CLI evidence rather than accepting an exit-zero summary', async () => {
   const work = await mkdtemp(join(tmpdir(), 'ultima-delivery-adapter-'));
+  const unsupported = setupItems['setup-vite'].handSteps.filter((step) => step.unverifiable)
+    .map((step) => ({ step: step.prose, reason: step.unverifiable }));
   try {
     for (const path of ['stylex-subtree', 'registry', 'cli'] as const) for (const fault of ['none', 'missing-group', 'missing-portal', 'missing-extraction', 'wrong-path', 'missing-cli-report', 'css-drift'] as const) {
       if (fault === 'missing-cli-report' && path !== 'cli') continue;
@@ -348,7 +374,7 @@ test('delivery adapters reject missing group, portal and CLI evidence rather tha
           if (fault === 'css-drift' && name === '') snapshot.controlVariables['--ult-font-weight-medium'] = { expected: 'drift', actual: 'drift' };
           fs.writeFileSync(path.join(output, row.snapshot), JSON.stringify(snapshot));
         }
-        fs.writeFileSync(path.join(output, 'doctor.json'), JSON.stringify({ command: 'doctor', target: 'vite', diagnostics: [], unsupported: [] }));
+        fs.writeFileSync(path.join(output, 'doctor.json'), JSON.stringify({ command: 'doctor', target: 'vite', diagnostics: [], unsupported: ${JSON.stringify(unsupported)} }));
         if (fault !== 'missing-cli-report') fs.writeFileSync(path.join(output, 'check.json'), JSON.stringify({ command: 'check', status: 'clean', counts: { errors: 0, incomplete: 0 }, scopes: [{kind: 'app', files: 3}], rules: ${JSON.stringify(CONSUMER_RULES.map((id) => ({ id, status: 'blocking' })))}, diagnostics: [], unsupported: [] }));
         if (fault === 'wrong-path') report.deliveryPath = 'css';
         fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report));

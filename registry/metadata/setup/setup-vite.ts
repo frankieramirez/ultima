@@ -29,6 +29,14 @@ export default {
       assertion: { kind: 'layered-resets', entries: ['index.html', 'src/main.*'] },
     },
     {
+      prose: 'Before UI edits, read project design guidance and trace the active local theme; preserve an existing brand. Choose a custom theme in https://ultima.systems/theme-studio when authorized. Follow https://ultima.systems/llms.txt#discover-and-maintain-the-product-theme and the install walkthrough at https://ultima.systems/install#theme-adoption.',
+      unverifiable: 'Brand intent and the association between local documents, drafts and active themes require project evidence and review.',
+    },
+    {
+      prose: 'For an exported root theme, install the Studio registry item, keep ultima-theme.json and review DESIGN.md before replacement. Import ../ultima-theme.css from src/main.tsx after base CSS; inspect the production cascade so it follows StyleX. Run npx ultima-design doctor and npx ultima-design check, then check the root, a control and an open popup in dark, light and system mode, including reduced motion and loaded fonts.',
+      unverifiable: 'Ordinary doctor checks setup, not the production theme cascade, rendered values, fonts or portal inheritance.',
+    },
+    {
       prose: "A strict CSP needs a nonce: pass it to Base UI's `CSPProvider` at your app root.",
       spec: 'A strict CSP needs a nonce.',
       unverifiable: 'The headers are set at runtime or by the host.',
