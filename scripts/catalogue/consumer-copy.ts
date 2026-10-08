@@ -52,25 +52,30 @@ export function consumerCopy(
   };
   const analysed = importsOf(file);
   if (analysed.problems.length) fail(analysed.problems.map(({ message }) => message).join('; '));
-  for (const imported of analysed.imports) {
-    const specifier = imported.specifier;
+  const collectDependency = (specifier: string) => {
     if (specifier.startsWith('.')) locals.push(resolveLocal(files, path, specifier));
     else if (!specifier.startsWith('@ultima/')) {
       const name = specifier.split('/').slice(0, specifier.startsWith('@') ? 2 : 1).join('/');
       if (!['react', 'react-dom'].includes(name)) dependencies.add(name);
     }
+  };
+  for (const imported of analysed.imports) {
+    const specifier = imported.specifier;
+    collectDependency(specifier);
     if (specifier.startsWith('@ultima/') && !file.statements.some((statement) =>
       ts.isImportDeclaration(statement) && statement.moduleSpecifier.getStart(file) === imported.start)) {
       fail('workspace re-exports and dynamic imports require an explicit import declaration');
     }
   }
-  const unsupported = (node: ts.Node) => {
-    if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument) && ts.isStringLiteral(node.argument.literal) && node.argument.literal.text.startsWith('@ultima/')) {
-      fail('workspace type imports require an explicit import declaration');
+  const typeDependencies = (node: ts.Node) => {
+    if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument) && ts.isStringLiteral(node.argument.literal)) {
+      const specifier = node.argument.literal.text;
+      if (specifier.startsWith('@ultima/')) fail('workspace type imports require an explicit import declaration');
+      collectDependency(specifier);
     }
-    ts.forEachChild(node, unsupported);
+    ts.forEachChild(node, typeDependencies);
   };
-  unsupported(file);
+  typeDependencies(file);
   for (const statement of file.statements) {
     if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
     const specifier = statement.moduleSpecifier.text;

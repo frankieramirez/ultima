@@ -76,6 +76,19 @@ describe('consumer-copy projection', () => {
     values[entry] = 'const lazy = import(name);';
     assert.throws(() => consumerBundle(entry, catalogue, files), /computed specifier/);
   });
+
+  test('retains local type-query dependencies and derives external type packages', () => {
+    const { catalogue, files, values } = fixture();
+    values[entry] = "export type Row = import('./types').Row;\nexport type Scale = import('d3-scale').ScaleLinear<number, number>;\n";
+    values['apps/docs/src/demos/button/types.ts'] = "export type Row = import('./nested').Row;\n";
+    values['apps/docs/src/demos/button/nested.ts'] = 'export type Row = { id: string };\n';
+    const bundle = consumerBundle(entry, catalogue, files);
+    assert.deepEqual(bundle.files.map(({ path }) => path), ['examples/demos/button/sorting.tsx', 'examples/demos/button/types.ts', 'examples/demos/button/nested.ts']);
+    assert.equal(bundle.files[0]!.content, values[entry]);
+    assert.deepEqual(bundle.dependencies, ['d3-scale']);
+    delete values['apps/docs/src/demos/button/nested.ts'];
+    assert.throws(() => consumerBundle(entry, catalogue, files), /unresolved local dependency "\.\/nested"/);
+  });
 });
 
 describe('composition inventory and generated recipes', () => {
