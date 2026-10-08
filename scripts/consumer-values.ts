@@ -48,6 +48,6 @@ export async function consumerValues(page: Page, table: TokenTable, mode: 'dark'
     const extraction = { tokens: { height: table['--ult-space-10'], radius: table['--ult-radius-md'] }, expected: { height: normalize(table['--ult-space-10']!, 'height'), radius: normalize(table['--ult-radius-md']!, 'border-radius'), display: 'inline-flex' }, actual: { height: css.height, radius: css.borderRadius, display: css.display } };
     for (const property of ['height', 'radius', 'display'] as const) if (extraction.actual[property] !== extraction.expected[property]) failures.push(`control.${property}: expected ${extraction.expected[property]}, got ${extraction.actual[property]}`);
     a.remove(); b.remove();
-    return { id, mode, engine: 'chromium', layout, deliveryPath, variables, controlVariables, portalVariables, expected, actual, extraction, portal, colorScheme: root.colorScheme, failures };
+    return { id, mode, engine: 'chromium', layout, deliveryPath, variables, controlVariables, portalVariables, expected, actual, extraction, portal, colorScheme: root.colorScheme, controlColorScheme: css.colorScheme, failures };
   }, { table, mode, id, layout, deliveryPath });
 }

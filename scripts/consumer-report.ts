@@ -21,6 +21,15 @@ export const DELIVERY_PATHS = ['css', 'stylex-subtree', 'registry', 'cli'] as co
 export type DeliveryPath = typeof DELIVERY_PATHS[number];
 export const consumerCases = (layout: ConsumerLayout, path: DeliveryPath = 'css') => (path === 'registry' ? ['css-reference-', '', ...registryPresets().map((id) => `${id}-`)] : ['']).flatMap((preset) => ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${layout}/${path}/chromium/${preset}${mode}`));
 export const CONSUMER_CASES = consumerCases('vite');
+export function consumerPrerequisites(layout: ConsumerLayout, path: DeliveryPath, selectedCase?: string): string[] {
+  if (typeof selectedCase !== 'string' || path !== 'registry') return [];
+  const mode = selectedCase.split('/').at(-1)!.match(/(?:system|explicit)-(?:dark|light)$/)?.[0];
+  const prefix = `${layout}/${path}/chromium/`;
+  return mode && !selectedCase.includes('/css-reference-') ? [`${prefix}css-reference-${mode}`, ...(selectedCase !== `${prefix}${mode}` ? [`${prefix}${mode}`] : [])] : [];
+}
+export function consumerReproduction(layout: ConsumerLayout, path: DeliveryPath, id: string, options: { preset?: string; fault?: string } = {}): string[] {
+  return ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', layout, '--delivery-path', path, ...(options.preset ? ['--preset', options.preset] : []), ...(options.fault ? ['--fault', options.fault] : []), '--case', id];
+}
 export type ConsumerCase = { id: string; status: 'passed' | 'failed'; snapshot: string; failures: string[] };
 export type ConsumerReport = {
   schemaVersion: 1;
@@ -47,6 +56,7 @@ export type ConsumerReport = {
   drafts?: Record<string, { digest: string; fingerprint: string; recipeVersion: number }>;
   cliReports?: { doctor: string; check: string };
   selectedCase?: string;
+  prerequisites?: ConsumerCase[];
 };
 
 export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, path?: DeliveryPath): string[] {
@@ -58,12 +68,14 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
   const all = consumerCases(report.layout, report.deliveryPath);
   if (report.selectedCase && !all.includes(report.selectedCase)) problems.push('unknown selected consumer case');
   const expected = report.selectedCase ? [report.selectedCase] : all;
-  const same = (values: unknown) => Array.isArray(values) && values.length === expected.length && new Set(values).size === values.length && expected.every((id) => values.includes(id));
+  const same = (values: unknown, wanted = expected) => Array.isArray(values) && values.length === wanted.length && new Set(values).size === values.length && wanted.every((id) => values.includes(id));
+  const prerequisites = report.prerequisites ?? [];
+  if (!Array.isArray(prerequisites) || !same(prerequisites.map((row) => row?.id), consumerPrerequisites(report.layout, report.deliveryPath, report.selectedCase))) problems.push('consumer-proof prerequisite evidence is incomplete');
   if (!same(report.expected) || !same(report.executed)) problems.push('consumer-proof case coverage is incomplete');
   if (!Array.isArray(report.cases) || !same(report.cases.map((row) => row?.id))) problems.push('consumer-proof case results are incomplete');
-  else for (const row of report.cases) {
-    if (!['passed', 'failed'].includes(row.status) || typeof row.snapshot !== 'string' || !row.snapshot || !Array.isArray(row.failures) || row.failures.some((failure) => typeof failure !== 'string')) {
-      problems.push(`invalid case result: ${row.id}`);
+  else for (const row of [...(Array.isArray(prerequisites) ? prerequisites : []), ...report.cases]) {
+    if (!row || typeof row.id !== 'string' || !['passed', 'failed'].includes(row.status) || typeof row.snapshot !== 'string' || !row.snapshot || !Array.isArray(row.failures) || row.failures.some((failure) => typeof failure !== 'string')) {
+      problems.push(`invalid case result: ${row?.id ?? 'missing'}`);
       continue;
     }
     if ((row.status === 'passed') !== (row.failures.length === 0)) problems.push(`case status disagrees with failures: ${row.id}`);
@@ -71,6 +83,11 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
   }
   const digest = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
   if (report.deliveryPath === 'registry' && registryPresets().filter((id) => !report.selectedCase || report.selectedCase.split('/').at(-1)?.startsWith(`${id}-`)).some((id) => !digest(report.drafts?.[id]?.digest) || !report.drafts?.[id]?.fingerprint || !Number.isInteger(report.drafts?.[id]?.recipeVersion))) problems.push('preset provenance is incomplete');
+  if (report.deliveryPath === 'registry' && report.selectedCase && all.includes(report.selectedCase)) {
+    const name = report.selectedCase.split('/').at(-1)!.replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '') || 'non-stock';
+    const selected = report.drafts?.[name];
+    if (!selected || !digest(selected.digest) || selected.digest !== report.source?.draftDigest || selected.fingerprint !== report.source?.draftFingerprint || selected.recipeVersion !== report.source?.recipeVersion) problems.push('selected registry provenance disagrees with source');
+  }
   if (report.deliveryPath === 'cli' && (!report.cliReports?.doctor || !report.cliReports?.check)) problems.push('packed CLI reports are missing');
   if (!report.source || !/^[a-f0-9]{40,64}$/.test(report.source.head ?? '') || !digest(report.source.manifest?.digest) || report.source.manifest.algorithm !== 'sha256' || report.source.manifest.version !== 1 || !Array.isArray(report.source.manifest?.entries) || report.source.manifest.files !== report.source.manifest.entries.length || !digest(report.source.registryManifestHash) || !digest(report.source.cliTarballDigest) || !digest(report.source.draftDigest) || typeof report.source.draftFingerprint !== 'string' || !report.source.draftFingerprint || !Number.isInteger(report.source.recipeVersion)) problems.push('consumer-proof source identity is incomplete');
   if (!Array.isArray(report.errors) || report.errors.some((error) => typeof error !== 'string') || (report.status === 'passed' && report.errors.length !== 0)) problems.push('invalid consumer-proof errors');

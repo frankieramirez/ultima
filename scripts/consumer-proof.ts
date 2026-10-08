@@ -10,7 +10,7 @@ import { presetDraft, resolveDraft, stockDraft, type ThemeDraft } from '../packa
 import { gate } from '../packages/tokens/src/theme/gate.ts';
 import { shuffleDraft } from '../packages/tokens/src/theme/shuffle.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
-import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
+import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerPrerequisites, consumerReproduction, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
 import { THEME_PRESETS } from '../packages/tokens/src/theme/draft.ts';
 import { installScene, SCENE_ITEMS, type SceneFault } from './consumer-scene.ts';
 import { browserConditions } from './consumer-browser.ts';
@@ -189,12 +189,14 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     await execute(app, 'npm', ['install', '-D', tarball]);
     const fixtures = [...(options.deliveryPath === 'registry' ? [{ name: 'css-reference', draft }] : []), { name: '', draft }, ...(options.deliveryPath === 'registry' ? THEME_PRESETS.map((preset) => ({ name: preset.id, draft: presetDraft(preset.id) })) : [])];
     const cssReference = new Map<string, Awaited<ReturnType<typeof consumerValues>>>();
+    const prerequisites = consumerPrerequisites(options.layout, options.deliveryPath, options.case);
     browser = await chromium.launch({ headless: true });
     report.versions.chromium = browser.version();
     for (const fixture of fixtures) {
       const cellName = options.case?.split('/').at(-1)!;
       const selectedFixture = cellName?.replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '');
-      if (options.case && fixture.name !== selectedFixture && !(fixture.name === 'css-reference' && selectedFixture === '')) continue;
+      const fixtureName = (id: string) => id.split('/').at(-1)!.replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '');
+      if (options.case && fixture.name !== selectedFixture && !prerequisites.some((id) => fixtureName(id) === fixture.name)) continue;
       const draft = fixture.draft;
       assert.ok(gate(resolveDraft(draft)).every((row) => row.dark.pass && row.light.pass), `${fixture.name || 'non-stock'} pairing gate`);
       const fixtureOutput = fixture.name ? join(output, fixture.name) : output;
@@ -204,7 +206,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       const installed = await installTheme(app, join(work, 'registry'), registry.url, draft, options.layout, options.deliveryPath, themeExecute, fixture.name === 'css-reference');
       const draftDigest = digest(installed);
       report.drafts![fixture.name || 'non-stock'] = { digest: draftDigest, fingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion };
-      if (!fixture.name) report.source.draftDigest = draftDigest;
+      if (!fixture.name || (options.case && fixture.name === selectedFixture)) Object.assign(report.source, { draftDigest, draftFingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion });
       await writeFile(join(fixtureOutput, 'ultima-theme.json'), installed);
       if (options.deliveryPath === 'cli' || documented) report.cliReports = await cliProof(app, fixtureOutput, options.layout, execute);
       if (documented) {
@@ -254,7 +256,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       const tables = options.preset === 'ultima' && (!fixture.name || fixture.name === 'css-reference' || fixture.name === 'ultima') ? frozen : resolveDraft(draft);
       const ids = ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${options.layout}/${options.deliveryPath}/chromium/${fixture.name ? `${fixture.name}-` : ''}${mode}`);
       for (const id of ids) {
-        if (options.case && id !== options.case && !(fixture.name === 'css-reference' && selectedFixture === '' && id.endsWith(cellName))) continue;
+        if (options.case && id !== options.case && !prerequisites.includes(id)) continue;
         const mode = id.endsWith('-dark') ? 'dark' : 'light';
         const explicit = id.includes('explicit-');
         const contextOptions = { reducedMotion: 'no-preference' as const, colorScheme: explicit ? (mode === 'dark' ? 'light' as const : 'dark' as const) : mode as 'dark' | 'light' };
@@ -264,7 +266,8 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
         const pageErrors = browserErrors(page);
         let hydration: HydrationEvidence | undefined;
         const name = id.split('/').at(-1)!;
-        const reproduce = `node --experimental-strip-types scripts/consumer-proof.ts --layout ${options.layout} --delivery-path ${options.deliveryPath}${options.preset ? ` --preset ${options.preset}` : ''}${options.fault ? ` --fault ${options.fault}` : ''} --case ${id}`;
+        const reproduceArgv = consumerReproduction(options.layout, options.deliveryPath, id, options);
+        const reproduce = reproduceArgv.join(' ');
         const browserLog = { console: [] as unknown[], pageErrors: [] as string[], failedRequests: [] as unknown[] };
         page.on('console', (message) => browserLog.console.push({ type: message.type(), text: message.text() }));
         page.on('pageerror', (error) => browserLog.pageErrors.push(String(error)));
@@ -316,17 +319,19 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
         await writeFile(join(output, `${name}.browser.json`), `${JSON.stringify(browserLog, null, 2)}\n`);
         await writeFile(join(output, `${name}.axe.json`), `${JSON.stringify(axeReport, null, 2)}\n`);
         await writeFile(join(output, `${name}.reproduce.txt`), `${reproduce}\nSource: ${source.head}\nManifest: ${source.manifest.digest}\n`);
-        await writeFile(join(output, `${name}.values.json`), `${JSON.stringify({ ...values, source: { head: source.head, manifest: source.manifest.digest }, reproduce, fixture: relative(output, fixtureOutput) || '.', artifacts: { build: relative(output, join(fixtureOutput, 'build.log')), server: relative(output, join(fixtureOutput, 'server.log')), browser: `${name}.browser.json`, axe: `${name}.axe.json`, screenshot: `${name}.png`, reproduce: `${name}.reproduce.txt` } }, null, 2)}\n`);
-        if (!options.case || id === options.case) {
+        await writeFile(join(output, `${name}.values.json`), `${JSON.stringify({ ...values, source: { head: source.head, manifest: source.manifest.digest }, reproduceArgv, reproduce, fixture: relative(output, fixtureOutput) || '.', artifacts: { build: relative(output, join(fixtureOutput, 'build.log')), server: relative(output, join(fixtureOutput, 'server.log')), browser: `${name}.browser.json`, axe: `${name}.axe.json`, screenshot: `${name}.png`, reproduce: `${name}.reproduce.txt` } }, null, 2)}\n`);
+        const row = { id, status: failures.length ? 'failed' as const : 'passed' as const, snapshot: `${name}.values.json`, failures };
+        if (prerequisites.includes(id)) (report.prerequisites ??= []).push(row);
+        else {
           report.executed.push(id);
-          report.cases.push({ id, status: failures.length ? 'failed' : 'passed', snapshot: `${name}.values.json`, failures });
+          report.cases.push(row);
         }
         await context.close();
       }
       await production.close();
       servers.pop();
     }
-    report.status = report.cases.some((row) => row.status === 'failed') ? 'failed' : 'passed';
+    report.status = [...(report.prerequisites ?? []), ...report.cases].some((row) => row.status === 'failed') ? 'failed' : 'passed';
     const after = hashSource(repository);
     assert.ok(after.ok && after.manifest.digest === source.manifest.digest, 'source changed while consumer proof ran');
   } catch (error) { report.errors.push(String(error)); report.status = 'incomplete'; }

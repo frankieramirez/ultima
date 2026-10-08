@@ -14,10 +14,39 @@ export const BROWSER_ASSERTIONS = [
   'reduced-motion-values', 'reduced-motion-interaction', 'axe-closed', 'axe-open', 'axe-switched-open', 'axe-switched-closed',
 ] as const;
 type Assertion = { name: string; expected: unknown; actual: unknown; status: 'passed' | 'failed'; error?: string };
-type AxeReport = { violations: { id: string; nodes: unknown[] }[]; incomplete: unknown[]; passes: unknown[] };
+type FocusItem = { role: string; name: string };
+type FocusStep = { key: string; inside: boolean; accessible: boolean; position: number; item: FocusItem | null };
+type AxeReport = { violations: { id: string; nodes: unknown[] }[]; incomplete: unknown[]; passes: unknown[]; focusCycle?: { relatedNodes: number; inventory: FocusItem[]; steps: FocusStep[] } };
 export type BrowserEvidence = { assertions: Assertion[]; axe: Record<string, AxeReport>; modeSnapshots: unknown[]; failures: string[] };
 
-export function browserEvidenceProblems(value: unknown, passed: boolean): string[] {
+function modalFocusNodes(axe: AxeReport): number | null {
+  let count = 0;
+  for (const rule of axe.incomplete as { id: string; nodes: { any: unknown[]; none: unknown[]; all: { id: string; relatedNodes: unknown[] }[] }[] }[]) {
+    if (!rule || rule.id !== 'aria-hidden-focus' || !Array.isArray(rule.nodes) || !rule.nodes.length) return null;
+    for (const node of rule.nodes) {
+      if (!node || node.any?.length !== 0 || node.none?.length !== 0 || node.all?.length !== 1 || node.all[0]?.id !== 'focusable-modal-open' || !Array.isArray(node.all[0].relatedNodes) || !node.all[0].relatedNodes.length) return null;
+      count += node.all[0].relatedNodes.length;
+    }
+  }
+  return count;
+}
+
+function axeProblems(axe: AxeReport, state: string): string[] {
+  const problems = axe.violations.map((violation) => violation?.id ?? 'invalid axe violation');
+  const count = modalFocusNodes(axe);
+  const cycle = axe.focusCycle;
+  const size = cycle?.inventory?.length ?? 0;
+  const reviewed = ['open', 'switched-open'].includes(state) && cycle?.relatedNodes === count && size > 0 && cycle.inventory.every((item) => typeof item?.role === 'string' && typeof item?.name === 'string') && Array.isArray(cycle.steps) && cycle.steps.length === 2 * (size + 1) && cycle.steps.every((step, index) => {
+    const forward = index <= size;
+    const offset = forward ? index : index - size - 1;
+    const position = forward ? offset % size : (size - 1 - offset % size);
+    return step?.inside === true && step.accessible === true && step.position === position && step.key === (forward ? 'Tab' : 'Shift+Tab') && JSON.stringify(step.item) === JSON.stringify(cycle.inventory[position]);
+  });
+  if (count === null || (count > 0 && !reviewed)) problems.push('unresolved axe incomplete');
+  return problems;
+}
+
+export function browserEvidenceProblems(value: unknown, passed: boolean, layout?: ConsumerLayout, deliveryPath?: DeliveryPath): string[] {
   if (!value || typeof value !== 'object') return ['missing browser pass-condition evidence'];
   const evidence = value as BrowserEvidence;
   const failures: string[] = [];
@@ -27,7 +56,7 @@ export function browserEvidenceProblems(value: unknown, passed: boolean): string
   }
   for (const state of ['closed', 'open', 'switched-open', 'switched-closed']) {
     const axe = evidence.axe?.[state];
-    if (!axe || !Array.isArray(axe.violations) || !Array.isArray(axe.incomplete) || !Array.isArray(axe.passes) || (passed && (axe.violations.length || !axe.passes.length))) failures.push(`missing or failing axe report: ${state}`);
+    if (!axe || !Array.isArray(axe.violations) || !Array.isArray(axe.incomplete) || !Array.isArray(axe.passes) || (passed && (axeProblems(axe, state).length || !axe.passes.length))) failures.push(`missing or failing axe report: ${state}`);
   }
   if (!Array.isArray(evidence.modeSnapshots) || evidence.modeSnapshots.length < 3 || !Array.isArray(evidence.failures) || (passed && evidence.failures.length)) failures.push('incomplete dynamic mode evidence');
   else {
@@ -35,6 +64,7 @@ export function browserEvidenceProblems(value: unknown, passed: boolean): string
     if (!['dark', 'light'].every((mode) => snapshots.some((snapshot) => snapshot?.mode === mode))) failures.push('dynamic modes did not cover both themes');
     for (const snapshot of snapshots) {
       if (!snapshot || typeof snapshot !== 'object') { failures.push('invalid dynamic theme snapshot'); continue; }
+      if ((layout && snapshot.layout !== layout) || (deliveryPath && snapshot.deliveryPath !== deliveryPath)) failures.push('dynamic snapshot has wrong layout or delivery path');
       const keys = Object.keys(snapshot.variables ?? {});
       const variables = keys.length > 0 && ['variables', 'controlVariables', 'portalVariables'].every((part) => keys.every((key) => {
         const value = snapshot[part as 'variables']?.[key];
@@ -42,6 +72,12 @@ export function browserEvidenceProblems(value: unknown, passed: boolean): string
       }));
       const paint = ['root', 'control', 'status', 'portal'].every((part) => ['backgroundColor', 'color'].every((property) => typeof snapshot.expected?.[part as 'root']?.[property as 'color'] === 'string' && typeof snapshot.actual?.[part as 'root']?.[property as 'color'] === 'string' && (!passed || snapshot.expected[part as 'root'][property as 'color'] === snapshot.actual[part as 'root']?.[property as 'color'])));
       if (!variables || !paint || !Array.isArray(snapshot.failures) || (passed && (snapshot.failures.length || snapshot.colorScheme !== snapshot.mode))) failures.push('invalid dynamic theme snapshot');
+      if (passed && (snapshot.controlColorScheme !== snapshot.mode || snapshot.portal?.colorScheme !== snapshot.mode)) failures.push('dynamic control or portal color-scheme differs from mode');
+      if (!snapshot.portal || typeof snapshot.portal.inContainer !== 'boolean' || typeof snapshot.portal.documentSurface !== 'string' || typeof snapshot.portal.subtreeSurface !== 'string' || (passed && deliveryPath === 'stylex-subtree' && (!snapshot.portal.inContainer || snapshot.portal.documentSurface === snapshot.portal.subtreeSurface))) failures.push('invalid dynamic portal boundary');
+      if (!['height', 'radius', 'display'].every((key) => {
+        const property = key as 'height' | 'radius' | 'display';
+        return typeof snapshot.extraction?.expected?.[property] === 'string' && typeof snapshot.extraction?.actual?.[property] === 'string' && (!passed || snapshot.extraction.actual[property] === snapshot.extraction.expected[property]);
+      })) failures.push('invalid dynamic extraction');
     }
   }
   return failures;
@@ -85,7 +121,36 @@ export async function browserConditions(page: Page, tables: ResolvedDraft, mode:
     await page.addScriptTag({ path: axePath });
     const result = await page.evaluate(async () => (window as unknown as { axe: { run: () => Promise<AxeReport> } }).axe.run());
     evidence.axe[state] = result;
-    return result.violations.map((violation) => violation.id);
+    const count = modalFocusNodes(result);
+    if (count !== null && count > 0) {
+      const focusState = async (edge?: 'first' | 'last') => dialog.evaluate((element, edge) => {
+        const accessible = (node: Element) => !node.closest('[aria-hidden="true"], [inert]') && getComputedStyle(node).visibility === 'visible' && getComputedStyle(node).display !== 'none' && node.getClientRects().length > 0;
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT);
+        const elements: HTMLElement[] = [];
+        while (walker.nextNode()) {
+          const node = walker.currentNode;
+          if (node instanceof HTMLElement && node.tabIndex >= 0 && !node.matches(':disabled') && accessible(node)) elements.push(node);
+        }
+        elements.sort((a, b) => (a.tabIndex || Infinity) - (b.tabIndex || Infinity));
+        const item = (node: HTMLElement) => ({ role: node.getAttribute('role') ?? node.tagName.toLowerCase(), name: node.getAttribute('aria-label') ?? node.textContent?.trim() ?? '' });
+        if (edge) elements[edge === 'first' ? 0 : elements.length - 1]?.focus();
+        const active = document.activeElement;
+        return { inventory: elements.map(item), inside: !!active && element.contains(active), accessible: !!active && accessible(active), position: elements.indexOf(active as HTMLElement), item: active instanceof HTMLElement ? item(active) : null };
+      }, edge);
+      const { inventory } = await focusState();
+      const steps: FocusStep[] = [];
+      // Axe defers modal-only tab checks; retain its findings and cross both boundaries.
+      for (const key of ['Tab', 'Shift+Tab']) {
+        await focusState(key === 'Tab' ? 'last' : 'first');
+        for (let index = 0; index <= inventory.length; index++) {
+          await page.keyboard.press(key);
+          const observed = await focusState();
+          steps.push({ key, inside: observed.inside && JSON.stringify(observed.inventory) === JSON.stringify(inventory), accessible: observed.accessible, position: observed.position, item: observed.item });
+        }
+      }
+      result.focusCycle = { relatedNodes: count, inventory, steps };
+    }
+    return axeProblems(result, state);
   };
   try {
   await check('form-label-required', true, async () => await input.getAttribute('required') !== null && await page.getByRole('form', { name: 'Project form' }).isVisible());
