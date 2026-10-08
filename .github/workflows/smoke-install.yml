@@ -17,7 +17,6 @@ on:
       - 'scripts/build-registry.ts'
       - 'scripts/build-agent-guide.ts'
       - 'scripts/smoke-install.sh'
-      - 'scripts/smoke-next-styles.ts'
       - 'packages/cli/**'
       - 'packages/ui/src/**'
       - 'packages/elements/**'

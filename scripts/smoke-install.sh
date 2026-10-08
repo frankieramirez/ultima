@@ -524,9 +524,6 @@ import "./ultima.css";'
   step "next: npm run build"
   (cd "$app" && npm run build)
 
-  step "next: production component styles"
-  node "$ROOT/scripts/smoke-next-styles.ts" "$app"
-
   step "next: ultima doctor"
   assert_doctor_passes "$app"
 

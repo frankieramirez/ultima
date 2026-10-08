@@ -1,11 +1,14 @@
 import type { Manifest } from './verification/source.ts';
 
-export const CONSUMER_CASES = ['vite/css/chromium/system-dark', 'vite/css/chromium/system-light', 'vite/css/chromium/explicit-dark', 'vite/css/chromium/explicit-light'];
+export const CONSUMER_LAYOUTS = ['vite', 'next-app', 'next-src'] as const;
+export type ConsumerLayout = typeof CONSUMER_LAYOUTS[number];
+export const consumerCases = (layout: ConsumerLayout) => ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${layout}/css/chromium/${mode}`);
+export const CONSUMER_CASES = consumerCases('vite');
 export type ConsumerCase = { id: string; status: 'passed' | 'failed'; snapshot: string; failures: string[] };
 export type ConsumerReport = {
   schemaVersion: 1;
   status: 'passed' | 'failed' | 'incomplete';
-  layout: 'vite';
+  layout: ConsumerLayout;
   deliveryPath: 'css';
   source: {
     head: string | null;
@@ -26,13 +29,14 @@ export type ConsumerReport = {
   errors: string[];
 };
 
-export function consumerReportProblems(value: unknown): string[] {
+export function consumerReportProblems(value: unknown, layout?: ConsumerLayout): string[] {
   if (!value || typeof value !== 'object') return ['missing consumer-proof report'];
   const report = value as ConsumerReport;
   const problems: string[] = [];
-  if (report.schemaVersion !== 1 || report.layout !== 'vite' || report.deliveryPath !== 'css') problems.push('unknown consumer-proof schema or parameters');
+  if (report.schemaVersion !== 1 || !CONSUMER_LAYOUTS.includes(report.layout) || report.deliveryPath !== 'css' || (layout && report.layout !== layout)) problems.push('unknown consumer-proof schema or parameters');
   if (!['passed', 'failed', 'incomplete'].includes(report.status)) problems.push('unknown consumer-proof status');
-  const same = (values: unknown) => Array.isArray(values) && values.length === CONSUMER_CASES.length && new Set(values).size === values.length && CONSUMER_CASES.every((id) => values.includes(id));
+  const expected = consumerCases(report.layout);
+  const same = (values: unknown) => Array.isArray(values) && values.length === expected.length && new Set(values).size === values.length && expected.every((id) => values.includes(id));
   if (!same(report.expected) || !same(report.executed)) problems.push('consumer-proof case coverage is incomplete');
   if (!Array.isArray(report.cases) || !same(report.cases.map((row) => row?.id))) problems.push('consumer-proof case results are incomplete');
   else for (const row of report.cases) {

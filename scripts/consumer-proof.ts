@@ -11,7 +11,8 @@ import { toCss, toRegistryItem } from '../packages/tokens/src/theme/export.ts';
 import { gate } from '../packages/tokens/src/theme/gate.ts';
 import { shuffleDraft } from '../packages/tokens/src/theme/shuffle.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
-import { CONSUMER_CASES, type ConsumerReport } from './consumer-report.ts';
+import { CONSUMER_LAYOUTS, consumerCases, type ConsumerLayout, type ConsumerReport } from './consumer-report.ts';
+import { browserErrors, hydrationProblems, hydrationState, nextFault, nextScene, serveNext, setupNext, type HydrationEvidence } from './consumer-next.ts';
 import { hashSource } from './verification/source.ts';
 
 export function proofDraft(): ThemeDraft {
@@ -28,11 +29,16 @@ export function proofDraft(): ThemeDraft {
   return draft;
 }
 
-export type ProofOptions = { layout: 'vite'; deliveryPath: 'css'; output?: string; fault?: 'theme-import' | 'stylex-extraction' };
+export type ProofOptions = { layout: ConsumerLayout; deliveryPath: 'css'; output?: string; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
 export async function consumerProof(options: ProofOptions): Promise<ConsumerReport> {
-  if (options.layout !== 'vite' || options.deliveryPath !== 'css') throw new Error('only layout=vite deliveryPath=css is implemented');
+  if (!CONSUMER_LAYOUTS.includes(options.layout) || options.deliveryPath !== 'css') throw new Error('unsupported consumer proof parameters');
+  if (options.fault === 'src-extraction' && options.layout !== 'next-src') throw new Error('src-extraction requires next-src');
+  if (options.fault === 'hydration-mismatch' && options.layout === 'vite') throw new Error('hydration-mismatch requires Next');
+  const isNext = options.layout !== 'vite';
+  const src = options.layout === 'next-src';
+  const setupItem = isNext ? 'setup-next' : 'setup-vite';
   const base = join(repository, '.scratch/consumer-proof');
   await mkdir(base, { recursive: true });
   const output = options.output ? resolve(options.output) : await mkdtemp(join(base, 'run-'));
@@ -43,8 +49,8 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   const report: ConsumerReport = {
     schemaVersion: 1, status: 'incomplete', layout: options.layout, deliveryPath: options.deliveryPath,
     source: { head: source.head, manifest: source.manifest, registryManifestHash: null, cliTarballDigest: null, draftDigest: null, draftFingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion },
-    command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: ['setup-vite', 'button', 'badge', 'tokens', 'lib', 'ultima-theme'],
-    expected: [...CONSUMER_CASES], executed: [], cases: [], errors: [],
+    command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: [setupItem, 'button', 'badge', 'tokens', 'lib', 'ultima-theme'],
+    expected: consumerCases(options.layout), executed: [], cases: [], errors: [],
   };
   const execute: Run = async (cwd, command, args) => {
     await appendFile(join(output, 'commands.log'), `${JSON.stringify({ cwd, command, args })}\n`);
@@ -72,20 +78,23 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     report.source.cliTarballDigest = digest(await readFile(tarball));
     const registry = await serveRegistry(join(work, 'registry'));
     servers.push(registry);
-    const app = join(work, 'vite-app');
-    await scaffold('vite', app, execute);
-    const setup = await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', `${registry.url}/r/setup-vite.json`, '--yes']);
-    for (const step of ['"paths": { "@/*": ["./src/*"] }', "import { ultimaStylex } from './ultima.vite.ts'", 'before the React plugin', 'Wrap any global CSS reset in an @layer']) assert.ok(setup.includes(step), `setup no longer prints: ${step}`);
-    for (const name of ['tsconfig.json', 'tsconfig.app.json']) {
-      const path = join(app, name);
-      const json = JSON.parse((await readFile(path, 'utf8')).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, ''));
-      json.compilerOptions = { ...json.compilerOptions, paths: { '@/*': ['./src/*'] } };
-      await writeFile(path, `${JSON.stringify(json, null, 2)}\n`);
+    const app = join(work, options.layout);
+    await scaffold(isNext ? (src ? 'next-src' : 'next-root') : 'vite', app, execute);
+    const setup = await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', `${registry.url}/r/${setupItem}.json`, '--yes']);
+    const configPath = join(app, isNext ? 'postcss.config.js' : 'vite.config.ts');
+    if (isNext) await setupNext(app, src, setup);
+    else {
+      for (const step of ['"paths": { "@/*": ["./src/*"] }', "import { ultimaStylex } from './ultima.vite.ts'", 'before the React plugin', 'Wrap any global CSS reset in an @layer']) assert.ok(setup.includes(step), `setup no longer prints: ${step}`);
+      for (const name of ['tsconfig.json', 'tsconfig.app.json']) {
+        const path = join(app, name);
+        const json = JSON.parse((await readFile(path, 'utf8')).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, ''));
+        json.compilerOptions = { ...json.compilerOptions, paths: { '@/*': ['./src/*'] } };
+        await writeFile(path, `${JSON.stringify(json, null, 2)}\n`);
+      }
+      const config = await readFile(configPath, 'utf8');
+      assert.ok(config.includes('plugins: [') && config.includes("import { defineConfig } from 'vite'"));
+      await writeFile(configPath, config.replace('plugins: [', 'plugins: [ultimaStylex(), ').replace("import { defineConfig } from 'vite'", "import { defineConfig } from 'vite'\nimport { ultimaStylex } from './ultima.vite.ts'"));
     }
-    const configPath = join(app, 'vite.config.ts');
-    const config = await readFile(configPath, 'utf8');
-    assert.ok(config.includes('plugins: [') && config.includes("import { defineConfig } from 'vite'"));
-    await writeFile(configPath, config.replace('plugins: [', 'plugins: [ultimaStylex(), ').replace("import { defineConfig } from 'vite'", "import { defineConfig } from 'vite'\nimport { ultimaStylex } from './ultima.vite.ts'"));
     const componentsPath = join(app, 'components.json');
     const components = JSON.parse(await readFile(componentsPath, 'utf8'));
     components.registries['@ultima'] = `${registry.url}/r/{name}.json`;
@@ -101,47 +110,67 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     assert.equal(await readFile(join(app, 'ultima-theme.css'), 'utf8'), toCss(draft));
     report.source.draftDigest = digest(installed);
     await writeFile(join(output, 'ultima-theme.json'), installed);
-    await writeFile(join(app, 'src/App.tsx'), `import { Button } from '@/components/ui/button';
+    const mainPath = join(app, isNext ? (src ? 'src/app/layout.tsx' : 'app/layout.tsx') : 'src/main.tsx');
+    if (isNext) await nextScene(app, src);
+    else {
+      await writeFile(join(app, 'src/App.tsx'), `import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 export default function App() {
   return <main><h1>Installed consumer proof</h1><Button tone="accent">Theme control</Button><Badge tone="success" variant="solid" role="status">Ready</Badge></main>;
 }
 `);
-    await writeFile(join(app, 'src/index.css'), '@layer reset { body { margin: 0; } }\n:root { background: var(--ult-color-surface); color: var(--ult-color-text); font-family: var(--ult-font-sans); }\n');
-    const mainPath = join(app, 'src/main.tsx');
-    const main = await readFile(mainPath, 'utf8');
-    assert.ok(main.includes("import './index.css'"));
-    await writeFile(mainPath, main.replace("import './index.css'", "import './index.css'\nimport '../ultima-theme.css'"));
+      await writeFile(join(app, 'src/index.css'), '@layer reset { body { margin: 0; } }\n:root { background: var(--ult-color-surface); color: var(--ult-color-text); font-family: var(--ult-font-sans); }\n');
+      const main = await readFile(mainPath, 'utf8');
+      assert.ok(main.includes("import './index.css'"));
+      await writeFile(mainPath, main.replace("import './index.css'", "import './index.css'\nimport '../ultima-theme.css'"));
+    }
     await execute(app, 'npm', ['install', '-D', tarball]);
     for (const command of ['doctor', 'check']) await execute(app, 'npx', ['--no-install', 'ultima-design', command]);
-    if (options.fault === 'theme-import') await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace("import '../ultima-theme.css'", ''));
-    if (options.fault === 'stylex-extraction') await writeFile(configPath, (await readFile(configPath, 'utf8')).replace("import { ultimaStylex } from './ultima.vite.ts'", '').replace('ultimaStylex(), ', "{ name: 'consumer:alias', config: () => ({ resolve: { alias: { '@': new URL('./src', import.meta.url).pathname } } }) }, "));
-    for (const name of ['package.json', 'package-lock.json', 'vite.config.ts', 'ultima.vite.ts', 'components.json', 'ultima-theme.css']) await cp(join(app, name), join(output, name));
-    await cp(join(app, 'src'), join(output, 'src'), { recursive: true });
-    for (const name of ['vite', 'react', '@stylexjs/stylex', '@stylexjs/unplugin', 'ultima-design']) report.versions[name] = JSON.parse(await readFile(join(app, 'node_modules', name, 'package.json'), 'utf8')).version;
+    if (options.fault === 'theme-import') await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace(/import ['"]\.\.\/+(?:\.\.\/)?ultima-theme\.css['"];?/, ''));
+    if (isNext) await nextFault(app, src, options.fault);
+    else if (options.fault === 'stylex-extraction') await writeFile(configPath, (await readFile(configPath, 'utf8')).replace("import { ultimaStylex } from './ultima.vite.ts'", '').replace('ultimaStylex(), ', "{ name: 'consumer:alias', config: () => ({ resolve: { alias: { '@': new URL('./src', import.meta.url).pathname } } }) }, "));
+    for (const name of ['package.json', 'package-lock.json', 'tsconfig.json', 'components.json', 'ultima-theme.css', ...(isNext ? ['babel.config.js', 'postcss.config.js'] : ['vite.config.ts', 'ultima.vite.ts'])]) await cp(join(app, name), join(output, name));
+    for (const name of isNext && !src ? ['app', 'components', 'lib'] : ['src']) await cp(join(app, name), join(output, name), { recursive: true });
+    for (const name of ['react', 'react-dom', '@stylexjs/stylex', 'ultima-design', ...(isNext ? ['next', '@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'] : ['vite', '@stylexjs/unplugin'])]) report.versions[name] = JSON.parse(await readFile(join(app, 'node_modules', name, 'package.json'), 'utf8')).version;
     report.versions.npm = (await execute(app, 'npm', ['--version'])).trim();
     await execute(app, 'npm', ['run', 'build']);
-    const production = await serveRegistry(join(app, 'dist'), true);
+    const production = isNext ? await serveNext(app, join(output, 'production.log')) : await serveRegistry(join(app, 'dist'), true);
     servers.push(production);
     browser = await chromium.launch({ headless: true });
     report.versions.chromium = browser.version();
-    const page = await browser.newPage({ reducedMotion: 'no-preference' });
-    const pageErrors: string[] = [];
-    page.on('pageerror', (error) => pageErrors.push(error.message));
     const tables = resolveDraft(draft);
-    for (const id of CONSUMER_CASES) {
+    for (const id of report.expected) {
       const mode = id.endsWith('-dark') ? 'dark' : 'light';
       const explicit = id.includes('/explicit-');
-      await page.emulateMedia({ colorScheme: explicit ? (mode === 'dark' ? 'light' : 'dark') : mode });
-      pageErrors.length = 0;
+      const contextOptions = { reducedMotion: 'no-preference' as const, colorScheme: explicit ? (mode === 'dark' ? 'light' as const : 'dark' as const) : mode as 'dark' | 'light' };
+      const context = await browser.newContext(contextOptions);
+      if (isNext && explicit) await context.addCookies([{ name: 'proof-mode', value: mode, url: production.url }]);
+      const page = await context.newPage();
+      const pageErrors = browserErrors(page);
+      let hydration: HydrationEvidence | undefined;
+      const name = id.split('/').at(-1)!;
+      if (isNext) {
+        const serverContext = await browser.newContext({ ...contextOptions, javaScriptEnabled: false });
+        await serverContext.addCookies(await context.cookies());
+        const serverPage = await serverContext.newPage();
+        const response = await serverPage.goto(production.url, { waitUntil: 'networkidle' });
+        assert.ok(response && response.ok(), 'server HTML must load');
+        await writeFile(join(output, `${name}.server.html`), await response.text());
+        hydration = { server: await hydrationState(serverPage), hydrated: { attributes: {}, content: null }, ready: false, errors: pageErrors };
+        await serverContext.close();
+      }
       await page.goto(production.url, { waitUntil: 'networkidle' });
-      await page.evaluate((mode) => { if (mode) document.documentElement.dataset.theme = mode; else document.documentElement.removeAttribute('data-theme'); }, explicit ? mode : null);
+      if (hydration) {
+        hydration.ready = await page.locator('body[data-hydrated="true"]').waitFor({ timeout: 10000 }).then(() => true, () => false);
+        hydration.hydrated = await hydrationState(page);
+        if (hydration.server.attributes['data-theme'] !== (explicit ? mode : null) || hydration.server.attributes['data-proof-mode'] !== (explicit ? mode : 'system')) pageErrors.push('server HTML initial mode differs from requested mode');
+      } else await page.evaluate((mode) => { if (mode) document.documentElement.dataset.theme = mode; else document.documentElement.removeAttribute('data-theme'); }, explicit ? mode : null);
       await page.mouse.move(0, 0);
       await page.evaluate(async () => {
         getComputedStyle(document.querySelector('button') ?? document.documentElement).backgroundColor;
         await Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => {})));
       });
-      const snapshot = await page.evaluate(({ table, mode, id }) => {
+      const snapshot = await page.evaluate(({ table, mode, id, layout }) => {
         const names = ['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'];
         const root = getComputedStyle(document.documentElement);
         const normalize = (value: string) => {
@@ -164,14 +193,27 @@ export default function App() {
         for (const [token, value] of Object.entries(variables)) if (value.actual !== value.expected) failures.push(`${token}: expected ${value.expected}, got ${value.actual}`);
         for (const part of ['root', 'control', 'status'] as const) for (const property of ['backgroundColor', 'color'] as const) if (actual[part]?.[property] !== expected[part][property]) failures.push(`${part}.${property}: expected ${expected[part][property]}, got ${actual[part]?.[property] ?? 'missing element'}`);
         if (root.colorScheme !== mode) failures.push(`color-scheme: expected ${mode}, got ${root.colorScheme}`);
-        return { id, mode, engine: 'chromium', layout: 'vite', deliveryPath: 'css', variables, expected, actual, colorScheme: root.colorScheme, failures };
-      }, { table: tables[mode], mode, id });
-      snapshot.failures.push(...pageErrors);
-      const name = id.split('/').at(-1)!;
-      await writeFile(join(output, `${name}.values.json`), `${JSON.stringify(snapshot, null, 2)}\n`);
+        const control = document.querySelector('button');
+        const css = control && getComputedStyle(control);
+        const length = (value: string, property: 'height' | 'borderRadius') => {
+          const probe = document.createElement('div');
+          probe.style.position = 'absolute';
+          probe.style[property] = value;
+          document.body.append(probe);
+          const normalized = getComputedStyle(probe)[property];
+          probe.remove();
+          return normalized;
+        };
+        const extraction = { tokens: { height: table['--ult-space-10'], radius: table['--ult-radius-md'] }, expected: { height: length(table['--ult-space-10']!, 'height'), radius: length(table['--ult-radius-md']!, 'borderRadius'), display: 'inline-flex' }, actual: { height: css?.height, radius: css?.borderRadius, display: css?.display } };
+        for (const property of ['height', 'radius', 'display'] as const) if (extraction.actual[property] !== extraction.expected[property]) failures.push(`control.${property}: expected ${extraction.expected[property]}, got ${extraction.actual[property]}`);
+        return { id, mode, engine: 'chromium', layout, deliveryPath: 'css', variables, expected, actual, extraction, colorScheme: root.colorScheme, failures };
+      }, { table: tables[mode], mode, id, layout: options.layout });
+      snapshot.failures.push(...(hydration ? hydrationProblems(hydration) : pageErrors));
+      await writeFile(join(output, `${name}.values.json`), `${JSON.stringify({ ...snapshot, hydration }, null, 2)}\n`);
       await page.screenshot({ path: join(output, `${name}.png`), fullPage: true });
       report.executed.push(id);
       report.cases.push({ id, status: snapshot.failures.length ? 'failed' : 'passed', snapshot: `${name}.values.json`, failures: snapshot.failures });
+      await context.close();
     }
     report.status = report.cases.some((row) => row.status === 'failed') ? 'failed' : 'passed';
     const after = hashSource(repository);
@@ -192,10 +234,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   while (args.length) {
     const flag = args.shift();
     const value = args.shift();
-    if (flag === '--layout' && value === 'vite') options.layout = value;
+    if (flag === '--layout' && CONSUMER_LAYOUTS.includes(value as ConsumerLayout)) options.layout = value as ConsumerLayout;
     else if (flag === '--delivery-path' && value === 'css') options.deliveryPath = value;
     else if (flag === '--output' && value) options.output = value;
-    else if (flag === '--fault' && (value === 'theme-import' || value === 'stylex-extraction')) options.fault = value;
+    else if (flag === '--fault' && (value === 'theme-import' || value === 'stylex-extraction' || value === 'src-extraction' || value === 'hydration-mismatch')) options.fault = value;
     else throw new Error(`unsupported argument ${flag} ${value ?? ''}`);
   }
   const report = await consumerProof(options);

@@ -28,7 +28,8 @@ import { fileURLToPath } from 'node:url';
 import { createManifest, hashBuild } from '../../apps/docs/scripts/build-manifest.ts';
 import { BUILD_MANIFEST, BUILD_ROOT, productionAdapter } from '../../apps/docs/scripts/production-adapter.ts';
 import { diskFiles } from '../catalogue/files.ts';
-import { consumerReportProblems, type ConsumerReport } from '../consumer-report.ts';
+import { consumerReportProblems, type ConsumerLayout, type ConsumerReport } from '../consumer-report.ts';
+import { hydrationProblems, type HydrationEvidence } from '../consumer-next.ts';
 import { loadCatalogue } from '../catalogue/model.ts';
 import { CI_OBLIGATIONS, type CheckId } from './checks.ts';
 import type { ProcessResult } from './process.ts';
@@ -84,6 +85,8 @@ const CONFIGURATION: Partial<Record<CheckId, string[]>> = {
   'docs-build': ['apps/docs/package.json', 'apps/docs/vite.config.ts', 'apps/docs/index.html', 'stylex.options.ts', 'package.json', 'scripts/build-registry.ts'],
   'consumer-smoke': ['scripts/smoke-install.sh', 'scripts/consumer-helpers.ts', 'package.json', 'scripts/build-registry.ts', 'apps/docs/vite.config.ts'],
   'consumer-proof': ['scripts/consumer-proof.ts', 'scripts/consumer-helpers.ts', 'scripts/consumer-report.ts', 'package.json', 'scripts/build-registry.ts', 'registry/static/setup-vite/ultima.vite.ts'],
+  'consumer-proof-next-app': ['scripts/consumer-proof.ts', 'scripts/consumer-next.ts', 'scripts/consumer-helpers.ts', 'scripts/consumer-report.ts', 'package.json', 'scripts/build-registry.ts', 'registry/static/setup-next/babel.config.js', 'registry/static/setup-next/postcss.config.js', 'registry/static/setup-next/app/ultima.css'],
+  'consumer-proof-next-src': ['scripts/consumer-proof.ts', 'scripts/consumer-next.ts', 'scripts/consumer-helpers.ts', 'scripts/consumer-report.ts', 'package.json', 'scripts/build-registry.ts', 'registry/static/setup-next/babel.config.js', 'registry/static/setup-next/postcss.config.js', 'registry/static/setup-next/app/ultima.css'],
 };
 
 /**
@@ -537,7 +540,7 @@ const reporterFlags = (destination: string) => ['--test-reporter=spec', '--test-
 
 const consumerProofAdapter: Adapter = {
   run: (context) => evidenced(context, async () => {
-    const output = join(context.artifacts, 'consumer-proof');
+    const output = join(context.artifacts, context.check.id);
     const reportPath = join(output, 'report.json');
     const { process } = await logged(context, [...context.check.argv, '--output', output]);
     const artifacts: string[] = [];
@@ -548,7 +551,9 @@ const consumerProofAdapter: Adapter = {
         let report: ConsumerReport;
         try { report = JSON.parse(readFileSync(reportPath, 'utf8')) as ConsumerReport; }
         catch { return { verdict: 'incomplete', executed: [], reason: 'consumer-proof wrote no readable report' }; }
-        const problems = consumerReportProblems(report);
+        const layoutIndex = context.check.argv.indexOf('--layout');
+        const layout = layoutIndex < 0 ? undefined : context.check.argv[layoutIndex + 1] as ConsumerLayout;
+        const problems = consumerReportProblems(report, layout);
         if (problems.length) return { verdict: 'incomplete', executed: [], reason: problems.join('; ') };
         for (const row of report.cases) {
           if (isAbsolute(row.snapshot) || relative(output, join(output, row.snapshot)).startsWith('..') || !existsSync(join(output, row.snapshot))) return { verdict: 'incomplete', executed: [], reason: `missing values snapshot: ${row.id}` };
@@ -560,12 +565,21 @@ const consumerProofAdapter: Adapter = {
           });
           const paint = ['root', 'control', 'status'].every((part) => ['backgroundColor', 'color'].every((property) => typeof snapshot?.expected?.[part]?.[property] === 'string' && (row.status !== 'passed' || snapshot.actual?.[part]?.[property] === snapshot.expected[part][property])));
           if (snapshot?.id !== row.id || !variables || !paint || !snapshot.actual || JSON.stringify(snapshot.failures) !== JSON.stringify(row.failures)) return { verdict: 'incomplete', executed: [], reason: `invalid values snapshot: ${row.id}` };
+          if (report.layout !== 'vite') {
+            const evidence = snapshot.hydration as HydrationEvidence | undefined;
+            if (!evidence?.server?.attributes || !evidence.hydrated?.attributes || !Array.isArray(evidence.errors) || typeof evidence.ready !== 'boolean' || (row.status === 'passed' && hydrationProblems(evidence).length)) return { verdict: 'incomplete', executed: [], reason: `invalid hydration snapshot: ${row.id}` };
+            const extraction = snapshot.extraction;
+            if (!extraction?.expected || !extraction.actual || !['height', 'radius', 'display'].every((key) => typeof extraction.expected[key] === 'string' && typeof extraction.actual[key] === 'string' && (row.status !== 'passed' || extraction.actual[key] === extraction.expected[key]))) return { verdict: 'incomplete', executed: [], reason: `invalid extraction snapshot: ${row.id}` };
+            const html = join(output, `${row.id.split('/').at(-1)}.server.html`);
+            if (!existsSync(html) || !readFileSync(html, 'utf8').includes('<main>')) return { verdict: 'incomplete', executed: [], reason: `missing server HTML: ${row.id}` };
+            artifacts.push(html);
+          }
           artifacts.push(join(output, row.snapshot));
         }
         if (report.source.manifest.digest !== context.identity.manifest.digest || report.source.head !== context.identity.head) return { verdict: 'incomplete', executed: [], reason: 'consumer-proof did not test the captured source identity' };
         const expectedExit = report.status === 'passed' ? 0 : report.status === 'failed' ? 1 : 2;
         if (process.exitCode !== expectedExit || report.status === 'incomplete') return { verdict: 'incomplete', expected: report.expected, executed: report.executed, reason: `consumer-proof ${report.status}, exit ${process.exitCode}: ${report.errors.join('; ')}` };
-        return { verdict: report.status === 'passed' ? 'passed' : 'validation-failure', expected: report.expected, executed: report.executed, failures: report.cases.flatMap((row) => row.failures.map((failure) => `${row.id}: ${failure}`)), reason: `consumer-proof ${report.status}: ${report.executed.length} installed Vite/CSS Chromium cases` };
+        return { verdict: report.status === 'passed' ? 'passed' : 'validation-failure', expected: report.expected, executed: report.executed, failures: report.cases.flatMap((row) => row.failures.map((failure) => `${row.id}: ${failure}`)), reason: `consumer-proof ${report.status}: ${report.executed.length} installed ${report.layout}/CSS Chromium cases` };
       },
     };
   }),
@@ -647,5 +661,7 @@ export const ADAPTERS: Adapters = {
   'docs-build': docsBuildAdapter,
   'consumer-smoke': smokeAdapter,
   'consumer-proof': consumerProofAdapter,
+  'consumer-proof-next-app': consumerProofAdapter,
+  'consumer-proof-next-src': consumerProofAdapter,
   'production-scenarios': productionAdapter,
 };
