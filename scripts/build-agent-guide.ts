@@ -249,8 +249,8 @@ function htmlTagsIn(markdown: string): string[] {
 
 function themeDiscovery(spec: string): string {
   const workflow = section(spec, 'Discover and maintain the product theme');
-  const boundary = '**Deterministic freshness belongs in the CLI.**';
-  if (!workflow.includes(boundary)) throw new Error('Theme discovery has no diagnostics boundary');
+  const boundary = '**Guidance ownership and implementation consumers.**';
+  if (!workflow.includes(boundary)) throw new Error('Theme discovery has no guidance ownership boundary');
   return workflow.slice(0, workflow.indexOf(boundary)).split('\n\n')
     .filter((paragraph) => !paragraph.startsWith('Decided on ') && !paragraph.startsWith('For example, '))
     .join('\n\n').trim();
@@ -337,6 +337,7 @@ export function agentGuide({
     '## CLI',
     '',
     section(spec, 'Agent guide'),
+    '',
   ].join('\n')}\n`;
 
   const tags = htmlTagsIn(guide);

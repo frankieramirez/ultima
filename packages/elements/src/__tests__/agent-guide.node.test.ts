@@ -68,7 +68,7 @@ test('emits no Elements heading while no element item exists', () => {
   expect(output).toContain('design system for React');
 });
 
-test('publishes adoption and discovery from the owning specification, excluding planned diagnostics', () => {
+test('publishes adoption, discovery and implemented diagnostics from the owning specification', () => {
   const spec = readFileSync(join(root, 'docs/spec/ultima.md'), 'utf8');
   const output = guide([]);
   expect(output).toContain('## Theme adoption');
@@ -85,7 +85,12 @@ test('publishes adoption and discovery from the owning specification, excluding 
   expect(discovery).toContain('npx --no-install ultima-design');
   expect(discovery).toContain('Draft missing or its version/recipe/preset cannot be resolved');
   expect(discovery).toContain('Generated CSS was hand-edited');
-  expect(output).not.toContain('doctor --theme');
+  for (const paragraph of ['**Deterministic freshness belongs in the CLI.**', 'The report states `match`', '`doctor --theme` keeps']) {
+    const source = spec.slice(spec.indexOf(paragraph)).split('\n\n')[0]!;
+    expect(discovery).toContain(source);
+  }
+  expect(output.match(/## Discover and maintain the product theme/g)).toHaveLength(1);
+  expect(output).not.toContain('Guidance ownership and implementation consumers');
   expect(output).not.toContain('Required verification scenarios for implementation');
   expect(Buffer.byteLength(output)).toBeLessThanOrEqual(64 * 1024);
 });

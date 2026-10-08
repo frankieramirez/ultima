@@ -19,6 +19,8 @@ Read applicable project instructions, `DESIGN.md` and named design guidance at t
 
 If hosted guidance is unavailable, use known guidance and local source, report the gap and leave unknown API choices unresolved. Run the pinned local CLI offline with `npx --no-install ultima-design doctor` and `npx --no-install ultima-design check`. `status` and `diff` need the registry; unavailable comparisons do not prove freshness.
 
+For local freshness, run `npx ultima-design doctor --theme`. Offline, prefer the pinned `npx --no-install ultima-design doctor --theme` and available local guidance; hosted `status`/`diff` remain unverified. Static matches do not prove rendering.
+
 ## 4. Learn what is installed
 
 When the registry is available, before adding an item or editing an installed one, run:

@@ -20,7 +20,32 @@ import { contextFor, planned, IDENTITY } from './adapter-context.ts';
 import { ADAPTERS } from './adapters.ts';
 import { manifestOf } from './source.ts';
 import { CONSUMER_RULES } from '../../packages/analysis/src/consumer.ts';
+import { themeProofProblems, themeSnapshot } from '../consumer-theme.ts';
+import type { ThemeRow } from '../../packages/cli/src/doctor-theme.ts';
 import { setupItems } from '../../registry/items.config.ts';
+
+test('installed theme receipt requires complete linked CSS/document proof and retains tree contents', async () => {
+  const row: Omit<ThemeRow, 'artifact'> = { family: 'theme', boundary: 'src/main.tsx', state: 'match', paths: { artifact: 'ultima-theme.css', draft: 'ultima-theme.json', imports: [] }, source: null, differences: [], reason: 'fixture', repair: 'fixture', coverage: { contentMatches: true, modes: ['dark', 'light'], groups: [], scopes: [], rendering: 'not-evaluated' } };
+  const report: Parameters<typeof themeProofProblems>[0] = { theme: { schemaVersion: 1, rows: [{ ...row, artifact: 'css' }, { ...row, artifact: 'design' }] }, diagnostics: [] };
+  assert.deepEqual(themeProofProblems(report), []);
+  assert.ok(themeProofProblems({}).length);
+  report.theme!.rows[1] = { ...row, artifact: 'design', state: 'unlinked', paths: { ...row.paths, artifact: null, draft: null } };
+  assert.deepEqual(themeProofProblems(report, false), []);
+  assert.ok(themeProofProblems(report).length, 'registry-installed document must still match');
+  report.theme!.rows[1]!.paths.artifact = 'DESIGN.md';
+  assert.ok(themeProofProblems(report, false).length, 'a present document cannot be waived as missing');
+  report.theme!.rows.pop();
+  assert.ok(themeProofProblems(report, false).length, 'optional document requires an explicit unlinked row');
+  report.theme!.rows[0]!.state = 'incomplete';
+  assert.ok(themeProofProblems(report).length);
+  const work = await mkdtemp(join(tmpdir(), 'ultima-theme-snapshot-'));
+  try {
+    await writeFile(join(work, 'DESIGN.md'), 'product');
+    const before = await themeSnapshot(work);
+    await writeFile(join(work, 'DESIGN.md'), 'product edit');
+    assert.notDeepEqual(await themeSnapshot(work), before);
+  } finally { await rm(work, { recursive: true, force: true }); }
+});
 
 test('migrated base styles preserve stock dimensions, neutral accent/focus and danger assertions', () => {
   const expected: BaseStyles = { height: '40px', display: 'inline-flex', radius: '4px', background: 'rgb(20, 20, 20)', focusColor: 'rgb(30, 30, 30)', focusStyle: 'solid', focusVisible: true, danger: 'rgb(200, 0, 0)' };

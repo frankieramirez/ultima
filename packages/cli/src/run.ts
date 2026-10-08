@@ -6,6 +6,7 @@ import { check, checkExit, printCheck } from './check.ts';
 import { exitCode, print } from './diagnostic.ts';
 import { diff } from './diff.ts';
 import { type Target, doctor } from './doctor.ts';
+import { doctorTheme, printTheme } from './doctor-theme.ts';
 import { hook } from './hook.ts';
 import { HARNESSES, type Harness, install, printPlan, uninstall } from './install.ts';
 import { printStatus, status } from './status.ts';
@@ -13,7 +14,7 @@ import { printStatus, status } from './status.ts';
 const COMMANDS = ['doctor', 'status', 'diff', 'check', 'install', 'uninstall'];
 const USAGE = `usage: ultima <${COMMANDS.join('|')}> [item…] [--json] [--cwd <dir>] [--target vite|next] [--project <tsconfig>] [--files <path>...] [--strict] [--harness <name>]... [--dry-run] [--force]`;
 const FLAGS: Record<string, string[]> = {
-  doctor: ['target', 'json'],
+  doctor: ['target', 'theme', 'json'],
   status: ['project', 'json'],
   diff: ['project'],
   check: ['files', 'strict', 'project', 'json'],
@@ -63,6 +64,11 @@ export async function run(argv: string[], stdin = ''): Promise<{ code: number; s
   }
   const result = doctor(invocation.root, invocation.target);
   if ('usage' in result) return usageError(result);
+  if (invocation.theme) {
+    const themed = doctorTheme(invocation.root, result.target);
+    const report = { command: 'doctor', ...result, theme: themed.theme, diagnostics: [...result.diagnostics, ...themed.diagnostics] };
+    return { code: exitCode(report), stdout: invocation.json ? print(report, true) : print({ command: 'doctor', ...result, diagnostics: report.diagnostics }, false) + printTheme(themed.theme), stderr: '' };
+  }
   const report = { command: invocation.command, ...result };
   return { code: exitCode(report), stdout: print(report, invocation.json), stderr: '' };
 }
@@ -81,7 +87,7 @@ function usageError(result: { usage: string }) {
 }
 
 type Invocation = { root: string; json: boolean } & (
-  | { command: 'doctor'; target: Target | undefined }
+  | { command: 'doctor'; target: Target | undefined; theme: boolean }
   | { command: 'status'; project: string | undefined }
   | { command: 'diff'; project: string | undefined; items: string[] }
   | { command: 'check'; project: string | undefined; files: string[] | undefined; strict: boolean }
@@ -99,6 +105,7 @@ function parseInvocation(argv: string[]): { usage: string } | Invocation {
         json: { type: 'boolean' },
         cwd: { type: 'string' },
         target: { type: 'string' },
+        theme: { type: 'boolean' },
         project: { type: 'string' },
         harness: { type: 'string', multiple: true },
         files: { type: 'string', multiple: true },
@@ -137,5 +144,5 @@ function parseInvocation(argv: string[]): { usage: string } | Invocation {
   if (command === 'install') {
     return { command, root, json, harnesses: harness as Harness[] | undefined, dryRun: args.values['dry-run'] ?? false, force: args.values.force ?? false };
   }
-  return { command: 'doctor', root, target, json };
+  return { command: 'doctor', root, target, json, theme: args.values.theme ?? false };
 }

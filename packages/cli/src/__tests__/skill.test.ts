@@ -34,7 +34,9 @@ describe('the consumer skill', () => {
     for (const pointer of ['project instructions', 'DESIGN.md', 'application root', 'inherited guidance', 'entry/layout imports', 'portal containers', 'installed source', 'Preserve an existing product brand', 'authorized custom theme', 'https://ultima.systems/llms.txt#discover-and-maintain-the-product-theme']) {
       expect(SKILL).toContain(pointer);
     }
-    expect(SKILL).not.toContain('doctor --theme');
+    expect(SKILL).toContain('npx ultima-design doctor --theme');
+    expect(SKILL).toContain('npx --no-install ultima-design doctor --theme');
+    expect(SKILL).toContain('Static matches do not prove rendering');
   });
 
   it('keeps local checks usable offline without claiming registry freshness', () => {
