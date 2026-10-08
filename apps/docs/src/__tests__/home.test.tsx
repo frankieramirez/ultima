@@ -80,6 +80,26 @@ test('the hero copies the default target pair, which the guide documents', async
   await expect.element(screen.getByRole('link', { name: 'Read the index' })).toHaveAttribute('href', '/#index');
 });
 
+test('the hero holds each command on one line: whole on a wide screen, scrolling on a phone', async () => {
+  onTestFinished(() => page.viewport(1280, 720));
+  for (const [width, scrolls] of [
+    [1280, false],
+    [390, true],
+  ] as const) {
+    await page.viewport(width, 844);
+    const screen = await mount('/');
+    const hero = screen.getByRole('button', { name: 'Copy the Vite install commands' }).first();
+    await expect.element(hero).toBeVisible();
+    const pre = hero.element().parentElement!.querySelector('pre')!;
+    const viewport = pre.parentElement!;
+    const lineHeight = parseFloat(getComputedStyle(pre).lineHeight);
+    for (const code of pre.querySelectorAll('code')) expect(code.getBoundingClientRect().height).toBeLessThan(lineHeight * 1.5);
+    expect(viewport.scrollWidth > viewport.clientWidth).toBe(scrolls);
+    expect(document.documentElement.scrollWidth).toBe(document.documentElement.clientWidth);
+    screen.unmount();
+  }
+});
+
 test('the plate follows the index and wears the previewed preset', async () => {
   await page.viewport(1440, 900);
   onTestFinished(() => page.viewport(1280, 720));
