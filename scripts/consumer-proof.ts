@@ -198,7 +198,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       const documented = options.preset === 'ultima' && !fixture.name;
       const themeExecute: Run = (cwd, command, args) => execute(cwd, command, documented ? args.map((arg) => arg === `${registry.url}/r/proof-theme.json` ? themeUrl : arg) : args);
       const installed = await installTheme(app, join(work, 'registry'), registry.url, draft, options.layout, options.deliveryPath, themeExecute, fixture.name === 'css-reference');
-      if (!subtree) await installedThemeProof(app, fixtureOutput, execute);
+      if (!subtree) await installedThemeProof(app, fixtureOutput, execute, fixture.name !== 'css-reference');
       const draftDigest = digest(installed);
       report.drafts![fixture.name || 'non-stock'] = { digest: draftDigest, fingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion };
       if (!fixture.name) report.source.draftDigest = draftDigest;

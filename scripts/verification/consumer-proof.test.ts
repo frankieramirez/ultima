@@ -28,6 +28,13 @@ test('installed theme receipt requires complete linked CSS/document proof and re
   const report: Parameters<typeof themeProofProblems>[0] = { theme: { schemaVersion: 1, rows: [{ ...row, artifact: 'css' }, { ...row, artifact: 'design' }] }, diagnostics: [] };
   assert.deepEqual(themeProofProblems(report), []);
   assert.ok(themeProofProblems({}).length);
+  report.theme!.rows[1] = { ...row, artifact: 'design', state: 'unlinked', paths: { ...row.paths, artifact: null, draft: null } };
+  assert.deepEqual(themeProofProblems(report, false), []);
+  assert.ok(themeProofProblems(report).length, 'registry-installed document must still match');
+  report.theme!.rows[1]!.paths.artifact = 'DESIGN.md';
+  assert.ok(themeProofProblems(report, false).length, 'a present document cannot be waived as missing');
+  report.theme!.rows.pop();
+  assert.ok(themeProofProblems(report, false).length, 'optional document requires an explicit unlinked row');
   report.theme!.rows[0]!.state = 'incomplete';
   assert.ok(themeProofProblems(report).length);
   const work = await mkdtemp(join(tmpdir(), 'ultima-theme-snapshot-'));
