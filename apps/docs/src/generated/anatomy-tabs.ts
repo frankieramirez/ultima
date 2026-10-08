@@ -67,6 +67,7 @@ export const anatomyTabs: Record<string, { parts: readonly string[]; demo?: Comp
   'tabs': { parts: ['Root', 'List', 'Tab', 'Indicator', 'Panel'] },
   'textarea': { parts: ['Textarea'] },
   'theme-mode': { parts: ['ThemeModeScript'] },
+  'theme-scope': { parts: ['ThemeScope'] },
   'toast': { parts: ['Viewport', 'Positioner', 'Root', 'Content', 'Title', 'Description', 'Action', 'Close', 'Arrow'], demo: ToastAnatomy },
   'toggle': { parts: ['Toggle'] },
   'toggle-group': { parts: ['Root', 'Item'] },

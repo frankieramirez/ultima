@@ -291,6 +291,11 @@ export const items: Record<string, RegistryItemDescription> = {
     "description": "Persist a document mode before hydration and follow system preference changes.",
     "docs": "Import a root CSS theme with [data-theme] blocks. See https://ultima.systems/components/theme-mode for the Vite head script and Next layout usage."
   },
+  "theme-scope": {
+    "title": "Theme Scope",
+    "description": "Theme a subtree in one mode and keep its portalled controls inside it.",
+    "docs": "Pass the Studio export's ultimaTheme as theme. A portalled control inside passes useThemeScopeContainer() as its portal container; one that omits it mounts under <body> and reads the document theme. See https://ultima.systems/components/theme-scope."
+  },
   "toast": {
     "title": "Toast",
     "description": "A stacked notification in six tones, queued from a manager, on Base UI.",

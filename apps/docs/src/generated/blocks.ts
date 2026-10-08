@@ -114,7 +114,7 @@ export const blocks: readonly BlockEntry[] = [
       {
         "id": "toggle-group",
         "title": "Toggle Group",
-        "number": "054",
+        "number": "055",
         "kind": "component"
       },
       {
@@ -231,7 +231,7 @@ export const blocks: readonly BlockEntry[] = [
       {
         "id": "toggle-group",
         "title": "Toggle Group",
-        "number": "054",
+        "number": "055",
         "kind": "component"
       },
       {
@@ -320,7 +320,7 @@ export const blocks: readonly BlockEntry[] = [
       {
         "id": "toast",
         "title": "Toast",
-        "number": "052",
+        "number": "053",
         "kind": "component"
       }
     ],
