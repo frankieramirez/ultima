@@ -6,6 +6,7 @@
  * documentation, so nothing here may be a second copy of a convention.
  */
 import { readFileSync } from 'node:fs';
+import type { RecipeProjection } from './catalogue/compositions.ts';
 
 const MAX_BYTES = 64 * 1024;
 
@@ -214,6 +215,23 @@ function describeBlock(block: GuideBlock): string {
   ].join('\n');
 }
 
+function describeRecipe(recipe: RecipeProjection): string {
+  return [
+    `### ${recipe.title}`,
+    '',
+    recipe.description,
+    '',
+    `Canonical example and copy/download source: https://ultima.systems${recipe.url}`,
+    '',
+    `Items: ${recipe.items.join(', ')}. Engine dependencies: ${recipe.dependencies.join(', ') || 'None'}.`,
+    '',
+    '```bash',
+    recipe.install,
+    ...(recipe.engines ? [recipe.engines] : []),
+    '```',
+  ].join('\n');
+}
+
 function describeTokens(tokens: TokensJson['tokens']): string {
   const groups = new Map<string, string[]>();
   for (const [name, { group }] of Object.entries(tokens)) {
@@ -235,12 +253,14 @@ export function agentGuide({
   groups,
   elements,
   blocks = [],
+  recipes = [],
 }: {
   specPath: string;
   tokensJsonPath: string;
   groups: GuideGroup[];
   elements: GuideComponent[];
   blocks?: GuideBlock[];
+  recipes?: RecipeProjection[];
 }): string {
   const spec = readFileSync(specPath, 'utf8');
   const { tokens } = JSON.parse(readFileSync(tokensJsonPath, 'utf8')) as TokensJson;
@@ -271,6 +291,11 @@ export function agentGuide({
       ? []
       : ['', '## Elements', '', ELEMENTS_LEAD, '', elements.map(describeElement).join('\n\n')]),
     ...(blocks.length === 0 ? [] : ['', '## Blocks', '', BLOCKS_LEAD, '', blocks.map(describeBlock).join('\n\n')]),
+    ...(recipes.length === 0 ? [] : [
+      '', '## Recipes', '',
+      'Copyable compositions, listed at https://ultima.systems/recipes. Recipes have no registry item: install the dependencies below, then copy every file shown at the canonical example. Source uses the default components.json aliases; substitute your configured aliases. Keep interactive source behind a Next.js client boundary. Run ultima-design doctor and ultima-design check, build your application, and exercise the documented states in both modes. Installed copy-bundle compilation is not yet verified.',
+      '', recipes.map(describeRecipe).join('\n\n'),
+    ]),
     '',
     '## Tokens',
     '',

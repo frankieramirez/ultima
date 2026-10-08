@@ -2,7 +2,9 @@ import { Demo } from '../../demo';
 import Anchored from '../../demos/command/anchored';
 import anchoredSource from '../../demos/command/anchored?raw';
 import CommandDialog from '../../demos/command/command-dialog';
-import commandDialogSource from '../../demos/command/command-dialog?raw';
+import { recipeSources } from '../../generated/recipes';
+
+export const commandDialogSource = recipeSources['apps/docs/src/demos/command/command-dialog.tsx'];
 import Inline from '../../demos/command/inline';
 import inlineSource from '../../demos/command/inline?raw';
 
