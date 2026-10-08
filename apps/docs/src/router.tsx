@@ -13,6 +13,7 @@ import { ComponentsPage } from './routes/components';
 import { Home } from './routes/home';
 import { ElementsPage } from './routes/elements';
 import { InstallPage } from './routes/install';
+import { InstallUpdatePage } from './routes/install-update';
 import { NotFound } from './routes/not-found';
 import { PalettePage } from './routes/palette';
 import { RationalePage } from './routes/rationale';
@@ -45,6 +46,13 @@ const cliRoute = createRoute({
   path: '/cli',
   component: CliPage,
   staticData: { title: 'CLI' },
+});
+
+const installUpdateRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/install/update',
+  component: InstallUpdatePage,
+  staticData: { title: 'Update the base theme' },
 });
 
 const elementsRoute = createRoute({
@@ -151,6 +159,7 @@ const themeStudioRoute = createRoute({
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   installRoute,
+  installUpdateRoute,
   cliRoute,
   elementsRoute,
   tokensRoute,

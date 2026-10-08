@@ -4,6 +4,10 @@
  * built docs.
  */
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+import { parseDraft } from '../../../../packages/tokens/src/theme/codec.ts';
+import { resolveDraft } from '../../../../packages/tokens/src/theme/draft.ts';
 
 import { productionScenario } from '../../../../scripts/verification/production.ts';
 import { siteDiscovery } from '../fixtures/site-discovery.ts';
@@ -14,6 +18,24 @@ export default productionScenario('site-discovery.discovery-surface', 'productio
     assert.equal(await page.title(), title, `${pathname} serves its own document.title`);
   }
   await axe('the last titled route');
+
+  await open('/install');
+  const updateLink = page.locator('main').getByRole('link', { name: 'Update the base theme', exact: true });
+  assert.equal(await updateLink.getAttribute('href'), '/install/update');
+  await updateLink.click();
+  await page.getByRole('heading', { name: 'Update the base theme', level: 1 }).waitFor();
+  await page.waitForFunction(() => document.querySelector('main pre code')?.textContent?.startsWith('npx shadcn add'));
+  const publicUrl = new URL((await page.locator('main pre code').first().textContent())!.match(/"([^"]+)"/)![1]!);
+  assert.equal(publicUrl.origin, siteDiscovery.origin);
+  const response = await page.request.get(`${new URL(page.url()).origin}${publicUrl.pathname}${publicUrl.search}`);
+  assert.equal(response.status(), 200, 'the production theme endpoint resolves the documented command');
+  const item = await response.json();
+  const parsed = parseDraft(item.files.find(({ target }: { target: string }) => target === '~/ultima-theme.json').content);
+  assert.ok(parsed.ok);
+  const frozen = JSON.parse(readFileSync(new URL('../../../../packages/tokens/src/__tests__/fixtures/pre-base-theme-drafts.json', import.meta.url), 'utf8')).cases.find(({ name }: { name: string }) => name === 'preset-ultima-revision-2').resolved;
+  assert.deepEqual(resolveDraft(parsed.draft), frozen, 'every documented preset value matches the pre-rollout defaults');
+  assert.match(await page.locator('main').innerText(), /never rewrites/);
+  await axe('the base-theme update guidance');
 
   for (const pathname of ['/not-in-the-grimoire', `/components/${siteDiscovery.notFound.component}`]) {
     await open(pathname);

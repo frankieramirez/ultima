@@ -14,6 +14,10 @@ import { packCli, repository, run, scaffold, serveRegistry, type Run } from './c
 import { CONSUMER_LAYOUTS, consumerCases, type ConsumerLayout, type ConsumerReport } from './consumer-report.ts';
 import { browserErrors, hydrationProblems, hydrationState, nextFault, nextScene, serveNext, setupNext, type HydrationEvidence } from './consumer-next.ts';
 import { hashSource } from './verification/source.ts';
+import { ultimaPresetUrl } from '../apps/docs/src/ultima-preset.ts';
+import { themeRegistry } from '../apps/docs/server/theme-registry.ts';
+import { contentHash, stampLine, withStamp } from '../packages/cli/src/stamp.ts';
+import { BASE_THEME_MARKER } from '../packages/cli/src/base-theme.ts';
 
 export function proofDraft(): ThemeDraft {
   const shuffled = shuffleDraft(stockDraft(), 'global', 'broad', 20260920);
@@ -29,7 +33,7 @@ export function proofDraft(): ThemeDraft {
   return draft;
 }
 
-export type ProofOptions = { layout: ConsumerLayout; deliveryPath: 'css'; output?: string; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' };
+export type ProofOptions = { layout: ConsumerLayout; deliveryPath: 'css'; output?: string; preset?: 'ultima'; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
 export type BaseStyles = { height: string; display: string; radius: string; background: string; focusColor: string; focusStyle: string; focusVisible: boolean; danger: string };
@@ -94,7 +98,11 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   await mkdir(output, { recursive: true });
   const source = hashSource(repository);
   if (!source.ok) throw new Error(source.reason);
-  const draft = proofDraft();
+  const draft = options.preset === 'ultima' ? presetDraft({ id: 'ultima', revision: 2 }) : proofDraft();
+  const frozen = options.preset === 'ultima'
+    ? JSON.parse(await readFile(join(repository, 'packages/tokens/src/__tests__/fixtures/pre-base-theme-drafts.json'), 'utf8')).cases.find(({ name }: { name: string }) => name === 'preset-ultima-revision-2').resolved
+    : resolveDraft(draft);
+  assert.deepEqual(resolveDraft(draft), frozen, 'Ultima must preserve every pre-rollout default');
   const report: ConsumerReport = {
     schemaVersion: 1, status: 'incomplete', layout: options.layout, deliveryPath: options.deliveryPath,
     source: { head: source.head, manifest: source.manifest, registryManifestHash: null, cliTarballDigest: null, draftDigest: null, draftFingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion },
@@ -149,9 +157,18 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     components.registries['@ultima'] = `${registry.url}/r/{name}.json`;
     await writeFile(componentsPath, `${JSON.stringify(components, null, 2)}\n`);
     await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/button', '@ultima/badge', '--yes']);
-    const item = join(work, 'registry/r/proof-theme.json');
-    await writeFile(item, toRegistryItem(draft));
-    await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', `${registry.url}/r/proof-theme.json`, '--yes']);
+    let themeUrl = `${registry.url}/r/proof-theme.json`;
+    if (options.preset === 'ultima') {
+      const publicUrl = await ultimaPresetUrl();
+      assert.ok(!publicUrl.tooLong, 'documented command must fit the registry URL');
+      const response = await themeRegistry(new Request(publicUrl.url));
+      assert.equal(response.status, 200, 'documented theme command must resolve');
+      await writeFile(join(work, 'registry/r/theme.json'), await response.text());
+      await writeFile(join(output, 'documented-command.txt'), `npx shadcn add "${publicUrl.url}"\n`);
+      const url = new URL(publicUrl.url);
+      themeUrl = `${registry.url}${url.pathname}${url.search}`;
+    } else await writeFile(join(work, 'registry/r/proof-theme.json'), toRegistryItem(draft));
+    await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', themeUrl, '--yes']);
     const installed = await readFile(join(app, 'ultima-theme.json'), 'utf8');
     const parsed = parseDraft(installed);
     assert.ok(parsed.ok, 'installed draft must decode');
@@ -175,6 +192,33 @@ export default function App() {
     }
     await execute(app, 'npm', ['install', '-D', tarball]);
     for (const command of ['doctor', 'check']) await execute(app, 'npx', ['--no-install', 'ultima-design', command]);
+    if (options.preset === 'ultima') {
+      await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/tokens-css', '--yes']);
+      const lib = isNext && !src ? 'lib' : 'src/lib';
+      const tokenFiles = [`${lib}/palette.ts`, `${lib}/themes.ts`, `${lib}/tokens-json.ts`, `${lib}/tokens.stylex.ts`, 'ultima-tokens.css'];
+      const owned = [...tokenFiles, 'ultima-theme.css', 'ultima-theme.json', 'DESIGN.md'];
+      const before = await Promise.all(owned.map((name) => readFile(join(app, name), 'utf8')));
+      assert.ok(before.slice(0, tokenFiles.length).every((text) => text.includes(BASE_THEME_MARKER)), 'base marker must survive real shadcn copies');
+      const after = await execute(app, 'npx', ['--no-install', 'ultima-design', 'status', '--json']);
+      assert.deepEqual(JSON.parse(after).notices, [], 'post-rollout consumer must not receive an update notice');
+      assert.deepEqual(await Promise.all(owned.map((name) => readFile(join(app, name), 'utf8'))), before, 'status is read-only');
+      await writeFile(join(output, 'status-after-rollout.json'), after);
+      const css = join(app, 'ultima-tokens.css');
+      const legacy = toCss(draft);
+      const old = withStamp(legacy, stampLine('tokens-css', 'pre-neutral', await contentHash(legacy, 'b1'), 'css'));
+      await writeFile(css, old);
+      try {
+        const json = await execute(app, 'npx', ['--no-install', 'ultima-design', 'status', '--json']);
+        const text = await execute(app, 'npx', ['--no-install', 'ultima-design', 'status']);
+        assert.equal(JSON.parse(json).notices[0]?.link, 'https://ultima.systems/install/update');
+        assert.deepEqual(JSON.parse(json).notices[0]?.files, ['ultima-tokens.css']);
+        assert.ok(text.includes('Neutral with Tight radius') && text.includes('https://ultima.systems/install/update'));
+        assert.equal(await readFile(css, 'utf8'), old, 'status must not replace a legacy token file');
+        assert.deepEqual(await Promise.all(owned.filter((name) => name !== 'ultima-tokens.css').map((name) => readFile(join(app, name), 'utf8'))), before.filter((_, index) => owned[index] !== 'ultima-tokens.css'), 'status must not rewrite sources or install a theme');
+        await writeFile(join(output, 'status-before-rollout.json'), json);
+        await writeFile(join(output, 'status-before-rollout.txt'), text);
+      } finally { await writeFile(css, before[tokenFiles.length - 1]!); }
+    }
     if (options.fault === 'theme-import') await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace(/import ['"]\.\.\/+(?:\.\.\/)?ultima-theme\.css['"];?/, ''));
     if (isNext) await nextFault(app, src, options.fault);
     else if (options.fault === 'stylex-extraction') await writeFile(configPath, (await readFile(configPath, 'utf8')).replace("import { ultimaStylex } from './ultima.vite.ts'", '').replace('ultimaStylex(), ', "{ name: 'consumer:alias', config: () => ({ resolve: { alias: { '@': new URL('./src', import.meta.url).pathname } } }) }, "));
@@ -187,7 +231,7 @@ export default function App() {
     servers.push(production);
     browser = await chromium.launch({ headless: true });
     report.versions.chromium = browser.version();
-    const tables = resolveDraft(draft);
+    const tables = frozen;
     for (const id of report.expected) {
       const mode = id.endsWith('-dark') ? 'dark' : 'light';
       const explicit = id.includes('/explicit-');
@@ -220,7 +264,6 @@ export default function App() {
         await Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => {})));
       });
       const snapshot = await page.evaluate(({ table, mode, id, layout }) => {
-        const names = ['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'];
         const root = getComputedStyle(document.documentElement);
         const normalize = (value: string) => {
           const probe = document.createElement('span');
@@ -237,7 +280,31 @@ export default function App() {
         };
         const paint = (element: Element | null) => element ? { backgroundColor: getComputedStyle(element).backgroundColor, color: getComputedStyle(element).color } : null;
         const actual = { root: paint(document.documentElement), control: paint(document.querySelector('button')), status: paint(document.querySelector('[role="status"]')) };
-        const variables = Object.fromEntries(names.map((name) => { const token = `--ult-color-${name}`; return [token, { expected: table[token], actual: root.getPropertyValue(token).trim() }]; }));
+        const compute = (token: string, value: string) => {
+          const property = token.startsWith('--ult-color-') ? 'color'
+            : /--ult-font-(sans|mono)$/.test(token) ? 'font-family'
+            : token.startsWith('--ult-font-weight-') ? 'font-weight'
+            : token.startsWith('--ult-font-leading-') ? 'line-height'
+            : token.startsWith('--ult-font-tracking-') ? 'letter-spacing'
+            : token.startsWith('--ult-shadow-') ? 'box-shadow'
+            : token.startsWith('--ult-filter-') ? 'backdrop-filter'
+            : token.startsWith('--ult-motion-') ? 'transition-duration' : 'width';
+          if (!CSS.supports(property, value)) return `invalid ${property}: ${value}`;
+          const probe = document.createElement('span');
+          probe.style.fontSize = '16px';
+          probe.style.position = 'absolute';
+          probe.style.display = 'block';
+          probe.style.setProperty(property, value);
+          document.body.append(probe);
+          const result = getComputedStyle(probe).getPropertyValue(property).trim();
+          probe.remove();
+          // CSS minification represents alpha in eight-bit hex; compare the same rendered channel.
+          return result.replace(/rgba\((\d+), (\d+), (\d+), ([\d.]+)\)/g, (_, r, g, b, alpha) => `rgba8(${r}, ${g}, ${b}, ${Math.round(Number(alpha) * 255)})`);
+        };
+        const variables = Object.fromEntries(Object.entries(table as Record<string, string>).map(([token, expected]) => {
+          const actual = root.getPropertyValue(token).trim();
+          return [token, { expected: compute(token, expected), actual: compute(token, actual), authored: { expected, actual } }];
+        }));
         const failures: string[] = [];
         for (const [token, value] of Object.entries(variables)) if (value.actual !== value.expected) failures.push(`${token}: expected ${value.expected}, got ${value.actual}`);
         for (const part of ['root', 'control', 'status'] as const) for (const property of ['backgroundColor', 'color'] as const) if (actual[part]?.[property] !== expected[part][property]) failures.push(`${part}.${property}: expected ${expected[part][property]}, got ${actual[part]?.[property] ?? 'missing element'}`);
@@ -287,6 +354,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (flag === '--layout' && CONSUMER_LAYOUTS.includes(value as ConsumerLayout)) options.layout = value as ConsumerLayout;
     else if (flag === '--delivery-path' && value === 'css') options.deliveryPath = value;
     else if (flag === '--output' && value) options.output = value;
+    else if (flag === '--preset' && value === 'ultima') options.preset = value;
     else if (flag === '--base-styles' && value) baseApp = resolve(value);
     else if (flag === '--fault' && (value === 'theme-import' || value === 'stylex-extraction' || value === 'src-extraction' || value === 'hydration-mismatch')) options.fault = value;
     else throw new Error(`unsupported argument ${flag} ${value ?? ''}`);

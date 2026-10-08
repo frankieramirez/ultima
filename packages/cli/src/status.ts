@@ -2,6 +2,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 
+import { BASE_THEME, BASE_THEME_MARKER, UNMARKED_NEUTRAL_HASHES } from './base-theme.ts';
 import { type Diagnostic, SPEC } from './diagnostic.ts';
 import { type ManagedState, managedSkills } from './install.ts';
 import { type ConsumerScope, consumerScope } from './scope.ts';
@@ -30,13 +31,14 @@ export type StatusReport = {
   revision: string | null;
   files: Row[];
   managed: { file: string; state: ManagedState; version: string }[];
+  notices: { id: string; message: string; link: string; files: string[] }[];
 };
 
 type CatalogueItem = {
   name: string;
   type: string;
   files: { path: string; target?: string }[];
-  meta?: { ultima?: { revision: string; files: Record<string, string> } };
+  meta?: { ultima?: { revision: string; files: Record<string, string>; baseTheme?: string } };
 };
 
 type Served = { item: string; name: string; installPath: string; hash: string };
@@ -98,11 +100,24 @@ export async function survey(
     if (row) files.push(row);
   }
   files.sort((a, b) => a.item.localeCompare(b.item) || a.file.localeCompare(b.file));
+  const legacyTokens = files.filter((row) => {
+    if (!['tokens', 'tokens-css'].includes(row.item) || row.state === 'current' || row.state === 'retired') return false;
+    if (items.find(({ name }) => name === row.item)?.meta?.ultima?.baseTheme !== BASE_THEME) return false;
+    if (row.installed?.hash === row.served || [row.local, row.installed?.hash].some((hash) => hash && UNMARKED_NEUTRAL_HASHES.includes(hash))) return false;
+    const lines = readFileSync(join(root, row.file), 'utf8').replace(/\r\n/g, '\n').split('\n');
+    return !lines.some((line) => line.trim() === `// ${BASE_THEME_MARKER}` || line.trim() === `/* ${BASE_THEME_MARKER} */`);
+  });
   const report = {
     registry: url.replace(/\/\{name\}\.json$/, ''),
     revision: items.find(({ meta }) => meta?.ultima)?.meta?.ultima?.revision ?? null,
     files,
     managed: managedSkills(root),
+    notices: legacyTokens.length ? [{
+      id: 'base-theme-neutral-tight',
+      message: 'Base tokens now use Neutral with Tight radius. Reinstalling changes the indigo accent and cyan action/highlight to neutral values and the radius scale from 2/4/10/12 to 1/2/4/6. Installed sources and theme files remain yours; use the Ultima preset to keep the previous appearance.',
+      link: 'https://ultima.systems/install/update',
+      files: legacyTokens.map(({ file }) => file),
+    }] : [],
   };
   return { report, scope, url, items };
 }
@@ -202,7 +217,7 @@ const CLOSING: Partial<Record<Row['state'], (items: string[]) => string>> = {
     `${items.join(', ')} ${items.length === 1 ? 'carries' : 'carry'} a hash scheme this CLI does not know; upgrade it: ${UPGRADE}`,
 };
 
-export function printStatus({ registry, revision, files, managed }: StatusReport): string {
+export function printStatus({ registry, revision, files, managed, notices }: StatusReport): string {
   const closing = Object.entries(CLOSING).flatMap(([state, line]) => {
     const items = [...new Set(files.filter((row) => row.state === state).map(({ item }) => item))];
     return items.length > 0 ? [[state, (line as (items: string[]) => string)(items)]] : [];
@@ -220,5 +235,6 @@ export function printStatus({ registry, revision, files, managed }: StatusReport
   else lines.push(...table.slice(0, table.length - skills.length).map(line));
   lines.push(...skills.map(line));
   if (closing.length > 0) lines.push('', ...closing.map(([state, text]) => `${(state as string).padEnd(first)}${text}`));
+  for (const notice of notices) lines.push('', notice.message, notice.link);
   return `${lines.join('\n')}\n`;
 }
