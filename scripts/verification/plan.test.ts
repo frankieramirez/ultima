@@ -155,7 +155,7 @@ describe('named scopes', () => {
     assert.match(document.selection.items[1]?.reasons.join() ?? '', /sorting\.tsx/, 'the recipe whose demo composes Button');
     assert.equal(checkOf(document, 'elements-tests')?.scope, 'whole');
     assert.match(checkOf(document, 'elements-tests')?.reasons.join() ?? '', /ult-button.*parity/);
-    for (const id of ['registry-build', 'docs-build', 'consumer-smoke', 'consumer-proof', 'production-scenarios']) assert.ok(checkIds(document).includes(id), id);
+    for (const id of ['registry-build', 'docs-build', 'consumer-smoke', 'consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src', 'production-scenarios']) assert.ok(checkIds(document).includes(id), id);
     assert.deepEqual(checkOf(document, 'ui-tests')?.cases, ['button.press@ui-vitest[default]']);
     assert.equal(checkOf(document, 'production-scenarios')?.cases.length, 4);
     assert.deepEqual(checkOf(document, 'ui-tests')?.argv.slice(-2), ['src/__tests__/button.test.tsx', 'src/__tests__/sidebar.test.tsx']);
@@ -178,7 +178,16 @@ describe('named scopes', () => {
     assertPlanned(document);
     assert.equal(document.scope, 'scoped');
     for (const id of ['registry-build', 'consumer-smoke', 'consumer-proof']) assert.ok(checkIds(document).includes(id), id);
+    assert.ok(!checkIds(document).includes('consumer-proof-next-app'));
     assert.ok(!checkIds(document).includes('ui-tests'));
+  });
+
+  test('Next setup selects both installed Next layout proofs', () => {
+    const files = workspace();
+    for (const [path, text] of Object.entries(files)) if (path.includes('setup-vite')) files[path.replaceAll('setup-vite', 'setup-next')] = text.replaceAll('setup-vite', 'setup-next');
+    const { document } = planOf(['component', 'setup-next'], repository(files));
+    assertPlanned(document);
+    for (const id of ['registry-build', 'consumer-smoke', 'consumer-proof-next-app', 'consumer-proof-next-src']) assert.ok(checkIds(document).includes(id), id);
   });
 
   test('a token source bundle or token export selects the release plan', () => {
@@ -522,7 +531,7 @@ describe('the release plan', () => {
   test('carries every CI workflow obligation, including the consumer-smoke workflow', () => {
     const planned = new Set(checkIds(document));
     const commands: { workflow: string; command: string }[] = [];
-    for (const workflow of ['ci.yml', 'smoke-install.yml']) {
+    for (const workflow of ['ci.yml', 'smoke-install.yml', 'consumer-proof.yml']) {
       const text = readFileSync(join(root, '.github/workflows', workflow), 'utf8');
       const lines = text.split('\n');
       lines.forEach((line, index) => {

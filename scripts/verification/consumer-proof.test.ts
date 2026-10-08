@@ -4,13 +4,27 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { scaffold, serveRegistry, packCli, type Run } from '../consumer-helpers.ts';
-import { CONSUMER_CASES, consumerReportProblems, type ConsumerReport } from '../consumer-report.ts';
-import { proofDraft } from '../consumer-proof.ts';
+import { CONSUMER_CASES, CONSUMER_LAYOUTS, consumerCases, consumerReportProblems, type ConsumerReport } from '../consumer-report.ts';
+import { browserErrors, hydrationProblems, nextFault, nextScene, setupNext, type HydrationEvidence } from '../consumer-next.ts';
+import { EventEmitter } from 'node:events';
+import type { Page } from 'playwright';
+import { baseStyleProblems, proofDraft, type BaseStyles } from '../consumer-proof.ts';
 import { resolveDraft } from '../../packages/tokens/src/theme/draft.ts';
 import { gate } from '../../packages/tokens/src/theme/gate.ts';
 import { contextFor, planned, IDENTITY } from './adapter-context.ts';
 import { ADAPTERS } from './adapters.ts';
 import { manifestOf } from './source.ts';
+
+test('migrated base styles preserve stock dimensions, neutral accent/focus and danger assertions', () => {
+  const expected: BaseStyles = { height: '40px', display: 'inline-flex', radius: '4px', background: 'rgb(20, 20, 20)', focusColor: 'rgb(30, 30, 30)', focusStyle: 'solid', focusVisible: true, danger: 'rgb(200, 0, 0)' };
+  assert.deepEqual(baseStyleProblems(expected, expected), []);
+  for (const key of Object.keys(expected) as (keyof BaseStyles)[]) {
+    const actual = { ...expected, [key]: key === 'focusVisible' ? false : 'wrong' };
+    assert.ok(baseStyleProblems(actual, expected).some((failure) => failure.startsWith(`${key}:`)), key);
+  }
+  const nonNeutral = { ...expected, background: 'rgb(20, 30, 40)', focusColor: 'rgb(40, 30, 20)' };
+  assert.equal(baseStyleProblems(nonNeutral, nonNeutral).length, 2);
+});
 
 test('consumer helpers preserve the fresh Vite, Next root/src and vanilla scaffold commands', async () => {
   const calls: unknown[] = [];
@@ -75,6 +89,72 @@ test('consumer reports fail closed on missing identity, coverage, repeated cases
   ]) { const changed = report(); change(changed); assert.ok(consumerReportProblems(changed).length); }
 });
 
+test('each layout requires its own complete case set and cannot satisfy another layout', () => {
+  for (const layout of CONSUMER_LAYOUTS) {
+    const r = report();
+    r.layout = layout;
+    assert.equal(consumerReportProblems(r).length === 0, layout === 'vite');
+    r.expected = consumerCases(layout);
+    r.executed = consumerCases(layout);
+    r.cases = r.expected.map((id) => ({ id, status: 'passed', snapshot: 'values.json', failures: [] }));
+    assert.deepEqual(consumerReportProblems(r, layout), []);
+    assert.ok(consumerReportProblems(r, layout === 'vite' ? 'next-src' : 'vite').length);
+  }
+});
+
+test('Next hand steps move the src marker, preserve alias-based server pages and order the theme after extraction', async () => {
+  const work = await mkdtemp(join(tmpdir(), 'ultima-next-setup-'));
+  try {
+    for (const src of [false, true]) {
+      const app = join(work, src ? 'src-app' : 'root-app');
+      const folder = join(app, src ? 'src/app' : 'app');
+      await mkdir(join(app, 'app'), { recursive: true });
+      if (src) await mkdir(folder, { recursive: true });
+      await writeFile(join(app, 'app/ultima.css'), '@stylex;');
+      await assert.rejects(setupNext(app, src, ''), /setup no longer prints/);
+      await setupNext(app, src, "Import './ultima.css' from app/layout.tsx. Wrap any global CSS reset in an @layer");
+      assert.equal(await readFile(join(folder, 'ultima.css'), 'utf8'), '@stylex;');
+      if (src) await assert.rejects(readFile(join(app, 'app/ultima.css')));
+      await nextScene(app, src);
+      const layout = await readFile(join(folder, 'layout.tsx'), 'utf8');
+      assert.ok(layout.indexOf("import './ultima.css'") < layout.indexOf("ultima-theme.css'"));
+      assert.ok(layout.includes(src ? "import '../../ultima-theme.css'" : "import '../ultima-theme.css'"));
+      assert.match(await readFile(join(folder, 'page.tsx'), 'utf8'), /@\/components\/ui\/button/);
+      assert.doesNotMatch(await readFile(join(folder, 'page.tsx'), 'utf8'), /use client|packages\//);
+      await nextFault(app, src, 'hydration-mismatch');
+      assert.match(await readFile(join(folder, 'hydration-probe.tsx'), 'utf8'), /typeof window/);
+      await writeFile(join(app, 'postcss.config.js'), "include: ['**/*.{js,jsx,ts,tsx}']");
+      await nextFault(app, src, 'stylex-extraction');
+      const extraction = await readFile(join(app, 'postcss.config.js'), 'utf8');
+      assert.doesNotMatch(extraction, /include: \['\*\*/);
+      assert.equal(extraction.includes('app/**/*'), src);
+    }
+  } finally { await rm(work, { recursive: true, force: true }); }
+});
+
+test('hydration fails closed on missing completion, content/mode drift, console and required asset failures', () => {
+  const evidence: HydrationEvidence = { server: { attributes: { 'data-theme': 'dark', 'data-proof-mode': 'dark' }, content: 'Installed scene' }, hydrated: { attributes: { 'data-theme': 'dark', 'data-proof-mode': 'dark' }, content: 'Installed scene' }, ready: true, errors: [] };
+  assert.deepEqual(hydrationProblems(evidence), []);
+  for (const change of [
+    (e: HydrationEvidence) => { e.ready = false; },
+    (e: HydrationEvidence) => { e.hydrated.content = 'mismatch'; },
+    (e: HydrationEvidence) => { e.server.content = null; e.hydrated.content = null; },
+    (e: HydrationEvidence) => { e.hydrated.attributes['data-theme'] = 'light'; },
+    (e: HydrationEvidence) => { e.server.attributes = {}; e.hydrated.attributes = {}; },
+    (e: HydrationEvidence) => { e.errors.push('hydration warning'); },
+  ]) { const e = structuredClone(evidence); change(e); assert.ok(hydrationProblems(e).length); }
+  const page = new EventEmitter();
+  const errors = browserErrors(page as unknown as Page);
+  page.emit('pageerror', new Error('uncaught React error'));
+  page.emit('console', { type: () => 'warning', text: () => 'Hydration did not match' });
+  page.emit('console', { type: () => 'error', text: () => 'React minified error #418' });
+  page.emit('console', { type: () => 'log', text: () => 'ordinary message' });
+  page.emit('requestfailed', { resourceType: () => 'script', url: () => '/required.js', failure: () => ({ errorText: 'connection reset' }) });
+  page.emit('response', { status: () => 404, request: () => ({ resourceType: () => 'stylesheet' }), url: () => '/required.css' });
+  assert.equal(errors.length, 5);
+  assert.match(errors.join('\n'), /uncaught React error[\s\S]*Hydration did not match[\s\S]*#418[\s\S]*required asset failed[\s\S]*required asset HTTP 404/);
+});
+
 test('the verifier refuses an exit-zero consumer command that writes no report', async () => {
   const work = await mkdtemp(join(tmpdir(), 'ultima-proof-adapter-'));
   try {
@@ -114,6 +194,44 @@ test('consumer adapter requires source-bound, readable values snapshots as well 
       assert.equal(result.verdict, fault === 'none' ? 'passed' : 'incomplete', result.reason ?? 'no reason');
       if (fault === 'none') assert.equal(result.executed.length, CONSUMER_CASES.length);
       if (fault === 'stale-source') assert.match(result.reason ?? '', /captured source identity/);
+    }
+  } finally { await rm(work, { recursive: true, force: true }); }
+});
+
+test('Next adapters require SSR HTML, completed hydration and token-derived extraction in every mode', async () => {
+  const work = await mkdtemp(join(tmpdir(), 'ultima-next-adapter-'));
+  try {
+    for (const layout of ['next-app', 'next-src'] as const) for (const fault of ['none', 'missing-html', 'missing-hydration', 'hydration-drift', 'missing-extraction', 'false-extraction-pass', 'wrong-layout'] as const) {
+      const fixture = report();
+      fixture.layout = fault === 'wrong-layout' ? 'vite' : layout;
+      fixture.expected = consumerCases(fixture.layout);
+      fixture.executed = [...fixture.expected];
+      fixture.cases = fixture.expected.map((id) => ({ id, status: 'passed', snapshot: 'values.json', failures: [] }));
+      const script = `
+        const fs = require('node:fs'), path = require('node:path');
+        const output = process.argv.at(-1), report = ${JSON.stringify(fixture)}, fault = ${JSON.stringify(fault)};
+        fs.mkdirSync(output, { recursive: true });
+        const paint = Object.fromEntries(['root', 'control', 'status'].map(part => [part, { backgroundColor: 'paint', color: 'text' }]));
+        const variables = Object.fromEntries(['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'].map(name => ['--ult-color-' + name, { expected: 'value', actual: 'value' }]));
+        for (const row of report.cases) {
+          const mode = row.id.endsWith('-dark') ? 'dark' : 'light', explicit = row.id.includes('/explicit-');
+          const state = { attributes: { 'data-theme': explicit ? mode : null, 'data-proof-mode': explicit ? mode : 'system' }, content: 'Installed scene' };
+          row.snapshot = row.id.split('/').at(-1) + '.values.json';
+          const snapshot = { id: row.id, expected: paint, actual: paint, variables, failures: [], extraction: { expected: { height: '40px', radius: '4px', display: 'inline-flex' }, actual: { height: '40px', radius: '4px', display: 'inline-flex' } }, hydration: { server: state, hydrated: structuredClone(state), ready: true, errors: [] } };
+          if (fault === 'missing-hydration') delete snapshot.hydration;
+          if (fault === 'hydration-drift') snapshot.hydration.hydrated.attributes['data-theme'] = 'wrong';
+          if (fault === 'missing-extraction') delete snapshot.extraction;
+          if (fault === 'false-extraction-pass') snapshot.extraction.actual.height = '0px';
+          if (fault !== 'missing-html') fs.writeFileSync(path.join(output, row.id.split('/').at(-1) + '.server.html'), '<html><main>Installed scene</main></html>');
+          fs.writeFileSync(path.join(output, row.snapshot), JSON.stringify(snapshot));
+        }
+        fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report));
+      `;
+      const id = layout === 'next-app' ? 'consumer-proof-next-app' : 'consumer-proof-next-src';
+      const context = contextFor(work, process.cwd(), planned(id, { argv: ['node', '-e', script, '--', '--layout', layout] }), { identity: { ...IDENTITY, head: fixture.source.head, manifest: fixture.source.manifest } });
+      const result = await ADAPTERS[id]!.run(context);
+      assert.equal(result.verdict, fault === 'none' ? 'passed' : 'incomplete', `${layout} ${fault}: ${result.reason}`);
+      if (fault === 'none') assert.equal(result.executed.length, 4);
     }
   } finally { await rm(work, { recursive: true, force: true }); }
 });
