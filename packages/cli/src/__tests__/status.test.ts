@@ -9,6 +9,7 @@ import { CLI_VERSION, skillStamp } from '../install.ts';
 import { run } from '../run.ts';
 import { contentHash, stampLine, withStamp } from '../stamp.ts';
 import { fileState } from '../status.ts';
+import { UNMARKED_NEUTRAL_HASHES } from '../base-theme.ts';
 import { project, snapshot } from './fixtures.ts';
 
 describe('fileState', () => {
@@ -53,17 +54,17 @@ async function stamped(item: string, source: string, revision: string, local = v
   return withStamp(local, stampLine(item, revision, await contentHash(source, 'c1'), 'ts'));
 }
 
-type Item = { name: string; type?: string; files: Record<string, string>; content?: string; targets?: Record<string, string> };
+type Item = { name: string; type?: string; files: Record<string, string>; content?: string; targets?: Record<string, string>; baseTheme?: string };
 
 async function serve(items: Item[], format: unknown = 1): Promise<string> {
   const catalogue = {
     name: 'ultima',
     meta: { ultima: { format } },
-    items: items.map(({ name, type = 'registry:ui', files, targets }) => ({
+    items: items.map(({ name, type = 'registry:ui', files, targets, baseTheme }) => ({
       name,
       type,
       files: Object.keys(files).map((file) => ({ path: `ultima/${type === 'registry:lib' ? 'lib' : 'ui'}/${file}`, type, ...(targets?.[file] && { target: targets[file] }) })),
-      meta: { ultima: { revision: NEW, files } },
+      meta: { ultima: { revision: NEW, files, ...(baseTheme && { baseTheme }) } },
     })),
   };
   const served: Record<string, unknown> = { '/r/registry.json': catalogue };
@@ -106,6 +107,76 @@ async function statusJson(root: string) {
 }
 
 describe('status', () => {
+  it.each(UNMARKED_NEUTRAL_HASHES)('recognizes the first Neutral rollout before markers (%s), including later edits', async (hash) => {
+    const css = hash.startsWith('b1:');
+    const item = css ? 'tokens-css' : 'tokens';
+    const name = css ? 'tokens.css' : 'tokens.stylex.ts';
+    const file = css ? 'ultima-tokens.css' : 'src/lib/tokens.stylex.ts';
+    const content = css ? ':root { --ult-radius-md: 6px; }' : 'export const radius = 6;';
+    const registry = await serve([{ name: item, type: 'registry:lib', files: { [name]: 'c1:0123456789abcdef' }, ...(css && { targets: { [name]: '~/ultima-tokens.css' } }), baseTheme: 'neutral-tight' }]);
+    const root = consumer(registry, { [file]: withStamp(content, stampLine(item, OLD, hash, css ? 'css' : 'ts')) });
+    expect((await statusJson(root)).report).toHaveProperty('notices', []);
+    expect((await status(root)).stdout).not.toContain('https://ultima.systems/install/update');
+  });
+
+  it.each(['tokens', 'tokens-css'])('does not warn after rollout for current or subsequently edited %s files', async (item) => {
+    const css = item === 'tokens-css';
+    const file = css ? 'ultima-tokens.css' : 'src/lib/tokens.stylex.ts';
+    const name = css ? 'tokens.css' : 'tokens.stylex.ts';
+    const scheme = css ? 'b1' : 'c1';
+    const syntax = css ? 'css' : 'ts';
+    const fresh = css ? ':root { --ult-radius-md: 4px; }\n/* @ultima-base neutral-tight */\n' : 'export const radius = 4;\n// @ultima-base neutral-tight\n';
+    const hash = await contentHash(fresh, scheme);
+    const registry = await serve([{ name: item, type: 'registry:lib', files: { [name]: hash }, ...(css && { targets: { [name]: '~/ultima-tokens.css' } }), baseTheme: 'neutral-tight' }]);
+    for (const content of [fresh, fresh.replace('4', '6')]) {
+      const root = consumer(registry, { [file]: withStamp(content, stampLine(item, NEW, hash, syntax)) });
+      expect((await statusJson(root)).report).toHaveProperty('notices', []);
+      expect((await status(root)).stdout).not.toContain('https://ultima.systems/install/update');
+    }
+    const later = await serve([{ name: item, type: 'registry:lib', files: { [name]: await contentHash(fresh.replace('4', '8'), scheme) }, ...(css && { targets: { [name]: '~/ultima-tokens.css' } }), baseTheme: 'neutral-tight' }]);
+    expect((await statusJson(consumer(later, { [file]: withStamp(fresh, stampLine(item, NEW, hash, syntax)) }))).report).toHaveProperty('notices', []);
+  });
+
+  it('warns once for legacy CSS and edited token sources, while leaving custom theme files untouched', async () => {
+    const old = 'export const radius = 10;\n';
+    const css = ':root { --ult-radius-md: 10px; }\n';
+    const registry = await serve([
+      { name: 'tokens', type: 'registry:lib', files: { 'tokens.stylex.ts': await contentHash(old.replace('10', '4'), 'c1') }, baseTheme: 'neutral-tight' },
+      { name: 'tokens-css', files: { 'tokens.css': await contentHash(css.replace('10', '4'), 'b1') }, targets: { 'tokens.css': '~/ultima-tokens.css' }, baseTheme: 'neutral-tight' },
+    ]);
+    const root = consumer(registry, {
+      'src/lib/tokens.stylex.ts': await stamped('tokens', old, OLD, old.replace('10', '12')),
+      'ultima-tokens.css': withStamp(css, stampLine('tokens-css', OLD, await contentHash(css, 'b1'), 'css')),
+      'ultima-theme.css': ':root { --ult-radius-md: 20px; }',
+    });
+    expect((await statusJson(root)).report).toHaveProperty('notices', [expect.objectContaining({ files: ['src/lib/tokens.stylex.ts', 'ultima-tokens.css'] })]);
+    expect((await status(root)).stdout.match(/https:\/\/ultima.systems\/install\/update/g)).toHaveLength(1);
+  });
+
+  it('preserves legacy registry behavior when base-theme metadata is absent', async () => {
+    const old = 'export const radius = 10;\n';
+    const registry = await serve([{ name: 'tokens', type: 'registry:lib', files: { 'tokens.stylex.ts': await contentHash(old.replace('10', '4'), 'c1') } }]);
+    expect((await statusJson(consumer(registry, { 'src/lib/tokens.stylex.ts': await stamped('tokens', old, OLD) }))).report).toHaveProperty('notices', []);
+  });
+
+  it('names the Neutral/Tight change and update page for a legacy token install in text and JSON without writing files', async () => {
+    const old = 'export const radius = 10;\n';
+    const fresh = 'export const radius = 4;\n';
+    const registry = await serve([{ name: 'tokens', type: 'registry:lib', files: { 'tokens.stylex.ts': await contentHash(fresh, 'c1') }, baseTheme: 'neutral-tight' }]);
+    const root = consumer(registry, { 'src/lib/tokens.stylex.ts': await stamped('tokens', old, OLD) });
+    const { code, report } = await statusJson(root);
+    expect(code).toBe(0);
+    expect(report).toHaveProperty('notices', [{
+      id: 'base-theme-neutral-tight',
+      message: expect.stringContaining('Neutral with Tight radius'),
+      link: 'https://ultima.systems/install/update',
+      files: ['src/lib/tokens.stylex.ts'],
+    }]);
+    const text = await status(root);
+    expect(text.stdout).toContain('Neutral with Tight radius');
+    expect(text.stdout).toContain('https://ultima.systems/install/update');
+  });
+
   it('reports each of the six states, and a stamp in an unknown scheme, and exits 0', async () => {
     const old = (name: string) => staged(name, 'one');
     const next = (name: string) => staged(name, 'two');

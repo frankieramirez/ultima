@@ -1,0 +1,56 @@
+import { UltimaPresetInstall } from '../ultima-preset-install';
+
+# Update the base theme
+
+Reinstalling Ultima's base tokens now gives you **Neutral with Tight radius**. The indigo accent and cyan action/highlight become achromatic, including the focus ring. The radius scale changes from 2/4/10/12 to 1/2/4/6 pixels. Success, warning and danger keep their green, amber and red roles. Mode selection stays the same: dark and light are full peers, with the system preference used unless you set a mode.
+
+## What changes when you reinstall
+
+Your installed sources and generated theme files remain yours. A new Ultima release never rewrites them. The read-only `npx ultima-design status` command compares installed files with the registry and links this page for legacy base tokens. `npx ultima-design status --json` includes the same notice under `notices`, with the affected file paths.
+
+Explicitly reinstalling the `tokens` or `tokens-css` item replaces base values when you allow those files to be overwritten. Component installs can also pull the token dependency, so review overwrite prompts. Reinstalling a component alone leaves its semantic token names and API unchanged. A custom theme that supplies those values keeps its appearance while it remains applied.
+
+Before overwriting an edited file, commit or back it up and inspect `npx ultima-design diff tokens`. Review your production build in both modes after the update. `status` never installs a theme for you.
+
+## Keep the previous appearance
+
+The explicit **Ultima** preset preserves the pre-rollout indigo accent and cyan action/highlight, with the Soft radius scale (2/4/10/12) and the previous non-color defaults. This command installs that frozen preset through the theme registry:
+
+<UltimaPresetInstall />
+
+It writes `ultima-theme.css`, `ultima-theme.json` and `DESIGN.md` at the project root. Back up existing files with those names before accepting an overwrite. Keep the JSON draft for later editing. Installing the files alone does not apply the theme.
+
+Import the theme after the application's StyleX output, or after `ultima-tokens.css` if you consume plain CSS. For Vite:
+
+```tsx title="src/main.tsx"
+import './index.css';
+import '../ultima-theme.css';
+```
+
+For Next.js with a root App Router directory:
+
+```tsx title="app/layout.tsx"
+import './ultima.css';
+import '../ultima-theme.css';
+```
+
+For Next.js with a `src` directory:
+
+```tsx title="src/app/layout.tsx"
+import './ultima.css';
+import '../../ultima-theme.css';
+```
+
+Set `data-theme="dark"` or `data-theme="light"` on `html` to pin a mode, or omit it to follow the system preference. Keep portal containers inside a scoped theme so popups inherit it. The [theme adoption guide](/install#theme-adoption) covers scoped themes and the optional StyleX export.
+
+## If you load the live tokens URL
+
+The unpinned `https://ultima.systems/tokens.css` URL follows the latest deployed build. Unlike an installed file, it can change without a reinstall. A browser loading it after the Neutral rollout receives the new base values.
+
+Before rolling that change into your product, vendor the stylesheet your product currently uses and serve your own committed copy, or install and apply the explicit Ultima preset above. Vendoring the latest URL after rollout vendors Neutral; use your retained pre-rollout copy or the Ultima preset to keep the previous appearance. Review cache behavior and both modes before deployment.
+
+## Existing drafts and exports
+
+Valid saved drafts, autosaves and shared Studio fragments reopen with the same resolved values in dark and light. Downloaded CSS and StyleX theme files keep their values until you choose to regenerate or replace them. Unsupported draft versions are refused explicitly. Opening a saved draft takes precedence over a fresh Neutral Studio session.
+
+Return to [Install](/install) for setup instructions or use [Theme Studio](/theme-studio) to preserve your product's custom theme.
