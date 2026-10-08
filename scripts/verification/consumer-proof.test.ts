@@ -1,16 +1,18 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mkdtemp, rm, writeFile, mkdir, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { scaffold, serveRegistry, packCli, type Run } from '../consumer-helpers.ts';
-import { CONSUMER_CASES, CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerReportProblems, type ConsumerReport } from '../consumer-report.ts';
+import { CONSUMER_CASES, CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerPrerequisites, consumerReproduction, consumerReportProblems, type ConsumerReport } from '../consumer-report.ts';
 import { cliReportProblems, installTheme } from '../consumer-delivery.ts';
 import { sceneSource } from '../consumer-scene.ts';
+import { BROWSER_ASSERTIONS, abortedBrowserProblems, browserEvidenceProblems } from '../consumer-browser.ts';
 import { toCss, toRegistryItem } from '../../packages/tokens/src/theme/export.ts';
-import { serializeDraft } from '../../packages/tokens/src/theme/codec.ts';
-import { THEME_PRESETS } from '../../packages/tokens/src/theme/draft.ts';
-import { browserErrors, hydrationProblems, nextFault, nextScene, setupNext, type HydrationEvidence } from '../consumer-next.ts';
+import { draftFingerprint, serializeDraft } from '../../packages/tokens/src/theme/codec.ts';
+import { THEME_PRESETS, stockDraft } from '../../packages/tokens/src/theme/draft.ts';
+import { browserErrors, hydrationProblems, nextFault, nextScene, setupNext, type BrowserLog, type HydrationEvidence } from '../consumer-next.ts';
 import { EventEmitter } from 'node:events';
 import type { Page } from 'playwright';
 import { baseStyleProblems, proofDraft, type BaseStyles } from '../consumer-proof.ts';
@@ -46,6 +48,20 @@ test('installed theme receipt requires complete linked CSS/document proof and re
     assert.notDeepEqual(await themeSnapshot(work), before);
   } finally { await rm(work, { recursive: true, force: true }); }
 });
+
+const browserFixture = `
+  snapshot.browser = { assertions: ${JSON.stringify(BROWSER_ASSERTIONS)}.map(name => ({ name, expected: true, actual: true, status: 'passed' })), axe: Object.fromEntries(['closed', 'open', 'switched-open', 'switched-closed'].map(state => [state, { violations: [], incomplete: [], passes: [{ id: 'synthetic-rule' }] }])), modeSnapshots: ['dark', 'light', 'dark'].map(mode => ({ mode, layout: report.layout, deliveryPath: report.deliveryPath, variables, controlVariables: variables, portalVariables: variables, expected: paint, actual: paint, colorScheme: mode, controlColorScheme: mode, portal: { inContainer: true, documentSurface: 'stock', subtreeSurface: 'draft', colorScheme: mode }, extraction: { expected: { height: '40px', radius: '4px', display: 'inline-flex' }, actual: { height: '40px', radius: '4px', display: 'inline-flex' } }, failures: [] })), failures: [] };
+  snapshot.fixture = '.';
+  snapshot.reproduceArgv = ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', report.layout, '--delivery-path', report.deliveryPath, '--case', row.id];
+  snapshot.reproduce = snapshot.reproduceArgv.join(' ');
+  snapshot.source = { head: report.source.head, manifest: report.source.manifest.digest };
+  snapshot.artifacts = { build: 'build.log', server: 'server.log', browser: row.id.split('/').at(-1) + '.browser.json', axe: row.id.split('/').at(-1) + '.axe.json', screenshot: 'synthetic.png', reproduce: row.id.split('/').at(-1) + '.reproduce.txt' };
+  fs.writeFileSync(path.join(output, 'package.json'), '{}');
+  for (const name of ['build.log', 'server.log', 'synthetic.png']) fs.writeFileSync(path.join(output, name), 'synthetic artifact');
+  fs.writeFileSync(path.join(output, snapshot.artifacts.browser), JSON.stringify({ console: [], pageErrors: [], failedRequests: [] }));
+  fs.writeFileSync(path.join(output, snapshot.artifacts.axe), JSON.stringify(snapshot.browser.axe));
+  fs.writeFileSync(path.join(output, snapshot.artifacts.reproduce), snapshot.reproduce + '\\n');
+`;
 
 test('migrated base styles preserve stock dimensions, neutral accent/focus and danger assertions', () => {
   const expected: BaseStyles = { height: '40px', display: 'inline-flex', radius: '4px', background: 'rgb(20, 20, 20)', focusColor: 'rgb(30, 30, 30)', focusStyle: 'solid', focusVisible: true, danger: 'rgb(200, 0, 0)' };
@@ -99,6 +115,127 @@ test('the non-stock consumer draft passes the two-mode Studio pairing gate', () 
   assert.ok(gate(resolveDraft(proofDraft())).every((row) => row.dark.pass && row.light.pass));
 });
 
+test('the replaceable installed scene supplies named form, navigation, Dialog and data contracts', () => {
+  for (const subtree of [false, true]) {
+    const scene = sceneSource(subtree);
+    for (const contract of ['<form', 'Project name', 'required', 'Project name is required', 'RadioGroup.Root', 'Save project', 'Reset form', 'aria-current', 'Activity', 'Dialog.Portal', 'Dialog.Close', 'Table.Root', 'No projects']) assert.ok(scene.includes(contract), contract);
+  }
+});
+
+test('scene faults mutate the real portal boundary, required error name and focus-return API', () => {
+  assert.match(sceneSource(true), /Dialog\.Portal container=\{container\}/);
+  assert.doesNotMatch(sceneSource(true, false, 'portal-theme'), /Dialog\.Portal container/);
+  assert.match(sceneSource(false, false, 'portal-theme'), /data-theme=\{mode === 'dark' \? 'light' : 'dark'\}/);
+  assert.doesNotMatch(sceneSource(false, false, 'required-error-name'), /aria-label="Project name error"/);
+  assert.match(sceneSource(false, false, 'focus-return'), /finalFocus=\{false\}/);
+});
+
+test('browser evidence fails closed on missing assertions, dynamic probes, failures and axe states', () => {
+  const variables = Object.fromEntries(Object.keys(resolveDraft(stockDraft()).light).map((key) => [key, { expected: 'paint', actual: 'paint' }]));
+  const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map((part) => [part, { backgroundColor: 'paint', color: 'text' }]));
+  const fixture = {
+    assertions: BROWSER_ASSERTIONS.map((name) => ({ name, expected: true, actual: true, status: 'passed' })),
+    axe: Object.fromEntries(['closed', 'open', 'switched-open', 'switched-closed'].map((state) => [state, { violations: [] as unknown[], incomplete: [], passes: [{ id: 'synthetic-rule' }] }])),
+    modeSnapshots: ['dark', 'light', 'dark'].map((mode) => ({ mode, layout: 'vite', deliveryPath: 'stylex-subtree', colorScheme: mode, controlColorScheme: mode, portal: { inContainer: true, documentSurface: 'stock', subtreeSurface: 'draft', colorScheme: mode }, extraction: { expected: { height: '40px', radius: '4px', display: 'inline-flex' }, actual: { height: '40px', radius: '4px', display: 'inline-flex' } }, expected: paint, actual: paint, variables, controlVariables: variables, portalVariables: variables, failures: [] })), failures: [] as string[],
+  };
+  assert.deepEqual(browserEvidenceProblems(fixture, true, 'vite', 'stylex-subtree'), []);
+  for (const fault of ['omitted', 'repeated', 'false-pass', 'missing-axe', 'axe-violation', 'missing-modes', 'one-mode', 'stale-portal', 'concealed-failure', 'dynamic-extraction', 'dynamic-boundary', 'dynamic-portal-scheme', 'dynamic-control-scheme', 'dynamic-layout', 'dynamic-path'] as const) {
+    const changed = structuredClone(fixture);
+    if (fault === 'omitted') changed.assertions.pop();
+    if (fault === 'repeated') changed.assertions[1] = changed.assertions[0]!;
+    if (fault === 'false-pass') changed.assertions[0]!.actual = false;
+    if (fault === 'missing-axe') delete changed.axe.open;
+    if (fault === 'axe-violation') changed.axe.open!.violations.push({ id: 'color-contrast' });
+    if (fault === 'missing-modes') changed.modeSnapshots = [];
+    if (fault === 'one-mode') changed.modeSnapshots.forEach((snapshot) => { snapshot.mode = 'dark'; });
+    if (fault === 'stale-portal') changed.modeSnapshots[0]!.portalVariables['--ult-color-surface']!.actual = 'stale';
+    if (fault === 'concealed-failure') changed.failures.push('mode-switch-portal failed');
+    if (fault === 'dynamic-extraction') changed.modeSnapshots[0]!.extraction.actual.height = '0px';
+    if (fault === 'dynamic-boundary') changed.modeSnapshots[0]!.portal.inContainer = false;
+    if (fault === 'dynamic-portal-scheme') changed.modeSnapshots[0]!.portal.colorScheme = 'light';
+    if (fault === 'dynamic-control-scheme') changed.modeSnapshots[0]!.controlColorScheme = 'light';
+    if (fault === 'dynamic-layout') changed.modeSnapshots[0]!.layout = 'next-src';
+    if (fault === 'dynamic-path') changed.modeSnapshots[0]!.deliveryPath = 'css';
+    assert.ok(browserEvidenceProblems(changed, true, 'vite', 'stylex-subtree').length, fault);
+  }
+  for (const part of ['variables', 'controlVariables', 'portalVariables'] as const) {
+    const changed = structuredClone(fixture);
+    changed.modeSnapshots[0]!.variables = structuredClone(variables);
+    changed.modeSnapshots[0]!.controlVariables = structuredClone(variables);
+    changed.modeSnapshots[0]!.portalVariables = structuredClone(variables);
+    changed.modeSnapshots[0]!.portalVariables['--ult-color-surface']!.actual = 'concealed mismatch';
+    delete changed.modeSnapshots[0]![part]['--ult-color-surface'];
+    assert.ok(browserEvidenceProblems(changed, true, 'vite', 'stylex-subtree').length, `${part}: omitted source token`);
+  }
+  const foreign = structuredClone(fixture);
+  foreign.modeSnapshots[0]!.variables['--foreign'] = { expected: 'paint', actual: 'paint' };
+  assert.ok(browserEvidenceProblems(foreign, true, 'vite', 'stylex-subtree').length);
+});
+
+test('a scene that threw keeps a complete failed inventory instead of missing evidence', () => {
+  const aborted = {
+    assertions: BROWSER_ASSERTIONS.map((name, index) => index < 3 ? { name, expected: true, actual: true, status: 'passed' } : { name, expected: 'reached', actual: null, status: 'failed', error: 'not reached: Dialog never opened' }),
+    axe: { closed: { violations: [], incomplete: [], passes: [] } }, modeSnapshots: [], failures: ['Dialog never opened'],
+  };
+  assert.deepEqual(abortedBrowserProblems(aborted), []);
+  assert.ok(browserEvidenceProblems(aborted, false).length, 'aborted evidence is not complete evidence');
+  for (const change of [
+    (e: typeof aborted) => { e.assertions.pop(); },
+    (e: typeof aborted) => { e.failures = []; },
+    (e: typeof aborted) => { (e as { axe?: unknown }).axe = undefined; },
+    (e: typeof aborted) => { (e.assertions[4] as { status: string }).status = 'skipped'; },
+  ]) { const e = structuredClone(aborted); change(e); assert.ok(abortedBrowserProblems(e).length); }
+  assert.ok(abortedBrowserProblems(undefined).length);
+});
+
+test('modal-only axe checks require visible exhaustive focus wraps and never resolve other incomplete rules', () => {
+  const variables = Object.fromEntries(Object.keys(resolveDraft(stockDraft()).light).map((key) => [key, { expected: 'paint', actual: 'paint' }]));
+  const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map((part) => [part, { backgroundColor: 'paint', color: 'text' }]));
+  const inventory = [{ role: 'button', name: 'First' }, { role: 'button', name: 'Last' }];
+  const rule = { id: 'aria-hidden-focus', nodes: [{ any: [], none: [], all: [{ id: 'focusable-modal-open', relatedNodes: [{ html: '<button hidden>Background</button>', target: ['hidden-background'] }] }] }] };
+  const steps = [0, 1, 0, 1, 0, 1].map((position, index) => ({ key: index < 3 ? 'Tab' : 'Shift+Tab', inside: true, accessible: true, position, item: inventory[position] }));
+  const fixture = {
+    assertions: BROWSER_ASSERTIONS.map((name) => ({ name, expected: true, actual: true, status: 'passed' })),
+    axe: Object.fromEntries(['closed', 'open', 'switched-open', 'switched-closed'].map((state) => [state, { violations: [], incomplete: state.includes('open') ? [structuredClone(rule)] : [], passes: [{ id: 'synthetic-rule' }], focusCycle: { relatedNodes: 1, inventory, steps } }])),
+    modeSnapshots: ['dark', 'light', 'dark'].map((mode) => ({ mode, colorScheme: mode, controlColorScheme: mode, portal: { inContainer: true, documentSurface: 'stock', subtreeSurface: 'draft', colorScheme: mode }, extraction: { expected: { height: '40px', radius: '4px', display: 'inline-flex' }, actual: { height: '40px', radius: '4px', display: 'inline-flex' } }, expected: paint, actual: paint, variables, controlVariables: variables, portalVariables: variables, failures: [] })), failures: [],
+  };
+  assert.deepEqual(browserEvidenceProblems(fixture, true), []);
+  const hiddenBackground = structuredClone(fixture);
+  for (const state of ['open', 'switched-open'] as const) {
+    hiddenBackground.axe[state]!.incomplete[0]!.nodes[0]!.all[0]!.relatedNodes = Array.from({ length: 11 }, () => ({ html: '<button hidden>Background</button>', target: ['hidden-background'] }));
+    hiddenBackground.axe[state]!.focusCycle.relatedNodes = 11;
+  }
+  assert.deepEqual(browserEvidenceProblems(hiddenBackground, true), []);
+  for (const fault of ['unrelated-rule', 'mixed-check', 'empty-node', 'empty-related', 'closed-incomplete', 'missing-cycle', 'wrong-count', 'missing-step', 'wrong-key', 'outside', 'hidden-inside', 'wrong-position', 'wrong-item', 'empty-inventory'] as const) {
+    const changed = structuredClone(fixture), axe = changed.axe.open!;
+    if (fault === 'unrelated-rule') axe.incomplete[0]!.id = 'color-contrast';
+    if (fault === 'mixed-check') axe.incomplete[0]!.nodes[0]!.all.push({ id: 'unresolved-check', relatedNodes: [{} as { html: string; target: string[] }] });
+    if (fault === 'empty-node') axe.incomplete[0]!.nodes = [];
+    if (fault === 'empty-related') axe.incomplete[0]!.nodes[0]!.all[0]!.relatedNodes = [];
+    if (fault === 'closed-incomplete') changed.axe.closed!.incomplete = [structuredClone(rule)];
+    if (fault === 'missing-cycle') delete (axe as { focusCycle?: unknown }).focusCycle;
+    if (fault === 'wrong-count') axe.focusCycle.relatedNodes = 2;
+    if (fault === 'missing-step') axe.focusCycle.steps.pop();
+    if (fault === 'wrong-key') axe.focusCycle.steps[0]!.key = 'Space';
+    if (fault === 'outside') axe.focusCycle.steps[0]!.inside = false;
+    if (fault === 'hidden-inside') axe.focusCycle.steps[0]!.accessible = false;
+    if (fault === 'wrong-position') axe.focusCycle.steps[0]!.position = 1;
+    if (fault === 'wrong-item') axe.focusCycle.steps[0]!.item = { role: 'button', name: 'Hidden' };
+    if (fault === 'empty-inventory') axe.focusCycle.inventory = [];
+    assert.ok(browserEvidenceProblems(changed, true).length, fault);
+  }
+  for (const container of ['any', 'none', 'all'] as const) for (const malformed of ['', {}, null, 0]) {
+    const changed = structuredClone(fixture);
+    Object.assign(changed.axe.open!.incomplete[0]!.nodes[0]!, { [container]: malformed });
+    assert.ok(browserEvidenceProblems(changed, true).length, `${container}: malformed check container`);
+  }
+  for (const related of [null, {}, { target: [] }, { target: [''] }, { html: '', target: ['hidden'] }, { html: '<button />', target: [null] }]) {
+    const changed = structuredClone(fixture);
+    Object.assign(changed.axe.open!.incomplete[0]!.nodes[0]!.all[0]!, { relatedNodes: [related] });
+    assert.ok(browserEvidenceProblems(changed, true).length, `malformed related node: ${JSON.stringify(related)}`);
+  }
+});
+
 test('every delivery path has its own coverage; registry reuses the scaffold for every shipped preset', () => {
   for (const layout of CONSUMER_LAYOUTS) for (const path of DELIVERY_PATHS) {
     const cases = consumerCases(layout, path);
@@ -107,7 +244,7 @@ test('every delivery path has its own coverage; registry reuses the scaffold for
     assert.ok(cases.every((id) => id.startsWith(`${layout}/${path}/chromium/`)));
   }
   assert.match(sceneSource(true), /\.\.\.ultimaTheme\[mode\], colorScheme\[mode\]/);
-  assert.match(sceneSource(true), /Popover\.Portal container=\{container\}/);
+  assert.match(sceneSource(true), /Dialog\.Portal container=\{container\}/);
   assert.match(sceneSource(true, true), /ultimaTheme\[mode\]\[0\]/);
 });
 
@@ -189,6 +326,39 @@ test('consumer reports fail closed on missing identity, coverage, repeated cases
   ]) { const changed = report(); change(changed); assert.ok(consumerReportProblems(changed).length); }
 });
 
+test('one-cell registry selection retains exact CSS and stock prerequisites outside requested coverage', () => {
+  const path = 'registry', layout = 'vite', prefix = `${layout}/${path}/chromium/`, mode = 'explicit-dark';
+  for (const selected of [`${prefix}css-reference-${mode}`, `${prefix}${mode}`, `${prefix}${THEME_PRESETS[0]!.id}-${mode}`]) {
+    const fixture = report();
+    fixture.deliveryPath = path;
+    fixture.selectedCase = selected;
+    fixture.expected = [selected];
+    fixture.executed = [selected];
+    fixture.cases = [{ id: selected, status: 'passed', snapshot: 'selected.values.json', failures: [] }];
+    fixture.prerequisites = consumerPrerequisites(layout, path, selected).map((id) => ({ id, status: 'passed', snapshot: `${id.split('/').at(-1)}.values.json`, failures: [] }));
+    const selectedName = selected.split('/').at(-1)!.replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '') || 'non-stock';
+    fixture.drafts = { [selectedName]: { digest: fixture.source.draftDigest!, fingerprint: fixture.source.draftFingerprint, recipeVersion: fixture.source.recipeVersion } };
+    const needs = selected.includes('/css-reference-') ? 0 : selected === `${prefix}${mode}` ? 1 : 2;
+    assert.equal(fixture.prerequisites.length, needs);
+    assert.deepEqual(consumerReportProblems(fixture, layout, path), []);
+    const argv = consumerReproduction(layout, path, selected, { preset: 'ultima', fault: 'focus-return' });
+    assert.deepEqual(argv.slice(-2), ['--case', selected]);
+    assert.deepEqual(argv.slice(3, -2), ['--layout', layout, '--delivery-path', path, '--preset', 'ultima', '--fault', 'focus-return']);
+    for (const fault of ['missing', 'duplicate', 'foreign', 'failed', 'null-digest', 'wrong-preset', 'full-gate'] as const) {
+      const altered = structuredClone(fixture);
+      if (fault === 'missing') altered.prerequisites?.pop();
+      if (fault === 'duplicate') altered.prerequisites?.push(altered.prerequisites[0]!);
+      if (fault === 'foreign') altered.prerequisites?.push({ id: `${prefix}other-${mode}`, status: 'passed', snapshot: 'foreign.json', failures: [] });
+      if (fault === 'failed') { if (altered.prerequisites?.length) altered.prerequisites[0]!.status = 'failed'; else altered.cases[0]!.status = 'failed'; }
+      if (fault === 'null-digest') altered.source.draftDigest = null;
+      if (fault === 'wrong-preset') altered.drafts![selectedName]!.digest = 'b'.repeat(64);
+      if (fault === 'full-gate') altered.selectedCase = undefined;
+      if (!needs && fault === 'missing') continue;
+      assert.ok(consumerReportProblems(altered, layout, path).length, `${selected}: ${fault}`);
+    }
+  }
+});
+
 test('each layout requires its own complete case set and cannot satisfy another layout', () => {
   for (const layout of CONSUMER_LAYOUTS) {
     const r = report();
@@ -248,7 +418,8 @@ test('hydration fails closed on missing completion, content/mode drift, console 
     (e: HydrationEvidence) => { e.errors.push('hydration warning'); },
   ]) { const e = structuredClone(evidence); change(e); assert.ok(hydrationProblems(e).length); }
   const page = new EventEmitter();
-  const errors = browserErrors(page as unknown as Page);
+  const log: BrowserLog = { console: [], pageErrors: [], failedRequests: [] };
+  const errors = browserErrors(page as unknown as Page, log);
   page.emit('pageerror', new Error('uncaught React error'));
   page.emit('console', { type: () => 'warning', text: () => 'Hydration did not match' });
   page.emit('console', { type: () => 'error', text: () => 'React minified error #418' });
@@ -257,6 +428,9 @@ test('hydration fails closed on missing completion, content/mode drift, console 
   page.emit('response', { status: () => 404, request: () => ({ resourceType: () => 'stylesheet' }), url: () => '/required.css' });
   assert.equal(errors.length, 5);
   assert.match(errors.join('\n'), /uncaught React error[\s\S]*Hydration did not match[\s\S]*#418[\s\S]*required asset failed[\s\S]*required asset HTTP 404/);
+  page.emit('requestfailed', { resourceType: () => 'image', url: () => '/optional.png', failure: () => ({ errorText: 'aborted' }) });
+  assert.equal(errors.length, 5, 'an optional asset is retained in the log, not as a required-asset error');
+  assert.deepEqual([log.pageErrors.length, log.console.length, log.failedRequests.map((entry) => entry.required)], [1, 3, [true, true, false]]);
 });
 
 test('the verifier refuses an exit-zero consumer command that writes no report', async () => {
@@ -275,19 +449,28 @@ test('consumer adapter requires source-bound, readable values snapshots as well 
   try {
     const fixture = report();
     const identity = { ...IDENTITY, head: fixture.source.head, manifest: fixture.source.manifest };
-    for (const fault of ['none', 'missing-snapshot', 'unreadable-snapshot', 'false-paint-pass', 'stale-source', 'missing-case'] as const) {
+    for (const fault of ['none', 'missing-snapshot', 'unreadable-snapshot', 'false-paint-pass', 'stale-source', 'missing-case', 'missing-browser', 'missing-build', 'missing-server', 'missing-browser-log', 'missing-axe', 'missing-screenshot', 'missing-fixture', 'wrong-reproduce', 'concealed-console', 'concealed-request', 'one-cell-waiver'] as const) {
       const changed = structuredClone(fixture);
       if (fault === 'stale-source') changed.source.head = 'c'.repeat(40);
       if (fault === 'missing-case') changed.executed.pop();
+      if (fault === 'one-cell-waiver') { changed.selectedCase = changed.expected[0]; changed.expected = [changed.selectedCase!]; changed.executed = [...changed.expected]; changed.cases = changed.cases.slice(0, 1); }
       const script = `
         const fs = require('node:fs'), path = require('node:path');
         const output = process.argv.at(-1), report = ${JSON.stringify(changed)};
         fs.mkdirSync(output, { recursive: true });
-        const paint = Object.fromEntries(['root', 'control', 'status'].map(part => [part, { backgroundColor: 'fixture-paint', color: 'fixture-text' }]));
-        const variables = Object.fromEntries(['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'].map(name => ['--ult-color-' + name, { expected: 'fixture-value', actual: 'fixture-value' }]));
+        const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map(part => [part, { backgroundColor: 'fixture-paint', color: 'fixture-text' }]));
+        const variables = Object.fromEntries(${JSON.stringify(Object.keys(resolveDraft(stockDraft()).light))}.map(name => [name, { expected: 'fixture-value', actual: 'fixture-value' }]));
         for (const row of report.cases) {
           row.snapshot = row.id.split('/').at(-1) + '.json';
           const snapshot = { id: row.id, expected: paint, actual: structuredClone(paint), variables, failures: [] };
+          ${browserFixture}
+          const fault = ${JSON.stringify(fault)};
+          if (fault === 'missing-browser') delete snapshot.browser;
+          if (fault === 'missing-fixture') snapshot.fixture = 'missing-fixture';
+          if (fault === 'wrong-reproduce') snapshot.reproduce = 'node scripts/consumer-proof.ts';
+          for (const kind of ['build', 'server', 'browser', 'axe', 'screenshot']) if (fault === 'missing-' + (kind === 'browser' ? 'browser-log' : kind)) snapshot.artifacts[kind] = 'missing-file';
+          if (fault === 'concealed-console') fs.writeFileSync(path.join(output, snapshot.artifacts.browser), JSON.stringify({ console: [{type: 'error', text: 'React failure'}], pageErrors: [], failedRequests: [] }));
+          if (fault === 'concealed-request') fs.writeFileSync(path.join(output, snapshot.artifacts.browser), JSON.stringify({ console: [], pageErrors: [], failedRequests: [{status: 500}] }));
           if (${JSON.stringify(fault)} === 'false-paint-pass') snapshot.actual.control.color = 'losing-paint';
           if (${JSON.stringify(fault)} !== 'missing-snapshot') fs.writeFileSync(path.join(output, row.snapshot), ${JSON.stringify(fault)} === 'unreadable-snapshot' ? 'not json' : JSON.stringify(snapshot));
         }
@@ -298,6 +481,44 @@ test('consumer adapter requires source-bound, readable values snapshots as well 
       assert.equal(result.verdict, fault === 'none' ? 'passed' : 'incomplete', result.reason ?? 'no reason');
       if (fault === 'none') assert.equal(result.executed.length, CONSUMER_CASES.length);
       if (fault === 'stale-source') assert.match(result.reason ?? '', /captured source identity/);
+    }
+  } finally { await rm(work, { recursive: true, force: true }); }
+});
+
+test('consumer adapter reports a cell whose scene threw as a validation failure, not missing evidence', async () => {
+  const work = await mkdtemp(join(tmpdir(), 'ultima-proof-adapter-'));
+  try {
+    const fixture = report();
+    fixture.status = 'failed';
+    fixture.cases[0] = { ...fixture.cases[0]!, status: 'failed', failures: ['locator.waitFor: Timeout 5000ms exceeded'] };
+    const identity = { ...IDENTITY, head: fixture.source.head, manifest: fixture.source.manifest };
+    for (const fault of ['none', 'before-scene', 'partial-inventory'] as const) {
+      const script = `
+        const fs = require('node:fs'), path = require('node:path');
+        const output = process.argv.at(-1), report = ${JSON.stringify(fixture)};
+        fs.mkdirSync(output, { recursive: true });
+        const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map(part => [part, { backgroundColor: 'fixture-paint', color: 'fixture-text' }]));
+        const variables = Object.fromEntries(${JSON.stringify(Object.keys(resolveDraft(stockDraft()).light))}.map(name => [name, { expected: 'fixture-value', actual: 'fixture-value' }]));
+        for (const row of report.cases) {
+          row.snapshot = row.id.split('/').at(-1) + '.json';
+          const snapshot = { id: row.id, expected: paint, actual: structuredClone(paint), variables, failures: [] };
+          ${browserFixture}
+          if (row.status === 'failed') {
+            Object.assign(snapshot, { actual: null, incomplete: true, failures: row.failures });
+            snapshot.browser = { assertions: ${JSON.stringify(BROWSER_ASSERTIONS)}.map((name, index) => index < 3 ? { name, expected: true, actual: true, status: 'passed' } : { name, expected: 'reached', actual: null, status: 'failed', error: 'not reached' }), axe: {}, modeSnapshots: [], failures: row.failures };
+            if (${JSON.stringify(fault)} === 'partial-inventory') snapshot.browser.assertions = snapshot.browser.assertions.slice(0, 3);
+            fs.writeFileSync(path.join(output, snapshot.artifacts.axe), JSON.stringify(snapshot.browser.axe));
+            if (${JSON.stringify(fault)} === 'before-scene') delete snapshot.browser;
+          }
+          fs.writeFileSync(path.join(output, row.snapshot), JSON.stringify(snapshot));
+        }
+        fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report));
+        process.exitCode = 1;
+      `;
+      const context = contextFor(work, process.cwd(), planned('consumer-proof', { argv: ['node', '-e', script, '--'] }), { identity });
+      const result = await ADAPTERS['consumer-proof']!.run(context);
+      assert.equal(result.verdict, fault === 'none' ? 'validation-failure' : 'incomplete', `${fault}: ${result.reason ?? 'no reason'}`);
+      if (fault === 'none') assert.ok(result.failures?.some((failure) => failure.includes('Timeout 5000ms exceeded')));
     }
   } finally { await rm(work, { recursive: true, force: true }); }
 });
@@ -315,13 +536,14 @@ test('Next adapters require SSR HTML, completed hydration and token-derived extr
         const fs = require('node:fs'), path = require('node:path');
         const output = process.argv.at(-1), report = ${JSON.stringify(fixture)}, fault = ${JSON.stringify(fault)};
         fs.mkdirSync(output, { recursive: true });
-        const paint = Object.fromEntries(['root', 'control', 'status'].map(part => [part, { backgroundColor: 'paint', color: 'text' }]));
-        const variables = Object.fromEntries(['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'].map(name => ['--ult-color-' + name, { expected: 'value', actual: 'value' }]));
+        const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map(part => [part, { backgroundColor: 'paint', color: 'text' }]));
+        const variables = Object.fromEntries(${JSON.stringify(Object.keys(resolveDraft(stockDraft()).light))}.map(name => [name, { expected: 'value', actual: 'value' }]));
         for (const row of report.cases) {
           const mode = row.id.endsWith('-dark') ? 'dark' : 'light', explicit = row.id.includes('/explicit-');
           const state = { attributes: { 'data-theme': explicit ? mode : null, 'data-proof-mode': explicit ? mode : 'system' }, content: 'Installed scene' };
           row.snapshot = row.id.split('/').at(-1) + '.values.json';
           const snapshot = { id: row.id, expected: paint, actual: paint, variables, failures: [], extraction: { expected: { height: '40px', radius: '4px', display: 'inline-flex' }, actual: { height: '40px', radius: '4px', display: 'inline-flex' } }, hydration: { server: state, hydrated: structuredClone(state), ready: true, errors: [] } };
+          ${browserFixture}
           if (fault === 'missing-hydration') delete snapshot.hydration;
           if (fault === 'hydration-drift') snapshot.hydration.hydrated.attributes['data-theme'] = 'wrong';
           if (fault === 'missing-extraction') delete snapshot.extraction;
@@ -368,6 +590,7 @@ test('delivery adapters reject missing group, portal and CLI evidence rather tha
           fs.writeFileSync(path.join(output, name, 'ultima-theme.json'), ${JSON.stringify(serializeDraft(draft))});
           const extracted = { height: '40px', radius: '4px', display: 'inline-flex' };
           const snapshot = { id: row.id, deliveryPath: report.deliveryPath, expected: paint, actual: structuredClone(paint), variables, controlVariables: structuredClone(variables), portalVariables: structuredClone(variables), portal: { inContainer: true, documentSurface: 'stock', subtreeSurface: 'draft' }, extraction: { tokens: { height: '2.5rem', radius: '4px' }, expected: extracted, actual: extracted }, failures: [] };
+          ${browserFixture}
           if (fault === 'missing-group') delete snapshot.controlVariables['--ult-font-weight-medium'];
           if (fault === 'missing-portal') delete snapshot.portalVariables;
           if (fault === 'missing-extraction') delete snapshot.extraction;
@@ -382,6 +605,72 @@ test('delivery adapters reject missing group, portal and CLI evidence rather tha
       const context = contextFor(work, process.cwd(), planned(`consumer-proof-${path}`, { argv: ['node', '-e', script, '--', '--delivery-path', path] }), { identity: { ...IDENTITY, head: fixture.source.head, manifest: fixture.source.manifest } });
       const result = await ADAPTERS[`consumer-proof-${path}`]!.run(context);
       assert.equal(result.verdict, fault === 'none' ? 'passed' : 'incomplete', `${path} ${fault}: ${result.reason}`);
+    }
+  } finally { await rm(work, { recursive: true, force: true }); }
+});
+
+test('selected registry adapter validates CSS and stock prerequisites, provenance and exact reproduction', async () => {
+  const work = await mkdtemp(join(tmpdir(), 'ultima-selected-registry-'));
+  try {
+    const draft = proofDraft(), installed = serializeDraft(draft);
+    const selected = `vite/registry/chromium/${THEME_PRESETS[0]!.id}-explicit-dark`;
+    for (const fault of ['none', 'missing-reference', 'reference-drift', 'missing-stock', 'missing-selected-draft', 'wrong-selected-digest', 'hidden-warning', 'wrong-layout', 'wrong-path', 'missing-argv', 'wrong-fault', 'omitted-dynamic-token', 'malformed-modal-check'] as const) {
+      const fixture = report();
+      fixture.deliveryPath = 'registry';
+      fixture.selectedCase = selected;
+      fixture.expected = [selected];
+      fixture.executed = [selected];
+      fixture.cases = [{ id: selected, status: 'passed', snapshot: `${selected.split('/').at(-1)}.values.json`, failures: [] }];
+      fixture.prerequisites = consumerPrerequisites('vite', 'registry', selected).map((id) => ({ id, status: 'passed', snapshot: `${id.split('/').at(-1)}.values.json`, failures: [] }));
+      fixture.source.draftDigest = createHash('sha256').update(installed).digest('hex');
+      fixture.source.draftFingerprint = draftFingerprint(draft);
+      fixture.source.recipeVersion = draft.recipeVersion;
+      fixture.drafts = Object.fromEntries(['css-reference', 'non-stock', THEME_PRESETS[0]!.id].map((name) => [name, { digest: fixture.source.draftDigest!, fingerprint: fixture.source.draftFingerprint, recipeVersion: draft.recipeVersion }]));
+      const script = `
+        const fs = require('node:fs'), path = require('node:path');
+        const output = process.argv.at(-1), report = ${JSON.stringify(fixture)}, fault = ${JSON.stringify(fault)};
+        fs.mkdirSync(output, { recursive: true });
+        const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map(part => [part, { backgroundColor: 'paint', color: 'text' }]));
+        const variables = Object.fromEntries(${JSON.stringify(Object.keys(resolveDraft(draft).dark))}.map(name => [name, { expected: 'value', actual: 'value' }]));
+        for (const row of [...report.prerequisites, ...report.cases]) {
+          const name = row.id.split('/').at(-1).replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '');
+          fs.mkdirSync(path.join(output, name), { recursive: true });
+          if (fault !== 'missing-selected-draft' || row.id !== report.selectedCase) fs.writeFileSync(path.join(output, name, 'ultima-theme.json'), ${JSON.stringify(installed)});
+          const extracted = { height: '40px', radius: '4px', display: 'inline-flex' };
+          const snapshot = { id: row.id, deliveryPath: report.deliveryPath, expected: paint, actual: structuredClone(paint), variables: structuredClone(variables), controlVariables: structuredClone(variables), portalVariables: structuredClone(variables), portal: { inContainer: true, documentSurface: 'stock', subtreeSurface: 'draft' }, extraction: { tokens: { height: '2.5rem', radius: '4px' }, expected: extracted, actual: extracted }, failures: [] };
+          ${browserFixture}
+          if (fault === 'omitted-dynamic-token') {
+            const dynamic = snapshot.browser.modeSnapshots[0];
+            dynamic.variables = structuredClone(dynamic.variables);
+            dynamic.portalVariables = structuredClone(dynamic.portalVariables);
+            dynamic.portalVariables['--ult-color-surface'].actual = 'concealed mismatch';
+            delete dynamic.variables['--ult-color-surface'];
+          }
+          if (fault === 'malformed-modal-check') {
+            snapshot.browser.axe.open.incomplete = [{ id: 'aria-hidden-focus', nodes: [{ any: '', none: '', all: [{ id: 'focusable-modal-open', relatedNodes: [{ html: '<button hidden />', target: ['background'] }] }] }] }];
+            const inventory = [{ role: 'button', name: 'Confirm theme' }];
+            snapshot.browser.axe.open.focusCycle = { relatedNodes: 1, inventory, steps: ['Tab', 'Tab', 'Shift+Tab', 'Shift+Tab'].map(key => ({ key, inside: true, accessible: true, position: 0, item: inventory[0] })) };
+          }
+          fs.writeFileSync(path.join(output, snapshot.artifacts.axe), JSON.stringify(snapshot.browser.axe));
+          if (fault === 'reference-drift' && name === 'css-reference') snapshot.variables['--ult-color-text'] = { expected: 'drift', actual: 'drift' };
+          if (fault === 'hidden-warning' && row.id === report.selectedCase) fs.writeFileSync(path.join(output, snapshot.artifacts.browser), JSON.stringify({ console: [{ type: 'warning', text: 'Hydration did not match' }], pageErrors: [], failedRequests: [] }));
+          if (fault === 'wrong-layout') snapshot.reproduceArgv[4] = 'next-app';
+          if (fault === 'wrong-path') snapshot.reproduceArgv[6] = 'css';
+          if (fault === 'wrong-fault') snapshot.reproduceArgv.splice(-2, 0, '--fault', 'focus-return');
+          if (fault === 'missing-argv') delete snapshot.reproduceArgv;
+          if (fault === 'wrong-layout' || fault === 'wrong-path' || fault === 'wrong-fault') snapshot.reproduce = snapshot.reproduceArgv.join(' ');
+          fs.writeFileSync(path.join(output, snapshot.artifacts.reproduce), snapshot.reproduce + '\\n');
+          fs.writeFileSync(path.join(output, row.snapshot), JSON.stringify(snapshot));
+        }
+        if (fault === 'missing-reference') report.prerequisites.shift();
+        if (fault === 'missing-stock') report.prerequisites.pop();
+        if (fault === 'wrong-selected-digest') report.source.draftDigest = 'b'.repeat(64);
+        fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report));
+      `;
+      const context = contextFor(work, process.cwd(), planned('consumer-proof-registry', { argv: ['node', '-e', script, '--', '--layout', 'vite', '--delivery-path', 'registry', '--case', selected] }), { identity: { ...IDENTITY, head: fixture.source.head, manifest: fixture.source.manifest } });
+      const result = await ADAPTERS['consumer-proof-registry']!.run(context);
+      assert.equal(result.verdict, fault === 'none' ? 'passed' : 'incomplete', `${fault}: ${result.reason}`);
+      if (fault === 'none') assert.deepEqual(result.executed, [selected]);
     }
   } finally { await rm(work, { recursive: true, force: true }); }
 });

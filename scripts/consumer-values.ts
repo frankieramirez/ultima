@@ -5,10 +5,10 @@ import type { ConsumerLayout, DeliveryPath } from './consumer-report.ts';
 export async function consumerValues(page: Page, table: TokenTable, mode: 'dark' | 'light', id: string, layout: ConsumerLayout, deliveryPath: DeliveryPath) {
   return page.evaluate(({ table, mode, id, layout, deliveryPath }) => {
     const subtree = deliveryPath === 'stylex-subtree';
-    const rootElement = subtree ? document.querySelector('[data-proof-root]')! : document.documentElement;
+    const rootElement = subtree ? document.querySelector('[data-testid="proof-root"]')! : document.documentElement;
     const root = getComputedStyle(rootElement);
-    const control = document.querySelector('button')!;
-    const popup = document.querySelector('[role="dialog"]')!;
+    const control = document.querySelector('[data-testid="proof-control"]')!;
+    const popup = document.querySelector('[data-testid="proof-portal"]')!;
     const a = document.createElement('div');
     const b = document.createElement('div');
     document.body.append(a, b);
@@ -39,7 +39,7 @@ export async function consumerValues(page: Page, table: TokenTable, mode: 'dark'
       portal: { backgroundColor: normalize(table['--ult-color-surface-raised']!), color: normalize(table['--ult-color-text']!) },
     };
     const paint = (element: Element | null) => element ? { backgroundColor: canonical(getComputedStyle(element).backgroundColor), color: canonical(getComputedStyle(element).color) } : null;
-    const actual = { root: paint(rootElement), control: paint(control), status: paint(document.querySelector('[role="status"]')), portal: paint(popup) };
+    const actual = { root: paint(rootElement), control: paint(control), status: paint(document.querySelector('[data-testid="proof-status"]')), portal: paint(popup) };
     for (const part of ['root', 'control', 'status', 'portal'] as const) for (const property of ['backgroundColor', 'color'] as const) if (actual[part]?.[property] !== expected[part][property]) failures.push(`${part}.${property}: expected ${expected[part][property]}, got ${actual[part]?.[property] ?? 'missing element'}`);
     for (const element of [rootElement, control, popup]) if (getComputedStyle(element).colorScheme !== mode) failures.push(`${element.tagName} color-scheme differs from ${mode}`);
     const portal = { inContainer: !!popup.closest('[data-proof-portal-container]'), documentSurface: getComputedStyle(document.documentElement).getPropertyValue('--ult-color-surface').trim(), subtreeSurface: root.getPropertyValue('--ult-color-surface').trim(), colorScheme: getComputedStyle(popup).colorScheme };
@@ -48,6 +48,6 @@ export async function consumerValues(page: Page, table: TokenTable, mode: 'dark'
     const extraction = { tokens: { height: table['--ult-space-10'], radius: table['--ult-radius-md'] }, expected: { height: normalize(table['--ult-space-10']!, 'height'), radius: normalize(table['--ult-radius-md']!, 'border-radius'), display: 'inline-flex' }, actual: { height: css.height, radius: css.borderRadius, display: css.display } };
     for (const property of ['height', 'radius', 'display'] as const) if (extraction.actual[property] !== extraction.expected[property]) failures.push(`control.${property}: expected ${extraction.expected[property]}, got ${extraction.actual[property]}`);
     a.remove(); b.remove();
-    return { id, mode, engine: 'chromium', layout, deliveryPath, variables, controlVariables, portalVariables, expected, actual, extraction, portal, colorScheme: root.colorScheme, failures };
+    return { id, mode, engine: 'chromium', layout, deliveryPath, variables, controlVariables, portalVariables, expected, actual, extraction, portal, colorScheme: root.colorScheme, controlColorScheme: css.colorScheme, failures };
   }, { table, mode, id, layout, deliveryPath });
 }
