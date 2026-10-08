@@ -27,6 +27,7 @@ import { toCss } from '../packages/tokens/src/theme/export.ts';
 import { installedThemeProof } from './consumer-theme.ts';
 import { COPY_FAULTS, COPY_ITEMS, copyBundleProof, copyBundleScene } from './consumer-copy-bundles.ts';
 import { lintProof, lintScene } from './consumer-lint.ts';
+import { externalProof } from './consumer-external.ts';
 
 export function proofDraft(): ThemeDraft {
   const draft = sharedProofDraft();
@@ -380,6 +381,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const args = process.argv.slice(2);
   const options: ProofOptions = { layout: 'vite', deliveryPath: 'css' };
   let baseApp: string | undefined;
+  let external: string | undefined;
   while (args.length) {
     const flag = args.shift();
     const value = args.shift();
@@ -390,12 +392,17 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     else if (flag === '--exercise' && PROOF_EXERCISES.includes(value as typeof PROOF_EXERCISES[number])) options.exercise = value as typeof PROOF_EXERCISES[number];
     else if (flag === '--preset' && value === 'ultima') options.preset = value;
     else if (flag === '--base-styles' && value) baseApp = resolve(value);
+    else if (flag === '--external' && value) external = resolve(value);
     else if (flag === '--fault' && PROOF_FAULTS.includes(value as typeof PROOF_FAULTS[number])) options.fault = value as typeof PROOF_FAULTS[number];
     else throw new Error(`unsupported argument ${flag} ${value ?? ''}`);
   }
   if (baseApp) {
     assert.ok(!options.fault && !options.output, 'base styles run against an existing smoke build');
     await baseStyleProof(baseApp, options.layout);
+  } else if (external) {
+    assert.ok(!options.fault && !options.case && !options.exercise && !options.preset, 'external mode takes only --output');
+    const report = await externalProof(external, options.output);
+    process.exitCode = report.status === 'passed' ? 0 : report.status === 'failed' ? 1 : 2;
   } else {
     const report = await consumerProof(options);
     process.exitCode = report.status === 'passed' ? 0 : report.status === 'failed' ? 1 : 2;

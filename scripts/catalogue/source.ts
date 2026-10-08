@@ -75,6 +75,7 @@ export function importsOf(file: ts.SourceFile): { imports: Import[]; problems: S
       });
     } else if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
       const [argument] = node.arguments;
+      const inlineData = argument && ts.isTemplateExpression(argument) && argument.head.text.startsWith('data:');
       if (argument && ts.isStringLiteralLike(argument)) {
         imports.push({
           specifier: argument.text,
@@ -85,7 +86,7 @@ export function importsOf(file: ts.SourceFile): { imports: Import[]; problems: S
           start: node.getStart(file),
           end: node.getEnd(),
         });
-      } else {
+      } else if (!inlineData) {
         problems.push({
           line: lineOf(file, node),
           message: 'a dynamic import with a computed specifier',
@@ -289,10 +290,11 @@ export function headingAnchors(text: string): Set<string> {
 export function mdxImports(path: string, text: string): Import[] {
   const statements: string[] = [];
   let current: string[] | undefined;
-  let fenced = false;
+  let fence: string | undefined;
   for (const line of text.split('\n')) {
-    if (!current && /^\s*(```|~~~)/.test(line)) fenced = !fenced;
-    if (fenced) continue;
+    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
+    if (!current && marker && (!fence || (marker[0] === fence[0] && marker.length >= fence.length))) fence = fence ? undefined : marker;
+    if (fence || marker) continue;
     if (!current && /^import\s/.test(line)) current = [];
     if (!current) continue;
     current.push(line);

@@ -492,5 +492,6 @@ export const CI_OBLIGATIONS: readonly { workflow: string; command: string; check
   { workflow: 'smoke-install.yml', command: 'TMPDIR="$RUNNER_TEMP/smoke" ./scripts/smoke-install.sh --keep', checks: ['consumer-smoke'] },
   { workflow: 'consumer-proof.yml', command: 'pnpm install --frozen-lockfile', preparation: 'dependency installation from the lockfile' },
   { workflow: 'consumer-proof.yml', command: 'pnpm exec playwright install --with-deps chromium', preparation: 'Chromium for installed consumer paint and hydration' },
+  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-select.ts "$BASE" >> "$GITHUB_OUTPUT"', preparation: 'the consumer cells the change plan selects, or every cell without a pull-request base' },
   { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path "${{ matrix.delivery-path }}" --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src', ...(['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src'] as const).flatMap((base) => (['stylex-subtree', 'registry', 'cli'] as const).map((path): CheckId => `${base}-${path}`))] },
 ];

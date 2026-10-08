@@ -11,14 +11,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Gates and cost in docs/spec/consumer-proof.md: a pull request runs the cells its change plan selects,
+  # and a push, which has no pull-request base, runs every cell.
+  select:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      proof: ${{ steps.select.outputs.proof }}
+      mode: ${{ steps.select.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: select
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: node --experimental-strip-types scripts/consumer-select.ts "$BASE" >> "$GITHUB_OUTPUT"
+
   consumer-proof:
+    needs: select
+    if: ${{ needs.select.outputs.proof != '[]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        layout: [vite, next-app, next-src]
-        delivery-path: [css, stylex-subtree, registry, cli]
+        include: ${{ fromJSON(needs.select.outputs.proof) }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -39,12 +63,14 @@ jobs:
           retention-days: 90
 
   theme-mode:
+    needs: select
+    if: ${{ needs.select.outputs.mode != '[]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        layout: [vite, next-app, next-src]
+        include: ${{ fromJSON(needs.select.outputs.mode) }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4

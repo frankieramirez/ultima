@@ -100,7 +100,7 @@ export function browserEvidenceProblems(value: unknown, passed: boolean, layout?
   return failures;
 }
 
-const axePath = createRequire(import.meta.url).resolve('axe-core/axe.min.js', { paths: [join(repository, 'apps/docs')] });
+export const axePath = createRequire(import.meta.url).resolve('axe-core/axe.min.js', { paths: [join(repository, 'apps/docs')] });
 
 export async function browserConditions(page: Page, tables: ResolvedDraft, mode: 'dark' | 'light', explicit: boolean, id: string, layout: ConsumerLayout, deliveryPath: DeliveryPath) {
   const evidence: BrowserEvidence = { assertions: [], axe: {}, modeSnapshots: [], failures: [] };
