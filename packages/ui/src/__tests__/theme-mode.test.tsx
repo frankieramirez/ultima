@@ -60,12 +60,25 @@ test('throwing reads fall back to system and throwing writes still notify mounte
   expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
   function Probe() { const { mode, resolved } = useThemeMode(); return <output>{mode}:{resolved}</output>; }
   const screen = await render(<Probe />);
+  let applied: string | undefined;
   vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-    expect(document.documentElement.dataset.theme).toBe('light');
+    applied = document.documentElement.dataset.theme;
     throw new Error('blocked');
   });
   setThemeMode('light');
+  expect(applied).toBe('light');
   await expect.element(screen.getByRole('status')).toHaveTextContent('light:light');
+});
+
+test('the hook follows direct data-theme changes on the document', async () => {
+  function Probe() { const { mode, resolved } = useThemeMode(); return <output>{mode}:{resolved}</output>; }
+  const screen = await render(<Probe />);
+  document.documentElement.setAttribute('data-theme', 'light');
+  await expect.element(screen.getByRole('status')).toHaveTextContent('light:light');
+  document.documentElement.setAttribute('data-theme', 'dark');
+  await expect.element(screen.getByRole('status')).toHaveTextContent('dark:dark');
+  document.documentElement.removeAttribute('data-theme');
+  await expect.element(screen.getByRole('status')).toHaveTextContent(`system:${matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'}`);
 });
 
 test('system follows media changes while explicit modes stay pinned and subscriptions clean up', async () => {

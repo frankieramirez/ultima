@@ -374,7 +374,7 @@ const BASE_CHECKS: readonly CheckDefinition[] = [
     title: `Installed theme-mode: ${layout} first paint, hydration, persistence and popup inheritance`,
     argv: ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', layout, '--delivery-path', 'css', '--exercise', 'theme-mode'],
     cwd: '.',
-    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', 'fresh external scaffold', 'shadcn setup, theme-mode, popover and theme installation', 'packed CLI doctor and check', 'npm run build', 'Chromium pre-hydration first paint with module scripts held, lifecycle and cross-tab storage'],
+    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', 'fresh external scaffold', 'shadcn setup, theme-mode, popover and theme installation', 'npm run build', 'Chromium pre-hydration first paint with module scripts held, lifecycle and cross-tab storage'],
     prerequisites: ['registry-build'], after: READ_FIRST,
     locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
     needs: ['network', 'loopback-port', 'chromium'], deadlineSeconds: 900,

@@ -315,8 +315,8 @@ function selectItem(selection: Selection, id: string, reason: string) {
     selection.need('consumer-smoke', `${id} is installed by consumers; scoped runs use the full smoke until a validated selector exists`);
     if (['button', 'badge', 'popover', 'tokens', 'lib', 'setup-vite'].includes(id)) for (const check of CHECKS.filter((check) => check.id === 'consumer-proof' || /^consumer-proof-(stylex-subtree|registry|cli)$/.test(check.id))) selection.need(check.id, `${id} is installed by the Vite rendered consumer scene`);
     if (['button', 'badge', 'popover', 'tokens', 'lib', 'setup-next'].includes(id)) for (const check of CHECKS.filter((check) => /^consumer-proof-next-(app|src)(-|$)/.test(check.id))) selection.need(check.id, `${id} is installed by the Next rendered consumer scene`);
-    if (['theme-mode', 'button', 'popover', 'tokens', 'lib', 'setup-vite'].includes(id)) selection.need('consumer-mode-vite', `${id} is installed by the Vite theme-mode production scene`);
-    if (['theme-mode', 'button', 'popover', 'tokens', 'lib', 'setup-next'].includes(id)) for (const check of ['consumer-mode-next-app', 'consumer-mode-next-src'] as const) selection.need(check, `${id} is installed by the Next theme-mode production scene`);
+    if (['theme-mode', 'button', 'badge', 'popover', 'tokens', 'lib', 'setup-vite'].includes(id)) selection.need('consumer-mode-vite', `${id} is installed by the Vite theme-mode production scene`);
+    if (['theme-mode', 'button', 'badge', 'popover', 'tokens', 'lib', 'setup-next'].includes(id)) for (const check of ['consumer-mode-next-app', 'consumer-mode-next-src'] as const) selection.need(check, `${id} is installed by the Next theme-mode production scene`);
   }
   if (summary.kind === 'react') {
     const react = catalogue.react.find((candidate) => candidate.id === id);

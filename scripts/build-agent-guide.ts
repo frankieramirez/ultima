@@ -129,8 +129,8 @@ function elementAxesOf({ name, source }: GuideComponent): { prop: string; values
 }
 
 function exportedName({ name, source, primaryExport }: GuideComponent): string {
-  if (primaryExport) return primaryExport;
   const list = /\bexport\s*\{([\s\S]*?)\}/.exec(source);
+  if (!list && primaryExport) return primaryExport;
   if (!list) throw new Error(`${name}.tsx has no export list`);
   const values = (list[1] as string)
     .split(',')
