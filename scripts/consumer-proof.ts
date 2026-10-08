@@ -5,13 +5,16 @@ import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Page } from 'playwright';
-import { draftFingerprint, parseDraft, serializeDraft } from '../packages/tokens/src/theme/codec.ts';
+import { draftFingerprint } from '../packages/tokens/src/theme/codec.ts';
 import { presetDraft, resolveDraft, stockDraft, type ThemeDraft } from '../packages/tokens/src/theme/draft.ts';
-import { toCss, toRegistryItem } from '../packages/tokens/src/theme/export.ts';
 import { gate } from '../packages/tokens/src/theme/gate.ts';
 import { shuffleDraft } from '../packages/tokens/src/theme/shuffle.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
-import { CONSUMER_LAYOUTS, consumerCases, type ConsumerLayout, type ConsumerReport } from './consumer-report.ts';
+import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
+import { THEME_PRESETS } from '../packages/tokens/src/theme/draft.ts';
+import { installScene } from './consumer-scene.ts';
+import { consumerValues } from './consumer-values.ts';
+import { cliProof, installTheme } from './consumer-delivery.ts';
 import { browserErrors, hydrationProblems, hydrationState, nextFault, nextScene, serveNext, setupNext, type HydrationEvidence } from './consumer-next.ts';
 import { hashSource } from './verification/source.ts';
 
@@ -29,7 +32,7 @@ export function proofDraft(): ThemeDraft {
   return draft;
 }
 
-export type ProofOptions = { layout: ConsumerLayout; deliveryPath: 'css'; output?: string; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' };
+export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' | 'partial-group' };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
 export type BaseStyles = { height: string; display: string; radius: string; background: string; focusColor: string; focusStyle: string; focusVisible: boolean; danger: string };
@@ -82,7 +85,8 @@ export async function baseStyleProof(app: string, layout: ConsumerLayout): Promi
 }
 
 export async function consumerProof(options: ProofOptions): Promise<ConsumerReport> {
-  if (!CONSUMER_LAYOUTS.includes(options.layout) || options.deliveryPath !== 'css') throw new Error('unsupported consumer proof parameters');
+  if (!CONSUMER_LAYOUTS.includes(options.layout) || !DELIVERY_PATHS.includes(options.deliveryPath)) throw new Error('unsupported consumer proof parameters');
+  if (options.fault === 'partial-group' && options.deliveryPath !== 'stylex-subtree') throw new Error('partial-group requires stylex-subtree');
   if (options.fault === 'src-extraction' && options.layout !== 'next-src') throw new Error('src-extraction requires next-src');
   if (options.fault === 'hydration-mismatch' && options.layout === 'vite') throw new Error('hydration-mismatch requires Next');
   const isNext = options.layout !== 'vite';
@@ -98,8 +102,8 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   const report: ConsumerReport = {
     schemaVersion: 1, status: 'incomplete', layout: options.layout, deliveryPath: options.deliveryPath,
     source: { head: source.head, manifest: source.manifest, registryManifestHash: null, cliTarballDigest: null, draftDigest: null, draftFingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion },
-    command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: [setupItem, 'button', 'badge', 'tokens', 'lib', 'ultima-theme'],
-    expected: consumerCases(options.layout), executed: [], cases: [], errors: [],
+    command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: [setupItem, 'button', 'badge', 'popover', 'tokens', 'lib', 'ultima-theme'],
+    expected: consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {},
   };
   const execute: Run = async (cwd, command, args) => {
     await appendFile(join(output, 'commands.log'), `${JSON.stringify({ cwd, command, args })}\n`);
@@ -148,121 +152,115 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     const components = JSON.parse(await readFile(componentsPath, 'utf8'));
     components.registries['@ultima'] = `${registry.url}/r/{name}.json`;
     await writeFile(componentsPath, `${JSON.stringify(components, null, 2)}\n`);
-    await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/button', '@ultima/badge', '--yes']);
-    const item = join(work, 'registry/r/proof-theme.json');
-    await writeFile(item, toRegistryItem(draft));
-    await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', `${registry.url}/r/proof-theme.json`, '--yes']);
-    const installed = await readFile(join(app, 'ultima-theme.json'), 'utf8');
-    const parsed = parseDraft(installed);
-    assert.ok(parsed.ok, 'installed draft must decode');
-    assert.equal(serializeDraft(parsed.draft), serializeDraft(draft));
-    assert.equal(await readFile(join(app, 'ultima-theme.css'), 'utf8'), toCss(draft));
-    report.source.draftDigest = digest(installed);
-    await writeFile(join(output, 'ultima-theme.json'), installed);
+    await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/button', '@ultima/badge', '@ultima/popover', '--yes']);
     const mainPath = join(app, isNext ? (src ? 'src/app/layout.tsx' : 'app/layout.tsx') : 'src/main.tsx');
     if (isNext) await nextScene(app, src);
     else {
-      await writeFile(join(app, 'src/App.tsx'), `import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-export default function App() {
-  return <main><h1>Installed consumer proof</h1><Button tone="accent">Theme control</Button><Badge tone="success" variant="solid" role="status">Ready</Badge></main>;
-}
-`);
       await writeFile(join(app, 'src/index.css'), '@layer reset { body { margin: 0; } }\n:root { background: var(--ult-color-surface); color: var(--ult-color-text); font-family: var(--ult-font-sans); }\n');
       const main = await readFile(mainPath, 'utf8');
       assert.ok(main.includes("import './index.css'"));
       await writeFile(mainPath, main.replace("import './index.css'", "import './index.css'\nimport '../ultima-theme.css'"));
     }
+    const subtree = options.deliveryPath === 'stylex-subtree';
+    if (subtree) await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace(/import ['"]\.\.\/+(?:\.\.\/)?ultima-theme\.css['"];?/, ''));
+    await installScene(app, options.layout, subtree, options.fault === 'partial-group');
     await execute(app, 'npm', ['install', '-D', tarball]);
-    for (const command of ['doctor', 'check']) await execute(app, 'npx', ['--no-install', 'ultima-design', command]);
-    if (options.fault === 'theme-import') await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace(/import ['"]\.\.\/+(?:\.\.\/)?ultima-theme\.css['"];?/, ''));
-    if (isNext) await nextFault(app, src, options.fault);
-    else if (options.fault === 'stylex-extraction') await writeFile(configPath, (await readFile(configPath, 'utf8')).replace("import { ultimaStylex } from './ultima.vite.ts'", '').replace('ultimaStylex(), ', "{ name: 'consumer:alias', config: () => ({ resolve: { alias: { '@': new URL('./src', import.meta.url).pathname } } }) }, "));
-    for (const name of ['package.json', 'package-lock.json', 'tsconfig.json', 'components.json', 'ultima-theme.css', ...(isNext ? ['babel.config.js', 'postcss.config.js'] : ['vite.config.ts', 'ultima.vite.ts'])]) await cp(join(app, name), join(output, name));
-    for (const name of isNext && !src ? ['app', 'components', 'lib'] : ['src']) await cp(join(app, name), join(output, name), { recursive: true });
-    for (const name of ['react', 'react-dom', '@stylexjs/stylex', 'ultima-design', ...(isNext ? ['next', '@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'] : ['vite', '@stylexjs/unplugin'])]) report.versions[name] = JSON.parse(await readFile(join(app, 'node_modules', name, 'package.json'), 'utf8')).version;
-    report.versions.npm = (await execute(app, 'npm', ['--version'])).trim();
-    await execute(app, 'npm', ['run', 'build']);
-    const production = isNext ? await serveNext(app, join(output, 'production.log')) : await serveRegistry(join(app, 'dist'), true);
-    servers.push(production);
+    const fixtures = [...(options.deliveryPath === 'registry' ? [{ name: 'css-reference', draft }] : []), { name: '', draft }, ...(options.deliveryPath === 'registry' ? THEME_PRESETS.map((preset) => ({ name: preset.id, draft: presetDraft(preset.id) })) : [])];
+    const cssReference = new Map<string, Awaited<ReturnType<typeof consumerValues>>>();
     browser = await chromium.launch({ headless: true });
     report.versions.chromium = browser.version();
-    const tables = resolveDraft(draft);
-    for (const id of report.expected) {
-      const mode = id.endsWith('-dark') ? 'dark' : 'light';
-      const explicit = id.includes('/explicit-');
-      const contextOptions = { reducedMotion: 'no-preference' as const, colorScheme: explicit ? (mode === 'dark' ? 'light' as const : 'dark' as const) : mode as 'dark' | 'light' };
-      const context = await browser.newContext(contextOptions);
-      if (isNext && explicit) await context.addCookies([{ name: 'proof-mode', value: mode, url: production.url }]);
-      const page = await context.newPage();
-      const pageErrors = browserErrors(page);
-      let hydration: HydrationEvidence | undefined;
-      const name = id.split('/').at(-1)!;
-      if (isNext) {
-        const serverContext = await browser.newContext({ ...contextOptions, javaScriptEnabled: false });
-        await serverContext.addCookies(await context.cookies());
-        const serverPage = await serverContext.newPage();
-        const response = await serverPage.goto(production.url, { waitUntil: 'networkidle' });
-        assert.ok(response && response.ok(), 'server HTML must load');
-        await writeFile(join(output, `${name}.server.html`), await response.text());
-        hydration = { server: await hydrationState(serverPage), hydrated: { attributes: {}, content: null }, ready: false, errors: pageErrors };
-        await serverContext.close();
+    for (const fixture of fixtures) {
+      const draft = fixture.draft;
+      assert.ok(gate(resolveDraft(draft)).every((row) => row.dark.pass && row.light.pass), `${fixture.name || 'non-stock'} pairing gate`);
+      const fixtureOutput = fixture.name ? join(output, fixture.name) : output;
+      await mkdir(fixtureOutput, { recursive: true });
+      const installed = await installTheme(app, join(work, 'registry'), registry.url, draft, options.layout, options.deliveryPath, execute, fixture.name === 'css-reference');
+      const draftDigest = digest(installed);
+      report.drafts![fixture.name || 'non-stock'] = { digest: draftDigest, fingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion };
+      if (!fixture.name) report.source.draftDigest = draftDigest;
+      await writeFile(join(fixtureOutput, 'ultima-theme.json'), installed);
+      if (options.deliveryPath === 'cli') report.cliReports = await cliProof(app, fixtureOutput, options.layout, execute);
+      if (options.fault === 'theme-import') await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace(/import ['"]\.\.\/+(?:\.\.\/)?ultima-theme\.css['"];?/, ''));
+      if (isNext && options.fault === 'hydration-mismatch') {
+        const scene = join(app, src ? 'src/ThemeConsumer.tsx' : 'ThemeConsumer.tsx');
+        await writeFile(scene, (await readFile(scene, 'utf8')).replace('Hydration probe</span>', "{typeof window === 'undefined' ? 'Server content' : 'Client content'}</span>"));
+      } else if (isNext) await nextFault(app, src, options.fault);
+      else if (options.fault === 'stylex-extraction') {
+        const config = await readFile(configPath, 'utf8');
+        await writeFile(configPath, `import type { Plugin } from 'vite';\n${config.replace('plugins: [', "plugins: [({ name: 'proof:missing-extraction', enforce: 'post', generateBundle(_options, bundle) { for (const file of Object.values(bundle)) if (file.type === 'asset' && file.fileName.endsWith('.css')) file.source = ''; } } satisfies Plugin), ")}`);
       }
-      await page.goto(production.url, { waitUntil: 'networkidle' });
-      if (hydration) {
-        hydration.ready = await page.locator('body[data-hydrated="true"]').waitFor({ timeout: 10000 }).then(() => true, () => false);
-        hydration.hydrated = await hydrationState(page);
-        if (hydration.server.attributes['data-theme'] !== (explicit ? mode : null) || hydration.server.attributes['data-proof-mode'] !== (explicit ? mode : 'system')) pageErrors.push('server HTML initial mode differs from requested mode');
-      } else await page.evaluate((mode) => { if (mode) document.documentElement.dataset.theme = mode; else document.documentElement.removeAttribute('data-theme'); }, explicit ? mode : null);
-      await page.mouse.move(0, 0);
-      await page.evaluate(async () => {
-        getComputedStyle(document.querySelector('button') ?? document.documentElement).backgroundColor;
-        await Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => {})));
-      });
-      const snapshot = await page.evaluate(({ table, mode, id, layout }) => {
-        const names = ['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'];
-        const root = getComputedStyle(document.documentElement);
-        const normalize = (value: string) => {
-          const probe = document.createElement('span');
-          probe.style.color = value;
-          document.body.append(probe);
-          const color = getComputedStyle(probe).color;
-          probe.remove();
-          return color;
-        };
-        const expected = {
-          root: { backgroundColor: normalize(table['--ult-color-surface']!), color: normalize(table['--ult-color-text']!) },
-          control: { backgroundColor: normalize(table['--ult-color-accent']!), color: normalize(table['--ult-color-accent-contrast']!) },
-          status: { backgroundColor: normalize(table['--ult-color-success']!), color: normalize(table['--ult-color-success-contrast']!) },
-        };
-        const paint = (element: Element | null) => element ? { backgroundColor: getComputedStyle(element).backgroundColor, color: getComputedStyle(element).color } : null;
-        const actual = { root: paint(document.documentElement), control: paint(document.querySelector('button')), status: paint(document.querySelector('[role="status"]')) };
-        const variables = Object.fromEntries(names.map((name) => { const token = `--ult-color-${name}`; return [token, { expected: table[token], actual: root.getPropertyValue(token).trim() }]; }));
-        const failures: string[] = [];
-        for (const [token, value] of Object.entries(variables)) if (value.actual !== value.expected) failures.push(`${token}: expected ${value.expected}, got ${value.actual}`);
-        for (const part of ['root', 'control', 'status'] as const) for (const property of ['backgroundColor', 'color'] as const) if (actual[part]?.[property] !== expected[part][property]) failures.push(`${part}.${property}: expected ${expected[part][property]}, got ${actual[part]?.[property] ?? 'missing element'}`);
-        if (root.colorScheme !== mode) failures.push(`color-scheme: expected ${mode}, got ${root.colorScheme}`);
-        const control = document.querySelector('button');
-        const css = control && getComputedStyle(control);
-        const length = (value: string, property: 'height' | 'borderRadius') => {
-          const probe = document.createElement('div');
-          probe.style.position = 'absolute';
-          probe.style[property] = value;
-          document.body.append(probe);
-          const normalized = getComputedStyle(probe)[property];
-          probe.remove();
-          return normalized;
-        };
-        const extraction = { tokens: { height: table['--ult-space-10'], radius: table['--ult-radius-md'] }, expected: { height: length(table['--ult-space-10']!, 'height'), radius: length(table['--ult-radius-md']!, 'borderRadius'), display: 'inline-flex' }, actual: { height: css?.height, radius: css?.borderRadius, display: css?.display } };
-        for (const property of ['height', 'radius', 'display'] as const) if (extraction.actual[property] !== extraction.expected[property]) failures.push(`control.${property}: expected ${extraction.expected[property]}, got ${extraction.actual[property]}`);
-        return { id, mode, engine: 'chromium', layout, deliveryPath: 'css', variables, expected, actual, extraction, colorScheme: root.colorScheme, failures };
-      }, { table: tables[mode], mode, id, layout: options.layout });
-      snapshot.failures.push(...(hydration ? hydrationProblems(hydration) : pageErrors));
-      await writeFile(join(output, `${name}.values.json`), `${JSON.stringify({ ...snapshot, hydration }, null, 2)}\n`);
-      await page.screenshot({ path: join(output, `${name}.png`), fullPage: true });
-      report.executed.push(id);
-      report.cases.push({ id, status: snapshot.failures.length ? 'failed' : 'passed', snapshot: `${name}.values.json`, failures: snapshot.failures });
-      await context.close();
+      for (const name of ['package.json', 'package-lock.json', 'tsconfig.json', 'components.json', 'ultima-theme.css', ...(isNext ? ['babel.config.js', 'postcss.config.js', ...(!src ? ['ThemeConsumer.tsx'] : [])] : ['vite.config.ts', 'ultima.vite.ts'])]) await cp(join(app, name), join(fixtureOutput, name));
+      for (const name of isNext && !src ? ['app', 'components', 'lib'] : ['src']) await cp(join(app, name), join(fixtureOutput, name), { recursive: true });
+      for (const name of ['react', 'react-dom', '@stylexjs/stylex', 'ultima-design', ...(isNext ? ['next', '@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'] : ['vite', '@stylexjs/unplugin'])]) report.versions[name] = JSON.parse(await readFile(join(app, 'node_modules', name, 'package.json'), 'utf8')).version;
+      report.versions.npm = (await execute(app, 'npm', ['--version'])).trim();
+      await execute(app, 'npm', ['run', 'build']);
+      const production = isNext ? await serveNext(app, join(output, 'production.log')) : await serveRegistry(join(app, 'dist'), true);
+      servers.push(production);
+      const tables = resolveDraft(draft);
+      const ids = ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${options.layout}/${options.deliveryPath}/chromium/${fixture.name ? `${fixture.name}-` : ''}${mode}`);
+      for (const id of ids) {
+        const mode = id.endsWith('-dark') ? 'dark' : 'light';
+        const explicit = id.includes('explicit-');
+        const contextOptions = { reducedMotion: 'no-preference' as const, colorScheme: explicit ? (mode === 'dark' ? 'light' as const : 'dark' as const) : mode as 'dark' | 'light' };
+        const context = await browser.newContext(contextOptions);
+        if (isNext && explicit) await context.addCookies([{ name: 'proof-mode', value: mode, url: production.url }]);
+        const page = await context.newPage();
+        const pageErrors = browserErrors(page);
+        let hydration: HydrationEvidence | undefined;
+        const name = id.split('/').at(-1)!;
+        if (isNext) {
+          const serverContext = await browser.newContext({ ...contextOptions, javaScriptEnabled: false });
+          await serverContext.addCookies(await context.cookies());
+          const serverPage = await serverContext.newPage();
+          const response = await serverPage.goto(production.url, { waitUntil: 'networkidle' });
+          assert.ok(response && response.ok(), 'server HTML must load');
+          await writeFile(join(output, `${name}.server.html`), await response.text());
+          hydration = { server: await hydrationState(serverPage), hydrated: { attributes: {}, content: null }, ready: false, errors: pageErrors };
+          await serverContext.close();
+        }
+        await page.goto(production.url, { waitUntil: 'networkidle' });
+        if (hydration) {
+          hydration.ready = await page.locator('body[data-hydrated="true"]').waitFor({ timeout: 10000 }).then(() => true, () => false);
+          hydration.hydrated = await hydrationState(page);
+          if (hydration.server.attributes['data-theme'] !== (explicit ? mode : null) || hydration.server.attributes['data-proof-mode'] !== (explicit ? mode : 'system')) pageErrors.push('server HTML initial mode differs from requested mode');
+        } else await page.evaluate((mode) => { if (mode) document.documentElement.dataset.theme = mode; else document.documentElement.removeAttribute('data-theme'); }, explicit ? mode : null);
+        await page.mouse.move(0, 0);
+        const control = page.getByRole('button', { name: 'Theme control', exact: true });
+        await control.focus();
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Shift+Tab');
+        const focus = await control.evaluate((el) => ({ visible: el.matches(':focus-visible'), outline: getComputedStyle(el).outlineStyle, color: getComputedStyle(el).outlineColor }));
+        if (!focus.visible || focus.outline === 'none') pageErrors.push('keyboard focus outline is missing');
+        await page.getByRole('button', { name: 'Theme popup', exact: true }).click();
+        await page.getByRole('dialog', { name: 'Installed theme' }).waitFor();
+        await page.evaluate(async () => {
+          getComputedStyle(document.querySelector('button') ?? document.documentElement).backgroundColor;
+          await Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => {})));
+        });
+        const snapshot = await consumerValues(page, tables[mode], mode, id, options.layout, options.deliveryPath);
+        const referenceKey = `${explicit ? 'explicit' : 'system'}-${mode}`;
+        if (fixture.name === 'css-reference') cssReference.set(referenceKey, snapshot);
+        else if (!fixture.name && options.deliveryPath === 'registry') {
+          const reference = cssReference.get(referenceKey)!;
+          for (const part of ['variables', 'controlVariables', 'portalVariables'] as const) {
+            for (const [token, value] of Object.entries(snapshot[part])) if (value.actual !== reference[part][token]?.actual) snapshot.failures.push(`registry differs from generated CSS: ${part} ${token}`);
+          }
+          if (JSON.stringify(snapshot.actual) !== JSON.stringify(reference.actual)) snapshot.failures.push('registry paint differs from generated CSS');
+        }
+        await page.screenshot({ path: join(output, `${name}.png`), fullPage: true });
+        await page.keyboard.press('Escape');
+        await page.getByRole('dialog', { name: 'Installed theme' }).waitFor({ state: 'hidden' });
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        const reducedMotion = await control.evaluate((el) => Object.fromEntries(['fast', 'base', 'slow', 'loop'].map((key) => [key, getComputedStyle(el).getPropertyValue(`--ult-motion-${key}`).trim()])));
+        for (const [key, value] of Object.entries(reducedMotion)) if (value !== (key === 'loop' ? '0s' : '1ms')) snapshot.failures.push(`reduced motion ${key}: ${value}`);
+        snapshot.failures.push(...(hydration ? hydrationProblems(hydration) : pageErrors));
+        await writeFile(join(output, `${name}.values.json`), `${JSON.stringify({ ...snapshot, hydration, reducedMotion, focus }, null, 2)}\n`);
+        report.executed.push(id);
+        report.cases.push({ id, status: snapshot.failures.length ? 'failed' : 'passed', snapshot: `${name}.values.json`, failures: snapshot.failures });
+        await context.close();
+      }
+      await production.close();
+      servers.pop();
     }
     report.status = report.cases.some((row) => row.status === 'failed') ? 'failed' : 'passed';
     const after = hashSource(repository);
@@ -285,10 +283,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const flag = args.shift();
     const value = args.shift();
     if (flag === '--layout' && CONSUMER_LAYOUTS.includes(value as ConsumerLayout)) options.layout = value as ConsumerLayout;
-    else if (flag === '--delivery-path' && value === 'css') options.deliveryPath = value;
+    else if (flag === '--delivery-path' && DELIVERY_PATHS.includes(value as DeliveryPath)) options.deliveryPath = value as DeliveryPath;
     else if (flag === '--output' && value) options.output = value;
     else if (flag === '--base-styles' && value) baseApp = resolve(value);
-    else if (flag === '--fault' && (value === 'theme-import' || value === 'stylex-extraction' || value === 'src-extraction' || value === 'hydration-mismatch')) options.fault = value;
+    else if (flag === '--fault' && (value === 'theme-import' || value === 'stylex-extraction' || value === 'src-extraction' || value === 'hydration-mismatch' || value === 'partial-group')) options.fault = value;
     else throw new Error(`unsupported argument ${flag} ${value ?? ''}`);
   }
   if (baseApp) {

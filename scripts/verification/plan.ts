@@ -313,8 +313,8 @@ function selectItem(selection: Selection, id: string, reason: string) {
   if (DISTRIBUTED.has(summary.kind)) {
     selection.need('registry-build', `${id} is a distributed ${summary.kind} item`);
     selection.need('consumer-smoke', `${id} is installed by consumers; scoped runs use the full smoke until a validated selector exists`);
-    if (['button', 'badge', 'tokens', 'lib', 'setup-vite'].includes(id)) selection.need('consumer-proof', `${id} is installed by the Vite/CSS rendered consumer scene`);
-    if (['button', 'badge', 'tokens', 'lib', 'setup-next'].includes(id)) for (const check of ['consumer-proof-next-app', 'consumer-proof-next-src'] as const) selection.need(check, `${id} is installed by the Next/CSS rendered consumer scene`);
+    if (['button', 'badge', 'popover', 'tokens', 'lib', 'setup-vite'].includes(id)) for (const check of CHECKS.filter((check) => check.id === 'consumer-proof' || /^consumer-proof-(stylex-subtree|registry|cli)$/.test(check.id))) selection.need(check.id, `${id} is installed by the Vite rendered consumer scene`);
+    if (['button', 'badge', 'popover', 'tokens', 'lib', 'setup-next'].includes(id)) for (const check of CHECKS.filter((check) => /^consumer-proof-next-(app|src)(-|$)/.test(check.id))) selection.need(check.id, `${id} is installed by the Next rendered consumer scene`);
   }
   if (summary.kind === 'react') {
     const react = catalogue.react.find((candidate) => candidate.id === id);
