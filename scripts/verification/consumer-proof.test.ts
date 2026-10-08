@@ -178,7 +178,11 @@ test('Next hand steps move the src marker, preserve alias-based server pages and
       await nextFault(app, src, 'stylex-extraction');
       const extraction = await readFile(join(app, 'postcss.config.js'), 'utf8');
       assert.doesNotMatch(extraction, /include: \['\*\*/);
-      assert.equal(extraction.includes('app/**/*'), src);
+      assert.doesNotMatch(extraction, /postcss-plugin|app\/\*\*\/*/);
+      assert.match(extraction, /plugins: \{\}/);
+      await writeFile(join(app, 'postcss.config.js'), "include: ['**/*.{js,jsx,ts,tsx}']");
+      await nextFault(app, true, 'src-extraction');
+      assert.match(await readFile(join(app, 'postcss.config.js'), 'utf8'), /include: \['app\/\*\*/);
     }
   } finally { await rm(work, { recursive: true, force: true }); }
 });
