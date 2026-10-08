@@ -552,4 +552,14 @@ export default [
     reason: "A component page's legend entry takes focus so a keyboard reader can emphasise its outline; it has no action, so it is not a widget. A block page's entry holds a link and takes no focus itself.",
     authority: 'docs/spec/ultima.md#anatomy',
   },
+  {
+    id: 'theme-mode-script-no-style-slot',
+    rule: 'ULT-API-001',
+    path: 'packages/ui/src/theme-mode.tsx',
+    symbol: 'ThemeModeScript',
+    target: 'style',
+    count: 1,
+    reason: 'Renders a nonvisual inline <script>; a StyleX slot has nothing to paint.',
+    authority: 'docs/spec/ultima.md#mode-and-scope-packaging',
+  },
 ] satisfies ArchitectureException[];
