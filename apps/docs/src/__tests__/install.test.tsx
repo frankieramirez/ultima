@@ -33,7 +33,9 @@ test('hosted guide and install page teach discovery and offline work without pla
   expect(new TextEncoder().encode(guide).byteLength).toBeLessThanOrEqual(64 * 1024);
   expect(guide).toContain('## Theme adoption');
   expect(guide).toContain('## Discover and maintain the product theme');
-  expect(guide).not.toContain('doctor --theme');
+  expect(guide).toContain('npx ultima-design doctor --theme');
+  expect(guide).toContain('npx --no-install ultima-design');
+  expect(guide).not.toContain('The flag is not currently available');
   const screen = await mount('/install');
   await expect.element(screen.getByRole('link', { name: 'discovery and safe-update workflow' })).toHaveAttribute('href', '/llms.txt#discover-and-maintain-the-product-theme');
   const prose = document.querySelector('main')!.textContent!;
