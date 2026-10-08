@@ -27,6 +27,7 @@ export const pages = [
   { label: 'Studio', to: '/theme-studio' },
   { label: 'Components', to: '/components' },
   { label: 'Blocks', to: '/blocks' },
+  { label: 'Recipes', to: '/recipes' },
 ] satisfies NavLink[];
 
 /** Every component in catalogue-number order, which is alphabetical. */

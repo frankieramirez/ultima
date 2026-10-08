@@ -2,6 +2,7 @@ import { type OptimizerPlan, type OptimizerPolicy, browserDependencies, ordinal 
 import type { Files } from './files.ts';
 import { BARREL, type Catalogue, type Diagnostic, type ReactEntry, loadCatalogue } from './model.ts';
 import type { Export } from './source.ts';
+import { compositionProjection } from './compositions.ts';
 
 export const ANATOMY = 'apps/docs/src/generated/anatomy';
 
@@ -18,6 +19,7 @@ export const OUTPUTS = {
   anatomyBarrel: `${ANATOMY}/index.ts`,
   barrel: BARREL,
   browser: 'scripts/generated/browser-dependencies.ts',
+  recipes: 'apps/docs/src/generated/recipes.ts',
 } as const;
 
 /** Directories holding only generated files, so anything else there is stale. */
@@ -304,6 +306,7 @@ export function planOutputs(
   policy: OptimizerPolicy,
 ): { outputs: Map<string, string>; optimizer: OptimizerPlan; diagnostics: Diagnostic[] } {
   const { catalogue, diagnostics } = loadCatalogue(files);
+  const composition = compositionProjection(files, catalogue);
   const outputs = new Map<string, string>([
     [OUTPUTS.registry, registryProjection(catalogue)],
     [OUTPUTS.catalogue, catalogueProjection(catalogue)],
@@ -316,9 +319,16 @@ export function planOutputs(
       .sort((a, b) => ordinal(a.id, b.id))
       .map((entry): [string, string] => [anatomyModule(entry.id), anatomyProjection(entry)]),
     [OUTPUTS.barrel, barrelProjection(catalogue)],
+    [OUTPUTS.recipes, `${header('registry/metadata/recipe/, recipe demos and scripts/catalogue/composition-examples.ts')}
+export type CopyFile = { source: string; path: string; content: string };
+export type CopyBundle = { entry: string; files: CopyFile[]; items: string[]; dependencies: string[] };
+export const recipes = ${data(composition.recipes)};
+export const recipeSources: Record<string, CopyBundle> = ${data(composition.sources)};
+export const compositionExamples = ${data(composition.examples)};
+`],
   ]);
   const barrel = new Map([...catalogue.exports.values()].map((entry) => [entry.name, `packages/ui/src/${entry.item}.tsx`]));
   const browser = browserDependencies(files, outputs, barrel, policy);
   outputs.set(OUTPUTS.browser, browserProjection(browser.plan));
-  return { outputs, optimizer: browser.plan, diagnostics: [...diagnostics, ...browser.diagnostics] };
+  return { outputs, optimizer: browser.plan, diagnostics: [...diagnostics, ...composition.diagnostics, ...browser.diagnostics] };
 }

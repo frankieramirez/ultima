@@ -32,6 +32,7 @@ const staleGeneratedProjections = {
 
 export function validFixture(): Record<string, string> {
   return {
+    'scripts/catalogue/composition-examples.ts': 'export default [] satisfies CompositionExample[];\n',
     'docs/spec/ultima.md': [
       '# Ultima',
       '## Plain components',
