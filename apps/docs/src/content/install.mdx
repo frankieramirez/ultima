@@ -91,9 +91,11 @@ Nine components also ship as custom elements for a host that cannot run React, i
 
 Install the `ultima-design` skill through skills.sh, the Ultima marketplace in Claude Code, or the consumer CLI. The [CLI page](/cli#other-skill-installers) lists the commands and explains which route also installs post-edit hooks. GitHub installation requires repository access until Ultima becomes public.
 
-The skill directs your agent to [`/llms.txt`](/llms.txt) before UI work and to CLI checks after edits. The hosted guide contains the principles, conventions, component imports and props, and token names. It is generated on every build; the skill carries workflow instructions and links to that guidance.
+Before UI edits, the skill asks your agent to read applicable project instructions and local design guidance, then trace the active theme at each affected boundary. It links the hosted [discovery and safe-update workflow](/llms.txt#discover-and-maintain-the-product-theme), including conflicts and offline work. The guide also contains conventions and component APIs. When the host is unavailable, use known guidance and installed source, report the gap, and run the pinned local CLI with `npx --no-install ultima-design doctor` and `npx --no-install ultima-design check`. Registry comparisons remain unverified offline.
 
 ## Theme adoption
+
+Keep Neutral in a fresh project until you choose a theme. For an existing brand, record its semantic roles, font faces, spacing, shape and mode behavior before an authorized change. Preserve those choices in a custom [Theme Studio](/theme-studio) draft. Selecting another preset requires an explicit project choice.
 
 [Theme Studio](/theme-studio) generates a theme for an existing Ultima application. Download the registry file, then run:
 
@@ -101,7 +103,7 @@ The skill directs your agent to [`/llms.txt`](/llms.txt) before UI work and to C
 npx shadcn add ./ultima-theme.registry.json
 ```
 
-The registry installs `ultima-theme.css`, `ultima-theme.json`, and `DESIGN.md` at the project root. Keep the JSON draft for later editing. The design document describes the current draft for people and agents. Reinstalling replaces the generated files.
+The registry installs `ultima-theme.css`, `ultima-theme.json`, and `DESIGN.md` at the project root. Keep the JSON draft for later editing. The design document describes the current draft for people and agents. Reinstalling replaces whole files through the installer's overwrite prompt. Review the diff and preserve consumer prose; for linked maintenance, stage the generated region and reconcile hand edits before replacement using the [safe-update workflow](/llms.txt#discover-and-maintain-the-product-theme).
 
 To start with Ultima's default design document on its own, run `npx shadcn add @ultima/design-md`. Review the file for your application and update it when you change the theme.
 
