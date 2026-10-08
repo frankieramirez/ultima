@@ -18,6 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         layout: [vite, next-app, next-src]
+        delivery-path: [css, stylex-subtree, registry, cli]
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -28,11 +29,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - name: Production installed consumer
-        run: node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --output "$RUNNER_TEMP/consumer-proof"
+        run: node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path "${{ matrix.delivery-path }}" --output "$RUNNER_TEMP/consumer-proof"
       - if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: consumer-proof-${{ matrix.layout }}
+          name: consumer-proof-${{ matrix.layout }}-${{ matrix.delivery-path }}
           path: ${{ runner.temp }}/consumer-proof
           if-no-files-found: error
           retention-days: 90
