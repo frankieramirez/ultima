@@ -29,7 +29,6 @@ import { createManifest, hashBuild } from '../../apps/docs/scripts/build-manifes
 import { BUILD_MANIFEST, BUILD_ROOT, productionAdapter } from '../../apps/docs/scripts/production-adapter.ts';
 import { diskFiles } from '../catalogue/files.ts';
 import { consumerReportProblems, consumerReproduction, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from '../consumer-report.ts';
-import { browserEvidenceProblems } from '../consumer-browser.ts';
 import { hydrationProblems, type HydrationEvidence } from '../consumer-next.ts';
 import { loadCatalogue } from '../catalogue/model.ts';
 import { CI_OBLIGATIONS, type CheckId } from './checks.ts';
@@ -546,6 +545,7 @@ const reporterFlags = (destination: string) => ['--test-reporter=spec', '--test-
 
 const consumerProofAdapter: Adapter = {
   run: (context) => evidenced(context, async () => {
+    const { browserEvidenceProblems } = await import('../consumer-browser.ts');
     const { cliReportProblems } = await import('../consumer-delivery.ts');
     const { parseDraft } = await import('../../packages/tokens/src/theme/codec.ts');
     const { resolveDraft } = await import('../../packages/tokens/src/theme/draft.ts');
