@@ -464,7 +464,7 @@ import { ultimaStylex } from './ultima.vite.ts'"
   (cd "$app" && npm run build)
 
   step "vite: production component styles"
-  node "$ROOT/scripts/smoke-next-styles.ts" "$app" --vite
+  node "$ROOT/scripts/consumer-proof.ts" --layout vite --base-styles "$app"
 
   step "vite: ultima doctor"
   assert_doctor_passes "$app"
@@ -528,7 +528,7 @@ import "./ultima.css";'
   (cd "$app" && npm run build)
 
   step "next: production component styles"
-  node "$ROOT/scripts/smoke-next-styles.ts" "$app"
+  node "$ROOT/scripts/consumer-proof.ts" --layout "$([ "$layout" = src ] && echo next-src || echo next-app)" --base-styles "$app"
 
   step "next: ultima doctor"
   assert_doctor_passes "$app"
