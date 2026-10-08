@@ -5,6 +5,14 @@ export type { ColorMode, ScaleName };
 export const SCALE_NAMES = ['mithril', 'arcane', 'mana', 'verdant', 'ember', 'ruin'] as const;
 
 export const RECIPE_VERSION = 1;
+export const BASE_RECIPE_VERSION = 3;
+
+export class UnsupportedRecipeError extends Error {
+  constructor(version: number) {
+    super(`Unsupported palette recipe ${version}.`);
+    this.name = 'UnsupportedRecipeError';
+  }
+}
 
 export type ScaleSeed = {
   hue: number;
@@ -118,7 +126,9 @@ export function oklchToHex(L: number, C: number, H: number): string {
 const RECIPE_2_BRAND_PINS = { mithril: { index: 0, value: '#101011' }, mana: { index: 11, value: '#8ff5ff' } } as const;
 
 export function generateScales(seeds: ScaleSeeds, recipeVersion = RECIPE_VERSION, brandPins = false): GeneratedScales {
-  if (recipeVersion !== 1 && recipeVersion !== 2) throw new Error(`Unsupported palette recipe ${recipeVersion}.`);
+  if (recipeVersion !== 1 && recipeVersion !== 2 && recipeVersion !== BASE_RECIPE_VERSION) {
+    throw new UnsupportedRecipeError(recipeVersion);
+  }
   const out = {} as GeneratedScales;
   for (const name of SCALE_NAMES) {
     const seed = seeds[name];

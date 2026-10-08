@@ -85,7 +85,7 @@ test('subtle perturbs the current draft inside its bounds', () => {
   expect(['compact', 'loose']).toContain(near.draft.typography.leading);
   expect(['compact', 'loose']).toContain(near.draft.typography.tracking);
   expect([0.75, 1.25]).toContain(near.draft.density);
-  expect(['sharp', 'round']).toContain(near.draft.shape);
+  expect(['sharp', 'soft', 'round']).toContain(near.draft.shape);
   expect(Math.abs(near.draft.elevation - 1)).toBeCloseTo(0.1, 9);
   expect(Math.abs(near.draft.motion - 1)).toBeCloseTo(0.1, 9);
 });

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { PAIRINGS } from '../../../tokens/src/theme/gate.ts';
+import { contrastRatio } from '../../../tokens/src/theme/recipe.ts';
 import { parseColor } from '../../../analysis/src/rules/theme.ts';
 import { bundledColorDefaults } from '../../scripts/bundled.ts';
 import { run } from '../run.ts';
@@ -179,7 +180,9 @@ describe('check', () => {
     expect(css.map(({ selector }) => selector)).toEqual(['.unbound', '@media (prefers-color-scheme: dark) .dark']);
     for (const finding of css) {
       expect(finding).toMatchObject({ severity: 'blocking', target: '--ult-color-text-subtle', link: 'https://ultima.systems/tokens#pairings' });
-      expect(finding.message).toMatch(/in dark mode: text-subtle on surface is 2\.55:1 against 4\.5:1/);
+      const defaults = bundledColorDefaults(join(dirname(fileURLToPath(import.meta.url)), '../../../..'));
+      const ratio = contrastRatio('#555555', defaults.dark['--ult-color-surface'] ?? '').toFixed(2);
+      expect(finding.message).toContain(`in dark mode: text-subtle on surface is ${ratio}:1 against 4.5:1`);
       expect(finding.message).not.toMatch(/light mode/);
     }
     // StyleX: applied alone and beside darkTheme block; beside lightTheme passes.

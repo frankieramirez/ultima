@@ -14,7 +14,7 @@ import {
   type TypeScale,
   type ThemePresetOrigin,
 } from './draft.ts';
-import { RECIPE_VERSION, SCALE_NAMES, type ScaleSeed, type ScaleSeeds } from './recipe.ts';
+import { BASE_RECIPE_VERSION, RECIPE_VERSION, SCALE_NAMES, type ScaleSeed, type ScaleSeeds } from './recipe.ts';
 
 export type DraftParseReason = 'malformed' | 'unknown-version';
 
@@ -309,7 +309,8 @@ export function parseDraft(input: string): DraftParseResult {
   }
   if (!isFiniteNumber(raw.recipeVersion)) return fail('malformed', 'Draft is missing a recipe version.');
 
-  if (raw.recipeVersion !== (raw.version === 1 ? RECIPE_VERSION : 2)) {
+  const recipes = raw.version === 1 ? [RECIPE_VERSION] : raw.version === 2 ? [2] : [2, BASE_RECIPE_VERSION];
+  if (!recipes.includes(raw.recipeVersion)) {
     return fail('unknown-version', `Recipe version ${raw.recipeVersion} is not supported for draft version ${raw.version}.`);
   }
 
