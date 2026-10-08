@@ -88,7 +88,9 @@ type ModeSnapshot = {
   id: string; expectedMode: 'dark' | 'light';
   firstPaint: { attribute: string | null; scheme: string; hydrated: boolean };
   serverHtml: string; serverSnapshot: { mode: string | null; resolved: string | null } | null;
-  transitions: ModeValues[]; crossTab: boolean; errors: string[]; failures: string[];
+  transitions: ModeValues[]; crossTab: boolean;
+  storageSync: { before: { mode: string | null; attribute: string | null }; after: { mode: string | null; attribute: string | null } } | null;
+  errors: string[]; failures: string[];
 };
 
 export function modeSnapshotProblems(snapshot: unknown, passing = false): string[] {
@@ -109,6 +111,7 @@ export function modeSnapshotProblems(snapshot: unknown, passing = false): string
     const expectedAttribute = stored === 'light' || stored === 'dark' ? stored : null;
     const expectedMode = expectedAttribute ?? system;
     if (value.firstPaint?.attribute !== expectedAttribute || value.firstPaint?.scheme !== expectedMode || value.expectedMode !== expectedMode || value.errors?.length !== 0 || value.crossTab !== (stored !== 'throwing')) problems.push('passing first paint/cross-tab evidence disagrees with the case');
+    if (stored !== 'throwing' && (value.storageSync?.before?.mode !== 'system' || value.storageSync.before.attribute !== null || value.storageSync.after?.mode !== 'light' || value.storageSync.after.attribute !== 'light')) problems.push('missing measured cross-tab storage transition');
     if (!value.id?.startsWith('vite/') && (value.serverSnapshot?.mode !== 'system' || value.serverSnapshot?.resolved !== 'pending')) problems.push('missing neutral server snapshot');
     const expected = [[expectedMode, expectedAttribute], ['light', 'light'], ['dark', 'dark'], [system, null], [system === 'dark' ? 'light' : 'dark', null], ['dark', 'dark']];
     for (const [index, state] of (Array.isArray(value.transitions) ? value.transitions : []).entries()) if (!state || state.mode !== expected[index]?.[0] || state.attribute !== expected[index]?.[1]) problems.push(`transition ${index} disagrees with the expected lifecycle`);
@@ -122,7 +125,8 @@ export async function modeProof(browser: Browser, url: string, report: ConsumerR
     const [stored, system] = name.split('-') as [string, 'dark' | 'light'];
     const mode = stored === 'light' || stored === 'dark' ? stored : system;
     const context = await browser.newContext({ colorScheme: system, reducedMotion: 'reduce' });
-    await context.addInitScript(({ stored, key }) => {
+    const page = await context.newPage();
+    await page.addInitScript(({ stored, key }) => {
       if (stored === 'throwing') {
         Object.defineProperty(window, 'localStorage', { get() { throw new Error('storage denied'); } });
       } else if (stored === 'light' || stored === 'dark') localStorage.setItem(key, stored);
@@ -133,7 +137,6 @@ export async function modeProof(browser: Browser, url: string, report: ConsumerR
         observer.disconnect();
       }).observe({ type: 'paint', buffered: true });
     }, { stored, key: MODE_KEY });
-    const page = await context.newPage();
     const errors = browserErrors(page);
     let release!: () => void;
     const gate = new Promise<void>((done) => { release = done; });
@@ -179,13 +182,16 @@ export async function modeProof(browser: Browser, url: string, report: ConsumerR
     const opposite = system === 'dark' ? 'light' : 'dark';
     await page.emulateMedia({ colorScheme: opposite });
     await capture(opposite, null);
+    let storageSync: ModeSnapshot['storageSync'] = null;
     if (stored !== 'throwing') {
       const tab = await context.newPage();
       const tabErrors = browserErrors(tab);
       await tab.goto(url, { waitUntil: 'networkidle' });
       await tab.locator('body[data-hydrated="true"]').waitFor();
+      const before = await tab.evaluate(() => ({ mode: document.querySelector('[data-mode]')?.getAttribute('data-mode') ?? null, attribute: document.documentElement.getAttribute('data-theme') }));
       await page.getByRole('button', { name: 'Light', exact: true }).click();
       await tab.waitForFunction(() => document.documentElement.dataset.theme === 'light' && document.querySelector('[data-resolved]')?.getAttribute('data-resolved') === 'light');
+      storageSync = { before, after: await tab.evaluate(() => ({ mode: document.querySelector('[data-mode]')?.getAttribute('data-mode') ?? null, attribute: document.documentElement.getAttribute('data-theme') })) };
       await tab.getByRole('button', { name: 'External dark', exact: true }).click();
       await capture('dark', 'dark');
       assert.equal(await page.evaluate((key) => localStorage.getItem(key), MODE_KEY), 'dark');
@@ -196,7 +202,7 @@ export async function modeProof(browser: Browser, url: string, report: ConsumerR
       await capture('dark', 'dark');
     }
     failures.push(...errors);
-    const snapshot = { id, expectedMode: mode, firstPaint, serverHtml, serverSnapshot, transitions, crossTab: stored !== 'throwing', errors, failures };
+    const snapshot = { id, expectedMode: mode, firstPaint, serverHtml, serverSnapshot, transitions, crossTab: stored !== 'throwing', storageSync, errors, failures };
     failures.push(...modeSnapshotProblems(snapshot, true));
     await writeFile(join(output, `${name}.values.json`), `${JSON.stringify(snapshot, null, 2)}\n`);
     await page.screenshot({ path: join(output, `${name}.png`), fullPage: true });

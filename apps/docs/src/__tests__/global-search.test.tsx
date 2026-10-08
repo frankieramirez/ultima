@@ -57,7 +57,7 @@ test('"button" at 1440 lists Components, Blocks using Button and Elements, with 
   await expect.element(dialog.getByRole('option', { name: /^Button A button/ })).toBeVisible();
   expect(groupLabels(dialog.element())).toEqual(['Components · 4', 'Blocks using Button · 4', 'Elements · 2']);
   const options = dialog.getByRole('option').elements().map((option) => option.textContent);
-  expect(options.slice(0, 4).map((text) => text?.slice(0, 6))).toEqual(['008But', '009But', '052Tog', '053Tog']);
+  expect(options.slice(0, 4).map((text) => text?.slice(0, 6))).toEqual(['008But', '009But', '053Tog', '054Tog']);
   expect(options.slice(4, 8)).toEqual(['CRM 01', 'Dashboard 01', 'Settings 01', 'Sign-in 01']);
 
   const pane = dialog.getByRole('complementary', { name: 'Button preview' });

@@ -25,7 +25,7 @@ test('the six groups hold the counts the Components directory frame shows', () =
     'Data display': 9,
     Navigation: 5,
     Feedback: 5,
-    Layout: 4,
+    Layout: 5,
   });
 });
 

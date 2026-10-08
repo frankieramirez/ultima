@@ -41,7 +41,7 @@ test('the mode exercise preserves its CSS-only identity alongside every legacy d
 
 test('mode snapshots reject fabricated first paint, lost tokens, lifecycle, SSR and hydration errors', () => {
   const state = (mode: string, attribute: string | null) => ({ mode, attribute, resolved: mode, colorScheme: mode, extraction: { display: 'inline-flex' }, variables: Object.fromEntries(['root', 'control', 'popup'].map((part) => [part, Object.fromEntries(Array.from({ length: 6 }, (_, i) => [i, { expected: 'value', actual: 'value' }]))])) });
-  const snapshot = { id: modeCases('next-app')[0], expectedMode: 'light', firstPaint: { attribute: 'light', scheme: 'light', hydrated: false }, serverHtml: 'light-dark.server.html', serverSnapshot: { mode: 'system', resolved: 'pending' }, transitions: [state('light', 'light'), state('light', 'light'), state('dark', 'dark'), state('dark', null), state('light', null), state('dark', 'dark')], crossTab: true, errors: [], failures: [] };
+  const snapshot = { id: modeCases('next-app')[0], expectedMode: 'light', firstPaint: { attribute: 'light', scheme: 'light', hydrated: false }, serverHtml: 'light-dark.server.html', serverSnapshot: { mode: 'system', resolved: 'pending' }, transitions: [state('light', 'light'), state('light', 'light'), state('dark', 'dark'), state('dark', null), state('light', null), state('dark', 'dark')], crossTab: true, storageSync: { before: { mode: 'system', attribute: null as string | null }, after: { mode: 'light', attribute: 'light' } }, errors: [], failures: [] };
   assert.deepEqual(modeSnapshotProblems(snapshot, true), []);
   for (const fault of [
     (s: typeof snapshot) => { s.firstPaint.hydrated = true; },
@@ -50,6 +50,8 @@ test('mode snapshots reject fabricated first paint, lost tokens, lifecycle, SSR 
     (s: typeof snapshot) => { s.transitions[3]!.attribute = 'system'; },
     (s: typeof snapshot) => { s.transitions.pop(); },
     (s: typeof snapshot) => { s.crossTab = false; },
+    (s: typeof snapshot) => { s.storageSync.before.attribute = 'light'; },
+    (s: typeof snapshot) => { s.storageSync.after.mode = 'system'; },
     (s: typeof snapshot) => { s.serverSnapshot.resolved = 'dark'; },
     (s: typeof snapshot) => { (s.errors as string[]).push('Hydration failed'); },
   ]) {
