@@ -142,8 +142,10 @@ export async function browserConditions(page: Page, tables: ResolvedDraft, mode:
       // Axe defers modal-only tab checks; retain its findings and cross both boundaries.
       for (const key of ['Tab', 'Shift+Tab']) {
         await focusState(key === 'Tab' ? 'last' : 'first');
+        await settle();
         for (let index = 0; index <= inventory.length; index++) {
           await page.keyboard.press(key);
+          await settle();
           const observed = await focusState();
           steps.push({ key, inside: observed.inside && JSON.stringify(observed.inventory) === JSON.stringify(inventory), accessible: observed.accessible, position: observed.position, item: observed.item });
         }
