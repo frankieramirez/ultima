@@ -353,9 +353,7 @@ process.stdout.write(JSON.stringify(payload));
 # docs/spec/ultima.md, Package and engine, Release: the tarball the release workflow publishes installs
 # into a consumer project and runs from its own dependencies, not from the workspace.
 pack_cli() {
-  mkdir -p "$WORK/pack"
-  (cd "$ROOT/packages/cli" && pnpm pack --pack-destination "$WORK/pack" >/dev/null)
-  TARBALL="$(ls "$WORK"/pack/ultima-design-*.tgz)"
+  TARBALL="$(node "$ROOT/scripts/consumer-helpers.ts" pack "$WORK")"
   echo "smoke-install: packed $(basename "$TARBALL")"
 }
 
@@ -409,48 +407,8 @@ serve_local_build() {
     pnpm --filter @ultima/docs build
   )
 
-  cat > "$WORK/serve.mjs" <<'SERVER'
-import { createReadStream, existsSync, statSync } from 'node:fs';
-import { createServer } from 'node:http';
-import { extname, join, normalize } from 'node:path';
-
-const dist = process.argv[2];
-
-const TYPES = {
-  '.css': 'text/css',
-  '.html': 'text/html',
-  '.js': 'text/javascript',
-  '.json': 'application/json',
-  '.svg': 'image/svg+xml',
-  '.txt': 'text/plain',
-};
-
-const NO_FALLBACK = [/^\/r\//, /^\/tokens\.(css|json)$/, /^\/llms\.txt$/];
-
-function fileFor(path) {
-  const candidate = join(dist, normalize(path));
-  if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
-  if (NO_FALLBACK.some((pattern) => pattern.test(path))) return null;
-  const index = join(dist, 'index.html');
-  return existsSync(index) ? index : null;
-}
-
-const server = createServer((request, response) => {
-  const path = decodeURIComponent(new URL(request.url, 'http://127.0.0.1').pathname);
-  const file = fileFor(path);
-  if (!file) {
-    response.writeHead(404).end('not found');
-    return;
-  }
-  response.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' });
-  createReadStream(file).pipe(response);
-});
-
-server.listen(0, '127.0.0.1', () => console.log(server.address().port));
-SERVER
-
   step "serving apps/docs/dist"
-  node "$WORK/serve.mjs" "$ROOT/apps/docs/dist" >"$WORK/port" 2>"$WORK/server.log" &
+  node "$ROOT/scripts/consumer-helpers.ts" serve "$ROOT/apps/docs/dist" >"$WORK/port" 2>"$WORK/server.log" &
   SERVER_PID=$!
 
   local port=""
@@ -476,8 +434,7 @@ vite_target() {
   local app="$WORK/vite-app"
 
   step "vite: scaffolding"
-  (cd "$WORK" && npm create vite@latest vite-app -- --template react-ts)
-  (cd "$app" && npm install)
+  node "$ROOT/scripts/consumer-helpers.ts" scaffold vite "$app"
 
   step "vite: npx shadcn add $HOST/r/setup-vite.json"
   setup_add "$app" setup-vite
@@ -532,16 +489,12 @@ next_layout() {
   if [ "$layout" = src ]; then name="next-src-app"; fi
   local app="$WORK/$name"
   local source="$app"
-  local src_flag="--no-src-dir"
   if [ "$layout" = src ]; then
     source="$app/src"
-    src_flag="--src-dir"
   fi
 
   step "next: scaffolding"
-  (cd "$WORK" && npx -y create-next-app@latest "$name" \
-    --ts --app --no-tailwind "$src_flag" --no-eslint --turbopack \
-    --import-alias "@/*" --use-npm --yes)
+  node "$ROOT/scripts/consumer-helpers.ts" scaffold "next-$layout" "$app"
 
   step "next: npx shadcn add $HOST/r/setup-next.json"
   setup_add "$app" setup-next
@@ -597,8 +550,7 @@ sidebar_target() {
   local app="$WORK/sidebar-app"
 
   step "sidebar: scaffolding"
-  (cd "$WORK" && npm create vite@latest sidebar-app -- --template react-ts)
-  (cd "$app" && npm install)
+  node "$ROOT/scripts/consumer-helpers.ts" scaffold vite "$app"
 
   step "sidebar: npx shadcn add $HOST/r/setup-vite.json"
   setup_add "$app" setup-vite
@@ -655,8 +607,7 @@ block_vite() {
   local app="$WORK/$block-vite"
 
   step "$block vite: scaffolding"
-  (cd "$WORK" && npm create vite@latest "$block-vite" -- --template react-ts)
-  (cd "$app" && npm install)
+  node "$ROOT/scripts/consumer-helpers.ts" scaffold vite "$app"
   setup_add "$app" setup-vite
   point_namespace_at_host "$app/components.json"
   add_paths_alias "$app/tsconfig.json"
@@ -686,9 +637,7 @@ block_next() {
   local app="$WORK/$block-next"
 
   step "$block next: scaffolding"
-  (cd "$WORK" && npx -y create-next-app@latest "$block-next" \
-    --ts --app --no-tailwind --no-src-dir --no-eslint --turbopack \
-    --import-alias "@/*" --use-npm --yes)
+  node "$ROOT/scripts/consumer-helpers.ts" scaffold next-root "$app"
   setup_add "$app" setup-next
   point_namespace_at_host "$app/components.json"
   replace_in_file "$app/app/layout.tsx" 'import "./globals.css";' \
@@ -716,7 +665,7 @@ element_target() {
   local app="$WORK/element-app"
 
   step "element: scaffolding"
-  (cd "$WORK" && npm create vite@latest element-app -- --template vanilla-ts)
+  node "$ROOT/scripts/consumer-helpers.ts" scaffold vanilla "$app"
 
   step "element: npx shadcn add $HOST/r/ult-button.json"
   (cd "$app" && npx -y shadcn@latest add "$HOST/r/ult-button.json" --yes)
