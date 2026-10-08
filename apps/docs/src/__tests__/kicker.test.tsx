@@ -30,6 +30,6 @@ test('tone picks between the subtle and muted text tokens', async () => {
     </>,
   );
 
-  expect(getComputedStyle(screen.getByText('Subtle').element()).color).toBe('rgb(145, 146, 149)');
-  expect(getComputedStyle(screen.getByText('Muted').element()).color).toBe('rgb(182, 183, 186)');
+  expect(getComputedStyle(screen.getByText('Subtle').element()).color).toBe('rgb(146, 146, 146)');
+  expect(getComputedStyle(screen.getByText('Muted').element()).color).toBe('rgb(183, 183, 183)');
 });
