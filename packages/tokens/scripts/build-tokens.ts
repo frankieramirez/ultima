@@ -17,6 +17,7 @@ import ts from 'typescript';
 
 import { stylexOptions } from '../../../stylex.options.ts';
 import { toDefaultDesignMd } from '../src/theme/export.ts';
+import { parseGeneratedRegion, parseProvenance } from '../src/theme/provenance.ts';
 import { resolveDraft, stockDraft } from '../src/theme/draft.ts';
 import type { ContrastResult, TokenEntry, TokensJson } from '../src/tokens-json.ts';
 import { generateBaseSources } from './base-theme.ts';
@@ -488,7 +489,13 @@ async function main(): Promise<void> {
   writeFileSync(join(dist, 'tokens.css'), css);
   writeFileSync(join(dist, 'tokens.json'), buildJson(tokens, values, contrast));
   const table = (mode: Mode) => Object.fromEntries([...values].map(([name, value]) => [name, value[mode]]));
-  writeFileSync(join(dist, 'DESIGN.md'), toDefaultDesignMd({ dark: table('dark'), light: table('light') }));
+  const design = toDefaultDesignMd({ dark: table('dark'), light: table('light') });
+  const region = parseGeneratedRegion(design);
+  const provenance = parseProvenance(design);
+  if (region.status !== 'intact' || provenance.status !== 'linked' || provenance.provenance.sourceKind !== 'compiled-default') {
+    fail('DESIGN.md must have an intact generated region and compiled-default provenance');
+  }
+  writeFileSync(join(dist, 'DESIGN.md'), design);
   console.log(
     `@ultima/tokens: wrote dist/tokens.css and dist/tokens.json (${tokens.length} tokens, ${contrast.length} pairings pass)`,
   );

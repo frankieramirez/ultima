@@ -8,6 +8,7 @@ import type { SourceKind } from './scope.ts';
 export type Category =
   | 'react'
   | 'styling'
+  | 'theme-digest'
   | 'base-ui'
   | 'zag-react'
   | 'zag-vanilla'
@@ -36,6 +37,7 @@ const scoped = (scope: string) => (name: string) => name.startsWith(`${scope}/`)
 export const CATEGORIES: readonly CategoryRule[] = [
   { category: 'react', match: exact('react', 'react-dom'), authority: ADR_0002 },
   { category: 'styling', match: exact('@stylexjs/stylex'), authority: ADR_0001 },
+  { category: 'theme-digest', match: exact('@noble/hashes'), authority: 'docs/spec/theme-studio.md#provenance-v1-wire-contract' },
   { category: 'base-ui', match: exact('@base-ui/react'), authority: ADR_0002 },
   { category: 'zag-react', match: exact('@zag-js/react'), authority: ADR_0002_ZAG },
   { category: 'zag-vanilla', match: exact('@zag-js/vanilla'), authority: ADR_0008 },
@@ -81,7 +83,7 @@ export const ZAG_REACT_ITEMS = ['calendar', 'date-picker', 'resizable'] as const
 export const POLICY: DependencyPolicy = {
   categories: CATEGORIES,
   allowed: {
-    'token-source': { styling: { categories: ['styling'] } },
+    'token-source': { styling: { categories: ['styling'] }, provenance: { categories: ['theme-digest'] } },
     'react-helper': { runtime: { categories: ['react', 'styling'] } },
     'react-component': {
       runtime: { categories: ['react', 'styling', 'base-ui'] },

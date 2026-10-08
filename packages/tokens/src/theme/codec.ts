@@ -1,3 +1,5 @@
+import { sha256 } from '@noble/hashes/sha256';
+import { bytesToHex } from '@noble/hashes/utils';
 import {
   THEME_DRAFT_VERSION,
   THEME_PRESETS,
@@ -17,6 +19,36 @@ import {
 import { BASE_RECIPE_VERSION, RECIPE_VERSION, SCALE_NAMES, type ScaleSeed, type ScaleSeeds } from './recipe.ts';
 
 export type DraftParseReason = 'malformed' | 'unknown-version';
+
+export const CANONICAL_SERIALIZATION_VERSION = 1;
+
+// v1: UTF-8 JSON, recursively sorted object keys, original array order and JSON scalars.
+export function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${Array.from(value, canonicalJson).join(',')}]`;
+  if (typeof value === 'object' && value !== null) {
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== null && prototype !== Object.prototype) throw new Error('Canonical serialization requires JSON values.');
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`).join(',')}}`;
+  }
+  const json = JSON.stringify(value);
+  if (json === undefined || (typeof value === 'number' && !Number.isFinite(value))) {
+    throw new Error('Canonical serialization requires JSON values.');
+  }
+  return json;
+}
+
+export function contentDigest(content: string): string {
+  return bytesToHex(sha256(new TextEncoder().encode(content)));
+}
+
+export function canonicalDraft(draft: ThemeDraft): string {
+  return canonicalJson(draft);
+}
+
+export function draftDigest(draft: ThemeDraft): string {
+  return contentDigest(canonicalDraft(draft));
+}
 
 export type DraftParseResult =
   | { ok: true; draft: ThemeDraft }

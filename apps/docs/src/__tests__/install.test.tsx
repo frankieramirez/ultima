@@ -5,12 +5,36 @@ import { render } from 'vitest-browser-react';
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
 
 import { routeTree } from '../router';
+import { parseDraft, resolveDraft } from '@ultima/tokens';
+import legacy from '../../../../packages/tokens/src/__tests__/fixtures/pre-base-theme-drafts.json';
 import '../styles.css';
 
 function mount(path: string) {
   const history = createMemoryHistory({ initialEntries: [path] });
   return render(<RouterProvider router={createRouter({ routeTree, history })} />);
 }
+
+test('install links to update guidance with a working frozen Ultima preset command', async () => {
+  const install = await mount('/install');
+  await expect.element(install.getByRole('link', { name: 'Update the base theme', exact: true }).last()).toHaveAttribute('href', '/install/update');
+  await install.unmount();
+  const screen = await mount('/install/update');
+  await expect.element(screen.getByRole('heading', { name: 'Update the base theme', level: 1 })).toBeVisible();
+  await expect.poll(() => document.querySelector('main pre code')?.textContent).toMatch(/^npx shadcn add "https:\/\/ultima.systems\/r\/theme.json\?theme=/);
+  const command = document.querySelector('main pre code')?.textContent ?? '';
+  const publicUrl = new URL(command.match(/"([^"]+)"/)![1]!);
+  const item = await (await fetch(`${publicUrl.pathname}${publicUrl.search}`)).json();
+  expect(item.files.map((file: { target: string }) => file.target)).toEqual(['~/ultima-theme.css', '~/ultima-theme.json', '~/DESIGN.md']);
+  const parsed = parseDraft(item.files.find((file: { target: string }) => file.target === '~/ultima-theme.json').content);
+  if (!parsed.ok) throw new Error(parsed.message);
+  expect(parsed.draft.preset).toEqual({ id: 'ultima', revision: 2 });
+  expect(resolveDraft(parsed.draft)).toEqual(legacy.cases.find(({ name }) => name === 'preset-ultima-revision-2')!.resolved);
+  expect(document.querySelector('main')?.textContent).toContain('never rewrites');
+  expect(document.querySelector('main')?.textContent).toContain('unpinned');
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('main a[href^="/"]')) {
+    expect(Object.keys(createRouter({ routeTree }).routesByPath)).toContain(link.pathname);
+  }
+});
 
 test('Commands is one tab list with a fence per target, Vite first', async () => {
   const screen = await mount('/install');
