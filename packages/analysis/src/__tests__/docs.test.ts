@@ -196,14 +196,13 @@ describe('the docs rules over the repository', () => {
 });
 
 describe('the old scanner against ULT-DOCS-001', () => {
-  /** The old scanner's scope: every .ts/.tsx under apps/docs/src outside demos/. */
   const oldScope = () => {
     const paths: string[] = [];
     const walk = (directory: string) => {
       for (const entry of repository.list(directory) ?? []) {
         const path = `${directory}/${entry.name}`;
         if (entry.directory) {
-          if (path !== 'apps/docs/src/demos') walk(path);
+          if (path !== 'apps/docs/src/demos' && path !== 'apps/docs/src/examples') walk(path);
         } else if (/\.tsx?$/.test(entry.name)) paths.push(path);
       }
     };

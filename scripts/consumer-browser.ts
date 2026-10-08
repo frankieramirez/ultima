@@ -4,11 +4,12 @@ import type { Page } from 'playwright';
 import { resolveDraft, stockDraft, type ResolvedDraft } from '../packages/tokens/src/theme/draft.ts';
 import { repository } from './consumer-helpers.ts';
 import type { ConsumerLayout, DeliveryPath } from './consumer-report.ts';
-import { consumerValues } from './consumer-values.ts';
+import { consumerValues, sceneProbes } from './consumer-values.ts';
 
 export const BROWSER_ASSERTIONS = [
   'form-label-required', 'required-validation', 'required-error-name', 'selection-pointer', 'selection-keyboard', 'submit-values', 'reset-values',
-  'navigation-current', 'navigation-keyboard', 'navigation-activation', 'data-row', 'data-empty', 'data-restore', 'keyboard-focus',
+  'navigation-current', 'navigation-keyboard', 'navigation-activation', 'data-row', 'data-empty', 'data-restore',
+  'layout-narrow', 'table-scroll-keyboard', 'layout-wide', 'keyboard-focus',
   'overlay-keyboard-open', 'overlay-portalled', 'overlay-focus-in', 'overlay-keyboard-action', 'overlay-action-focus-return',
   'overlay-pointer-open', 'overlay-escape', 'overlay-escape-focus-return', 'mode-switch-portal', 'system-preference-change', 'explicit-mode-overrides',
   'reduced-motion-values', 'reduced-motion-interaction', 'axe-closed', 'axe-open', 'axe-switched-open', 'axe-switched-closed',
@@ -113,13 +114,25 @@ export async function browserConditions(page: Page, tables: ResolvedDraft, mode:
     if (status === 'failed') evidence.failures.push(`${name}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}${error ? ` (${error})` : ''}`);
   };
   const settle = async () => page.evaluate(async () => {
-    getComputedStyle(document.querySelector('[data-testid="proof-portal"]') ?? document.documentElement).backgroundColor;
+    getComputedStyle(document.querySelector('[role="dialog"]') ?? document.documentElement).backgroundColor;
     await new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done())));
     await Promise.all(document.getAnimations().filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished.catch(() => {})));
   });
+  const { control, portal: dialog } = sceneProbes(page);
+  const form = page.getByRole('form', { name: 'New project', exact: true });
   const input = page.getByRole('textbox', { name: 'Project name', exact: true });
-  const trigger = page.getByRole('button', { name: 'Theme popup', exact: true });
-  const dialog = page.getByRole('dialog', { name: 'Installed theme', exact: true });
+  const owner = page.getByRole('combobox', { name: 'Owner', exact: true });
+  const reset = page.getByRole('button', { name: 'Reset', exact: true });
+  const trigger = page.getByRole('button', { name: 'Edit Aster', exact: true });
+  const region = page.getByRole('region', { name: 'Projects, newest first', exact: true });
+  const ownerText = async () => (await owner.textContent())?.trim();
+  const choose = async (name: string) => { await owner.click(); await page.getByRole('option', { name, exact: true }).click(); await page.getByRole('listbox').waitFor({ state: 'hidden' }); };
+  const columns = async () => {
+    const [left, right] = [await form.boundingBox(), await region.boundingBox()];
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+    const fits = await region.evaluate((el) => el.scrollWidth <= el.clientWidth);
+    return { stacked: !!left && !!right && left.y + left.height <= right.y, beside: !!left && !!right && left.x + left.width <= right.x, overflow, fits };
+  };
   const focused = (locator: ReturnType<Page['getByRole']>) => locator.evaluate((el) => el === document.activeElement);
   const modeValues = async (next: 'dark' | 'light') => {
     await page.getByTestId('proof-root').waitFor();
@@ -171,44 +184,65 @@ export async function browserConditions(page: Page, tables: ResolvedDraft, mode:
     return axeProblems(result, state);
   };
   try {
-  await check('form-label-required', true, async () => await input.getAttribute('required') !== null && await page.getByRole('form', { name: 'Project form' }).isVisible());
-  await check('required-validation', 'true', async () => { await page.getByRole('button', { name: 'Save project', exact: true }).click(); return input.getAttribute('aria-invalid'); });
-  await check('required-error-name', true, async () => {
-    const alert = page.getByRole('alert', { name: 'Project name error', exact: true });
-    await alert.waitFor();
-    return await alert.textContent() === 'Project name is required' && await input.evaluate((el) => (el.getAttribute('aria-describedby') ?? '').split(/\s+/).some((id) => document.getElementById(id)?.textContent === 'Project name is required'));
-  });
-  await check('selection-pointer', 'true', async () => { await page.getByRole('radio', { name: 'Public', exact: true }).click(); return page.getByRole('radio', { name: 'Public', exact: true }).getAttribute('aria-checked'); });
-  await check('selection-keyboard', { up: 'true', down: 'true' }, async () => {
-    await page.getByRole('radio', { name: 'Public', exact: true }).focus();
-    await page.keyboard.press('ArrowUp');
-    const up = await page.getByRole('radio', { name: 'Private', exact: true }).getAttribute('aria-checked');
+  await check('form-label-required', true, async () => await input.getAttribute('required') !== null && await form.isVisible());
+  await check('required-validation', 'true', async () => { await control.click(); return input.getAttribute('aria-invalid'); });
+  await check('required-error-name', ['Enter a project name.'], () => input.evaluate((el) => (el.getAttribute('aria-describedby') ?? '').split(/\s+/).map((id) => document.getElementById(id)?.textContent).filter(Boolean)));
+  await check('selection-pointer', 'Priya Shah', async () => { await choose('Priya Shah'); return ownerText(); });
+  await check('selection-keyboard', { value: 'Tomás Ruiz', focused: true }, async () => {
+    const highlighted = (name: string) => page.getByRole('option', { name, exact: true }).and(page.locator('[data-highlighted]')).waitFor();
+    // The pointer still rests where it chose an option; the reopened popup would put another option under it.
+    await page.mouse.move(0, 0);
+    await owner.focus();
     await page.keyboard.press('ArrowDown');
-    return { up, down: await page.getByRole('radio', { name: 'Public', exact: true }).getAttribute('aria-checked') };
-  });
-  // Submit the non-default selection, so the value proves the RadioGroup reaches FormData.
-  await check('submit-values', { project: 'Aster', visibility: 'public' }, async () => {
-    await input.fill('Aster');
-    await page.getByRole('button', { name: 'Save project', exact: true }).focus();
+    await highlighted('Priya Shah');
+    await settle();
+    await page.keyboard.press('ArrowDown');
+    await highlighted('Tomás Ruiz');
     await page.keyboard.press('Enter');
-    return JSON.parse(await page.getByRole('status', { name: 'Submission result', exact: true }).textContent() ?? 'null');
+    await page.getByRole('listbox').waitFor({ state: 'hidden' });
+    return { value: await ownerText(), focused: await focused(owner) };
   });
-  await check('reset-values', { raised: 'true', project: '', private: 'true', result: 'No submission', errors: 0 }, async () => {
-    // Leave a raised error, an entered name and the non-default selection for Reset to clear.
+  await check('submit-values', { announced: 'Created Nimbus.', rows: 1 }, async () => {
+    await input.fill('Nimbus');
+    await control.focus();
+    await page.keyboard.press('Enter');
+    return { announced: await form.getByRole('status').textContent(), rows: await page.getByRole('row', { name: /^Nimbus Tomás Ruiz Active / }).count() };
+  });
+  await check('reset-values', { raised: 'true', cleared: null, project: '', owner: 'Ada Park', announced: '' }, async () => {
     await input.fill('');
-    await page.getByRole('button', { name: 'Save project', exact: true }).click();
+    await control.click();
     const raised = await input.getAttribute('aria-invalid');
+    await choose('Priya Shah');
+    await reset.click();
+    const cleared = await input.getAttribute('aria-invalid');
     await input.fill('Draft');
-    await page.getByRole('button', { name: 'Reset form', exact: true }).click();
-    return { raised, project: await input.inputValue(), private: await page.getByRole('radio', { name: 'Private', exact: true }).getAttribute('aria-checked'), result: await page.getByRole('status', { name: 'Submission result', exact: true }).textContent(), errors: await page.getByRole('form', { name: 'Project form', exact: true }).getByRole('alert').count() };
+    await reset.click();
+    return { raised, cleared, project: await input.inputValue(), owner: await ownerText(), announced: await form.getByRole('status').textContent() };
   });
   await check('navigation-current', 'page', () => page.getByRole('link', { name: 'Projects', exact: true }).getAttribute('aria-current'));
   await check('navigation-keyboard', true, async () => { await page.getByRole('link', { name: 'Projects', exact: true }).focus(); await page.keyboard.press('Tab'); return focused(page.getByRole('link', { name: 'Activity', exact: true })); });
-  await check('navigation-activation', true, async () => { await page.keyboard.press('Enter'); return await page.getByRole('link', { name: 'Activity', exact: true }).getAttribute('aria-current') === 'page' && await page.getByRole('heading', { name: 'Current route: activity', exact: true }).isVisible() && new URL(page.url()).hash === '#activity'; });
-  await check('data-row', true, () => page.getByRole('row', { name: 'Aster Active', exact: true }).isVisible());
-  await check('data-empty', true, async () => { await page.getByRole('button', { name: 'Clear projects', exact: true }).click(); return await page.getByRole('heading', { name: 'No projects', exact: true }).isVisible() && await page.getByRole('row', { name: 'Aster Active', exact: true }).count() === 0; });
-  await check('data-restore', true, async () => { await page.getByRole('button', { name: 'Restore projects', exact: true }).click(); return page.getByRole('row', { name: 'Aster Active', exact: true }).isVisible(); });
-  const control = page.getByRole('button', { name: 'Theme control', exact: true });
+  await check('navigation-activation', { activity: true, returned: true }, async () => {
+    await page.keyboard.press('Enter');
+    const activity = await page.getByRole('link', { name: 'Activity', exact: true }).getAttribute('aria-current') === 'page' && await page.getByRole('heading', { level: 1, name: 'Activity', exact: true }).isVisible() && new URL(page.url()).hash === '#activity' && await page.getByText('Created Nimbus for Tomás Ruiz.', { exact: true }).isVisible();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Enter');
+    await form.waitFor();
+    return { activity, returned: await page.getByRole('link', { name: 'Projects', exact: true }).getAttribute('aria-current') === 'page' && new URL(page.url()).hash === '#projects' };
+  });
+  await check('data-row', true, () => page.getByRole('row', { name: /^Aster / }).isVisible());
+  await check('data-empty', true, async () => { await page.getByRole('button', { name: 'Clear projects', exact: true }).click(); return await page.getByRole('heading', { name: 'No projects', exact: true }).isVisible() && await page.getByRole('row').count() === 0; });
+  await check('data-restore', true, async () => { await page.getByRole('button', { name: 'Restore sample projects', exact: true }).click(); return page.getByRole('row', { name: /^Aster / }).isVisible(); });
+  const viewport = page.viewportSize();
+  await check('layout-narrow', { stacked: true, beside: false, overflow: false, fits: false }, async () => { await page.setViewportSize({ width: 390, height: 844 }); await settle(); return columns(); });
+  await check('table-scroll-keyboard', { focused: true, scrolled: true }, async () => {
+    await page.getByRole('button', { name: 'Clear projects', exact: true }).focus();
+    await page.keyboard.press('Tab');
+    const reached = await focused(region);
+    await page.keyboard.press('ArrowRight');
+    await settle();
+    return { focused: reached, scrolled: await region.evaluate((el) => el.scrollLeft > 0) };
+  });
+  await check('layout-wide', { stacked: false, beside: true, overflow: false, fits: true }, async () => { await page.setViewportSize(viewport ?? { width: 1280, height: 720 }); await settle(); return columns(); });
   await check('keyboard-focus', true, async () => {
     await control.focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
     return control.evaluate((el) => {
@@ -220,14 +254,14 @@ export async function browserConditions(page: Page, tables: ResolvedDraft, mode:
   });
   await check('axe-closed', [], () => axe('closed'));
   await check('overlay-keyboard-open', true, async () => { await trigger.focus(); await page.keyboard.press('Enter'); await dialog.waitFor(); await settle(); return dialog.isVisible(); });
-  await check('overlay-portalled', true, () => dialog.evaluate((el) => !!el.parentElement && !el.parentElement.contains(document.querySelector('[data-testid="proof-control"]')) && (el.closest('[data-proof-portal-container]') !== null || el.closest('main') === null)));
+  await check('overlay-portalled', true, () => dialog.evaluate((el) => el.closest('main') === null && (el.closest('[data-proof-portal-container]') !== null || el.closest('[data-testid="proof-root"]') === null)));
   await check('overlay-focus-in', true, () => dialog.evaluate((el) => el.contains(document.activeElement)));
   await check('axe-open', [], () => axe('open'));
   const snapshot = await consumerValues(page, tables[mode], mode, id, layout, deliveryPath);
   const opposite = mode === 'dark' ? 'light' : 'dark';
   await check('mode-switch-portal', [], async () => { await setMode(opposite); return modeValues(opposite); });
   await check('axe-switched-open', [], () => axe('switched-open'));
-  await check('overlay-keyboard-action', true, async () => { await page.getByRole('button', { name: 'Confirm theme', exact: true }).focus(); await page.keyboard.press('Space'); await dialog.waitFor({ state: 'hidden' }); return await dialog.count() === 0; });
+  await check('overlay-keyboard-action', true, async () => { await dialog.getByRole('button', { name: 'Save changes', exact: true }).focus(); await page.keyboard.press('Space'); await dialog.waitFor({ state: 'hidden' }); return await dialog.count() === 0; });
   await check('overlay-action-focus-return', true, () => focused(trigger));
   await check('axe-switched-closed', [], () => axe('switched-closed'));
   await check('overlay-pointer-open', true, async () => { await trigger.click(); await dialog.waitFor(); await settle(); return dialog.isVisible(); });
@@ -249,11 +283,12 @@ export async function browserConditions(page: Page, tables: ResolvedDraft, mode:
   await check('overlay-escape-focus-return', true, () => focused(trigger));
   await check('reduced-motion-values', { fast: '1ms', base: '1ms', slow: '1ms', loop: '0s', portalFast: '1ms', portalBase: '1ms', portalSlow: '1ms', portalLoop: '0s', transition: '0.001s' }, async () => {
     await page.emulateMedia({ reducedMotion: 'reduce' }); await trigger.click(); await dialog.waitFor(); await settle();
-    return page.evaluate(() => {
-      const control = getComputedStyle(document.querySelector('[data-testid="proof-control"]')!);
-      const portal = getComputedStyle(document.querySelector('[data-testid="proof-portal"]')!);
-      return Object.fromEntries([...['fast', 'base', 'slow', 'loop'].map((key) => [key, control.getPropertyValue(`--ult-motion-${key}`).trim()]), ...['fast', 'base', 'slow', 'loop'].map((key) => [`portal${key[0]!.toUpperCase()}${key.slice(1)}`, portal.getPropertyValue(`--ult-motion-${key}`).trim()]), ['transition', portal.transitionDuration]]);
-    });
+    const motion = (element: Element) => {
+      const css = getComputedStyle(element);
+      return { ...Object.fromEntries(['fast', 'base', 'slow', 'loop'].map((key) => [key, css.getPropertyValue(`--ult-motion-${key}`).trim()])), transition: css.transitionDuration };
+    };
+    const [{ transition: _, ...ownMotion }, { transition, ...portalMotion }] = [await control.evaluate(motion), await dialog.evaluate(motion)];
+    return { ...ownMotion, ...Object.fromEntries(Object.entries(portalMotion).map(([key, value]) => [`portal${key[0]!.toUpperCase()}${key.slice(1)}`, value])), transition };
   });
   await check('reduced-motion-interaction', true, async () => { await page.keyboard.press('Escape'); await dialog.waitFor({ state: 'hidden' }); return focused(trigger); });
   await page.emulateMedia({ reducedMotion: 'no-preference' });

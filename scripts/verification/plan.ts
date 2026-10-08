@@ -9,6 +9,8 @@
  * counterparts, recipes, demos and registered scenarios. Global inputs, unmapped paths and any edge the
  * graph cannot establish broaden to the release plan, with the reason and path recorded.
  */
+import compositionExamples from '../catalogue/composition-examples.ts';
+import { consumerBundle } from '../catalogue/consumer-copy.ts';
 import type { Files } from '../catalogue/files.ts';
 import { type Catalogue, type Diagnostic, loadCatalogue } from '../catalogue/model.ts';
 import type { Base, Change } from './changes.ts';
@@ -292,6 +294,19 @@ function selectFeature(selection: Selection, id: string, reason: string) {
   for (const suite of feature.supporting) selection.testFile(suite.path, `supports feature ${id}: ${suite.reason}`);
 }
 
+/** The rendered consumer runner's scene, the inventory's Projects screen, as scripts/consumer-scene.ts installs it. */
+const SCENE_ENTRY = compositionExamples.find((example) => example.id === 'projects')!.files[0]!.source;
+const sceneItems = new WeakMap<Snapshot, string[] | 'unprojectable'>();
+/** A scene that exists but cannot be projected selects the runner from every distributed item. */
+function inScene(snapshot: Snapshot, id: string): boolean {
+  if (!sceneItems.has(snapshot)) {
+    try { sceneItems.set(snapshot, snapshot.files.read(SCENE_ENTRY) === undefined ? [] : consumerBundle(SCENE_ENTRY, snapshot.catalogue, snapshot.files).items); }
+    catch { sceneItems.set(snapshot, 'unprojectable'); }
+  }
+  const items = sceneItems.get(snapshot)!;
+  return items === 'unprojectable' || items.includes(id);
+}
+
 /** What selecting a catalogue item adds, by the kind its descriptor declares. */
 function selectItem(selection: Selection, id: string, reason: string) {
   const { current } = selection;
@@ -313,8 +328,8 @@ function selectItem(selection: Selection, id: string, reason: string) {
   if (DISTRIBUTED.has(summary.kind)) {
     selection.need('registry-build', `${id} is a distributed ${summary.kind} item`);
     selection.need('consumer-smoke', `${id} is installed by consumers; scoped runs use the full smoke until a validated selector exists`);
-    if (['button', 'badge', 'popover', 'tokens', 'lib', 'setup-vite'].includes(id)) for (const check of CHECKS.filter((check) => check.id === 'consumer-proof' || /^consumer-proof-(stylex-subtree|registry|cli)$/.test(check.id))) selection.need(check.id, `${id} is installed by the Vite rendered consumer scene`);
-    if (['button', 'badge', 'popover', 'tokens', 'lib', 'setup-next'].includes(id)) for (const check of CHECKS.filter((check) => /^consumer-proof-next-(app|src)(-|$)/.test(check.id))) selection.need(check.id, `${id} is installed by the Next rendered consumer scene`);
+    if (inScene(current, id) || ['tokens', 'lib', 'setup-vite'].includes(id)) for (const check of CHECKS.filter((check) => check.id === 'consumer-proof' || /^consumer-proof-(stylex-subtree|registry|cli)$/.test(check.id))) selection.need(check.id, `${id} is installed by the Vite rendered consumer scene`);
+    if (inScene(current, id) || ['tokens', 'lib', 'setup-next'].includes(id)) for (const check of CHECKS.filter((check) => /^consumer-proof-next-(app|src)(-|$)/.test(check.id))) selection.need(check.id, `${id} is installed by the Next rendered consumer scene`);
     if (['theme-mode', 'button', 'badge', 'popover', 'tokens', 'lib', 'setup-vite'].includes(id)) selection.need('consumer-mode-vite', `${id} is installed by the Vite theme-mode production scene`);
     if (['theme-mode', 'button', 'badge', 'popover', 'tokens', 'lib', 'setup-next'].includes(id)) for (const check of ['consumer-mode-next-app', 'consumer-mode-next-src'] as const) selection.need(check, `${id} is installed by the Next theme-mode production scene`);
   }

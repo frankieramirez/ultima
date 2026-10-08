@@ -9,13 +9,20 @@ export type CompositionExample = {
   title: string;
   recipe?: string;
   block?: string;
-  route: string;
-  anchor: string;
+  /** The owning page and heading; both are omitted together until that page is published. */
+  route?: string;
+  anchor?: string;
   files: { source: string; destination: string }[];
   feature?: string;
   scenarios?: string[];
 };
 export const COMPOSITION_INVENTORY = 'scripts/catalogue/composition-examples.ts';
+export type CompositionProjection = CompositionExample & { install: string };
+
+const installCommand = (items: string[]) => {
+  const installable = items.filter((id) => !['tokens', 'lib'].includes(id));
+  return { items: installable, install: `npx shadcn add ${installable.map((id) => `@ultima/${id}`).join(' ')}` };
+};
 export type RecipeProjection = {
   id: string;
   title: string;
@@ -31,7 +38,7 @@ export type RecipeProjection = {
 };
 
 export function compositionProjection(files: Files, catalogue: Catalogue): {
-  recipes: RecipeProjection[]; sources: Record<string, CopyBundle>; examples: CompositionExample[]; diagnostics: Diagnostic[];
+  recipes: RecipeProjection[]; sources: Record<string, CopyBundle>; examples: CompositionProjection[]; diagnostics: Diagnostic[];
 } {
   const diagnostics: Diagnostic[] = [];
   const report = (path: string, message: string) => diagnostics.push({ code: 'unresolved-dependency' as const, path, message });
@@ -40,7 +47,7 @@ export function compositionProjection(files: Files, catalogue: Catalogue): {
   if (text === undefined) report(COMPOSITION_INVENTORY, 'missing composition inventory');
   const literal = text === undefined ? { value: [], problems: [] } : readLiteral(COMPOSITION_INVENTORY, text);
   literal.problems.forEach((message) => report(COMPOSITION_INVENTORY, message));
-  const examples: CompositionExample[] = [];
+  const examples: CompositionProjection[] = [];
   const seen = new Set<string>();
   if (!Array.isArray(literal.value)) report(COMPOSITION_INVENTORY, 'inventory must be an array');
   for (const value of Array.isArray(literal.value) ? literal.value : []) {
@@ -52,10 +59,12 @@ export function compositionProjection(files: Files, catalogue: Catalogue): {
     if (typeof example.title !== 'string' || !example.title.trim() || !Array.isArray(example.files) || example.files.length === 0) {
       report(COMPOSITION_INVENTORY, `${example.id}: title and source bundle are required`); continue;
     }
-    const page = typeof example.route === 'string' && /^\/components\/([a-z0-9-]+)$/.exec(example.route);
-    const pageSource = page ? files.read(`apps/docs/src/content/components/${page[1]}.mdx`) :
-      typeof example.route === 'string' && /^\/[a-z0-9-]+$/.test(example.route) ? files.read(`apps/docs/src/content${example.route}.mdx`) : undefined;
-    if (!pageSource || !headingAnchors(pageSource).has(example.anchor)) report(COMPOSITION_INVENTORY, `${example.id}: unresolved route/anchor`);
+    if (example.route !== undefined || example.anchor !== undefined) {
+      const page = typeof example.route === 'string' && /^\/components\/([a-z0-9-]+)$/.exec(example.route);
+      const pageSource = page ? files.read(`apps/docs/src/content/components/${page[1]}.mdx`) :
+        typeof example.route === 'string' && /^\/[a-z0-9-]+$/.test(example.route) ? files.read(`apps/docs/src/content${example.route}.mdx`) : undefined;
+      if (!pageSource || typeof example.anchor !== 'string' || !headingAnchors(pageSource).has(example.anchor)) report(COMPOSITION_INVENTORY, `${example.id}: unresolved route/anchor`);
+    }
     const recipe = catalogue.recipes.find((entry) => entry.id === example.recipe);
     if (example.recipe && (!recipe || example.route !== `/components/${recipe.page}` || example.anchor !== recipe.section)) report(COMPOSITION_INVENTORY, `${example.id}: unresolved recipe owner`);
     if (example.block && !catalogue.blocks.some((entry) => entry.id === example.block)) report(COMPOSITION_INVENTORY, `${example.id}: unresolved block owner`);
@@ -72,18 +81,19 @@ export function compositionProjection(files: Files, catalogue: Catalogue): {
       try { sources[source] = consumerBundle(source, catalogue, files, undefined, destinations); }
       catch (error) { report(source, (error as Error).message); }
     }
-    examples.push(example);
+    const entry = sources[example.files[0]!.source];
+    examples.push({ ...example, install: entry ? installCommand(entry.items).install : '' });
   }
   const recipes = catalogue.recipes.map((recipe) => {
     for (const source of recipe.demos) {
       try { sources[source] ??= consumerBundle(source, catalogue, files); }
       catch (error) { report(source, (error as Error).message); }
     }
-    const items = recipe.registryDependencies.filter((id) => !['tokens', 'lib'].includes(id));
+    const { items, install } = installCommand(recipe.registryDependencies);
     return {
       id: recipe.id, title: recipe.title, description: recipe.description, page: recipe.page, section: recipe.section,
       url: `/components/${recipe.page}#${recipe.section}`, items, dependencies: recipe.dependencies,
-      install: `npx shadcn add ${items.map((id) => `@ultima/${id}`).join(' ')}`,
+      install,
       engines: recipe.dependencies.length > 0 ? `npm install ${recipe.dependencies.join(' ')}` : null,
       sources: recipe.demos,
     };

@@ -83,7 +83,7 @@ export type HydrationEvidence = { server: HydrationState; hydrated: HydrationSta
 export async function hydrationState(page: Page): Promise<HydrationState> {
   return page.evaluate(() => ({
     attributes: Object.fromEntries(['data-theme', 'data-proof-mode'].map((name) => [name, document.documentElement.getAttribute(name)])),
-    content: document.querySelector('main')?.textContent ?? null,
+    content: document.querySelector('[data-testid="proof-root"]')?.textContent ?? null,
   }));
 }
 export function hydrationProblems(evidence: HydrationEvidence): string[] {

@@ -13,7 +13,7 @@ import { packCli, repository, run, scaffold, serveRegistry, type Run } from './c
 import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, modeCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
 import { THEME_PRESETS } from '../packages/tokens/src/theme/draft.ts';
 import { modeProof, modeScene } from './consumer-mode.ts';
-import { installScene, isSceneFault, SCENE_FAULTS, SCENE_ITEMS } from './consumer-scene.ts';
+import { installScene, isSceneFault, SCENE_FAULTS, SCENE_INSTALL, SCENE_ITEMS } from './consumer-scene.ts';
 import { browserConditions } from './consumer-browser.ts';
 import { consumerValues } from './consumer-values.ts';
 import { cliProof, installTheme } from './consumer-delivery.ts';
@@ -169,10 +169,10 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     const components = JSON.parse(await readFile(componentsPath, 'utf8'));
     components.registries['@ultima'] = `${registry.url}/r/{name}.json`;
     await writeFile(componentsPath, `${JSON.stringify(components, null, 2)}\n`);
-    await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', ...SCENE_ITEMS.map((item) => `@ultima/${item}`), '--yes']);
+    await execute(app, 'npx', ['-y', 'shadcn@latest', ...SCENE_INSTALL.split(' ').slice(2), '--yes']);
     if (options.exercise === 'theme-mode') {
-      await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/popover', '@ultima/theme-mode', '--yes']);
-      report.installedItems.push('popover', 'theme-mode');
+      await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/badge', '@ultima/popover', '@ultima/theme-mode', '--yes']);
+      report.installedItems.push('badge', 'popover', 'theme-mode');
       const installedMode = join(app, src || !isNext ? 'src/components/ui/theme-mode.tsx' : 'components/ui/theme-mode.tsx');
       const registeredMode = JSON.parse(await readFile(join(work, 'registry/r/theme-mode.json'), 'utf8'));
       assert.equal(await readFile(installedMode, 'utf8'), registeredMode.files[0].content, 'installed theme-mode must be the exact registry payload, including its version marker');
