@@ -35,12 +35,13 @@ function prefer(mode: keyof typeof modes) {
 }
 
 const FOUNDATIONS = [
-  { path: '/install', title: 'Install', place: '02', previous: 'Home', next: 'CLI' },
-  { path: '/cli', title: 'CLI', place: '03', previous: 'Install', next: 'Elements' },
-  { path: '/elements', title: 'Elements', place: '04', previous: 'CLI', next: 'Tokens' },
-  { path: '/tokens', title: 'Tokens', place: '05', previous: 'Elements', next: 'Palette' },
-  { path: '/palette', title: 'Palette', place: '06', previous: 'Tokens', next: 'Rationale' },
-  { path: '/rationale', title: 'Rationale', place: '07', previous: 'Palette', next: 'Studio' },
+  { path: '/install', title: 'Install', place: '02', previous: 'Home', next: 'Update the base theme' },
+  { path: '/install/update', title: 'Update the base theme', place: '03', previous: 'Install', next: 'CLI' },
+  { path: '/cli', title: 'CLI', place: '04', previous: 'Update the base theme', next: 'Elements' },
+  { path: '/elements', title: 'Elements', place: '05', previous: 'CLI', next: 'Tokens' },
+  { path: '/tokens', title: 'Tokens', place: '06', previous: 'Elements', next: 'Palette' },
+  { path: '/palette', title: 'Palette', place: '07', previous: 'Tokens', next: 'Rationale' },
+  { path: '/rationale', title: 'Rationale', place: '08', previous: 'Palette', next: 'Studio' },
 ];
 
 for (const { path, title, place, previous, next } of FOUNDATIONS) {
@@ -79,7 +80,7 @@ test('a trailing slash still finds the page in the site order', async () => {
   await expect.element(screen.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
   expect(document.querySelector('main')?.textContent).toContain('Foundations · 02');
   const pager = screen.getByRole('navigation', { name: 'Previous and next page' });
-  expect([...pager.element().querySelectorAll('a')].map((link) => link.textContent)).toEqual(['PreviousHome', 'NextCLI']);
+  expect([...pager.element().querySelectorAll('a')].map((link) => link.textContent)).toEqual(['PreviousHome', 'NextUpdate the base theme']);
 });
 
 test('the section number stays out of the heading name', async () => {

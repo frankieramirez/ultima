@@ -15,6 +15,7 @@
   "routes": [
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/" },
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/install" },
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/install/update" },
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/elements" },
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/tokens" },
     { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/palette" },
@@ -37,6 +38,7 @@
   "preconditions": [],
   "steps": [
     { "action": "Load each route directly.", "expect": "document.title is that page's own name joined to Ultima." },
+    { "action": "Follow Install's update link and read its generated Ultima command.", "expect": "The update page explains Neutral/Tight and consumer ownership; the command resolves to the frozen pre-rollout preset." },
     { "action": "Load an unknown path and an unknown component name.", "expect": "Both serve the not-found title." },
     { "action": "Fetch /robots.txt.", "expect": "200; it allows the site and names the sitemap URL." },
     { "action": "Fetch /sitemap.xml.", "expect": "200; every loc is on https://ultima.systems and every route is listed." }

@@ -10,6 +10,7 @@ import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync,
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { BASE_THEME, BASE_THEME_MARKER } from '../packages/cli/src/base-theme.ts';
 import {
   REGISTRY_FORMAT,
   catalogueRevision,
@@ -49,7 +50,7 @@ type RegistryFile = { path: string; type: string; target?: string };
 
 type HashedFile = RegistryFile & { hash: string };
 
-type Meta = { ultima: { revision: string; files: Record<string, string> } };
+type Meta = { ultima: { revision: string; files: Record<string, string>; baseTheme?: string } };
 
 type RegistryItem = {
   name: string;
@@ -114,12 +115,13 @@ const descriptions = new Map<string, Description>([
 ]);
 
 async function stamped(item: string, text: string, scheme: 'c1' | 'b1') {
+  if (item === 'tokens' || item === 'tokens-css') text = withStamp(text, scheme === 'c1' ? `// ${BASE_THEME_MARKER}` : `/* ${BASE_THEME_MARKER} */`);
   const hash = await contentHash(text, scheme);
   return { hash, text: withStamp(text, stampLine(item, revision, hash, scheme === 'c1' ? 'ts' : 'css')) };
 }
 
-function meta(files: { path: string; hash: string }[]): Meta {
-  return { ultima: { revision, files: Object.fromEntries(files.map(({ path, hash }) => [basename(path), hash])) } };
+function meta(files: { path: string; hash: string }[], baseTheme?: string): Meta {
+  return { ultima: { revision, files: Object.fromEntries(files.map(({ path, hash }) => [basename(path), hash])), ...(baseTheme && { baseTheme }) } };
 }
 
 async function stage(sources: StagedSource[]): Promise<Staged[]> {
@@ -174,7 +176,7 @@ function item(name: string, type: string, files: HashedFile[]): RegistryItem {
     ...(registryDependencies.length > 0 && { registryDependencies }),
     files: files.map(({ hash: _, ...file }) => file),
     docs,
-    meta: meta(files),
+    meta: meta(files, name === 'tokens' || name === 'tokens-css' ? BASE_THEME : undefined),
   };
 }
 
