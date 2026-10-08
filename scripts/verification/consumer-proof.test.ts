@@ -4,7 +4,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { scaffold, serveRegistry, packCli, type Run } from '../consumer-helpers.ts';
-import { CONSUMER_CASES, CONSUMER_LAYOUTS, consumerCases, consumerReportProblems, type ConsumerReport } from '../consumer-report.ts';
+import { CONSUMER_CASES, CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerReportProblems, type ConsumerReport } from '../consumer-report.ts';
+import { cliReportProblems, installTheme } from '../consumer-delivery.ts';
+import { sceneSource } from '../consumer-scene.ts';
+import { toCss, toRegistryItem } from '../../packages/tokens/src/theme/export.ts';
+import { serializeDraft } from '../../packages/tokens/src/theme/codec.ts';
+import { THEME_PRESETS } from '../../packages/tokens/src/theme/draft.ts';
 import { browserErrors, hydrationProblems, nextFault, nextScene, setupNext, type HydrationEvidence } from '../consumer-next.ts';
 import { EventEmitter } from 'node:events';
 import type { Page } from 'playwright';
@@ -14,6 +19,7 @@ import { gate } from '../../packages/tokens/src/theme/gate.ts';
 import { contextFor, planned, IDENTITY } from './adapter-context.ts';
 import { ADAPTERS } from './adapters.ts';
 import { manifestOf } from './source.ts';
+import { CONSUMER_RULES } from '../../packages/analysis/src/consumer.ts';
 import { themeProofProblems, themeSnapshot } from '../consumer-theme.ts';
 import type { ThemeRow } from '../../packages/cli/src/doctor-theme.ts';
 
@@ -85,6 +91,51 @@ test('the non-stock consumer draft passes the two-mode Studio pairing gate', () 
   assert.ok(gate(resolveDraft(proofDraft())).every((row) => row.dark.pass && row.light.pass));
 });
 
+test('every delivery path has its own coverage; registry reuses the scaffold for every shipped preset', () => {
+  for (const layout of CONSUMER_LAYOUTS) for (const path of DELIVERY_PATHS) {
+    const cases = consumerCases(layout, path);
+    assert.equal(cases.length, path === 'registry' ? 4 * (THEME_PRESETS.length + 2) : 4);
+    assert.equal(new Set(cases).size, cases.length);
+    assert.ok(cases.every((id) => id.startsWith(`${layout}/${path}/chromium/`)));
+  }
+  assert.match(sceneSource(true), /\.\.\.ultimaTheme\[mode\], colorScheme\[mode\]/);
+  assert.match(sceneSource(true), /Popover\.Portal container=\{container\}/);
+  assert.match(sceneSource(true, true), /ultimaTheme\[mode\]\[0\]/);
+});
+
+test('theme delivery requires an actual shadcn command and verifies both files and fingerprint', async () => {
+  const work = await mkdtemp(join(tmpdir(), 'ultima-delivery-'));
+  const draft = proofDraft();
+  await mkdir(join(work, 'r'));
+  try {
+    await assert.rejects(installTheme(work, work, 'http://127.0.0.1:4321', draft, 'vite', 'registry', async () => ''), /ENOENT/);
+    let calls = 0;
+    const execute: Run = async (cwd, command, args) => {
+      calls++;
+      assert.equal(cwd, work);
+      assert.equal(command, 'npx');
+      assert.deepEqual(args, ['-y', 'shadcn@latest', 'add', 'http://127.0.0.1:4321/r/proof-theme.json', '--yes', '--overwrite']);
+      assert.equal(await readFile(join(work, 'r/proof-theme.json'), 'utf8'), toRegistryItem(draft));
+      await writeFile(join(work, 'ultima-theme.json'), serializeDraft(draft));
+      await writeFile(join(work, 'ultima-theme.css'), toCss(draft));
+      return '';
+    };
+    assert.equal(await installTheme(work, work, 'http://127.0.0.1:4321', draft, 'vite', 'registry', execute), serializeDraft(draft));
+    assert.equal(calls, 1);
+    await assert.rejects(installTheme(work, work, 'http://127.0.0.1:4321', draft, 'vite', 'registry', async (...args) => { await execute(...args); await writeFile(join(work, 'ultima-theme.css'), 'corrupt'); return ''; }), /AssertionError/);
+  } finally { await rm(work, { recursive: true, force: true }); }
+});
+
+test('packed CLI evidence rejects success exits with missing scope, incomplete diagnostics or unsupported doctor steps', () => {
+  const doctor = { command: 'doctor', target: 'vite', diagnostics: [], unsupported: [] };
+  const check = { command: 'check', status: 'clean', counts: { errors: 0, incomplete: 0 }, scopes: [{ kind: 'app', files: 3 }], rules: CONSUMER_RULES.map((id) => ({ id, status: 'blocking' })), diagnostics: [], unsupported: [] };
+  assert.deepEqual(cliReportProblems(doctor, 'doctor', 'vite'), []);
+  assert.deepEqual(cliReportProblems(check, 'check', 'vite'), []);
+  assert.ok(cliReportProblems(doctor, 'doctor', 'next-app').length);
+  assert.ok(cliReportProblems({ ...doctor, unsupported: [{ step: 'missing' }] }, 'doctor', 'vite').length);
+  for (const change of [{ scopes: [] }, { rules: [] }, { rules: check.rules.slice(1) }, { rules: check.rules.map((row) => ({ ...row, status: 'skipped' })) }, { status: 'incomplete' }, { diagnostics: [{}] }, { diagnostics: [{ severity: 'incomplete' }] }, { counts: { errors: 0, incomplete: 1 } }]) assert.ok(cliReportProblems({ ...check, ...change }, 'check', 'vite').length);
+});
+
 function report(): ConsumerReport {
   const hash = 'a'.repeat(64);
   return {
@@ -145,7 +196,11 @@ test('Next hand steps move the src marker, preserve alias-based server pages and
       await nextFault(app, src, 'stylex-extraction');
       const extraction = await readFile(join(app, 'postcss.config.js'), 'utf8');
       assert.doesNotMatch(extraction, /include: \['\*\*/);
-      assert.equal(extraction.includes('app/**/*'), src);
+      assert.doesNotMatch(extraction, /postcss-plugin|app\/\*\*\/*/);
+      assert.match(extraction, /plugins: \{\}/);
+      await writeFile(join(app, 'postcss.config.js'), "include: ['**/*.{js,jsx,ts,tsx}']");
+      await nextFault(app, true, 'src-extraction');
+      assert.match(await readFile(join(app, 'postcss.config.js'), 'utf8'), /include: \['app\/\*\*/);
     }
   } finally { await rm(work, { recursive: true, force: true }); }
 });
@@ -250,6 +305,50 @@ test('Next adapters require SSR HTML, completed hydration and token-derived extr
       const result = await ADAPTERS[id]!.run(context);
       assert.equal(result.verdict, fault === 'none' ? 'passed' : 'incomplete', `${layout} ${fault}: ${result.reason}`);
       if (fault === 'none') assert.equal(result.executed.length, 4);
+    }
+  } finally { await rm(work, { recursive: true, force: true }); }
+});
+
+test('delivery adapters reject missing group, portal and CLI evidence rather than accepting an exit-zero summary', async () => {
+  const work = await mkdtemp(join(tmpdir(), 'ultima-delivery-adapter-'));
+  try {
+    for (const path of ['stylex-subtree', 'registry', 'cli'] as const) for (const fault of ['none', 'missing-group', 'missing-portal', 'missing-extraction', 'wrong-path', 'missing-cli-report', 'css-drift'] as const) {
+      if (fault === 'missing-cli-report' && path !== 'cli') continue;
+      if (fault === 'css-drift' && path !== 'registry') continue;
+      const fixture = report();
+      fixture.deliveryPath = path;
+      fixture.expected = consumerCases('vite', path);
+      fixture.executed = [...fixture.expected];
+      fixture.cases = fixture.expected.map((id) => ({ id, status: 'passed', snapshot: `${id.split('/').at(-1)}.values.json`, failures: [] }));
+      fixture.drafts = Object.fromEntries(THEME_PRESETS.map((preset) => [preset.id, { digest: 'b'.repeat(64), fingerprint: 'fixture', recipeVersion: 2 }]));
+      fixture.cliReports = { doctor: 'doctor.json', check: 'check.json' };
+      const draft = proofDraft();
+      const script = `
+        const fs = require('node:fs'), path = require('node:path');
+        const output = process.argv.at(-1), report = ${JSON.stringify(fixture)}, fault = ${JSON.stringify(fault)};
+        fs.mkdirSync(output, { recursive: true });
+        const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map(part => [part, { backgroundColor: 'paint', color: 'text' }]));
+        const variables = Object.fromEntries(${JSON.stringify(Object.keys(resolveDraft(draft).dark))}.map(name => [name, { expected: 'value', actual: 'value' }]));
+        for (const row of report.cases) {
+          const name = row.id.split('/').at(-1).replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '');
+          fs.mkdirSync(path.join(output, name), { recursive: true });
+          fs.writeFileSync(path.join(output, name, 'ultima-theme.json'), ${JSON.stringify(serializeDraft(draft))});
+          const extracted = { height: '40px', radius: '4px', display: 'inline-flex' };
+          const snapshot = { id: row.id, deliveryPath: report.deliveryPath, expected: paint, actual: structuredClone(paint), variables, controlVariables: structuredClone(variables), portalVariables: structuredClone(variables), portal: { inContainer: true, documentSurface: 'stock', subtreeSurface: 'draft' }, extraction: { tokens: { height: '2.5rem', radius: '4px' }, expected: extracted, actual: extracted }, failures: [] };
+          if (fault === 'missing-group') delete snapshot.controlVariables['--ult-font-weight-medium'];
+          if (fault === 'missing-portal') delete snapshot.portalVariables;
+          if (fault === 'missing-extraction') delete snapshot.extraction;
+          if (fault === 'css-drift' && name === '') snapshot.controlVariables['--ult-font-weight-medium'] = { expected: 'drift', actual: 'drift' };
+          fs.writeFileSync(path.join(output, row.snapshot), JSON.stringify(snapshot));
+        }
+        fs.writeFileSync(path.join(output, 'doctor.json'), JSON.stringify({ command: 'doctor', target: 'vite', diagnostics: [], unsupported: [] }));
+        if (fault !== 'missing-cli-report') fs.writeFileSync(path.join(output, 'check.json'), JSON.stringify({ command: 'check', status: 'clean', counts: { errors: 0, incomplete: 0 }, scopes: [{kind: 'app', files: 3}], rules: ${JSON.stringify(CONSUMER_RULES.map((id) => ({ id, status: 'blocking' })))}, diagnostics: [], unsupported: [] }));
+        if (fault === 'wrong-path') report.deliveryPath = 'css';
+        fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report));
+      `;
+      const context = contextFor(work, process.cwd(), planned(`consumer-proof-${path}`, { argv: ['node', '-e', script, '--', '--delivery-path', path] }), { identity: { ...IDENTITY, head: fixture.source.head, manifest: fixture.source.manifest } });
+      const result = await ADAPTERS[`consumer-proof-${path}`]!.run(context);
+      assert.equal(result.verdict, fault === 'none' ? 'passed' : 'incomplete', `${path} ${fault}: ${result.reason}`);
     }
   } finally { await rm(work, { recursive: true, force: true }); }
 });
