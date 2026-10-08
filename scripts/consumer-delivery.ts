@@ -7,6 +7,7 @@ import type { ThemeDraft } from '../packages/tokens/src/theme/draft.ts';
 import type { Run } from './consumer-helpers.ts';
 import type { ConsumerLayout, DeliveryPath } from './consumer-report.ts';
 import { CONSUMER_RULES } from '../packages/analysis/src/consumer.ts';
+import { setupItems } from '../registry/items.config.ts';
 
 export async function installTheme(app: string, registryFolder: string, url: string, draft: ThemeDraft, layout: ConsumerLayout, path: DeliveryPath, execute: Run, directCss = false): Promise<string> {
   const item = toRegistryItem(draft);
@@ -43,7 +44,12 @@ export function cliReportProblems(report: unknown, command: 'doctor' | 'check', 
   if (value.command !== command || !Array.isArray(value.diagnostics) || value.diagnostics.some((row) => record(row).severity !== 'advisory')) failures.push('CLI diagnostics are missing or blocking/incomplete');
   if (!Array.isArray(value.unsupported) || value.unsupported.some((row) => typeof record(row).step !== 'string' || typeof record(row).reason !== 'string')) failures.push('CLI unsupported-analysis inventory is missing');
   if (command === 'doctor') {
-    if (value.target !== (layout === 'vite' ? 'vite' : 'next') || (Array.isArray(value.unsupported) && value.unsupported.some((row) => record(row).step !== "A strict CSP needs a nonce: pass it to Base UI's `CSPProvider` at your app root." || record(row).reason !== 'The headers are set at runtime or by the host.'))) failures.push('doctor did not complete the layout setup checks');
+    const target = layout === 'vite' ? 'vite' : 'next';
+    const expected = setupItems[`setup-${target}`].handSteps.filter((step) => step.unverifiable)
+      .map((step) => ({ step: step.prose, reason: step.unverifiable }));
+    const actual = Array.isArray(value.unsupported)
+      ? value.unsupported.map((row) => ({ step: record(row).step, reason: record(row).reason })) : null;
+    if (value.target !== target || JSON.stringify(actual) !== JSON.stringify(expected)) failures.push('doctor did not complete the layout setup checks');
   } else {
     const scopes = Array.isArray(value.scopes) ? value.scopes : [];
     const rules = Array.isArray(value.rules) ? value.rules : [];
