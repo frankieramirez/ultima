@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
-import { mkdir, readFile, readdir, stat } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, readdir, stat } from 'node:fs/promises';
 import { dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -36,9 +36,11 @@ export async function packCli(work: string, execute: Run = run): Promise<string>
   return join(pack, names[0]!);
 }
 
-export async function serveRegistry(folder: string, fallback = false) {
+export async function serveRegistry(folder: string, fallback = false, log?: string) {
   folder = resolve(folder);
+  let logs = Promise.resolve();
   const server = createServer(async (request, response) => {
+    if (log) response.on('finish', () => { logs = logs.then(() => appendFile(log, `${request.method} ${request.url} ${response.statusCode}\n`)); });
     try {
       const path = decodeURIComponent(new URL(request.url ?? '/', 'http://127.0.0.1').pathname);
       let file = resolve(folder, `.${path}`);
@@ -59,7 +61,8 @@ export async function serveRegistry(folder: string, fallback = false) {
   });
   const address = server.address();
   if (!address || typeof address === 'string') throw new Error('no loopback address');
-  return { url: `http://127.0.0.1:${address.port}`, close: () => new Promise<void>((done, reject) => server.close((error) => error ? reject(error) : done())) };
+  if (log) await appendFile(log, `Serving ${folder} at http://127.0.0.1:${address.port}\n`);
+  return { url: `http://127.0.0.1:${address.port}`, close: async () => { await new Promise<void>((done, reject) => server.close((error) => error ? reject(error) : done())); await logs; } };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

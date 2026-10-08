@@ -12,7 +12,8 @@ import { shuffleDraft } from '../packages/tokens/src/theme/shuffle.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
 import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
 import { THEME_PRESETS } from '../packages/tokens/src/theme/draft.ts';
-import { installScene } from './consumer-scene.ts';
+import { installScene, SCENE_ITEMS, type SceneFault } from './consumer-scene.ts';
+import { browserConditions } from './consumer-browser.ts';
 import { consumerValues } from './consumer-values.ts';
 import { cliProof, installTheme } from './consumer-delivery.ts';
 import { browserErrors, hydrationProblems, hydrationState, nextFault, nextScene, serveNext, setupNext, type HydrationEvidence } from './consumer-next.ts';
@@ -37,7 +38,7 @@ export function proofDraft(): ThemeDraft {
   return draft;
 }
 
-export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; preset?: 'ultima'; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' | 'partial-group' };
+export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; case?: string; preset?: 'ultima'; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' | 'partial-group' | SceneFault };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
 export type BaseStyles = { height: string; display: string; radius: string; background: string; focusColor: string; focusStyle: string; focusVisible: boolean; danger: string };
@@ -94,6 +95,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   if (options.fault === 'partial-group' && options.deliveryPath !== 'stylex-subtree') throw new Error('partial-group requires stylex-subtree');
   if (options.fault === 'src-extraction' && options.layout !== 'next-src') throw new Error('src-extraction requires next-src');
   if (options.fault === 'hydration-mismatch' && options.layout === 'vite') throw new Error('hydration-mismatch requires Next');
+  if (options.case && !consumerCases(options.layout, options.deliveryPath).includes(options.case)) throw new Error(`unknown consumer cell: ${options.case}`);
   const isNext = options.layout !== 'vite';
   const src = options.layout === 'next-src';
   const setupItem = isNext ? 'setup-next' : 'setup-vite';
@@ -111,8 +113,8 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   const report: ConsumerReport = {
     schemaVersion: 1, status: 'incomplete', layout: options.layout, deliveryPath: options.deliveryPath,
     source: { head: source.head, manifest: source.manifest, registryManifestHash: null, cliTarballDigest: null, draftDigest: null, draftFingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion },
-    command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: [setupItem, 'button', 'badge', 'popover', 'tokens', 'lib', 'ultima-theme'],
-    expected: consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {},
+    command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: [setupItem, ...SCENE_ITEMS, 'tokens', 'lib', 'ultima-theme'],
+    expected: options.case ? [options.case] : consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {}, ...(options.case ? { selectedCase: options.case } : {}),
   };
   const execute: Run = async (cwd, command, args) => {
     await appendFile(join(output, 'commands.log'), `${JSON.stringify({ cwd, command, args })}\n`);
@@ -161,7 +163,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     const components = JSON.parse(await readFile(componentsPath, 'utf8'));
     components.registries['@ultima'] = `${registry.url}/r/{name}.json`;
     await writeFile(componentsPath, `${JSON.stringify(components, null, 2)}\n`);
-    await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/button', '@ultima/badge', '@ultima/popover', '--yes']);
+    await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', ...SCENE_ITEMS.map((item) => `@ultima/${item}`), '--yes']);
     let themeUrl = `${registry.url}/r/proof-theme.json`;
     if (options.preset === 'ultima') {
       const publicUrl = await ultimaPresetUrl();
@@ -183,13 +185,16 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     }
     const subtree = options.deliveryPath === 'stylex-subtree';
     if (subtree) await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace(/import ['"]\.\.\/+(?:\.\.\/)?ultima-theme\.css['"];?/, ''));
-    await installScene(app, options.layout, subtree, options.fault === 'partial-group');
+    await installScene(app, options.layout, subtree, options.fault === 'partial-group', options.fault as SceneFault);
     await execute(app, 'npm', ['install', '-D', tarball]);
     const fixtures = [...(options.deliveryPath === 'registry' ? [{ name: 'css-reference', draft }] : []), { name: '', draft }, ...(options.deliveryPath === 'registry' ? THEME_PRESETS.map((preset) => ({ name: preset.id, draft: presetDraft(preset.id) })) : [])];
     const cssReference = new Map<string, Awaited<ReturnType<typeof consumerValues>>>();
     browser = await chromium.launch({ headless: true });
     report.versions.chromium = browser.version();
     for (const fixture of fixtures) {
+      const cellName = options.case?.split('/').at(-1)!;
+      const selectedFixture = cellName?.replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '');
+      if (options.case && fixture.name !== selectedFixture && !(fixture.name === 'css-reference' && selectedFixture === '')) continue;
       const draft = fixture.draft;
       assert.ok(gate(resolveDraft(draft)).every((row) => row.dark.pass && row.light.pass), `${fixture.name || 'non-stock'} pairing gate`);
       const fixtureOutput = fixture.name ? join(output, fixture.name) : output;
@@ -242,12 +247,14 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       for (const name of isNext && !src ? ['app', 'components', 'lib'] : ['src']) await cp(join(app, name), join(fixtureOutput, name), { recursive: true });
       for (const name of ['react', 'react-dom', '@stylexjs/stylex', 'ultima-design', ...(isNext ? ['next', '@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'] : ['vite', '@stylexjs/unplugin'])]) report.versions[name] = JSON.parse(await readFile(join(app, 'node_modules', name, 'package.json'), 'utf8')).version;
       report.versions.npm = (await execute(app, 'npm', ['--version'])).trim();
-      await execute(app, 'npm', ['run', 'build']);
-      const production = isNext ? await serveNext(app, join(output, 'production.log')) : await serveRegistry(join(app, 'dist'), true);
+      try { await writeFile(join(fixtureOutput, 'build.log'), await execute(app, 'npm', ['run', 'build'])); }
+      catch (error) { await writeFile(join(fixtureOutput, 'build.log'), String(error)); throw error; }
+      const production = isNext ? await serveNext(app, join(fixtureOutput, 'server.log')) : await serveRegistry(join(app, 'dist'), true, join(fixtureOutput, 'server.log'));
       servers.push(production);
       const tables = options.preset === 'ultima' && (!fixture.name || fixture.name === 'css-reference' || fixture.name === 'ultima') ? frozen : resolveDraft(draft);
       const ids = ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${options.layout}/${options.deliveryPath}/chromium/${fixture.name ? `${fixture.name}-` : ''}${mode}`);
       for (const id of ids) {
+        if (options.case && id !== options.case && !(fixture.name === 'css-reference' && selectedFixture === '' && id.endsWith(cellName))) continue;
         const mode = id.endsWith('-dark') ? 'dark' : 'light';
         const explicit = id.includes('explicit-');
         const contextOptions = { reducedMotion: 'no-preference' as const, colorScheme: explicit ? (mode === 'dark' ? 'light' as const : 'dark' as const) : mode as 'dark' | 'light' };
@@ -257,6 +264,16 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
         const pageErrors = browserErrors(page);
         let hydration: HydrationEvidence | undefined;
         const name = id.split('/').at(-1)!;
+        const reproduce = `node --experimental-strip-types scripts/consumer-proof.ts --layout ${options.layout} --delivery-path ${options.deliveryPath}${options.preset ? ` --preset ${options.preset}` : ''}${options.fault ? ` --fault ${options.fault}` : ''} --case ${id}`;
+        const browserLog = { console: [] as unknown[], pageErrors: [] as string[], failedRequests: [] as unknown[] };
+        page.on('console', (message) => browserLog.console.push({ type: message.type(), text: message.text() }));
+        page.on('pageerror', (error) => browserLog.pageErrors.push(String(error)));
+        page.on('requestfailed', (request) => browserLog.failedRequests.push({ url: request.url(), failure: request.failure() }));
+        page.on('response', (response) => { if (response.status() >= 400) browserLog.failedRequests.push({ url: response.url(), status: response.status() }); });
+        let values: Record<string, unknown>;
+        let failures: string[];
+        let axeReport: unknown;
+        try {
         if (isNext) {
           const serverContext = await browser.newContext({ ...contextOptions, javaScriptEnabled: false });
           await serverContext.addCookies(await context.cookies());
@@ -274,19 +291,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
           if (hydration.server.attributes['data-theme'] !== (explicit ? mode : null) || hydration.server.attributes['data-proof-mode'] !== (explicit ? mode : 'system')) pageErrors.push('server HTML initial mode differs from requested mode');
         } else await page.evaluate((mode) => { if (mode) document.documentElement.dataset.theme = mode; else document.documentElement.removeAttribute('data-theme'); }, explicit ? mode : null);
         await page.mouse.move(0, 0);
-        const control = page.getByRole('button', { name: 'Theme control', exact: true });
-        await control.focus();
-        await page.keyboard.press('Tab');
-        await page.keyboard.press('Shift+Tab');
-        const focus = await control.evaluate((el) => ({ visible: el.matches(':focus-visible'), outline: getComputedStyle(el).outlineStyle, color: getComputedStyle(el).outlineColor }));
-        if (!focus.visible || focus.outline === 'none') pageErrors.push('keyboard focus outline is missing');
-        await page.getByRole('button', { name: 'Theme popup', exact: true }).click();
-        await page.getByRole('dialog', { name: 'Installed theme' }).waitFor();
-        await page.evaluate(async () => {
-          getComputedStyle(document.querySelector('button') ?? document.documentElement).backgroundColor;
-          await Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => {})));
-        });
-        const snapshot = await consumerValues(page, tables[mode], mode, id, options.layout, options.deliveryPath);
+        const { snapshot, browser: conditions } = await browserConditions(page, tables, mode, explicit, id, options.layout, options.deliveryPath);
         const referenceKey = `${explicit ? 'explicit' : 'system'}-${mode}`;
         if (fixture.name === 'css-reference') cssReference.set(referenceKey, snapshot);
         else if (!fixture.name && options.deliveryPath === 'registry') {
@@ -296,16 +301,26 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
           }
           if (JSON.stringify(snapshot.actual) !== JSON.stringify(reference.actual)) snapshot.failures.push('registry paint differs from generated CSS');
         }
-        await page.screenshot({ path: join(output, `${name}.png`), fullPage: true });
-        await page.keyboard.press('Escape');
-        await page.getByRole('dialog', { name: 'Installed theme' }).waitFor({ state: 'hidden' });
-        await page.emulateMedia({ reducedMotion: 'reduce' });
-        const reducedMotion = await control.evaluate((el) => Object.fromEntries(['fast', 'base', 'slow', 'loop'].map((key) => [key, getComputedStyle(el).getPropertyValue(`--ult-motion-${key}`).trim()])));
-        for (const [key, value] of Object.entries(reducedMotion)) if (value !== (key === 'loop' ? '0s' : '1ms')) snapshot.failures.push(`reduced motion ${key}: ${value}`);
         snapshot.failures.push(...(hydration ? hydrationProblems(hydration) : pageErrors));
-        await writeFile(join(output, `${name}.values.json`), `${JSON.stringify({ ...snapshot, hydration, reducedMotion, focus }, null, 2)}\n`);
-        report.executed.push(id);
-        report.cases.push({ id, status: snapshot.failures.length ? 'failed' : 'passed', snapshot: `${name}.values.json`, failures: snapshot.failures });
+        snapshot.failures.push(...browserLog.pageErrors, ...browserLog.console.filter((entry) => (entry as { type: string }).type === 'error').map((entry) => JSON.stringify(entry)), ...browserLog.failedRequests.map((entry) => JSON.stringify(entry)));
+        values = { ...snapshot, hydration, browser: conditions };
+        failures = snapshot.failures;
+        axeReport = conditions.axe;
+        } catch (error) {
+          failures = [String(error)];
+          const partial = (error as { browser?: { axe: unknown } }).browser;
+          values = { id, mode, engine: 'chromium', layout: options.layout, deliveryPath: options.deliveryPath, expected: tables[mode], actual: null, failures, browser: partial, incomplete: true };
+          axeReport = partial?.axe ?? { error: String(error), incomplete: true };
+        }
+        await page.screenshot({ path: join(output, `${name}.png`), fullPage: true }).catch((error) => failures.push(`screenshot unavailable: ${error}`));
+        await writeFile(join(output, `${name}.browser.json`), `${JSON.stringify(browserLog, null, 2)}\n`);
+        await writeFile(join(output, `${name}.axe.json`), `${JSON.stringify(axeReport, null, 2)}\n`);
+        await writeFile(join(output, `${name}.reproduce.txt`), `${reproduce}\nSource: ${source.head}\nManifest: ${source.manifest.digest}\n`);
+        await writeFile(join(output, `${name}.values.json`), `${JSON.stringify({ ...values, source: { head: source.head, manifest: source.manifest.digest }, reproduce, fixture: relative(output, fixtureOutput) || '.', artifacts: { build: relative(output, join(fixtureOutput, 'build.log')), server: relative(output, join(fixtureOutput, 'server.log')), browser: `${name}.browser.json`, axe: `${name}.axe.json`, screenshot: `${name}.png`, reproduce: `${name}.reproduce.txt` } }, null, 2)}\n`);
+        if (!options.case || id === options.case) {
+          report.executed.push(id);
+          report.cases.push({ id, status: failures.length ? 'failed' : 'passed', snapshot: `${name}.values.json`, failures });
+        }
         await context.close();
       }
       await production.close();
@@ -334,9 +349,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (flag === '--layout' && CONSUMER_LAYOUTS.includes(value as ConsumerLayout)) options.layout = value as ConsumerLayout;
     else if (flag === '--delivery-path' && DELIVERY_PATHS.includes(value as DeliveryPath)) options.deliveryPath = value as DeliveryPath;
     else if (flag === '--output' && value) options.output = value;
+    else if (flag === '--case' && value) options.case = value;
     else if (flag === '--preset' && value === 'ultima') options.preset = value;
     else if (flag === '--base-styles' && value) baseApp = resolve(value);
-    else if (flag === '--fault' && (value === 'theme-import' || value === 'stylex-extraction' || value === 'src-extraction' || value === 'hydration-mismatch' || value === 'partial-group')) options.fault = value;
+    else if (flag === '--fault' && ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', 'portal-theme', 'required-error-name', 'focus-return'].includes(value ?? '')) options.fault = value as ProofOptions['fault'];
     else throw new Error(`unsupported argument ${flag} ${value ?? ''}`);
   }
   if (baseApp) {

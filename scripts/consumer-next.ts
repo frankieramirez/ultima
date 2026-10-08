@@ -21,6 +21,7 @@ export async function nextScene(app: string, src: boolean): Promise<void> {
   await writeFile(join(folder, 'layout.tsx'), `import { cookies } from 'next/headers';
 import './globals.css';
 import './ultima.css';
+export const metadata = { title: 'Installed consumer proof' };
 import '${src ? '../../' : '../'}ultima-theme.css';
 export const instant = false;
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

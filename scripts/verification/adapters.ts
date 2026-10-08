@@ -29,6 +29,7 @@ import { createManifest, hashBuild } from '../../apps/docs/scripts/build-manifes
 import { BUILD_MANIFEST, BUILD_ROOT, productionAdapter } from '../../apps/docs/scripts/production-adapter.ts';
 import { diskFiles } from '../catalogue/files.ts';
 import { consumerReportProblems, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from '../consumer-report.ts';
+import { browserEvidenceProblems } from '../consumer-browser.ts';
 import { hydrationProblems, type HydrationEvidence } from '../consumer-next.ts';
 import { loadCatalogue } from '../catalogue/model.ts';
 import { CI_OBLIGATIONS, type CheckId } from './checks.ts';
@@ -564,11 +565,25 @@ const consumerProofAdapter: Adapter = {
         const pathIndex = context.check.argv.indexOf('--delivery-path');
         const path = pathIndex < 0 ? undefined : context.check.argv[pathIndex + 1] as DeliveryPath;
         const problems = consumerReportProblems(report, layout, path);
+        const selectedIndex = context.check.argv.indexOf('--case');
+        if (report.selectedCase !== (selectedIndex < 0 ? undefined : context.check.argv[selectedIndex + 1])) problems.push('consumer-proof changed the requested cell coverage');
         if (problems.length) return { verdict: 'incomplete', executed: [], reason: problems.join('; ') };
         const cssReference = new Map<string, string>();
         for (const row of report.cases) {
           if (isAbsolute(row.snapshot) || relative(output, join(output, row.snapshot)).startsWith('..') || !existsSync(join(output, row.snapshot))) return { verdict: 'incomplete', executed: [], reason: `missing values snapshot: ${row.id}` };
           const snapshot = JSON.parse(readFileSync(join(output, row.snapshot), 'utf8'));
+          const browserProblems = browserEvidenceProblems(snapshot.browser, row.status === 'passed');
+          if (browserProblems.length) return { verdict: 'incomplete', executed: [], reason: `${row.id}: ${browserProblems.join('; ')}` };
+          if (typeof snapshot.reproduce !== 'string' || !snapshot.reproduce.endsWith(`--case ${row.id}`) || typeof snapshot.fixture !== 'string' || isAbsolute(snapshot.fixture) || relative(output, join(output, snapshot.fixture)).startsWith('..') || !existsSync(join(output, snapshot.fixture, 'package.json'))) return { verdict: 'incomplete', executed: [], reason: `missing retained fixture or cell reproduction: ${row.id}` };
+          for (const kind of ['build', 'server', 'browser', 'axe', 'screenshot', 'reproduce']) {
+            const file = snapshot.artifacts?.[kind];
+            if (typeof file !== 'string' || isAbsolute(file) || relative(output, join(output, file)).startsWith('..') || !existsSync(join(output, file))) return { verdict: 'incomplete', executed: [], reason: `missing retained ${kind} artifact: ${row.id}` };
+            artifacts.push(join(output, file));
+          }
+          const logs = JSON.parse(readFileSync(join(output, snapshot.artifacts.browser), 'utf8'));
+          if (readFileSync(join(output, snapshot.artifacts.reproduce), 'utf8').split('\n')[0] !== snapshot.reproduce || snapshot.source?.head !== report.source.head || snapshot.source?.manifest !== report.source.manifest.digest) return { verdict: 'incomplete', executed: [], reason: `invalid cell source or reproduce artifact: ${row.id}` };
+          if (!['console', 'pageErrors', 'failedRequests'].every((key) => Array.isArray(logs[key])) || JSON.stringify(JSON.parse(readFileSync(join(output, snapshot.artifacts.axe), 'utf8'))) !== JSON.stringify(snapshot.browser.axe)) return { verdict: 'incomplete', executed: [], reason: `invalid browser or axe artifacts: ${row.id}` };
+          if (row.status === 'passed' && (logs.pageErrors.length || logs.failedRequests.length || logs.console.some((entry: { type: string }) => entry.type === 'error'))) return { verdict: 'incomplete', executed: [], reason: `concealed browser errors: ${row.id}` };
           const names = ['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'];
           const variables = names.every((name) => {
             const value = snapshot?.variables?.[`--ult-color-${name}`];

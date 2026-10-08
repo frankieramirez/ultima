@@ -7,6 +7,7 @@ import { scaffold, serveRegistry, packCli, type Run } from '../consumer-helpers.
 import { CONSUMER_CASES, CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerReportProblems, type ConsumerReport } from '../consumer-report.ts';
 import { cliReportProblems, installTheme } from '../consumer-delivery.ts';
 import { sceneSource } from '../consumer-scene.ts';
+import { BROWSER_ASSERTIONS, browserEvidenceProblems } from '../consumer-browser.ts';
 import { toCss, toRegistryItem } from '../../packages/tokens/src/theme/export.ts';
 import { serializeDraft } from '../../packages/tokens/src/theme/codec.ts';
 import { THEME_PRESETS } from '../../packages/tokens/src/theme/draft.ts';
@@ -20,6 +21,19 @@ import { contextFor, planned, IDENTITY } from './adapter-context.ts';
 import { ADAPTERS } from './adapters.ts';
 import { manifestOf } from './source.ts';
 import { CONSUMER_RULES } from '../../packages/analysis/src/consumer.ts';
+
+const browserFixture = `
+  snapshot.browser = { assertions: ${JSON.stringify(BROWSER_ASSERTIONS)}.map(name => ({ name, expected: true, actual: true, status: 'passed' })), axe: Object.fromEntries(['closed', 'open', 'switched-open', 'switched-closed'].map(state => [state, { violations: [], incomplete: [], passes: [{ id: 'synthetic-rule' }] }])), modeSnapshots: ['dark', 'light', 'dark'].map(mode => ({ mode, variables, controlVariables: variables, portalVariables: variables, expected: paint, actual: paint, colorScheme: mode, failures: [] })), failures: [] };
+  snapshot.fixture = '.';
+  snapshot.reproduce = 'node --experimental-strip-types scripts/consumer-proof.ts --case ' + row.id;
+  snapshot.source = { head: report.source.head, manifest: report.source.manifest.digest };
+  snapshot.artifacts = { build: 'build.log', server: 'server.log', browser: row.id.split('/').at(-1) + '.browser.json', axe: row.id.split('/').at(-1) + '.axe.json', screenshot: 'synthetic.png', reproduce: row.id.split('/').at(-1) + '.reproduce.txt' };
+  fs.writeFileSync(path.join(output, 'package.json'), '{}');
+  for (const name of ['build.log', 'server.log', 'synthetic.png']) fs.writeFileSync(path.join(output, name), 'synthetic artifact');
+  fs.writeFileSync(path.join(output, snapshot.artifacts.browser), JSON.stringify({ console: [], pageErrors: [], failedRequests: [] }));
+  fs.writeFileSync(path.join(output, snapshot.artifacts.axe), JSON.stringify(snapshot.browser.axe));
+  fs.writeFileSync(path.join(output, snapshot.artifacts.reproduce), snapshot.reproduce + '\\n');
+`;
 
 test('migrated base styles preserve stock dimensions, neutral accent/focus and danger assertions', () => {
   const expected: BaseStyles = { height: '40px', display: 'inline-flex', radius: '4px', background: 'rgb(20, 20, 20)', focusColor: 'rgb(30, 30, 30)', focusStyle: 'solid', focusVisible: true, danger: 'rgb(200, 0, 0)' };
@@ -73,6 +87,45 @@ test('the non-stock consumer draft passes the two-mode Studio pairing gate', () 
   assert.ok(gate(resolveDraft(proofDraft())).every((row) => row.dark.pass && row.light.pass));
 });
 
+test('the replaceable installed scene supplies named form, navigation, Dialog and data contracts', () => {
+  for (const subtree of [false, true]) {
+    const scene = sceneSource(subtree);
+    for (const contract of ['<form', 'Project name', 'required', 'Project name is required', 'RadioGroup.Root', 'Save project', 'Reset form', 'aria-current', 'Activity', 'Dialog.Portal', 'Dialog.Close', 'Table.Root', 'No projects']) assert.ok(scene.includes(contract), contract);
+  }
+});
+
+test('scene faults mutate the real portal boundary, required error name and focus-return API', () => {
+  assert.match(sceneSource(true), /Dialog\.Portal container=\{container\}/);
+  assert.doesNotMatch(sceneSource(true, false, 'portal-theme'), /Dialog\.Portal container/);
+  assert.match(sceneSource(false, false, 'portal-theme'), /data-theme=\{mode === 'dark' \? 'light' : 'dark'\}/);
+  assert.doesNotMatch(sceneSource(false, false, 'required-error-name'), /aria-label="Project name error"/);
+  assert.match(sceneSource(false, false, 'focus-return'), /finalFocus=\{false\}/);
+});
+
+test('browser evidence fails closed on missing assertions, dynamic probes, failures and axe states', () => {
+  const variables = { '--ult-color-surface': { expected: 'paint', actual: 'paint' } };
+  const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map((part) => [part, { backgroundColor: 'paint', color: 'text' }]));
+  const fixture = {
+    assertions: BROWSER_ASSERTIONS.map((name) => ({ name, expected: true, actual: true, status: 'passed' })),
+    axe: Object.fromEntries(['closed', 'open', 'switched-open', 'switched-closed'].map((state) => [state, { violations: [] as unknown[], incomplete: [], passes: [{ id: 'synthetic-rule' }] }])),
+    modeSnapshots: ['dark', 'light', 'dark'].map((mode) => ({ mode, colorScheme: mode, expected: paint, actual: paint, variables, controlVariables: variables, portalVariables: variables, failures: [] })), failures: [] as string[],
+  };
+  assert.deepEqual(browserEvidenceProblems(fixture, true), []);
+  for (const fault of ['omitted', 'repeated', 'false-pass', 'missing-axe', 'axe-violation', 'missing-modes', 'one-mode', 'stale-portal', 'concealed-failure'] as const) {
+    const changed = structuredClone(fixture);
+    if (fault === 'omitted') changed.assertions.pop();
+    if (fault === 'repeated') changed.assertions[1] = changed.assertions[0]!;
+    if (fault === 'false-pass') changed.assertions[0]!.actual = false;
+    if (fault === 'missing-axe') delete changed.axe.open;
+    if (fault === 'axe-violation') changed.axe.open!.violations.push({ id: 'color-contrast' });
+    if (fault === 'missing-modes') changed.modeSnapshots = [];
+    if (fault === 'one-mode') changed.modeSnapshots.forEach((snapshot) => { snapshot.mode = 'dark'; });
+    if (fault === 'stale-portal') changed.modeSnapshots[0]!.portalVariables['--ult-color-surface'].actual = 'stale';
+    if (fault === 'concealed-failure') changed.failures.push('mode-switch-portal failed');
+    assert.ok(browserEvidenceProblems(changed, true).length, fault);
+  }
+});
+
 test('every delivery path has its own coverage; registry reuses the scaffold for every shipped preset', () => {
   for (const layout of CONSUMER_LAYOUTS) for (const path of DELIVERY_PATHS) {
     const cases = consumerCases(layout, path);
@@ -81,7 +134,7 @@ test('every delivery path has its own coverage; registry reuses the scaffold for
     assert.ok(cases.every((id) => id.startsWith(`${layout}/${path}/chromium/`)));
   }
   assert.match(sceneSource(true), /\.\.\.ultimaTheme\[mode\], colorScheme\[mode\]/);
-  assert.match(sceneSource(true), /Popover\.Portal container=\{container\}/);
+  assert.match(sceneSource(true), /Dialog\.Portal container=\{container\}/);
   assert.match(sceneSource(true, true), /ultimaTheme\[mode\]\[0\]/);
 });
 
@@ -226,19 +279,28 @@ test('consumer adapter requires source-bound, readable values snapshots as well 
   try {
     const fixture = report();
     const identity = { ...IDENTITY, head: fixture.source.head, manifest: fixture.source.manifest };
-    for (const fault of ['none', 'missing-snapshot', 'unreadable-snapshot', 'false-paint-pass', 'stale-source', 'missing-case'] as const) {
+    for (const fault of ['none', 'missing-snapshot', 'unreadable-snapshot', 'false-paint-pass', 'stale-source', 'missing-case', 'missing-browser', 'missing-build', 'missing-server', 'missing-browser-log', 'missing-axe', 'missing-screenshot', 'missing-fixture', 'wrong-reproduce', 'concealed-console', 'concealed-request', 'one-cell-waiver'] as const) {
       const changed = structuredClone(fixture);
       if (fault === 'stale-source') changed.source.head = 'c'.repeat(40);
       if (fault === 'missing-case') changed.executed.pop();
+      if (fault === 'one-cell-waiver') { changed.selectedCase = changed.expected[0]; changed.expected = [changed.selectedCase!]; changed.executed = [...changed.expected]; changed.cases = changed.cases.slice(0, 1); }
       const script = `
         const fs = require('node:fs'), path = require('node:path');
         const output = process.argv.at(-1), report = ${JSON.stringify(changed)};
         fs.mkdirSync(output, { recursive: true });
-        const paint = Object.fromEntries(['root', 'control', 'status'].map(part => [part, { backgroundColor: 'fixture-paint', color: 'fixture-text' }]));
+        const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map(part => [part, { backgroundColor: 'fixture-paint', color: 'fixture-text' }]));
         const variables = Object.fromEntries(['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'].map(name => ['--ult-color-' + name, { expected: 'fixture-value', actual: 'fixture-value' }]));
         for (const row of report.cases) {
           row.snapshot = row.id.split('/').at(-1) + '.json';
           const snapshot = { id: row.id, expected: paint, actual: structuredClone(paint), variables, failures: [] };
+          ${browserFixture}
+          const fault = ${JSON.stringify(fault)};
+          if (fault === 'missing-browser') delete snapshot.browser;
+          if (fault === 'missing-fixture') snapshot.fixture = 'missing-fixture';
+          if (fault === 'wrong-reproduce') snapshot.reproduce = 'node scripts/consumer-proof.ts';
+          for (const kind of ['build', 'server', 'browser', 'axe', 'screenshot']) if (fault === 'missing-' + (kind === 'browser' ? 'browser-log' : kind)) snapshot.artifacts[kind] = 'missing-file';
+          if (fault === 'concealed-console') fs.writeFileSync(path.join(output, snapshot.artifacts.browser), JSON.stringify({ console: [{type: 'error', text: 'React failure'}], pageErrors: [], failedRequests: [] }));
+          if (fault === 'concealed-request') fs.writeFileSync(path.join(output, snapshot.artifacts.browser), JSON.stringify({ console: [], pageErrors: [], failedRequests: [{status: 500}] }));
           if (${JSON.stringify(fault)} === 'false-paint-pass') snapshot.actual.control.color = 'losing-paint';
           if (${JSON.stringify(fault)} !== 'missing-snapshot') fs.writeFileSync(path.join(output, row.snapshot), ${JSON.stringify(fault)} === 'unreadable-snapshot' ? 'not json' : JSON.stringify(snapshot));
         }
@@ -266,13 +328,14 @@ test('Next adapters require SSR HTML, completed hydration and token-derived extr
         const fs = require('node:fs'), path = require('node:path');
         const output = process.argv.at(-1), report = ${JSON.stringify(fixture)}, fault = ${JSON.stringify(fault)};
         fs.mkdirSync(output, { recursive: true });
-        const paint = Object.fromEntries(['root', 'control', 'status'].map(part => [part, { backgroundColor: 'paint', color: 'text' }]));
+        const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map(part => [part, { backgroundColor: 'paint', color: 'text' }]));
         const variables = Object.fromEntries(['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'].map(name => ['--ult-color-' + name, { expected: 'value', actual: 'value' }]));
         for (const row of report.cases) {
           const mode = row.id.endsWith('-dark') ? 'dark' : 'light', explicit = row.id.includes('/explicit-');
           const state = { attributes: { 'data-theme': explicit ? mode : null, 'data-proof-mode': explicit ? mode : 'system' }, content: 'Installed scene' };
           row.snapshot = row.id.split('/').at(-1) + '.values.json';
           const snapshot = { id: row.id, expected: paint, actual: paint, variables, failures: [], extraction: { expected: { height: '40px', radius: '4px', display: 'inline-flex' }, actual: { height: '40px', radius: '4px', display: 'inline-flex' } }, hydration: { server: state, hydrated: structuredClone(state), ready: true, errors: [] } };
+          ${browserFixture}
           if (fault === 'missing-hydration') delete snapshot.hydration;
           if (fault === 'hydration-drift') snapshot.hydration.hydrated.attributes['data-theme'] = 'wrong';
           if (fault === 'missing-extraction') delete snapshot.extraction;
@@ -317,6 +380,7 @@ test('delivery adapters reject missing group, portal and CLI evidence rather tha
           fs.writeFileSync(path.join(output, name, 'ultima-theme.json'), ${JSON.stringify(serializeDraft(draft))});
           const extracted = { height: '40px', radius: '4px', display: 'inline-flex' };
           const snapshot = { id: row.id, deliveryPath: report.deliveryPath, expected: paint, actual: structuredClone(paint), variables, controlVariables: structuredClone(variables), portalVariables: structuredClone(variables), portal: { inContainer: true, documentSurface: 'stock', subtreeSurface: 'draft' }, extraction: { tokens: { height: '2.5rem', radius: '4px' }, expected: extracted, actual: extracted }, failures: [] };
+          ${browserFixture}
           if (fault === 'missing-group') delete snapshot.controlVariables['--ult-font-weight-medium'];
           if (fault === 'missing-portal') delete snapshot.portalVariables;
           if (fault === 'missing-extraction') delete snapshot.extraction;

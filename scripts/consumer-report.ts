@@ -46,6 +46,7 @@ export type ConsumerReport = {
   errors: string[];
   drafts?: Record<string, { digest: string; fingerprint: string; recipeVersion: number }>;
   cliReports?: { doctor: string; check: string };
+  selectedCase?: string;
 };
 
 export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, path?: DeliveryPath): string[] {
@@ -54,7 +55,9 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
   const problems: string[] = [];
   if (report.schemaVersion !== 1 || !CONSUMER_LAYOUTS.includes(report.layout) || !DELIVERY_PATHS.includes(report.deliveryPath) || (layout && report.layout !== layout) || (path && report.deliveryPath !== path)) problems.push('unknown consumer-proof schema or parameters');
   if (!['passed', 'failed', 'incomplete'].includes(report.status)) problems.push('unknown consumer-proof status');
-  const expected = consumerCases(report.layout, report.deliveryPath);
+  const all = consumerCases(report.layout, report.deliveryPath);
+  if (report.selectedCase && !all.includes(report.selectedCase)) problems.push('unknown selected consumer case');
+  const expected = report.selectedCase ? [report.selectedCase] : all;
   const same = (values: unknown) => Array.isArray(values) && values.length === expected.length && new Set(values).size === values.length && expected.every((id) => values.includes(id));
   if (!same(report.expected) || !same(report.executed)) problems.push('consumer-proof case coverage is incomplete');
   if (!Array.isArray(report.cases) || !same(report.cases.map((row) => row?.id))) problems.push('consumer-proof case results are incomplete');
@@ -67,7 +70,7 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
     if (report.status === 'passed' && (row.status !== 'passed' || row.failures.length !== 0)) problems.push(`passing report contains a failing case: ${row.id}`);
   }
   const digest = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
-  if (report.deliveryPath === 'registry' && registryPresets().some((id) => !digest(report.drafts?.[id]?.digest) || !report.drafts?.[id]?.fingerprint || !Number.isInteger(report.drafts?.[id]?.recipeVersion))) problems.push('preset provenance is incomplete');
+  if (report.deliveryPath === 'registry' && registryPresets().filter((id) => !report.selectedCase || report.selectedCase.split('/').at(-1)?.startsWith(`${id}-`)).some((id) => !digest(report.drafts?.[id]?.digest) || !report.drafts?.[id]?.fingerprint || !Number.isInteger(report.drafts?.[id]?.recipeVersion))) problems.push('preset provenance is incomplete');
   if (report.deliveryPath === 'cli' && (!report.cliReports?.doctor || !report.cliReports?.check)) problems.push('packed CLI reports are missing');
   if (!report.source || !/^[a-f0-9]{40,64}$/.test(report.source.head ?? '') || !digest(report.source.manifest?.digest) || report.source.manifest.algorithm !== 'sha256' || report.source.manifest.version !== 1 || !Array.isArray(report.source.manifest?.entries) || report.source.manifest.files !== report.source.manifest.entries.length || !digest(report.source.registryManifestHash) || !digest(report.source.cliTarballDigest) || !digest(report.source.draftDigest) || typeof report.source.draftFingerprint !== 'string' || !report.source.draftFingerprint || !Number.isInteger(report.source.recipeVersion)) problems.push('consumer-proof source identity is incomplete');
   if (!Array.isArray(report.errors) || report.errors.some((error) => typeof error !== 'string') || (report.status === 'passed' && report.errors.length !== 0)) problems.push('invalid consumer-proof errors');
