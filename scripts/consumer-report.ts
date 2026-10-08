@@ -21,9 +21,15 @@ export const DELIVERY_PATHS = ['css', 'stylex-subtree', 'registry', 'cli'] as co
 export type DeliveryPath = typeof DELIVERY_PATHS[number];
 export const consumerCases = (layout: ConsumerLayout, path: DeliveryPath = 'css') => (path === 'registry' ? ['css-reference-', '', ...registryPresets().map((id) => `${id}-`)] : ['']).flatMap((preset) => ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${layout}/${path}/chromium/${preset}${mode}`));
 export const CONSUMER_CASES = consumerCases('vite');
+/** The fixture prefix and mode of a cell id, the inverse of `consumerCases`. */
+export function consumerCell(id: string): { fixture: string; mode: string | undefined } {
+  const cell = id.split('/').at(-1) ?? '';
+  const mode = cell.match(/(?:system|explicit)-(?:dark|light)$/)?.[0];
+  return { fixture: (mode ? cell.slice(0, -mode.length) : cell).replace(/-$/, ''), mode };
+}
 export function consumerPrerequisites(layout: ConsumerLayout, path: DeliveryPath, selectedCase?: string): string[] {
   if (typeof selectedCase !== 'string' || path !== 'registry') return [];
-  const mode = selectedCase.split('/').at(-1)!.match(/(?:system|explicit)-(?:dark|light)$/)?.[0];
+  const { mode } = consumerCell(selectedCase);
   const prefix = `${layout}/${path}/chromium/`;
   return mode && !selectedCase.includes('/css-reference-') ? [`${prefix}css-reference-${mode}`, ...(selectedCase !== `${prefix}${mode}` ? [`${prefix}${mode}`] : [])] : [];
 }
@@ -84,7 +90,7 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
   const digest = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
   if (report.deliveryPath === 'registry' && registryPresets().filter((id) => !report.selectedCase || report.selectedCase.split('/').at(-1)?.startsWith(`${id}-`)).some((id) => !digest(report.drafts?.[id]?.digest) || !report.drafts?.[id]?.fingerprint || !Number.isInteger(report.drafts?.[id]?.recipeVersion))) problems.push('preset provenance is incomplete');
   if (report.deliveryPath === 'registry' && report.selectedCase && all.includes(report.selectedCase)) {
-    const name = report.selectedCase.split('/').at(-1)!.replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '') || 'non-stock';
+    const name = consumerCell(report.selectedCase).fixture || 'non-stock';
     const selected = report.drafts?.[name];
     if (!selected || !digest(selected.digest) || selected.digest !== report.source?.draftDigest || selected.fingerprint !== report.source?.draftFingerprint || selected.recipeVersion !== report.source?.recipeVersion) problems.push('selected registry provenance disagrees with source');
   }

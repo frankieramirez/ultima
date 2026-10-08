@@ -8,11 +8,11 @@ import { scaffold, serveRegistry, packCli, type Run } from '../consumer-helpers.
 import { CONSUMER_CASES, CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerPrerequisites, consumerReproduction, consumerReportProblems, type ConsumerReport } from '../consumer-report.ts';
 import { cliReportProblems, installTheme } from '../consumer-delivery.ts';
 import { sceneSource } from '../consumer-scene.ts';
-import { BROWSER_ASSERTIONS, browserEvidenceProblems } from '../consumer-browser.ts';
+import { BROWSER_ASSERTIONS, abortedBrowserProblems, browserEvidenceProblems } from '../consumer-browser.ts';
 import { toCss, toRegistryItem } from '../../packages/tokens/src/theme/export.ts';
 import { draftFingerprint, serializeDraft } from '../../packages/tokens/src/theme/codec.ts';
 import { THEME_PRESETS, stockDraft } from '../../packages/tokens/src/theme/draft.ts';
-import { browserErrors, hydrationProblems, nextFault, nextScene, setupNext, type HydrationEvidence } from '../consumer-next.ts';
+import { browserErrors, hydrationProblems, nextFault, nextScene, setupNext, type BrowserLog, type HydrationEvidence } from '../consumer-next.ts';
 import { EventEmitter } from 'node:events';
 import type { Page } from 'playwright';
 import { baseStyleProblems, proofDraft, type BaseStyles } from '../consumer-proof.ts';
@@ -144,6 +144,22 @@ test('browser evidence fails closed on missing assertions, dynamic probes, failu
   const foreign = structuredClone(fixture);
   foreign.modeSnapshots[0]!.variables['--foreign'] = { expected: 'paint', actual: 'paint' };
   assert.ok(browserEvidenceProblems(foreign, true, 'vite', 'stylex-subtree').length);
+});
+
+test('a scene that threw keeps a complete failed inventory instead of missing evidence', () => {
+  const aborted = {
+    assertions: BROWSER_ASSERTIONS.map((name, index) => index < 3 ? { name, expected: true, actual: true, status: 'passed' } : { name, expected: 'reached', actual: null, status: 'failed', error: 'not reached: Dialog never opened' }),
+    axe: { closed: { violations: [], incomplete: [], passes: [] } }, modeSnapshots: [], failures: ['Dialog never opened'],
+  };
+  assert.deepEqual(abortedBrowserProblems(aborted), []);
+  assert.ok(browserEvidenceProblems(aborted, false).length, 'aborted evidence is not complete evidence');
+  for (const change of [
+    (e: typeof aborted) => { e.assertions.pop(); },
+    (e: typeof aborted) => { e.failures = []; },
+    (e: typeof aborted) => { (e as { axe?: unknown }).axe = undefined; },
+    (e: typeof aborted) => { (e.assertions[4] as { status: string }).status = 'skipped'; },
+  ]) { const e = structuredClone(aborted); change(e); assert.ok(abortedBrowserProblems(e).length); }
+  assert.ok(abortedBrowserProblems(undefined).length);
 });
 
 test('modal-only axe checks require visible exhaustive focus wraps and never resolve other incomplete rules', () => {
@@ -353,7 +369,8 @@ test('hydration fails closed on missing completion, content/mode drift, console 
     (e: HydrationEvidence) => { e.errors.push('hydration warning'); },
   ]) { const e = structuredClone(evidence); change(e); assert.ok(hydrationProblems(e).length); }
   const page = new EventEmitter();
-  const errors = browserErrors(page as unknown as Page);
+  const log: BrowserLog = { console: [], pageErrors: [], failedRequests: [] };
+  const errors = browserErrors(page as unknown as Page, log);
   page.emit('pageerror', new Error('uncaught React error'));
   page.emit('console', { type: () => 'warning', text: () => 'Hydration did not match' });
   page.emit('console', { type: () => 'error', text: () => 'React minified error #418' });
@@ -362,6 +379,9 @@ test('hydration fails closed on missing completion, content/mode drift, console 
   page.emit('response', { status: () => 404, request: () => ({ resourceType: () => 'stylesheet' }), url: () => '/required.css' });
   assert.equal(errors.length, 5);
   assert.match(errors.join('\n'), /uncaught React error[\s\S]*Hydration did not match[\s\S]*#418[\s\S]*required asset failed[\s\S]*required asset HTTP 404/);
+  page.emit('requestfailed', { resourceType: () => 'image', url: () => '/optional.png', failure: () => ({ errorText: 'aborted' }) });
+  assert.equal(errors.length, 5, 'an optional asset is retained in the log, not as a required-asset error');
+  assert.deepEqual([log.pageErrors.length, log.console.length, log.failedRequests.map((entry) => entry.required)], [1, 3, [true, true, false]]);
 });
 
 test('the verifier refuses an exit-zero consumer command that writes no report', async () => {
@@ -412,6 +432,44 @@ test('consumer adapter requires source-bound, readable values snapshots as well 
       assert.equal(result.verdict, fault === 'none' ? 'passed' : 'incomplete', result.reason ?? 'no reason');
       if (fault === 'none') assert.equal(result.executed.length, CONSUMER_CASES.length);
       if (fault === 'stale-source') assert.match(result.reason ?? '', /captured source identity/);
+    }
+  } finally { await rm(work, { recursive: true, force: true }); }
+});
+
+test('consumer adapter reports a cell whose scene threw as a validation failure, not missing evidence', async () => {
+  const work = await mkdtemp(join(tmpdir(), 'ultima-proof-adapter-'));
+  try {
+    const fixture = report();
+    fixture.status = 'failed';
+    fixture.cases[0] = { ...fixture.cases[0]!, status: 'failed', failures: ['locator.waitFor: Timeout 5000ms exceeded'] };
+    const identity = { ...IDENTITY, head: fixture.source.head, manifest: fixture.source.manifest };
+    for (const fault of ['none', 'before-scene', 'partial-inventory'] as const) {
+      const script = `
+        const fs = require('node:fs'), path = require('node:path');
+        const output = process.argv.at(-1), report = ${JSON.stringify(fixture)};
+        fs.mkdirSync(output, { recursive: true });
+        const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map(part => [part, { backgroundColor: 'fixture-paint', color: 'fixture-text' }]));
+        const variables = Object.fromEntries(${JSON.stringify(Object.keys(resolveDraft(stockDraft()).light))}.map(name => [name, { expected: 'fixture-value', actual: 'fixture-value' }]));
+        for (const row of report.cases) {
+          row.snapshot = row.id.split('/').at(-1) + '.json';
+          const snapshot = { id: row.id, expected: paint, actual: structuredClone(paint), variables, failures: [] };
+          ${browserFixture}
+          if (row.status === 'failed') {
+            Object.assign(snapshot, { actual: null, incomplete: true, failures: row.failures });
+            snapshot.browser = { assertions: ${JSON.stringify(BROWSER_ASSERTIONS)}.map((name, index) => index < 3 ? { name, expected: true, actual: true, status: 'passed' } : { name, expected: 'reached', actual: null, status: 'failed', error: 'not reached' }), axe: {}, modeSnapshots: [], failures: row.failures };
+            if (${JSON.stringify(fault)} === 'partial-inventory') snapshot.browser.assertions = snapshot.browser.assertions.slice(0, 3);
+            fs.writeFileSync(path.join(output, snapshot.artifacts.axe), JSON.stringify(snapshot.browser.axe));
+            if (${JSON.stringify(fault)} === 'before-scene') delete snapshot.browser;
+          }
+          fs.writeFileSync(path.join(output, row.snapshot), JSON.stringify(snapshot));
+        }
+        fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report));
+        process.exitCode = 1;
+      `;
+      const context = contextFor(work, process.cwd(), planned('consumer-proof', { argv: ['node', '-e', script, '--'] }), { identity });
+      const result = await ADAPTERS['consumer-proof']!.run(context);
+      assert.equal(result.verdict, fault === 'none' ? 'validation-failure' : 'incomplete', `${fault}: ${result.reason ?? 'no reason'}`);
+      if (fault === 'none') assert.ok(result.failures?.some((failure) => failure.includes('Timeout 5000ms exceeded')));
     }
   } finally { await rm(work, { recursive: true, force: true }); }
 });

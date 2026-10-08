@@ -2,7 +2,9 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { ConsumerLayout } from './consumer-report.ts';
 
-export type SceneFault = 'portal-theme' | 'required-error-name' | 'focus-return';
+export const SCENE_FAULTS = ['portal-theme', 'required-error-name', 'focus-return'] as const;
+export type SceneFault = typeof SCENE_FAULTS[number];
+export const isSceneFault = (value: unknown): value is SceneFault => SCENE_FAULTS.includes(value as SceneFault);
 export const SCENE_ITEMS = ['button', 'badge', 'dialog', 'field', 'input', 'radio-group', 'table', 'empty'];
 
 export function sceneSource(subtree: boolean, partial = false, fault?: SceneFault): string {

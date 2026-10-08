@@ -52,14 +52,24 @@ function axeProblems(axe: AxeReport, state: string): string[] {
   return problems;
 }
 
+const inventoryComplete = (evidence: BrowserEvidence) => Array.isArray(evidence.assertions) && !evidence.assertions.some((row) => !row || typeof row !== 'object') && evidence.assertions.length === BROWSER_ASSERTIONS.length && new Set(evidence.assertions.map((row) => row.name)).size === BROWSER_ASSERTIONS.length && BROWSER_ASSERTIONS.every((name) => evidence.assertions.some((row) => row.name === name));
+const assertionProblems = (evidence: BrowserEvidence, passed: boolean) => evidence.assertions.flatMap((row) => !['passed', 'failed'].includes(row.status) || row.expected === undefined || row.actual === undefined || (passed && (row.status !== 'passed' || JSON.stringify(row.expected) !== JSON.stringify(row.actual))) ? [`invalid browser assertion: ${row.name}`] : []);
+
+/** Evidence from a scene that threw partway: every assertion is accounted for, unreached ones as failed rows, and the error is recorded. */
+export function abortedBrowserProblems(value: unknown): string[] {
+  if (!value || typeof value !== 'object') return ['missing browser pass-condition evidence'];
+  const evidence = value as BrowserEvidence;
+  if (!inventoryComplete(evidence)) return ['incomplete browser assertion inventory'];
+  const failures = assertionProblems(evidence, false);
+  if (!Array.isArray(evidence.failures) || !evidence.failures.length || !evidence.axe || typeof evidence.axe !== 'object') failures.push('aborted browser evidence records no failure');
+  return failures;
+}
+
 export function browserEvidenceProblems(value: unknown, passed: boolean, layout?: ConsumerLayout, deliveryPath?: DeliveryPath): string[] {
   if (!value || typeof value !== 'object') return ['missing browser pass-condition evidence'];
   const evidence = value as BrowserEvidence;
-  const failures: string[] = [];
-  if (!Array.isArray(evidence.assertions) || evidence.assertions.some((row) => !row || typeof row !== 'object') || evidence.assertions.length !== BROWSER_ASSERTIONS.length || new Set(evidence.assertions.map((row) => row.name)).size !== BROWSER_ASSERTIONS.length || BROWSER_ASSERTIONS.some((name) => !evidence.assertions.some((row) => row.name === name))) return ['incomplete browser assertion inventory'];
-  for (const row of evidence.assertions) {
-    if (!['passed', 'failed'].includes(row.status) || row.expected === undefined || row.actual === undefined || (passed && (row.status !== 'passed' || JSON.stringify(row.expected) !== JSON.stringify(row.actual)))) failures.push(`invalid browser assertion: ${row.name}`);
-  }
+  if (!inventoryComplete(evidence)) return ['incomplete browser assertion inventory'];
+  const failures = assertionProblems(evidence, passed);
   for (const state of ['closed', 'open', 'switched-open', 'switched-closed']) {
     const axe = evidence.axe?.[state];
     if (!axe || !Array.isArray(axe.violations) || !Array.isArray(axe.incomplete) || !Array.isArray(axe.passes) || (passed && (axeProblems(axe, state).length || !axe.passes.length))) failures.push(`missing or failing axe report: ${state}`);
@@ -169,14 +179,26 @@ export async function browserConditions(page: Page, tables: ResolvedDraft, mode:
     return await alert.textContent() === 'Project name is required' && await input.evaluate((el) => (el.getAttribute('aria-describedby') ?? '').split(/\s+/).some((id) => document.getElementById(id)?.textContent === 'Project name is required'));
   });
   await check('selection-pointer', 'true', async () => { await page.getByRole('radio', { name: 'Public', exact: true }).click(); return page.getByRole('radio', { name: 'Public', exact: true }).getAttribute('aria-checked'); });
-  await check('selection-keyboard', 'true', async () => { await page.getByRole('radio', { name: 'Public', exact: true }).focus(); await page.keyboard.press('ArrowUp'); return page.getByRole('radio', { name: 'Private', exact: true }).getAttribute('aria-checked'); });
-  await check('submit-values', { project: 'Aster', visibility: 'private' }, async () => {
+  await check('selection-keyboard', { up: 'true', down: 'true' }, async () => {
+    await page.getByRole('radio', { name: 'Public', exact: true }).focus();
+    await page.keyboard.press('ArrowUp');
+    const up = await page.getByRole('radio', { name: 'Private', exact: true }).getAttribute('aria-checked');
+    await page.keyboard.press('ArrowDown');
+    return { up, down: await page.getByRole('radio', { name: 'Public', exact: true }).getAttribute('aria-checked') };
+  });
+  // Submit the non-default selection, so the value proves the RadioGroup reaches FormData.
+  await check('submit-values', { project: 'Aster', visibility: 'public' }, async () => {
     await input.fill('Aster');
     await page.getByRole('button', { name: 'Save project', exact: true }).focus();
     await page.keyboard.press('Enter');
     return JSON.parse(await page.getByRole('status', { name: 'Submission result', exact: true }).textContent() ?? 'null');
   });
   await check('reset-values', { project: '', private: 'true', result: 'No submission', errors: 0 }, async () => {
+    // Leave a raised error, an entered name and the non-default selection for Reset to clear.
+    await input.fill('');
+    await page.getByRole('button', { name: 'Save project', exact: true }).click();
+    await page.getByRole('form', { name: 'Project form', exact: true }).getByRole('alert').waitFor();
+    await input.fill('Draft');
     await page.getByRole('button', { name: 'Reset form', exact: true }).click();
     return { project: await input.inputValue(), private: await page.getByRole('radio', { name: 'Private', exact: true }).getAttribute('aria-checked'), result: await page.getByRole('status', { name: 'Submission result', exact: true }).textContent(), errors: await page.getByRole('form', { name: 'Project form', exact: true }).getByRole('alert').count() };
   });
@@ -238,5 +260,10 @@ export async function browserConditions(page: Page, tables: ResolvedDraft, mode:
   await trigger.click(); await dialog.waitFor(); await settle();
   snapshot.failures.push(...evidence.failures);
   return { snapshot, browser: evidence };
-  } catch (error) { throw Object.assign(new Error(String(error)), { browser: evidence }); }
+  } catch (error) {
+    // Record what the throw left unreached, so the cell reads as a failure rather than missing evidence.
+    for (const name of BROWSER_ASSERTIONS) if (!evidence.assertions.some((row) => row.name === name)) evidence.assertions.push({ name, expected: 'reached', actual: null, status: 'failed', error: `not reached: ${String(error)}` });
+    evidence.failures.push(String(error));
+    throw Object.assign(new Error(String(error)), { browser: evidence });
+  }
 }

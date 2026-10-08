@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { createManifest, hashBuild } from '../../apps/docs/scripts/build-manifest.ts';
 import { BUILD_MANIFEST, BUILD_ROOT, productionAdapter } from '../../apps/docs/scripts/production-adapter.ts';
 import { diskFiles } from '../catalogue/files.ts';
-import { consumerReportProblems, consumerReproduction, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from '../consumer-report.ts';
+import { consumerCell, consumerReportProblems, consumerReproduction, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from '../consumer-report.ts';
 import { hydrationProblems, type HydrationEvidence } from '../consumer-next.ts';
 import { loadCatalogue } from '../catalogue/model.ts';
 import { CI_OBLIGATIONS, type CheckId } from './checks.ts';
@@ -545,7 +545,7 @@ const reporterFlags = (destination: string) => ['--test-reporter=spec', '--test-
 
 const consumerProofAdapter: Adapter = {
   run: (context) => evidenced(context, async () => {
-    const { browserEvidenceProblems } = await import('../consumer-browser.ts');
+    const { abortedBrowserProblems, browserEvidenceProblems } = await import('../consumer-browser.ts');
     const { cliReportProblems } = await import('../consumer-delivery.ts');
     const { parseDraft } = await import('../../packages/tokens/src/theme/codec.ts');
     const { resolveDraft } = await import('../../packages/tokens/src/theme/draft.ts');
@@ -575,7 +575,9 @@ const consumerProofAdapter: Adapter = {
           const option = (flag: string) => { const index = context.check.argv.indexOf(flag); return index < 0 ? undefined : context.check.argv[index + 1]; };
           const reproduceArgv = consumerReproduction(report.layout, report.deliveryPath, row.id, { preset: option('--preset'), fault: option('--fault') });
           if (JSON.stringify(snapshot.reproduceArgv) !== JSON.stringify(reproduceArgv) || snapshot.reproduce !== reproduceArgv.join(' ')) return { verdict: 'incomplete', executed: [], reason: `invalid reproduction parameters: ${row.id}` };
-          const browserProblems = browserEvidenceProblems(snapshot.browser, row.status === 'passed', report.layout, report.deliveryPath);
+          // A failed cell whose scene threw carries an aborted inventory instead of completed values.
+          const aborted = row.status === 'failed' && snapshot.incomplete === true;
+          const browserProblems = aborted ? abortedBrowserProblems(snapshot.browser) : browserEvidenceProblems(snapshot.browser, row.status === 'passed', report.layout, report.deliveryPath);
           if (browserProblems.length) return { verdict: 'incomplete', executed: [], reason: `${row.id}: ${browserProblems.join('; ')}` };
           if (typeof snapshot.reproduce !== 'string' || !snapshot.reproduce.endsWith(`--case ${row.id}`) || typeof snapshot.fixture !== 'string' || isAbsolute(snapshot.fixture) || relative(output, join(output, snapshot.fixture)).startsWith('..') || !existsSync(join(output, snapshot.fixture, 'package.json'))) return { verdict: 'incomplete', executed: [], reason: `missing retained fixture or cell reproduction: ${row.id}` };
           for (const kind of ['build', 'server', 'browser', 'axe', 'screenshot', 'reproduce']) {
@@ -586,6 +588,11 @@ const consumerProofAdapter: Adapter = {
           const logs = JSON.parse(readFileSync(join(output, snapshot.artifacts.browser), 'utf8'));
           if (readFileSync(join(output, snapshot.artifacts.reproduce), 'utf8').split('\n')[0] !== snapshot.reproduce || snapshot.source?.head !== report.source.head || snapshot.source?.manifest !== report.source.manifest.digest) return { verdict: 'incomplete', executed: [], reason: `invalid cell source or reproduce artifact: ${row.id}` };
           if (!['console', 'pageErrors', 'failedRequests'].every((key) => Array.isArray(logs[key])) || JSON.stringify(JSON.parse(readFileSync(join(output, snapshot.artifacts.axe), 'utf8'))) !== JSON.stringify(snapshot.browser.axe)) return { verdict: 'incomplete', executed: [], reason: `invalid browser or axe artifacts: ${row.id}` };
+          if (aborted) {
+            if (snapshot.id !== row.id || JSON.stringify(snapshot.failures) !== JSON.stringify(row.failures)) return { verdict: 'incomplete', executed: [], reason: `invalid values snapshot: ${row.id}` };
+            artifacts.push(join(output, row.snapshot));
+            continue;
+          }
           if (row.status === 'passed' && (logs.pageErrors.length || logs.failedRequests.length || logs.console.some((entry: { type: string; text: string }) => entry.type === 'error' || /hydration|hydrating|did not match|server rendered/i.test(entry.text)))) return { verdict: 'incomplete', executed: [], reason: `concealed browser errors: ${row.id}` };
           const names = ['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'];
           const variables = names.every((name) => {
@@ -595,7 +602,7 @@ const consumerProofAdapter: Adapter = {
           const paint = ['root', 'control', 'status'].every((part) => ['backgroundColor', 'color'].every((property) => typeof snapshot?.expected?.[part]?.[property] === 'string' && (row.status !== 'passed' || snapshot.actual?.[part]?.[property] === snapshot.expected[part][property])));
           if (snapshot?.id !== row.id || !variables || !paint || !snapshot.actual || JSON.stringify(snapshot.failures) !== JSON.stringify(row.failures)) return { verdict: 'incomplete', executed: [], reason: `invalid values snapshot: ${row.id}` };
           if (report.deliveryPath !== 'css') {
-            const draftName = row.id.split('/').at(-1)!.replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '');
+            const draftName = consumerCell(row.id).fixture;
             const draftPath = join(output, draftName, 'ultima-theme.json');
             if (!existsSync(draftPath)) return { verdict: 'incomplete', executed: [], reason: `missing installed draft: ${row.id}` };
             const installedDraft = readFileSync(draftPath, 'utf8');

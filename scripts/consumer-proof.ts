@@ -10,13 +10,13 @@ import { presetDraft, resolveDraft, stockDraft, type ThemeDraft } from '../packa
 import { gate } from '../packages/tokens/src/theme/gate.ts';
 import { shuffleDraft } from '../packages/tokens/src/theme/shuffle.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
-import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerPrerequisites, consumerReproduction, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
+import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
 import { THEME_PRESETS } from '../packages/tokens/src/theme/draft.ts';
-import { installScene, SCENE_ITEMS, type SceneFault } from './consumer-scene.ts';
+import { installScene, isSceneFault, SCENE_FAULTS, SCENE_ITEMS } from './consumer-scene.ts';
 import { browserConditions } from './consumer-browser.ts';
 import { consumerValues } from './consumer-values.ts';
 import { cliProof, installTheme } from './consumer-delivery.ts';
-import { browserErrors, hydrationProblems, hydrationState, nextFault, nextScene, serveNext, setupNext, type HydrationEvidence } from './consumer-next.ts';
+import { browserErrors, hydrationProblems, type BrowserLog, hydrationState, nextFault, nextScene, serveNext, setupNext, type HydrationEvidence } from './consumer-next.ts';
 import { hashSource } from './verification/source.ts';
 import { ultimaPresetUrl } from '../apps/docs/src/ultima-preset.ts';
 import { themeRegistry } from '../apps/docs/server/theme-registry.ts';
@@ -38,7 +38,8 @@ export function proofDraft(): ThemeDraft {
   return draft;
 }
 
-export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; case?: string; preset?: 'ultima'; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' | 'partial-group' | SceneFault };
+export const PROOF_FAULTS = ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', ...SCENE_FAULTS] as const;
+export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; case?: string; preset?: 'ultima'; fault?: typeof PROOF_FAULTS[number] };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
 export type BaseStyles = { height: string; display: string; radius: string; background: string; focusColor: string; focusStyle: string; focusVisible: boolean; danger: string };
@@ -185,18 +186,16 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     }
     const subtree = options.deliveryPath === 'stylex-subtree';
     if (subtree) await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace(/import ['"]\.\.\/+(?:\.\.\/)?ultima-theme\.css['"];?/, ''));
-    await installScene(app, options.layout, subtree, options.fault === 'partial-group', options.fault as SceneFault);
+    await installScene(app, options.layout, subtree, options.fault === 'partial-group', isSceneFault(options.fault) ? options.fault : undefined);
     await execute(app, 'npm', ['install', '-D', tarball]);
     const fixtures = [...(options.deliveryPath === 'registry' ? [{ name: 'css-reference', draft }] : []), { name: '', draft }, ...(options.deliveryPath === 'registry' ? THEME_PRESETS.map((preset) => ({ name: preset.id, draft: presetDraft(preset.id) })) : [])];
     const cssReference = new Map<string, Awaited<ReturnType<typeof consumerValues>>>();
     const prerequisites = consumerPrerequisites(options.layout, options.deliveryPath, options.case);
     browser = await chromium.launch({ headless: true });
     report.versions.chromium = browser.version();
+    const selectedFixture = options.case ? consumerCell(options.case).fixture : undefined;
     for (const fixture of fixtures) {
-      const cellName = options.case?.split('/').at(-1)!;
-      const selectedFixture = cellName?.replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '');
-      const fixtureName = (id: string) => id.split('/').at(-1)!.replace(/(?:system|explicit)-(?:dark|light)$/, '').replace(/-$/, '');
-      if (options.case && fixture.name !== selectedFixture && !prerequisites.some((id) => fixtureName(id) === fixture.name)) continue;
+      if (options.case && fixture.name !== selectedFixture && !prerequisites.some((id) => consumerCell(id).fixture === fixture.name)) continue;
       const draft = fixture.draft;
       assert.ok(gate(resolveDraft(draft)).every((row) => row.dark.pass && row.light.pass), `${fixture.name || 'non-stock'} pairing gate`);
       const fixtureOutput = fixture.name ? join(output, fixture.name) : output;
@@ -263,16 +262,12 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
         const context = await browser.newContext(contextOptions);
         if (isNext && explicit) await context.addCookies([{ name: 'proof-mode', value: mode, url: production.url }]);
         const page = await context.newPage();
-        const pageErrors = browserErrors(page);
+        const browserLog: BrowserLog = { console: [], pageErrors: [], failedRequests: [] };
+        const pageErrors = browserErrors(page, browserLog);
         let hydration: HydrationEvidence | undefined;
         const name = id.split('/').at(-1)!;
         const reproduceArgv = consumerReproduction(options.layout, options.deliveryPath, id, options);
         const reproduce = reproduceArgv.join(' ');
-        const browserLog = { console: [] as unknown[], pageErrors: [] as string[], failedRequests: [] as unknown[] };
-        page.on('console', (message) => browserLog.console.push({ type: message.type(), text: message.text() }));
-        page.on('pageerror', (error) => browserLog.pageErrors.push(String(error)));
-        page.on('requestfailed', (request) => browserLog.failedRequests.push({ url: request.url(), failure: request.failure() }));
-        page.on('response', (response) => { if (response.status() >= 400) browserLog.failedRequests.push({ url: response.url(), status: response.status() }); });
         let values: Record<string, unknown>;
         let failures: string[];
         let axeReport: unknown;
@@ -305,7 +300,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
           if (JSON.stringify(snapshot.actual) !== JSON.stringify(reference.actual)) snapshot.failures.push('registry paint differs from generated CSS');
         }
         snapshot.failures.push(...(hydration ? hydrationProblems(hydration) : pageErrors));
-        snapshot.failures.push(...browserLog.pageErrors, ...browserLog.console.filter((entry) => (entry as { type: string }).type === 'error').map((entry) => JSON.stringify(entry)), ...browserLog.failedRequests.map((entry) => JSON.stringify(entry)));
+        snapshot.failures.push(...browserLog.failedRequests.filter((entry) => !entry.required).map((entry) => `request failed: ${JSON.stringify(entry)}`));
         values = { ...snapshot, hydration, browser: conditions };
         failures = snapshot.failures;
         axeReport = conditions.axe;
@@ -357,7 +352,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     else if (flag === '--case' && value) options.case = value;
     else if (flag === '--preset' && value === 'ultima') options.preset = value;
     else if (flag === '--base-styles' && value) baseApp = resolve(value);
-    else if (flag === '--fault' && ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', 'portal-theme', 'required-error-name', 'focus-return'].includes(value ?? '')) options.fault = value as ProofOptions['fault'];
+    else if (flag === '--fault' && PROOF_FAULTS.includes(value as typeof PROOF_FAULTS[number])) options.fault = value as typeof PROOF_FAULTS[number];
     else throw new Error(`unsupported argument ${flag} ${value ?? ''}`);
   }
   if (baseApp) {
