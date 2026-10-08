@@ -8,12 +8,23 @@ import { CONSUMER_CASES, CONSUMER_LAYOUTS, consumerCases, consumerReportProblems
 import { browserErrors, hydrationProblems, nextFault, nextScene, setupNext, type HydrationEvidence } from '../consumer-next.ts';
 import { EventEmitter } from 'node:events';
 import type { Page } from 'playwright';
-import { proofDraft } from '../consumer-proof.ts';
+import { baseStyleProblems, proofDraft, type BaseStyles } from '../consumer-proof.ts';
 import { resolveDraft } from '../../packages/tokens/src/theme/draft.ts';
 import { gate } from '../../packages/tokens/src/theme/gate.ts';
 import { contextFor, planned, IDENTITY } from './adapter-context.ts';
 import { ADAPTERS } from './adapters.ts';
 import { manifestOf } from './source.ts';
+
+test('migrated base styles preserve stock dimensions, neutral accent/focus and danger assertions', () => {
+  const expected: BaseStyles = { height: '40px', display: 'inline-flex', radius: '4px', background: 'rgb(20, 20, 20)', focusColor: 'rgb(30, 30, 30)', focusStyle: 'solid', focusVisible: true, danger: 'rgb(200, 0, 0)' };
+  assert.deepEqual(baseStyleProblems(expected, expected), []);
+  for (const key of Object.keys(expected) as (keyof BaseStyles)[]) {
+    const actual = { ...expected, [key]: key === 'focusVisible' ? false : 'wrong' };
+    assert.ok(baseStyleProblems(actual, expected).some((failure) => failure.startsWith(`${key}:`)), key);
+  }
+  const nonNeutral = { ...expected, background: 'rgb(20, 30, 40)', focusColor: 'rgb(40, 30, 20)' };
+  assert.equal(baseStyleProblems(nonNeutral, nonNeutral).length, 2);
+});
 
 test('consumer helpers preserve the fresh Vite, Next root/src and vanilla scaffold commands', async () => {
   const calls: unknown[] = [];

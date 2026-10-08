@@ -19,6 +19,7 @@ import { RationalePage } from './routes/rationale';
 import { Root } from './routes/root';
 import { ThemeStudio } from './routes/theme-studio';
 import { TokensPage } from './routes/tokens';
+import { RecipesPage } from './routes/recipes';
 
 const rootRoute = createRootRoute({
   component: Root,
@@ -98,6 +99,13 @@ const blocksRoute = createRoute({
   staticData: { title: 'Blocks' },
 });
 
+const recipesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/recipes',
+  component: RecipesPage,
+  staticData: { title: 'Recipes' },
+});
+
 const blockRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/blocks/$id',
@@ -150,6 +158,7 @@ export const routeTree = rootRoute.addChildren([
   componentsRoute,
   componentNameRoute,
   blocksRoute,
+  recipesRoute,
   blockRoute,
   blockPreviewRoute,
   rationaleRoute,

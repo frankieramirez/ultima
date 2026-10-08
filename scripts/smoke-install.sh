@@ -192,7 +192,7 @@ writeFileSync(
     `const catalogue = [${names.map(identifier).join(", ")}];`,
     "",
     `export default function ${process.env.COMPONENT}() {`,
-    "  return <main><p>{catalogue.length} Ultima components</p><Button.Button>StyleX smoke</Button.Button></main>;",
+    "  return <main><p>{catalogue.length} Ultima components</p><Button.Button>StyleX smoke</Button.Button><Button.Button tone=\"danger\">StyleX danger smoke</Button.Button></main>;",
     "}",
     "",
   ].join("\n"),
@@ -463,6 +463,9 @@ import { ultimaStylex } from './ultima.vite.ts'"
   step "vite: npm run build"
   (cd "$app" && npm run build)
 
+  step "vite: production component styles"
+  node "$ROOT/scripts/consumer-proof.ts" --layout vite --base-styles "$app"
+
   step "vite: ultima doctor"
   assert_doctor_passes "$app"
 
@@ -523,6 +526,9 @@ import "./ultima.css";'
 
   step "next: npm run build"
   (cd "$app" && npm run build)
+
+  step "next: production component styles"
+  node "$ROOT/scripts/consumer-proof.ts" --layout "$([ "$layout" = src ] && echo next-src || echo next-app)" --base-styles "$app"
 
   step "next: ultima doctor"
   assert_doctor_passes "$app"

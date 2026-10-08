@@ -15,7 +15,7 @@ const GROUPS = ['color', 'space', 'text', 'font', 'radius', 'shadow', 'filter', 
 function headerMentions(source: string, draft = stockDraft()) {
   const head = source.slice(0, source.indexOf('\n', source.indexOf('*/')));
   expect(head).toMatch(/studio v1/i);
-  expect(head).toMatch(/draft v1/i);
+  expect(head).toContain(`draft v${draft.version}`);
   expect(head).toContain(draftFingerprint(draft));
 }
 

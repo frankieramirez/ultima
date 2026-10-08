@@ -36,7 +36,7 @@ const APPEARANCE: SearchResult[] = [
   { kind: 'action', id: 'system', title: 'Follow the system' },
 ];
 
-const GO_TO = ['/components', '/blocks', '/install', '/cli', '/tokens', '/theme-studio'];
+const GO_TO = ['/components', '/blocks', '/recipes', '/install', '/cli', '/tokens', '/theme-studio'];
 
 function indexOf(sources: SearchSources) {
   const componentResults = sources.components.map(

@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Card, Separator, Tabs } from '@ultima/ui';
+import { Button, Card, Separator, Tabs } from '@ultima/ui';
 import { useState, type ComponentType, type ReactNode } from 'react';
 
 import { AnatomyPanel } from './anatomy-panel';
@@ -8,6 +8,7 @@ import { breakpoints } from './breakpoints.stylex';
 import { CopyButton } from './copy-button';
 import { HighlightedCode } from './highlighted-code';
 import { ThemeBoundary } from './theme-boundary';
+import type { CopyBundle } from './generated/recipes';
 
 const styles = stylex.create({
   figure: {
@@ -74,6 +75,13 @@ const styles = stylex.create({
   previewInner: { minInlineSize: 'fit-content' },
   code: { padding: 0 },
   source: { backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0 },
+  files: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space['--ult-space-4'],
+    overflowX: 'auto',
+    padding: space['--ult-space-4'],
+  },
   caption: {
     color: color['--ult-color-text-muted'],
     display: 'flex',
@@ -98,7 +106,7 @@ export function Demo({
   anatomy,
 }: {
   component: ComponentType;
-  source: string;
+  source: string | CopyBundle;
   lang?: string;
   title?: ReactNode;
   titleId?: string;
@@ -109,6 +117,11 @@ export function Demo({
   anatomy?: { item: string; component: ComponentType };
 }) {
   const [tab, setTab] = useState<string | number>('preview');
+  const [fileIndex, setFileIndex] = useState(0);
+  const bundle = typeof source === 'string' ? undefined : source;
+  const file = bundle?.files[fileIndex] ?? bundle?.files[0];
+  const code = typeof source === 'string' ? source : file?.content ?? '';
+  const download = file ? `data:text/plain;charset=utf-8,${encodeURIComponent(code)}` : undefined;
   return (
     <Card.Root render={<figure />} style={[styles.figure, plate && styles.plate]}>
       <Tabs.Root value={tab} onValueChange={setTab} variant="segmented" style={styles.views}>
@@ -140,7 +153,12 @@ export function Demo({
               )}
               <Tabs.Indicator />
             </Tabs.List>
-            <CopyButton text={source} ariaLabel="Copy example source" />
+            <CopyButton text={code} ariaLabel="Copy example source" />
+            {file && (
+              <Button render={<a href={download} download={file.path.split('/').at(-1)} />} nativeButton={false} size="sm" variant="ghost">
+                Download source
+              </Button>
+            )}
           </div>
         </div>
         <Separator />
@@ -150,7 +168,21 @@ export function Demo({
           </ThemeBoundary>
         </Tabs.Panel>
         <Tabs.Panel value="code" style={styles.code}>
-          <HighlightedCode code={source} lang={lang} lineNumbers style={styles.source} />
+          {bundle && (
+            <div {...stylex.props(styles.files)}>
+              <p>Save each file at its shown path. Substitute the aliases from your components.json.</p>
+              {bundle.files.length > 1 && (
+                <Tabs.Root value={fileIndex} onValueChange={(value) => setFileIndex(Number(value))}>
+                  <Tabs.List aria-label="Source file">
+                    {bundle.files.map((entry, index) => <Tabs.Tab key={entry.path} value={index}>{entry.path}</Tabs.Tab>)}
+                    <Tabs.Indicator />
+                  </Tabs.List>
+                </Tabs.Root>
+              )}
+              <code>{file?.path}</code>
+            </div>
+          )}
+          <HighlightedCode code={code} lang={lang} lineNumbers style={styles.source} />
         </Tabs.Panel>
         {anatomy && (
           <Tabs.Panel value="anatomy">

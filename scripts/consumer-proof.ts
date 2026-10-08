@@ -4,7 +4,7 @@ import { appendFile, cp, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/pro
 import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright';
+import { chromium, type Page } from 'playwright';
 import { draftFingerprint, parseDraft, serializeDraft } from '../packages/tokens/src/theme/codec.ts';
 import { presetDraft, resolveDraft, stockDraft, type ThemeDraft } from '../packages/tokens/src/theme/draft.ts';
 import { toCss, toRegistryItem } from '../packages/tokens/src/theme/export.ts';
@@ -31,6 +31,55 @@ export function proofDraft(): ThemeDraft {
 
 export type ProofOptions = { layout: ConsumerLayout; deliveryPath: 'css'; output?: string; fault?: 'theme-import' | 'stylex-extraction' | 'src-extraction' | 'hydration-mismatch' };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
+
+export type BaseStyles = { height: string; display: string; radius: string; background: string; focusColor: string; focusStyle: string; focusVisible: boolean; danger: string };
+export function baseStyleProblems(actual: BaseStyles, expected: BaseStyles): string[] {
+  const failures: string[] = [];
+  for (const key of Object.keys(expected) as (keyof BaseStyles)[]) if (actual[key] !== expected[key]) failures.push(`${key}: expected ${expected[key]}, got ${actual[key]}`);
+  for (const key of ['background', 'focusColor'] as const) {
+    const channels = actual[key].match(/\d+/g);
+    if (!channels || channels[0] !== channels[1] || channels[1] !== channels[2]) failures.push(`${key} is not neutral`);
+  }
+  return failures;
+}
+
+export async function baseStyleProof(app: string, layout: ConsumerLayout): Promise<void> {
+  const production = layout === 'vite' ? await serveRegistry(join(app, 'dist'), true) : await serveNext(app, join(app, 'production.log'));
+  let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
+  try {
+    browser = await chromium.launch({ headless: true });
+    const tables = resolveDraft(stockDraft());
+    for (const mode of ['dark', 'light'] as const) {
+      const page: Page = await browser.newPage({ colorScheme: mode });
+      const errors = browserErrors(page);
+      await page.goto(production.url, { waitUntil: 'networkidle' });
+      const button = page.getByRole('button', { name: 'StyleX smoke', exact: true });
+      const danger = page.getByRole('button', { name: 'StyleX danger smoke', exact: true });
+      await button.waitFor();
+      const expected = await page.evaluate((table) => {
+        const probe = document.createElement('span');
+        document.body.append(probe);
+        const color = (name: string) => { probe.style.color = table[name]!; return getComputedStyle(probe).color; };
+        const expected = { height: `${Number.parseFloat(table['--ult-space-10']!) * Number.parseFloat(getComputedStyle(document.documentElement).fontSize)}px`, display: 'inline-flex', radius: table['--ult-radius-md']!, background: color('--ult-color-accent'), focusColor: color('--ult-color-border-focus'), focusStyle: 'solid', focusVisible: true, danger: color('--ult-color-danger') };
+        probe.remove();
+        return expected;
+      }, tables[mode]);
+      const styles = await button.evaluate((element) => {
+        const css = getComputedStyle(element);
+        return { height: css.height, display: css.display, radius: css.borderRadius, background: css.backgroundColor };
+      });
+      await page.keyboard.press('Tab');
+      const focus = await button.evaluate((element) => ({ focusColor: getComputedStyle(element).outlineColor, focusStyle: getComputedStyle(element).outlineStyle, focusVisible: element.matches(':focus-visible') }));
+      const actual = { ...styles, ...focus, danger: await danger.evaluate((element) => getComputedStyle(element).backgroundColor) };
+      const failures = [...baseStyleProblems(actual, expected), ...errors];
+      await writeFile(join(app, `production-styles-${mode}.values.json`), `${JSON.stringify({ layout, mode, expected, actual, failures }, null, 2)}\n`);
+      await page.screenshot({ path: join(app, `production-styles-${mode}.png`) });
+      assert.deepEqual(failures, [], `Production ${layout} ${mode} base styles`);
+      console.log(`Production ${layout} ${mode} Button styles: ${JSON.stringify(actual)}`);
+      await page.close();
+    }
+  } finally { await browser?.close(); await production.close(); }
+}
 
 export async function consumerProof(options: ProofOptions): Promise<ConsumerReport> {
   if (!CONSUMER_LAYOUTS.includes(options.layout) || options.deliveryPath !== 'css') throw new Error('unsupported consumer proof parameters');
@@ -231,15 +280,22 @@ export default function App() {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const options: ProofOptions = { layout: 'vite', deliveryPath: 'css' };
+  let baseApp: string | undefined;
   while (args.length) {
     const flag = args.shift();
     const value = args.shift();
     if (flag === '--layout' && CONSUMER_LAYOUTS.includes(value as ConsumerLayout)) options.layout = value as ConsumerLayout;
     else if (flag === '--delivery-path' && value === 'css') options.deliveryPath = value;
     else if (flag === '--output' && value) options.output = value;
+    else if (flag === '--base-styles' && value) baseApp = resolve(value);
     else if (flag === '--fault' && (value === 'theme-import' || value === 'stylex-extraction' || value === 'src-extraction' || value === 'hydration-mismatch')) options.fault = value;
     else throw new Error(`unsupported argument ${flag} ${value ?? ''}`);
   }
-  const report = await consumerProof(options);
-  process.exitCode = report.status === 'passed' ? 0 : report.status === 'failed' ? 1 : 2;
+  if (baseApp) {
+    assert.ok(!options.fault && !options.output, 'base styles run against an existing smoke build');
+    await baseStyleProof(baseApp, options.layout);
+  } else {
+    const report = await consumerProof(options);
+    process.exitCode = report.status === 'passed' ? 0 : report.status === 'failed' ? 1 : 2;
+  }
 }
