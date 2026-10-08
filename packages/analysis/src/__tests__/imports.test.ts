@@ -84,6 +84,18 @@ describe('ULT-IMPORT-001', () => {
     only(BADGE, "import { scaleLinear } from 'd3-scale';", 'ULT-IMPORT-001');
   });
 
+  test('permits only the reviewed digest dependency in token sources, never UI, elements or helpers', () => {
+    assert.deepEqual(withImport(TOKENS, "import { sha256 } from '@noble/hashes/sha256';"), []);
+    for (const path of [SEPARATOR, BADGE, HELPER]) {
+      const report = run({ [path]: `import { sha256 } from '@noble/hashes/sha256';\n${source(path)}` });
+      assert.equal(located(report, path).filter((row) => row.ruleId === 'ULT-PRIMITIVE-001').length, 1);
+      assert.equal(report.diagnostics.find((row) => row.ruleId === 'ULT-PRIMITIVE-001' && row.file === path)?.link, 'docs/spec/theme-studio.md#provenance-v1-wire-contract');
+    }
+    for (const name of ['hash.js', '@noble/curves', '@noble/hashes-other']) {
+      only(TOKENS, `import digest from '${name}';`, 'ULT-IMPORT-001');
+    }
+  });
+
   test('keeps the docs application off tooling, fixtures and tests, at the original MDX location', () => {
     only(CHROME, "import { loadCatalogue } from '../../../scripts/catalogue/model.ts';", 'ULT-IMPORT-001');
     only(CHROME, "import '../../../packages/analysis/fixtures/source/marker';", 'ULT-IMPORT-001');

@@ -5,10 +5,16 @@ import * as drafts from '../theme/draft.ts';
 import { gate } from '../theme/gate.ts';
 import { decodeFragment, encodeFragment, parseDraft, serializeDraft } from '../theme/codec.ts';
 import { toCss, toRegistryItem, toStylex } from '../theme/export.ts';
+import { withoutProvenance } from '../theme/provenance.ts';
 import { commit, createHistory, undo } from '../theme/history.ts';
 import { shuffleDraft } from '../theme/shuffle.ts';
 import legacy from './fixtures/legacy-theme-drafts.json';
 import presetV2 from './fixtures/preset-v2-theme-drafts.json';
+
+function legacyRegistry(source: string) {
+  const { meta: _meta, ...item } = JSON.parse(source);
+  return { ...item, files: item.files.slice(0, 2).map((file: { content: string }) => ({ ...file, content: withoutProvenance(file.content) })) };
+}
 
 function memoryStorage(): StorageLike {
   const items = new Map<string, string>();
@@ -55,10 +61,10 @@ test('saved v1 drafts preserve every resolved token and all exported artifacts',
     expect(parsed.draft.version).toBe(1);
     expect(parsed.draft).not.toHaveProperty('preset');
     expect(drafts.resolveDraft(parsed.draft)).toEqual(fixture.resolved);
-    expect(toCss(parsed.draft)).toBe(fixture.css);
-    expect(toStylex(parsed.draft)).toBe(fixture.stylex);
+    expect(withoutProvenance(toCss(parsed.draft))).toBe(fixture.css);
+    expect(withoutProvenance(toStylex(parsed.draft))).toBe(fixture.stylex);
     const registry = JSON.parse(toRegistryItem(parsed.draft));
-    expect({ ...registry, files: registry.files.slice(0, 2) }).toEqual(JSON.parse(fixture.registry));
+    expect(legacyRegistry(toRegistryItem(parsed.draft))).toEqual(JSON.parse(fixture.registry));
     expect(registry.files[2]?.target).toBe('~/DESIGN.md');
     expect(drafts.resetDraft(parsed.draft)).toEqual(legacy.cases[0]!.draft);
   }
@@ -135,10 +141,9 @@ test('version-2 preset drafts resolve every token unchanged after open, autosave
       expect(draft.version, id).toBe(2);
       expect(serializeDraft(draft)).toBe(serializeDraft(fixture.draft as drafts.ThemeDraft));
       expect(drafts.resolveDraft(draft), id).toEqual(fixture.resolved);
-      expect(toCss(draft), id).toBe(fixture.css);
-      expect(toStylex(draft), id).toBe(fixture.stylex);
-      const registry = JSON.parse(toRegistryItem(draft));
-      expect({ ...registry, files: registry.files.slice(0, 2) }, id).toEqual(JSON.parse(fixture.registry));
+      expect(withoutProvenance(toCss(draft)), id).toBe(fixture.css);
+      expect(withoutProvenance(toStylex(draft)), id).toBe(fixture.stylex);
+      expect(legacyRegistry(toRegistryItem(draft)), id).toEqual(JSON.parse(fixture.registry));
       expect(drafts.resetDraft(draft)).toEqual(opened.draft);
     }
   }
@@ -154,7 +159,7 @@ test('version-2 preset drafts resolve every token unchanged after open, autosave
     for (const draft of [restored.draft, shared.draft]) {
       expect(draft.version).toBe(1);
       expect(drafts.resolveDraft(draft)).toEqual(fixture.resolved);
-      expect(toCss(draft)).toBe(fixture.css);
+      expect(withoutProvenance(toCss(draft))).toBe(fixture.css);
     }
   }
 });

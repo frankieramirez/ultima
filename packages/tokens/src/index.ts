@@ -65,9 +65,22 @@ export {
   FRAGMENT_SAFE_LENGTH,
   parseDraft,
   serializeDraft,
+  CANONICAL_SERIALIZATION_VERSION,
+  canonicalJson,
+  canonicalDraft,
+  contentDigest,
+  draftDigest,
 } from './theme/codec';
 export type { DraftParseReason, DraftParseResult, FragmentEncodeResult } from './theme/codec';
 export { toCss, toDesignMd, toRegistryItem, toStylex, STUDIO_VERSION } from './theme/export';
+export { compare } from './theme/compare';
+export type { ThemeArtifact, ThemeComparison } from './theme/compare';
+export {
+  EXPORTER_VERSION, DESIGN_DOCUMENT_VERSION, GENERATED_START, GENERATED_END,
+  draftProvenance, defaultProvenance, provenanceComment, parseProvenance,
+  generatedRegion, parseGeneratedRegion, refreshDesignRegion,
+} from './theme/provenance';
+export type { ThemeProvenance, ProvenanceResult, GeneratedRegionResult } from './theme/provenance';
 export { createRegistryUrl, REGISTRY_URL_MAX_LENGTH, THEME_REGISTRY_PATH } from './theme/registry-url';
 export {
   AUTOSAVE_BACKUP_KEY,

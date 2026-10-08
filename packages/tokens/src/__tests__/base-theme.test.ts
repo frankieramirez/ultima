@@ -8,12 +8,23 @@ import { restoreAutosave, saveAutosave, type StorageLike } from '../theme/autosa
 import { decodeFragment, encodeFragment, parseDraft, serializeDraft } from '../theme/codec.ts';
 import { presetDraft, resetDraft, resolveDraft, stockDraft, type ThemeDraft } from '../theme/draft.ts';
 import { toCss, toRegistryItem, toStylex } from '../theme/export.ts';
+import { parseGeneratedRegion, withoutProvenance } from '../theme/provenance.ts';
 import { gate } from '../theme/gate.ts';
 import { BASE_RECIPE_VERSION, generateScales, UnsupportedRecipeError } from '../theme/recipe.ts';
 import reference from '../../scripts/palette.json';
 import fixtures from './fixtures/pre-base-theme-drafts.json';
 
 const hash = (source: string) => createHash('sha256').update(source).digest('hex');
+
+function legacyRegistry(source: string): string {
+  const { meta: _meta, ...item } = JSON.parse(source);
+  item.files = item.files.map((file: { content: string; path: string }) => {
+    const region = file.path === 'DESIGN.md' ? parseGeneratedRegion(file.content) : null;
+    const content = region?.status === 'intact' ? region.content.slice(1) : file.content;
+    return { ...file, content: withoutProvenance(content).replace(/^\n+/, '') };
+  });
+  return `${JSON.stringify(item, null, 2)}\n`;
+}
 
 test('every pre-base draft keeps its values through import, autosave, share and export', async () => {
   for (const fixture of fixtures.cases) {
@@ -33,9 +44,9 @@ test('every pre-base draft keeps its values through import, autosave, share and 
     for (const draft of [opened.draft, restored.draft, shared.draft]) {
       expect(resolveDraft(draft), fixture.name).toEqual(fixture.resolved);
       expect(hash(serializeDraft(draft)), fixture.name).toBe(fixture.exports.serialized);
-      expect(hash(toCss(draft)), fixture.name).toBe(fixture.exports.css);
-      expect(hash(toStylex(draft)), fixture.name).toBe(fixture.exports.stylex);
-      expect(hash(toRegistryItem(draft)), fixture.name).toBe(fixture.exports.registry);
+      expect(hash(withoutProvenance(toCss(draft))), fixture.name).toBe(fixture.exports.css);
+      expect(hash(withoutProvenance(toStylex(draft))), fixture.name).toBe(fixture.exports.stylex);
+      expect(hash(legacyRegistry(toRegistryItem(draft))), fixture.name).toBe(fixture.exports.registry);
     }
   }
 });
