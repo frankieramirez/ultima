@@ -193,14 +193,14 @@ export async function browserConditions(page: Page, tables: ResolvedDraft, mode:
     await page.keyboard.press('Enter');
     return JSON.parse(await page.getByRole('status', { name: 'Submission result', exact: true }).textContent() ?? 'null');
   });
-  await check('reset-values', { project: '', private: 'true', result: 'No submission', errors: 0 }, async () => {
+  await check('reset-values', { raised: 'true', project: '', private: 'true', result: 'No submission', errors: 0 }, async () => {
     // Leave a raised error, an entered name and the non-default selection for Reset to clear.
     await input.fill('');
     await page.getByRole('button', { name: 'Save project', exact: true }).click();
-    await page.getByRole('form', { name: 'Project form', exact: true }).getByRole('alert').waitFor();
+    const raised = await input.getAttribute('aria-invalid');
     await input.fill('Draft');
     await page.getByRole('button', { name: 'Reset form', exact: true }).click();
-    return { project: await input.inputValue(), private: await page.getByRole('radio', { name: 'Private', exact: true }).getAttribute('aria-checked'), result: await page.getByRole('status', { name: 'Submission result', exact: true }).textContent(), errors: await page.getByRole('form', { name: 'Project form', exact: true }).getByRole('alert').count() };
+    return { raised, project: await input.inputValue(), private: await page.getByRole('radio', { name: 'Private', exact: true }).getAttribute('aria-checked'), result: await page.getByRole('status', { name: 'Submission result', exact: true }).textContent(), errors: await page.getByRole('form', { name: 'Project form', exact: true }).getByRole('alert').count() };
   });
   await check('navigation-current', 'page', () => page.getByRole('link', { name: 'Projects', exact: true }).getAttribute('aria-current'));
   await check('navigation-keyboard', true, async () => { await page.getByRole('link', { name: 'Projects', exact: true }).focus(); await page.keyboard.press('Tab'); return focused(page.getByRole('link', { name: 'Activity', exact: true })); });
