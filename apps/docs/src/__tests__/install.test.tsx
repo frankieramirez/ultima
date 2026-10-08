@@ -7,12 +7,42 @@ import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/rea
 import { routeTree } from '../router';
 import { parseDraft, resolveDraft } from '@ultima/tokens';
 import legacy from '../../../../packages/tokens/src/__tests__/fixtures/pre-base-theme-drafts.json';
+import { setupItems } from '../../../../registry/items.config.ts';
 import '../styles.css';
 
 function mount(path: string) {
   const history = createMemoryHistory({ initialEntries: [path] });
   return render(<RouterProvider router={createRouter({ routeTree, history })} />);
 }
+
+test('built setup items print every hand step and keep theme assertions manual', async () => {
+  for (const [id, { handSteps }] of Object.entries(setupItems)) {
+    const item = await (await fetch(`/r/${id}.json`)).json();
+    for (const [index, step] of handSteps.entries()) expect(item.docs).toContain(`${index + 1}. ${step.prose}`);
+    const theme = handSteps.filter((step) => step.prose.includes('theme'));
+    expect(theme).toHaveLength(2);
+    for (const step of theme) {
+      expect(step.assertion).toBeUndefined();
+      expect(step.unverifiable).toBeTruthy();
+    }
+  }
+});
+
+test('hosted guide and install page teach discovery and offline work without planned flags', async () => {
+  const guide = await (await fetch('/llms.txt')).text();
+  expect(new TextEncoder().encode(guide).byteLength).toBeLessThanOrEqual(64 * 1024);
+  expect(guide).toContain('## Theme adoption');
+  expect(guide).toContain('## Discover and maintain the product theme');
+  expect(guide).not.toContain('doctor --theme');
+  const screen = await mount('/install');
+  await expect.element(screen.getByRole('link', { name: 'discovery and safe-update workflow' })).toHaveAttribute('href', '/llms.txt#discover-and-maintain-the-product-theme');
+  const prose = document.querySelector('main')!.textContent!;
+  expect(prose).toContain('npx --no-install ultima-design doctor');
+  expect(prose).toContain('npx --no-install ultima-design check');
+  expect(prose).toContain('Preserve those choices');
+  expect(prose).toContain('preserve consumer prose');
+  expect(prose).not.toContain('doctor --theme');
+});
 
 test('install links to update guidance with a working frozen Ultima preset command', async () => {
   const install = await mount('/install');
