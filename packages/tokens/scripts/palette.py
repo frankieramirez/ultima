@@ -57,7 +57,7 @@ CF={'dark':[0.15,0.25,0.4,0.5,0.6,0.7,0.8,0.9,1,1,0.9,0.75],
     'light':[0.05,0.12,0.25,0.35,0.45,0.55,0.65,0.8,1,1,1,0.8]}
 PIN={('mithril','dark',1):'#101011',('mana','dark',12):'#8ff5ff'}
 
-def build():
+def build(neutral=False):
     out={}
     for name,h in HUE.items():
         out[name]={}
@@ -67,25 +67,36 @@ def build():
             cf=CF_OVR.get(name,{}).get(mode,CF[mode])
             steps=[]
             for i,L in enumerate(Ls):
-                pin=PIN.get((name,mode,i+1))
-                steps.append(pin or oklch_to_hex(L,PEAK[name][mode]*cf[i],h))
+                pin=None if neutral else PIN.get((name,mode,i+1))
+                saturation=0 if neutral and name in ('mithril','arcane','mana') else 1
+                steps.append(pin or oklch_to_hex(L,PEAK[name][mode]*saturation*cf[i],h))
             out[name][mode]=steps
     return out
 
 # ---------- semantic mapping ----------
 HUES=['arcane','mana','verdant','ember','ruin']
 ROLE={'accent':'arcane','highlight':'mana','success':'verdant','warning':'ember','danger':'ruin'}
-def semantic(p,mode):
+def semantic(p,mode,neutral=False):
     m=lambda s,i:p[s][mode][i-1]
     t={'surface':m('mithril',1),'surface-raised':m('mithril',2),'surface-sunken':m('mithril',3),'surface-hover':m('mithril',4),'surface-active':m('mithril',5),
        'text':m('mithril',12),'text-muted':m('mithril',11),'text-subtle':m('mithril',10),'text-inverse':m('mithril',1),
-       'border':m('mithril',6),'border-strong':m('mithril',8),'border-focus':m('arcane',9)}
+       'border':m('mithril',6),'border-strong':m('mithril',8),'border-focus':m('arcane',9),
+       'action':m('mana',9),'action-hover':m('mana',10),'action-active':m('mana',11)}
+    t['action-contrast']=max((m('mithril',1),m('mithril',12)),key=lambda c:min(cr(c,t[key]) for key in ('action','action-hover','action-active')))
     for role,s in ROLE.items():
-        t[role]=m(s,9); t[role+'-hover']=m(s,10); t[role+'-active']=m(s,11); t[role+'-subtle']=m(s,3); t[role+'-text']=m(s,12)
+        t[role]=m(s,9); t[role+'-hover']=m(s,10); t[role+'-active']=m(s,11); t[role+'-subtle']=m(s,3); t[role+'-border']=m(s,7); t[role+'-text']=m(s,12)
         # contrast on-color: mithril1 unless it fails on any of base/hover/active, then mithril12
         cands=[('mithril1',m('mithril',1)),('mithril12',m('mithril',12))]
         best=max(cands,key=lambda c:min(cr(c[1],t[role]),cr(c[1],t[role+'-hover']),cr(c[1],t[role+'-active'])))
         t[role+'-contrast']=best[1]; t[role+'-contrast@step']=best[0]
+    if neutral:
+        t['accent']=t['accent-text']=m('mithril',12)
+        t['accent-subtle']=m('mithril',3); t['accent-border']=m('mithril',7)
+        offsets=(-0.06,-0.11) if mode=='dark' else (0.08,0.14)
+        t['accent-hover'],t['accent-active']=[oklch_to_hex(L_TOP['mithril'][mode][3]+offset,0,HUE['mithril']) for offset in offsets]
+        t['accent-contrast']=max((m('mithril',1),m('mithril',12)),key=lambda c:min(cr(c,t[key]) for key in ('accent','accent-hover','accent-active')))
+        t['accent-contrast@step']='mithril1' if t['accent-contrast']==m('mithril',1) else 'mithril12'
+    t['surface-overlay']=m('mithril',2)+('b3' if mode=='dark' else 'cc')
     return t
 
 def gate(t,mode):
@@ -100,28 +111,36 @@ def gate(t,mode):
     for role in ROLE:
         for bg in ('surface','surface-raised',role+'-subtle'): chk(role+'-text',bg,4.5,'hue text')
         for bg in (role,role+'-hover',role+'-active'): chk(role+'-contrast',bg,4.5,'on-color')
+    for bg in ('action','action-hover','action-active'): chk('action-contrast',bg,4.5,'action')
     return rows,fails
 
 if __name__=='__main__':
-    p=build()
+    p=build(neutral=True)
+    ultima=build()
     for name in p:
         for mode in p[name]:
             print(f'{name:8}{mode:6}'+' '.join(p[name][mode]))
     allfails=[]
     for mode in ('dark','light'):
-        t=semantic(p,mode); rows,fails=gate(t,mode); allfails+=fails
+        t=semantic(p,mode,neutral=True); rows,fails=gate(t,mode); allfails+=fails
         print(f'\n{mode} contrast tokens: '+', '.join(f"{r}-contrast={t[r+'-contrast@step']}" for r in ROLE))
+        if '-v' in sys.argv:
+            for r in rows: print('  ',r)
+    for mode in ('dark','light'):
+        rows,fails=gate(semantic(ultima,mode),mode); allfails+=fails
+        print(f'Ultima {mode}: {len(rows)} pairings, {len(fails)} failures')
         if '-v' in sys.argv:
             for r in rows: print('  ',r)
     print('\nFAILS:' if allfails else '\nALL PAIRINGS PASS')
     for mode,fg,bg,r,minr in allfails: print(f'  {mode}: {fg} on {bg} is {r}:1, minimum {minr}:1',file=sys.stderr)
-    fresh=json.dumps({'palette':p,'semantic':{m:semantic(p,m) for m in ('dark','light')}},indent=1)
+    fresh=json.dumps({'recipeVersion':3,'palette':p,'semantic':{m:semantic(p,m,neutral=True) for m in ('dark','light')},
+                     'ultima':{'palette':ultima,'semantic':{m:semantic(ultima,m) for m in ('dark','light')}}},indent=1)
     path=os.path.join(os.path.dirname(os.path.abspath(__file__)),'palette.json')
     if '--check' in sys.argv:
         committed=open(path).read() if os.path.exists(path) else ''
         diff=list(difflib.unified_diff(committed.splitlines(),fresh.splitlines(),'palette.json (committed)','palette.json (regenerated)',lineterm=''))
         if diff:
-            print('\n'.join(['palette.json differs from a fresh run:']+diff),file=sys.stderr)
+            print('\n'.join(['', 'palette.json differs from a fresh run:']+diff),file=sys.stderr)
             sys.exit(1)
         print('palette.json matches a fresh run')
     else:

@@ -1,5 +1,6 @@
 import type { ColorMode } from '../palette.ts';
 import {
+  BASE_RECIPE_VERSION,
   contrastRatio,
   generateInkStates,
   generateScales,
@@ -289,7 +290,7 @@ function applyOverrides(table: TokenTable, overrides: Partial<TokenTable>, mode:
   return next;
 }
 
-export function stockDraft(): ThemeDraft {
+function legacyStockDraft(): ThemeDraft {
   return {
     version: 1,
     recipeVersion: RECIPE_VERSION,
@@ -322,7 +323,7 @@ export function stockDraft(): ThemeDraft {
 /** A preset id gives its current revision 2; `{ id, revision: 1 }` gives the version-2 definition. */
 export function presetDraft(preset: ThemePresetId | ThemePresetOrigin): ThemeDraft {
   const { id, revision }: ThemePresetOrigin = typeof preset === 'string' ? { id: preset, revision: 2 } : preset;
-  const draft = stockDraft();
+  const draft = legacyStockDraft();
   draft.version = revision === 1 ? 2 : THEME_DRAFT_VERSION;
   draft.recipeVersion = 2;
   draft.preset = { id, revision };
@@ -353,12 +354,19 @@ export function presetDraft(preset: ThemePresetId | ThemePresetOrigin): ThemeDra
   return draft;
 }
 
+export function stockDraft(): ThemeDraft {
+  const draft = presetDraft('neutral');
+  draft.recipeVersion = BASE_RECIPE_VERSION;
+  return draft;
+}
+
 export function presetRevision(version: 2 | typeof THEME_DRAFT_VERSION): ThemePresetRevision {
   return version === 2 ? 1 : 2;
 }
 
 export function resetDraft(draft: ThemeDraft): ThemeDraft {
-  if (draft.version === 1) return stockDraft();
+  if (draft.version === 1) return legacyStockDraft();
+  if (draft.recipeVersion === BASE_RECIPE_VERSION) return stockDraft();
   return presetDraft(draft.preset ?? { id: 'neutral', revision: presetRevision(draft.version) });
 }
 

@@ -113,14 +113,6 @@ export const siteLight = stylex.createTheme(color, {
   '--ult-color-surface-overlay': '#f9f9f9cc',
 });
 
-export const siteShape = stylex.createTheme(radius, {
-  '--ult-radius-xs': '1px',
-  '--ult-radius-sm': '2px',
-  '--ult-radius-md': '4px',
-  '--ult-radius-lg': '6px',
-  '--ult-radius-full': '9999px',
-});
-
 export const neutralDark = stylex.createTheme(color, {
   '--ult-color-surface': '#0e0e0e',
   '--ult-color-surface-raised': '#151515',

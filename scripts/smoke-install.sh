@@ -192,7 +192,7 @@ writeFileSync(
     `const catalogue = [${names.map(identifier).join(", ")}];`,
     "",
     `export default function ${process.env.COMPONENT}() {`,
-    "  return <main><p>{catalogue.length} Ultima components</p><Button.Button>StyleX smoke</Button.Button></main>;",
+    "  return <main><p>{catalogue.length} Ultima components</p><Button.Button>StyleX smoke</Button.Button><Button.Button tone=\"danger\">StyleX danger smoke</Button.Button></main>;",
     "}",
     "",
   ].join("\n"),
@@ -462,6 +462,9 @@ import { ultimaStylex } from './ultima.vite.ts'"
 
   step "vite: npm run build"
   (cd "$app" && npm run build)
+
+  step "vite: production component styles"
+  node "$ROOT/scripts/smoke-next-styles.ts" "$app" --vite
 
   step "vite: ultima doctor"
   assert_doctor_passes "$app"

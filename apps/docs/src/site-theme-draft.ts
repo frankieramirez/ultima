@@ -38,9 +38,11 @@ export function renderSiteThemes(): string {
       for (const [token, value] of tokens(resolved, mode, '--ult-color-')) lines.push(`  '${token}': '${value}',`);
       lines.push('});');
     }
-    lines.push('', `export const ${name}Shape = stylex.createTheme(radius, {`);
-    for (const [token, value] of tokens(resolved, 'dark', '--ult-radius-')) lines.push(`  '${token}': '${value}',`);
-    lines.push('});');
+    if (name === 'neutral') {
+      lines.push('', `export const ${name}Shape = stylex.createTheme(radius, {`);
+      for (const [token, value] of tokens(resolved, 'dark', '--ult-radius-')) lines.push(`  '${token}': '${value}',`);
+      lines.push('});');
+    }
   }
   return `${lines.join('\n')}\n`;
 }

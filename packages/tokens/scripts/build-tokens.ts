@@ -17,7 +17,9 @@ import ts from 'typescript';
 
 import { stylexOptions } from '../../../stylex.options.ts';
 import { toDefaultDesignMd } from '../src/theme/export.ts';
+import { resolveDraft, stockDraft } from '../src/theme/draft.ts';
 import type { ContrastResult, TokenEntry, TokensJson } from '../src/tokens-json.ts';
+import { generateBaseSources } from './base-theme.ts';
 
 const scriptsDir = dirname(fileURLToPath(import.meta.url));
 const packageDir = join(scriptsDir, '..');
@@ -287,7 +289,7 @@ function themesByMode(
 }
 
 /**
- * `themes.ts` restates every palette value by hand, so this is what catches it drifting
+ * `themes.ts` restates every generated color value, so this catches it drifting
  * from `tokens.stylex.ts`.
  */
 function checkThemesMatchTokens(
@@ -413,12 +415,12 @@ function runGate(values: Map<string, ModeValues>): ContrastResult[] {
       fail(`the contrast gate names ${pairing.foreground} on ${pairing.background}, which is not a token`);
     }
     const ratios = MODES.map(
-      (mode) => Math.round(contrastRatio(foreground[mode], background[mode]) * 100) / 100,
+      (mode) => contrastRatio(foreground[mode], background[mode]),
     ) as [number, number];
     return {
       ...pairing,
-      dark: ratios[0],
-      light: ratios[1],
+      dark: Math.round(ratios[0] * 100) / 100,
+      light: Math.round(ratios[1] * 100) / 100,
       pass: ratios.every((ratio) => ratio >= pairing.minimum),
     };
   });
@@ -451,12 +453,19 @@ function fail(message: string): never {
 }
 
 async function main(): Promise<void> {
+  generateBaseSources();
   const compiled = collect(await compileCssRules());
   const tokens = readTokenSource();
   const values = resolveValues(tokens, compiled);
 
   checkAgainstPalette(tokens, values);
-  const colorTokens = tokens.filter((token) => token.paletteSteps).map((token) => token.name);
+  const colorTokens = tokens.filter((token) => token.group === 'color').map((token) => token.name);
+  const base = resolveDraft(stockDraft());
+  for (const token of tokens.filter((token) => token.group === 'color' || token.group === 'radius')) {
+    for (const mode of MODES) {
+      if (values.get(token.name)?.[mode] !== base[mode][token.name]) fail(`${token.name} differs from the base draft in ${mode}`);
+    }
+  }
   const themes = themesByMode(compiled, colorTokens, values);
   checkThemesMatchTokens(themes, colorTokens, values);
 

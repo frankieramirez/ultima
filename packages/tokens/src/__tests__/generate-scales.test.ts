@@ -9,25 +9,27 @@ import { generateScales, SCALE_NAMES, STOCK_SEEDS, seedFromSrgb, type ScaleSeeds
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const PALETTE_PY = join(root, 'packages/tokens/scripts/palette.py');
 
-function pythonScales(seeds: ScaleSeeds): Record<string, Record<'dark' | 'light', string[]>> {
+function pythonScales(corpus: ScaleSeeds[]): Record<string, Record<'dark' | 'light', string[]>>[] {
   const script = `
 import copy, json, runpy, sys
 p = runpy.run_path(sys.argv[1])
 orig_peak = copy.deepcopy(p['PEAK'])
 p['PIN'].clear()
-seeds = json.loads(sys.argv[2])
-for name, seed in seeds.items():
-    p['HUE'][name] = seed['hue']
-    for mode in ('dark', 'light'):
-        p['PEAK'][name][mode] = orig_peak[name][mode] * seed['saturation']
-print(json.dumps(p['build']()))
+results = []
+for seeds in json.loads(sys.argv[2]):
+    for name, seed in seeds.items():
+        p['HUE'][name] = seed['hue']
+        for mode in ('dark', 'light'):
+            p['PEAK'][name][mode] = orig_peak[name][mode] * seed['saturation']
+    results.append(p['build']())
+print(json.dumps(results))
 `;
   const stdout = execFileSync(
     'python3',
-    ['-c', script, PALETTE_PY, JSON.stringify(seeds)],
+    ['-c', script, PALETTE_PY, JSON.stringify(corpus)],
     { encoding: 'utf8' },
   );
-  return JSON.parse(stdout) as Record<string, Record<'dark' | 'light', string[]>>;
+  return JSON.parse(stdout) as Record<string, Record<'dark' | 'light', string[]>>[];
 }
 
 function stockWith(scale: (typeof SCALE_NAMES)[number], hue: number, saturation: number): ScaleSeeds {
@@ -52,9 +54,7 @@ const corpus: ScaleSeeds[] = [
 ];
 
 test('generateScales matches palette.py hex for identical seeds with pins disabled', () => {
-  for (const seeds of corpus) {
-    expect(generateScales(seeds)).toEqual(pythonScales(seeds));
-  }
+  expect(corpus.map((seeds) => generateScales(seeds))).toEqual(pythonScales(corpus));
 });
 
 test('seedFromSrgb maps a picked color onto hue and a 0–1.5 saturation factor', () => {

@@ -15,11 +15,11 @@ import {
 
 import { readStored, writeStored } from './storage';
 import { shell } from './shell.stylex';
-import { neutralDark, neutralLight, neutralShape, siteDark, siteLight, siteShape } from './site-themes';
+import { neutralDark, neutralLight, neutralShape, siteDark, siteLight } from './site-themes';
 
 export type Scheme = 'dark' | 'light';
 
-export const siteTheme = { dark: [siteDark, siteShape], light: [siteLight, siteShape] } as const;
+export const siteTheme = { dark: [siteDark], light: [siteLight] } as const;
 
 export const neutralTheme = { dark: [neutralDark, neutralShape], light: [neutralLight, neutralShape] } as const;
 

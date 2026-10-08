@@ -22,11 +22,13 @@ export { palette } from './palette';
 export type { ColorMode, ScaleName } from './palette';
 export type { ContrastResult, TokenEntry, TokenValue, TokensJson } from './tokens-json';
 export {
+  BASE_RECIPE_VERSION,
   generateScales,
   RECIPE_VERSION,
   SCALE_NAMES,
   STOCK_SEEDS,
   seedFromSrgb,
+  UnsupportedRecipeError,
 } from './theme/recipe';
 export type { GeneratedScales, ScaleSeed, ScaleSeeds } from './theme/recipe';
 export {
