@@ -1,5 +1,5 @@
-import { expect, test } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { expect, onTestFinished, test } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import { RouterProvider, createMemoryHistory, createRouter } from '@tanstack/react-router';
@@ -42,6 +42,19 @@ test('hosted guide and install page teach discovery and offline work without pla
   expect(prose).toContain('Preserve those choices');
   expect(prose).toContain('preserve consumer prose');
   expect(prose).not.toContain('doctor --theme');
+});
+
+test('long hosted theme links wrap inside the setup steps at the tablet breakpoint', async () => {
+  await page.viewport(768, 844);
+  onTestFinished(() => page.viewport(1280, 720));
+  const screen = await mount('/install');
+  await expect.element(screen.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
+  const steps = [...document.querySelectorAll<HTMLElement>('main li')].filter((step) =>
+    step.textContent?.includes('https://ultima.systems/llms.txt#discover-and-maintain-the-product-theme'),
+  );
+  expect(steps).toHaveLength(2);
+  for (const step of steps) expect(step.scrollWidth).toBeLessThanOrEqual(step.clientWidth);
+  expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(768);
 });
 
 test('install links to update guidance with a working frozen Ultima preset command', async () => {
