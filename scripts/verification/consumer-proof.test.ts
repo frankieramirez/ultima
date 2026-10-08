@@ -11,7 +11,7 @@ import { sceneSource } from '../consumer-scene.ts';
 import { BROWSER_ASSERTIONS, browserEvidenceProblems } from '../consumer-browser.ts';
 import { toCss, toRegistryItem } from '../../packages/tokens/src/theme/export.ts';
 import { draftFingerprint, serializeDraft } from '../../packages/tokens/src/theme/codec.ts';
-import { THEME_PRESETS } from '../../packages/tokens/src/theme/draft.ts';
+import { THEME_PRESETS, stockDraft } from '../../packages/tokens/src/theme/draft.ts';
 import { browserErrors, hydrationProblems, nextFault, nextScene, setupNext, type HydrationEvidence } from '../consumer-next.ts';
 import { EventEmitter } from 'node:events';
 import type { Page } from 'playwright';
@@ -105,7 +105,7 @@ test('scene faults mutate the real portal boundary, required error name and focu
 });
 
 test('browser evidence fails closed on missing assertions, dynamic probes, failures and axe states', () => {
-  const variables = { '--ult-color-surface': { expected: 'paint', actual: 'paint' } };
+  const variables = Object.fromEntries(Object.keys(resolveDraft(stockDraft()).light).map((key) => [key, { expected: 'paint', actual: 'paint' }]));
   const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map((part) => [part, { backgroundColor: 'paint', color: 'text' }]));
   const fixture = {
     assertions: BROWSER_ASSERTIONS.map((name) => ({ name, expected: true, actual: true, status: 'passed' })),
@@ -122,7 +122,7 @@ test('browser evidence fails closed on missing assertions, dynamic probes, failu
     if (fault === 'axe-violation') changed.axe.open!.violations.push({ id: 'color-contrast' });
     if (fault === 'missing-modes') changed.modeSnapshots = [];
     if (fault === 'one-mode') changed.modeSnapshots.forEach((snapshot) => { snapshot.mode = 'dark'; });
-    if (fault === 'stale-portal') changed.modeSnapshots[0]!.portalVariables['--ult-color-surface'].actual = 'stale';
+    if (fault === 'stale-portal') changed.modeSnapshots[0]!.portalVariables['--ult-color-surface']!.actual = 'stale';
     if (fault === 'concealed-failure') changed.failures.push('mode-switch-portal failed');
     if (fault === 'dynamic-extraction') changed.modeSnapshots[0]!.extraction.actual.height = '0px';
     if (fault === 'dynamic-boundary') changed.modeSnapshots[0]!.portal.inContainer = false;
@@ -132,13 +132,25 @@ test('browser evidence fails closed on missing assertions, dynamic probes, failu
     if (fault === 'dynamic-path') changed.modeSnapshots[0]!.deliveryPath = 'css';
     assert.ok(browserEvidenceProblems(changed, true, 'vite', 'stylex-subtree').length, fault);
   }
+  for (const part of ['variables', 'controlVariables', 'portalVariables'] as const) {
+    const changed = structuredClone(fixture);
+    changed.modeSnapshots[0]!.variables = structuredClone(variables);
+    changed.modeSnapshots[0]!.controlVariables = structuredClone(variables);
+    changed.modeSnapshots[0]!.portalVariables = structuredClone(variables);
+    changed.modeSnapshots[0]!.portalVariables['--ult-color-surface']!.actual = 'concealed mismatch';
+    delete changed.modeSnapshots[0]![part]['--ult-color-surface'];
+    assert.ok(browserEvidenceProblems(changed, true, 'vite', 'stylex-subtree').length, `${part}: omitted source token`);
+  }
+  const foreign = structuredClone(fixture);
+  foreign.modeSnapshots[0]!.variables['--foreign'] = { expected: 'paint', actual: 'paint' };
+  assert.ok(browserEvidenceProblems(foreign, true, 'vite', 'stylex-subtree').length);
 });
 
 test('modal-only axe checks require visible exhaustive focus wraps and never resolve other incomplete rules', () => {
-  const variables = { '--ult-color-surface': { expected: 'paint', actual: 'paint' } };
+  const variables = Object.fromEntries(Object.keys(resolveDraft(stockDraft()).light).map((key) => [key, { expected: 'paint', actual: 'paint' }]));
   const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map((part) => [part, { backgroundColor: 'paint', color: 'text' }]));
   const inventory = [{ role: 'button', name: 'First' }, { role: 'button', name: 'Last' }];
-  const rule = { id: 'aria-hidden-focus', nodes: [{ any: [], none: [], all: [{ id: 'focusable-modal-open', relatedNodes: [{ target: ['hidden-background'] }] }] }] };
+  const rule = { id: 'aria-hidden-focus', nodes: [{ any: [], none: [], all: [{ id: 'focusable-modal-open', relatedNodes: [{ html: '<button hidden>Background</button>', target: ['hidden-background'] }] }] }] };
   const steps = [0, 1, 0, 1, 0, 1].map((position, index) => ({ key: index < 3 ? 'Tab' : 'Shift+Tab', inside: true, accessible: true, position, item: inventory[position] }));
   const fixture = {
     assertions: BROWSER_ASSERTIONS.map((name) => ({ name, expected: true, actual: true, status: 'passed' })),
@@ -148,14 +160,14 @@ test('modal-only axe checks require visible exhaustive focus wraps and never res
   assert.deepEqual(browserEvidenceProblems(fixture, true), []);
   const hiddenBackground = structuredClone(fixture);
   for (const state of ['open', 'switched-open'] as const) {
-    hiddenBackground.axe[state]!.incomplete[0]!.nodes[0]!.all[0]!.relatedNodes = Array.from({ length: 11 }, () => ({ target: ['hidden-background'] }));
+    hiddenBackground.axe[state]!.incomplete[0]!.nodes[0]!.all[0]!.relatedNodes = Array.from({ length: 11 }, () => ({ html: '<button hidden>Background</button>', target: ['hidden-background'] }));
     hiddenBackground.axe[state]!.focusCycle.relatedNodes = 11;
   }
   assert.deepEqual(browserEvidenceProblems(hiddenBackground, true), []);
   for (const fault of ['unrelated-rule', 'mixed-check', 'empty-node', 'empty-related', 'closed-incomplete', 'missing-cycle', 'wrong-count', 'missing-step', 'wrong-key', 'outside', 'hidden-inside', 'wrong-position', 'wrong-item', 'empty-inventory'] as const) {
     const changed = structuredClone(fixture), axe = changed.axe.open!;
     if (fault === 'unrelated-rule') axe.incomplete[0]!.id = 'color-contrast';
-    if (fault === 'mixed-check') axe.incomplete[0]!.nodes[0]!.all.push({ id: 'unresolved-check', relatedNodes: [{} as { target: string[] }] });
+    if (fault === 'mixed-check') axe.incomplete[0]!.nodes[0]!.all.push({ id: 'unresolved-check', relatedNodes: [{} as { html: string; target: string[] }] });
     if (fault === 'empty-node') axe.incomplete[0]!.nodes = [];
     if (fault === 'empty-related') axe.incomplete[0]!.nodes[0]!.all[0]!.relatedNodes = [];
     if (fault === 'closed-incomplete') changed.axe.closed!.incomplete = [structuredClone(rule)];
@@ -169,6 +181,16 @@ test('modal-only axe checks require visible exhaustive focus wraps and never res
     if (fault === 'wrong-item') axe.focusCycle.steps[0]!.item = { role: 'button', name: 'Hidden' };
     if (fault === 'empty-inventory') axe.focusCycle.inventory = [];
     assert.ok(browserEvidenceProblems(changed, true).length, fault);
+  }
+  for (const container of ['any', 'none', 'all'] as const) for (const malformed of ['', {}, null, 0]) {
+    const changed = structuredClone(fixture);
+    Object.assign(changed.axe.open!.incomplete[0]!.nodes[0]!, { [container]: malformed });
+    assert.ok(browserEvidenceProblems(changed, true).length, `${container}: malformed check container`);
+  }
+  for (const related of [null, {}, { target: [] }, { target: [''] }, { html: '', target: ['hidden'] }, { html: '<button />', target: [null] }]) {
+    const changed = structuredClone(fixture);
+    Object.assign(changed.axe.open!.incomplete[0]!.nodes[0]!.all[0]!, { relatedNodes: [related] });
+    assert.ok(browserEvidenceProblems(changed, true).length, `malformed related node: ${JSON.stringify(related)}`);
   }
 });
 
@@ -368,7 +390,7 @@ test('consumer adapter requires source-bound, readable values snapshots as well 
         const output = process.argv.at(-1), report = ${JSON.stringify(changed)};
         fs.mkdirSync(output, { recursive: true });
         const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map(part => [part, { backgroundColor: 'fixture-paint', color: 'fixture-text' }]));
-        const variables = Object.fromEntries(['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'].map(name => ['--ult-color-' + name, { expected: 'fixture-value', actual: 'fixture-value' }]));
+        const variables = Object.fromEntries(${JSON.stringify(Object.keys(resolveDraft(stockDraft()).light))}.map(name => [name, { expected: 'fixture-value', actual: 'fixture-value' }]));
         for (const row of report.cases) {
           row.snapshot = row.id.split('/').at(-1) + '.json';
           const snapshot = { id: row.id, expected: paint, actual: structuredClone(paint), variables, failures: [] };
@@ -408,7 +430,7 @@ test('Next adapters require SSR HTML, completed hydration and token-derived extr
         const output = process.argv.at(-1), report = ${JSON.stringify(fixture)}, fault = ${JSON.stringify(fault)};
         fs.mkdirSync(output, { recursive: true });
         const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map(part => [part, { backgroundColor: 'paint', color: 'text' }]));
-        const variables = Object.fromEntries(['surface', 'text', 'accent', 'accent-contrast', 'success', 'success-contrast'].map(name => ['--ult-color-' + name, { expected: 'value', actual: 'value' }]));
+        const variables = Object.fromEntries(${JSON.stringify(Object.keys(resolveDraft(stockDraft()).light))}.map(name => [name, { expected: 'value', actual: 'value' }]));
         for (const row of report.cases) {
           const mode = row.id.endsWith('-dark') ? 'dark' : 'light', explicit = row.id.includes('/explicit-');
           const state = { attributes: { 'data-theme': explicit ? mode : null, 'data-proof-mode': explicit ? mode : 'system' }, content: 'Installed scene' };
@@ -483,7 +505,7 @@ test('selected registry adapter validates CSS and stock prerequisites, provenanc
   try {
     const draft = proofDraft(), installed = serializeDraft(draft);
     const selected = `vite/registry/chromium/${THEME_PRESETS[0]!.id}-explicit-dark`;
-    for (const fault of ['none', 'missing-reference', 'reference-drift', 'missing-stock', 'missing-selected-draft', 'wrong-selected-digest', 'hidden-warning', 'wrong-layout', 'wrong-path', 'missing-argv', 'wrong-fault'] as const) {
+    for (const fault of ['none', 'missing-reference', 'reference-drift', 'missing-stock', 'missing-selected-draft', 'wrong-selected-digest', 'hidden-warning', 'wrong-layout', 'wrong-path', 'missing-argv', 'wrong-fault', 'omitted-dynamic-token', 'malformed-modal-check'] as const) {
       const fixture = report();
       fixture.deliveryPath = 'registry';
       fixture.selectedCase = selected;
@@ -508,6 +530,19 @@ test('selected registry adapter validates CSS and stock prerequisites, provenanc
           const extracted = { height: '40px', radius: '4px', display: 'inline-flex' };
           const snapshot = { id: row.id, deliveryPath: report.deliveryPath, expected: paint, actual: structuredClone(paint), variables: structuredClone(variables), controlVariables: structuredClone(variables), portalVariables: structuredClone(variables), portal: { inContainer: true, documentSurface: 'stock', subtreeSurface: 'draft' }, extraction: { tokens: { height: '2.5rem', radius: '4px' }, expected: extracted, actual: extracted }, failures: [] };
           ${browserFixture}
+          if (fault === 'omitted-dynamic-token') {
+            const dynamic = snapshot.browser.modeSnapshots[0];
+            dynamic.variables = structuredClone(dynamic.variables);
+            dynamic.portalVariables = structuredClone(dynamic.portalVariables);
+            dynamic.portalVariables['--ult-color-surface'].actual = 'concealed mismatch';
+            delete dynamic.variables['--ult-color-surface'];
+          }
+          if (fault === 'malformed-modal-check') {
+            snapshot.browser.axe.open.incomplete = [{ id: 'aria-hidden-focus', nodes: [{ any: '', none: '', all: [{ id: 'focusable-modal-open', relatedNodes: [{ html: '<button hidden />', target: ['background'] }] }] }] }];
+            const inventory = [{ role: 'button', name: 'Confirm theme' }];
+            snapshot.browser.axe.open.focusCycle = { relatedNodes: 1, inventory, steps: ['Tab', 'Tab', 'Shift+Tab', 'Shift+Tab'].map(key => ({ key, inside: true, accessible: true, position: 0, item: inventory[0] })) };
+          }
+          fs.writeFileSync(path.join(output, snapshot.artifacts.axe), JSON.stringify(snapshot.browser.axe));
           if (fault === 'reference-drift' && name === 'css-reference') snapshot.variables['--ult-color-text'] = { expected: 'drift', actual: 'drift' };
           if (fault === 'hidden-warning' && row.id === report.selectedCase) fs.writeFileSync(path.join(output, snapshot.artifacts.browser), JSON.stringify({ console: [{ type: 'warning', text: 'Hydration did not match' }], pageErrors: [], failedRequests: [] }));
           if (fault === 'wrong-layout') snapshot.reproduceArgv[4] = 'next-app';

@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import type { Page } from 'playwright';
-import type { ResolvedDraft } from '../packages/tokens/src/theme/draft.ts';
+import { resolveDraft, stockDraft, type ResolvedDraft } from '../packages/tokens/src/theme/draft.ts';
 import { repository } from './consumer-helpers.ts';
 import type { ConsumerLayout, DeliveryPath } from './consumer-report.ts';
 import { consumerValues } from './consumer-values.ts';
@@ -18,13 +18,19 @@ type FocusItem = { role: string; name: string };
 type FocusStep = { key: string; inside: boolean; accessible: boolean; position: number; item: FocusItem | null };
 type AxeReport = { violations: { id: string; nodes: unknown[] }[]; incomplete: unknown[]; passes: unknown[]; focusCycle?: { relatedNodes: number; inventory: FocusItem[]; steps: FocusStep[] } };
 export type BrowserEvidence = { assertions: Assertion[]; axe: Record<string, AxeReport>; modeSnapshots: unknown[]; failures: string[] };
+const TOKEN_KEYS = Object.keys(resolveDraft(stockDraft()).light);
 
 function modalFocusNodes(axe: AxeReport): number | null {
   let count = 0;
+  const selector = (value: unknown): boolean => typeof value === 'string' ? value.length > 0 : Array.isArray(value) && value.length > 0 && value.every(selector);
   for (const rule of axe.incomplete as { id: string; nodes: { any: unknown[]; none: unknown[]; all: { id: string; relatedNodes: unknown[] }[] }[] }[]) {
     if (!rule || rule.id !== 'aria-hidden-focus' || !Array.isArray(rule.nodes) || !rule.nodes.length) return null;
     for (const node of rule.nodes) {
-      if (!node || node.any?.length !== 0 || node.none?.length !== 0 || node.all?.length !== 1 || node.all[0]?.id !== 'focusable-modal-open' || !Array.isArray(node.all[0].relatedNodes) || !node.all[0].relatedNodes.length) return null;
+      if (!node || !Array.isArray(node.any) || node.any.length !== 0 || !Array.isArray(node.none) || node.none.length !== 0 || !Array.isArray(node.all) || node.all.length !== 1 || node.all[0]?.id !== 'focusable-modal-open' || !Array.isArray(node.all[0].relatedNodes) || !node.all[0].relatedNodes.length || node.all[0].relatedNodes.some((related) => {
+        if (!related || typeof related !== 'object' || Array.isArray(related)) return true;
+        const item = related as { html?: unknown; target?: unknown };
+        return typeof item.html !== 'string' || !item.html.length || !Array.isArray(item.target) || !selector(item.target);
+      })) return null;
       count += node.all[0].relatedNodes.length;
     }
   }
@@ -65,8 +71,8 @@ export function browserEvidenceProblems(value: unknown, passed: boolean, layout?
     for (const snapshot of snapshots) {
       if (!snapshot || typeof snapshot !== 'object') { failures.push('invalid dynamic theme snapshot'); continue; }
       if ((layout && snapshot.layout !== layout) || (deliveryPath && snapshot.deliveryPath !== deliveryPath)) failures.push('dynamic snapshot has wrong layout or delivery path');
-      const keys = Object.keys(snapshot.variables ?? {});
-      const variables = keys.length > 0 && ['variables', 'controlVariables', 'portalVariables'].every((part) => keys.every((key) => {
+      const keys = TOKEN_KEYS;
+      const variables = ['variables', 'controlVariables', 'portalVariables'].every((part) => Object.keys(snapshot[part as 'variables'] ?? {}).length === keys.length && keys.every((key) => {
         const value = snapshot[part as 'variables']?.[key];
         return typeof value?.expected === 'string' && typeof value?.actual === 'string' && (!passed || value.expected === value.actual);
       }));
