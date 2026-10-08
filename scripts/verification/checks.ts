@@ -26,6 +26,7 @@ export type CheckId =
   | 'registry-build'
   | 'docs-build'
   | 'consumer-smoke'
+  | 'consumer-proof'
   | 'production-scenarios';
 
 /**
@@ -316,6 +317,21 @@ export const CHECKS: readonly CheckDefinition[] = [
     // Scoped runs use the full smoke until a validated selector exists.
     selector: 'none',
     adapter: BROWSER,
+  },
+  {
+    id: 'consumer-proof',
+    title: 'Installed consumer paint: Vite, generated CSS and Chromium in both modes',
+    argv: ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', 'vite', '--delivery-path', 'css'],
+    cwd: '.',
+    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', 'pnpm pack', 'fresh external Vite scaffold', 'shadcn setup, scene and generated theme installation', 'packed CLI doctor and check', 'npm run build', 'Chromium computed variables and paint'],
+    prerequisites: ['registry-build'],
+    after: READ_FIRST,
+    locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
+    needs: ['network', 'loopback-port', 'chromium'],
+    deadlineSeconds: 900,
+    scope: 'scoped',
+    selector: 'none',
+    adapter: { status: 'available', since: '#749 (Vite and generated CSS)' },
   },
   {
     id: 'production-scenarios',
