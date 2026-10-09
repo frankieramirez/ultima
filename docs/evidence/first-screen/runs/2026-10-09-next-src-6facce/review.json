@@ -1,0 +1,14 @@
+{
+  "reviewer": "Claude Code (cast session for #774), from the stream-json transcript, the served-request log and the agent's notes",
+  "rule": "An intervention is an action on the project or its tooling that the guidance or CLI output did not print or link. A decision is a choice about setting up, theming or styling with Ultima that the guidance did not settle and that changed the output; product choices the brief leaves open (data, copy, arrangement, Select or Dialog) and choices between documented options are not counted. Running git init and ultima install, which init's report prints, writing a browser script for the production check the install page asks for, and building before tsc follow the guidance.",
+  "interventions": [
+    { "step": "Read the hosted docs", "action": "Rendered /install, /build-a-screen and /support with headless Chromium (--dump-dom) and pulled lesson source out of the Code tabs' download links.", "reason": "The linked docs pages render client-side, so a plain HTTP fetch returns an empty shell." },
+    { "step": "StyleX lint versions", "action": "Moved @stylexjs/stylex, babel-plugin and postcss-plugin from init's 0.19.0 to 0.19.1 after doctor's ULT-LINT-003 repair (plugin 0.19.0) made installed select.tsx fail valid-styles.", "reason": "init, the lint walkthrough and doctor disagree on the StyleX version." },
+    { "step": "doctor --theme", "action": "Patched and restored DESIGN.md to diagnose ULT-THEME-001.", "reason": "Harness defect, now fixed: the served CLI expected the loopback llms.txt link in DESIGN.md while the theme item kept the public one." }
+  ],
+  "decisions": [
+    { "choice": "Pinned every StyleX package to 0.19.1", "options": ["0.19.1 plugin over 0.19.0 runtime (ULT-LINT-003)", "0.19.0 plugin (lint errors in installed source)", "every StyleX package at 0.19.1 (ULT-SETUP-017)"], "why": "The guidance does not settle the conflict." },
+    { "choice": "Removed the scaffold's Geist next/font loads from layout.tsx", "options": ["keep them", "remove them"], "why": "init leaves them and no guidance says whether they stay beside the theme's font stacks." }
+  ],
+  "notes": "The live-host reference in the transcript is the agent's sed over DESIGN.md while diagnosing the harness defect; it read no live content. Production failed only axe-open `region`, in all four cases (the open Select's options outside every landmark). check, doctor, lint and the raw-paint scan were clean. The agent also reports that the nested pseudo-class form in /llms.txt's State styling fails @stylexjs/valid-styles; not verified here."
+}

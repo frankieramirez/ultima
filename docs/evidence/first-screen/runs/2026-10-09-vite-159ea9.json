@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-09-vite-159ea9",
+  "layout": "vite",
+  "brief": {
+    "path": "docs/evidence/first-screen/brief.md",
+    "sha256": "2b0662013937b1f550246297fc2ff8e0689fd32c9e36ad15107e39347e17d986",
+    "brand": "#A3237F"
+  },
+  "source": {
+    "head": "6f5dd1695343f57f728584979f1c8ceeb227558a",
+    "manifest": "1c08586ea922905558b686f85bc73ec86a9ca2c422003f2cb4c5056ae61e4b2e",
+    "registryManifest": "09beca294c879a3e959dbdd7566253f8e6af8a2ad5ac40d0ca40307d1fc094af",
+    "cliTarball": {
+      "packed": "d86e9e504d007fcc4ec6ab3a83ce39199d0bdbae7e02413720c832d3caeaa460",
+      "served": "7e4ae2145c468f5c33e48ba513818dca8363cdf2c0008563c7c55c6ea60da1ae",
+      "version": "0.1.0"
+    },
+    "draftDigest": "2362c2cc7e7337b2b7a84ccd656298ccb22efdcaa9bc0fa84517864a970afda8",
+    "draftFingerprint": "93e116"
+  },
+  "host": {
+    "origin": "http://127.0.0.1:40259",
+    "standsFor": "https://ultima.systems",
+    "npm": "http://127.0.0.1:40259/npm/"
+  },
+  "theme": {
+    "madeIn": "Theme Studio",
+    "command": "npx shadcn@latest add \"http://127.0.0.1:40259/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\""
+  },
+  "prompt": {
+    "sha256": "036b82d9d46de73ce4979f5586da55b0afb63d941efaad0f150e859f2eb45084"
+  },
+  "agent": {
+    "harness": "claude-code",
+    "version": "2.1.295 (Claude Code)",
+    "flags": [
+      "-p",
+      "--safe-mode",
+      "--strict-mcp-config",
+      "--no-chrome",
+      "--permission-mode",
+      "auto",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--settings",
+      "settings: deny WebSearch, the live host, and other checkouts"
+    ],
+    "cwd": "an empty directory under ~/.cache/ultima-first-screen, outside any checkout",
+    "startedAt": "2026-10-09T14:57:42.891Z",
+    "finishedAt": "2026-10-09T15:05:56.835Z",
+    "exit": 0,
+    "model": "claude-opus-5-5",
+    "session": "2936b20f-f15d-4218-85eb-153a6070a877",
+    "turns": 59,
+    "costUsd": 2.9882473999999997,
+    "durationMs": 493323,
+    "outcome": "success"
+  },
+  "transcript": {
+    "file": "2026-10-09-vite-159ea9.stream.jsonl.gz",
+    "sha256": "f969f05b9b48c34dc49145dc48311cc65296146773e9225f93dfa024b9b81e8d",
+    "events": 347,
+    "commands": [
+      "ls -la && curl -s http://127.0.0.1:40259/llms.txt | head -200",
+      "cat /home/f/.claude/projects/-home-f--cache-ultima-first-screen-2026-10-09-vite-159ea9-work/2936b20f-f15d-4218-85eb-153a6070a877/tool-results/bpxwipbxv.txt",
+      "mkdir -p .scratch && curl -s http://127.0.0.1:40259/llms.txt > .scratch/llms.txt; wc -l .scratch/llms.txt; sed -n 200,400p .scratch/llms.txt",
+      "grep -n '^#' .scratch/llms.txt | sed -n 1,400p",
+      "sed -n 994,1024p .scratch/llms.txt; sed -n 1355,1433p .scratch/llms.txt",
+      "curl -s http://127.0.0.1:40259/install -o .scratch/install.html; curl -s http://127.0.0.1:40259/build-a-screen -o .scratch/bas.html; ls -la .scratch; curl -s -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:40259/install.md; curl -s -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:40259/build-a-screen.md",
+      "cat .scratch/install.html; which chromium chromium-browser google-chrome firefox node npx; node -v; ls ~/.cache/ms-playwright 2>/dev/null",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/.scratch && for p in install build-a-screen support; do timeout 60 chromium --headless --disable-gpu --virtual-time-budget=8000 --dump-dom http://127.0.0.1:40259/$p > $p.dom.html 2>/dev/null; python3 -I -c \"\nimport sys,html,re\ns=open(sys.argv[1]).read()\ns=re.sub(r'<(script|style)[^>]*>.*?</\\1>','',s,flags=re.S)\ns=re.sub(r'<(br|/p|/h[1-6]|/li|/pre|/div|/tr)[^>]*>','\\n',s)\ns=re.sub(r'<[^>]+>','',s)\ns=html.unescape(s)\ns=re.sub(r'\\n\\s*\\n+','\\n\\n',s)\nopen(sys.argv[2],'w').write(s)\n\" $p.dom.html $p.txt; wc -c $p.txt; done",
+      "cat install.txt",
+      "sed -n '/Build a screen$/,$p' build-a-screen.txt | sed -n '/Foundations ·/,$p'; echo ======; sed -n '/Foundations ·/,$p' support.txt",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work && npx --yes ultima-design@latest init larder --framework vite --plan --json > .scratch/ultima-init-plan.json; echo exit=$?; head -c 6000 .scratch/ultima-init-plan.json",
+      "python3 -I -c \"\nimport json,sys\np=json.load(open(sys.argv[1]))\nfor o in p['operations']:\n    print('-',o['id'],o['kind'],o.get('path',''),json.dumps(o.get('command',''))[:200])\nprint([k for k in p if k not in ('operations','payloads','dependencies')])\nfor k in p:\n  if k not in ('operations','payloads','dependencies','cli','recipe','request','target','inputs'): print(k, json.dumps(p[k],indent=1)[:3000])\n\" .scratch/ultima-init-plan.json",
+      "npx --yes ultima-design@latest init --apply .scratch/ultima-init-plan.json > .scratch/init-apply.log 2>&1; echo exit=$?; tail -80 .scratch/init-apply.log",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/larder && timeout 300 npx --yes shadcn@latest add \"http://127.0.0.1:40259/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\" < /dev/null 2>&1 | tail -30; echo; ls; ",
+      "cat DESIGN.md; echo ====; head -60 ultima-theme.css; grep -c '' ultima-theme.css; cat src/main.tsx src/index.css src/App.tsx vite.config.ts ultima.vite.ts components.json",
+      "grep -n -v '^  --ult' ultima-theme.css; ls src/lib src/components/ui; cat src/lib/themes.ts | head -60",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/.scratch && curl -s http://127.0.0.1:40259/r/crm-01.json -o crm-01.json; python3 -I -c \"\nimport json,sys\nd=json.load(open(sys.argv[1]))\nprint(d.get('registryDependencies'), d.get('dependencies'))\nfor f in d['files']: print(f['path'], len(f.get('content','')))\n\" crm-01.json; curl -s http://127.0.0.1:40259/r/registry.json | python3 -I -c \"import json,sys; d=json.load(sys.stdin); print([i['name'] for i in d['items']])\"",
+      "python3 -I -c \"\nimport json,sys\nd=json.load(open(sys.argv[1]))\nfor f in d['files']:\n  if f['path'].endswith(('crm-01.tsx','contact-list.tsx','contact-details.tsx')): print('=====',f['path']); print(f['content'])\n\" crm-01.json",
+      "grep -o 'href=\"[^\"]*\"' build-a-screen.dom.html | sort -u | grep -v '^href=\"/components/' | head -50; grep -o 'download[^>]*>' build-a-screen.dom.html | head",
+      "mkdir -p lessons && python3 -I -c \"\nimport re,sys,urllib.parse,html\ns=open(sys.argv[1]).read()\nfor m in re.finditer(r'<a[^>]*href=\\\"(data:text/plain[^\\\"]*)\\\"[^>]*>',s):\n    tag=m.group(0)\n    dl=re.search(r'download=\\\"([^\\\"]*)\\\"',tag)\n    name=dl.group(1) if dl else 'unknown'\n    body=urllib.parse.unquote(html.unescape(m.group(1)).split(',',1)[1])\n    print(name,len(body))\n    open(sys.argv[2]+'/'+name.replace('/','__'),'w').write(body)\n\" build-a-screen.dom.html lessons; ls lessons",
+      "cat lessons/projects.tsx; cat lessons/interaction-states.tsx",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/larder && timeout 300 npx --yes shadcn@latest add @ultima/field @ultima/input @ultima/select @ultima/badge @ultima/toggle-group @ultima/empty @ultima/separator < /dev/null 2>&1 | tail -30; ls src/components/ui src/lib; git status 2>/dev/null | head -2",
+      "cat package.json; grep -n 'export' src/components/ui/{field,input,select,badge,toggle-group,card,empty}.tsx | head -80; grep -n 'defineConsts' node_modules/@stylexjs/stylex/lib/*.d.ts 2>/dev/null | head -3; ls node_modules/@stylexjs/stylex/lib | head",
+      "grep -rln 'defineConsts' node_modules/@stylexjs/stylex/lib | head -3; cat src/components/ui/field.tsx | sed -n 1,100p; sed -n 1,80p src/components/ui/toggle-group.tsx; sed -n 1,60p src/lib/tokens.stylex.ts; grep -n 'const\\|export' src/lib/tokens.stylex.ts | head -30",
+      "npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 2>&1 | tail -3 && curl -s http://127.0.0.1:40259/ultima.eslint.mjs -o ultima.eslint.mjs && cat ultima.eslint.mjs && cat > eslint.config.mjs <<'EOF'\nimport tseslint from 'typescript-eslint';\nimport { ultimaStylex } from './ultima.eslint.mjs';\n\nexport default [\n  { ignores: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/out/**', '**/coverage/**'] },\n  {\n    files: ultimaStylex.files,\n    languageOptions: {\n      parser: tseslint.parser,\n      parserOptions: { ecmaFeatures: { jsx: true } },\n    },\n  },\n  ultimaStylex,\n];\nEOF\nnpm pkg set scripts.lint=\"oxlint && eslint .\" && grep lint package.json",
+      "sed -n 300,360p src/components/ui/select.tsx; grep -n 'function\\|const Dialog' src/components/ui/dialog.tsx; grep -n 'function\\|const Card\\|Title' src/components/ui/card.tsx | head; grep -n \"tones\\|variants\\|neutral\\|accent\" src/components/ui/badge.tsx | head -20; npx --no-install ultima-design check --help 2>&1 | head -40",
+      "mkdir -p /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/larder/src/components/pantry && cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/larder && cat > src/components/pantry/screen.stylex.ts <<'EOF'\nimport * as stylex from '@stylexjs/stylex';\n\n/** Sizes only the Pantry screen needs, outside Ultima's `--ult-*` tokens. */\nexport const screen = stylex.defineVars({\n  '--app-size-content-max': '72rem',\n});\n\n/** Where the stock list and the item detail move from one column to two. */\nexport const breakpoints = stylex.defineConsts({\n  wide: '@media (min-width: 52rem)',\n});\nEOF\ncat > src/components/pantry/pantry-data.ts <<'EOF'\nexport const categories = ['Canned goods', 'Dry goods', 'Produce', 'Toiletries'] as const;\n\nexport type Category = (typeof categories)[number];\n\nexport type PantryItem = {\n  id: string;\n  name: string;\n  category: Category;\n  quantity: number;\n  /** Local calendar date, `YYYY-MM-DD`. */\n  restocked: string;\n};\n\n/** At or below this many on hand, an item is flagged as running low. */\nexport const LOW_STOCK = 5;\n\nexport const sampleItems: PantryItem[] = [\n  { id: 'chickpeas', name: 'Chickpeas', category: 'Canned goods', quantity: 24, restocked: '2026-10-06' },\n  { id: 'tomato-soup', name: 'Tomato soup', category: 'Canned goods', quantity: 4, restocked: '2026-09-28' },\n  { id: 'rice', name: 'Long-grain rice', category: 'Dry goods', quantity: 18, restocked: '2026-10-08' },\n  { id: 'pasta', name: 'Pasta', category: 'Dry goods', quantity: 31, restocked: '2026-10-02' },\n  { id: 'oats', name: 'Rolled oats', category: 'Dry goods', quantity: 3, restocked: '2026-09-21' },\n  { id: 'apples', name: 'Apples', category: 'Produce', quantity: 40, restocked: '2026-10-09' },\n  { id: 'potatoes', name: 'Potatoes', category: 'Produce', quantity: 12, restocked: '2026-10-07' },\n  { id: 'toothpaste', name: 'Toothpaste', category: 'Toiletries', quantity: 9, restocked: '2026-09-30' },\n  { id: 'soap', name: 'Bar soap', category: 'Toiletries', quantity: 2, restocked: '2026-09-15' },\n];\n\nexport function today() {\n  const now = new Date();\n  const pad = (value: number) => String(value).padStart(2, '0');\n  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;\n}\n\nconst dateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });\n\nexport function formatDate(date: string) {\n  const [year, month, day] = date.split('-').map(Number);\n  return dateFormat.format(new Date(year!, month! - 1, day!));\n}\nEOF",
+      "sed -n 40,67p src/components/ui/input.tsx; grep -n '^function\\|^type' src/components/ui/select.tsx | head -40; grep -n 'Header\\|title\\|header' src/components/ui/card.tsx | head",
+      "cat > src/App.tsx <<'EOF'\nimport Pantry from '@/components/pantry/pantry';\n\nexport default function App() {\n  return <Pantry />;\n}\nEOF\npython3 -I - <<'EOF'\np='src/main.tsx'\ns=open(p).read()\ns=s.replace(\"import './index.css'\\n\",\"import './index.css'\\nimport '../ultima-theme.css'\\n\")\nopen(p,'w').write(s)\np='index.html'\ns=open(p).read()\nimport re\ns=re.sub(r'<title>.*?</title>','<title>Pantry · Larder</title>',s)\nopen(p,'w').write(s)\nEOF\ncat src/main.tsx; grep title index.html; npx --no-install ultima-design doctor; echo doctor=$?; npx --no-install ultima-design check; echo check=$?",
+      "npm install -D --save-exact @stylexjs/eslint-plugin@0.19.0 2>&1 | tail -1; npx --no-install ultima-design doctor 2>&1 | sed -n '/StyleX lint/,$p'; echo doctor=$?; for f in src/App.tsx src/components/pantry/pantry.tsx src/components/pantry/screen.stylex.ts src/components/ui/badge.tsx src/lib/tokens.stylex.ts src/lib/themes.ts; do echo \"$f: $(npx --no-install eslint --print-config $f | python3 -I -c 'import json,sys; c=json.load(sys.stdin); print(c[\"languageOptions\"][\"parser\"], c[\"rules\"].get(\"@stylexjs/valid-styles\"))')\"; done",
+      "npm run lint 2>&1 | tail -30; echo lint=$?; npx --no-install ultima-design check; echo check=$?; npm run build 2>&1 | tail -20",
+      "npx --no-install eslint . 2>&1 | head -40; echo; sed -n 105,122p src/components/ui/select.tsx",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/.scratch && mkdir -p lintprobe && cd lintprobe && npm init -y >/dev/null && npm install --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 >/dev/null 2>&1; cp ../../larder/ultima.eslint.mjs ../../larder/eslint.config.mjs . && mkdir -p src && cp ../../larder/src/components/ui/select.tsx src/ && npx --no-install eslint src/select.tsx | grep -c error",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/.scratch/lintprobe && npx --no-install eslint src/select.tsx; echo exit=$?; ls node_modules/@stylexjs/",
+      "npm install --save-exact @stylexjs/eslint-plugin@0.19.0 >/dev/null 2>&1; npx --no-install eslint src/select.tsx | grep -c 'error'; npm install --save-exact @stylexjs/eslint-plugin@0.19.1 >/dev/null 2>&1; npx --no-install eslint src/select.tsx | grep -c error",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/larder && npm install -D --save-exact @stylexjs/eslint-plugin@0.19.1 2>&1 | tail -1; npm run lint 2>&1 | grep -E 'problems|error|Found' ; npm run lint >/dev/null 2>&1; echo lint=$?; npx --no-install ultima-design doctor >/dev/null; echo doctor=$?; npx --no-install ultima-design check | tail -1; echo check=$?",
+      "npm run build 2>&1 | tail -4 && (nohup npx vite preview --port 4173 --strictPort > ../.scratch/preview.log 2>&1 &) ; sleep 0; ls /home/f/.local/share/mise/installs/npm-playwright/latest/node_modules/",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/.scratch && cat preview.log; mkdir -p shots && node verify.cjs http://localhost:4173/ shots 2>&1 | tail -60",
+      "sed -i \"s|chromium.launch()|chromium.launch({ executablePath: '/usr/bin/chromium' })|\" verify.cjs && node verify.cjs http://localhost:4173/ shots 2>&1 | tail -60",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/larder && f=$(ls dist/assets/*.css) && python3 -I -c \"\nimport sys,re\ns=open(sys.argv[1]).read()\nfor pat in ['@layer reset','--ult-color-accent:#e968be','--ult-color-accent: #e968be','@layer priority','@layer x','.x','[data-theme=dark]','[data-theme=\\\"dark\\\"]','prefers-reduced-motion','--lightningcss-light']:\n  print(repr(pat), s.find(pat))\nprint(len(s))\nprint(s[:400])\n\" $f; grep -o '@layer [a-z0-9_,. -]*[;{]' $f | head",
+      "f=$(ls dist/assets/*.css) && python3 -I -c \"\nimport sys,re\ns=open(sys.argv[1]).read()\nfor m in re.finditer(r'--ult-color-accent:',s):\n  i=m.start(); \n  # find enclosing context\n  print(i, repr(s[max(0,i-120):i+30]))\n\" $f",
+      "f=$(ls dist/assets/*.css) && python3 -I -c \"\nimport sys\ns=open(sys.argv[1]).read()\nprint(s[13700:14400]); print('....'); print(s[18500:18700])\n\" $f",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work/.scratch && sed -i 's|  await page.screenshot({ path: `${out}/light-phone-select.png` });|  await page.waitForTimeout(500);\\n  await page.screenshot({ path: `${out}/light-phone-select.png` });|' verify.cjs && grep -n 'waitForTimeout' verify.cjs && cd ../larder && npm run build 2>&1 | grep -E 'built|error' && npm run lint 2>&1 | grep -E 'problems|pantry'; npx --no-install ultima-design check | tail -1; cd ../.scratch && node verify.cjs http://localhost:4173/ shots 2>&1 | grep -v '^PASS' ",
+      "pkill -f \"vite preview --port 4173\" ; cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work && cat > exercise-notes.json <<'EOF'\n{\n  \"interventions\": [\n    {\n      \"step\": \"Reading the hosted docs\",\n      \"action\": \"Rendered /install, /build-a-screen and /support with headless system Chromium (--dump-dom) and pulled the lesson source (projects.tsx, interaction-states.tsx) out of the Code tabs' data: download links into ./.scratch/lessons.\",\n      \"reason\": \"The doc pages are a client-rendered SPA, so curl only returns an empty shell, and no .md versions exist. Only the first file of each Code tab can be downloaded, so screen.stylex.ts and projects-data.ts were never seen.\"\n    },\n    {\n      \"step\": \"Running printed shadcn commands\",\n      \"action\": \"Ran the Theme Studio install command and `npx shadcn@latest add @ultima/field @ultima/input @ultima/select @ultima/badge @ultima/toggle-group @ultima/empty @ultima/separator` with stdin closed (< /dev/null), without --yes.\",\n      \"reason\": \"The agent shell has no TTY. Neither run needed an overwrite prompt, so the files were written as printed.\"\n    },\n    {\n      \"step\": \"StyleX lint\",\n      \"action\": \"Installed @stylexjs/eslint-plugin 0.19.0 and 0.19.1 in turn in a scratch project (./.scratch/lintprobe) and linted the installed src/components/ui/select.tsx with each.\",\n      \"reason\": \"After applying doctor's ULT-LINT-003 repair (plugin 0.19.0), eslint reported 2 valid-styles errors for `gridColumn: 2` in the unmodified installed select.tsx. The probe showed that 0.19.0 rejects it and 0.19.1 accepts it.\"\n    },\n    {\n      \"step\": \"StyleX lint\",\n      \"action\": \"Went back to @stylexjs/eslint-plugin 0.19.1 (the install page's exact command) after first applying doctor's printed repair to 0.19.0.\",\n      \"reason\": \"No guidance says to undo a doctor repair. With 0.19.1, lint passes with 0 errors and doctor still exits 0 with only the ULT-LINT-003 advisory.\"\n    },\n    {\n      \"step\": \"Production verification\",\n      \"action\": \"Wrote ./.scratch/verify.cjs, a Playwright script run against `vite preview` with the system /usr/bin/chromium. It checks computed --ult-* values and color-scheme on the root, a Button and the portalled Select popup in dark, light, data-theme=light and reduced-motion modes; checks layout and sideways overflow at 390px and 1280px; and drives selection, the empty-name error, the Select (opened from the keyboard, closed with Escape, focus returned) and both kinds of donation.\",\n      \"reason\": \"The docs ask for this rendered check but give no tool or script for it. Playwright's bundled browser build was missing, so the system Chromium was used.\"\n    }\n  ],\n  \"decisions\": [\n    {\n      \"choice\": \"Kept @stylexjs/eslint-plugin at 0.19.1\",\n      \"options\": [\n        \"0.19.1, the install page's tested version (doctor advisory ULT-LINT-003 stays, exit 0)\",\n        \"0.19.0, doctor's printed repair (2 lint errors in installed select.tsx)\",\n        \"0.19.0 and edit select.tsx to `gridColumn: '2'`\",\n        \"Upgrade @stylexjs/stylex and @stylexjs/unplugin to 0.19.1 to match the Support page's Vite cell\"\n      ],\n      \"why\": \"It is the documented, tested version. Lint then passes with no edits to installed component source and no change to the toolchain init pinned. The cost is one doctor advisory that does not block.\"\n    },\n    {\n      \"choice\": \"Category is chosen with a portalled Select inside an inline form card, not a Dialog\",\n      \"options\": [\"Portalled Select (Select.Portal to document.body)\", \"Form inside a Dialog\", \"Both\"],\n      \"why\": \"The brief accepts either. An inline form keeps intake-desk logging one step away, and the Projects lesson uses the same Select pattern. Base UI provides the keyboard opening, Escape and focus return.\"\n    },\n    {\n      \"choice\": \"Put the responsive breakpoint in the app token module (src/components/pantry/screen.stylex.ts) as stylex.defineConsts, beside the --app-size-content-max defineVars\",\n      \"options\": [\n        \"A named module constant in pantry.tsx, as the Principles section and the Projects lesson do\",\n        \"defineConsts in the app's own .stylex.ts token module\"\n      ],\n      \"why\": \"The brief says the app decides no lengths outside its theme and token modules. defineConsts can be used as a media-query key, which still meets Ultima's point that a custom property cannot appear in a media condition.\"\n    },\n    {\n      \"choice\": \"Load no font files and accept the theme's fallbacks for 'Figtree' and 'IBM Plex Mono'\",\n      \"options\": [\"Accept the documented fallback stack\", \"Add and load the Figtree and IBM Plex Mono faces\"],\n      \"why\": \"The docs allow either. Loading faces would add packages or a remote font host and change the rendered type. With the fallback, the computed h1 font is the system UI face.\"\n    },\n    {\n      \"choice\": \"Follow the system color preference with no mode toggle, and remove the starter's colorScheme.system style from <main>\",\n      \"options\": [\"System mode only, with data-theme left to the host\", \"Add @ultima/theme-mode and a toggle\", \"Keep colorScheme.system on the screen root\"],\n      \"why\": \"The docs say not to add a separate mode switch for the theme artifact. The root ultima-theme.css already sets color-scheme per mode, and keeping the starter's per-element system scheme would contradict an explicit data-theme on <html>.\"\n    },\n    {\n      \"choice\": \"Stock list built as a vertical ToggleGroup (the CRM 01 block's list pattern), composed by hand rather than installing the CRM 01 block\",\n      \"options\": [\"Install and adapt @ultima/crm-01\", \"Vertical ToggleGroup of rows\", \"Table with per-row buttons\", \"Plain buttons styled as rows\"],\n      \"why\": \"CRM 01 adds workspace navigation, tabs and activity the brief does not ask for. Its ToggleGroup gives single selection, aria-pressed and arrow-key movement with no custom ARIA.\"\n    },\n    {\n      \"choice\": \"Override the ToggleGroup item's pressed background to --ult-color-accent-subtle and the selected name to --ult-color-accent-text, with the hover nested inside the pressed state\",\n      \"options\": [\"Keep the component default (pressed = --ult-color-surface-raised)\", \"Use the brand accent roles for the selected row\"],\n      \"why\": \"In dark mode the default pressed surface was hard to tell apart from the list background. The accent roles carry the brand without touching success, warning or danger. Low stock uses the warning Badge tone.\"\n    },\n    {\n      \"choice\": \"Kept the documented `import '../ultima-theme.css'` after index.css in src/main.tsx without reordering the production bundle\",\n      \"options\": [\"Keep the documented import\", \"Change the Vite or StyleX pipeline so the theme file comes after the StyleX rules in the emitted CSS\"],\n      \"why\": \"In dist CSS the unlayered theme comes before the StyleX `@layer priority*` blocks, which include the Neutral token defaults. Unlayered rules beat layered ones regardless of order, and the computed values (accent #e968be dark, #bb2893 light, including in the portalled popup) confirm the theme wins.\"\n    }\n  ]\n}\nEOF\npython3 -I -c \"import json; json.load(open('exercise-notes.json')); print('valid')\"; ls",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-159ea9/work && ls -a; pgrep -af \"vite preview\" | head",
+      "python3 -I -c \"import json; d=json.load(open('exercise-notes.json')); print('valid', len(d['interventions']), len(d['decisions']))\"; ss -ltnp 2>/dev/null | grep 4173 || echo \"preview stopped\""
+    ],
+    "fetches": [],
+    "outsideReferences": []
+  },
+  "selfReport": {
+    "interventions": [
+      {
+        "step": "Reading the hosted docs",
+        "action": "Rendered /install, /build-a-screen and /support with headless system Chromium (--dump-dom) and pulled the lesson source (projects.tsx, interaction-states.tsx) out of the Code tabs' data: download links into ./.scratch/lessons.",
+        "reason": "The doc pages are a client-rendered SPA, so curl only returns an empty shell, and no .md versions exist. Only the first file of each Code tab can be downloaded, so screen.stylex.ts and projects-data.ts were never seen."
+      },
+      {
+        "step": "Running printed shadcn commands",
+        "action": "Ran the Theme Studio install command and `npx shadcn@latest add @ultima/field @ultima/input @ultima/select @ultima/badge @ultima/toggle-group @ultima/empty @ultima/separator` with stdin closed (< /dev/null), without --yes.",
+        "reason": "The agent shell has no TTY. Neither run needed an overwrite prompt, so the files were written as printed."
+      },
+      {
+        "step": "StyleX lint",
+        "action": "Installed @stylexjs/eslint-plugin 0.19.0 and 0.19.1 in turn in a scratch project (./.scratch/lintprobe) and linted the installed src/components/ui/select.tsx with each.",
+        "reason": "After applying doctor's ULT-LINT-003 repair (plugin 0.19.0), eslint reported 2 valid-styles errors for `gridColumn: 2` in the unmodified installed select.tsx. The probe showed that 0.19.0 rejects it and 0.19.1 accepts it."
+      },
+      {
+        "step": "StyleX lint",
+        "action": "Went back to @stylexjs/eslint-plugin 0.19.1 (the install page's exact command) after first applying doctor's printed repair to 0.19.0.",
+        "reason": "No guidance says to undo a doctor repair. With 0.19.1, lint passes with 0 errors and doctor still exits 0 with only the ULT-LINT-003 advisory."
+      },
+      {
+        "step": "Production verification",
+        "action": "Wrote ./.scratch/verify.cjs, a Playwright script run against `vite preview` with the system /usr/bin/chromium. It checks computed --ult-* values and color-scheme on the root, a Button and the portalled Select popup in dark, light, data-theme=light and reduced-motion modes; checks layout and sideways overflow at 390px and 1280px; and drives selection, the empty-name error, the Select (opened from the keyboard, closed with Escape, focus returned) and both kinds of donation.",
+        "reason": "The docs ask for this rendered check but give no tool or script for it. Playwright's bundled browser build was missing, so the system Chromium was used."
+      }
+    ],
+    "decisions": [
+      {
+        "choice": "Kept @stylexjs/eslint-plugin at 0.19.1",
+        "options": [
+          "0.19.1, the install page's tested version (doctor advisory ULT-LINT-003 stays, exit 0)",
+          "0.19.0, doctor's printed repair (2 lint errors in installed select.tsx)",
+          "0.19.0 and edit select.tsx to `gridColumn: '2'`",
+          "Upgrade @stylexjs/stylex and @stylexjs/unplugin to 0.19.1 to match the Support page's Vite cell"
+        ],
+        "why": "It is the documented, tested version. Lint then passes with no edits to installed component source and no change to the toolchain init pinned. The cost is one doctor advisory that does not block."
+      },
+      {
+        "choice": "Category is chosen with a portalled Select inside an inline form card, not a Dialog",
+        "options": [
+          "Portalled Select (Select.Portal to document.body)",
+          "Form inside a Dialog",
+          "Both"
+        ],
+        "why": "The brief accepts either. An inline form keeps intake-desk logging one step away, and the Projects lesson uses the same Select pattern. Base UI provides the keyboard opening, Escape and focus return."
+      },
+      {
+        "choice": "Put the responsive breakpoint in the app token module (src/components/pantry/screen.stylex.ts) as stylex.defineConsts, beside the --app-size-content-max defineVars",
+        "options": [
+          "A named module constant in pantry.tsx, as the Principles section and the Projects lesson do",
+          "defineConsts in the app's own .stylex.ts token module"
+        ],
+        "why": "The brief says the app decides no lengths outside its theme and token modules. defineConsts can be used as a media-query key, which still meets Ultima's point that a custom property cannot appear in a media condition."
+      },
+      {
+        "choice": "Load no font files and accept the theme's fallbacks for 'Figtree' and 'IBM Plex Mono'",
+        "options": [
+          "Accept the documented fallback stack",
+          "Add and load the Figtree and IBM Plex Mono faces"
+        ],
+        "why": "The docs allow either. Loading faces would add packages or a remote font host and change the rendered type. With the fallback, the computed h1 font is the system UI face."
+      },
+      {
+        "choice": "Follow the system color preference with no mode toggle, and remove the starter's colorScheme.system style from <main>",
+        "options": [
+          "System mode only, with data-theme left to the host",
+          "Add @ultima/theme-mode and a toggle",
+          "Keep colorScheme.system on the screen root"
+        ],
+        "why": "The docs say not to add a separate mode switch for the theme artifact. The root ultima-theme.css already sets color-scheme per mode, and keeping the starter's per-element system scheme would contradict an explicit data-theme on <html>."
+      },
+      {
+        "choice": "Stock list built as a vertical ToggleGroup (the CRM 01 block's list pattern), composed by hand rather than installing the CRM 01 block",
+        "options": [
+          "Install and adapt @ultima/crm-01",
+          "Vertical ToggleGroup of rows",
+          "Table with per-row buttons",
+          "Plain buttons styled as rows"
+        ],
+        "why": "CRM 01 adds workspace navigation, tabs and activity the brief does not ask for. Its ToggleGroup gives single selection, aria-pressed and arrow-key movement with no custom ARIA."
+      },
+      {
+        "choice": "Override the ToggleGroup item's pressed background to --ult-color-accent-subtle and the selected name to --ult-color-accent-text, with the hover nested inside the pressed state",
+        "options": [
+          "Keep the component default (pressed = --ult-color-surface-raised)",
+          "Use the brand accent roles for the selected row"
+        ],
+        "why": "In dark mode the default pressed surface was hard to tell apart from the list background. The accent roles carry the brand without touching success, warning or danger. Low stock uses the warning Badge tone."
+      },
+      {
+        "choice": "Kept the documented `import '../ultima-theme.css'` after index.css in src/main.tsx without reordering the production bundle",
+        "options": [
+          "Keep the documented import",
+          "Change the Vite or StyleX pipeline so the theme file comes after the StyleX rules in the emitted CSS"
+        ],
+        "why": "In dist CSS the unlayered theme comes before the StyleX `@layer priority*` blocks, which include the Neutral token defaults. Unlayered rules beat layered ones regardless of order, and the computed values (accent #e968be dark, #bb2893 light, including in the portalled popup) confirm the theme wins."
+      }
+    ]
+  },
+  "styling": {
+    "check": {
+      "exit": 0,
+      "counts": {
+        "errors": 0,
+        "advisories": 0,
+        "incomplete": 0,
+        "suppressions": 0
+      }
+    },
+    "doctor": {
+      "exit": 0
+    },
+    "lint": {
+      "state": "configured",
+      "config": "eslint.config.mjs",
+      "errors": 0,
+      "warnings": 18,
+      "exit": 0
+    },
+    "rawPaint": {
+      "files": [
+        "src/App.tsx",
+        "src/components/pantry/pantry-data.ts",
+        "src/components/pantry/pantry.tsx",
+        "src/index.css",
+        "src/main.tsx"
+      ],
+      "findings": []
+    }
+  },
+  "production": {
+    "status": "failed",
+    "layout": "vite",
+    "versions": {
+      "node": "v26.8.1",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "@stylexjs/stylex": "0.19.0",
+      "ultima-design": "0.1.0",
+      "vite": "8.3.4",
+      "chromium": "153.0.8010.12"
+    },
+    "cases": [
+      {
+        "id": "system-dark",
+        "status": "failed",
+        "snapshot": "system-dark.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"aria-hidden-focus\",\"region\"]"
+        ]
+      },
+      {
+        "id": "system-light",
+        "status": "failed",
+        "snapshot": "system-light.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"aria-hidden-focus\",\"region\"]"
+        ]
+      },
+      {
+        "id": "explicit-dark",
+        "status": "failed",
+        "snapshot": "explicit-dark.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"aria-hidden-focus\",\"region\"]"
+        ]
+      },
+      {
+        "id": "explicit-light",
+        "status": "failed",
+        "snapshot": "explicit-light.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"aria-hidden-focus\",\"region\"]"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "verdict": {
+    "conditions": {
+      "completed": "passed",
+      "publicGuidanceOnly": "passed",
+      "interventions": "failed",
+      "decisions": "failed",
+      "check": "passed",
+      "lint": "passed",
+      "rawPaint": "passed",
+      "production": "failed"
+    },
+    "status": "failed"
+  },
+  "review": {
+    "reviewer": "Claude Code (cast session for #774), from the stream-json transcript, the served-request log and the agent's notes",
+    "rule": "An intervention is an action on the project or its tooling that the guidance or CLI output did not print or link. A decision is a choice about setting up, theming or styling with Ultima that the guidance did not settle and that changed the output; product choices the brief leaves open (data, copy, arrangement, Select or Dialog) and choices between documented options are not counted. Running a printed command with stdin closed, and writing a browser script to perform the production check the install page asks for, follow the guidance and are not counted.",
+    "interventions": [
+      {
+        "step": "Read the hosted docs",
+        "action": "Rendered /install, /build-a-screen and /support with headless Chromium and pulled lesson source out of the Code tabs' download links.",
+        "reason": "The linked docs pages render client-side, so a plain HTTP fetch returns an empty shell, and only the first file of a lesson's Code tab is downloadable; screen.stylex.ts and projects-data.ts stayed unreachable."
+      },
+      {
+        "step": "StyleX lint",
+        "action": "Built a scratch project to lint the installed select.tsx with @stylexjs/eslint-plugin 0.19.0 and 0.19.1, then reverted doctor's printed ULT-LINT-003 repair back to 0.19.1.",
+        "reason": "init pins @stylexjs/stylex 0.19.0, the install page installs plugin 0.19.1, and doctor's repair (plugin equal to the runtime, 0.19.0) makes installed select.tsx fail valid-styles on `gridColumn: 2`."
+      }
+    ],
+    "decisions": [
+      {
+        "choice": "Kept @stylexjs/eslint-plugin 0.19.1 against @stylexjs/stylex 0.19.0, leaving doctor's ULT-LINT-003 advisory",
+        "options": [
+          "0.19.1 as the install page says",
+          "0.19.0 as doctor repairs, with 2 lint errors in installed source"
+        ],
+        "why": "The install page and doctor contradict each other for an init project."
+      }
+    ],
+    "notes": "Production failed only axe-open, in all four cases: `region` (the portalled Select listbox sits outside every landmark) and `aria-hidden-focus` (Base UI's tabbable focus-guard spans carry aria-hidden). check, doctor, lint and the raw-paint scan were clean. The agent overrode Toggle Group's pressed background with accent roles because the default pressed surface was hard to see in dark mode; that is component feedback, not counted."
+  }
+}

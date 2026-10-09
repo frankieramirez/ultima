@@ -1,0 +1,5 @@
+{
+  "exit": 1,
+  "report": null,
+  "output": "npm error npx canceled due to missing packages and no YES option: [\"ultima-design@0.1.0\"]\nnpm error A complete log of this run can be found in: /home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/npm-cache/_logs/2026-10-09T14_53_15_481Z-debug-0.log\n"
+}

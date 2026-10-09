@@ -518,7 +518,7 @@ describe('the release plan', () => {
     assert.deepEqual(checkIds(document).sort(), [...RELEASE].sort());
     for (const entry of document.checks) assert.notEqual(entry.scope, 'files');
     assert.ok(checkOf(document, 'production-scenarios')?.cases.includes('dialog.keyboard-dismissal@production[mode=light,viewport=narrow,motion=normal]'));
-    assert.deepEqual(checkOf(document, 'docs-tests')?.cases, ['screen-composition.copy-bundles@docs-vitest[default]', 'screen-composition.recipe-index@docs-vitest[default]', 'site-discovery.discovery-surface@docs-vitest[default]', 'theme-studio.draft-history@docs-vitest[default]']);
+    assert.deepEqual(checkOf(document, 'docs-tests')?.cases, ['first-screen.agent-runs@docs-vitest[default]', 'screen-composition.copy-bundles@docs-vitest[default]', 'screen-composition.recipe-index@docs-vitest[default]', 'site-discovery.discovery-surface@docs-vitest[default]', 'theme-studio.draft-history@docs-vitest[default]']);
     assert.deepEqual(
       document.outcome.unavailable.sort(),
       [],

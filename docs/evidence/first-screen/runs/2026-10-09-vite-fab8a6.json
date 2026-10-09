@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-09-vite-fab8a6",
+  "layout": "vite",
+  "brief": {
+    "path": "docs/evidence/first-screen/brief.md",
+    "sha256": "2b0662013937b1f550246297fc2ff8e0689fd32c9e36ad15107e39347e17d986",
+    "brand": "#A3237F"
+  },
+  "source": {
+    "head": "6f5dd1695343f57f728584979f1c8ceeb227558a",
+    "manifest": "ef6589f027e70167a6f78d1ddf6d2e526e36580e42a87e4df27c8737b929067c",
+    "registryManifest": "09beca294c879a3e959dbdd7566253f8e6af8a2ad5ac40d0ca40307d1fc094af",
+    "cliTarball": {
+      "packed": "b35712952d3715e21f6df3914bebb61af1be687b723d00e8d8b66d3f1262d879",
+      "served": "fae8bc532fc3276947726f644128a928cd7a076d8080b0765618ef2220103f3a",
+      "version": "0.1.0"
+    },
+    "draftDigest": "2362c2cc7e7337b2b7a84ccd656298ccb22efdcaa9bc0fa84517864a970afda8",
+    "draftFingerprint": "93e116"
+  },
+  "host": {
+    "origin": "http://127.0.0.1:33235",
+    "standsFor": "https://ultima.systems",
+    "npm": "http://127.0.0.1:33235/npm/"
+  },
+  "theme": {
+    "madeIn": "Theme Studio",
+    "command": "npx shadcn@latest add \"http://127.0.0.1:33235/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\""
+  },
+  "prompt": {
+    "sha256": "ae9415a5dc594c2054a9f1afa15f553cb1a9b0c1d1efb1f5b7143534f14869d5"
+  },
+  "agent": {
+    "harness": "claude-code",
+    "version": "2.1.295 (Claude Code)",
+    "flags": [
+      "-p",
+      "--safe-mode",
+      "--strict-mcp-config",
+      "--no-chrome",
+      "--permission-mode",
+      "auto",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--settings",
+      "settings: deny WebSearch, the live host, and other checkouts"
+    ],
+    "cwd": "an empty directory under ~/.cache/ultima-first-screen, outside any checkout",
+    "startedAt": "2026-10-09T14:45:02.583Z",
+    "finishedAt": "2026-10-09T14:53:15.435Z",
+    "exit": 0,
+    "model": "claude-opus-5-5",
+    "session": "92f031f4-8522-4bb6-b4db-8d15f31d9add",
+    "turns": 61,
+    "costUsd": 2.8745532000000003,
+    "durationMs": 492233,
+    "outcome": "success"
+  },
+  "transcript": {
+    "file": "2026-10-09-vite-fab8a6.stream.jsonl.gz",
+    "sha256": "d195b23a9b4edfc26567d6c74e92bea459287a6ab4d2b91ac82d7be25cc960ed",
+    "events": 470,
+    "commands": [
+      "ls -la && curl -s http://127.0.0.1:33235/llms.txt | head -200",
+      "mkdir -p /tmp/larder-docs && cd /tmp/larder-docs && curl -s http://127.0.0.1:33235/llms.txt -o llms.txt && wc -l llms.txt && sed -n 200,420p llms.txt",
+      "cd /tmp/larder-docs && grep -n '^#' llms.txt | sed -n 1,400p",
+      "cd /tmp/larder-docs && sed -n 1175,1433p llms.txt",
+      "cd /tmp/larder-docs && for p in install build-a-screen support; do curl -s http://127.0.0.1:33235/$p -o $p.html; echo \"$p $(wc -c < $p.html)\"; done; curl -sI http://127.0.0.1:33235/install.md | head -3; python3 -I -c \"\nimport html,re,sys\nfor p in ['install','build-a-screen','support']:\n    s=open(f'/tmp/larder-docs/{p}.html').read()\n    s=re.sub(r'<script.*?</script>|<style.*?</style>','',s,flags=re.S)\n    s=re.sub(r'<(br|/p|/h[1-6]|/li|/pre|/div|/tr)[^>]*>','\\n',s)\n    s=re.sub(r'<[^>]+>','',s)\n    s=html.unescape(s)\n    s=re.sub(r'\\n\\s*\\n+','\\n\\n',s)\n    open(f'/tmp/larder-docs/{p}.txt','w').write(s)\n\"; wc -l *.txt",
+      "cd /tmp/larder-docs && cat install.html; curl -sIL http://127.0.0.1:33235/install | head -20",
+      "cd /tmp/larder-docs && for p in / /install/ /install.html /docs/install /build-a-screen/ /build-a-screen.html /sitemap.xml /r/index.json /r/registry.json /support/ /theme-studio; do echo \"$p $(curl -s -o /dev/null -w '%{http_code} %{size_download}' http://127.0.0.1:33235$p)\"; done",
+      "cd /tmp/larder-docs && curl -s http://127.0.0.1:33235/ ; echo; curl -s http://127.0.0.1:33235/sitemap.xml | grep -o '<loc>[^<]*' | head -80",
+      "node -v && npm -v && npx --yes ultima-design@latest init larder --framework vite --plan --json > /tmp/larder-docs/plan.json; echo \"exit $?\"; head -c 6000 /tmp/larder-docs/plan.json",
+      "cd /tmp && npm view ultima-design@latest version bin dist.tarball 2>&1 | head; npm config get registry",
+      "d=$(dirname $(find ~/.npm/_npx -path '*node_modules/ultima-design/package.json' 2>/dev/null | head -1)); echo $d; ls -la $d $d/dist 2>&1 | head -30; ls -la $d/../.bin 2>&1",
+      "npm config get cache; cd /tmp/larder-docs && npx --yes ultima-design@latest --help 2>&1 | head -30; echo \"exit $?\"",
+      "C=/home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/npm-cache; find $C/_npx -maxdepth 4 -name 'ultima*' 2>/dev/null; for d in $C/_npx/*/; do echo \"== $d\"; cat $d/package.json 2>/dev/null; ls -la $d/node_modules/.bin 2>/dev/null | head; done",
+      "D=/home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/npm-cache/_npx/017c8a75a00e8934/node_modules/ultima-design; cat $D/package.json; ls -la $D $D/dist | head -40",
+      "mkdir -p /tmp/larder-tgz && cd /tmp/larder-tgz && curl -s http://127.0.0.1:33235/npm/ultima-design/-/ultima-design-0.1.0.tgz -o u.tgz && tar tzf u.tgz; npm view ultima-design versions dist-tags --json",
+      "cd /tmp/larder-tgz && tar xzf u.tgz && cat package/skill/ultima-design/SKILL.md",
+      "which chromium chromium-browser google-chrome firefox 2>/dev/null; ls ~/.cache/ms-playwright 2>/dev/null; cd /tmp/larder-docs && curl -s http://127.0.0.1:33235/assets/index-B6yO4EBz.js -o index.js && wc -c index.js && grep -o 'assets/[A-Za-z0-9_-]*\\.js' index.js | sort -u | head -100 | wc -l",
+      "npm view playwright-core version 2>&1 | tail -2; npm view vite version 2>&1 | tail -1; npm view shadcn version 2>&1|tail -1; npm view @stylexjs/stylex version 2>&1 | tail -1",
+      "mkdir -p /tmp/larder-tools && cd /tmp/larder-tools && npm init -y >/dev/null && npm i playwright-core@1.64.0 >/dev/null 2>&1; cat > render.mjs <<'EOF'\nimport { chromium } from 'playwright-core';\nconst [,, base, out, ...paths] = process.argv;\nconst browser = await chromium.launch({ executablePath: '/usr/bin/chromium' });\nconst page = await browser.newPage();\nawait page.goto(base + '/', { waitUntil: 'networkidle' });\nconst fs = await import('node:fs');\nfor (const p of paths) {\n  await page.evaluate((p) => { history.pushState({}, '', p); dispatchEvent(new PopStateEvent('popstate')); }, p);\n  await page.waitForTimeout(1500);\n  const text = await page.evaluate(() => document.querySelector('main')?.innerText ?? document.body.innerText);\n  fs.writeFileSync(out + '/' + p.replace(/\\//g, '_') + '.txt', text);\n  console.log(p, text.length);\n}\nawait browser.close();\nEOF\nnode render.mjs http://127.0.0.1:33235 /tmp/larder-docs /install /build-a-screen /support /cli /theme-studio /components/select /components/dialog /components/field /tokens",
+      "cat /tmp/larder-docs/_install.txt",
+      "cat /tmp/larder-docs/_cli.txt; echo ======; cat /tmp/larder-docs/_support.txt",
+      "cat /tmp/larder-docs/_build-a-screen.txt",
+      "npm create vite@latest larder -- --template react-ts --no-interactive 2>&1 | tail -15; ls larder; cat larder/package.json",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/work/larder && npm install 2>&1 | tail -3 && npx --yes shadcn@latest add http://127.0.0.1:33235/r/setup-vite.json --yes 2>&1 | tail -40",
+      "cat components.json ultima.vite.ts vite.config.ts tsconfig.json tsconfig.app.json src/main.tsx; ls src; head -30 src/index.css; git status 2>&1 | head -2",
+      "python3 -I - <<'EOF'\nimport re\np='tsconfig.json'; s=open(p).read()\ns=s.replace('\"files\": [],','\"files\": [],\\n  \"compilerOptions\": {\\n    \"paths\": { \"@/*\": [\"./src/*\"] }\\n  },',1)\nopen(p,'w').write(s)\np='tsconfig.app.json'; s=open(p).read()\ns=s.replace('\"jsx\": \"react-jsx\",','\"jsx\": \"react-jsx\",\\n    \"paths\": { \"@/*\": [\"./src/*\"] },',1)\nopen(p,'w').write(s)\nEOF\ncat > vite.config.ts <<'EOF'\nimport react from '@vitejs/plugin-react'\nimport { defineConfig } from 'vite'\nimport { ultimaStylex } from './ultima.vite.ts'\n\n// https://vite.dev/config/\nexport default defineConfig({\n  plugins: [ultimaStylex(), react()],\n})\nEOF\ncat > src/index.css <<'EOF'\n@layer reset {\n  *,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\n  body {\n    margin: 0;\n  }\n}\nEOF\nrm -f src/App.css src/assets/react.svg public/icons.svg; ls public src/assets 2>&1; grep -n include tsconfig.node.json",
+      "cd /tmp/larder-docs && curl -s http://127.0.0.1:33235/r/registry.json -o registry.json && python3 -I -c \"\nimport json;r=json.load(open('/tmp/larder-docs/registry.json'))\nfor i in r['items']: print(i['name'], i.get('type'), [f['path'] for f in i.get('files',[])][:4])\n\" | head -120; grep -o '\"[^\"]*projects[^\"]*\"' index.js | sort -u | head",
+      "cd /tmp/larder-docs && grep -o '.\\{200\\}apps/docs/src/examples/complete-screen/screen.stylex.ts.\\{300\\}' index.js | head -3; grep -c 'complete-screen' index.js",
+      "cd /tmp/larder-tools && cat > code.mjs <<'EOF'\nimport { chromium } from 'playwright-core';\nimport fs from 'node:fs';\nconst browser = await chromium.launch({ executablePath: '/usr/bin/chromium' });\nconst page = await browser.newPage();\nconst downloads = [];\npage.on('request', r => { if (!/\\.(js|css|png|svg|woff2?)$/.test(r.url())) downloads.push(r.url()); });\nawait page.goto('http://127.0.0.1:33235/', { waitUntil: 'networkidle' });\nawait page.evaluate(() => { history.pushState({}, '', '/build-a-screen'); dispatchEvent(new PopStateEvent('popstate')); });\nawait page.waitForTimeout(1500);\nconst tabs = page.getByRole('tab', { name: 'Code' });\nconsole.log('code tabs', await tabs.count());\nawait tabs.nth(0).click();\nawait page.waitForTimeout(1500);\nconst panel = page.getByRole('tabpanel').filter({ hasText: 'projects' }).first();\nfs.writeFileSync('/tmp/larder-docs/projects-code.txt', await panel.innerText());\n// list buttons in the panel\nconsole.log(await panel.locator('button, [role=tab]').allInnerTexts());\nconsole.log(downloads.join('\\n'));\nawait browser.close();\nEOF\nnode code.mjs; wc -l /tmp/larder-docs/projects-code.txt; head -50 /tmp/larder-docs/projects-code.txt",
+      "cd /tmp/larder-tools && cat > code2.mjs <<'EOF'\nimport { chromium } from 'playwright-core';\nimport fs from 'node:fs';\nconst [,, route, idx, outDir] = process.argv;\nconst browser = await chromium.launch({ executablePath: '/usr/bin/chromium' });\nconst page = await browser.newPage();\nawait page.goto('http://127.0.0.1:33235/', { waitUntil: 'networkidle' });\nawait page.evaluate((r) => { history.pushState({}, '', r); dispatchEvent(new PopStateEvent('popstate')); }, route);\nawait page.waitForTimeout(1500);\nawait page.getByRole('tab', { name: 'Code' }).nth(+idx).click();\nawait page.waitForTimeout(1000);\nconst panel = page.locator('[role=tabpanel]:visible').filter({ has: page.locator('pre') }).first();\nconst fileTabs = panel.getByRole('tab');\nconst n = await fileTabs.count();\nfor (let i = 0; i < n; i++) {\n  const name = (await fileTabs.nth(i).innerText()).trim();\n  await fileTabs.nth(i).click();\n  await page.waitForTimeout(400);\n  const code = await panel.locator('[role=tabpanel]:visible pre code, pre:visible code').first().innerText().catch(()=>null)\n    ?? await panel.locator('pre:visible').first().innerText();\n  const out = outDir + '/' + name.replace(/\\//g, '__');\n  fs.writeFileSync(out, code);\n  console.log(name, code.length);\n}\nawait browser.close();\nEOF\nmkdir -p /tmp/larder-docs/projects && node code2.mjs /build-a-screen 0 /tmp/larder-docs/projects; head -40 /tmp/larder-docs/projects/components__projects__screen.stylex.ts",
+      "cat /tmp/larder-docs/projects/components__projects__projects.tsx; cat /tmp/larder-docs/projects/components__projects__projects-data.ts",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/work/larder && npx --yes shadcn@latest add \"http://127.0.0.1:33235/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\" --yes 2>&1 | tail -20; ls",
+      "cat DESIGN.md | head -120; head -c 1500 ultima-theme.json; echo; grep -n 'accent\\b\\|--ult-color-accent:\\|--ult-color-success:\\|data-theme\\|prefers' ultima-theme.css | head -20",
+      "cat > src/main.tsx <<'EOF'\nimport { StrictMode } from 'react'\nimport { createRoot } from 'react-dom/client'\nimport './index.css'\nimport '../ultima-theme.css'\nimport App from './App.tsx'\n\ncreateRoot(document.getElementById('root')!).render(\n  <StrictMode>\n    <App />\n  </StrictMode>,\n)\nEOF\nnpx --yes shadcn@latest add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/badge @ultima/toggle-group @ultima/separator --yes 2>&1 | tail -40",
+      "find src -type f | sort && cat package.json | sed -n '/dependencies/,$p'; sed -n 1,200p src/components/ui/toggle-group.tsx",
+      "cd /tmp/larder-docs && curl -s http://127.0.0.1:33235/r/crm-01.json -o crm.json && python3 -I -c \"\nimport json;r=json.load(open('/tmp/larder-docs/crm.json'))\nprint(r.get('registryDependencies'))\nfor f in r['files']: print('=====',f['path']); print(f['content'])\n\" > crm.txt; grep -n '=====' crm.txt; sed -n '/contact-list.tsx/,/=====/p' crm.txt | head -250",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/work/larder/src && grep -n '^export\\|^const [a-z]* = stylex.define\\|export const' lib/tokens.stylex.ts | head -30; grep -n 'function\\|^const\\|^export\\|tones\\b' components/ui/badge.tsx | head -30; grep -n '^function\\|^const [A-Z]\\|^export' components/ui/card.tsx components/ui/field.tsx components/ui/input.tsx components/ui/select.tsx components/ui/dialog.tsx components/ui/empty.tsx",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/work/larder/src && sed -n 1,120p components/ui/badge.tsx; grep -n 'function Input\\|onValueChange\\|type=' components/ui/input.tsx | head",
+      "sed -n 220,345p lib/tokens.stylex.ts; cat lib/component.ts | head -30",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/work/larder && grep -n 'body\\|html\\|:root\\|color-scheme' ultima-theme.css | head; sed -n 1,60p src/components/ui/field.tsx; sed -n 1,60p src/components/ui/input.tsx",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/work/larder/src && mkdir -p components/pantry && cat > components/pantry/screen.stylex.ts <<'EOF'\nimport * as stylex from '@stylexjs/stylex';\n\n/** Sizes only this screen needs. Colors, spacing and type come from Ultima's semantic tokens. */\nexport const screen = stylex.defineVars({\n  '--app-size-content-max': '72rem',\n  /** The page fills at least the viewport, so the surface color reaches the bottom on a short list. */\n  '--app-size-page-min': '100dvh',\n});\n\n/** Where the stock list and the item detail move from one column to two. */\nexport const breakpoints = stylex.defineConsts({\n  wide: '@media (min-width: 48rem)',\n});\nEOF\ncat > components/pantry/pantry-data.ts <<'EOF'\nexport const categories = ['Canned goods', 'Dry goods', 'Produce', 'Toiletries'] as const;\n\nexport type Category = (typeof categories)[number];\n\nexport type PantryItem = {\n  id: string;\n  name: string;\n  category: Category;\n  quantity: number;\n  /** The local calendar date of the last donation, as YYYY-MM-DD. */\n  restocked: string;\n};\n\n/** At or below this count an item is flagged as low stock. */\nexport const lowStockThreshold = 5;\n\nexport const sampleItems: PantryItem[] = [\n  { id: 'black-beans', name: 'Black beans', category: 'Canned goods', quantity: 24, restocked: '2026-10-06' },\n  { id: 'chopped-tomatoes', name: 'Chopped tomatoes', category: 'Canned goods', quantity: 4, restocked: '2026-09-28' },\n  { id: 'brown-rice', name: 'Brown rice', category: 'Dry goods', quantity: 15, restocked: '2026-10-02' },\n  { id: 'rolled-oats', name: 'Rolled oats', category: 'Dry goods', quantity: 9, restocked: '2026-10-08' },\n  { id: 'apples', name: 'Apples', category: 'Produce', quantity: 32, restocked: '2026-10-08' },\n  { id: 'potatoes', name: 'Potatoes', category: 'Produce', quantity: 3, restocked: '2026-10-01' },\n  { id: 'toothpaste', name: 'Toothpaste', category: 'Toiletries', quantity: 11, restocked: '2026-09-30' },\n  { id: 'bar-soap', name: 'Bar soap', category: 'Toiletries', quantity: 18, restocked: '2026-10-05' },\n];\n\n/** Today's local calendar date as YYYY-MM-DD. */\nexport function today() {\n  const now = new Date();\n  const month = String(now.getMonth() + 1).padStart(2, '0');\n  const day = String(now.getDate()).padStart(2, '0');\n  return `${now.getFullYear()}-${month}-${day}`;\n}\n\nconst dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'long' });\n\n/** Formats a YYYY-MM-DD date in the reader's locale without shifting it across time zones. */\nexport function formatDate(date: string) {\n  const [year, month, day] = date.split('-').map(Number);\n  return dateFormat.format(new Date(year!, month! - 1, day!));\n}\nEOF\ncat > App.tsx <<'EOF'\nimport Pantry from '@/components/pantry/pantry';\n\nexport default function App() {\n  return <Pantry />;\n}\nEOF\nrm -rf assets",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/work/larder && cat index.html && python3 -I - <<'EOF'\np='index.html'; s=open(p).read()\nimport re\ns=re.sub(r'\\s*<link rel=\"icon\"[^>]*>\\n?', '\\n', s)\ns=re.sub(r'<title>.*?</title>', '<title>Larder · Pantry</title>', s)\nopen(p,'w').write(s)\nEOF\nrm -f public/favicon.svg; rmdir public 2>/dev/null; cat index.html; npm run build 2>&1 | tail -30",
+      "f=$(ls dist/assets/*.css); grep -o '@layer[^{]*{' $f | head -5; grep -bo '@layer reset\\|--ult-color-accent:#[0-9a-f]*\\|--ult-color-accent: #[0-9a-f]*\\|min-width:48rem\\|min-width: 48rem' $f | head -20; grep -c 'data-theme' $f",
+      "f=$(ls dist/assets/*.css); python3 -I - \"$f\" <<'EOF'\nimport sys,re\ns=open(sys.argv[1]).read()\nfor m in re.finditer(r'@layer [^{;]*[{;]|@media[^{]*\\{|:root[^{]*\\{|\\[data-theme[^{]*\\{', s):\n    print(m.start(), m.group(0)[:80])\nEOF",
+      "curl -s http://127.0.0.1:33235/ultima.eslint.mjs -o ultima.eslint.mjs && cat ultima.eslint.mjs && npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 2>&1 | tail -3\ncat > eslint.config.mjs <<'EOF'\nimport tseslint from 'typescript-eslint';\nimport { ultimaStylex } from './ultima.eslint.mjs';\n\nexport default [\n  { ignores: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/out/**', '**/coverage/**'] },\n  {\n    files: ultimaStylex.files,\n    languageOptions: {\n      parser: tseslint.parser,\n      parserOptions: { ecmaFeatures: { jsx: true } },\n    },\n  },\n  ultimaStylex,\n];\nEOF\nnpm pkg set scripts.lint=\"oxlint && eslint .\"; npm run lint 2>&1 | tail -30",
+      "for f in src/components/pantry/pantry.tsx src/components/ui/select.tsx src/lib/tokens.stylex.ts src/components/pantry/screen.stylex.ts; do npx --no-install eslint --print-config $f | python3 -I -c \"import json,sys;c=json.load(sys.stdin);print('$f', c['rules'].get('@stylexjs/valid-styles'), c['languageOptions']['parser'])\"; done; npx eslint src/components/pantry; echo \"eslint pantry exit $?\"",
+      "(npx vite preview --port 4317 --strictPort > /tmp/larder-tools/preview.log 2>&1 &) ; sleep 2; curl -s -o /dev/null -w '%{http_code}\\n' http://localhost:4317/",
+      "cd /tmp/larder-tools && cat > verify.mjs <<'EOF'\nimport { chromium } from 'playwright-core';\nconst URL = 'http://localhost:4317/';\nconst out = '/tmp/larder-tools';\nconst browser = await chromium.launch({ executablePath: '/usr/bin/chromium' });\nconst log = (...a) => console.log(...a);\n\nfor (const [label, width] of [['phone', 390], ['laptop', 1280]]) {\n  const page = await browser.newPage({ viewport: { width, height: 900 } });\n  await page.goto(URL);\n  const m = await page.evaluate(() => {\n    const se = document.scrollingElement;\n    const list = document.querySelector('[aria-labelledby$=\"-title\"]').closest('[class]').getBoundingClientRect();\n    const detail = document.querySelector('section[aria-label=\"Item detail\"]').getBoundingClientRect();\n    return { scrollW: se.scrollWidth, clientW: se.clientWidth, list: [list.x, list.y], detail: [detail.x, detail.y] };\n  });\n  log(label, JSON.stringify(m), m.scrollW <= m.clientW ? 'NO-HSCROLL' : 'HSCROLL!');\n  await page.screenshot({ path: `${out}/${label}.png`, fullPage: true });\n  await page.close();\n}\n\n// Themes: system (dark / light emulation), explicit dark, explicit light\nfor (const [label, scheme, attr] of [['system-dark', 'dark', null], ['system-light', 'light', null], ['explicit-dark', 'light', 'dark'], ['explicit-light', 'dark', 'light']]) {\n  const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, colorScheme: scheme });\n  await page.goto(URL);\n  if (attr) await page.evaluate((a) => document.documentElement.setAttribute('data-theme', a), attr);\n  const trigger = page.getByRole('combobox', { name: 'Category' });\n  await trigger.focus();\n  await page.keyboard.press('Enter');\n  const popup = page.getByRole('listbox');\n  await popup.waitFor();\n  const vals = await page.evaluate(() => {\n    const get = (el, p) => getComputedStyle(el).getPropertyValue(p).trim();\n    const root = document.getElementById('root').firstElementChild;\n    const btn = [...document.querySelectorAll('button')].find(b => b.textContent === 'Log donation');\n    const lb = document.querySelector('[role=listbox]');\n    return {\n      rootAccent: get(root, '--ult-color-accent'), rootBg: get(root, 'background-color'), scheme: get(document.documentElement, 'color-scheme'),\n      btnBg: get(btn, 'background-color'), btnAccent: get(btn, '--ult-color-accent'),\n      popupAccent: get(lb, '--ult-color-accent'), popupBg: get(lb.closest('[data-side], [role=presentation]') ?? lb, 'background-color'), popupInBody: lb.closest('#root') === null,\n      font: get(root, 'font-family'),\n    };\n  });\n  log(label, JSON.stringify(vals));\n  if (label.startsWith('system')) await page.screenshot({ path: `${out}/${label}-select.png` });\n  await page.keyboard.press('Escape');\n  await popup.waitFor({ state: 'hidden' });\n  log(label, 'escape closed; focus on trigger:', await trigger.evaluate(el => el === document.activeElement));\n  await page.close();\n}\n\n// Interaction flow\nconst page = await browser.newPage({ viewport: { width: 390, height: 900 } });\nawait page.goto(URL);\n// select an item with keyboard\nconst stock = page.getByRole('group', { name: 'Stock' });\nawait stock.getByRole('button', { name: 'Brown rice' }).click();\nlog('detail after select:', (await page.locator('section[aria-label=\"Item detail\"]').innerText()).replace(/\\n/g, ' | '));\n// empty submit\nawait page.getByRole('button', { name: 'Log donation' }).click();\nconst name = page.getByRole('textbox', { name: 'Item name' });\nlog('empty submit: aria-invalid', await name.getAttribute('aria-invalid'), 'focused', await name.evaluate(e => e === document.activeElement),\n  'describedby->', await name.evaluate(e => (e.getAttribute('aria-describedby')||'').split(' ').map(id => document.getElementById(id)?.textContent).join(' / ')));\nawait page.screenshot({ path: `${out}/phone-error.png`, fullPage: true });\n// new item via keyboard select\nawait name.fill('Peanut butter');\nawait page.getByRole('spinbutton', { name: 'Quantity' }).fill('6');\nconst trig = page.getByRole('combobox', { name: 'Category' });\nawait trig.focus(); await page.keyboard.press('ArrowDown');\nawait page.getByRole('listbox').waitFor();\nawait page.getByRole('option', { name: 'Dry goods' }).click();\nawait page.getByRole('button', { name: 'Log donation' }).click();\nlog('status:', await page.getByRole('status').innerText());\nlog('list has PB:', await stock.getByRole('button', { name: 'Peanut butter' }).count(), 'pressed:', await stock.getByRole('button', { name: 'Peanut butter' }).getAttribute('aria-pressed'));\nlog('detail:', (await page.locator('section[aria-label=\"Item detail\"]').innerText()).replace(/\\n/g, ' | '));\n// add to existing\nawait name.fill('apples'); await page.getByRole('spinbutton', { name: 'Quantity' }).fill('10');\nawait page.getByRole('button', { name: 'Log donation' }).click();\nlog('status:', await page.getByRole('status').innerText());\nlog('detail:', (await page.locator('section[aria-label=\"Item detail\"]').innerText()).replace(/\\n/g, ' | '));\nlog('hscroll after adds:', await page.evaluate(() => document.scrollingElement.scrollWidth > document.scrollingElement.clientWidth));\nawait browser.close();\nEOF\nnode verify.mjs",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/work/larder && npm run build 2>&1 | tail -4 && npm run lint 2>&1 | grep -E 'pantry|problems|error' ; cd /tmp/larder-tools && node verify.mjs 2>&1 | grep -v '^system\\|^explicit' ; node -e \"\nconst { chromium } = require('playwright-core');\n(async()=>{const b=await chromium.launch({executablePath:'/usr/bin/chromium'});\nfor (const s of ['dark','light']){const p=await b.newPage({viewport:{width:1280,height:900},colorScheme:s});await p.goto('http://localhost:4317/');\nawait p.getByRole('combobox',{name:'Category'}).focus();await p.keyboard.press('Enter');await p.getByRole('listbox').waitFor();await p.waitForTimeout(500);\nawait p.screenshot({path:'/tmp/larder-tools/'+s+'-open.png'});}\nawait b.close();})();\"",
+      "pkill -f 'vite preview --port 4317'; cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-fab8a6/work && cat > exercise-notes.json <<'EOF'\n{\n  \"interventions\": [\n    {\n      \"step\": \"Set up with init\",\n      \"action\": \"Ran the documented `npx ultima-design@latest init larder --framework vite --plan --json`; it failed with `sh: ultima: command not found`. Inspected the npx cache and downloaded the served tarball (http://127.0.0.1:33235/npm/ultima-design/-/ultima-design-0.1.0.tgz) to diagnose it.\",\n      \"reason\": \"ultima-design@0.1.0, the only version served, declares bin `ultima: ./dist/cli.js` but its tarball contains only package.json, LICENSE and skill/; dist/cli.js is missing, so no CLI command can run.\"\n    },\n    {\n      \"step\": \"Scaffold the application\",\n      \"action\": \"Created the app with `npm create vite@latest larder -- --template react-ts --no-interactive`, then followed the Install page's 'Set up by hand' path (`npx shadcn add http://127.0.0.1:33235/r/setup-vite.json` and its printed hand steps).\",\n      \"reason\": \"init normally runs the framework scaffold; with the CLI unusable, the documented hand path needs an existing Vite app, and no guidance prints the scaffold command.\"\n    },\n    {\n      \"step\": \"Read the hosted docs\",\n      \"action\": \"Installed playwright-core in a scratch directory (/tmp/larder-tools) and drove the system Chromium to load `/` and navigate client-side to /install, /build-a-screen, /cli, /support and the component pages. Also used it to read the Projects lesson's Code tab files.\",\n      \"reason\": \"The host serves the docs SPA only at `/`; direct requests to the linked pages (e.g. http://127.0.0.1:33235/install#stylex-lint) return 404 'not found', so the linked guidance could not be fetched as plain HTTP.\"\n    },\n    {\n      \"step\": \"Choose a list-selection pattern\",\n      \"action\": \"Read the CRM 01 block's source from the registry JSON (http://127.0.0.1:33235/r/crm-01.json) without installing it.\",\n      \"reason\": \"To reuse the block's documented list-and-selected-record pattern (vertical Toggle Group) rather than invent one; reading an item's JSON directly is not a printed step.\"\n    },\n    {\n      \"step\": \"Replace scaffold demo styling\",\n      \"action\": \"Replaced create-vite's src/index.css with the documented `@layer reset` block, and deleted src/App.css, src/assets/*, public/favicon.svg and the favicon link. Set the page title to 'Larder · Pantry'.\",\n      \"reason\": \"The hand step only says to wrap resets in a layer; the scaffold's demo CSS sets its own colors, fonts and lengths, which the brief forbids outside theme and token modules.\"\n    },\n    {\n      \"step\": \"Run doctor, check and install\",\n      \"action\": \"Skipped `npx ultima-design doctor`, `npx ultima-design check`, `status` and `install` (skill and hooks).\",\n      \"reason\": \"The published CLI has no executable (see the first intervention), so these could not run. Instead I verified by hand: setup hand steps, StyleX lint (eslint exit 0, 0 errors), the production build, and rendered checks in a browser.\"\n    }\n  ],\n  \"decisions\": [\n    {\n      \"choice\": \"Stock list is a vertical Ultima Toggle Group with one pressed item; the pressed row's background is overridden to --ult-color-accent-subtle\",\n      \"options\": [\"Toggle Group (CRM 01 pattern)\", \"Table rows with a 'View' button\", \"List of ghost Buttons\"],\n      \"why\": \"Single selection with keyboard support from a kit component, matching a shipped block. The kit's raised-surface pressed state was nearly invisible, so the brand accent marks the selection.\"\n    },\n    {\n      \"choice\": \"Log-a-donation form is inline in a Card, with Category as a portalled Ultima Select\",\n      \"options\": [\"Inline form with portalled Select\", \"Form opened in a Dialog\"],\n      \"why\": \"Volunteers log donations constantly at the intake desk; keeping the form on screen avoids an extra step. The Select provides keyboard open, Escape close and focus return.\"\n    },\n    {\n      \"choice\": \"A donation whose name matches an existing item (case-insensitive) adds to its quantity, keeps its existing category and sets its last-restocked date to today; any other name adds a new item. The affected item becomes the selected item.\",\n      \"options\": [\"Match on name only\", \"Match on name and category\", \"Always add a new row\"],\n      \"why\": \"The brief says the form 'adds to an existing one'; matching on name is what a volunteer expects, and showing the result in the detail confirms the change.\"\n    },\n    {\n      \"choice\": \"Quantity defaults to 1 and must be a whole number of at least 1, with its own field error\",\n      \"options\": [\"Validate quantity\", \"Accept any value\", \"Make quantity optional\"],\n      \"why\": \"Prevents zero, negative or fractional counts from corrupting stock.\"\n    },\n    {\n      \"choice\": \"Items at or below 5 on hand show a warning-tone 'Low stock' badge; category badges use the neutral tone\",\n      \"options\": [\"Low-stock warning badge\", \"No stock status\"],\n      \"why\": \"A status the pantry needs, expressed with the warning role as the brief requires. The category stays neutral so neither accent nor status color carries category meaning.\"\n    },\n    {\n      \"choice\": \"Brand accent appears on the 'Larder' wordmark (--ult-color-accent-text), the primary 'Log donation' button (Button's default accent tone) and the selected row\",\n      \"options\": [\"Accent on wordmark, primary action and selection\", \"Accent on primary action only\"],\n      \"why\": \"Uses the berry magenta as the product's accent without giving it any status meaning.\"\n    },\n    {\n      \"choice\": \"The 48rem breakpoint lives in the app token module (src/components/pantry/screen.stylex.ts) as `stylex.defineConsts`, beside the app size tokens --app-size-content-max (72rem, as in the Projects lesson) and --app-size-page-min (100dvh)\",\n      \"options\": [\"defineConsts in the app token module\", \"Named module constant in pantry.tsx, as Ultima's principles and the Projects lesson do\"],\n      \"why\": \"The brief allows lengths only in theme and token modules; StyleX compiles an imported defineConsts media query (verified in the production CSS as `@media (width >= 48rem)`).\"\n    },\n    {\n      \"choice\": \"Laptop layout: stock list in the left column spanning two rows; item detail and donation form stacked in the right column. Phone order: list, detail, form.\",\n      \"options\": [\"List left, detail and form right\", \"Three columns\", \"Form above the list\"],\n      \"why\": \"Keeps list and detail side by side as required, without the form crowding either.\"\n    },\n    {\n      \"choice\": \"Did not load the Figtree or IBM Plex Mono faces named by the theme; the system fallback stack renders\",\n      \"options\": [\"Accept fallback\", \"Self-host the font files\"],\n      \"why\": \"The docs allow either; loading them would need font files the public host does not provide, from another source.\"\n    },\n    {\n      \"choice\": \"Kept the documented `import '../ultima-theme.css'` after index.css in src/main.tsx, even though the production stylesheet emits the unlayered theme before StyleX's `@layer priority*` blocks\",\n      \"options\": [\"Keep the documented import and verify computed values\", \"Restructure the build to emit the theme last\"],\n      \"why\": \"The unlayered theme beats layered StyleX variables regardless of file order. Computed --ult-color-accent on the root, a Button and the portalled Select popup matched the export in system dark (#e968be), system light (#bb2893), data-theme=dark and data-theme=light.\"\n    },\n    {\n      \"choice\": \"Seed data: eight items across all four categories (two each), with restock dates in late September and early October 2026, two of them low stock\",\n      \"options\": [\"Six items, three categories (minimum)\", \"Eight items, four categories\"],\n      \"why\": \"Exercises every category in the fixed set and the low-stock state.\"\n    },\n    {\n      \"choice\": \"Scaffolded with npm and create-vite's react-ts template; kept the template's oxlint and ran ESLint after it (`oxlint && eslint .`)\",\n      \"options\": [\"npm\", \"pnpm\", \"yarn\"],\n      \"why\": \"npm is the package manager the docs' commands use; the lint script follows the Install page's advice for an app that already has oxlint.\"\n    }\n  ]\n}\nEOF\npython3 -I -c \"import json;json.load(open('exercise-notes.json'));print('valid json')\"; ls larder",
+      "ls; pgrep -af 'vite preview' | grep -v pgrep",
+      "python3 -I -c \"import json;d=json.load(open('exercise-notes.json'));print(len(d['interventions']),len(d['decisions']))\"; cd larder && npm run build 2>&1 | tail -2; npm run lint >/dev/null 2>&1; echo \"lint exit $?\""
+    ],
+    "fetches": [],
+    "outsideReferences": []
+  },
+  "selfReport": {
+    "interventions": [
+      {
+        "step": "Set up with init",
+        "action": "Ran the documented `npx ultima-design@latest init larder --framework vite --plan --json`; it failed with `sh: ultima: command not found`. Inspected the npx cache and downloaded the served tarball (http://127.0.0.1:33235/npm/ultima-design/-/ultima-design-0.1.0.tgz) to diagnose it.",
+        "reason": "ultima-design@0.1.0, the only version served, declares bin `ultima: ./dist/cli.js` but its tarball contains only package.json, LICENSE and skill/; dist/cli.js is missing, so no CLI command can run."
+      },
+      {
+        "step": "Scaffold the application",
+        "action": "Created the app with `npm create vite@latest larder -- --template react-ts --no-interactive`, then followed the Install page's 'Set up by hand' path (`npx shadcn add http://127.0.0.1:33235/r/setup-vite.json` and its printed hand steps).",
+        "reason": "init normally runs the framework scaffold; with the CLI unusable, the documented hand path needs an existing Vite app, and no guidance prints the scaffold command."
+      },
+      {
+        "step": "Read the hosted docs",
+        "action": "Installed playwright-core in a scratch directory (/tmp/larder-tools) and drove the system Chromium to load `/` and navigate client-side to /install, /build-a-screen, /cli, /support and the component pages. Also used it to read the Projects lesson's Code tab files.",
+        "reason": "The host serves the docs SPA only at `/`; direct requests to the linked pages (e.g. http://127.0.0.1:33235/install#stylex-lint) return 404 'not found', so the linked guidance could not be fetched as plain HTTP."
+      },
+      {
+        "step": "Choose a list-selection pattern",
+        "action": "Read the CRM 01 block's source from the registry JSON (http://127.0.0.1:33235/r/crm-01.json) without installing it.",
+        "reason": "To reuse the block's documented list-and-selected-record pattern (vertical Toggle Group) rather than invent one; reading an item's JSON directly is not a printed step."
+      },
+      {
+        "step": "Replace scaffold demo styling",
+        "action": "Replaced create-vite's src/index.css with the documented `@layer reset` block, and deleted src/App.css, src/assets/*, public/favicon.svg and the favicon link. Set the page title to 'Larder · Pantry'.",
+        "reason": "The hand step only says to wrap resets in a layer; the scaffold's demo CSS sets its own colors, fonts and lengths, which the brief forbids outside theme and token modules."
+      },
+      {
+        "step": "Run doctor, check and install",
+        "action": "Skipped `npx ultima-design doctor`, `npx ultima-design check`, `status` and `install` (skill and hooks).",
+        "reason": "The published CLI has no executable (see the first intervention), so these could not run. Instead I verified by hand: setup hand steps, StyleX lint (eslint exit 0, 0 errors), the production build, and rendered checks in a browser."
+      },
+      {
+        "step": "Stop the preview server",
+        "action": "Ran `pkill -f 'vite preview --port 4317'` after browser verification.",
+        "reason": "Cleanup of the local `vite preview` server I started for the production check; not part of any guidance."
+      }
+    ],
+    "decisions": [
+      {
+        "choice": "Stock list is a vertical Ultima Toggle Group with one pressed item; the pressed row's background is overridden to --ult-color-accent-subtle",
+        "options": [
+          "Toggle Group (CRM 01 pattern)",
+          "Table rows with a 'View' button",
+          "List of ghost Buttons"
+        ],
+        "why": "Single selection with keyboard support from a kit component, matching a shipped block. The kit's raised-surface pressed state was nearly invisible, so the brand accent marks the selection."
+      },
+      {
+        "choice": "Log-a-donation form is inline in a Card, with Category as a portalled Ultima Select",
+        "options": [
+          "Inline form with portalled Select",
+          "Form opened in a Dialog"
+        ],
+        "why": "Volunteers log donations constantly at the intake desk; keeping the form on screen avoids an extra step. The Select provides keyboard open, Escape close and focus return."
+      },
+      {
+        "choice": "A donation whose name matches an existing item (case-insensitive) adds to its quantity, keeps its existing category and sets its last-restocked date to today; any other name adds a new item. The affected item becomes the selected item.",
+        "options": [
+          "Match on name only",
+          "Match on name and category",
+          "Always add a new row"
+        ],
+        "why": "The brief says the form 'adds to an existing one'; matching on name is what a volunteer expects, and showing the result in the detail confirms the change."
+      },
+      {
+        "choice": "Quantity defaults to 1 and must be a whole number of at least 1, with its own field error",
+        "options": [
+          "Validate quantity",
+          "Accept any value",
+          "Make quantity optional"
+        ],
+        "why": "Prevents zero, negative or fractional counts from corrupting stock."
+      },
+      {
+        "choice": "Items at or below 5 on hand show a warning-tone 'Low stock' badge; category badges use the neutral tone",
+        "options": [
+          "Low-stock warning badge",
+          "No stock status"
+        ],
+        "why": "A status the pantry needs, expressed with the warning role as the brief requires. The category stays neutral so neither accent nor status color carries category meaning."
+      },
+      {
+        "choice": "Brand accent appears on the 'Larder' wordmark (--ult-color-accent-text), the primary 'Log donation' button (Button's default accent tone) and the selected row",
+        "options": [
+          "Accent on wordmark, primary action and selection",
+          "Accent on primary action only"
+        ],
+        "why": "Uses the berry magenta as the product's accent without giving it any status meaning."
+      },
+      {
+        "choice": "The 48rem breakpoint lives in the app token module (src/components/pantry/screen.stylex.ts) as `stylex.defineConsts`, beside the app size tokens --app-size-content-max (72rem, as in the Projects lesson) and --app-size-page-min (100dvh)",
+        "options": [
+          "defineConsts in the app token module",
+          "Named module constant in pantry.tsx, as Ultima's principles and the Projects lesson do"
+        ],
+        "why": "The brief allows lengths only in theme and token modules; StyleX compiles an imported defineConsts media query (verified in the production CSS as `@media (width >= 48rem)`)."
+      },
+      {
+        "choice": "Laptop layout: stock list in the left column spanning two rows; item detail and donation form stacked in the right column. Phone order: list, detail, form.",
+        "options": [
+          "List left, detail and form right",
+          "Three columns",
+          "Form above the list"
+        ],
+        "why": "Keeps list and detail side by side as required, without the form crowding either."
+      },
+      {
+        "choice": "Did not load the Figtree or IBM Plex Mono faces named by the theme; the system fallback stack renders",
+        "options": [
+          "Accept fallback",
+          "Self-host the font files"
+        ],
+        "why": "The docs allow either; loading them would need font files the public host does not provide, from another source."
+      },
+      {
+        "choice": "Kept the documented `import '../ultima-theme.css'` after index.css in src/main.tsx, even though the production stylesheet emits the unlayered theme before StyleX's `@layer priority*` blocks",
+        "options": [
+          "Keep the documented import and verify computed values",
+          "Restructure the build to emit the theme last"
+        ],
+        "why": "The unlayered theme beats layered StyleX variables regardless of file order. Computed --ult-color-accent on the root, a Button and the portalled Select popup matched the export in system dark (#e968be), system light (#bb2893), data-theme=dark and data-theme=light."
+      },
+      {
+        "choice": "Seed data: eight items across all four categories (two each), with restock dates in late September and early October 2026, two of them low stock",
+        "options": [
+          "Six items, three categories (minimum)",
+          "Eight items, four categories"
+        ],
+        "why": "Exercises every category in the fixed set and the low-stock state."
+      },
+      {
+        "choice": "Scaffolded with npm and create-vite's react-ts template; kept the template's oxlint and ran ESLint after it (`oxlint && eslint .`)",
+        "options": [
+          "npm",
+          "pnpm",
+          "yarn"
+        ],
+        "why": "npm is the package manager the docs' commands use; the lint script follows the Install page's advice for an app that already has oxlint."
+      }
+    ]
+  },
+  "styling": {
+    "check": {
+      "exit": 1,
+      "counts": null
+    },
+    "doctor": {
+      "exit": 1
+    },
+    "lint": {
+      "state": "configured",
+      "config": "eslint.config.mjs",
+      "errors": 0,
+      "warnings": 18,
+      "exit": 0
+    },
+    "rawPaint": {
+      "files": [
+        "src/App.tsx",
+        "src/components/pantry/pantry-data.ts",
+        "src/components/pantry/pantry.tsx",
+        "src/index.css",
+        "src/main.tsx"
+      ],
+      "findings": []
+    }
+  },
+  "production": {
+    "status": "failed",
+    "layout": "vite",
+    "versions": {
+      "node": "v26.8.1",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "@stylexjs/stylex": "0.19.1",
+      "vite": "8.3.4",
+      "chromium": "153.0.8010.12"
+    },
+    "cases": [
+      {
+        "id": "system-dark",
+        "status": "failed",
+        "snapshot": "system-dark.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"region\"]"
+        ]
+      },
+      {
+        "id": "system-light",
+        "status": "failed",
+        "snapshot": "system-light.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"region\"]"
+        ]
+      },
+      {
+        "id": "explicit-dark",
+        "status": "failed",
+        "snapshot": "explicit-dark.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"region\"]"
+        ]
+      },
+      {
+        "id": "explicit-light",
+        "status": "failed",
+        "snapshot": "explicit-light.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"region\"]"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "verdict": {
+    "conditions": {
+      "completed": "passed",
+      "publicGuidanceOnly": "passed",
+      "interventions": "failed",
+      "decisions": "passed",
+      "check": "failed",
+      "lint": "passed",
+      "rawPaint": "passed",
+      "production": "failed"
+    },
+    "status": "failed"
+  },
+  "review": {
+    "reviewer": "Claude Code (cast session for #774), from the stream-json transcript and the served-request log",
+    "invalid": "Harness defect: the served ultima-design tarball was packed without building the CLI, so it had no dist/cli.js and init, doctor and check could not run. The harness now builds the CLI before packing. The run is kept as evidence and does not count toward the exercise.",
+    "interventions": [
+      {
+        "step": "Set up with init",
+        "action": "Inspected the npx cache and downloaded the served tarball after `npx ultima-design@latest init` failed with `ultima: command not found`.",
+        "reason": "Harness defect: the tarball had no dist/cli.js."
+      },
+      {
+        "step": "Scaffold the application",
+        "action": "Ran `npm create vite@latest larder -- --template react-ts` and the hand setup path instead of init.",
+        "reason": "init could not run; no guidance prints the scaffold command for the hand path."
+      },
+      {
+        "step": "Read the hosted docs",
+        "action": "Installed playwright-core and drove a headless Chromium to read /install, /build-a-screen, /cli, /support and the Projects lesson's Code tab.",
+        "reason": "The docs pages render client-side, so a plain HTTP fetch of a page that /llms.txt links returns no content (the harness also answered 404 for non-HTML Accept headers, which Cloudflare Pages does not)."
+      },
+      {
+        "step": "Choose a list-selection pattern",
+        "action": "Read CRM 01's source from /r/crm-01.json without installing it.",
+        "reason": "Reading an item's registry JSON directly is not a printed step."
+      },
+      {
+        "step": "Replace scaffold demo styling",
+        "action": "Replaced create-vite's index.css and deleted App.css and the template assets.",
+        "reason": "The hand path does not say to remove the template's own colors, fonts and lengths."
+      },
+      {
+        "step": "Run doctor and check",
+        "action": "Skipped doctor, check, status and install and verified by hand.",
+        "reason": "Harness defect: the CLI had no executable."
+      }
+    ],
+    "decisions": [],
+    "notes": "axe-open failed in all four cases on the `region` rule: the portalled Select listbox sits outside every landmark.",
+    "rule": "Same rule as the later runs. The run is invalid; its record is kept as evidence of the harness defect."
+  }
+}

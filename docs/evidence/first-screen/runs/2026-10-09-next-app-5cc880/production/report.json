@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "status": "failed",
+  "project": "/home/f/.cache/ultima-first-screen/2026-10-09-next-app-5cc880/work/larder",
+  "layout": "next-app",
+  "command": [
+    "/home/f/orca/workspaces/ultima/774-first-screen-agent-exercise/scripts/first-screen.ts",
+    "run",
+    "--layout",
+    "next-app"
+  ],
+  "source": {
+    "head": "6f5dd1695343f57f728584979f1c8ceeb227558a",
+    "manifest": "5971b2a779360f0d8208432cbe6ec00edd0cf9aab62aeb538301236193407230",
+    "draftDigest": "2362c2cc7e7337b2b7a84ccd656298ccb22efdcaa9bc0fa84517864a970afda8",
+    "draftFingerprint": "93e116",
+    "recipeVersion": 2
+  },
+  "versions": {
+    "node": "v26.8.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "@stylexjs/stylex": "0.19.1",
+    "ultima-design": "0.1.0",
+    "next": "16.4.0",
+    "chromium": "153.0.8010.12"
+  },
+  "expected": [
+    "system-dark",
+    "system-light",
+    "explicit-dark",
+    "explicit-light"
+  ],
+  "executed": [
+    "system-dark",
+    "system-light",
+    "explicit-dark",
+    "explicit-light"
+  ],
+  "cases": [
+    {
+      "id": "system-dark",
+      "status": "failed",
+      "snapshot": "system-dark.values.json",
+      "failures": [
+        "axe-open: expected [], got [\"region\"]"
+      ]
+    },
+    {
+      "id": "system-light",
+      "status": "failed",
+      "snapshot": "system-light.values.json",
+      "failures": [
+        "axe-open: expected [], got [\"region\"]"
+      ]
+    },
+    {
+      "id": "explicit-dark",
+      "status": "failed",
+      "snapshot": "explicit-dark.values.json",
+      "failures": [
+        "axe-open: expected [], got [\"region\"]"
+      ]
+    },
+    {
+      "id": "explicit-light",
+      "status": "failed",
+      "snapshot": "explicit-light.values.json",
+      "failures": [
+        "axe-open: expected [], got [\"region\"]"
+      ]
+    }
+  ],
+  "errors": []
+}

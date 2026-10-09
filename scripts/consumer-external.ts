@@ -38,6 +38,30 @@ export function externalLayout(manifest: { dependencies?: Record<string, string>
   return dependencies.vite ? 'vite' : null;
 }
 
+/** axe-core's own `region` exemptions, from its rule definition. */
+const AXE_REGIONS = 'dialog, [role=dialog], [role=alertdialog], svg';
+const OWNED_POPUP = 'data-ultima-owned-popup';
+
+/**
+ * axe over the whole page. Its best-practice `region` rule exempts dialogs but not a listbox or menu, though both
+ * are popups that belong to the control that opened them: the external-mode decision on #809 exempts a listbox or
+ * menu popup the same way when an expanded control names it with `aria-controls` or `aria-owns`. Anything else
+ * outside a landmark still fails `region`.
+ */
+export async function externalAxe(page: Page): Promise<{ violations: { id: string; nodes: { target: unknown[] }[] }[] }> {
+  await page.addScriptTag({ path: axePath });
+  return page.evaluate(async ({ regions, marker }) => {
+    const owned = [...document.querySelectorAll('[aria-expanded="true"]')]
+      .flatMap((control) => `${control.getAttribute('aria-controls') ?? ''} ${control.getAttribute('aria-owns') ?? ''}`.split(/\s+/))
+      .map((id) => (id ? document.getElementById(id) : null))
+      .filter((popup): popup is HTMLElement => !!popup && (popup.matches('[role=listbox], [role=menu]') || !!popup.querySelector('[role=listbox], [role=menu]')));
+    for (const popup of owned) popup.setAttribute(marker, '');
+    const axe = (window as unknown as { axe: { configure: (spec: unknown) => void; run: () => Promise<{ violations: { id: string; nodes: { target: unknown[] }[] }[] }> } }).axe;
+    axe.configure({ checks: [{ id: 'region', options: { regionMatcher: `${regions}, [${marker}]` } }] });
+    try { return await axe.run(); } finally { for (const popup of owned) popup.removeAttribute(marker); }
+  }, { regions: AXE_REGIONS, marker: OWNED_POPUP });
+}
+
 function tokenProblems(element: Locator, table: TokenTable, mode: 'dark' | 'light'): Promise<string[]> {
   return element.evaluate((target, { table, mode }) => {
     const probe = document.createElement('div');
@@ -77,8 +101,7 @@ async function externalCase(page: Page, tables: ResolvedDraft, id: typeof EXTERN
     await Promise.all(document.getAnimations().filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished.catch(() => {})));
   });
   const violations = async (state: string) => {
-    await page.addScriptTag({ path: axePath });
-    const result = await page.evaluate(() => (window as unknown as { axe: { run: () => Promise<{ violations: { id: string }[] }> } }).axe.run());
+    const result = await externalAxe(page);
     axe[state] = result;
     return result.violations.map((violation) => violation.id);
   };
@@ -99,7 +122,7 @@ async function externalCase(page: Page, tables: ResolvedDraft, id: typeof EXTERN
     }
     return wide;
   });
-  await check('required-error-name', { invalid: true, named: true }, async () => {
+  const requiredError = () => check('required-error-name', { invalid: true, named: true }, async () => {
     const description = () => field.evaluate((element) => [...(element.getAttribute('aria-describedby') ?? '').split(/\s+/), element.getAttribute('aria-errormessage') ?? '']
       .filter(Boolean).map((name) => document.getElementById(name)?.textContent?.trim() ?? '').filter(Boolean).join(' '));
     if (await field.evaluate((element) => element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) await field.fill('');
@@ -110,6 +133,9 @@ async function externalCase(page: Page, tables: ResolvedDraft, id: typeof EXTERN
     const after = await description();
     return { invalid, named: after !== '' && after !== before };
   });
+  // A form that opens in the overlay, such as one in a Dialog, has its required field checked once the overlay is open.
+  const inPage = (await field.count()) > 0;
+  if (inPage) await requiredError();
   await check('axe-closed', [], () => violations('closed'));
   await check('overlay-keyboard-open', true, async () => { await trigger.focus(); await page.keyboard.press('Enter'); await popup.waitFor({ timeout: 3000 }); await settle(); return popup.isVisible(); });
   await check('overlay-portalled', true, async () => popup.evaluate((element, control) => {
@@ -118,6 +144,7 @@ async function externalCase(page: Page, tables: ResolvedDraft, id: typeof EXTERN
     return top.parentElement === document.body && !top.contains(control);
   }, await trigger.elementHandle()));
   await check('overlay-focus-in', true, () => popup.evaluate((element) => element.contains(document.activeElement)));
+  if (!inPage) await requiredError();
   await check('portal-values', [], () => tokenProblems(popup, tables[mode], mode));
   await check('axe-open', [], () => violations('open'));
   await check('overlay-escape', true, async () => { await page.keyboard.press('Escape'); await popup.waitFor({ state: 'hidden', timeout: 3000 }); return true; });
