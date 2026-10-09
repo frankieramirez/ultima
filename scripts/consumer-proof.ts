@@ -28,7 +28,7 @@ import { installedThemeProof } from './consumer-theme.ts';
 import { COPY_FAULTS, COPY_ITEMS, copyBundleProof, copyBundleScene } from './consumer-copy-bundles.ts';
 import { lintProof, lintScene } from './consumer-lint.ts';
 import { externalProof } from './consumer-external.ts';
-import { bundleProof, bundleScene } from './consumer-bundles.ts';
+import { BUNDLE_FAULTS, bundleProof, bundleScene } from './consumer-bundles.ts';
 import { elementScene } from './consumer-elements.ts';
 
 export function proofDraft(): ThemeDraft {
@@ -42,7 +42,7 @@ export function proofDraft(): ThemeDraft {
   return draft;
 }
 
-export const PROOF_FAULTS = ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', 'mode-script', ...SCENE_FAULTS, ...COPY_FAULTS] as const;
+export const PROOF_FAULTS = ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', 'mode-script', ...SCENE_FAULTS, ...COPY_FAULTS, ...BUNDLE_FAULTS] as const;
 export const PROOF_EXERCISES = ['theme-mode', 'copy-bundles', 'lint', 'bundles', 'elements'] as const;
 export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; case?: string; preset?: 'ultima'; exercise?: typeof PROOF_EXERCISES[number]; fault?: typeof PROOF_FAULTS[number]; engines?: Engine[] };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
@@ -108,6 +108,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   if (options.case && !consumerCases(options.layout, options.deliveryPath).includes(options.case)) throw new Error(`unknown consumer cell: ${options.case}`);
   if (options.exercise === 'elements' && options.layout !== 'vite') throw new Error('the elements exercise runs on its own vanilla Vite fixture');
   if (options.exercise === 'elements' && options.fault) throw new Error('the elements exercise takes no --fault');
+  if (options.fault === 'wrong-submitted-date' && (options.exercise !== 'bundles' || options.layout !== 'vite')) throw new Error('wrong-submitted-date requires the Vite bundles exercise');
   const crossEngine = options.exercise === 'bundles' || options.exercise === 'elements';
   if (options.engines && !crossEngine) throw new Error('--engine selects bundle and element cells; the other cells run in Chromium');
   const engines = crossEngine ? ENGINES.filter((engine) => !options.engines || options.engines.includes(engine)) : [];
@@ -241,7 +242,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       report.installedItems.push(...COPY_ITEMS.filter((id) => !report.installedItems.includes(id)));
     }
     if (options.exercise === 'bundles' && !isNext) {
-      await bundleScene(app, execute);
+      await bundleScene(app, execute, options.fault);
       report.installedItems.push(...BUNDLE_ITEMS);
     }
     let lint: Awaited<ReturnType<typeof lintScene>> | undefined;

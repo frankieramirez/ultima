@@ -4,9 +4,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import ts from 'typescript';
-import { BUNDLE_ASSERTIONS, PROBES_SOURCE, bundleProof, bundleReproduction, bundleSnapshotProblems, type BundleSnapshot } from '../consumer-bundles.ts';
+import { BUNDLE_ASSERTIONS, BUNDLE_FAULTS, CELL_DEADLINES_MS, DATE_PROBES_SOURCE, DIRECTION_PROBES_SOURCE, PROBES_SOURCE, RTL_EXCLUSIONS, bundleFiles, bundleProof, bundleReproduction, bundleSnapshotProblems, type BundleSnapshot } from '../consumer-bundles.ts';
 import { BUNDLES, BUNDLE_ITEMS, CONSUMER_LAYOUTS, ELEMENT_ITEMS, ENGINES, MATRIX_BUNDLES, bundleCases, consumerReportProblems, elementCases, matrixCases, type ConsumerReport, type Engine } from '../consumer-report.ts';
 import { presetDraft, resolveDraft } from '../../packages/tokens/src/theme/draft.ts';
+import { SCENE_ITEMS } from '../consumer-scene.ts';
 
 const digest = 'a'.repeat(64);
 const fixture = { hash: digest, lock: 'b'.repeat(64) };
@@ -25,10 +26,10 @@ function report(overrides: Partial<ConsumerReport> = {}) {
   } as ConsumerReport;
 }
 
-test('the case registry is every bundle in both modes in every engine: 18 cells', () => {
+test('the case registry is every bundle in both modes in every engine: 36 cells', () => {
   const cases = bundleCases();
-  assert.equal(cases.length, 18);
-  assert.equal(new Set(cases).size, 18);
+  assert.equal(cases.length, 36);
+  assert.equal(new Set(cases).size, 36);
   for (const engine of ENGINES) for (const bundle of BUNDLES) for (const mode of ['dark', 'light']) assert.ok(cases.includes(`vite/bundles/${engine}/${bundle}-${mode}`));
   assert.deepEqual(bundleCases(['firefox']), cases.filter((id) => id.includes('/firefox/')));
   for (const bundle of MATRIX_BUNDLES) assert.ok(BUNDLE_ASSERTIONS[bundle].length > 0 && new Set(BUNDLE_ASSERTIONS[bundle]).size === BUNDLE_ASSERTIONS[bundle].length, bundle);
@@ -43,6 +44,8 @@ test('the Next layouts add 12 hydration cells and the element fixture 6 lifecycl
   assert.equal(new Set(matrix).size, matrix.length);
   assert.deepEqual(matrix, [...CONSUMER_LAYOUTS.flatMap((layout) => bundleCases(ENGINES, layout)), ...elementCases()]);
   assert.equal(matrix.length, bundleCases().length + 12 + 6, 'the Vite bundles plus the Next and element cells');
+  assert.equal(matrix.length, 54, 'the full cross-engine matrix of docs/spec/consumer-support.md#bounded-production-proof');
+  for (const bundle of MATRIX_BUNDLES) assert.ok(CELL_DEADLINES_MS[bundle] >= 30_000, `${bundle} has a deadline of at least 30 seconds`);
   assert.equal(ELEMENT_ITEMS.length, 9, 'the nine-element catalogue');
 });
 
@@ -137,8 +140,48 @@ test('the fault and engine reproduce one engine of the run', () => {
 });
 
 test('the probes parse as TSX and import only installed items', () => {
-  const output = ts.transpileModule(PROBES_SOURCE, { fileName: 'BundleProbes.tsx', reportDiagnostics: true, compilerOptions: { jsx: ts.JsxEmit.ReactJSX } });
-  assert.deepEqual(output.diagnostics, []);
-  const imports = [...PROBES_SOURCE.matchAll(/from '@\/components\/ui\/([a-z-]+)'/g)].map((match) => match[1]);
+  const imports: string[] = [];
+  for (const [name, source] of Object.entries(bundleFiles())) {
+    const output = ts.transpileModule(source, { fileName: name, reportDiagnostics: true, compilerOptions: { jsx: ts.JsxEmit.ReactJSX } });
+    assert.deepEqual(output.diagnostics, [], name);
+    imports.push(...[...source.matchAll(/from '@\/components\/ui\/([a-z-]+)'/g)].map((match) => match[1]!));
+    for (const [, specifier] of source.matchAll(/from '([^.@][^']*|@[^/]+\/[^/']+)/g)) assert.ok(['react', '@zag-js/date-picker', '@base-ui/react'].includes(specifier!), `${name} imports ${specifier}, which the fixture does not install`);
+  }
   for (const item of BUNDLE_ITEMS) assert.ok(imports.includes(item), item);
+  assert.ok(PROBES_SOURCE && DATE_PROBES_SOURCE.includes("locale=\"en-US\"") && DATE_PROBES_SOURCE.includes("locale=\"en-GB\""), 'both date locales');
+  assert.ok(DIRECTION_PROBES_SOURCE.includes('dir="rtl"') && /[\u0600-\u06ff]/.test(DIRECTION_PROBES_SOURCE), 'the RTL fixture carries Zag\'s dir prop and Arabic labels');
+});
+
+test('the wrong-submitted-date fault changes only how the form serializes a date', () => {
+  assert.deepEqual(BUNDLE_FAULTS, ['wrong-submitted-date']);
+  const clean = bundleFiles();
+  const faulted = bundleFiles('wrong-submitted-date');
+  assert.notEqual(faulted['DateProbes.tsx'], clean['DateProbes.tsx']);
+  assert.match(faulted['DateProbes.tsx']!, /new Date\(date\.toString\(\)\)\.toLocaleDateString/);
+  for (const name of Object.keys(clean).filter((name) => name !== 'DateProbes.tsx')) assert.equal(faulted[name], clean[name], name);
+});
+
+test('an RTL exclusion names a direction assertion and the component it removes from the claim', () => {
+  const direction: readonly string[] = BUNDLE_ASSERTIONS['direction-locale'];
+  for (const [assertion, exclusion] of Object.entries(RTL_EXCLUSIONS)) {
+    assert.ok(direction.includes(assertion), assertion);
+    assert.ok([...BUNDLE_ITEMS, ...SCENE_ITEMS].includes(exclusion!.component), exclusion!.component);
+    assert.ok(exclusion!.reason.length > 0);
+  }
+});
+
+test('an excluded assertion passes a cell only when it is a named RTL exclusion', () => {
+  const id = 'vite/bundles/firefox/direction-locale-dark';
+  const row = { id, status: 'passed', failures: [] as string[] };
+  const reproduceArgv = bundleReproduction('firefox');
+  const assertions = BUNDLE_ASSERTIONS['direction-locale'].map((name) => ({ name, expected: true, actual: true, status: 'passed' as const }));
+  const snapshot: BundleSnapshot = {
+    id, engine: 'firefox', bundle: 'direction-locale', mode: 'dark', browser: { name: 'firefox', version: 'firefox-1' }, userAgent: 'agent', platform, fixture,
+    assertions, failures: [], durationMs: 1500, reproduceArgv, reproduce: reproduceArgv.join(' '), artifacts: { browser: 'b.json', screenshot: 's.png' },
+  };
+  const context = { fixture, versions };
+  const exclude = (name: string) => ({ ...snapshot, assertions: assertions.map((row) => row.name === name ? { ...row, actual: false, status: 'excluded' as const } : row) });
+  assert.deepEqual(bundleSnapshotProblems(exclude('tabs-indicator'), row, context), []);
+  assert.ok(bundleSnapshotProblems(exclude('tabs-arrows'), row, context).includes('an assertion is excluded without a named RTL exclusion'));
+  assert.ok(bundleSnapshotProblems(exclude('tabs-arrows'), row, context).includes('passing cell holds a failed assertion'));
 });

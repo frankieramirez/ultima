@@ -414,14 +414,14 @@ const BASE_CHECKS: readonly CheckDefinition[] = [
   })),
   {
     id: 'consumer-bundles-vite',
-    title: 'Installed production bundles: theme and CSS, overlay and keyboard, and form on the canonical Vite fixture in both modes across Chromium, Firefox and WebKit',
+    title: 'Installed production bundles: theme and CSS, overlay and keyboard, form, Date Picker, direction and locale, and narrow touch on the canonical Vite fixture in both modes across Chromium, Firefox and WebKit',
     argv: ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', 'vite', '--delivery-path', 'css', '--exercise', 'bundles'],
     cwd: '.',
-    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', 'fresh external Vite scaffold', 'shadcn setup, the Projects scene, checkbox, popover and theme installation', 'one npm run build', 'Chromium, Firefox and WebKit, two cells at a time, against the one served build'],
+    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', 'fresh external Vite scaffold', 'shadcn setup, the Projects scene, checkbox, popover, date-picker, tabs and theme installation', 'one npm run build', 'Chromium, Firefox and WebKit, two cells at a time, against the one served build'],
     prerequisites: ['registry-build'], after: READ_FIRST,
     locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
     needs: ['network', 'loopback-port', 'chromium'], deadlineSeconds: 1200,
-    scope: 'scoped', selector: 'none', adapter: { status: 'available', since: '#770 (Firefox and WebKit bundles)' },
+    scope: 'scoped', selector: 'none', adapter: { status: 'available', since: '#770 (Firefox and WebKit bundles), #771 (Date Picker, direction and touch bundles)' },
   },
   ...(['next-app', 'next-src'] as const).map((layout): CheckDefinition => ({
     id: `consumer-bundles-${layout}`,

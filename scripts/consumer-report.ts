@@ -31,8 +31,8 @@ export const lintCases = (layout: ConsumerLayout) => LINT_CASES.map((name) => `$
 /** The browser engines a runner cell can name. The scene matrices run Chromium; the production bundles run all three. */
 export const ENGINES = ['chromium', 'firefox', 'webkit'] as const;
 export type Engine = typeof ENGINES[number];
-/** The first three production bundles of docs/spec/consumer-support.md#bounded-production-proof; scripts/consumer-bundles.ts holds each one's assertions. */
-export const BUNDLES = ['theme-css', 'overlay-keyboard', 'form'] as const;
+/** The six Vite production bundles of docs/spec/consumer-support.md#bounded-production-proof; scripts/consumer-bundles.ts holds each one's assertions. */
+export const BUNDLES = ['theme-css', 'overlay-keyboard', 'form', 'date-picker', 'direction-locale', 'narrow-touch'] as const;
 export const NEXT_BUNDLES = ['hydration'] as const;
 export const ELEMENT_BUNDLES = ['lifecycle'] as const;
 export type Bundle = typeof BUNDLES[number] | typeof NEXT_BUNDLES[number] | typeof ELEMENT_BUNDLES[number];
@@ -43,8 +43,8 @@ export const bundleCases = (engines: readonly Engine[] = ENGINES, layout: Consum
 export const elementCases = (engines: readonly Engine[] = ENGINES) => cells('vite/elements', ELEMENT_BUNDLES, engines);
 /** Every cell of the cross-engine matrix in docs/spec/consumer-support.md#bounded-production-proof that the runner registers. */
 export const matrixCases = () => [...CONSUMER_LAYOUTS.flatMap((layout) => bundleCases(ENGINES, layout)), ...elementCases()];
-/** The items the bundles exercise installs beside the Projects scene, for its scoped popups and form controls. */
-export const BUNDLE_ITEMS = ['checkbox', 'popover'];
+/** The items the bundles exercise installs beside the Projects scene, for its scoped popups, form controls, dates and RTL layout. */
+export const BUNDLE_ITEMS = ['checkbox', 'popover', 'date-picker', 'tabs'];
 export const ELEMENT_ITEMS = readdirSync(new URL('../registry/metadata/element/', import.meta.url)).filter((name) => name.endsWith('.ts')).map((name) => name.slice(0, -'.ts'.length)).sort();
 /** The worked block-adaptation path the copy-bundles exercise installs and adapts. */
 export const ADAPTED_BLOCK = 'settings-01';
