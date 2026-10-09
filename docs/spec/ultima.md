@@ -2842,9 +2842,13 @@ The audit skill gets no Ultima-aware branch: no import, no special case, no lens
 
 Charted on [Map: A consumer CLI for Ultima](https://github.com/frankieramirez/ultima/issues/467), published as `ultima-design`. Each subsection is written when its ticket closes.
 
+### Init
+
+[Consumer project bootstrap](consumer-setup.md) specifies `init`, and its [As built](consumer-setup.md#as-built) section records the implemented new Vite path: a reviewed, versioned plan, applied in private staging and published into the absent destination only after `doctor`, `check`, the typecheck and the build pass.
+
 ### Install
 
-The planned [consumer project bootstrap](consumer-setup.md) owns separately reviewed application setup. `install` continues to write only the managed agent files specified below.
+The [consumer project bootstrap](consumer-setup.md) owns separately reviewed application setup. `install` continues to write only the managed agent files specified below.
 
 Decided on [Whether install writes into the consumer's repository, and the ADR 0005 amendment](https://github.com/frankieramirez/ultima/issues/474). `install` exists, and it writes into the consumer's repository, never into global harness directories. Codex and Copilot hooks can only be delivered to the project, and a project install keeps the CLI's version in the consumer's lockfile.
 

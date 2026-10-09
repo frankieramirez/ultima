@@ -8,10 +8,11 @@ import { diff } from './diff.ts';
 import { type Target, doctor } from './doctor.ts';
 import { doctorTheme, printTheme } from './doctor-theme.ts';
 import { hook } from './hook.ts';
+import { type InitIO, init } from './init.ts';
 import { HARNESSES, type Harness, install, printPlan, uninstall } from './install.ts';
 import { printStatus, status } from './status.ts';
 
-const COMMANDS = ['doctor', 'status', 'diff', 'check', 'install', 'uninstall'];
+const COMMANDS = ['init', 'doctor', 'status', 'diff', 'check', 'install', 'uninstall'];
 const USAGE = `usage: ultima <${COMMANDS.join('|')}> [item…] [--json] [--cwd <dir>] [--target vite|next] [--project <tsconfig>] [--files <path>...] [--strict] [--harness <name>]... [--dry-run] [--force]`;
 const FLAGS: Record<string, string[]> = {
   doctor: ['target', 'theme', 'json'],
@@ -22,9 +23,15 @@ const FLAGS: Record<string, string[]> = {
   uninstall: ['json'],
 };
 
-export async function run(argv: string[], stdin = ''): Promise<{ code: number; stdout: string; stderr: string }> {
+export async function run(argv: string[], stdin = '', io?: InitIO): Promise<{ code: number; stdout: string; stderr: string }> {
   // `hook` is hidden from usage and never fails: a harness hook must leave the agent where no hook would.
   if (argv[0] === 'hook') return { code: 0, stdout: hookInvocation(argv.slice(1), stdin), stderr: '' };
+  if (argv[0] === 'init') {
+    let stdout = '';
+    let stderr = '';
+    const code = await init(argv.slice(1), io ?? { interactive: false, ask: async () => false, out: (text) => { stdout += text; }, err: (text) => { stderr += text; } });
+    return { code, stdout, stderr };
+  }
   const invocation = parseInvocation(argv);
   if ('usage' in invocation) return usageError(invocation);
   if (invocation.command === 'install' || invocation.command === 'uninstall') {
