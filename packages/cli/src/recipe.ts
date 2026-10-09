@@ -112,13 +112,13 @@ const VITE_PACKAGE = `{
 
 const VITE_DEPENDENCIES = {
   '@base-ui/react': '1.8.0',
-  '@stylexjs/stylex': '0.19.0',
+  '@stylexjs/stylex': '0.19.1',
   react: '19.3.0',
   'react-dom': '19.3.0',
 };
 
 const VITE_DEV_DEPENDENCIES = {
-  '@stylexjs/unplugin': '0.19.0',
+  '@stylexjs/unplugin': '0.19.1',
   '@types/node': '24.19.1',
   '@types/react': '19.3.0',
   '@types/react-dom': '19.3.0',
@@ -416,15 +416,15 @@ const NEXT_PNPM_PACKAGE = NEXT_PACKAGE.replace('  }\n}\n', '  },\n  "packageMana
 
 const NEXT_DEPENDENCIES = {
   '@base-ui/react': '1.8.0',
-  '@stylexjs/stylex': '0.19.0',
+  '@stylexjs/stylex': '0.19.1',
   next: '16.4.0',
   react: '19.3.0',
   'react-dom': '19.3.0',
 };
 
 const NEXT_DEV_DEPENDENCIES = {
-  '@stylexjs/babel-plugin': '0.19.0',
-  '@stylexjs/postcss-plugin': '0.19.0',
+  '@stylexjs/babel-plugin': '0.19.1',
+  '@stylexjs/postcss-plugin': '0.19.1',
   '@types/node': '20.19.43',
   '@types/react': '19.3.0',
   '@types/react-dom': '19.3.0',

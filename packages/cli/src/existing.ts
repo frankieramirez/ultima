@@ -54,7 +54,7 @@ export type ExistingRequest = {
 type Band = { tested: string; floor: string; below: string };
 
 const STYLEX = ['@stylexjs/stylex', '@stylexjs/unplugin', '@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'];
-const STYLEX_BAND: Band = { tested: '0.19.0', floor: '0.19.0', below: '0.20.0' };
+const STYLEX_BAND: Band = { tested: '0.19.1', floor: '0.19.0', below: '0.20.0' };
 const REACT_BAND: Band = { tested: '19.3.0', floor: '19.0.0', below: '20.0.0' };
 
 /** The recipe `init` follows in an existing application. Pins equal the new-project recipe's where both name a package. */

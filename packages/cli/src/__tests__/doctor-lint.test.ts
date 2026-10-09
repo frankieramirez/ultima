@@ -66,6 +66,13 @@ function installPackage(root: string, name: string, version: string) {
   write(root, `node_modules/${name}/package.json`, JSON.stringify({ name, version }));
 }
 
+/** Moves the StyleX runtime and compiler packages the fixture installed to one older version, as a project init pinned earlier would have. */
+function olderStylex(root: string, version: string) {
+  for (const name of ['@stylexjs/stylex', '@stylexjs/unplugin', '@stylexjs/babel-plugin', '@stylexjs/postcss-plugin']) {
+    if (existsSync(join(root, 'node_modules', name, 'package.json'))) installPackage(root, name, version);
+  }
+}
+
 function withLintRecipe(layout: Layout): string {
   const root = app(layout);
   installPackage(root, 'eslint', LINT_PINS.eslint);
@@ -148,6 +155,27 @@ describe.each(['vite', 'next-app', 'next-src'] as const)('doctor StyleX lint in 
     const report = await advisoryLint(root);
     expect(rules(report)).toEqual(['ULT-LINT-003']);
     expect(report.lint.diagnostics[0]!.message).toContain(`@stylexjs/eslint-plugin 0.0.1 differs from @stylexjs/stylex ${stylexVersion(root)}`);
+  });
+
+  it('moves a StyleX runtime below the tested plugin up, never the plugin down', async () => {
+    const root = withLintRecipe(layout);
+    olderStylex(root, '0.19.0');
+    const report = await advisoryLint(root);
+    expect(rules(report)).toEqual(['ULT-LINT-003']);
+    const [diagnostic] = report.lint.diagnostics;
+    expect(diagnostic!.message).toContain(`differs from @stylexjs/stylex 0.19.0, an unverified combination: the recipe requires both at one version, tested at ${LINT_PINS['@stylexjs/eslint-plugin']}`);
+    expect(diagnostic!.repair).toContain(`@stylexjs/stylex@${LINT_PINS['@stylexjs/eslint-plugin']}`);
+    expect(diagnostic!.repair).not.toContain('@stylexjs/eslint-plugin@0.19.0');
+  });
+
+  it('advises when the runtime and plugin agree below the tested version', async () => {
+    const root = withLintRecipe(layout);
+    olderStylex(root, '0.19.0');
+    installPackage(root, '@stylexjs/eslint-plugin', '0.19.0');
+    const report = await advisoryLint(root);
+    expect(rules(report)).toEqual(['ULT-LINT-003']);
+    expect(report.lint.diagnostics[0]!.message).toContain(`below the tested ${LINT_PINS['@stylexjs/eslint-plugin']}`);
+    expect(report.lint.diagnostics[0]!.repair).toContain(`@stylexjs/eslint-plugin@${LINT_PINS['@stylexjs/eslint-plugin']}`);
   });
 
   it('advises when a required TSX path is ignored', async () => {

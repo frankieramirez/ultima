@@ -131,6 +131,8 @@ export const ultimaStylex = {
 };
 ```
 
+The plugin must match `@stylexjs/stylex` exactly, and `init` installs StyleX 0.19.1. A project on an older StyleX moves its StyleX packages to 0.19.1 with the plugin, because the 0.19.0 plugin rejects installed component sources.
+
 Invalid styles are errors. `allowOuterPseudoAndMedia` accepts the namespace-level `':hover'` and `@media` blocks that installed components use. Unused styles, shorthand advice and conflicting props are warnings. Key order is your choice, so `sort-keys` is off, and so is every other upstream rule.
 
 **A project without ESLint.** This includes a create-vite app, which ships oxlint. Install the tested versions:

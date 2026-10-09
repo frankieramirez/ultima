@@ -8,7 +8,7 @@ import ts from 'typescript';
 
 import { type Diagnostic, type Position, SPEC } from './diagnostic.ts';
 import type { Target } from './doctor.ts';
-import { position, resolveInstalledVersion } from './setup.ts';
+import { compareVersions, position, resolveInstalledVersion } from './setup.ts';
 
 /** The combination every installed lint fixture passed: docs/spec/consumer-lint.md, Compatibility and ownership. */
 export const LINT_PINS = { eslint: '9.39.5', 'typescript-eslint': '8.71.1', '@stylexjs/eslint-plugin': '0.19.1' } as const;
@@ -16,6 +16,8 @@ export const LINT_PINS = { eslint: '9.39.5', 'typescript-eslint': '8.71.1', '@st
 export const VERIFIED_MAJORS = { eslint: 9, '@typescript-eslint/parser': 8 } as const;
 
 const PLUGIN = '@stylexjs/eslint-plugin';
+/** The StyleX runtime and compiler packages a setup recipe installs, which move together with the lint plugin. */
+const STYLEX = ['@stylexjs/stylex', '@stylexjs/unplugin', '@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'];
 const FRAGMENT = 'ultima.eslint.mjs';
 const RECIPE = 'https://ultima.systems/install#stylex-lint';
 const LINK = SPEC.replace(/ultima\.md$/, 'consumer-lint.md#doctor-diagnostics');
@@ -67,6 +69,12 @@ export function doctorLint(root: string, target: Target | null): LintReport {
   }
 
   const pinned = (name: keyof typeof LINT_PINS) => `${name}@${LINT_PINS[name]}`;
+  // A plugin older than the tested pin rejects shipped component sources, so a runtime below it moves up rather
+  // than taking the plugin down with it.
+  const runtime = versions['@stylexjs/stylex'];
+  const behind = runtime !== null && compareVersions(runtime, LINT_PINS[PLUGIN]) < 0;
+  const pluginVersion = runtime !== null && !behind ? runtime : LINT_PINS[PLUGIN];
+  const align = `Run \`npm install --save-exact ${[...STYLEX.filter(declared), PLUGIN].map((name) => `${name}@${LINT_PINS[PLUGIN]}`).join(' ')}\`.`;
   const flat = FLAT.find((name) => existsSync(join(root, name)));
   const legacy = LEGACY.find((name) => existsSync(join(root, name))) ?? (manifest.eslintConfig !== undefined ? 'package.json' : undefined);
   const config = flat ?? legacy ?? null;
@@ -76,7 +84,7 @@ export function doctorLint(root: string, target: Target | null): LintReport {
       'ULT-LINT-001', '.',
       `${NOT_CONFIGURED}: ${versions.eslint ? 'ESLint is installed, but the project root has no eslint.config.* file' : 'no ESLint package resolves and the project root has no ESLint config'}.`,
       versions.eslint
-        ? `Install ${PLUGIN}@${versions['@stylexjs/stylex'] ?? LINT_PINS[PLUGIN]} if it is missing, then ${create}`
+        ? `Install ${PLUGIN}@${pluginVersion} if it is missing, then ${create}${behind ? ` ${align}` : ''}`
         : `Run \`npm install -D --save-exact ${(['eslint', 'typescript-eslint', PLUGIN] as const).map(pinned).join(' ')}\`, then ${create}`,
     );
     return report('not-configured', NOT_CONFIGURED, null);
@@ -129,9 +137,11 @@ export function doctorLint(root: string, target: Target | null): LintReport {
   if (!registers && (declared(PLUGIN) || versions[PLUGIN])) {
     advise('ULT-LINT-003', flat, `${flat} imports neither ${PLUGIN} nor ${FRAGMENT}, though ${PLUGIN} is installed: doctor cannot determine whether this custom integration applies the StyleX rules.`, 'Confirm the effective config with the commands below.');
   } else if (!registers) {
-    advise('ULT-LINT-001', flat, `${NOT_CONFIGURED}: ${flat} does not register ${PLUGIN}.`, `Run \`npm install -D --save-exact ${PLUGIN}@${versions['@stylexjs/stylex'] ?? LINT_PINS[PLUGIN]}\`, save ${FRAGMENT} beside ${flat} and append \`ultimaStylex\` after your framework configuration.`);
-  } else if (versions[PLUGIN] && versions['@stylexjs/stylex'] && versions[PLUGIN] !== versions['@stylexjs/stylex']) {
-    advise('ULT-LINT-003', 'package.json', `${PLUGIN} ${versions[PLUGIN]} differs from @stylexjs/stylex ${versions['@stylexjs/stylex']}, an unverified combination: the recipe requires both at one version.`, `Run \`npm install -D --save-exact ${PLUGIN}@${versions['@stylexjs/stylex']}\`.`);
+    advise('ULT-LINT-001', flat, `${NOT_CONFIGURED}: ${flat} does not register ${PLUGIN}.`, `Run \`npm install -D --save-exact ${PLUGIN}@${pluginVersion}\`, save ${FRAGMENT} beside ${flat} and append \`ultimaStylex\` after your framework configuration.${behind ? ` ${align}` : ''}`);
+  } else if (versions[PLUGIN] && runtime && versions[PLUGIN] !== runtime) {
+    advise('ULT-LINT-003', 'package.json', `${PLUGIN} ${versions[PLUGIN]} differs from @stylexjs/stylex ${runtime}, an unverified combination: the recipe requires both at one version${behind ? `, tested at ${LINT_PINS[PLUGIN]}` : ''}.`, behind ? align : `Run \`npm install -D --save-exact ${PLUGIN}@${runtime}\`.`);
+  } else if (versions[PLUGIN] && behind) {
+    advise('ULT-LINT-003', 'package.json', `@stylexjs/stylex and ${PLUGIN} ${runtime} are below the tested ${LINT_PINS[PLUGIN]}; that plugin rejects shipped component sources.`, align);
   }
 
   for (const module of modules) {

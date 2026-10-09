@@ -249,7 +249,7 @@ describe('init on an existing Vite application', () => {
       recipe: { id: 'vite-react-ts-existing' },
       target: { root, framework: 'vite', layout: 'src', sourceRoot: 'src', entry: 'src/main.tsx', packageManager: { name: 'npm', version: '11.0.0', source: 'lockfile', lockfile: 'package-lock.json' } },
       dependencies: {
-        added: { dependencies: { '@base-ui/react': '1.8.0', '@stylexjs/stylex': '0.19.0' }, devDependencies: { '@stylexjs/unplugin': '0.19.0', unplugin: '2.3.11', 'ultima-design': CLI_VERSION } },
+        added: { dependencies: { '@base-ui/react': '1.8.0', '@stylexjs/stylex': '0.19.1' }, devDependencies: { '@stylexjs/unplugin': '0.19.1', unplugin: '2.3.11', 'ultima-design': CLI_VERSION } },
         present: { react: '19.2.0', 'react-dom': '19.2.0', typescript: '5.9.3', vite: '8.1.0' },
       },
       items: { add: ['button', 'card', 'dialog'], present: [], creates: ['src/components/ui/button.tsx', 'src/components/ui/card.tsx', 'src/components/ui/dialog.tsx', 'src/lib/themes.ts', 'src/lib/tokens.stylex.ts'] },
@@ -297,7 +297,7 @@ describe('init on an existing Vite application', () => {
     expect(after['src/index.css']).toBe(':root {\n  --brand: #e11d48;\n  font-family: system-ui;\n}\n\n@layer reset {\n  *,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\n  h1 {\n    font-size: 2rem;\n  }\n}\n\nbody {\n  margin: 0;\n}\n\n.shell {\n  padding: 1rem;\n}\n');
     expect(after['src/ultima-preview.tsx']).toContain('export default function UltimaPreview()');
     expect(after['src/ultima-preview.tsx']).toContain('written by `ultima-design init`');
-    expect(JSON.parse(after['package.json'] as string)).toMatchObject({ scripts: { dev: 'vite', build: 'tsc -b && vite build' }, dependencies: { 'react-router-dom': '^7.0.0', '@stylexjs/stylex': '0.19.0' }, devDependencies: { 'vite-plugin-inspect': '^11.0.0', unplugin: '2.3.11' } });
+    expect(JSON.parse(after['package.json'] as string)).toMatchObject({ scripts: { dev: 'vite', build: 'tsc -b && vite build' }, dependencies: { 'react-router-dom': '^7.0.0', '@stylexjs/stylex': '0.19.1' }, devDependencies: { 'vite-plugin-inspect': '^11.0.0', unplugin: '2.3.11' } });
     expect(after['src/components/ui/button.tsx']).toBe(FILES.button);
     expect(Object.keys(after).filter((file) => !(file in before)).sort()).toEqual([
       'components.json',
@@ -443,7 +443,7 @@ describe('init on an existing Next application', () => {
     expect(after[`${prefix}components/ui/dialog.tsx`]).toBe(FILES.dialog);
     expect(h.calls[0]).toEqual(['pnpm', 'install', '--no-frozen-lockfile']);
     expect(h.calls[1]?.slice(0, 3)).toEqual(['pnpm', 'dlx', 'shadcn@4.21.4']);
-    expect(JSON.parse(after['package.json'] as string).devDependencies).toMatchObject({ '@stylexjs/babel-plugin': '0.19.0', '@stylexjs/postcss-plugin': '0.19.0', typescript: '^5' });
+    expect(JSON.parse(after['package.json'] as string).devDependencies).toMatchObject({ '@stylexjs/babel-plugin': '0.19.1', '@stylexjs/postcss-plugin': '0.19.1', typescript: '^5' });
 
     h.calls.length = 0;
     const again = await plan(h);
@@ -715,7 +715,7 @@ describe('recovery', () => {
     h.beforeStep.clear();
     const resumed = await plan(h);
     expect(resumed.err).toBe('');
-    expect(resumed.plan.resume).toEqual({ runId: first.runs[0], install: { react: '19.2.0', '@base-ui/react': '1.8.0', '@stylexjs/stylex': '0.19.0', '@stylexjs/unplugin': '0.19.0', unplugin: '2.3.11', 'ultima-design': CLI_VERSION }, items: [] });
+    expect(resumed.plan.resume).toEqual({ runId: first.runs[0], install: { react: '19.2.0', '@base-ui/react': '1.8.0', '@stylexjs/stylex': '0.19.1', '@stylexjs/unplugin': '0.19.1', unplugin: '2.3.11', 'ultima-design': CLI_VERSION }, items: [] });
     expect(resumed.plan.operations.find(({ id }) => id === 'verify versions')).toMatchObject({ versions: { react: '19.2.0', unplugin: '2.3.11' } });
     expect(resumed.plan.operations.map(({ id }) => id)).toEqual(['install', 'add button, card, dialog', 'edit vite.config.ts', 'edit src/index.css', 'create src/ultima-preview.tsx', ...CHECKS]);
     const printed = io();
