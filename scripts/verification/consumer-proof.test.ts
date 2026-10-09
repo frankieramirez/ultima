@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { scaffold, serveRegistry, packCli, type Run } from '../consumer-helpers.ts';
 import { CONSUMER_CASES, CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerPrerequisites, consumerReproduction, consumerReportProblems, type ConsumerReport } from '../consumer-report.ts';
 import { cliReportProblems, installTheme } from '../consumer-delivery.ts';
-import { sceneSource } from '../consumer-scene.ts';
+import { SCENE_INSTALL, SCENE_ITEMS, sceneFiles, sceneSource } from '../consumer-scene.ts';
 import { BROWSER_ASSERTIONS, abortedBrowserProblems, browserEvidenceProblems } from '../consumer-browser.ts';
 import { toCss, toRegistryItem } from '../../packages/tokens/src/theme/export.ts';
 import { draftFingerprint, serializeDraft } from '../../packages/tokens/src/theme/codec.ts';
@@ -115,19 +115,24 @@ test('the non-stock consumer draft passes the two-mode Studio pairing gate', () 
   assert.ok(gate(resolveDraft(proofDraft())).every((row) => row.dark.pass && row.light.pass));
 });
 
-test('the replaceable installed scene supplies named form, navigation, Dialog and data contracts', () => {
-  for (const subtree of [false, true]) {
-    const scene = sceneSource(subtree);
-    for (const contract of ['<form', 'Project name', 'required', 'Project name is required', 'RadioGroup.Root', 'Save project', 'Reset form', 'aria-current', 'Activity', 'Dialog.Portal', 'Dialog.Close', 'Table.Root', 'No projects']) assert.ok(scene.includes(contract), contract);
-  }
+test('the installed scene is the projected Projects bundle, installed by its derived command', () => {
+  assert.equal(SCENE_INSTALL, 'npx shadcn add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table');
+  assert.deepEqual(SCENE_ITEMS, ['button', 'card', 'dialog', 'empty', 'field', 'input', 'select', 'sidebar', 'table']);
+  const files = sceneFiles();
+  assert.deepEqual(files.map(({ path }) => path), ['components/projects/projects.tsx', 'components/projects/projects-data.ts', 'components/projects/screen.stylex.ts']);
+  const screen = files[0]!.content;
+  assert.doesNotMatch(files.map(({ content }) => content).join('\n'), /from '@ultima\//);
+  for (const contract of ["'use client'", "from '@/components/ui/select'", "from './screen.stylex'", 'Project name', 'Enter a project name.', 'Create project', 'type="reset"', 'Sidebar.Link', 'Dialog.Portal container={container}', 'Select.Portal container={container}', 'Table.Caption', 'No projects']) assert.ok(screen.includes(contract), contract);
+  for (const subtree of [false, true]) assert.match(sceneSource(subtree), /import Projects from '\.\/components\/projects\/projects';/);
 });
 
 test('scene faults mutate the real portal boundary, required error name and focus-return API', () => {
-  assert.match(sceneSource(true), /Dialog\.Portal container=\{container\}/);
-  assert.doesNotMatch(sceneSource(true, false, 'portal-theme'), /Dialog\.Portal container/);
+  assert.match(sceneSource(true), /<Projects container=\{container\} \/>/);
+  assert.doesNotMatch(sceneSource(true, false, 'portal-theme'), /<Projects container/);
   assert.match(sceneSource(false, false, 'portal-theme'), /data-theme=\{mode === 'dark' \? 'light' : 'dark'\}/);
-  assert.doesNotMatch(sceneSource(false, false, 'required-error-name'), /aria-label="Project name error"/);
-  assert.match(sceneSource(false, false, 'focus-return'), /finalFocus=\{false\}/);
+  assert.match(sceneFiles('required-error-name')[0]!.content, /<Field\.Error match><\/Field\.Error>/);
+  assert.match(sceneFiles('focus-return')[0]!.content, /<Dialog\.Popup finalFocus=\{false\}>/);
+  assert.deepEqual(sceneFiles('portal-theme'), sceneFiles());
 });
 
 test('browser evidence fails closed on missing assertions, dynamic probes, failures and axe states', () => {
@@ -244,7 +249,7 @@ test('every delivery path has its own coverage; registry reuses the scaffold for
     assert.ok(cases.every((id) => id.startsWith(`${layout}/${path}/chromium/`)));
   }
   assert.match(sceneSource(true), /\.\.\.ultimaTheme\[mode\], colorScheme\[mode\]/);
-  assert.match(sceneSource(true), /Dialog\.Portal container=\{container\}/);
+  assert.match(sceneSource(true), /<Projects container=\{container\} \/>/);
   assert.match(sceneSource(true, true), /ultimaTheme\[mode\]\[0\]/);
 });
 

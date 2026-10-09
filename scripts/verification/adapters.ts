@@ -90,7 +90,7 @@ const CONFIGURATION: Partial<Record<CheckId, string[]>> = {
 };
 
 for (const base of ['consumer-proof', 'consumer-proof-next-app', 'consumer-proof-next-src'] as const) {
-  CONFIGURATION[base]!.push('scripts/consumer-scene.ts', 'scripts/consumer-values.ts', 'scripts/consumer-delivery.ts');
+  CONFIGURATION[base]!.push('scripts/consumer-scene.ts', 'scripts/consumer-values.ts', 'scripts/consumer-delivery.ts', 'apps/docs/src/generated/recipes.ts', 'apps/docs/src/examples/complete-screen/projects.tsx', 'apps/docs/src/examples/complete-screen/projects-data.ts', 'apps/docs/src/examples/complete-screen/screen.stylex.ts');
   for (const path of ['stylex-subtree', 'registry', 'cli'] as const) CONFIGURATION[`${base}-${path}`] = CONFIGURATION[base];
 }
 

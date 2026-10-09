@@ -126,6 +126,20 @@ describe('composition inventory and generated recipes', () => {
     }
   });
 
+  test('an example awaiting its page omits route and anchor together and derives its install command from its imports', () => {
+    const { values, files, catalogue } = fixture();
+    const { route: _route, anchor: _anchor, recipe: _recipe, ...unpublished } = example;
+    values[COMPOSITION_INVENTORY] = `export default ${JSON.stringify([unpublished])} satisfies CompositionExample[];`;
+    const projection = compositionProjection(files, catalogue);
+    assert.deepEqual(projection.diagnostics, []);
+    assert.deepEqual(projection.sources[entry]!.items, ['button', 'sidebar', 'tokens']);
+    assert.equal(projection.examples[0]!.install, 'npx shadcn add @ultima/button @ultima/sidebar');
+    for (const partial of [{ ...unpublished, route: '/components/button' }, { ...unpublished, anchor: 'sorting' }]) {
+      values[COMPOSITION_INVENTORY] = `export default ${JSON.stringify([partial])} satisfies CompositionExample[];`;
+      assert.ok(compositionProjection(files, catalogue).diagnostics.length > 0, JSON.stringify(partial));
+    }
+  });
+
   test('rejects a missing authored inventory', () => {
     const { values, files, catalogue } = fixture();
     delete values[COMPOSITION_INVENTORY];

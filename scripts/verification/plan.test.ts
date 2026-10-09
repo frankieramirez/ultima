@@ -49,6 +49,7 @@ function workspace(): Record<string, string> {
     'scripts/verification/register.ts': 'export function scenario() {}\n',
     'scripts/verification/production.ts': 'export function productionScenario() {}\n',
     'apps/docs/src/layout.tsx': "import { Button } from '@ultima/ui';\nexport const Layout = () => <Button />;\n",
+    'apps/docs/src/examples/complete-screen/projects.tsx': "import { Button } from '@ultima/ui/button';\nexport default function Projects() { return <Button />; }\n",
     'docs/guide.md': '# Guide\n',
   };
 }

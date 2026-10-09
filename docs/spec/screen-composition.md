@@ -27,6 +27,8 @@ Six lessons cover the question. The product-token lesson shares the Projects scr
 
 The Projects scene supplies the same form/navigation/overlay/data obligations as [rendered consumer proof](consumer-proof.md#fixture-and-provenance). Make it that fixture's shared scene when implementing the guide. Keep the existing consumer-proof plan's non-stock passing draft and provenance requirements. The guide needs neither a second application fixture nor a separate browser matrix.
 
+The Projects screen landed with [#762](https://github.com/frankieramirez/ultima/issues/762) as inventory entry `projects`, with its data and `screen.stylex.ts`, and it is now the runner's scene. The entry carries no route or anchor until `/build-a-screen` publishes one; the inventory validates both together. Its token group holds `--app-size-content-max` and `--app-size-table-min`, the width below which the table scrolls inside its region.
+
 The exact breakpoint and content-width value belong to implementation and its rendered checks. Use named module constants for media conditions, as ADR 0004 requires. Put the application-owned size value in `screen.stylex.ts`, using a namespaced `stylex.defineVars` group. It is an application layout token, outside Ultima's `--ult-*` namespace and palette generator. Use Ultima space tokens for ordinary spacing; existing semantic roles carry accent, action and status colors. A new application color role would require its own dark/light/state/contrast contract and falls outside this example set.
 
 ## Choosing what to author
