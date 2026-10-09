@@ -1,10 +1,9 @@
 // `init` for an existing application: docs/spec/consumer-setup.md, File and edit contract, existing-project column.
 // Detection names one application and layout; the plan holds every edit as content and diff, and every conflict
 // stops planning before anything is written. Apply plans again and requires the identical hash, then edits in
-// place. Recovery journals and rollback are #768's; harness delegation is #769's.
-import { randomBytes } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, relative, resolve, sep } from 'node:path';
+// place under a recovery journal (journal.ts), and a rerun continues an unfinished run. Harness delegation is #769's.
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 import { createTwoFilesPatch } from 'diff';
 import ts from 'typescript';
@@ -26,6 +25,7 @@ import {
   registryPayloads,
 } from './init.ts';
 import { CLI_VERSION } from './install.ts';
+import { type Journal, createJournal, initCli, loadJournal, hashes, newRunId, recordOutputs, recoveryDirectory, rememberOriginals, saveJournal, unfinishedJournal, writeInPlace } from './journal.ts';
 import { MANAGERS, type Manager, VITE, VITE_PREVIEW, sha256 } from './recipe.ts';
 import { checkStep, compareVersions, resolveInstalledVersion } from './setup.ts';
 import { contentHash, readStamp } from './stamp.ts';
@@ -161,6 +161,8 @@ export type ExistingPlan = {
   theme: { css: boolean; json: boolean; design: boolean; importedFrom: string | null };
   preview: { path: string; url: string; mounted: boolean; mountStep: string | null };
   manualSteps: string[];
+  /** The unfinished run this plan continues: dependencies it declared that are not installed yet, items it left partly installed. */
+  resume: { runId: string; install: Record<string, string>; items: string[] } | null;
   planHash: string;
 };
 
@@ -241,6 +243,7 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
   const { root, sourceRoot } = detection;
   const conflict = (file: string, message: string, repair: string) => conflicts.push({ file, message, repair });
 
+  const journal = unfinishedJournal(root);
   const files: Record<string, string | null> = {};
   const read = (path: string): string | null => {
     const absolute = join(root, path);
@@ -260,12 +263,18 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
   const declared = { ...pkg.dependencies, ...pkg.devDependencies };
   const versions: Record<string, string | null> = {};
   const unresolved: string[] = [];
+  const pending: Record<string, string> = {};
+  const installs = journal?.operations.filter(({ id }) => id === 'install' || id.startsWith('add ')) ?? [];
+  const interruptedInstall = installs.length > 0 && installs.at(-1)?.status !== 'done';
   for (const [name, band] of Object.entries(recipe.bands)) {
     if (!(name in declared)) continue;
     const version = resolveInstalledVersion(root, name) ?? null;
     versions[name] = version;
     if (version === null) {
-      unresolved.push(name);
+      if (journal?.dependencies[name] === declared[name]) continue;
+      const found = journal?.versions[name];
+      if (found && interruptedInstall) pending[name] = found;
+      else unresolved.push(name);
       continue;
     }
     if (compareVersions(version, band.floor) < 0) {
@@ -273,6 +282,9 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
     } else if (compareVersions(version, band.below) >= 0) {
       conflict('package.json', `${name} resolves to ${version}, newer than this CLI has tested (${band.tested}), so automatic setup is blocked.`, `Use a newer ultima-design if one supports it, or follow the manual setup at https://ultima.systems/install.`);
     }
+  }
+  for (const [name, specifier] of Object.entries(journal?.dependencies ?? {})) {
+    if (declared[name] === specifier && resolveInstalledVersion(root, name) == null) pending[name] = specifier;
   }
   const stylex = [...new Set(STYLEX.flatMap((name) => (versions[name] ? [versions[name] as string] : [])))];
   if (stylex.length > 1) conflict('package.json', `The StyleX packages resolve to different versions (${stylex.join(', ')}); the runtime and compiler must match.`, `Install one version of every @stylexjs package, then plan again.`);
@@ -410,19 +422,26 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
   const installPath = (file: RegistryItem['files'][number]): string | null => {
     const alias = file.type === 'registry:ui' ? aliases.ui : file.type === 'registry:lib' ? aliases.lib : null;
     if (alias) return join(sourceRoot, alias.slice(2), basename(file.path)).split(sep).join('/');
-    if (file.target.startsWith('~/')) return file.target.slice(2);
-    return null;
+    return file.target || null;
   };
   const add: string[] = [];
   const present: string[] = [];
+  const readded: string[] = [];
   for (const item of recipe.items) {
     const paths = payload(item).files.map(installPath).filter((path): path is string => path !== null);
     const existing = paths.filter(has);
+    const partlyAddedByUnfinishedRun = journal !== null && existing.length < paths.length && existing.every((path) => journal.creates.includes(path));
     if (existing.length === 0) add.push(item);
-    else if (existing.length === paths.length) {
+    else if (partlyAddedByUnfinishedRun && (await Promise.all(existing.map(async (path) => sameSource(read(path) ?? '', servedAt(item, path), aliases)))).every(Boolean)) {
+      add.push(item);
+      readded.push(item);
+    } else if (existing.length === paths.length) {
       present.push(item);
       for (const path of paths) preserved.add(path);
     } else conflict(existing.join(', '), `@ultima/${item} is partly installed: ${paths.filter((path) => !has(path)).join(', ')} ${paths.length - existing.length === 1 ? 'is' : 'are'} missing.`, `Run \`ultima status\`, then reinstall or remove @ultima/${item} by hand, then plan again.`);
+  }
+  function servedAt(item: string, path: string): string {
+    return payload(item).files.find((file) => installPath(file) === path)?.content ?? '';
   }
   const closure = new Set<string>();
   const queue = [...add];
@@ -437,6 +456,10 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
     for (const file of payload(item).files) {
       const path = installPath(file);
       if (path === null) continue;
+      if (path.split('/').includes('..') || isAbsolute(path)) {
+        conflict(path, `@ultima/${item} would install ${path}, outside the application.`, 'Check --registry: init installs registry files only inside the application. Then plan again.');
+        continue;
+      }
       if (escapes(root, path)) {
         conflict(path, `${path} resolves outside the application through a symlink.`, 'Remove the symlink, then plan again.');
         continue;
@@ -566,8 +589,9 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
 
   const run = (args: string[]): Command => (pm === 'npm' ? { command: 'npm', args: ['exec', '--no', '--', ...args], cwd: 'app' } : { command: 'pnpm', args: ['exec', ...args], cwd: 'app' });
   const dlx = (rest: string[]): Command => (pm === 'npm' ? { command: 'npx', args: ['--yes', `${recipe.shadcn.package}@${recipe.shadcn.version}`, ...rest], cwd: 'app' } : { command: 'pnpm', args: ['dlx', `${recipe.shadcn.package}@${recipe.shadcn.version}`, ...rest], cwd: 'app' });
-  const addedAll = { ...added.dependencies, ...added.devDependencies };
+  const addedAll = { ...added.dependencies, ...added.devDependencies, ...pending };
   const hasAdded = Object.keys(addedAll).length > 0;
+  const versionsToVerify = { ...Object.fromEntries(Object.entries(journal?.dependencies ?? {}).filter(([name, specifier]) => declared[name] === specifier)), ...addedAll };
   const references = Array.isArray((parseJson('tsconfig.json', read('tsconfig.json') ?? '{}')?.value as { references?: unknown } | undefined)?.references);
   const typecheck: Operation = { id: 'typecheck', kind: 'check', check: 'typecheck', command: run(detection.framework === 'vite' && references ? ['tsc', '-b'] : ['tsc', '--noEmit']) };
   const build: Operation | null = pkg.scripts?.build ? { id: 'build', kind: 'check', check: 'build', command: { command: pm, args: ['run', 'build'], cwd: 'app' } } : null;
@@ -576,7 +600,7 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
     ...(hasAdded ? [{ id: 'install', kind: 'run', command: { command: pm, args: pm === 'npm' ? ['install'] : ['install', '--no-frozen-lockfile'], cwd: 'app' } } satisfies Operation] : []),
     ...(add.length > 0 ? [{ id: `add ${add.join(', ')}`, kind: 'run', command: dlx(['add', ...add.map((item) => `@ultima/${item}`), '--yes']) } satisfies Operation] : []),
     ...late,
-    ...(hasAdded ? [{ id: 'verify versions', kind: 'verify-versions', versions: { ...addedAll, ...('ultima-design' in addedAll ? { 'ultima-design': CLI_VERSION } : {}) } } satisfies Operation] : []),
+    ...(Object.keys(versionsToVerify).length > 0 ? [{ id: 'verify versions', kind: 'verify-versions', versions: { ...versionsToVerify, ...('ultima-design' in versionsToVerify ? { 'ultima-design': CLI_VERSION } : {}) } } satisfies Operation] : []),
     { id: 'doctor', kind: 'check', check: 'doctor', command: run(['ultima', 'doctor']) },
     { id: 'check', kind: 'check', check: 'check', command: run(['ultima', 'check']) },
     // Next's generated next-env.d.ts names .next/types, which only its build writes, so Next type-checks after it.
@@ -589,7 +613,7 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
   };
   const host = has('src/App.tsx') ? 'src/App.tsx' : 'src/main.tsx';
   const router = ['react-router', 'react-router-dom', '@tanstack/react-router'].find((name) => name in declared);
-  const rerun = pm === 'npm' ? 'npx ultima-design init .' : 'pnpm exec ultima init .';
+  const rerun = `${initCli(pm)} .`;
   const mountStep =
     detection.framework === 'vite' && !mounted
       ? `Mount the preview. In ${host}, add \`import UltimaPreview from '${relativeImport(host)}';\` and render \`<UltimaPreview />\`${router ? ` on a route of its own, for example \`<Route path="/ultima-preview" element={<UltimaPreview />} />\` with ${router}` : ' where you want to see it'}. Verify: \`${pm} run dev\`, open ${recipe.devUrl}${router ? 'ultima-preview' : ''} and see "Ultima is ready"; then run \`${rerun}\` again, which checks setup and build and reports the preview mounted.`
@@ -629,6 +653,7 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
     theme,
     preview: { path: previewPath, url: previewUrl, mounted, mountStep },
     manualSteps,
+    resume: journal ? { runId: journal.runId, install: pending, items: readded } : null,
   };
   return { ...body, planHash: planHash(body as never) };
 }
@@ -739,6 +764,8 @@ type Result = {
   planHash: string;
   runId: string;
   logs: string;
+  /** The recovery journal and originals, and the command that undoes this run; null when the run wrote nothing. */
+  recovery: { journal: string; rollback: string } | null;
   operations: { id: string; status: 'done' | 'failed' | 'not run'; log?: string }[];
   checks: Partial<Record<'doctor' | 'check' | 'typecheck' | 'build', 'passed' | 'failed'>>;
   versions: Record<string, string>;
@@ -749,15 +776,52 @@ type Result = {
   error?: string;
 };
 
+/** The `@ultima` items whose served payload no longer hashes as the plan pinned it, or the fetch failure. */
+async function payloadsChangedSincePlan(plan: ExistingPlan, deps: InitDeps): Promise<string[] | string> {
+  const recipe = EXISTING_RECIPES[plan.target.framework];
+  const served = await registryPayloads(plan.request.registry, [recipe.setupItem, ...recipe.items], deps.fetch);
+  if ('code' in served) return served.message;
+  const items = new Set([...served.hashes, ...plan.payloads].map(({ item }) => item));
+  const hash = (list: ExistingPlan['payloads'], item: string) => list.find((entry) => entry.item === item)?.sha256;
+  return [...items].filter((item) => hash(served.hashes, item) !== hash(plan.payloads, item)).map((item) => `@ultima/${item}`);
+}
+
 /** Applies a fresh, identical plan in place. A failed step stops the run; nothing after it runs. */
 async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps: InitDeps): Promise<number> {
   const progress = json ? io.err : io.out;
   const { root } = plan.target;
-  const runId = `${new Date().toISOString().replace(/[:.]/g, '-')}-${randomBytes(3).toString('hex')}`;
-  const logs = join(root, 'node_modules', '.ultima-init', runId);
+  const pm = plan.target.packageManager.name;
+  const lockfile = plan.target.packageManager.lockfile ?? (pm === 'npm' ? 'package-lock.json' : 'pnpm-lock.yaml');
+  const touches = (operation: Operation, creates: string[]): string[] => {
+    if (operation.kind === 'write') return [operation.path];
+    if (operation.kind === 'run') return ['package.json', lockfile, ...(operation.id.startsWith('add ') ? creates : [])];
+    return [];
+  };
+  const inventory = [...new Set(plan.operations.flatMap((operation) => touches(operation, plan.items.creates)))];
+  let journal: Journal | null = null;
+  if (plan.resume) {
+    journal = loadJournal(root, plan.resume.runId);
+    if (!journal) return report(io, fail(1, `the run ${plan.resume.runId} this plan resumes has no readable journal; nothing was written. Plan again`), json);
+  } else if (inventory.length > 0) {
+    journal = createJournal(root, newRunId(), pm, lockfile);
+  }
+  const runId = journal?.runId ?? newRunId();
+  const logs = journal ? recoveryDirectory(root, runId) : join(root, 'node_modules', '.ultima-init', runId);
   mkdirSync(logs, { recursive: true });
-  writeFileSync(join(logs, 'plan.json'), `${JSON.stringify(plan, null, 2)}\n`);
+  const attempt = journal ? journal.plans.length + 1 : 1;
+  const attemptPrefix = attempt > 1 ? `${attempt}.` : '';
+  writeFileSync(join(logs, `${attemptPrefix}plan.json`), `${JSON.stringify(plan, null, 2)}\n`);
+  if (journal) {
+    journal.status = 'running';
+    journal.plans.push(plan.planHash);
+    journal.payloads = plan.payloads;
+    for (const path of plan.items.creates) if (!journal.creates.includes(path)) journal.creates.push(path);
+    Object.assign(journal.dependencies, plan.dependencies.added.dependencies, plan.dependencies.added.devDependencies);
+    for (const [name, version] of Object.entries(plan.inputs.versions)) if (version !== null) journal.versions[name] ??= version;
+    rememberOriginals(journal, inventory);
+  }
   const writes = plan.operations.flatMap((operation) => (operation.kind === 'write' ? [operation] : []));
+  const undo = `${initCli(pm)} . --rollback ${runId}`;
   const result: Result = {
     command: 'init',
     mode: 'existing',
@@ -766,6 +830,7 @@ async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps
     planHash: plan.planHash,
     runId,
     logs,
+    recovery: journal ? { journal: join(logs, 'journal.json'), rollback: undo } : null,
     operations: plan.operations.map(({ id }) => ({ id, status: 'not run' })),
     checks: {},
     versions: {},
@@ -779,34 +844,68 @@ async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps
     manualSteps: plan.manualSteps,
   };
   const finish = (code: 0 | 1 | 3): number => {
-    writeFileSync(join(logs, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);
+    writeFileSync(join(logs, `${attemptPrefix}result.json`), `${JSON.stringify(result, null, 2)}\n`);
     io.out(json ? `${JSON.stringify(result, null, 2)}\n` : printExistingResult(plan, result));
     return code;
   };
-  const stop = (index: number, code: 1 | 3, message: string): number => {
+  let entry: Journal['operations'][number] | null = null;
+  let touched: string[] = [];
+  const settle = (status: 'done' | 'failed', extra: { exit?: number; log?: string; error?: string } = {}) => {
+    if (!journal || !entry) return;
+    entry.after = hashes(root, touched);
+    recordOutputs(journal, entry.after);
+    Object.assign(entry, { status, ...extra });
+    saveJournal(journal);
+  };
+  const stop = (index: number, code: 1 | 3, message: string, extra: { exit?: number; log?: string } = {}): number => {
     result.status = code === 1 ? 'failed' : 'incomplete';
     result.error = `${plan.operations[index]?.id}: ${message}`;
     (result.operations[index] as Result['operations'][number]).status = 'failed';
-    io.err(`ultima init: stopped at ${result.error}\nEarlier steps stay applied; logs are at ${logs}\n`);
+    settle('failed', { ...extra, error: message });
+    if (journal) {
+      journal.status = 'stopped';
+      saveJournal(journal);
+    }
+    io.err(
+      journal
+        ? `ultima init: stopped at ${result.error}\nEarlier steps stay applied. Run \`${initCli(pm)} .\` to plan the rest of this run, or \`${undo}\` to undo it. The journal, originals and logs are in ${logs}\n`
+        : `ultima init: stopped at ${result.error}\nLogs are at ${logs}\n`,
+    );
     return finish(code);
   };
 
   for (const [index, operation] of plan.operations.entries()) {
     const row = result.operations[index] as Result['operations'][number];
     progress(`${operation.kind === 'run' || operation.kind === 'check' ? `${operation.id}: ${commandLine(operation.command)}` : operation.id}\n`);
+    if (journal) {
+      touched = touches(operation, journal.creates);
+      entry = { id: operation.id, status: 'started', at: new Date().toISOString(), before: hashes(root, touched) };
+      journal.operations.push(entry);
+      saveJournal(journal);
+    }
+    if (operation.kind === 'run' && operation.id.startsWith('add ')) {
+      const changed = await payloadsChangedSincePlan(plan, deps);
+      if (typeof changed === 'string') return stop(index, 3, `${changed}; shadcn did not run`);
+      if (changed.length > 0) return stop(index, 1, `the registry changed ${changed.join(', ')} since this plan pinned it, so shadcn did not run. Plan again to review the new payloads`);
+    }
     if (operation.kind === 'run' || operation.kind === 'check') {
-      const log = join(logs, `${String(index + 1).padStart(2, '0')}-${operation.id.replace(/[^a-z0-9]+/gi, '-')}.log`);
+      const log = join(logs, `${attemptPrefix}${String(index + 1).padStart(2, '0')}-${operation.id.replace(/[^a-z0-9]+/gi, '-')}.log`);
       row.log = log;
       writeFileSync(log, `$ ${commandLine(operation.command)}\n`);
       const code = await deps.exec(operation.command.command, operation.command.args, root, log);
       if (operation.kind === 'check') result.checks[operation.check] = code === 0 ? 'passed' : 'failed';
-      if (code !== 0) return stop(index, operation.kind === 'check' ? 1 : 3, `exited ${code}; see ${log}`);
+      if (code !== 0) return stop(index, operation.kind === 'check' ? 1 : 3, `exited ${code}; see ${log}`, { exit: code, log });
+      settle('done', { exit: code, log });
     } else if (operation.kind === 'write') {
       const path = join(root, operation.path);
       const current = existsSync(path) ? sha256(readFileSync(path)) : null;
       if (current !== operation.replaces) return stop(index, 1, `${operation.path} changed after it was planned`);
-      mkdirSync(dirname(path), { recursive: true });
-      writeFileSync(path, operation.content);
+      try {
+        writeInPlace(path, operation.content);
+      } catch (error) {
+        return stop(index, 1, `${operation.path} could not be written (${(error as Error).message})`);
+      }
+      settle('done');
     } else if (operation.kind === 'verify-versions') {
       const mismatched = Object.entries(operation.versions).flatMap(([name, expected]) => {
         const actual = resolveInstalledVersion(root, name) ?? null;
@@ -814,10 +913,15 @@ async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps
         return actual === expected ? [] : [`${name} resolved to ${actual ?? 'nothing'}, the plan pins ${expected}`];
       });
       if (mismatched.length > 0) return stop(index, 1, mismatched.join('; '));
+      settle('done');
     } else {
       return stop(index, 3, `${operation.kind} is not an existing-project operation`);
     }
     row.status = 'done';
+  }
+  if (journal) {
+    journal.status = 'finished';
+    saveJournal(journal);
   }
   for (const [name, version] of Object.entries(plan.dependencies.present)) result.versions[name] ??= version;
   const complete = plan.preview.mounted && 'build' in result.checks;
@@ -838,6 +942,11 @@ export function printExistingPlan(plan: ExistingPlan): string {
     `Manager      ${target.packageManager.name} ${target.packageManager.version} (from ${target.packageManager.lockfile ?? target.packageManager.source})`,
     `Registry     ${plan.request.registry}`,
     `Plan         sha256 ${plan.planHash}`,
+    ...(plan.resume
+      ? [
+          `Resumes      run ${plan.resume.runId}, which stopped before it finished${Object.keys(plan.resume.install).length > 0 ? `; it still installs ${Object.keys(plan.resume.install).join(', ')}` : ''}${plan.resume.items.length > 0 ? `; it adds ${plan.resume.items.join(', ')} again, which its shadcn run left partly installed` : ''}. Steps it finished are not planned again.`,
+        ]
+      : []),
     '',
     'Dependencies added, exact:',
     ...(added.length > 0 ? added : ['  none: every one is already declared']),
@@ -884,6 +993,7 @@ function printExistingResult(plan: ExistingPlan, result: Result): string {
     '',
     `Versions   ${Object.entries(result.versions).map(([name, version]) => `${name} ${version}`).join(', ') || 'unchanged'}`,
     `Logs       ${result.logs}`,
+    ...(result.recovery ? [`Recovery   ${result.recovery.journal}; undo this run with \`${result.recovery.rollback}\``] : []),
     '',
     plan.preview.mounted ? `The preview is at ${plan.preview.url} (${plan.preview.path}).` : `The preview is written to ${plan.preview.path} and not mounted yet.`,
     `  ${pm} run dev`,

@@ -463,6 +463,28 @@ describe('init --apply', () => {
     expect(output.err).toContain('stopped at install: exited 1');
     expect(existsSync(join(h.parent, 'my-app'))).toBe(false);
   });
+
+  it('keeps an interrupted scaffold in staging, and the same plan then publishes the destination once', async () => {
+    const h = harness();
+    const path = await planFile(h);
+    h.during.set('scaffold', () => {
+      h.during.delete('scaffold');
+      throw new Error('interrupted');
+    });
+    await expect(init(['--apply', path], io().io, h.deps)).rejects.toThrow('interrupted');
+    expect(existsSync(join(h.parent, 'my-app'))).toBe(false);
+    const interrupted = stagingDirectories(h.parent);
+    expect(interrupted).toHaveLength(1);
+    expect(readdirSync(join(h.parent, interrupted[0] as string, 'logs'))).toEqual(['01-scaffold.log', 'plan.json']);
+
+    expect(await init(['--apply', path], io().io, h.deps)).toBe(0);
+    const clean = harness();
+    expect(await init(['--apply', await planFile(clean)], io().io, clean.deps)).toBe(0);
+    const published = (parent: string) => listing(join(parent, 'my-app')).filter((path) => !path.startsWith('node_modules') && !path.startsWith('.next'));
+    expect(published(h.parent)).toEqual(published(clean.parent));
+    expect(readFileSync(join(h.parent, 'my-app/package.json'), 'utf8')).toBe(readFileSync(join(clean.parent, 'my-app/package.json'), 'utf8'));
+    expect(stagingDirectories(h.parent)).toEqual(interrupted);
+  });
 });
 
 describe('the recipes', () => {

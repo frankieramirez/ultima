@@ -28,6 +28,7 @@ import { createTwoFilesPatch } from 'diff';
 
 import { type ExistingPlan, applyExistingFile, initExisting, isExistingProject } from './existing.ts';
 import { CLI_VERSION } from './install.ts';
+import { rollback } from './journal.ts';
 import { MANAGERS, type Manager, RECIPES, type Recipe, forManager, normalizeScaffold, sha256 } from './recipe.ts';
 import { compareVersions } from './setup.ts';
 
@@ -115,7 +116,7 @@ export const defaultDeps: InitDeps = {
 };
 
 const USAGE =
-  'usage: ultima init <directory> --framework vite|next [--layout root|src] [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init <existing-app> [--framework vite|next] [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init --apply <plan.json> [--json]';
+  'usage: ultima init <directory> --framework vite|next [--layout root|src] [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init <existing-app> [--framework vite|next] [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init --apply <plan.json> [--json]\n       ultima init [<existing-app>] --rollback <run-id>';
 
 export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultDeps): Promise<number> {
   let args;
@@ -132,6 +133,7 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
         apply: { type: 'string' },
         registry: { type: 'string' },
         'cli-tarball': { type: 'string' },
+        rollback: { type: 'string' },
       },
     });
   } catch (error) {
@@ -143,6 +145,13 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
     const extra = [...positionals, ...Object.keys(values).filter((flag) => flag !== 'apply' && flag !== 'json')];
     if (extra.length > 0) return usage(io, `--apply takes only the plan path, so nothing can change the reviewed operations; got ${extra.join(', ')}`);
     return applyFile(resolve(values.apply), json, io, deps);
+  }
+  if (values.rollback !== undefined) {
+    const extra = Object.keys(values).filter((flag) => flag !== 'rollback');
+    if (extra.length > 0 || positionals.length > 1) return usage(io, `--rollback takes the run id and, at most, the application directory; got ${[...positionals.slice(1), ...extra].join(', ')}`);
+    const directory = resolve(positionals[0] ?? '.');
+    if (!isExistingProject(directory)) return usage(io, `${directory} holds no package.json; name the application the run set up`);
+    return rollback(realpathSync(directory), values.rollback, io);
   }
   if (positionals.length !== 1) return usage(io, positionals.length === 0 ? 'name the directory to create' : `init takes one directory, got ${positionals.join(' ')}`);
   if (isExistingProject(resolve(positionals[0] as string))) return existing(resolve(positionals[0] as string), values, io, deps);
