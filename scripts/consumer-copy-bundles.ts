@@ -69,7 +69,12 @@ const tokenPixels = (page: Page, token: string) => page.evaluate((name) => {
   return width;
 }, token);
 type AxeResult = { violations: { id: string }[] };
+/** Axe reads paint, so an entering popup or toast must finish its finite animations first. */
 const runAxe = async (page: Page): Promise<AxeResult> => {
+  await page.evaluate(async () => {
+    await new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done())));
+    await Promise.all(document.getAnimations().filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished.catch(() => {})));
+  });
   await page.addScriptTag({ path: axePath });
   return page.evaluate(async () => (window as unknown as { axe: { run: (options: unknown) => Promise<AxeResult> } }).axe.run({ runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }));
 };
