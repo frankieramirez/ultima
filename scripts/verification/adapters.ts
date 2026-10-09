@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { createManifest, hashBuild } from '../../apps/docs/scripts/build-manifest.ts';
 import { BUILD_MANIFEST, BUILD_ROOT, productionAdapter } from '../../apps/docs/scripts/production-adapter.ts';
 import { diskFiles } from '../catalogue/files.ts';
-import { consumerCell, consumerReportProblems, consumerReproduction, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from '../consumer-report.ts';
+import { ENGINES, consumerCell, consumerReportProblems, consumerReproduction, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from '../consumer-report.ts';
 import { hydrationProblems, type HydrationEvidence } from '../consumer-next.ts';
 import { loadCatalogue } from '../catalogue/model.ts';
 import { CI_OBLIGATIONS, type CheckId } from './checks.ts';
@@ -97,6 +97,7 @@ for (const [layout, base] of [['vite', 'consumer-proof'], ['next-app', 'consumer
   CONFIGURATION[`consumer-copy-${layout}`] = [...CONFIGURATION[base]!, 'scripts/consumer-copy-bundles.ts', 'scripts/catalogue/composition-examples.ts', 'apps/docs/package.json'];
   CONFIGURATION[`consumer-lint-${layout}`] = [...CONFIGURATION[base]!, 'scripts/consumer-lint.ts', 'apps/docs/public/ultima.eslint.mjs', 'packages/analysis/fixtures/app/palette.tsx', 'packages/analysis/fixtures/app/paint.tsx'];
 }
+CONFIGURATION['consumer-bundles-vite'] = [...CONFIGURATION['consumer-proof']!, 'scripts/consumer-bundles.ts', 'scripts/consumer-next.ts'];
 
 /**
  * Where each suite's runner finds its tests, as the runner's own configuration states it: Vitest's
@@ -558,6 +559,7 @@ const consumerProofAdapter: Adapter = {
     const modeValidator = exercise === 'theme-mode' ? await import('../consumer-mode.ts') : undefined;
     const copyValidator = exercise === 'copy-bundles' ? await import('../consumer-copy-bundles.ts') : undefined;
     const lintValidator = exercise === 'lint' ? await import('../consumer-lint.ts') : undefined;
+    const bundleValidator = exercise === 'bundles' ? await import('../consumer-bundles.ts') : undefined;
     const output = join(context.artifacts, context.check.id);
     const reportPath = join(output, 'report.json');
     const { process } = await logged(context, [...context.check.argv, '--output', output]);
@@ -578,6 +580,10 @@ const consumerProofAdapter: Adapter = {
         if (exercise !== report.exercise) problems.push('consumer exercise differs from the registered command');
         const selectedIndex = context.check.argv.indexOf('--case');
         if (report.selectedCase !== (selectedIndex < 0 ? undefined : context.check.argv[selectedIndex + 1])) problems.push('consumer-proof changed the requested cell coverage');
+        if (bundleValidator) {
+          const requested = context.check.argv.flatMap((arg, index) => context.check.argv[index - 1] === '--engine' ? [arg] : []);
+          if (JSON.stringify(report.engines) !== JSON.stringify(ENGINES.filter((engine) => !requested.length || requested.includes(engine)))) problems.push('consumer-proof changed the requested engines');
+        }
         if (problems.length) return { verdict: 'incomplete', executed: [], reason: problems.join('; ') };
         const cssReference = new Map<string, string>();
         for (const row of [...(report.prerequisites ?? []), ...report.cases]) {
@@ -595,6 +601,14 @@ const consumerProofAdapter: Adapter = {
             const issues = lintValidator.lintSnapshotProblems(snapshot, row, (log) => !isAbsolute(log) && !relative(output, join(folder, log)).startsWith('..') && existsSync(join(folder, log)));
             if (issues.length) return { verdict: 'incomplete', executed: [], reason: `invalid lint snapshot: ${row.id}: ${issues.join('; ')}` };
             artifacts.push(join(output, row.snapshot), ...(snapshot.commands as { log: string }[]).map((command) => join(folder, command.log)));
+            continue;
+          }
+          if (bundleValidator) {
+            const issues = bundleValidator.bundleSnapshotProblems(snapshot, row, report);
+            const files = Object.values(snapshot?.artifacts ?? {}).filter((file): file is string => typeof file === 'string');
+            if (files.some((file) => isAbsolute(file) || relative(output, join(output, file)).startsWith('..') || !existsSync(join(output, file)))) issues.push('missing retained artifact');
+            if (issues.length) return { verdict: 'incomplete', executed: [], reason: `invalid bundle snapshot: ${row.id}: ${issues.join('; ')}` };
+            artifacts.push(join(output, row.snapshot), ...files.map((file) => join(output, file)));
             continue;
           }
           if (copyValidator) {
@@ -770,5 +784,6 @@ export const ADAPTERS: Adapters = {
   'consumer-lint-vite': consumerProofAdapter,
   'consumer-lint-next-app': consumerProofAdapter,
   'consumer-lint-next-src': consumerProofAdapter,
+  'consumer-bundles-vite': consumerProofAdapter,
   'production-scenarios': productionAdapter,
 };

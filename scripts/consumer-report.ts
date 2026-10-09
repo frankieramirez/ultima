@@ -28,6 +28,16 @@ export const copyBundleCases = (layout: ConsumerLayout) => COPY_CASES.map((name)
 /** The lint exercise: one case per row of docs/spec/consumer-lint.md#verification-and-delivery, which scripts/consumer-lint.ts asserts. */
 export const LINT_CASES = ['config', 'catalogue', 'invalid-property', 'palette-constant', 'raw-paint', 'warning-only', 'composition', 'no-eslint', 'missing-plugin', 'incompatible-package', 'bad-config', 'ignored-tsx', 'severity-override', 'offline', 'compile'];
 export const lintCases = (layout: ConsumerLayout) => LINT_CASES.map((name) => `${layout}/lint/node/${name}`);
+/** The browser engines a runner cell can name. The scene matrices run Chromium; the production bundles run all three. */
+export const ENGINES = ['chromium', 'firefox', 'webkit'] as const;
+export type Engine = typeof ENGINES[number];
+/** The first three production bundles of docs/spec/consumer-support.md#bounded-production-proof; scripts/consumer-bundles.ts holds each one's assertions. */
+export const BUNDLES = ['theme-css', 'overlay-keyboard', 'form'] as const;
+export type Bundle = typeof BUNDLES[number];
+/** The bundles exercise runs on the canonical Vite fixture only: every bundle in both modes, per engine. */
+export const bundleCases = (engines: readonly Engine[] = ENGINES) => engines.flatMap((engine) => BUNDLES.flatMap((bundle) => ['dark', 'light'].map((mode) => `vite/bundles/${engine}/${bundle}-${mode}`)));
+/** The items the bundles exercise installs beside the Projects scene, for its scoped popups and form controls. */
+export const BUNDLE_ITEMS = ['checkbox', 'popover'];
 /** The worked block-adaptation path the copy-bundles exercise installs and adapts. */
 export const ADAPTED_BLOCK = 'settings-01';
 /** The fixture prefix and mode of a cell id, the inverse of `consumerCases`. */
@@ -51,7 +61,7 @@ export type ConsumerReport = {
   status: 'passed' | 'failed' | 'incomplete';
   layout: ConsumerLayout;
   deliveryPath: DeliveryPath;
-  exercise?: 'theme-mode' | 'copy-bundles' | 'lint';
+  exercise?: 'theme-mode' | 'copy-bundles' | 'lint' | 'bundles';
   source: {
     head: string | null;
     manifest: Manifest;
@@ -71,6 +81,10 @@ export type ConsumerReport = {
   errors: string[];
   drafts?: Record<string, { digest: string; fingerprint: string; recipeVersion: number }>;
   cliReports?: { doctor: string; check: string };
+  engines?: Engine[];
+  /** The bundles exercise's one production build, shared by every engine: the hash of its served output and its lockfile. */
+  fixture?: { hash: string; lock: string };
+  platform?: { os: string; release: string; arch: string };
   lint?: { fragment: { path: string; digest: string }; config: string; lintScript: string | null; network: string; versions: Record<string, string | null>; files: string[] };
   selectedCase?: string;
   prerequisites?: ConsumerCase[];
@@ -82,13 +96,21 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
   const problems: string[] = [];
   if (report.schemaVersion !== 1 || !CONSUMER_LAYOUTS.includes(report.layout) || !DELIVERY_PATHS.includes(report.deliveryPath) || (layout && report.layout !== layout) || (path && report.deliveryPath !== path)) problems.push('unknown consumer-proof schema or parameters');
   if (!['passed', 'failed', 'incomplete'].includes(report.status)) problems.push('unknown consumer-proof status');
-  if (report.exercise !== undefined && !['theme-mode', 'copy-bundles', 'lint'].includes(report.exercise)) problems.push('unknown consumer exercise');
+  if (report.exercise !== undefined && !['theme-mode', 'copy-bundles', 'lint', 'bundles'].includes(report.exercise)) problems.push('unknown consumer exercise');
   if (report.exercise !== undefined && report.deliveryPath !== 'css') problems.push(`${report.exercise} requires CSS delivery`);
   if (report.exercise === 'copy-bundles' && !report.installedItems?.includes(ADAPTED_BLOCK)) problems.push('copy-bundles installed source inventory is incomplete');
   if (report.exercise === 'theme-mode' && !['theme-mode', 'popover'].every((item) => report.installedItems?.includes(item))) problems.push('theme-mode installed source inventory is incomplete');
   if (report.exercise === 'lint' && !['button', 'sidebar', ADAPTED_BLOCK].every((item) => report.installedItems?.includes(item))) problems.push('lint installed source inventory is incomplete');
   if (report.exercise === 'lint' && report.status !== 'incomplete' && (!report.lint || !/^[a-f0-9]{64}$/.test(report.lint.fragment?.digest ?? '') || typeof report.lint.network !== 'string' || !report.lint.versions?.eslint || !report.lint.versions?.['@stylexjs/eslint-plugin'] || !Array.isArray(report.lint.files) || report.lint.files.length === 0)) problems.push('lint fragment, network, version or coverage evidence is missing');
-  const all = report.exercise === 'theme-mode' ? modeCases(report.layout) : report.exercise === 'copy-bundles' ? copyBundleCases(report.layout) : report.exercise === 'lint' ? lintCases(report.layout) : consumerCases(report.layout, report.deliveryPath);
+  if (report.exercise === 'bundles') {
+    if (report.layout !== 'vite') problems.push('bundles run on the canonical Vite fixture');
+    if (!BUNDLE_ITEMS.every((item) => report.installedItems?.includes(item))) problems.push('bundles installed source inventory is incomplete');
+    if (!Array.isArray(report.engines) || !report.engines.length || report.engines.some((engine, index) => !ENGINES.includes(engine) || report.engines!.indexOf(engine) !== index)) problems.push('unknown bundle engines');
+    else if (report.status !== 'incomplete' && report.engines.some((engine) => typeof report.versions?.[engine] !== 'string' || !report.versions[engine])) problems.push('bundle browser identity is missing');
+    const sha = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
+    if (report.status !== 'incomplete' && (!sha(report.fixture?.hash) || !sha(report.fixture?.lock) || !report.platform?.os || !report.platform.release || !report.platform.arch)) problems.push('bundle fixture or platform identity is missing');
+  }
+  const all = report.exercise === 'theme-mode' ? modeCases(report.layout) : report.exercise === 'copy-bundles' ? copyBundleCases(report.layout) : report.exercise === 'lint' ? lintCases(report.layout) : report.exercise === 'bundles' ? bundleCases(Array.isArray(report.engines) ? report.engines.filter((engine) => ENGINES.includes(engine)) : []) : consumerCases(report.layout, report.deliveryPath);
   if (report.selectedCase && (report.exercise !== undefined || !all.includes(report.selectedCase))) problems.push('unknown selected consumer case');
   const expected = report.selectedCase ? [report.selectedCase] : all;
   const same = (values: unknown, wanted = expected) => Array.isArray(values) && values.length === wanted.length && new Set(values).size === values.length && wanted.every((id) => values.includes(id));

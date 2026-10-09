@@ -21,6 +21,7 @@ jobs:
       mode: ${{ steps.select.outputs.mode }}
       copy: ${{ steps.select.outputs.copy }}
       lint: ${{ steps.select.outputs.lint }}
+      bundles: ${{ steps.select.outputs.bundles }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -143,6 +144,30 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: consumer-proof-${{ matrix.layout }}-lint
+          path: ${{ runner.temp }}/consumer-proof
+          if-no-files-found: error
+          retention-days: 90
+
+  bundles:
+    needs: select
+    if: ${{ needs.select.outputs.bundles != '[]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Production bundles in three engines
+        run: node --experimental-strip-types scripts/consumer-proof.ts --layout vite --delivery-path css --exercise bundles --output "$RUNNER_TEMP/consumer-proof"
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: consumer-proof-vite-bundles
           path: ${{ runner.temp }}/consumer-proof
           if-no-files-found: error
           retention-days: 90

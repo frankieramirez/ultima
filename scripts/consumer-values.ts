@@ -1,6 +1,6 @@
 import type { Page } from 'playwright';
 import type { TokenTable } from '../packages/tokens/src/theme/draft.ts';
-import type { ConsumerLayout, DeliveryPath } from './consumer-report.ts';
+import type { ConsumerLayout, DeliveryPath, Engine } from './consumer-report.ts';
 
 /** The scene's value probes, found by role and accessible name: its accent control, a status label and the open Dialog. */
 export const sceneProbes = (page: Page) => ({
@@ -10,10 +10,10 @@ export const sceneProbes = (page: Page) => ({
   portal: page.getByRole('dialog', { name: 'Edit Aster', exact: true }),
 });
 
-export async function consumerValues(page: Page, table: TokenTable, mode: 'dark' | 'light', id: string, layout: ConsumerLayout, deliveryPath: DeliveryPath) {
+export async function consumerValues(page: Page, table: TokenTable, mode: 'dark' | 'light', id: string, layout: ConsumerLayout, deliveryPath: DeliveryPath, engine: Engine = 'chromium') {
   const probes = sceneProbes(page);
   const [control, status, popup] = await Promise.all([probes.control.elementHandle(), probes.status.elementHandle(), probes.portal.elementHandle()]);
-  return page.evaluate(({ table, mode, id, layout, deliveryPath, control, status, popup }) => {
+  return page.evaluate(({ table, mode, id, layout, deliveryPath, engine, control, status, popup }) => {
     const subtree = deliveryPath === 'stylex-subtree';
     const rootElement = subtree ? document.querySelector('[data-testid="proof-root"]')! : document.documentElement;
     const root = getComputedStyle(rootElement);
@@ -58,6 +58,6 @@ export async function consumerValues(page: Page, table: TokenTable, mode: 'dark'
     const extraction = { tokens: { height: table['--ult-space-10'], radius: table['--ult-radius-md'] }, expected: { height: normalize(table['--ult-space-10']!, 'height'), radius: normalize(table['--ult-radius-md']!, 'border-radius'), display: blockified ? 'flex' : 'inline-flex' }, actual: { height: css.height, radius: css.borderRadius, display: css.display } };
     for (const property of ['height', 'radius', 'display'] as const) if (extraction.actual[property] !== extraction.expected[property]) failures.push(`control.${property}: expected ${extraction.expected[property]}, got ${extraction.actual[property]}`);
     a.remove(); b.remove();
-    return { id, mode, engine: 'chromium', layout, deliveryPath, variables, controlVariables, portalVariables, expected, actual, extraction, portal, colorScheme: root.colorScheme, controlColorScheme: css.colorScheme, failures };
-  }, { table, mode, id, layout, deliveryPath, control, status, popup });
+    return { id, mode, engine, layout, deliveryPath, variables, controlVariables, portalVariables, expected, actual, extraction, portal, colorScheme: root.colorScheme, controlColorScheme: css.colorScheme, failures };
+  }, { table, mode, id, layout, deliveryPath, engine, control, status, popup });
 }
