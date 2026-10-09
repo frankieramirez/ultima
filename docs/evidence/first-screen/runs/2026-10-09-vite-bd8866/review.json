@@ -1,0 +1,12 @@
+{
+  "reviewer": "Claude Code (cast session for #774), from the stream-json transcript, the served-request log and the agent's notes",
+  "rule": "An intervention is an action on the project or its tooling that the guidance or CLI output did not print or link. A decision is a choice about setting up, theming or styling with Ultima that the guidance did not settle and that changed the output; product choices the brief leaves open (data, copy, arrangement, Select or Dialog) and choices between documented options are not counted. Writing a browser script for the production check the install page asks for follows the guidance.",
+  "interventions": [
+    { "step": "Read the hosted docs", "action": "Rendered /install, /build-a-screen and /support with headless Chromium (--dump-dom) and pulled lesson source out of the Code tabs' download links.", "reason": "The linked docs pages render client-side, so a plain HTTP fetch returns an empty shell." }
+  ],
+  "decisions": [
+    { "choice": "Kept @stylexjs/eslint-plugin 0.19.1 over init's 0.19.0 runtime instead of doctor's ULT-LINT-003 repair", "options": ["0.19.1 plugin (ULT-LINT-003 advisory)", "0.19.0 plugin (2 valid-styles errors in installed select.tsx)"], "why": "init, the lint walkthrough and doctor disagree on the StyleX version." },
+    { "choice": "Dropped init's colorScheme.system style from the screen root", "options": ["keep init's preview style", "let ultima-theme.css set color-scheme on <html>"], "why": "On a subtree, colorScheme.system follows the OS even when data-theme pins a mode; the guidance does not say what to do with init's preview style once a theme is applied." }
+  ],
+  "notes": "Production was measured with the runner at 0a3fff7, which looked for a required field only in the page; this agent put the form in a Dialog, so required-error-name timed out in every case. With the runner fixed to check a form inside the open overlay, the same build passes every external assertion in all four cases (re-run outside this record). axe-open passed: the overlay was the Dialog."
+}

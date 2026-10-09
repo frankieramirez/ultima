@@ -99,7 +99,7 @@ async function externalCase(page: Page, tables: ResolvedDraft, id: typeof EXTERN
     }
     return wide;
   });
-  await check('required-error-name', { invalid: true, named: true }, async () => {
+  const requiredError = () => check('required-error-name', { invalid: true, named: true }, async () => {
     const description = () => field.evaluate((element) => [...(element.getAttribute('aria-describedby') ?? '').split(/\s+/), element.getAttribute('aria-errormessage') ?? '']
       .filter(Boolean).map((name) => document.getElementById(name)?.textContent?.trim() ?? '').filter(Boolean).join(' '));
     if (await field.evaluate((element) => element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) await field.fill('');
@@ -110,6 +110,9 @@ async function externalCase(page: Page, tables: ResolvedDraft, id: typeof EXTERN
     const after = await description();
     return { invalid, named: after !== '' && after !== before };
   });
+  // A form that opens in the overlay, such as one in a Dialog, has its required field checked once the overlay is open.
+  const inPage = (await field.count()) > 0;
+  if (inPage) await requiredError();
   await check('axe-closed', [], () => violations('closed'));
   await check('overlay-keyboard-open', true, async () => { await trigger.focus(); await page.keyboard.press('Enter'); await popup.waitFor({ timeout: 3000 }); await settle(); return popup.isVisible(); });
   await check('overlay-portalled', true, async () => popup.evaluate((element, control) => {
@@ -118,6 +121,7 @@ async function externalCase(page: Page, tables: ResolvedDraft, id: typeof EXTERN
     return top.parentElement === document.body && !top.contains(control);
   }, await trigger.elementHandle()));
   await check('overlay-focus-in', true, () => popup.evaluate((element) => element.contains(document.activeElement)));
+  if (!inPage) await requiredError();
   await check('portal-values', [], () => tokenProblems(popup, tables[mode], mode));
   await check('axe-open', [], () => violations('open'));
   await check('overlay-escape', true, async () => { await page.keyboard.press('Escape'); await popup.waitFor({ state: 'hidden', timeout: 3000 }); return true; });
