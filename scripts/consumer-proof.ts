@@ -397,7 +397,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     else throw new Error(`unsupported argument ${flag} ${value ?? ''}`);
   }
   if (baseApp) {
-    assert.ok(!options.fault && !options.output, 'base styles run against an existing smoke build');
+    assert.ok(!options.fault && !options.output && !external, 'base styles run against an existing smoke build');
     await baseStyleProof(baseApp, options.layout);
   } else if (external) {
     assert.ok(!options.fault && !options.case && !options.exercise && !options.preset, 'external mode takes only --output');

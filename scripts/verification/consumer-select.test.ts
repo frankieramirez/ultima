@@ -42,6 +42,8 @@ test('scene components, setup and the CLI select the cells that install them', (
 test('MDX code fences are prose, not imports', () => {
   const text = "import { Card } from '@ultima/ui';\n\n```tsx title=\"src/main.tsx\"\nimport './index.css';\n```\n\n~~~\nimport '../ultima-theme.css';\n~~~\n";
   assert.deepEqual(mdxImports('page.mdx', text).map((entry) => entry.specifier), ['@ultima/ui']);
+  const nested = "import { Card } from '@ultima/ui';\n\n```md\n```tsx\nimport './example.css';\n```\n\nimport { Demo } from '../demos';\n";
+  assert.deepEqual(mdxImports('page.mdx', nested).map((entry) => entry.specifier), ['@ultima/ui', '../demos']);
 });
 
 test('external mode reads the layout from the project it is given', () => {

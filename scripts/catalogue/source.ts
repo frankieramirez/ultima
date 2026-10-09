@@ -293,7 +293,7 @@ export function mdxImports(path: string, text: string): Import[] {
   let fence: string | undefined;
   for (const line of text.split('\n')) {
     const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
-    if (!current && marker && (!fence || (marker[0] === fence[0] && marker.length >= fence.length))) fence = fence ? undefined : marker;
+    if (!current && marker && (!fence || (marker[0] === fence[0] && marker.length >= fence.length && /^\s*(?:`+|~+)\s*$/.test(line)))) fence = fence ? undefined : marker;
     if (fence || marker) continue;
     if (!current && /^import\s/.test(line)) current = [];
     if (!current) continue;
