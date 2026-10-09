@@ -5,14 +5,17 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   # Gates and cost in docs/spec/consumer-proof.md: a pull request runs the cells its change plan selects,
-  # and a push, which has no pull-request base, runs every cell.
+  # and a push or a scheduled run, which has no pull-request base, runs every cell.
   select:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -22,6 +25,7 @@ jobs:
       copy: ${{ steps.select.outputs.copy }}
       lint: ${{ steps.select.outputs.lint }}
       bundles: ${{ steps.select.outputs.bundles }}
+      elements: ${{ steps.select.outputs.elements }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -153,6 +157,10 @@ jobs:
     if: ${{ needs.select.outputs.bundles != '[]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.select.outputs.bundles) }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -163,11 +171,75 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - name: Production bundles in three engines
-        run: node --experimental-strip-types scripts/consumer-proof.ts --layout vite --delivery-path css --exercise bundles --output "$RUNNER_TEMP/consumer-proof"
+        run: node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise bundles --output "$RUNNER_TEMP/consumer-proof"
       - if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: consumer-proof-vite-bundles
+          name: consumer-proof-${{ matrix.layout }}-bundles
           path: ${{ runner.temp }}/consumer-proof
           if-no-files-found: error
           retention-days: 90
+
+  elements:
+    needs: select
+    if: ${{ needs.select.outputs.elements != '[]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Element lifecycle in three engines
+        run: node --experimental-strip-types scripts/consumer-proof.ts --layout vite --delivery-path css --exercise elements --output "$RUNNER_TEMP/consumer-proof"
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: consumer-proof-vite-elements
+          path: ${{ runner.temp }}/consumer-proof
+          if-no-files-found: error
+          retention-days: 90
+
+  matrix:
+    needs: [select, consumer-proof, theme-mode, copy-bundles, lint, bundles, elements]
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.select.outputs.bundles != '[]' || needs.select.outputs.elements != '[]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: consumer-proof-*-{bundles,elements}
+          path: ${{ runner.temp }}/reports
+      - name: One revision, every matrix cell
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: node --experimental-strip-types scripts/consumer-matrix.ts "$RUNNER_TEMP/reports" --summary "$RUNNER_TEMP/matrix.md"
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: consumer-matrix
+          path: |
+            ${{ runner.temp }}/matrix.md
+            ${{ runner.temp }}/matrix.json
+          if-no-files-found: warn
+          retention-days: 90
+      - name: File the scheduled failure
+        if: ${{ failure() && github.event_name == 'schedule' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node --experimental-strip-types scripts/consumer-matrix.ts --file-issue "$RUNNER_TEMP/matrix.md"

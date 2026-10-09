@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import ts from 'typescript';
 import { BUNDLE_ASSERTIONS, PROBES_SOURCE, bundleProof, bundleReproduction, bundleSnapshotProblems, type BundleSnapshot } from '../consumer-bundles.ts';
-import { BUNDLES, BUNDLE_ITEMS, ENGINES, bundleCases, consumerReportProblems, type ConsumerReport, type Engine } from '../consumer-report.ts';
+import { BUNDLES, BUNDLE_ITEMS, CONSUMER_LAYOUTS, ELEMENT_ITEMS, ENGINES, MATRIX_BUNDLES, bundleCases, consumerReportProblems, elementCases, matrixCases, type ConsumerReport, type Engine } from '../consumer-report.ts';
 import { presetDraft, resolveDraft } from '../../packages/tokens/src/theme/draft.ts';
 
 const digest = 'a'.repeat(64);
@@ -31,7 +31,19 @@ test('the case registry is every bundle in both modes in every engine: 18 cells'
   assert.equal(new Set(cases).size, 18);
   for (const engine of ENGINES) for (const bundle of BUNDLES) for (const mode of ['dark', 'light']) assert.ok(cases.includes(`vite/bundles/${engine}/${bundle}-${mode}`));
   assert.deepEqual(bundleCases(['firefox']), cases.filter((id) => id.includes('/firefox/')));
-  for (const bundle of BUNDLES) assert.ok(BUNDLE_ASSERTIONS[bundle].length > 0 && new Set(BUNDLE_ASSERTIONS[bundle]).size === BUNDLE_ASSERTIONS[bundle].length, bundle);
+  for (const bundle of MATRIX_BUNDLES) assert.ok(BUNDLE_ASSERTIONS[bundle].length > 0 && new Set(BUNDLE_ASSERTIONS[bundle]).size === BUNDLE_ASSERTIONS[bundle].length, bundle);
+});
+
+test('the Next layouts add 12 hydration cells and the element fixture 6 lifecycle cells', () => {
+  const next = (['next-app', 'next-src'] as const).flatMap((layout) => bundleCases(ENGINES, layout));
+  assert.equal(next.length, 12);
+  for (const layout of ['next-app', 'next-src']) for (const engine of ENGINES) for (const mode of ['dark', 'light']) assert.ok(next.includes(`${layout}/bundles/${engine}/hydration-${mode}`));
+  assert.deepEqual(elementCases(), ENGINES.flatMap((engine) => ['dark', 'light'].map((mode) => `vite/elements/${engine}/lifecycle-${mode}`)));
+  const matrix = matrixCases();
+  assert.equal(new Set(matrix).size, matrix.length);
+  assert.deepEqual(matrix, [...CONSUMER_LAYOUTS.flatMap((layout) => bundleCases(ENGINES, layout)), ...elementCases()]);
+  assert.equal(matrix.length, bundleCases().length + 12 + 6, 'the Vite bundles plus the Next and element cells');
+  assert.equal(ELEMENT_ITEMS.length, 9, 'the nine-element catalogue');
 });
 
 test('a bundles report needs every requested engine, its identity and the Vite fixture', () => {
@@ -42,13 +54,26 @@ test('a bundles report needs every requested engine, its identity and the Vite f
   assert.deepEqual(problemsExceptSourceIdentity(report({ engines: ['chromium', 'firefox'] })).filter((problem) => problem !== coverage), [], 'a narrowed run states its engines');
   assert.ok(problemsExceptSourceIdentity(report({ engines: ['chromium', 'opera' as Engine] })).includes('unknown bundle engines'));
   assert.ok(problemsExceptSourceIdentity(report({ engines: ['firefox', 'firefox'] })).includes('unknown bundle engines'));
-  assert.ok(problemsExceptSourceIdentity(report({ layout: 'next-app' })).includes('bundles run on the canonical Vite fixture'));
+  const next = bundleCases(ENGINES, 'next-src');
+  assert.deepEqual(problemsExceptSourceIdentity(report({ layout: 'next-src', installedItems: [], expected: next, executed: next, cases: next.map((id) => ({ id, status: 'passed', failures: [], snapshot: 'fixture.json' })) })), [], 'a Next layout runs its hydration cells and needs no Vite probes');
+  assert.ok(problemsExceptSourceIdentity(report({ layout: 'next-app' })).includes('consumer-proof case coverage is incomplete'), 'a Next report cannot carry the Vite cells');
   assert.ok(problemsExceptSourceIdentity(report({ installedItems: [] })).includes('bundles installed source inventory is incomplete'));
   assert.ok(problemsExceptSourceIdentity(report({ versions: { chromium: 'x' } })).includes('bundle browser identity is missing'));
   assert.ok(problemsExceptSourceIdentity(report({ fixture: undefined })).includes('bundle fixture or platform identity is missing'));
   assert.ok(problemsExceptSourceIdentity(report({ platform: undefined })).includes('bundle fixture or platform identity is missing'));
   assert.ok(problemsExceptSourceIdentity(report({ errors: ['webkit could not launch'] })).includes('invalid consumer-proof errors'), 'a launch error cannot sit in a passing report');
   assert.ok(!problemsExceptSourceIdentity(report({ status: 'incomplete', errors: ['webkit could not launch'], fixture: undefined })).includes('bundle fixture or platform identity is missing'));
+});
+
+test('an elements report needs the whole element catalogue, its own fixture and no CLI tarball', () => {
+  const cases = elementCases();
+  const elements = (overrides: Partial<ConsumerReport> = {}) => report({ exercise: 'elements', installedItems: [...ELEMENT_ITEMS, 'tokens-css'], expected: cases, executed: cases, cases: cases.map((id) => ({ id, status: 'passed', failures: [], snapshot: 'fixture.json' })), ...overrides });
+  const source = (cliTarballDigest: string | null) => ({ head: 'c'.repeat(40), manifest: { algorithm: 'sha256', version: 1, digest, files: 0, entries: [] }, registryManifestHash: digest, cliTarballDigest, draftDigest: digest, draftFingerprint: 'f', recipeVersion: 1 }) as unknown as ConsumerReport['source'];
+  assert.deepEqual(consumerReportProblems(elements({ source: source(null) })), []);
+  assert.ok(consumerReportProblems(elements({ source: source(digest) })).includes('consumer-proof source identity is incomplete'), 'the light-DOM consumer never packs the CLI');
+  assert.ok(problemsExceptSourceIdentity(elements({ installedItems: ['ult-button'] })).includes('bundles installed source inventory is incomplete'));
+  assert.ok(problemsExceptSourceIdentity(elements({ layout: 'next-app' })).includes('elements run on their own vanilla Vite fixture'));
+  assert.ok(problemsExceptSourceIdentity(elements({ expected: bundleCases(), executed: bundleCases() })).includes('consumer-proof case coverage is incomplete'));
 });
 
 test('an engine that cannot launch leaves its cells unexecuted and says why', async () => {
@@ -73,7 +98,7 @@ test('bundle snapshots carry every assertion, the engine, platform and fixture i
   const reproduceArgv = bundleReproduction('webkit');
   const snapshot: BundleSnapshot = {
     id, engine: 'webkit', bundle: 'form', mode: 'light', browser: { name: 'webkit', version: 'webkit-1' }, userAgent: 'agent', platform, fixture,
-    assertions: BUNDLE_ASSERTIONS.form.map((name) => ({ name, expected: true, actual: true, status: 'passed' })), failures: [], reproduceArgv, reproduce: reproduceArgv.join(' '),
+    assertions: BUNDLE_ASSERTIONS.form.map((name) => ({ name, expected: true, actual: true, status: 'passed' })), failures: [], durationMs: 1200, reproduceArgv, reproduce: reproduceArgv.join(' '),
     artifacts: { browser: 'b.json', screenshot: 's.png' },
   };
   const context = { fixture, versions };
@@ -88,6 +113,23 @@ test('bundle snapshots carry every assertion, the engine, platform and fixture i
   assert.ok(bundleSnapshotProblems({ ...snapshot, failures: failed.failures }, failed, context).includes('missing trace artifact'));
   assert.deepEqual(bundleSnapshotProblems({ ...snapshot, failures: failed.failures, artifacts: { browser: 'b.json', trace: 't.zip' } }, failed, context), []);
   assert.deepEqual(bundleSnapshotProblems(null, row, context), ['missing bundle snapshot']);
+  assert.ok(bundleSnapshotProblems({ ...snapshot, durationMs: undefined } as unknown as BundleSnapshot, row, context).includes('missing cell duration'));
+});
+
+test('a hydration cell reproduces its Next layout and retains the server HTML', () => {
+  const id = 'next-src/bundles/firefox/hydration-dark';
+  const row = { id, status: 'passed', failures: [] as string[] };
+  const reproduceArgv = bundleReproduction('firefox', undefined, 'next-src');
+  const snapshot: BundleSnapshot = {
+    id, engine: 'firefox', bundle: 'hydration', mode: 'dark', browser: { name: 'firefox', version: 'firefox-1' }, userAgent: 'agent', platform, fixture,
+    assertions: BUNDLE_ASSERTIONS.hydration.map((name) => ({ name, expected: true, actual: true, status: 'passed' })), failures: [], durationMs: 900, reproduceArgv, reproduce: reproduceArgv.join(' '),
+    artifacts: { browser: 'b.json', screenshot: 's.png', server: 'h.html' },
+  };
+  const context = { fixture, versions };
+  assert.deepEqual(bundleSnapshotProblems(snapshot, row, context), []);
+  assert.ok(bundleSnapshotProblems({ ...snapshot, artifacts: { browser: 'b.json', screenshot: 's.png' } }, row, context).includes('missing server artifact'));
+  assert.ok(bundleSnapshotProblems({ ...snapshot, reproduceArgv: bundleReproduction('firefox') }, row, context).includes('invalid reproduction'), 'the Vite command cannot reproduce a Next cell');
+  assert.deepEqual(bundleReproduction('webkit', undefined, 'vite', 'elements').slice(3, 10), ['--layout', 'vite', '--delivery-path', 'css', '--exercise', 'elements', '--engine']);
 });
 
 test('the fault and engine reproduce one engine of the run', () => {
