@@ -61,6 +61,8 @@ When styles do not apply at all, run:
 npx ultima-design doctor
 ```
 
+Lint StyleX with the project's ESLint and the [StyleX lint recipe](https://ultima.systems/install#stylex-lint); `doctor` reports lint as `detected` at best, never as a lint pass.
+
 Check the production rendering in both explicit modes and system mode, including an open popup. A zero CLI exit cannot prove the theme rendered ([install walkthrough](https://ultima.systems/install#theme-adoption)).
 
 ## 8. Reading results

@@ -10,6 +10,7 @@ import { doctorTheme, printTheme } from './doctor-theme.ts';
 import { hook } from './hook.ts';
 import { type InitIO, init } from './init.ts';
 import { HARNESSES, type Harness, install, printPlan, uninstall } from './install.ts';
+import { doctorLint, printLint } from './lint.ts';
 import { printStatus, status } from './status.ts';
 
 const COMMANDS = ['init', 'doctor', 'status', 'diff', 'check', 'install', 'uninstall'];
@@ -71,13 +72,14 @@ export async function run(argv: string[], stdin = '', io?: InitIO): Promise<{ co
   }
   const result = doctor(invocation.root, invocation.target);
   if ('usage' in result) return usageError(result);
+  const lint = doctorLint(invocation.root, result.target);
   if (invocation.theme) {
     const themed = doctorTheme(invocation.root, result.target);
-    const report = { command: 'doctor', ...result, theme: themed.theme, diagnostics: [...result.diagnostics, ...themed.diagnostics] };
-    return { code: exitCode(report), stdout: invocation.json ? print(report, true) : print({ command: 'doctor', ...result, diagnostics: report.diagnostics }, false) + printTheme(themed.theme), stderr: '' };
+    const report = { command: 'doctor', ...result, diagnostics: [...result.diagnostics, ...themed.diagnostics] };
+    return { code: exitCode(report), stdout: invocation.json ? print({ ...report, lint, theme: themed.theme }, true) : print(report, false) + printLint(lint) + printTheme(themed.theme), stderr: '' };
   }
   const report = { command: invocation.command, ...result };
-  return { code: exitCode(report), stdout: print(report, invocation.json), stderr: '' };
+  return { code: exitCode(report), stdout: invocation.json ? print({ ...report, lint }, true) : print(report, false) + printLint(lint), stderr: '' };
 }
 
 function hookInvocation(argv: string[], stdin: string): string {

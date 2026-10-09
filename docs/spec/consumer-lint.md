@@ -1,6 +1,6 @@
 # StyleX linting in consumer projects
 
-Decided on [Decide the StyleX linting contract for consumer projects](https://github.com/frankieramirez/ultima/issues/730), under [Make Ultima a plug-and-play StyleX design system](https://github.com/frankieramirez/ultima/issues/725). Status: the fragment, walkthrough, setup hand steps and installed proof are implemented ([#756](https://github.com/frankieramirez/ultima/issues/756)); doctor diagnostics are pending. Only the combination under [Compatibility and ownership](#compatibility-and-ownership) is published.
+Decided on [Decide the StyleX linting contract for consumer projects](https://github.com/frankieramirez/ultima/issues/730), under [Make Ultima a plug-and-play StyleX design system](https://github.com/frankieramirez/ultima/issues/725). Status: the fragment, walkthrough, setup hand steps and installed proof are implemented ([#756](https://github.com/frankieramirez/ultima/issues/756)), and so are doctor's lint diagnostics ([#757](https://github.com/frankieramirez/ultima/issues/757)). Only the combination under [Compatibility and ownership](#compatibility-and-ownership) is published.
 
 ## Coverage and severities
 
@@ -108,9 +108,22 @@ ESLint exits 0 for a completed run without errors, 1 for lint errors, and 2 for 
 
 ## Doctor diagnostics
 
-A later CLI ticket adds bounded lint diagnostics for dependency absence, version mismatch and config presence, with the exact repair step and recipe link. Doctor reads files and resolved versions only. It never imports or evaluates ESLint config, installs packages, edits scripts, or runs consumer code. A string mentioning the plugin cannot prove effective TSX rules. Mark effective configuration `unverified` and point to local print-config and lint commands.
+The CLI adds bounded lint diagnostics for dependency absence, version mismatch and config presence, with the exact repair step and recipe link. Doctor reads files and resolved versions only. It never imports or evaluates ESLint config, installs packages, edits scripts, or runs consumer code. A string mentioning the plugin cannot prove effective TSX rules. Mark effective configuration `unverified` and point to local print-config and lint commands.
 
 An absent applicable integration advises: `StyleX lint is not configured; syntax validation remains unverified`. A custom integration names what doctor could not determine. Preserve existing setup and policy exit behavior. Reports distinguish setup from StyleX lint: static detection can report `detected`, never an executed lint pass. The proof runner requires a complete lint result independently and records commands, versions, selected files and upstream rule IDs. ESLint supplies file/location diagnostics; execution failures identify the missing dependency or configuration step.
+
+`packages/cli/src/lint.ts` implements this as the `lint` section of `doctor`, beside the setup report and outside its `diagnostics`, so lint never changes doctor's exit. It bundles the tested pins and verified majors that the proof runner also imports. It resolves versions from `node_modules` manifests and parses `eslint.config.*` and an imported `ultima.eslint.mjs` with the TypeScript parser. It never imports them. JSON adds `lint`: `schemaVersion` 1; `state`, one of `not-applicable`, `not-configured`, `unverified` or `detected`; the `reason`; the `config` path; the resolved `versions` and the `tested` pins; the required `files` it probes, which are the entry, the first installed component and the token and theme modules; `effective: "unverified"`; the print-config and lint `commands`; and advisory `diagnostics`.
+
+| Rule | Advises when |
+| --- | --- |
+| `ULT-LINT-001` | No ESLint package and no config, no `eslint.config.*`, or a flat config that registers no StyleX plugin: `StyleX lint is not configured; syntax validation remains unverified`. |
+| `ULT-LINT-002` | A dependency the config or fragment imports does not resolve, the imported fragment is missing, or a config exists without a resolvable `eslint`. |
+| `ULT-LINT-003` | An unverified combination: an ESLint 8 legacy config, ESLint outside major 9, the parser outside major 8, the plugin at a version other than `@stylexjs/stylex`, or a custom integration that installs the plugin without importing it or the fragment. |
+| `ULT-LINT-004` | A literal `ignores` or `globalIgnores` pattern covers a required file. |
+| `ULT-LINT-005` | The flat config does not parse. |
+| `ULT-LINT-006` | A literal override sets `@stylexjs/valid-styles` below error. |
+
+A project with no setup item and no declared `@stylexjs/stylex` is `not-applicable`. Static presence in a verified combination is `detected`. The lint proof's no-ESLint and negative cases require the matching advisory, and its `config` case requires `detected` with no lint finding.
 
 ## Verification and delivery
 

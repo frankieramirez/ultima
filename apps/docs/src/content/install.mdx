@@ -187,6 +187,8 @@ npx ultima-design doctor
 npx ultima-design check
 ```
 
+`ultima-design doctor` lists what it can see under **StyleX lint**: a missing package or config, an unverified ESLint or plugin version, an ignored component, or `detected`. It reads files and installed versions only. It never runs ESLint, so `detected` is not a lint pass, and its lint advice never changes doctor's exit code.
+
 For Next.js, probe the page under `app/` or `src/app/` instead. Also probe an installed component and the token and theme modules in your lib folder. Each should name the typescript-eslint parser and show `@stylexjs/valid-styles` at severity 2. A file that prints `undefined` is ignored, and an ignored component means lint does not cover it.
 
 ESLint exits 0 when it reports only warnings, 1 when it reports errors and 2 when it could not run. Run the lint script once in CI, without `--fix` and without `--max-warnings 0` unless your project already wants that. Review autofixes locally. After installation, every command uses local packages and runs offline. `ultima-design check` never runs ESLint, and passing lint does not mean the build applied your theme.
