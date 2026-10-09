@@ -54,6 +54,8 @@ Retain the full existing Chromium component, axe, element and production suites.
 
 Add hydration/theme/portal smoke on Next root and src layouts in every engine and both modes: 12 cells. Fail on hydration diagnostics, missing CSS/assets or unhandled page errors; verify interaction after hydration. Add element registration, reconnect, attribute/property update and `ult-tabs` keyboard/theme smoke in every engine and both modes: 6 cells. Total initial added matrix: 54 cells, reusing builds across browsers. Fold equivalent cases from the rendered-consumer plan into these cells rather than running duplicate suites.
 
+The theme and CSS, overlay and keyboard, and form bundles run on the Vite fixture in all three engines: 18 of the 36 cells. The runner's [cross-engine bundles](consumer-proof.md#cross-engine-bundles) exercise implements them ([#770](https://github.com/frankieramirez/ultima/issues/770)). The Date Picker, direction and locale, and narrow touch bundles, the Next cells and the element cells are still to come.
+
 Maintain explicit expected/executed case IDs. A missing, skipped, timed-out or unlaunchable required case leaves verification incomplete or failed. Preserve traces, failure screenshots, console/network errors and actual values alongside revision, fixture hash, dependency lock and browser/OS identity. Seed regressions for missing src extraction, broken portal theming, hydration mismatch and wrong submitted date to prove the assertions catch the claimed failures.
 
 ## Cadence, cost and manual proof

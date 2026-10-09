@@ -1,0 +1,102 @@
+import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { test } from 'node:test';
+import ts from 'typescript';
+import { BUNDLE_ASSERTIONS, PROBES_SOURCE, bundleProof, bundleReproduction, bundleSnapshotProblems, type BundleSnapshot } from '../consumer-bundles.ts';
+import { BUNDLES, BUNDLE_ITEMS, ENGINES, bundleCases, consumerReportProblems, type ConsumerReport, type Engine } from '../consumer-report.ts';
+import { presetDraft, resolveDraft } from '../../packages/tokens/src/theme/draft.ts';
+
+const digest = 'a'.repeat(64);
+const fixture = { hash: digest, lock: 'b'.repeat(64) };
+const platform = { os: 'Linux', release: '6', arch: 'x64' };
+const versions = Object.fromEntries(ENGINES.map((engine) => [engine, `${engine}-1`]));
+
+const problemsExceptSourceIdentity = (value: ConsumerReport) => consumerReportProblems(value).filter((problem) => problem !== 'consumer-proof source identity is incomplete');
+
+function report(overrides: Partial<ConsumerReport> = {}) {
+  const engines = overrides.engines ?? [...ENGINES];
+  const cases = bundleCases(engines);
+  return {
+    schemaVersion: 1, status: 'passed', layout: 'vite', deliveryPath: 'css', exercise: 'bundles', engines, fixture, platform, versions,
+    installedItems: [...BUNDLE_ITEMS], expected: cases, executed: cases, cases: cases.map((id) => ({ id, status: 'passed', failures: [], snapshot: 'fixture.json' })), errors: [],
+    ...overrides,
+  } as ConsumerReport;
+}
+
+test('the case registry is every bundle in both modes in every engine: 18 cells', () => {
+  const cases = bundleCases();
+  assert.equal(cases.length, 18);
+  assert.equal(new Set(cases).size, 18);
+  for (const engine of ENGINES) for (const bundle of BUNDLES) for (const mode of ['dark', 'light']) assert.ok(cases.includes(`vite/bundles/${engine}/${bundle}-${mode}`));
+  assert.deepEqual(bundleCases(['firefox']), cases.filter((id) => id.includes('/firefox/')));
+  for (const bundle of BUNDLES) assert.ok(BUNDLE_ASSERTIONS[bundle].length > 0 && new Set(BUNDLE_ASSERTIONS[bundle]).size === BUNDLE_ASSERTIONS[bundle].length, bundle);
+});
+
+test('a bundles report needs every requested engine, its identity and the Vite fixture', () => {
+  const coverage = 'consumer-proof case coverage is incomplete';
+  assert.deepEqual(problemsExceptSourceIdentity(report()), []);
+  const withoutWebkit = bundleCases(['chromium', 'firefox']);
+  assert.ok(problemsExceptSourceIdentity(report({ executed: withoutWebkit, cases: withoutWebkit.map((id) => ({ id, status: 'passed', failures: [], snapshot: 'fixture.json' })) })).includes(coverage), 'an unexecuted engine leaves coverage incomplete');
+  assert.deepEqual(problemsExceptSourceIdentity(report({ engines: ['chromium', 'firefox'] })).filter((problem) => problem !== coverage), [], 'a narrowed run states its engines');
+  assert.ok(problemsExceptSourceIdentity(report({ engines: ['chromium', 'opera' as Engine] })).includes('unknown bundle engines'));
+  assert.ok(problemsExceptSourceIdentity(report({ engines: ['firefox', 'firefox'] })).includes('unknown bundle engines'));
+  assert.ok(problemsExceptSourceIdentity(report({ layout: 'next-app' })).includes('bundles run on the canonical Vite fixture'));
+  assert.ok(problemsExceptSourceIdentity(report({ installedItems: [] })).includes('bundles installed source inventory is incomplete'));
+  assert.ok(problemsExceptSourceIdentity(report({ versions: { chromium: 'x' } })).includes('bundle browser identity is missing'));
+  assert.ok(problemsExceptSourceIdentity(report({ fixture: undefined })).includes('bundle fixture or platform identity is missing'));
+  assert.ok(problemsExceptSourceIdentity(report({ platform: undefined })).includes('bundle fixture or platform identity is missing'));
+  assert.ok(problemsExceptSourceIdentity(report({ errors: ['webkit could not launch'] })).includes('invalid consumer-proof errors'), 'a launch error cannot sit in a passing report');
+  assert.ok(!problemsExceptSourceIdentity(report({ status: 'incomplete', errors: ['webkit could not launch'], fixture: undefined })).includes('bundle fixture or platform identity is missing'));
+});
+
+test('an engine that cannot launch leaves its cells unexecuted and says why', async () => {
+  const app = await mkdtemp(join(tmpdir(), 'ultima-bundles-'));
+  try {
+    await mkdir(join(app, 'dist'));
+    await writeFile(join(app, 'dist/index.html'), '<!doctype html>');
+    await writeFile(join(app, 'package-lock.json'), '{}');
+    const draft = resolveDraft(presetDraft('neutral'));
+    const result = report({ status: 'incomplete', executed: [], cases: [], errors: [], fixture: undefined, platform: undefined, versions: {} });
+    await bundleProof('http://127.0.0.1:9', app, result, app, draft, draft, ENGINES, undefined, async (engine) => { throw new Error(`browserType.launch:\n╔═══╗\n║ ${engine} is missing dependencies ║`); });
+    assert.deepEqual(result.executed, []);
+    assert.deepEqual(result.errors, ENGINES.map((engine) => `${engine} could not launch: Error: browserType.launch: ${engine} is missing dependencies`));
+    assert.match(result.fixture?.hash ?? '', /^[a-f0-9]{64}$/);
+    assert.ok(problemsExceptSourceIdentity(result).includes('consumer-proof case coverage is incomplete'));
+  } finally { await rm(app, { recursive: true, force: true }); }
+});
+
+test('bundle snapshots carry every assertion, the engine, platform and fixture identity, and failure evidence', () => {
+  const id = 'vite/bundles/webkit/form-light';
+  const row = { id, status: 'passed', failures: [] as string[] };
+  const reproduceArgv = bundleReproduction('webkit');
+  const snapshot: BundleSnapshot = {
+    id, engine: 'webkit', bundle: 'form', mode: 'light', browser: { name: 'webkit', version: 'webkit-1' }, userAgent: 'agent', platform, fixture,
+    assertions: BUNDLE_ASSERTIONS.form.map((name) => ({ name, expected: true, actual: true, status: 'passed' })), failures: [], reproduceArgv, reproduce: reproduceArgv.join(' '),
+    artifacts: { browser: 'b.json', screenshot: 's.png' },
+  };
+  const context = { fixture, versions };
+  assert.deepEqual(bundleSnapshotProblems(snapshot, row, context), []);
+  assert.ok(bundleSnapshotProblems({ ...snapshot, assertions: snapshot.assertions.slice(1) }, row, context).includes('incomplete bundle assertion inventory'));
+  assert.ok(bundleSnapshotProblems({ ...snapshot, assertions: snapshot.assertions.map((row, index) => index ? row : { ...row, actual: false, status: 'failed' }) }, row, context).includes('passing cell holds a failed assertion'));
+  assert.ok(bundleSnapshotProblems({ ...snapshot, engine: 'chromium' }, row, context).includes('snapshot disagrees with its case'));
+  assert.ok(bundleSnapshotProblems({ ...snapshot, browser: { name: 'webkit', version: 'other' } }, row, context).length);
+  assert.ok(bundleSnapshotProblems(snapshot, row, { ...context, fixture: { ...fixture, hash: 'c'.repeat(64) } }).length, 'a cell must name the build the report shared');
+  assert.ok(bundleSnapshotProblems({ ...snapshot, reproduceArgv: bundleReproduction('chromium') }, row, context).includes('invalid reproduction'));
+  const failed = { ...row, status: 'failed', failures: ['form broke'] };
+  assert.ok(bundleSnapshotProblems({ ...snapshot, failures: failed.failures }, failed, context).includes('missing trace artifact'));
+  assert.deepEqual(bundleSnapshotProblems({ ...snapshot, failures: failed.failures, artifacts: { browser: 'b.json', trace: 't.zip' } }, failed, context), []);
+  assert.deepEqual(bundleSnapshotProblems(null, row, context), ['missing bundle snapshot']);
+});
+
+test('the fault and engine reproduce one engine of the run', () => {
+  assert.deepEqual(bundleReproduction('firefox', 'portal-theme').slice(-4), ['--engine', 'firefox', '--fault', 'portal-theme']);
+});
+
+test('the probes parse as TSX and import only installed items', () => {
+  const output = ts.transpileModule(PROBES_SOURCE, { fileName: 'BundleProbes.tsx', reportDiagnostics: true, compilerOptions: { jsx: ts.JsxEmit.ReactJSX } });
+  assert.deepEqual(output.diagnostics, []);
+  const imports = [...PROBES_SOURCE.matchAll(/from '@\/components\/ui\/([a-z-]+)'/g)].map((match) => match[1]);
+  for (const item of BUNDLE_ITEMS) assert.ok(imports.includes(item), item);
+});
