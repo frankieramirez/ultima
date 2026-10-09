@@ -9,7 +9,7 @@ import { draftFingerprint } from '../packages/tokens/src/theme/codec.ts';
 import { presetDraft, resolveDraft, stockDraft, type ThemeDraft } from '../packages/tokens/src/theme/draft.ts';
 import { gate } from '../packages/tokens/src/theme/gate.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
-import { CONSUMER_LAYOUTS, DELIVERY_PATHS, copyBundleCases, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, modeCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
+import { CONSUMER_LAYOUTS, DELIVERY_PATHS, copyBundleCases, lintCases, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, modeCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
 import { THEME_PRESETS } from '../packages/tokens/src/theme/draft.ts';
 import { modeProof, modeScene } from './consumer-mode.ts';
 import { installScene, isSceneFault, SCENE_FAULTS, SCENE_INSTALL, SCENE_ITEMS } from './consumer-scene.ts';
@@ -26,6 +26,7 @@ import { BASE_THEME_MARKER } from '../packages/cli/src/base-theme.ts';
 import { toCss } from '../packages/tokens/src/theme/export.ts';
 import { installedThemeProof } from './consumer-theme.ts';
 import { COPY_FAULTS, COPY_ITEMS, copyBundleProof, copyBundleScene } from './consumer-copy-bundles.ts';
+import { lintProof, lintScene } from './consumer-lint.ts';
 
 export function proofDraft(): ThemeDraft {
   const draft = sharedProofDraft();
@@ -39,7 +40,7 @@ export function proofDraft(): ThemeDraft {
 }
 
 export const PROOF_FAULTS = ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', 'mode-script', ...SCENE_FAULTS, ...COPY_FAULTS] as const;
-export const PROOF_EXERCISES = ['theme-mode', 'copy-bundles'] as const;
+export const PROOF_EXERCISES = ['theme-mode', 'copy-bundles', 'lint'] as const;
 export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; case?: string; preset?: 'ultima'; exercise?: typeof PROOF_EXERCISES[number]; fault?: typeof PROOF_FAULTS[number] };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
@@ -100,6 +101,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   if (options.exercise && (!PROOF_EXERCISES.includes(options.exercise) || options.deliveryPath !== 'css')) throw new Error(`${options.exercise} requires CSS delivery`);
   if (options.exercise && options.case) throw new Error(`${options.exercise} runs every case; --case selects a rendered consumer cell`);
   if (options.fault === 'unresolved-copy-import' && options.exercise !== 'copy-bundles') throw new Error('unresolved-copy-import requires the copy-bundles exercise');
+  if (options.fault && options.exercise === 'lint') throw new Error('the lint exercise seeds its own negative cases; it takes no --fault');
   if (options.case && !consumerCases(options.layout, options.deliveryPath).includes(options.case)) throw new Error(`unknown consumer cell: ${options.case}`);
   const isNext = options.layout !== 'vite';
   const src = options.layout === 'next-src';
@@ -120,7 +122,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     source: { head: source.head, manifest: source.manifest, registryManifestHash: null, cliTarballDigest: null, draftDigest: null, draftFingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion },
     command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: [setupItem, ...SCENE_ITEMS, 'tokens', 'lib', 'ultima-theme'],
     ...(options.exercise && { exercise: options.exercise }),
-    expected: options.exercise === 'theme-mode' ? modeCases(options.layout) : options.exercise === 'copy-bundles' ? copyBundleCases(options.layout) : options.case ? [options.case] : consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {}, ...(options.case ? { selectedCase: options.case } : {}),
+    expected: options.exercise === 'theme-mode' ? modeCases(options.layout) : options.exercise === 'copy-bundles' ? copyBundleCases(options.layout) : options.exercise === 'lint' ? lintCases(options.layout) : options.case ? [options.case] : consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {}, ...(options.case ? { selectedCase: options.case } : {}),
   };
   const execute: Run = async (cwd, command, args) => {
     await appendFile(join(output, 'commands.log'), `${JSON.stringify({ cwd, command, args })}\n`);
@@ -149,7 +151,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     const registry = await serveRegistry(join(work, 'registry'));
     servers.push(registry);
     const app = join(work, options.layout);
-    await scaffold(isNext ? (src ? 'next-src' : 'next-root') : 'vite', app, execute);
+    await scaffold(isNext ? (src ? 'next-src' : 'next-root') : 'vite', app, execute, { eslint: options.exercise === 'lint' });
     const setup = await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', `${registry.url}/r/${setupItem}.json`, '--yes']);
     const configPath = join(app, isNext ? 'postcss.config.js' : 'vite.config.ts');
     if (isNext) await setupNext(app, src, setup);
@@ -204,12 +206,20 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       await copyBundleScene(app, options.layout, execute, options.fault);
       report.installedItems.push(...COPY_ITEMS.filter((id) => !report.installedItems.includes(id)));
     }
+    let lint: Awaited<ReturnType<typeof lintScene>> | undefined;
+    if (options.exercise === 'lint') {
+      // The full catalogue, the fragment and the lint dependencies install while the network is still allowed.
+      lint = await lintScene(app, options.layout, { url: registry.url, folder: join(work, 'registry') }, draft, execute, join(output, 'lint'));
+      report.installedItems.push(...lint.items.filter((id) => !report.installedItems.includes(id)));
+    }
     await execute(app, 'npm', ['install', '-D', tarball]);
     const fixtures = [...(options.deliveryPath === 'registry' ? [{ name: 'css-reference', draft }] : []), { name: '', draft }, ...(options.deliveryPath === 'registry' ? THEME_PRESETS.map((preset) => ({ name: preset.id, draft: presetDraft(preset.id) })) : [])];
     const cssReference = new Map<string, Awaited<ReturnType<typeof consumerValues>>>();
     const prerequisites = consumerPrerequisites(options.layout, options.deliveryPath, options.case);
-    browser = await chromium.launch({ headless: true });
-    report.versions.chromium = browser.version();
+    if (options.exercise !== 'lint') {
+      browser = await chromium.launch({ headless: true });
+      report.versions.chromium = browser.version();
+    }
     const selectedFixture = options.case ? consumerCell(options.case).fixture : undefined;
     for (const fixture of fixtures) {
       if (options.case && fixture.name !== selectedFixture && !prerequisites.some((id) => consumerCell(id).fixture === fixture.name)) continue;
@@ -267,7 +277,11 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       for (const name of ['react', 'react-dom', '@stylexjs/stylex', 'ultima-design', ...(isNext ? ['next', '@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'] : ['vite', '@stylexjs/unplugin'])]) report.versions[name] = JSON.parse(await readFile(join(app, 'node_modules', name, 'package.json'), 'utf8')).version;
       report.versions.npm = (await execute(app, 'npm', ['--version'])).trim();
       if (options.exercise === 'copy-bundles') {
-        await copyBundleProof(browser, app, options.layout, execute, report, fixtureOutput);
+        await copyBundleProof(browser!, app, options.layout, execute, report, fixtureOutput);
+        continue;
+      }
+      if (options.exercise === 'lint') {
+        await lintProof(app, options.layout, execute, report, fixtureOutput, lint!);
         continue;
       }
       try { await writeFile(join(fixtureOutput, 'build.log'), await execute(app, 'npm', ['run', 'build'])); }
@@ -275,14 +289,14 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       const production = isNext ? await serveNext(app, join(fixtureOutput, 'server.log')) : await serveRegistry(join(app, 'dist'), true, join(fixtureOutput, 'server.log'));
       servers.push(production);
       const tables = options.preset === 'ultima' && (!fixture.name || fixture.name === 'css-reference' || fixture.name === 'ultima') ? frozen : resolveDraft(draft);
-      if (options.exercise === 'theme-mode') await modeProof(browser, production.url, report, fixtureOutput, tables);
+      if (options.exercise === 'theme-mode') await modeProof(browser!, production.url, report, fixtureOutput, tables);
       const ids = options.exercise === 'theme-mode' ? [] : ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${options.layout}/${options.deliveryPath}/chromium/${fixture.name ? `${fixture.name}-` : ''}${mode}`);
       for (const id of ids) {
         if (options.case && id !== options.case && !prerequisites.includes(id)) continue;
         const mode = id.endsWith('-dark') ? 'dark' : 'light';
         const explicit = id.includes('explicit-');
         const contextOptions = { reducedMotion: 'no-preference' as const, colorScheme: explicit ? (mode === 'dark' ? 'light' as const : 'dark' as const) : mode as 'dark' | 'light' };
-        const context = await browser.newContext(contextOptions);
+        const context = await browser!.newContext(contextOptions);
         if (isNext && explicit) await context.addCookies([{ name: 'proof-mode', value: mode, url: production.url }]);
         const page = await context.newPage();
         const browserLog: BrowserLog = { console: [], pageErrors: [], failedRequests: [] };
@@ -296,7 +310,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
         let axeReport: unknown;
         try {
         if (isNext) {
-          const serverContext = await browser.newContext({ ...contextOptions, javaScriptEnabled: false });
+          const serverContext = await browser!.newContext({ ...contextOptions, javaScriptEnabled: false });
           await serverContext.addCookies(await context.cookies());
           const serverPage = await serverContext.newPage();
           const response = await serverPage.goto(production.url, { waitUntil: 'networkidle' });

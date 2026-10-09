@@ -95,6 +95,7 @@ for (const base of ['consumer-proof', 'consumer-proof-next-app', 'consumer-proof
 }
 for (const [layout, base] of [['vite', 'consumer-proof'], ['next-app', 'consumer-proof-next-app'], ['next-src', 'consumer-proof-next-src']] as const) {
   CONFIGURATION[`consumer-copy-${layout}`] = [...CONFIGURATION[base]!, 'scripts/consumer-copy-bundles.ts', 'scripts/catalogue/composition-examples.ts', 'apps/docs/package.json'];
+  CONFIGURATION[`consumer-lint-${layout}`] = [...CONFIGURATION[base]!, 'scripts/consumer-lint.ts', 'apps/docs/public/ultima.eslint.mjs', 'packages/analysis/fixtures/app/palette.tsx', 'packages/analysis/fixtures/app/paint.tsx'];
 }
 
 /**
@@ -556,6 +557,7 @@ const consumerProofAdapter: Adapter = {
     const exercise = exerciseIndex < 0 ? undefined : context.check.argv[exerciseIndex + 1];
     const modeValidator = exercise === 'theme-mode' ? await import('../consumer-mode.ts') : undefined;
     const copyValidator = exercise === 'copy-bundles' ? await import('../consumer-copy-bundles.ts') : undefined;
+    const lintValidator = exercise === 'lint' ? await import('../consumer-lint.ts') : undefined;
     const output = join(context.artifacts, context.check.id);
     const reportPath = join(output, 'report.json');
     const { process } = await logged(context, [...context.check.argv, '--output', output]);
@@ -586,6 +588,13 @@ const consumerProofAdapter: Adapter = {
             const html = join(output, `${row.id.split('/').at(-1)}.server.html`);
             if (snapshot.id !== row.id || JSON.stringify(snapshot.failures) !== JSON.stringify(row.failures) || issues.length || !existsSync(html)) return { verdict: 'incomplete', executed: [], reason: `invalid theme-mode snapshot: ${row.id}: ${issues.join('; ')}` };
             artifacts.push(html, join(output, row.snapshot));
+            continue;
+          }
+          if (lintValidator) {
+            const folder = dirname(join(output, row.snapshot));
+            const issues = lintValidator.lintSnapshotProblems(snapshot, row, (log) => !isAbsolute(log) && !relative(output, join(folder, log)).startsWith('..') && existsSync(join(folder, log)));
+            if (issues.length) return { verdict: 'incomplete', executed: [], reason: `invalid lint snapshot: ${row.id}: ${issues.join('; ')}` };
+            artifacts.push(join(output, row.snapshot), ...(snapshot.commands as { log: string }[]).map((command) => join(folder, command.log)));
             continue;
           }
           if (copyValidator) {
@@ -758,5 +767,8 @@ export const ADAPTERS: Adapters = {
   'consumer-copy-vite': consumerProofAdapter,
   'consumer-copy-next-app': consumerProofAdapter,
   'consumer-copy-next-src': consumerProofAdapter,
+  'consumer-lint-vite': consumerProofAdapter,
+  'consumer-lint-next-app': consumerProofAdapter,
+  'consumer-lint-next-src': consumerProofAdapter,
   'production-scenarios': productionAdapter,
 };

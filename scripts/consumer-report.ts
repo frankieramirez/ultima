@@ -25,6 +25,9 @@ export const CONSUMER_CASES = consumerCases('vite');
 /** The copy-bundles exercise: compile, then one case per exercise in scripts/consumer-copy-bundles.ts, which asserts the two agree. */
 export const COPY_CASES = ['compile', 'projects-zoom-200', 'product-tokens', 'style-overrides', 'interaction-states', 'typography', 'carousel', 'chart', 'command-dialog', 'data-table-sorting', 'data-table-row-selection', 'data-table-filtering', 'data-table-pagination', 'item', 'kbd', 'react-hook-form', 'sheet', 'settings-01-desktop', 'settings-01-narrow'];
 export const copyBundleCases = (layout: ConsumerLayout) => COPY_CASES.map((name) => `${layout}/copy-bundles/chromium/${name}`);
+/** The lint exercise: one case per row of docs/spec/consumer-lint.md#verification-and-delivery, which scripts/consumer-lint.ts asserts. */
+export const LINT_CASES = ['config', 'catalogue', 'invalid-property', 'palette-constant', 'raw-paint', 'warning-only', 'composition', 'no-eslint', 'missing-plugin', 'incompatible-package', 'bad-config', 'ignored-tsx', 'severity-override', 'offline', 'compile'];
+export const lintCases = (layout: ConsumerLayout) => LINT_CASES.map((name) => `${layout}/lint/node/${name}`);
 /** The worked block-adaptation path the copy-bundles exercise installs and adapts. */
 export const ADAPTED_BLOCK = 'settings-01';
 /** The fixture prefix and mode of a cell id, the inverse of `consumerCases`. */
@@ -48,7 +51,7 @@ export type ConsumerReport = {
   status: 'passed' | 'failed' | 'incomplete';
   layout: ConsumerLayout;
   deliveryPath: DeliveryPath;
-  exercise?: 'theme-mode' | 'copy-bundles';
+  exercise?: 'theme-mode' | 'copy-bundles' | 'lint';
   source: {
     head: string | null;
     manifest: Manifest;
@@ -68,6 +71,7 @@ export type ConsumerReport = {
   errors: string[];
   drafts?: Record<string, { digest: string; fingerprint: string; recipeVersion: number }>;
   cliReports?: { doctor: string; check: string };
+  lint?: { fragment: { path: string; digest: string }; config: string; lintScript: string | null; network: string; versions: Record<string, string | null>; files: string[] };
   selectedCase?: string;
   prerequisites?: ConsumerCase[];
 };
@@ -78,11 +82,13 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
   const problems: string[] = [];
   if (report.schemaVersion !== 1 || !CONSUMER_LAYOUTS.includes(report.layout) || !DELIVERY_PATHS.includes(report.deliveryPath) || (layout && report.layout !== layout) || (path && report.deliveryPath !== path)) problems.push('unknown consumer-proof schema or parameters');
   if (!['passed', 'failed', 'incomplete'].includes(report.status)) problems.push('unknown consumer-proof status');
-  if (report.exercise !== undefined && !['theme-mode', 'copy-bundles'].includes(report.exercise)) problems.push('unknown consumer exercise');
+  if (report.exercise !== undefined && !['theme-mode', 'copy-bundles', 'lint'].includes(report.exercise)) problems.push('unknown consumer exercise');
   if (report.exercise !== undefined && report.deliveryPath !== 'css') problems.push(`${report.exercise} requires CSS delivery`);
   if (report.exercise === 'copy-bundles' && !report.installedItems?.includes(ADAPTED_BLOCK)) problems.push('copy-bundles installed source inventory is incomplete');
   if (report.exercise === 'theme-mode' && !['theme-mode', 'popover'].every((item) => report.installedItems?.includes(item))) problems.push('theme-mode installed source inventory is incomplete');
-  const all = report.exercise === 'theme-mode' ? modeCases(report.layout) : report.exercise === 'copy-bundles' ? copyBundleCases(report.layout) : consumerCases(report.layout, report.deliveryPath);
+  if (report.exercise === 'lint' && !['button', 'sidebar', ADAPTED_BLOCK].every((item) => report.installedItems?.includes(item))) problems.push('lint installed source inventory is incomplete');
+  if (report.exercise === 'lint' && report.status !== 'incomplete' && (!report.lint || !/^[a-f0-9]{64}$/.test(report.lint.fragment?.digest ?? '') || typeof report.lint.network !== 'string' || !report.lint.versions?.eslint || !report.lint.versions?.['@stylexjs/eslint-plugin'] || !Array.isArray(report.lint.files) || report.lint.files.length === 0)) problems.push('lint fragment, network, version or coverage evidence is missing');
+  const all = report.exercise === 'theme-mode' ? modeCases(report.layout) : report.exercise === 'copy-bundles' ? copyBundleCases(report.layout) : report.exercise === 'lint' ? lintCases(report.layout) : consumerCases(report.layout, report.deliveryPath);
   if (report.selectedCase && (report.exercise !== undefined || !all.includes(report.selectedCase))) problems.push('unknown selected consumer case');
   const expected = report.selectedCase ? [report.selectedCase] : all;
   const same = (values: unknown, wanted = expected) => Array.isArray(values) && values.length === wanted.length && new Set(values).size === values.length && wanted.every((id) => values.includes(id));

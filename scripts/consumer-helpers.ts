@@ -16,14 +16,15 @@ export const run: Run = (cwd, command, args) => new Promise((done, reject) => {
   child.on('close', (code) => code === 0 ? done(output) : reject(new Error(`${command} ${args.join(' ')} exited ${code}\n${output}`)));
 });
 
-export async function scaffold(layout: 'vite' | 'next-root' | 'next-src' | 'vanilla', app: string, execute: Run = run): Promise<void> {
+/** `eslint` keeps create-next-app's ESLint config, which the lint exercise composes with; every other run scaffolds without it. */
+export async function scaffold(layout: 'vite' | 'next-root' | 'next-src' | 'vanilla', app: string, execute: Run = run, options: { eslint?: boolean } = {}): Promise<void> {
   const work = dirname(app);
   const name = relative(work, app);
   if (layout === 'vite' || layout === 'vanilla') {
     await execute(work, 'npm', ['create', 'vite@latest', name, '--', '--template', layout === 'vite' ? 'react-ts' : 'vanilla-ts']);
     if (layout === 'vite') await execute(app, 'npm', ['install']);
   } else {
-    await execute(work, 'npx', ['-y', 'create-next-app@latest', name, '--ts', '--app', '--no-tailwind', layout === 'next-src' ? '--src-dir' : '--no-src-dir', '--no-eslint', '--turbopack', '--import-alias', '@/*', '--use-npm', '--yes']);
+    await execute(work, 'npx', ['-y', 'create-next-app@latest', name, '--ts', '--app', '--no-tailwind', layout === 'next-src' ? '--src-dir' : '--no-src-dir', options.eslint ? '--eslint' : '--no-eslint', '--turbopack', '--import-alias', '@/*', '--use-npm', '--yes']);
   }
 }
 

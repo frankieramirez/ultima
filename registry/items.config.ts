@@ -465,6 +465,10 @@ export const setupItems = {
         "unverifiable": "Ordinary doctor checks setup, not the production theme cascade, rendered values, fonts or portal inheritance."
       },
       {
+        "prose": "Lint StyleX with its official ESLint plugin. Save https://ultima.systems/ultima.eslint.mjs beside eslint.config.mjs and append `ultimaStylex` to your flat config after the framework configuration, or follow https://ultima.systems/install#stylex-lint to add ESLint to a project without it. Setup never installs ESLint or writes eslint.config.*.",
+        "unverifiable": "Doctor does not read lint configuration yet; run npx eslint --print-config on a page, a component and lib/tokens.stylex.ts, then npx eslint ."
+      },
+      {
         "prose": "A strict CSP needs a nonce: pass it to Base UI's `CSPProvider` at your app root.",
         "spec": "A strict CSP needs a nonce.",
         "unverifiable": "The headers are set at runtime or by the host."
@@ -573,6 +577,10 @@ export const setupItems = {
       {
         "prose": "For an exported root theme, install the Studio registry item, keep ultima-theme.json and review DESIGN.md before replacement. Import ../ultima-theme.css from src/main.tsx after base CSS; inspect the production cascade so it follows StyleX. Run npx ultima-design doctor and npx ultima-design check, then check the root, a control and an open popup in dark, light and system mode, including reduced motion and loaded fonts.",
         "unverifiable": "Ordinary doctor checks setup, not the production theme cascade, rendered values, fonts or portal inheritance."
+      },
+      {
+        "prose": "Lint StyleX with its official ESLint plugin. Save https://ultima.systems/ultima.eslint.mjs beside eslint.config.mjs and append `ultimaStylex` to your flat config after the framework configuration, or follow https://ultima.systems/install#stylex-lint to add ESLint to a project without it. Setup never installs ESLint or writes eslint.config.*.",
+        "unverifiable": "Doctor does not read lint configuration yet; run npx eslint --print-config on a page, a component and lib/tokens.stylex.ts, then npx eslint ."
       },
       {
         "prose": "A strict CSP needs a nonce: pass it to Base UI's `CSPProvider` at your app root.",
