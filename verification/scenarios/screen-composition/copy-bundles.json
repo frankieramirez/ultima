@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "screen-composition.copy-bundles",
+  "title": "Every exposed copy bundle shows, copies and downloads the bytes installed consumers compile and exercise",
+  "intent": "Each recipe demo and inventory lesson exposes its consumer-copy files with identical displayed, clipboard and download bytes and no workspace import; the installed-consumer checks write those same bytes into fresh Vite, Next root app and Next src/app projects, typecheck and build them, and exercise each bundle in production Chromium: recipe interactions, the Projects screen at 200% zoom, and Settings 01 adapted with new labels and data at desktop and narrow widths.",
+  "contract": "docs/spec/screen-composition.md#compiling-and-exercising-the-examples",
+  "aliases": ["copy bundle", "copy source", "download source", "installed consumer", "consumer-copy-vite", "consumer-copy-next-app", "consumer-copy-next-src", "unresolved import", "200% zoom", "settings 01 adaptation"],
+  "items": ["carousel", "chart", "command-dialog", "data-table", "item", "kbd", "react-hook-form", "sheet", "typography"],
+  "sources": ["apps/docs/src/examples/complete-screen", "scripts/consumer-copy-bundles.ts"],
+  "demos": [],
+  "routes": [
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/components/$name" }
+  ],
+  "fixtures": [],
+  "preconditions": [
+    "The generated recipe projection is current: pnpm catalogue:check passes.",
+    "The installed steps need network access, a loopback port and Chromium; they run as the consumer-copy-<layout> verifier checks and the copy-bundles job of the Installed consumer proof workflow."
+  ],
+  "steps": [
+    {
+      "action": "Open the Code tab of every exposed bundle and step through its files, copying and downloading each.",
+      "expect": "The displayed, copied and downloaded bytes equal the projected file, and no file imports @ultima/."
+    },
+    {
+      "action": "Run node --experimental-strip-types scripts/consumer-proof.ts --layout <vite|next-app|next-src> --delivery-path css --exercise copy-bundles.",
+      "expect": "A fresh external app installs every bundle's items, engines and type packages and Settings 01 from the built registry, writes the exact bundle bytes, adapts Settings 01's labels and data, and its production build and tsc pass: the compile case."
+    },
+    {
+      "action": "Exercise each bundle in the served production build.",
+      "expect": "Every recipe demo's controls work (carousel, command dialog, sorting, selection, filtering, pagination, form validation, sheet focus return); the Projects screen at 200% zoom has no horizontal overflow, creates a project and keeps its table reachable; adapted Settings 01 keeps desktop navigation, the narrow menu with focus return, and keyboard save; axe passes for each."
+    },
+    {
+      "action": "Run the same command with --fault unresolved-copy-import.",
+      "expect": "One copied file imports @ultima/ui again; the compile case fails and the report is failed, never passed."
+    }
+  ],
+  "targets": [
+    { "target": "docs-vitest", "variants": "default" }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "screen-composition",
+  "title": "Copy bundles for recipes and complete screens",
+  "summary": "The consumer-copy projection behind /recipes and the composition inventory: every recipe demo and lesson shows, copies and downloads installed-consumer source, and the same bytes, with an adapted Settings 01, typecheck, build and work in fresh installed Vite, Next root app and Next src/app projects.",
+  "knowledge": "proposed",
+  "aliases": ["screen composition", "copy bundle", "copy bundles", "consumer copy", "recipes", "recipe index", "build a screen", "projects screen", "settings 01 adaptation", "200% zoom", "installed consumer", "copy-bundles"],
+  "contract": "docs/spec/screen-composition.md#compiling-and-exercising-the-examples",
+  "items": ["carousel", "chart", "command-dialog", "data-table", "item", "kbd", "react-hook-form", "sheet", "typography"],
+  "sourceRoots": [
+    "apps/docs/src/examples/complete-screen",
+    "apps/docs/src/routes/recipes.tsx",
+    "scripts/catalogue/composition-examples.ts",
+    "scripts/catalogue/compositions.ts",
+    "scripts/catalogue/consumer-copy.ts",
+    "scripts/consumer-copy-bundles.ts",
+    "scripts/consumer-scene.ts"
+  ],
+  "extraDependencies": [
+    {
+      "path": "apps/docs/src/generated/recipes.ts",
+      "reason": "The generated projection holds the exact bytes the docs show and the installed consumers compile."
+    },
+    {
+      "path": "packages/blocks/src/settings-01",
+      "reason": "The installed-consumer checks install Settings 01 from the registry and adapt its labels and data as the worked block path."
+    },
+    {
+      "path": "apps/docs/package.json",
+      "reason": "Its @types packages decide the type packages a recipe's engine command installs."
+    }
+  ],
+  "supporting": [
+    {
+      "path": "apps/docs/src/__tests__/projects-screen.test.tsx",
+      "reason": "Renders the Projects screen in the workspace: form, selection, navigation, data and Dialog behavior before it is copied."
+    }
+  ]
+}

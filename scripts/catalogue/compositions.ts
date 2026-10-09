@@ -33,6 +33,8 @@ export type RecipeProjection = {
   url: string;
   items: string[];
   dependencies: string[];
+  /** The `@types/*` packages the docs app compiles these engines with, so a TypeScript consumer can too. */
+  devDependencies: string[];
   install: string;
   engines: string | null;
   sources: string[];
@@ -70,7 +72,7 @@ export function compositionProjection(files: Files, catalogue: Catalogue): {
     if (example.recipe && (!recipe || example.route !== `/components/${recipe.page}` || example.anchor !== recipe.section)) report(COMPOSITION_INVENTORY, `${example.id}: unresolved recipe owner`);
     if (example.block && !catalogue.blocks.some((entry) => entry.id === example.block)) report(COMPOSITION_INVENTORY, `${example.id}: unresolved block owner`);
     if (example.feature && files.read(`verification/features/${example.feature}.json`) === undefined) report(COMPOSITION_INVENTORY, `${example.id}: unresolved feature`);
-    if (example.scenarios !== undefined && (!Array.isArray(example.scenarios) || example.scenarios.some((id) => typeof id !== 'string' || files.read(`verification/scenarios/${id}.json`) === undefined))) report(COMPOSITION_INVENTORY, `${example.id}: unresolved scenarios`);
+    if (example.scenarios !== undefined && (!Array.isArray(example.scenarios) || example.scenarios.some((id) => typeof id !== 'string' || files.read(`verification/scenarios/${id.replace('.', '/')}.json`) === undefined))) report(COMPOSITION_INVENTORY, `${example.id}: unresolved scenarios`);
     const destinations: Record<string, string> = {};
     for (const file of example.files) {
       if (!file || typeof file.source !== 'string' || typeof file.destination !== 'string' || !safePath(file.source) || !safePath(file.destination) || destinations[file.source] !== undefined || Object.values(destinations).includes(file.destination)) {
@@ -86,17 +88,22 @@ export function compositionProjection(files: Files, catalogue: Catalogue): {
     const items = entry ? entry.items : example.block && example.files.length === 0 ? [example.block] : undefined;
     examples.push({ ...example, install: items ? installCommand(items).install : '' });
   }
+  const docsManifest = JSON.parse(files.read('apps/docs/package.json') ?? '{}') as Record<string, Record<string, string> | undefined>;
+  const docsPackages = new Set([...Object.keys(docsManifest.dependencies ?? {}), ...Object.keys(docsManifest.devDependencies ?? {})]);
   const recipes = catalogue.recipes.map((recipe) => {
     for (const source of recipe.demos) {
       try { sources[source] ??= consumerBundle(source, catalogue, files); }
       catch (error) { report(source, (error as Error).message); }
     }
     const { items, install } = installCommand(recipe.registryDependencies);
+    const devDependencies = recipe.dependencies.map((name) => `@types/${name.replace(/^@/, '').replace('/', '__')}`).filter((name) => docsPackages.has(name));
     return {
       id: recipe.id, title: recipe.title, description: recipe.description, page: recipe.page, section: recipe.section,
-      url: `/components/${recipe.page}#${recipe.section}`, items, dependencies: recipe.dependencies,
+      url: `/components/${recipe.page}#${recipe.section}`, items, dependencies: recipe.dependencies, devDependencies,
       install,
-      engines: recipe.dependencies.length > 0 ? `npm install ${recipe.dependencies.join(' ')}` : null,
+      engines: recipe.dependencies.length > 0
+        ? [`npm install ${recipe.dependencies.join(' ')}`, ...(devDependencies.length > 0 ? [`npm install -D ${devDependencies.join(' ')}`] : [])].join('\n')
+        : null,
       sources: recipe.demos,
     };
   });

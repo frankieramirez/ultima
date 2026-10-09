@@ -93,6 +93,9 @@ for (const base of ['consumer-proof', 'consumer-proof-next-app', 'consumer-proof
   CONFIGURATION[base]!.push('scripts/consumer-scene.ts', 'scripts/consumer-values.ts', 'scripts/consumer-delivery.ts', 'apps/docs/src/generated/recipes.ts', 'apps/docs/src/examples/complete-screen/projects.tsx', 'apps/docs/src/examples/complete-screen/projects-data.ts', 'apps/docs/src/examples/complete-screen/screen.stylex.ts');
   for (const path of ['stylex-subtree', 'registry', 'cli'] as const) CONFIGURATION[`${base}-${path}`] = CONFIGURATION[base];
 }
+for (const [layout, base] of [['vite', 'consumer-proof'], ['next-app', 'consumer-proof-next-app'], ['next-src', 'consumer-proof-next-src']] as const) {
+  CONFIGURATION[`consumer-copy-${layout}`] = [...CONFIGURATION[base]!, 'scripts/consumer-copy-bundles.ts', 'scripts/catalogue/composition-examples.ts', 'apps/docs/package.json'];
+}
 
 /**
  * Where each suite's runner finds its tests, as the runner's own configuration states it: Vitest's
@@ -549,7 +552,10 @@ const consumerProofAdapter: Adapter = {
     const { cliReportProblems } = await import('../consumer-delivery.ts');
     const { parseDraft } = await import('../../packages/tokens/src/theme/codec.ts');
     const { resolveDraft } = await import('../../packages/tokens/src/theme/draft.ts');
-    const modeValidator = context.check.argv.includes('--exercise') ? await import('../consumer-mode.ts') : undefined;
+    const exerciseIndex = context.check.argv.indexOf('--exercise');
+    const exercise = exerciseIndex < 0 ? undefined : context.check.argv[exerciseIndex + 1];
+    const modeValidator = exercise === 'theme-mode' ? await import('../consumer-mode.ts') : undefined;
+    const copyValidator = exercise === 'copy-bundles' ? await import('../consumer-copy-bundles.ts') : undefined;
     const output = join(context.artifacts, context.check.id);
     const reportPath = join(output, 'report.json');
     const { process } = await logged(context, [...context.check.argv, '--output', output]);
@@ -566,8 +572,8 @@ const consumerProofAdapter: Adapter = {
         const pathIndex = context.check.argv.indexOf('--delivery-path');
         const path = pathIndex < 0 ? undefined : context.check.argv[pathIndex + 1] as DeliveryPath;
         const problems = consumerReportProblems(report, layout, path);
-        const modeExercise = context.check.argv.includes('--exercise');
-        if (modeExercise !== (report.exercise === 'theme-mode')) problems.push('consumer exercise differs from the registered command');
+        const modeExercise = exercise === 'theme-mode';
+        if (exercise !== report.exercise) problems.push('consumer exercise differs from the registered command');
         const selectedIndex = context.check.argv.indexOf('--case');
         if (report.selectedCase !== (selectedIndex < 0 ? undefined : context.check.argv[selectedIndex + 1])) problems.push('consumer-proof changed the requested cell coverage');
         if (problems.length) return { verdict: 'incomplete', executed: [], reason: problems.join('; ') };
@@ -580,6 +586,14 @@ const consumerProofAdapter: Adapter = {
             const html = join(output, `${row.id.split('/').at(-1)}.server.html`);
             if (snapshot.id !== row.id || JSON.stringify(snapshot.failures) !== JSON.stringify(row.failures) || issues.length || !existsSync(html)) return { verdict: 'incomplete', executed: [], reason: `invalid theme-mode snapshot: ${row.id}: ${issues.join('; ')}` };
             artifacts.push(html, join(output, row.snapshot));
+            continue;
+          }
+          if (copyValidator) {
+            const issues = copyValidator.copySnapshotProblems(snapshot, row);
+            const files = Object.values(snapshot?.artifacts ?? {}).filter((file): file is string => typeof file === 'string');
+            if (files.some((file) => isAbsolute(file) || relative(output, join(output, file)).startsWith('..') || !existsSync(join(output, file)))) issues.push('missing retained artifact');
+            if (issues.length) return { verdict: 'incomplete', executed: [], reason: `invalid copy-bundle snapshot: ${row.id}: ${issues.join('; ')}` };
+            artifacts.push(join(output, row.snapshot), ...files.map((file) => join(output, file)));
             continue;
           }
           const option = (flag: string) => { const index = context.check.argv.indexOf(flag); return index < 0 ? undefined : context.check.argv[index + 1]; };
@@ -741,5 +755,8 @@ export const ADAPTERS: Adapters = {
   'consumer-mode-vite': consumerProofAdapter,
   'consumer-mode-next-app': consumerProofAdapter,
   'consumer-mode-next-src': consumerProofAdapter,
+  'consumer-copy-vite': consumerProofAdapter,
+  'consumer-copy-next-app': consumerProofAdapter,
+  'consumer-copy-next-src': consumerProofAdapter,
   'production-scenarios': productionAdapter,
 };

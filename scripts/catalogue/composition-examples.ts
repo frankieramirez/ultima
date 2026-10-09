@@ -11,6 +11,8 @@ export default [
       { source: 'apps/docs/src/examples/complete-screen/projects-data.ts', destination: 'components/projects/projects-data.ts' },
       { source: 'apps/docs/src/examples/complete-screen/screen.stylex.ts', destination: 'components/projects/screen.stylex.ts' },
     ],
+    feature: 'screen-composition',
+    scenarios: ['screen-composition.copy-bundles'],
   },
   {
     id: 'typography',
@@ -21,6 +23,8 @@ export default [
     files: [
       { source: 'apps/docs/src/demos/code/typography.tsx', destination: 'examples/demos/code/typography.tsx' },
     ],
+    feature: 'screen-composition',
+    scenarios: ['screen-composition.copy-bundles'],
   },
   {
     id: 'style-overrides',
@@ -30,6 +34,8 @@ export default [
     files: [
       { source: 'apps/docs/src/examples/complete-screen/style-overrides.tsx', destination: 'components/examples/style-overrides.tsx' },
     ],
+    feature: 'screen-composition',
+    scenarios: ['screen-composition.copy-bundles'],
   },
   {
     id: 'interaction-states',
@@ -39,6 +45,8 @@ export default [
     files: [
       { source: 'apps/docs/src/examples/complete-screen/interaction-states.tsx', destination: 'components/examples/interaction-states.tsx' },
     ],
+    feature: 'screen-composition',
+    scenarios: ['screen-composition.copy-bundles'],
   },
   {
     id: 'product-tokens',
@@ -50,6 +58,8 @@ export default [
       { source: 'apps/docs/src/examples/complete-screen/projects-data.ts', destination: 'components/projects/projects-data.ts' },
       { source: 'apps/docs/src/examples/complete-screen/screen.stylex.ts', destination: 'components/projects/screen.stylex.ts' },
     ],
+    feature: 'screen-composition',
+    scenarios: ['screen-composition.copy-bundles'],
   },
   {
     id: 'settings-01-adaptation',
@@ -58,5 +68,7 @@ export default [
     route: '/build-a-screen',
     anchor: 'adapt-an-existing-block',
     files: [],
+    feature: 'screen-composition',
+    scenarios: ['screen-composition.copy-bundles'],
   },
 ] satisfies CompositionExample[];

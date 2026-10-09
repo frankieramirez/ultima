@@ -22,6 +22,11 @@ export type DeliveryPath = typeof DELIVERY_PATHS[number];
 export const consumerCases = (layout: ConsumerLayout, path: DeliveryPath = 'css') => (path === 'registry' ? ['css-reference-', '', ...registryPresets().map((id) => `${id}-`)] : ['']).flatMap((preset) => ['system-dark', 'system-light', 'explicit-dark', 'explicit-light'].map((mode) => `${layout}/${path}/chromium/${preset}${mode}`));
 export const modeCases = (layout: ConsumerLayout) => ['light', 'dark', 'missing', 'throwing'].flatMap((stored) => ['dark', 'light'].map((system) => `${layout}/theme-mode/chromium/${stored}-${system}`));
 export const CONSUMER_CASES = consumerCases('vite');
+/** The copy-bundles exercise: compile, then one case per exercise in scripts/consumer-copy-bundles.ts, which asserts the two agree. */
+export const COPY_CASES = ['compile', 'projects-zoom-200', 'product-tokens', 'style-overrides', 'interaction-states', 'typography', 'carousel', 'chart', 'command-dialog', 'data-table-sorting', 'data-table-row-selection', 'data-table-filtering', 'data-table-pagination', 'item', 'kbd', 'react-hook-form', 'sheet', 'settings-01-desktop', 'settings-01-narrow'];
+export const copyBundleCases = (layout: ConsumerLayout) => COPY_CASES.map((name) => `${layout}/copy-bundles/chromium/${name}`);
+/** The worked block-adaptation path the copy-bundles exercise installs and adapts. */
+export const ADAPTED_BLOCK = 'settings-01';
 /** The fixture prefix and mode of a cell id, the inverse of `consumerCases`. */
 export function consumerCell(id: string): { fixture: string; mode: string | undefined } {
   const cell = id.split('/').at(-1) ?? '';
@@ -43,7 +48,7 @@ export type ConsumerReport = {
   status: 'passed' | 'failed' | 'incomplete';
   layout: ConsumerLayout;
   deliveryPath: DeliveryPath;
-  exercise?: 'theme-mode';
+  exercise?: 'theme-mode' | 'copy-bundles';
   source: {
     head: string | null;
     manifest: Manifest;
@@ -73,10 +78,11 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
   const problems: string[] = [];
   if (report.schemaVersion !== 1 || !CONSUMER_LAYOUTS.includes(report.layout) || !DELIVERY_PATHS.includes(report.deliveryPath) || (layout && report.layout !== layout) || (path && report.deliveryPath !== path)) problems.push('unknown consumer-proof schema or parameters');
   if (!['passed', 'failed', 'incomplete'].includes(report.status)) problems.push('unknown consumer-proof status');
-  if (report.exercise !== undefined && report.exercise !== 'theme-mode') problems.push('unknown consumer exercise');
-  if (report.exercise === 'theme-mode' && report.deliveryPath !== 'css') problems.push('theme-mode requires CSS delivery');
+  if (report.exercise !== undefined && !['theme-mode', 'copy-bundles'].includes(report.exercise)) problems.push('unknown consumer exercise');
+  if (report.exercise !== undefined && report.deliveryPath !== 'css') problems.push(`${report.exercise} requires CSS delivery`);
+  if (report.exercise === 'copy-bundles' && !report.installedItems?.includes(ADAPTED_BLOCK)) problems.push('copy-bundles installed source inventory is incomplete');
   if (report.exercise === 'theme-mode' && !['theme-mode', 'popover'].every((item) => report.installedItems?.includes(item))) problems.push('theme-mode installed source inventory is incomplete');
-  const all = report.exercise === 'theme-mode' ? modeCases(report.layout) : consumerCases(report.layout, report.deliveryPath);
+  const all = report.exercise === 'theme-mode' ? modeCases(report.layout) : report.exercise === 'copy-bundles' ? copyBundleCases(report.layout) : consumerCases(report.layout, report.deliveryPath);
   if (report.selectedCase && (report.exercise !== undefined || !all.includes(report.selectedCase))) problems.push('unknown selected consumer case');
   const expected = report.selectedCase ? [report.selectedCase] : all;
   const same = (values: unknown, wanted = expected) => Array.isArray(values) && values.length === wanted.length && new Set(values).size === values.length && wanted.every((id) => values.includes(id));

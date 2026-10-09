@@ -10,9 +10,11 @@
  * graph cannot establish broaden to the release plan, with the reason and path recorded.
  */
 import compositionExamples from '../catalogue/composition-examples.ts';
+import { compositionProjection } from '../catalogue/compositions.ts';
 import { consumerBundle } from '../catalogue/consumer-copy.ts';
 import type { Files } from '../catalogue/files.ts';
 import { type Catalogue, type Diagnostic, loadCatalogue } from '../catalogue/model.ts';
+import { ADAPTED_BLOCK } from '../consumer-report.ts';
 import type { Base, Change } from './changes.ts';
 import { CHECKS, type CheckDefinition, type CheckId, DEFAULT_DEADLINE_SECONDS, RELEASE_PENDING, check } from './checks.ts';
 import { type Graph, type Reach, buildGraph, dependantsOf } from './graph.ts';
@@ -307,6 +309,18 @@ function inScene(snapshot: Snapshot, id: string): boolean {
   return items === 'unprojectable' || items.includes(id);
 }
 
+/** The installed copy-bundle checks: every exposed recipe and lesson bundle, and the adapted Settings 01, as scripts/consumer-copy-bundles.ts installs them. */
+const COPY_CHECKS = ['consumer-copy-vite', 'consumer-copy-next-app', 'consumer-copy-next-src'] as const;
+const copyItems = new WeakMap<Snapshot, Set<string> | 'unprojectable'>();
+function inCopyBundles(snapshot: Snapshot, id: string): boolean {
+  if (!copyItems.has(snapshot)) {
+    const { sources, diagnostics } = compositionProjection(snapshot.files, snapshot.catalogue);
+    copyItems.set(snapshot, diagnostics.length ? 'unprojectable' : new Set([ADAPTED_BLOCK, 'tokens', 'lib', 'setup-vite', 'setup-next', ...Object.values(sources).flatMap((bundle) => bundle.items)]));
+  }
+  const items = copyItems.get(snapshot)!;
+  return items === 'unprojectable' || items.has(id);
+}
+
 /** What selecting a catalogue item adds, by the kind its descriptor declares. */
 function selectItem(selection: Selection, id: string, reason: string) {
   const { current } = selection;
@@ -332,6 +346,7 @@ function selectItem(selection: Selection, id: string, reason: string) {
     if (inScene(current, id) || ['tokens', 'lib', 'setup-next'].includes(id)) for (const check of CHECKS.filter((check) => /^consumer-proof-next-(app|src)(-|$)/.test(check.id))) selection.need(check.id, `${id} is installed by the Next rendered consumer scene`);
     if (['theme-mode', 'button', 'badge', 'popover', 'tokens', 'lib', 'setup-vite'].includes(id)) selection.need('consumer-mode-vite', `${id} is installed by the Vite theme-mode production scene`);
     if (['theme-mode', 'button', 'badge', 'popover', 'tokens', 'lib', 'setup-next'].includes(id)) for (const check of ['consumer-mode-next-app', 'consumer-mode-next-src'] as const) selection.need(check, `${id} is installed by the Next theme-mode production scene`);
+    if (inCopyBundles(current, id)) for (const check of COPY_CHECKS) selection.need(check, `${id} is installed by the copy-bundle consumers`);
   }
   if (summary.kind === 'react') {
     const react = catalogue.react.find((candidate) => candidate.id === id);
@@ -368,6 +383,7 @@ function selectItem(selection: Selection, id: string, reason: string) {
         selection.need('consumer-smoke', `recipe ${id}'s composed installable inputs: ${recipe.registryDependencies.join(', ')}`);
       }
       selection.need('docs-build', `recipe ${id} renders on /components/${recipe.page}#${recipe.section}`);
+      for (const check of COPY_CHECKS) selection.need(check, `recipe ${id}'s demos are copied into installed consumers`);
       for (const reach of dependantsOf(current.graph, recipe.demos).values()) attributeReached(selection, reach);
     }
   }

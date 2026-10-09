@@ -9,7 +9,7 @@ import { draftFingerprint } from '../packages/tokens/src/theme/codec.ts';
 import { presetDraft, resolveDraft, stockDraft, type ThemeDraft } from '../packages/tokens/src/theme/draft.ts';
 import { gate } from '../packages/tokens/src/theme/gate.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
-import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, modeCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
+import { CONSUMER_LAYOUTS, DELIVERY_PATHS, copyBundleCases, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, modeCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
 import { THEME_PRESETS } from '../packages/tokens/src/theme/draft.ts';
 import { modeProof, modeScene } from './consumer-mode.ts';
 import { installScene, isSceneFault, SCENE_FAULTS, SCENE_INSTALL, SCENE_ITEMS } from './consumer-scene.ts';
@@ -25,6 +25,7 @@ import { contentHash, stampLine, withStamp } from '../packages/cli/src/stamp.ts'
 import { BASE_THEME_MARKER } from '../packages/cli/src/base-theme.ts';
 import { toCss } from '../packages/tokens/src/theme/export.ts';
 import { installedThemeProof } from './consumer-theme.ts';
+import { COPY_FAULTS, COPY_ITEMS, copyBundleProof, copyBundleScene } from './consumer-copy-bundles.ts';
 
 export function proofDraft(): ThemeDraft {
   const draft = sharedProofDraft();
@@ -37,8 +38,9 @@ export function proofDraft(): ThemeDraft {
   return draft;
 }
 
-export const PROOF_FAULTS = ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', 'mode-script', ...SCENE_FAULTS] as const;
-export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; case?: string; preset?: 'ultima'; exercise?: 'theme-mode'; fault?: typeof PROOF_FAULTS[number] };
+export const PROOF_FAULTS = ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', 'mode-script', ...SCENE_FAULTS, ...COPY_FAULTS] as const;
+export const PROOF_EXERCISES = ['theme-mode', 'copy-bundles'] as const;
+export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; case?: string; preset?: 'ultima'; exercise?: typeof PROOF_EXERCISES[number]; fault?: typeof PROOF_FAULTS[number] };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
 export type BaseStyles = { height: string; display: string; radius: string; background: string; focusColor: string; focusStyle: string; focusVisible: boolean; danger: string };
@@ -95,8 +97,9 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   if (options.fault === 'partial-group' && options.deliveryPath !== 'stylex-subtree') throw new Error('partial-group requires stylex-subtree');
   if (options.fault === 'src-extraction' && options.layout !== 'next-src') throw new Error('src-extraction requires next-src');
   if (options.fault === 'hydration-mismatch' && options.layout === 'vite') throw new Error('hydration-mismatch requires Next');
-  if (options.exercise && (options.exercise !== 'theme-mode' || options.deliveryPath !== 'css')) throw new Error('theme-mode requires CSS delivery');
-  if (options.exercise && options.case) throw new Error('theme-mode runs every mode case; --case selects a rendered consumer cell');
+  if (options.exercise && (!PROOF_EXERCISES.includes(options.exercise) || options.deliveryPath !== 'css')) throw new Error(`${options.exercise} requires CSS delivery`);
+  if (options.exercise && options.case) throw new Error(`${options.exercise} runs every case; --case selects a rendered consumer cell`);
+  if (options.fault === 'unresolved-copy-import' && options.exercise !== 'copy-bundles') throw new Error('unresolved-copy-import requires the copy-bundles exercise');
   if (options.case && !consumerCases(options.layout, options.deliveryPath).includes(options.case)) throw new Error(`unknown consumer cell: ${options.case}`);
   const isNext = options.layout !== 'vite';
   const src = options.layout === 'next-src';
@@ -117,7 +120,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     source: { head: source.head, manifest: source.manifest, registryManifestHash: null, cliTarballDigest: null, draftDigest: null, draftFingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion },
     command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: [setupItem, ...SCENE_ITEMS, 'tokens', 'lib', 'ultima-theme'],
     ...(options.exercise && { exercise: options.exercise }),
-    expected: options.exercise === 'theme-mode' ? modeCases(options.layout) : options.case ? [options.case] : consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {}, ...(options.case ? { selectedCase: options.case } : {}),
+    expected: options.exercise === 'theme-mode' ? modeCases(options.layout) : options.exercise === 'copy-bundles' ? copyBundleCases(options.layout) : options.case ? [options.case] : consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {}, ...(options.case ? { selectedCase: options.case } : {}),
   };
   const execute: Run = async (cwd, command, args) => {
     await appendFile(join(output, 'commands.log'), `${JSON.stringify({ cwd, command, args })}\n`);
@@ -197,6 +200,10 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     if (subtree) await writeFile(mainPath, (await readFile(mainPath, 'utf8')).replace(/import ['"]\.\.\/+(?:\.\.\/)?ultima-theme\.css['"];?/, ''));
     await installScene(app, options.layout, subtree, options.fault === 'partial-group', isSceneFault(options.fault) ? options.fault : undefined);
     if (options.exercise === 'theme-mode') await modeScene(app, options.layout, execute, options.fault);
+    if (options.exercise === 'copy-bundles') {
+      await copyBundleScene(app, options.layout, execute, options.fault);
+      report.installedItems.push(...COPY_ITEMS.filter((id) => !report.installedItems.includes(id)));
+    }
     await execute(app, 'npm', ['install', '-D', tarball]);
     const fixtures = [...(options.deliveryPath === 'registry' ? [{ name: 'css-reference', draft }] : []), { name: '', draft }, ...(options.deliveryPath === 'registry' ? THEME_PRESETS.map((preset) => ({ name: preset.id, draft: presetDraft(preset.id) })) : [])];
     const cssReference = new Map<string, Awaited<ReturnType<typeof consumerValues>>>();
@@ -259,6 +266,10 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       for (const name of isNext && !src ? ['app', 'components', 'lib'] : ['src']) await cp(join(app, name), join(fixtureOutput, name), { recursive: true });
       for (const name of ['react', 'react-dom', '@stylexjs/stylex', 'ultima-design', ...(isNext ? ['next', '@stylexjs/babel-plugin', '@stylexjs/postcss-plugin'] : ['vite', '@stylexjs/unplugin'])]) report.versions[name] = JSON.parse(await readFile(join(app, 'node_modules', name, 'package.json'), 'utf8')).version;
       report.versions.npm = (await execute(app, 'npm', ['--version'])).trim();
+      if (options.exercise === 'copy-bundles') {
+        await copyBundleProof(browser, app, options.layout, execute, report, fixtureOutput);
+        continue;
+      }
       try { await writeFile(join(fixtureOutput, 'build.log'), await execute(app, 'npm', ['run', 'build'])); }
       catch (error) { await writeFile(join(fixtureOutput, 'build.log'), String(error)); throw error; }
       const production = isNext ? await serveNext(app, join(fixtureOutput, 'server.log')) : await serveRegistry(join(app, 'dist'), true, join(fixtureOutput, 'server.log'));
@@ -362,7 +373,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     else if (flag === '--delivery-path' && DELIVERY_PATHS.includes(value as DeliveryPath)) options.deliveryPath = value as DeliveryPath;
     else if (flag === '--output' && value) options.output = value;
     else if (flag === '--case' && value) options.case = value;
-    else if (flag === '--exercise' && value === 'theme-mode') options.exercise = value;
+    else if (flag === '--exercise' && PROOF_EXERCISES.includes(value as typeof PROOF_EXERCISES[number])) options.exercise = value as typeof PROOF_EXERCISES[number];
     else if (flag === '--preset' && value === 'ultima') options.preset = value;
     else if (flag === '--base-styles' && value) baseApp = resolve(value);
     else if (flag === '--fault' && PROOF_FAULTS.includes(value as typeof PROOF_FAULTS[number])) options.fault = value as typeof PROOF_FAULTS[number];

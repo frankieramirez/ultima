@@ -19,6 +19,7 @@ export const recipes = [
       "@stylexjs/stylex",
       "embla-carousel-react"
     ],
+    "devDependencies": [],
     "install": "npx shadcn add @ultima/aspect-ratio @ultima/button",
     "engines": "npm install @stylexjs/stylex embla-carousel-react",
     "sources": [
@@ -41,8 +42,13 @@ export const recipes = [
       "d3-format",
       "d3-scale"
     ],
+    "devDependencies": [
+      "@types/d3-array",
+      "@types/d3-format",
+      "@types/d3-scale"
+    ],
     "install": "npx shadcn add @ultima/table",
-    "engines": "npm install @stylexjs/stylex d3-array d3-format d3-scale",
+    "engines": "npm install @stylexjs/stylex d3-array d3-format d3-scale\nnpm install -D @types/d3-array @types/d3-format @types/d3-scale",
     "sources": [
       "apps/docs/src/demos/table/chart.tsx"
     ]
@@ -63,6 +69,7 @@ export const recipes = [
     "dependencies": [
       "@stylexjs/stylex"
     ],
+    "devDependencies": [],
     "install": "npx shadcn add @ultima/button @ultima/command @ultima/dialog @ultima/scroll-area",
     "engines": "npm install @stylexjs/stylex",
     "sources": [
@@ -89,6 +96,7 @@ export const recipes = [
       "@stylexjs/stylex",
       "@tanstack/react-table"
     ],
+    "devDependencies": [],
     "install": "npx shadcn add @ultima/button @ultima/checkbox @ultima/dropdown-menu @ultima/input @ultima/pagination @ultima/select @ultima/table",
     "engines": "npm install @stylexjs/stylex @tanstack/react-table",
     "sources": [
@@ -113,6 +121,7 @@ export const recipes = [
     "dependencies": [
       "@stylexjs/stylex"
     ],
+    "devDependencies": [],
     "install": "npx shadcn add @ultima/avatar @ultima/button @ultima/card",
     "engines": "npm install @stylexjs/stylex",
     "sources": [
@@ -132,6 +141,7 @@ export const recipes = [
     "dependencies": [
       "@stylexjs/stylex"
     ],
+    "devDependencies": [],
     "install": "npx shadcn add @ultima/code",
     "engines": "npm install @stylexjs/stylex",
     "sources": [
@@ -155,6 +165,7 @@ export const recipes = [
       "@stylexjs/stylex",
       "react-hook-form"
     ],
+    "devDependencies": [],
     "install": "npx shadcn add @ultima/button @ultima/field @ultima/input",
     "engines": "npm install @base-ui/react @stylexjs/stylex react-hook-form",
     "sources": [
@@ -175,6 +186,7 @@ export const recipes = [
     "dependencies": [
       "@stylexjs/stylex"
     ],
+    "devDependencies": [],
     "install": "npx shadcn add @ultima/button @ultima/dialog",
     "engines": "npm install @stylexjs/stylex",
     "sources": [
@@ -197,6 +209,7 @@ export const recipes = [
     "dependencies": [
       "@stylexjs/stylex"
     ],
+    "devDependencies": [],
     "install": "npx shadcn add @ultima/code @ultima/scroll-area @ultima/separator @ultima/table",
     "engines": "npm install @stylexjs/stylex",
     "sources": [
@@ -563,6 +576,10 @@ export const compositionExamples = [
         "destination": "components/projects/screen.stylex.ts"
       }
     ],
+    "feature": "screen-composition",
+    "scenarios": [
+      "screen-composition.copy-bundles"
+    ],
     "install": "npx shadcn add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table"
   },
   {
@@ -577,6 +594,10 @@ export const compositionExamples = [
         "destination": "examples/demos/code/typography.tsx"
       }
     ],
+    "feature": "screen-composition",
+    "scenarios": [
+      "screen-composition.copy-bundles"
+    ],
     "install": "npx shadcn add @ultima/code @ultima/scroll-area @ultima/separator @ultima/table"
   },
   {
@@ -590,6 +611,10 @@ export const compositionExamples = [
         "destination": "components/examples/style-overrides.tsx"
       }
     ],
+    "feature": "screen-composition",
+    "scenarios": [
+      "screen-composition.copy-bundles"
+    ],
     "install": "npx shadcn add @ultima/button @ultima/card"
   },
   {
@@ -602,6 +627,10 @@ export const compositionExamples = [
         "source": "apps/docs/src/examples/complete-screen/interaction-states.tsx",
         "destination": "components/examples/interaction-states.tsx"
       }
+    ],
+    "feature": "screen-composition",
+    "scenarios": [
+      "screen-composition.copy-bundles"
     ],
     "install": "npx shadcn add @ultima/button @ultima/dialog @ultima/field @ultima/input"
   },
@@ -624,6 +653,10 @@ export const compositionExamples = [
         "destination": "components/projects/screen.stylex.ts"
       }
     ],
+    "feature": "screen-composition",
+    "scenarios": [
+      "screen-composition.copy-bundles"
+    ],
     "install": "npx shadcn add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table"
   },
   {
@@ -633,6 +666,10 @@ export const compositionExamples = [
     "route": "/build-a-screen",
     "anchor": "adapt-an-existing-block",
     "files": [],
+    "feature": "screen-composition",
+    "scenarios": [
+      "screen-composition.copy-bundles"
+    ],
     "install": "npx shadcn add @ultima/settings-01"
   }
 ];
