@@ -2,12 +2,13 @@
 // Implementation acceptance scenarios. Each layout is scaffolded outside the workspace with its framework's own
 // generator, given consumer content init must keep (a foreign Vite plugin, a Next provider, root documents), then
 // planned and applied by the packed CLI against the candidate registry. A rerun must write nothing, and Chromium
-// checks the production preview and the consumer's own page.
+// checks the production preview and the consumer's own page. The first layout then runs a recovery case: the apply is
+// killed during its npm install, a fresh plan resumes it, and a rollback leaves only a consumer's later edit.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, relative, resolve } from 'node:path';
+import { basename, join, relative, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { chromium, type Browser } from 'playwright';
 import { resolveDraft, stockDraft } from '../packages/tokens/src/theme/draft.ts';
@@ -24,17 +25,17 @@ const MODES = [
 ] as const;
 // Files the framework or the package manager rewrites on its own: install, and next build's tsconfig and next-env.d.ts.
 const OWNED_ELSEWHERE = new Set(['package-lock.json', 'next-env.d.ts', 'tsconfig.json']);
-const SKIP = new Set(['node_modules', '.next', 'dist', '.git']);
+const SKIP = new Set(['node_modules', '.next', 'dist', '.git', '.ultima-init']);
 
 const digest = (bytes: Buffer | string) => createHash('sha256').update(bytes).digest('hex');
 
-async function hashes(root: string, prefix = ''): Promise<Record<string, string>> {
+async function hashes(root: string, prefix = '', appName?: string): Promise<Record<string, string>> {
   const result: Record<string, string> = {};
   for (const entry of await readdir(join(root, prefix), { withFileTypes: true })) {
     if (SKIP.has(entry.name)) continue;
     const path = prefix ? `${prefix}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) Object.assign(result, await hashes(root, path));
-    else if (entry.isFile()) result[path] = digest(await readFile(join(root, path)));
+    if (entry.isDirectory()) Object.assign(result, await hashes(root, path, appName));
+    else if (entry.isFile()) result[path] = digest(appName ? (await readFile(join(root, path), 'utf8')).replaceAll(appName, '<name>') : await readFile(join(root, path)));
   }
   return result;
 }
@@ -133,6 +134,80 @@ async function preview(browser: Browser, url: string, layout: Layout, scheme: 'd
   return checks;
 }
 
+type Journal = { runId: string; status: string; operations: { id: string; status: string }[] };
+
+async function latestJournal(app: string): Promise<Journal | null> {
+  try {
+    const runs = (await readdir(join(app, '.ultima-init'))).filter((name) => name !== '.gitignore').sort();
+    return runs.length > 0 ? (JSON.parse(await readFile(join(app, '.ultima-init', runs.at(-1)!, 'journal.json'), 'utf8')) as Journal) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function killDuringInstall(work: string, app: string, plan: string): Promise<Journal> {
+  const { spawn } = await import('node:child_process');
+  const child = spawn(join(work, 'cli/node_modules/.bin/ultima'), ['init', '--apply', plan], { cwd: app, stdio: 'ignore', detached: true });
+  const closed = new Promise((done) => child.on('close', done));
+  for (const deadline = Date.now() + 300_000; Date.now() < deadline; await new Promise((done) => setTimeout(done, 100))) {
+    const last = (await latestJournal(app))?.operations.at(-1);
+    if (last?.id !== 'install' || last.status !== 'started') continue;
+    await new Promise((done) => setTimeout(done, 500));
+    process.kill(-(child.pid as number), 'SIGKILL');
+    await closed;
+    return (await latestJournal(app)) as Journal;
+  }
+  process.kill(-(child.pid as number), 'SIGKILL');
+  throw new Error('the apply never reached its install');
+}
+
+type Recovery = {
+  layout: Layout;
+  runId: string;
+  killedDuring: string;
+  resume: { plan: number; runId: string | null; firstStep: string | null; pending: string[]; apply: number };
+  differsFromStraightApply: string[];
+  rollback: { code: number; edited: string; left: boolean; notRestored: string[] };
+};
+
+async function recoveryCase(layout: Layout, work: string, flags: string[], straight: Record<string, string>): Promise<Recovery> {
+  const app = join(work, `${layout}-recovery-app`);
+  await scaffold(layout, app);
+  if (layout !== 'vite') await run(app, 'npm', ['install']);
+  await seed(layout, app);
+  const before = await hashes(app);
+  const planned = await cli(work, app, ['init', '.', ...flags, '--plan', '--json']);
+  assert.equal(planned.code, 0, planned.stderr);
+  await writeFile(join(output, `${layout}-recovery-plan.json`), planned.stdout);
+  const killed = await killDuringInstall(work, app, join(output, `${layout}-recovery-plan.json`));
+  await writeFile(join(output, `${layout}-recovery-killed-journal.json`), `${JSON.stringify(killed, null, 2)}\n`);
+
+  const resumePlan = await cli(work, app, ['init', '.', ...flags, '--plan', '--json']);
+  await writeFile(join(output, `${layout}-recovery-resume-plan.json`), resumePlan.stdout);
+  const resumed = resumePlan.code === 0 ? (JSON.parse(resumePlan.stdout) as { resume: { runId: string; install: Record<string, string> } | null; operations: { id: string }[] }) : null;
+  const resumeApply = await cli(work, app, ['init', '--apply', join(output, `${layout}-recovery-resume-plan.json`), '--json']);
+  await writeFile(join(output, `${layout}-recovery-resume-result.json`), resumeApply.stdout);
+  const after = await hashes(app, '', basename(app));
+  const differs = [...new Set([...Object.keys(after), ...Object.keys(straight)])].filter((path) => !OWNED_ELSEWHERE.has(path) && after[path] !== straight[path]);
+
+  const edited = layout === 'vite' ? 'vite.config.ts' : `${layout === 'next-src' ? 'src/app' : 'app'}/layout.tsx`;
+  await writeFile(join(app, edited), `${await readFile(join(app, edited), 'utf8')}// the consumer's edit after init\n`);
+  const rolled = await cli(work, app, ['init', '.', '--rollback', killed.runId]);
+  await writeFile(join(output, `${layout}-recovery-rollback.txt`), `${rolled.stdout}${rolled.stderr}`);
+  const settled = await hashes(app);
+  // Next's build rewrites tsconfig.json and next-env.d.ts, and its incremental typecheck writes tsconfig.tsbuildinfo; init writes none of them.
+  const buildOwned = layout === 'vite' ? [] : ['tsconfig.json', 'next-env.d.ts', 'tsconfig.tsbuildinfo'];
+  const notRestored = [...new Set([...Object.keys(before), ...Object.keys(settled)])].filter((path) => path !== edited && !buildOwned.includes(path) && before[path] !== settled[path]).sort();
+  return {
+    layout,
+    runId: killed.runId,
+    killedDuring: killed.operations.at(-1)?.id ?? 'nothing',
+    resume: { plan: resumePlan.code, runId: resumed?.resume?.runId ?? null, firstStep: resumed?.operations[0]?.id ?? null, pending: Object.keys(resumed?.resume?.install ?? {}), apply: resumeApply.code },
+    differsFromStraightApply: differs.sort(),
+    rollback: { code: rolled.code, edited, left: rolled.stdout.includes(`Left       ${edited}\n`), notRestored },
+  };
+}
+
 const { values } = parseArgs({ options: { layout: { type: 'string', multiple: true }, output: { type: 'string' }, keep: { type: 'boolean' } } });
 const layouts = (values.layout ?? [...LAYOUTS]) as Layout[];
 assert.ok(layouts.every((layout) => LAYOUTS.includes(layout)), `--layout takes ${LAYOUTS.join(', ')}`);
@@ -150,6 +225,7 @@ const report = {
   work,
   versions: { node: process.version, chromium: '' },
   runs: [] as Row[],
+  recovery: undefined as Recovery | undefined,
   error: undefined as string | undefined,
 };
 const servers: { close(): Promise<void> }[] = [];
@@ -169,6 +245,7 @@ try {
   browser = await chromium.launch({ headless: true });
   report.versions.chromium = browser.version();
   const flags = ['--registry', `${registry.url}/r/{name}.json`, '--cli-tarball', tarball];
+  const straight = new Map<Layout, Record<string, string>>();
   for (const layout of layouts) {
     const app = join(work, `${layout}-app`);
     await scaffold(layout, app);
@@ -187,6 +264,7 @@ try {
     row.status = (JSON.parse(applied.stdout) as { status: string }).status;
     const inventory = new Set([...plan.operations.flatMap(({ kind, path }) => (kind === 'write' && path ? [path] : [])), ...plan.items.creates]);
     const after = await hashes(app);
+    straight.set(layout, await hashes(app, '', basename(app)));
     row.untouched = Object.keys(before).filter((path) => !inventory.has(path) && before[path] === after[path]);
     row.changedOutsidePlan = Object.keys(before).filter((path) => !inventory.has(path) && !OWNED_ELSEWHERE.has(path) && before[path] !== after[path]);
 
@@ -213,7 +291,17 @@ try {
     servers.push(server);
     for (const { id, scheme, mode } of MODES) row.cases.push({ id: `${layout}/${id}`, checks: await preview(browser, server.url, layout, scheme, mode) });
   }
-  const passed = report.runs.length === layouts.length && report.runs.every((row) =>
+  const first = layouts[0] as Layout;
+  if (straight.has(first)) report.recovery = await recoveryCase(first, work, flags, straight.get(first)!);
+  const recovery = report.recovery;
+  const recovered =
+    recovery !== undefined &&
+    recovery.killedDuring === 'install' &&
+    recovery.resume.plan === 0 && recovery.resume.runId === recovery.runId && recovery.resume.firstStep === 'install' &&
+    recovery.resume.apply === (recovery.layout === 'vite' ? 3 : 0) &&
+    recovery.differsFromStraightApply.length === 0 &&
+    recovery.rollback.code === 1 && recovery.rollback.left && recovery.rollback.notRestored.length === 0;
+  const passed = recovered && report.runs.length === layouts.length && report.runs.every((row) =>
     row.plan === 0 &&
     row.apply === (row.layout === 'vite' ? 3 : 0) &&
     (row.layout !== 'vite' || (row.mounted?.plan === 0 && row.mounted.apply === 0)) &&
@@ -232,6 +320,10 @@ try {
 for (const row of report.runs) {
   console.log(`${row.layout}: plan ${row.plan}, apply ${row.apply} (${row.status ?? 'no result'})${row.mounted ? `, after mounting plan ${row.mounted.plan} apply ${row.mounted.apply}` : ''}; rerun plan ${row.rerun.plan} with ${row.rerun.writes.length} non-check steps, apply ${row.rerun.apply}, ${row.rerun.changed.length} files changed; ${row.changedOutsidePlan.length} files changed outside the plan`);
   for (const { id, checks } of row.cases) console.log(`  ${id}: ${checks.map(({ name, passed }) => `${name} ${passed ? 'ok' : 'FAILED'}`).join(', ')}`);
+}
+if (report.recovery) {
+  const { layout, killedDuring, resume, differsFromStraightApply, rollback } = report.recovery;
+  console.log(`${layout} recovery: killed during ${killedDuring}; resume plan ${resume.plan} from ${resume.firstStep ?? 'nothing'} (${resume.pending.length} pending), apply ${resume.apply}, ${differsFromStraightApply.length} files differ from the straight apply; rollback ${rollback.code}, ${rollback.edited} ${rollback.left ? 'left and named' : 'NOT named'}, ${rollback.notRestored.length} files not restored`);
 }
 if (report.error) console.log(report.error);
 console.log(`init existing-project consumer case ${report.status}; report ${join(output, 'report.json')}`);
