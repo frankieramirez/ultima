@@ -17,6 +17,7 @@ export type MatrixSummary = {
   unexpected: string[];
   duplicated: string[];
   failed: { id: string; failures: string[] }[];
+  knownGaps: NonNullable<ConsumerReport['knownGaps']>;
   invalid: { path: string; problems: string[] }[];
   jobs: { name: string; result: string }[];
   durations: Partial<Record<Bundle, { cells: number; maxMs: number; totalMs: number }>>;
@@ -31,12 +32,13 @@ export function matrixSummary(retained: RetainedReport[], wholeMatrix: boolean, 
   const expected = matrixCases();
   const executed: string[] = [];
   const heads = new Set<string>();
-  const summary: MatrixSummary = { status: 'passed', wholeMatrix, heads: [], expected: expected.length, executed: 0, missing: [], unexpected: [], duplicated: [], failed: [], invalid: [], jobs: jobs.filter((job) => job.result !== 'success' && job.result !== 'skipped'), durations: {} };
+  const summary: MatrixSummary = { status: 'passed', wholeMatrix, heads: [], expected: expected.length, executed: 0, missing: [], unexpected: [], duplicated: [], failed: [], knownGaps: [], invalid: [], jobs: jobs.filter((job) => job.result !== 'success' && job.result !== 'skipped'), durations: {} };
   for (const { path, report, durations } of retained) {
     const value = report as ConsumerReport;
     const problems = consumerReportProblems(value);
     if (problems.length) summary.invalid.push({ path, problems });
     heads.add(String(value?.source?.head));
+    if (Array.isArray(value?.knownGaps)) summary.knownGaps.push(...value.knownGaps);
     for (const row of Array.isArray(value?.cases) ? value.cases : []) {
       executed.push(row.id);
       if (row.status !== 'passed') summary.failed.push({ id: row.id, failures: row.failures });
@@ -68,6 +70,7 @@ export function matrixMarkdown(summary: MatrixSummary, run?: string): string {
     `Revision: ${summary.heads.map((head) => `\`${head}\``).join(', ') || 'none'}. Executed ${summary.executed} of ${summary.expected} registered cells${summary.wholeMatrix ? '' : ' (a pull request runs the cells its change plan selects)'}.`, '',
     ...list('Failed jobs', summary.jobs.map((job) => `${job.name}: ${job.result}`)),
     ...list('Failed cells', summary.failed.map((row) => `\`${row.id}\`: ${row.failures.join('; ')}`)),
+    ...list('Known gaps', summary.knownGaps.map((gap) => `\`${gap.id}\` ${gap.assertion}: ${gap.component}${gap.issue ? ` (${gap.issue})` : ''}`)),
     ...list('Invalid reports', summary.invalid.map((row) => `\`${row.path}\`: ${row.problems.join('; ')}`)),
     ...list('Missing cells', summary.missing.map((id) => `\`${id}\``)),
     ...list('Unregistered or duplicated cells', [...summary.unexpected, ...summary.duplicated].map((id) => `\`${id}\``)),

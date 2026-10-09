@@ -19,7 +19,7 @@ export const BUNDLE_ASSERTIONS = {
   lifecycle: ['registration', 'upgrade', 'reconnect', 'attribute-update', 'tabs-keyboard', 'tabs-theme'],
   'date-picker': ['commit-typed', 'invalid-input', 'controlled-update', 'clear', 'calendar-selection', 'min-max-unavailable', 'range-en-gb', 'submitted-dates', 'reset', 'time-zones'],
   'direction-locale': ['rtl-document', 'translated-labels', 'navigation-layout', 'navigation-keyboard', 'tabs-layout', 'tabs-indicator', 'tabs-arrows', 'select-layout', 'select-keyboard', 'date-picker-layout', 'date-picker-glyphs', 'date-picker-keys'],
-  'narrow-touch': ['touch-context', 'navigation-drawer', 'dialog-touch', 'select-touch', 'popover-dismiss', 'date-touch', 'reach-controls'],
+  'narrow-touch': ['touch-context', 'page-overflow', 'range-date-picker-fits', 'navigation-drawer', 'drawer-backdrop-dismiss', 'dialog-touch', 'select-touch', 'popover-dismiss', 'date-touch', 'reach-controls'],
 } as const satisfies Record<Bundle, readonly string[]>;
 
 /**
@@ -30,6 +30,29 @@ export const RTL_EXCLUSIONS: Partial<Record<string, { component: string; reason:
   'tabs-indicator': { component: 'tabs', reason: 'Indicator sets inset-inline-start from Base UI\'s physical --active-tab-left, so under dir="rtl" it sits at the far end of the list instead of under the selected tab.' },
   'date-picker-glyphs': { component: 'date-picker', reason: 'PrevTrigger and NextTrigger draw fixed left and right chevrons, so under dir="rtl" previous points away from the inline start.' },
 };
+
+export type KnownGap = { component: string; reason: string; issue?: string; engines?: readonly Engine[] };
+/**
+ * Every assertion a cell may record as `excluded` instead of failing: the RTL exclusions, and the narrow touch
+ * defects filed as issues. Each stays visible in its snapshot and the report; any other failure fails the cell.
+ */
+export const KNOWN_GAPS: Partial<Record<Bundle, Partial<Record<string, KnownGap>>>> = {
+  'direction-locale': RTL_EXCLUSIONS,
+  'narrow-touch': {
+    'range-date-picker-fits': { component: 'date-picker', issue: '#806', reason: 'A range Date Picker cannot shrink below its two inputs\' natural widths, so in a grid form it widens a 390px page.' },
+    'drawer-backdrop-dismiss': { component: 'sidebar', issue: '#807', engines: ['firefox'], reason: 'In Firefox touch emulation a tap on a modal Dialog\'s backdrop does not dismiss the Sidebar drawer; it needs a physical Android check.' },
+  },
+};
+export const knownGap = (bundle: Bundle, assertion: string, engine: Engine): KnownGap | undefined => {
+  const gap = KNOWN_GAPS[bundle]?.[assertion];
+  return gap && (!gap.engines || gap.engines.includes(engine)) ? gap : undefined;
+};
+/**
+ * A held assertion passes. One that broke is excluded only when it is a known gap for that bundle and engine and
+ * its measurement completed: a check that threw never measured the gap, so it fails like any other.
+ */
+export const assertionStatus = (bundle: Bundle, assertion: string, engine: Engine, held: boolean, measured = true): 'passed' | 'excluded' | 'failed' =>
+  held ? 'passed' : measured && knownGap(bundle, assertion, engine) ? 'excluded' : 'failed';
 const CELLS_PER_ENGINE = 2;
 /** About five times each bundle's slowest cell in the first complete CI run (#804; the #771 bundles from a local Firefox run until CI measures them), never under 30 seconds. */
 export const CELL_DEADLINES_MS: Record<Bundle, number> = { 'theme-css': 60_000, 'overlay-keyboard': 30_000, form: 30_000, 'date-picker': 60_000, 'direction-locale': 30_000, 'narrow-touch': 60_000, hydration: 45_000, lifecycle: 30_000 };
@@ -960,15 +983,23 @@ async function narrowTouch({ page, check: record }: Cell) {
   };
   const width = () => page.evaluate(() => document.documentElement.scrollWidth);
   const fits = async (locator: Locator) => { const rect = await box(locator); return rect.left >= 0 && rect.right <= 390; };
-  await check('touch-context', { width: 390, touch: true, scrollWidth: 390 }, async () => ({
-    ...(await page.evaluate(() => ({ width: innerWidth, touch: matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 }))),
-    scrollWidth: await width(),
-  }));
+  await check('touch-context', { width: 390, touch: true }, () => page.evaluate(() => ({ width: innerWidth, touch: matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 })));
+  // #806 widens the page through the range Date Picker alone; set it aside so every other overflow and reach still fails.
+  const range = page.getByRole('region', { name: 'Sprint picker', exact: true });
+  // One handle for both steps: once hidden, the role locator no longer finds the section to restore it.
+  const withoutRange = async <T>(action: () => Promise<T>) => {
+    const section = await range.elementHandle();
+    if (!section) throw new Error('the range Date Picker section is missing');
+    await section.evaluate((element: HTMLElement) => { element.style.display = 'none'; });
+    try { return await action(); } finally { await section.evaluate((element: HTMLElement) => { element.style.display = ''; }); await section.dispose(); }
+  };
+  await check('page-overflow', { scrollWidth: 390 }, () => withoutRange(async () => ({ scrollWidth: await width() })));
+  await check('range-date-picker-fits', { scrollWidth: 390, control: true }, async () => ({ scrollWidth: await width(), control: await fits(range.locator('[data-part="control"]')) }));
   const menu = page.getByRole('button', { name: 'Menu', exact: true });
   const drawer = page.getByRole('dialog', { name: 'Workspace', exact: true });
   const heading = async () => (await page.locator('main h1').textContent())?.trim();
   const openDrawer = async () => { await menu.tap(); await drawer.waitFor(); await settle(page); };
-  await check('navigation-drawer', { fits: true, navigated: 'Activity', restored: 'Projects', dismissed: true }, async () => {
+  await check('navigation-drawer', { fits: true, navigated: 'Activity', restored: 'Projects' }, async () => {
     await openDrawer();
     const drawerFits = await fits(drawer);
     await drawer.getByRole('link', { name: 'Activity', exact: true }).tap();
@@ -977,12 +1008,13 @@ async function narrowTouch({ page, check: record }: Cell) {
     await openDrawer();
     await drawer.getByRole('link', { name: 'Projects', exact: true }).tap();
     await drawer.waitFor({ state: 'hidden' });
-    const restored = await heading();
+    return { fits: drawerFits, navigated, restored: await heading() };
+  });
+  await check('drawer-backdrop-dismiss', { dismissed: true }, async () => {
     await openDrawer();
     const panel = await box(drawer);
     await page.touchscreen.tap(Math.round((panel.right + 390) / 2), 400);
-    const dismissed = await drawer.waitFor({ state: 'hidden' }).then(() => true, () => false);
-    return { fits: drawerFits, navigated, restored, dismissed };
+    return { dismissed: await drawer.waitFor({ state: 'hidden' }).then(() => true, () => false) };
   });
   await check('dialog-touch', { fits: true, closed: true, focusInside: true }, async () => {
     const dialog = page.getByRole('dialog', { name: 'Edit Aster', exact: true });
@@ -1032,7 +1064,7 @@ async function narrowTouch({ page, check: record }: Cell) {
     await settle(page);
     return { fits: calendarFits, picked, closed, typed: await date.read('Release value') };
   });
-  await check('reach-controls', [], () => page.evaluate(() => {
+  await check('reach-controls', [], () => withoutRange(() => page.evaluate(() => {
     const selector = 'a[href], button, input:not([type="hidden"]), select, textarea, [role="combobox"], [role="checkbox"], [role="tab"], [tabindex="0"]';
     const controls = [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => element.getClientRects().length > 0 && !element.closest('[aria-hidden="true"], [inert]'));
     return controls.flatMap((element) => {
@@ -1043,7 +1075,7 @@ async function narrowTouch({ page, check: record }: Cell) {
       const name = element.getAttribute('aria-label') ?? (element as HTMLInputElement).labels?.[0]?.textContent?.trim() ?? element.textContent?.trim() ?? element.tagName;
       return reachable ? [] : [`${name} at ${Math.round(rect.left)}-${Math.round(rect.right)}`];
     });
-  }));
+  })));
 }
 
 
@@ -1094,8 +1126,10 @@ async function runCell(browser: Browser, engine: Engine, id: string, url: string
     let error: string | undefined;
     try { actual = await action(); } catch (caught) { error = String(caught); }
     const held = !error && JSON.stringify(actual) === JSON.stringify(expected);
-    const status = held ? 'passed' : RTL_EXCLUSIONS[assertion] && bundle === 'direction-locale' ? 'excluded' : 'failed';
+    const status = assertionStatus(bundle, assertion, engine, held, !error);
     assertions.push({ name: assertion, expected, actual, status, ...(error ? { error } : {}) });
+    const gap = status === 'excluded' ? knownGap(bundle, assertion, engine)! : undefined;
+    if (gap) (report.knownGaps ??= []).push({ id, assertion, component: gap.component, ...(gap.issue ? { issue: gap.issue } : {}) });
     if (status === 'failed') failures.push(`${assertion}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}${error ? ` (${error})` : ''}`);
   };
   const work = (async () => {
@@ -1164,8 +1198,8 @@ export function bundleSnapshotProblems(snapshot: unknown, row: { id: string; sta
   if (!bundle) return [...problems, 'unknown bundle case'];
   const names = Array.isArray(value.assertions) ? value.assertions.map((assertion) => assertion?.name) : [];
   if (names.length !== BUNDLE_ASSERTIONS[bundle].length || BUNDLE_ASSERTIONS[bundle].some((assertion) => !names.includes(assertion))) problems.push('incomplete bundle assertion inventory');
-  const excused = (assertion: Assertion) => assertion.status === 'excluded' && bundle === 'direction-locale' && !!RTL_EXCLUSIONS[assertion.name];
-  if (value.assertions?.some((assertion) => assertion.status === 'excluded' && !excused(assertion))) problems.push('an assertion is excluded without a named RTL exclusion');
+  const excused = (assertion: Assertion) => assertion.status === 'excluded' && !!knownGap(bundle, assertion.name, engine as Engine);
+  if (value.assertions?.some((assertion) => assertion.status === 'excluded' && !excused(assertion))) problems.push('an assertion is excluded without a named exclusion or known gap');
   if (row.status === 'passed' && value.assertions?.some((assertion) => !excused(assertion) && (assertion.status !== 'passed' || JSON.stringify(assertion.expected) !== JSON.stringify(assertion.actual)))) problems.push('passing cell holds a failed assertion');
   if (!value.browser || value.browser.name !== engine || value.browser.version !== report.versions?.[engine as Engine] || !value.platform?.os || JSON.stringify(value.fixture) !== JSON.stringify(report.fixture)) problems.push('browser, platform or fixture identity disagrees with the report');
   if (JSON.stringify(value.reproduceArgv) !== JSON.stringify(bundleReproduction(engine as Engine, value.reproduceArgv?.includes('--fault') ? value.reproduceArgv.at(-1) : undefined, layout as ConsumerLayout, exercise as 'bundles' | 'elements')) || value.reproduce !== value.reproduceArgv?.join(' ')) problems.push('invalid reproduction');

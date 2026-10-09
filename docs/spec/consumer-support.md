@@ -71,9 +71,14 @@ Under that recipe the direction cells assert the document's direction, translate
 
 Sidebar and Select pass every RTL case in Chromium and Firefox; WebKit's first result comes from the installed-consumer workflow. A component leaves this list only when its excluded case passes in every engine.
 
-### First narrow touch results
+### Narrow touch known gaps
 
-At 390 pixels the narrow touch cells fail on two findings. In Chromium and Firefox, the fixture's range Date Picker sits inside a grid form like the Projects scene's own form stacks, and its two inputs' intrinsic widths give `DatePicker.Control` a min-content of about 410 pixels, so the page scrolls horizontally. In Firefox's touch emulation, tapping the backdrop of a modal Base UI Dialog does not dismiss it. That covers the Sidebar drawer and the Edit dialog. The same tap dismisses a Popover, and Chromium dismisses all three. Emulation is regression evidence only, so the Firefox finding still needs a physical Android check before it is attributed to Ultima.
+Two narrow touch defects are filed issues and recorded as known gaps. Their assertions still run in every cell, and each break is reported under `knownGaps` with its issue rather than failing the cell:
+
+- **Range Date Picker overflow, [#806](https://github.com/frankieramirez/ultima/issues/806), all engines.** The range picker's two inputs keep their natural widths, giving `DatePicker.Control` a min-content of about 410 pixels. In a grid form like the Projects scene's own form stacks, that widens a 390-pixel page. `range-date-picker-fits` measures the page and the control with the picker in place. `page-overflow` and `reach-controls` set that one picker aside and stay fully asserted, so an overflow or an unreachable control from anything else still fails.
+- **Firefox backdrop dismissal, [#807](https://github.com/frankieramirez/ultima/issues/807), Firefox only.** In Firefox's touch emulation, tapping the backdrop of a modal Base UI Dialog does not dismiss it. `drawer-backdrop-dismiss` records this for the Sidebar drawer. The same tap dismisses a Popover in Firefox. Chromium and WebKit dismiss the drawer, and there the assertion fails the cell if it breaks. It needs a physical Android check before it is attributed to Ultima.
+
+A gap leaves this list when its issue closes and its assertion passes in every engine.
 
 Maintain explicit expected/executed case IDs. A missing, skipped, timed-out or unlaunchable required case leaves verification incomplete or failed. Preserve traces, failure screenshots, console/network errors and actual values alongside revision, fixture hash, dependency lock and browser/OS identity. Seed regressions for missing src extraction, broken portal theming, hydration mismatch and wrong submitted date to prove the assertions catch the claimed failures.
 

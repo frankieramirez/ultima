@@ -4,10 +4,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import ts from 'typescript';
-import { BUNDLE_ASSERTIONS, BUNDLE_FAULTS, CELL_DEADLINES_MS, DATE_PROBES_SOURCE, DIRECTION_PROBES_SOURCE, PROBES_SOURCE, RTL_EXCLUSIONS, bundleFiles, bundleProof, bundleReproduction, bundleSnapshotProblems, type BundleSnapshot } from '../consumer-bundles.ts';
+import { BUNDLE_ASSERTIONS, BUNDLE_FAULTS, CELL_DEADLINES_MS, DATE_PROBES_SOURCE, DIRECTION_PROBES_SOURCE, PROBES_SOURCE, KNOWN_GAPS, RTL_EXCLUSIONS, assertionStatus, bundleFiles, bundleProof, bundleReproduction, bundleSnapshotProblems, type BundleSnapshot } from '../consumer-bundles.ts';
 import { BUNDLES, BUNDLE_ITEMS, CONSUMER_LAYOUTS, ELEMENT_ITEMS, ENGINES, MATRIX_BUNDLES, bundleCases, consumerReportProblems, elementCases, matrixCases, type ConsumerReport, type Engine } from '../consumer-report.ts';
 import { presetDraft, resolveDraft } from '../../packages/tokens/src/theme/draft.ts';
 import { SCENE_ITEMS } from '../consumer-scene.ts';
+import { matrixMarkdown, matrixSummary } from '../consumer-matrix.ts';
 
 const digest = 'a'.repeat(64);
 const fixture = { hash: digest, lock: 'b'.repeat(64) };
@@ -183,6 +184,61 @@ test('an excluded assertion passes a cell only when it is a named RTL exclusion'
   const context = { fixture, versions };
   const exclude = (name: string) => ({ ...snapshot, assertions: assertions.map((row) => row.name === name ? { ...row, actual: false, status: 'excluded' as const } : row) });
   assert.deepEqual(bundleSnapshotProblems(exclude('tabs-indicator'), row, context), []);
-  assert.ok(bundleSnapshotProblems(exclude('tabs-arrows'), row, context).includes('an assertion is excluded without a named RTL exclusion'));
+  assert.ok(bundleSnapshotProblems(exclude('tabs-arrows'), row, context).includes('an assertion is excluded without a named exclusion or known gap'));
   assert.ok(bundleSnapshotProblems(exclude('tabs-arrows'), row, context).includes('passing cell holds a failed assertion'));
+});
+
+test('a narrow touch known gap names its issue and is excluded only where it was found', () => {
+  const touch: readonly string[] = BUNDLE_ASSERTIONS['narrow-touch'];
+  const gaps = KNOWN_GAPS['narrow-touch']!;
+  assert.deepEqual(Object.fromEntries(Object.entries(gaps).map(([name, gap]) => [name, gap!.issue])), { 'range-date-picker-fits': '#806', 'drawer-backdrop-dismiss': '#807' });
+  for (const name of Object.keys(gaps)) assert.ok(touch.includes(name), name);
+  for (const engine of ENGINES) assert.equal(assertionStatus('narrow-touch', 'range-date-picker-fits', engine, false), 'excluded', engine);
+  assert.equal(assertionStatus('narrow-touch', 'drawer-backdrop-dismiss', 'firefox', false), 'excluded');
+  for (const engine of ['chromium', 'webkit'] as const) assert.equal(assertionStatus('narrow-touch', 'drawer-backdrop-dismiss', engine, false), 'failed', `#807 is a Firefox gap, so ${engine} still fails it`);
+  for (const name of touch.filter((name) => !(name in gaps))) for (const engine of ENGINES) assert.equal(assertionStatus('narrow-touch', name, engine, false), 'failed', `${name} in ${engine}`);
+  assert.equal(assertionStatus('narrow-touch', 'tabs-indicator', 'firefox', false), 'failed', 'an RTL exclusion does not excuse another bundle');
+  assert.equal(assertionStatus('narrow-touch', 'range-date-picker-fits', 'chromium', true), 'passed', 'a gap that holds is reported as passing');
+  assert.equal(assertionStatus('narrow-touch', 'range-date-picker-fits', 'firefox', false, false), 'failed', 'a gap check that threw never measured the gap, so it fails');
+  assert.equal(assertionStatus('direction-locale', 'tabs-indicator', 'webkit', false, false), 'failed');
+});
+
+test('a narrow touch cell passes with its known gaps recorded, and fails on any other broken assertion', () => {
+  const cell = (engine: Engine, broken: string[]) => {
+    const id = `vite/bundles/${engine}/narrow-touch-dark`;
+    const assertions = BUNDLE_ASSERTIONS['narrow-touch'].map((name) => {
+      const status = assertionStatus('narrow-touch', name, engine, !broken.includes(name));
+      return { name, expected: true, actual: !broken.includes(name), status };
+    });
+    const failures = assertions.filter((row) => row.status === 'failed').map((row) => `${row.name}: broke`);
+    const row = { id, status: failures.length ? 'failed' : 'passed', failures };
+    const reproduceArgv = bundleReproduction(engine);
+    const snapshot: BundleSnapshot = {
+      id, engine, bundle: 'narrow-touch', mode: 'dark', browser: { name: engine, version: `${engine}-1` }, userAgent: 'agent', platform, fixture,
+      assertions, failures, durationMs: 9000, reproduceArgv, reproduce: reproduceArgv.join(' '), artifacts: failures.length ? { browser: 'b.json', trace: 't.zip' } : { browser: 'b.json', screenshot: 's.png' },
+    };
+    return { row, snapshot, problems: bundleSnapshotProblems(snapshot, row, { fixture, versions }) };
+  };
+  const firefox = cell('firefox', ['range-date-picker-fits', 'drawer-backdrop-dismiss']);
+  assert.equal(firefox.row.status, 'passed');
+  assert.deepEqual(firefox.problems, []);
+  assert.deepEqual(firefox.snapshot.assertions.filter((row) => row.status === 'excluded').map((row) => row.name), ['range-date-picker-fits', 'drawer-backdrop-dismiss'], 'both gaps stay in the snapshot as excluded, not passed');
+  const chromium = cell('chromium', ['range-date-picker-fits', 'drawer-backdrop-dismiss']);
+  assert.equal(chromium.row.status, 'failed', 'the Firefox-only gap fails in Chromium');
+  assert.deepEqual(chromium.row.failures, ['drawer-backdrop-dismiss: broke']);
+  const fresh = cell('webkit', ['range-date-picker-fits', 'page-overflow']);
+  assert.equal(fresh.row.status, 'failed', 'an overflow from anything but the range Date Picker still fails');
+  assert.deepEqual(fresh.row.failures, ['page-overflow: broke']);
+  const forged = { ...firefox.snapshot, assertions: firefox.snapshot.assertions.map((row) => row.name === 'dialog-touch' ? { ...row, actual: false, status: 'excluded' as const } : row) };
+  assert.ok(bundleSnapshotProblems(forged, firefox.row, { fixture, versions }).includes('an assertion is excluded without a named exclusion or known gap'));
+});
+
+test('known gaps travel in the report and the matrix summary, and must name executed cells', () => {
+  const id = 'vite/bundles/firefox/narrow-touch-dark';
+  const gaps = [{ id, assertion: 'range-date-picker-fits', component: 'date-picker', issue: '#806' }, { id, assertion: 'drawer-backdrop-dismiss', component: 'sidebar', issue: '#807' }];
+  assert.deepEqual(problemsExceptSourceIdentity(report({ knownGaps: gaps })), []);
+  assert.ok(problemsExceptSourceIdentity(report({ knownGaps: [{ ...gaps[0]!, id: 'vite/bundles/firefox/narrow-touch-sepia' }] })).includes('known gaps must name executed cells'));
+  const summary = matrixSummary([{ path: 'r.json', report: report({ knownGaps: gaps }), durations: {} }], false);
+  assert.deepEqual(summary.knownGaps, gaps);
+  assert.match(matrixMarkdown(summary), /### Known gaps[\s\S]*range-date-picker-fits: date-picker \(#806\)[\s\S]*drawer-backdrop-dismiss: sidebar \(#807\)/);
 });
