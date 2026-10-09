@@ -37,48 +37,36 @@ const variants = stylex.create({
     backgroundColor: {
       default: 'transparent',
       ':hover': color['--ult-color-surface-raised'],
-      ':is([data-pressed])': {
-        default: color['--ult-color-accent-subtle'],
-        ':hover': color['--ult-color-accent-subtle'],
-      },
+      ':is([data-pressed])': color['--ult-color-accent-subtle'],
+      ':is([data-pressed]):hover': color['--ult-color-accent-subtle'],
     },
     borderColor: {
       default: color['--ult-color-border'],
-      ':is([data-pressed])': {
-        default: color['--ult-color-accent-border'],
-        ':hover': color['--ult-color-accent-border'],
-      },
+      ':is([data-pressed])': color['--ult-color-accent-border'],
+      ':is([data-pressed]):hover': color['--ult-color-accent-border'],
     },
     color: {
       default: color['--ult-color-text'],
-      ':is([data-pressed])': {
-        default: color['--ult-color-accent-text'],
-        ':hover': color['--ult-color-accent-text'],
-      },
+      ':is([data-pressed])': color['--ult-color-accent-text'],
+      ':is([data-pressed]):hover': color['--ult-color-accent-text'],
     },
   },
   ghost: {
     backgroundColor: {
       default: 'transparent',
       ':hover': color['--ult-color-surface-raised'],
-      ':is([data-pressed])': {
-        default: color['--ult-color-accent-subtle'],
-        ':hover': color['--ult-color-accent-subtle'],
-      },
+      ':is([data-pressed])': color['--ult-color-accent-subtle'],
+      ':is([data-pressed]):hover': color['--ult-color-accent-subtle'],
     },
     borderColor: {
       default: 'transparent',
-      ':is([data-pressed])': {
-        default: color['--ult-color-accent-border'],
-        ':hover': color['--ult-color-accent-border'],
-      },
+      ':is([data-pressed])': color['--ult-color-accent-border'],
+      ':is([data-pressed]):hover': color['--ult-color-accent-border'],
     },
     color: {
       default: color['--ult-color-text-muted'],
-      ':is([data-pressed])': {
-        default: color['--ult-color-accent-text'],
-        ':hover': color['--ult-color-accent-text'],
-      },
+      ':is([data-pressed])': color['--ult-color-accent-text'],
+      ':is([data-pressed]):hover': color['--ult-color-accent-text'],
     },
   },
 });

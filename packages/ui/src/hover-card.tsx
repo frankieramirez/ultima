@@ -24,7 +24,7 @@ const styles = stylex.create({
     },
   },
   positioner: {
-    outline: 0,
+    outline: '0',
     zIndex: z.popup,
   },
   popup: {

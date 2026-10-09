@@ -30,17 +30,6 @@ export default [
     authority: 'docs/spec/ultima.md#state-styling',
   },
   {
-    id: 'toast-intra-stack-z-index',
-    rule: 'ULT-TOKEN-001',
-    path: 'packages/ui/src/toast.tsx',
-    symbol: 'styles.root',
-    target: 'zIndex',
-    expression: '`calc(${stackCeiling} - var(--toast-index))`',
-    count: 1,
-    reason: 'The z-index arithmetic among toast roots is a module constant in toast.tsx, not a token.',
-    authority: 'docs/spec/ultima.md#border-widths-and-z-index',
-  },
-  {
     id: 'avatar-fallback-initials-track-the-box',
     rule: 'ULT-TOKEN-001',
     path: 'packages/ui/src/avatar.tsx',

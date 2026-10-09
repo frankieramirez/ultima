@@ -199,7 +199,7 @@ export const RUNTIME_VARIABLES: readonly RuntimeVariable[] = [
   ...variable("Base UI's Drawer: the velocity-scaled exit reads the duration token", ['drawer'], ['duration'], 'docs/spec/ultima.md#motion', '--drawer-swipe-strength'),
   ...variable("Base UI's Drawer", ['drawer'], ['length'], NOTES, '--drawer-height'),
   ...variable("Base UI's Drawer", ['drawer'], ['translation'], NOTES, '--drawer-snap-point-offset', '--drawer-swipe-movement-x', '--drawer-swipe-movement-y'),
-  ...variable('Sidebar, set by the consumer on the panel', ['sidebar'], ['keyword'], 'docs/spec/ultima.md#sidebar', '--sidebar-scrollbar-width'),
+  ...variable('Sidebar, set by the consumer on the panel', ['sidebar'], ['scrollbar-width'], 'docs/spec/ultima.md#sidebar', '--sidebar-scrollbar-width'),
   ...variable("Zag's tabs indicator, mapped onto Base UI's names", ['ult-tabs'], ['custom-property'], ELEMENT_PRIMITIVES, '--left', '--top', '--width', '--height'),
 ];
 

@@ -11,6 +11,12 @@ const source = resolve('registry/static/setup-next');
 type BabelConfig = { plugins: [string, { aliases: Record<string, string[]> }][] };
 type PostcssConfig = { plugins: Record<string, { include: string[]; exclude: string[] }> };
 
+test('the Next setup configs load through module.require, which the consumer TypeScript lint allows', () => {
+  for (const file of ['babel.config.js', 'postcss.config.js']) {
+    assert.doesNotMatch(readFileSync(join(source, file), 'utf8'), /(^|[^.\w])require\(/, file);
+  }
+});
+
 for (const directory of ['.', 'src', 'custom']) {
   test(`Next setup resolves consumer aliases and extracts ${directory} source`, () => {
     const root = mkdtempSync(join(tmpdir(), 'ultima-next-config-'));
@@ -21,15 +27,17 @@ for (const directory of ['.', 'src', 'custom']) {
       }`);
       writeFileSync(join(root, 'base.json'), readFileSync(join(root, 'tsconfig.json')));
       writeFileSync(join(root, 'tsconfig.json'), '{ "extends": "./base.json" }');
-      const babel = { exports: {} as BabelConfig };
+      const babel = { exports: {} as BabelConfig, require };
       runInNewContext(readFileSync(join(source, 'babel.config.js'), 'utf8'), {
-        require, module: babel, __dirname: root, process,
+        module: babel, __dirname: root, process,
       });
       const options = babel.exports.plugins[0]![1];
       assert.deepEqual(Array.from(options.aliases['@/*']!), [resolve(root, directory, '*')]);
-      const postcss = { exports: {} as PostcssConfig };
-      runInNewContext(readFileSync(join(source, 'postcss.config.js'), 'utf8'), {
+      const postcss = {
+        exports: {} as PostcssConfig,
         require: (id: string) => id === './babel.config.js' ? babel.exports : require(id),
+      };
+      runInNewContext(readFileSync(join(source, 'postcss.config.js'), 'utf8'), {
         module: postcss, __dirname: root,
       });
       const config = postcss.exports.plugins['@stylexjs/postcss-plugin']!;

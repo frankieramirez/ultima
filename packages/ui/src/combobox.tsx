@@ -144,7 +144,7 @@ const styles = stylex.create({
     },
   },
   positioner: {
-    outline: 0,
+    outline: '0',
   },
   popup: {
     backgroundColor: color['--ult-color-surface-raised'],
@@ -157,24 +157,28 @@ const styles = stylex.create({
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-sans'],
     maxWidth: 'var(--available-width)',
+    opacity: {
+      default: 1,
+      ':is([data-starting-style])': 0,
+      ':is([data-ending-style])': 0,
+    },
     outline: 'none',
     paddingInline: space['--ult-space-1'],
     position: 'relative',
+    transform: {
+      default: 'none',
+      ':is([data-starting-style])': 'scale(0.98)',
+      ':is([data-ending-style])': 'scale(0.98)',
+    },
     transformOrigin: 'var(--transform-origin)',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'opacity, transform',
-    transitionTimingFunction: easing.enter,
+    transitionTimingFunction: {
+      default: easing.enter,
+      ':is([data-ending-style])': easing.exit,
+    },
     width: 'var(--anchor-width)',
     zIndex: z.popup,
-    ':is([data-starting-style])': {
-      opacity: 0,
-      transform: 'scale(0.98)',
-    },
-    ':is([data-ending-style])': {
-      opacity: 0,
-      transform: 'scale(0.98)',
-      transitionTimingFunction: easing.exit,
-    },
   },
   list: {
     maxHeight: `min(${listHeight}, var(--available-height))`,

@@ -62,37 +62,43 @@ const styles = stylex.create({
 });
 
 export function ContactDetails({ contact }: { contact: Contact }) {
-  const rows: [string, ReactNode][] = [
-    [
-      'Email',
-      <a href={`mailto:${contact.email}`} {...stylex.props(styles.link)}>
-        {contact.email}
-      </a>,
-    ],
-    [
-      'Phone',
-      <a href={`tel:${contact.phone.replaceAll(' ', '')}`} {...stylex.props(styles.link)}>
-        {contact.phone}
-      </a>,
-    ],
-    [
-      'Owner',
-      <>
-        <Avatar.Root aria-hidden="true" style={styles.owner}>
-          <Avatar.Fallback>{contact.owner.initials}</Avatar.Fallback>
-        </Avatar.Root>
-        {contact.owner.name}
-      </>,
-    ],
-    ['Deal value', contact.deal ? `${contact.deal.value} · ${contact.deal.stage}` : 'No open deal'],
-    [
-      'Tags',
-      contact.tags.map((tag) => (
+  const rows: { term: string; value: ReactNode }[] = [
+    {
+      term: 'Email',
+      value: (
+        <a href={`mailto:${contact.email}`} {...stylex.props(styles.link)}>
+          {contact.email}
+        </a>
+      ),
+    },
+    {
+      term: 'Phone',
+      value: (
+        <a href={`tel:${contact.phone.replaceAll(' ', '')}`} {...stylex.props(styles.link)}>
+          {contact.phone}
+        </a>
+      ),
+    },
+    {
+      term: 'Owner',
+      value: (
+        <>
+          <Avatar.Root aria-hidden="true" style={styles.owner}>
+            <Avatar.Fallback>{contact.owner.initials}</Avatar.Fallback>
+          </Avatar.Root>
+          {contact.owner.name}
+        </>
+      ),
+    },
+    { term: 'Deal value', value: contact.deal ? `${contact.deal.value} · ${contact.deal.stage}` : 'No open deal' },
+    {
+      term: 'Tags',
+      value: contact.tags.map((tag) => (
         <Badge key={tag} tone="neutral">
           {tag}
         </Badge>
       )),
-    ],
+    },
   ];
 
   return (
@@ -101,7 +107,7 @@ export function ContactDetails({ contact }: { contact: Contact }) {
         <Card.Title style={styles.title}>Details</Card.Title>
       </Card.Header>
       <dl {...stylex.props(styles.list)}>
-        {rows.map(([term, value], index) => (
+        {rows.map(({ term, value }, index) => (
           <Fragment key={term}>
             {/* axe-core's definition-list rule rejects a role="separator" child of a dl that screen readers can reach. */}
             {index > 0 && <Separator aria-hidden="true" />}

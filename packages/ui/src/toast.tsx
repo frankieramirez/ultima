@@ -8,7 +8,6 @@ import type { ComponentProps } from 'react';
 
 const stackWidth = `calc(6 * ${space['--ult-space-12']})`;
 
-const stackCeiling = 1000;
 const scaleStep = 0.1;
 const slideDistance = '150%';
 
@@ -20,10 +19,8 @@ const shrunkHeight = 'var(--toast-frontmost-height, var(--toast-height, 0px))';
 const stackScale = `max(0, 1 - (var(--toast-index) * ${scaleStep}))`;
 const stackShrink = `(1 - ${stackScale})`;
 
-const collapsedTransform =
-  `translateX(${swipeX})` +
-  ` translateY(calc(${swipeY} - (var(--toast-index) * ${space['--ult-space-5']}) - (${stackShrink} * ${shrunkHeight})))` +
-  ` scale(${stackScale})`;
+const collapsedY = `calc(${swipeY} - (var(--toast-index) * ${space['--ult-space-5']}) - (${stackShrink} * ${shrunkHeight}))`;
+const collapsedTransform = `translateX(${swipeX}) translateY(${collapsedY}) scale(${stackScale})`;
 const expandedY = `calc(${swipeY} - var(--toast-offset-y) - (var(--toast-index) * ${space['--ult-space-5']}))`;
 const expandedTransform = `translateX(${swipeX}) translateY(${expandedY})`;
 
@@ -36,7 +33,7 @@ const styles = stylex.create({
     zIndex: z.toast,
   },
   positioner: {
-    outline: 0,
+    outline: '0',
   },
   root: {
     backgroundColor: {
@@ -94,7 +91,7 @@ const styles = stylex.create({
     transitionTimingFunction: easing.standard,
     userSelect: 'none',
     width: '100%',
-    zIndex: `calc(${stackCeiling} - var(--toast-index))`,
+    zIndex: `calc(${z.toast} - var(--toast-index))`,
   },
   content: {
     alignItems: 'flex-start',

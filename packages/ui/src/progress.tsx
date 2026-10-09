@@ -41,10 +41,7 @@ const styles = stylex.create({
   indicator: {
     animationDuration: motion['--ult-motion-loop'],
     animationIterationCount: 'infinite',
-    animationName: {
-      default: 'none',
-      ':is([data-indeterminate])': { default: slide, [REDUCED_MOTION]: 'none' },
-    },
+    animationName: { default: 'none', ':is([data-indeterminate])': slide, [REDUCED_MOTION]: 'none' },
     animationTimingFunction: easing.standard,
     borderRadius: radius['--ult-radius-full'],
     /** Base UI writes no inline style while indeterminate, so the fill owns its box there. */
