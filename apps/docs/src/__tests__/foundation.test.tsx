@@ -36,12 +36,13 @@ function prefer(mode: keyof typeof modes) {
 
 const FOUNDATIONS = [
   { path: '/install', title: 'Install', place: '02', previous: 'Home', next: 'Update the base theme' },
-  { path: '/install/update', title: 'Update the base theme', place: '03', previous: 'Install', next: 'CLI' },
-  { path: '/cli', title: 'CLI', place: '04', previous: 'Update the base theme', next: 'Elements' },
-  { path: '/elements', title: 'Elements', place: '05', previous: 'CLI', next: 'Tokens' },
-  { path: '/tokens', title: 'Tokens', place: '06', previous: 'Elements', next: 'Palette' },
-  { path: '/palette', title: 'Palette', place: '07', previous: 'Tokens', next: 'Rationale' },
-  { path: '/rationale', title: 'Rationale', place: '08', previous: 'Palette', next: 'Studio' },
+  { path: '/install/update', title: 'Update the base theme', place: '03', previous: 'Install', next: 'Build a screen' },
+  { path: '/build-a-screen', title: 'Build a screen', place: '04', previous: 'Update the base theme', next: 'CLI' },
+  { path: '/cli', title: 'CLI', place: '05', previous: 'Build a screen', next: 'Elements' },
+  { path: '/elements', title: 'Elements', place: '06', previous: 'CLI', next: 'Tokens' },
+  { path: '/tokens', title: 'Tokens', place: '07', previous: 'Elements', next: 'Palette' },
+  { path: '/palette', title: 'Palette', place: '08', previous: 'Tokens', next: 'Rationale' },
+  { path: '/rationale', title: 'Rationale', place: '09', previous: 'Palette', next: 'Studio' },
 ];
 
 for (const { path, title, place, previous, next } of FOUNDATIONS) {
@@ -213,6 +214,7 @@ test('Install ends with cards to the pages a reader goes next', async () => {
   await expect.element(screen.getByRole('heading', { name: 'Where to go next' })).toBeVisible();
   const links = [...document.querySelectorAll('main h3 a')].map((link) => [link.textContent, link.getAttribute('href')]);
   expect(links).toEqual([
+    ['Build a screen', '/build-a-screen'],
     ['Components', '/components'],
     ['Tokens', '/tokens'],
     ['Theme Studio', '/theme-studio'],

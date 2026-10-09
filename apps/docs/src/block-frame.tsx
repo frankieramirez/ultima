@@ -31,27 +31,36 @@ const styles = stylex.create({
   }),
 });
 
-/**
- * Frames `/blocks/<id>/preview` at a preview size, scaled down to fit the column. The block lays
- * out for the frame's own viewport, so a Sidebar reads the frame's width rather than the reader's
- * window. A thumbnail loads lazily and is `inert`, so nothing inside it is a tab stop. `children`
- * draws over the frame at its scale, as Anatomy does.
- */
-export function BlockFrame({
-  block,
-  size = 'desktop',
-  thumbnail = false,
-  inert = thumbnail,
-  frameRef,
-  children,
-}: {
-  block: BlockEntry;
+/** Frames `/blocks/<id>/preview`; see PreviewFrame. */
+export function BlockFrame({ block, ...props }: { block: BlockEntry } & Omit<PreviewFrameProps, 'src' | 'title'>) {
+  return <PreviewFrame src={`/blocks/${block.id}/preview`} title={`${block.title} preview`} {...props} />;
+}
+
+type PreviewFrameProps = {
+  src: string;
+  title: string;
   size?: PreviewSize;
   thumbnail?: boolean;
   inert?: boolean;
   frameRef?: Ref<HTMLIFrameElement>;
   children?: (scale: number) => ReactNode;
-}) {
+};
+
+/**
+ * Frames a bare preview route at a preview size, scaled down to fit the column. The screen lays
+ * out for the frame's own viewport, so a Sidebar reads the frame's width rather than the reader's
+ * window. A thumbnail loads lazily and is `inert`, so nothing inside it is a tab stop. `children`
+ * draws over the frame at its scale, as Anatomy does.
+ */
+export function PreviewFrame({
+  src,
+  title,
+  size = 'desktop',
+  thumbnail = false,
+  inert = thumbnail,
+  frameRef,
+  children,
+}: PreviewFrameProps) {
   const stage = useRef<HTMLDivElement>(null);
   const [room, setRoom] = useState(0);
 
@@ -73,8 +82,8 @@ export function BlockFrame({
       <div {...stylex.props(styles.window(`${width * scale}px`, `${height * scale}px`))}>
         <iframe
           ref={frameRef}
-          src={`/blocks/${block.id}/preview`}
-          title={`${block.title} preview`}
+          src={src}
+          title={title}
           width={width}
           height={height}
           loading={thumbnail ? 'lazy' : 'eager'}

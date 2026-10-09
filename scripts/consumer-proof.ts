@@ -8,7 +8,6 @@ import { chromium, type Page } from 'playwright';
 import { draftFingerprint } from '../packages/tokens/src/theme/codec.ts';
 import { presetDraft, resolveDraft, stockDraft, type ThemeDraft } from '../packages/tokens/src/theme/draft.ts';
 import { gate } from '../packages/tokens/src/theme/gate.ts';
-import { shuffleDraft } from '../packages/tokens/src/theme/shuffle.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
 import { CONSUMER_LAYOUTS, DELIVERY_PATHS, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, modeCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from './consumer-report.ts';
 import { THEME_PRESETS } from '../packages/tokens/src/theme/draft.ts';
@@ -20,6 +19,7 @@ import { cliProof, installTheme } from './consumer-delivery.ts';
 import { browserErrors, hydrationProblems, type BrowserLog, hydrationState, nextFault, nextScene, serveNext, setupNext, type HydrationEvidence } from './consumer-next.ts';
 import { hashSource } from './verification/source.ts';
 import { ultimaPresetUrl } from '../apps/docs/src/ultima-preset.ts';
+import { proofDraft as sharedProofDraft } from '../apps/docs/src/proof-draft.ts';
 import { themeRegistry } from '../apps/docs/server/theme-registry.ts';
 import { contentHash, stampLine, withStamp } from '../packages/cli/src/stamp.ts';
 import { BASE_THEME_MARKER } from '../packages/cli/src/base-theme.ts';
@@ -27,10 +27,7 @@ import { toCss } from '../packages/tokens/src/theme/export.ts';
 import { installedThemeProof } from './consumer-theme.ts';
 
 export function proofDraft(): ThemeDraft {
-  const shuffled = shuffleDraft(stockDraft(), 'global', 'broad', 20260920);
-  assert.equal(shuffled.kind, 'applied', 'proof draft shuffle must pass');
-  if (shuffled.kind !== 'applied') throw new Error('no proof draft');
-  const draft = shuffled.draft;
+  const draft = sharedProofDraft();
   const tables = resolveDraft(draft);
   assert.ok(gate(tables).every((row) => row.dark.pass && row.light.pass), 'proof draft must pass the Studio pairing gate');
   for (const preset of ['neutral', 'ultima'] as const) for (const mode of ['dark', 'light'] as const) {

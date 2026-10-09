@@ -7,7 +7,7 @@ import { memoryFiles } from './files.ts';
 import { diskFixture, testPolicy } from './fixture.ts';
 import { loadCatalogue } from './model.ts';
 import { OUTPUTS, planOutputs } from './projections.ts';
-import { exportsOf, importsOf, parse } from './source.ts';
+import { exportsOf, importsOf, mdxImports, parse } from './source.ts';
 
 const entry = 'apps/docs/src/demos/button/sorting.tsx';
 function fixture() {
@@ -138,6 +138,24 @@ describe('composition inventory and generated recipes', () => {
       values[COMPOSITION_INVENTORY] = `export default ${JSON.stringify([partial])} satisfies CompositionExample[];`;
       assert.ok(compositionProjection(files, catalogue).diagnostics.length > 0, JSON.stringify(partial));
     }
+  });
+
+  test('a block lesson installs its block and needs no copied files; any other lesson needs them', () => {
+    const { values, files, catalogue: base } = fixture();
+    const block = 'settings-01';
+    const catalogue = { ...base, blocks: [{ id: block } as (typeof base.blocks)[number]] };
+    const { recipe: _recipe, ...plain } = example;
+    values[COMPOSITION_INVENTORY] = `export default ${JSON.stringify([{ ...plain, id: 'adapt', block, files: [] }])} satisfies CompositionExample[];`;
+    const projection = compositionProjection(files, catalogue);
+    assert.deepEqual(projection.diagnostics, []);
+    assert.equal(projection.examples[0]!.install, `npx shadcn add @ultima/${block}`);
+    values[COMPOSITION_INVENTORY] = `export default ${JSON.stringify([{ ...plain, files: [] }])} satisfies CompositionExample[];`;
+    assert.ok(compositionProjection(files, catalogue).diagnostics.some(({ message }) => message.endsWith('title and source bundle are required')));
+  });
+
+  test('an MDX page\'s fenced example imports are prose, not page imports', () => {
+    const page = "import { Demo } from '../demo';\n\n# Page\n\n```tsx\nimport Projects from '@/components/projects/projects';\n```\n";
+    assert.deepEqual(mdxImports('page.mdx', page).map(({ specifier }) => specifier), ['../demo']);
   });
 
   test('rejects a missing authored inventory', () => {

@@ -12,6 +12,7 @@ export type CompositionExample = {
   /** The owning page and heading; both are omitted together until that page is published. */
   route?: string;
   anchor?: string;
+  /** Empty only for a block lesson: the block's registry item installs its source. */
   files: { source: string; destination: string }[];
   feature?: string;
   scenarios?: string[];
@@ -56,7 +57,7 @@ export function compositionProjection(files: Files, catalogue: Catalogue): {
       report(COMPOSITION_INVENTORY, 'invalid or duplicate example ID'); continue;
     }
     seen.add(example.id);
-    if (typeof example.title !== 'string' || !example.title.trim() || !Array.isArray(example.files) || example.files.length === 0) {
+    if (typeof example.title !== 'string' || !example.title.trim() || !Array.isArray(example.files) || (example.files.length === 0 && !example.block)) {
       report(COMPOSITION_INVENTORY, `${example.id}: title and source bundle are required`); continue;
     }
     if (example.route !== undefined || example.anchor !== undefined) {
@@ -81,8 +82,9 @@ export function compositionProjection(files: Files, catalogue: Catalogue): {
       try { sources[source] = consumerBundle(source, catalogue, files, undefined, destinations); }
       catch (error) { report(source, (error as Error).message); }
     }
-    const entry = sources[example.files[0]!.source];
-    examples.push({ ...example, install: entry ? installCommand(entry.items).install : '' });
+    const entry = example.files[0] && sources[example.files[0].source];
+    const items = entry ? entry.items : example.block && example.files.length === 0 ? [example.block] : undefined;
+    examples.push({ ...example, install: items ? installCommand(items).install : '' });
   }
   const recipes = catalogue.recipes.map((recipe) => {
     for (const source of recipe.demos) {

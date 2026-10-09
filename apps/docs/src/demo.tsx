@@ -73,6 +73,7 @@ const styles = stylex.create({
     ':is([hidden])': { display: 'none' },
   },
   previewInner: { minInlineSize: 'fit-content' },
+  fill: { inlineSize: '100%', minInlineSize: 0 },
   code: { padding: 0 },
   source: { backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0 },
   files: {
@@ -104,6 +105,7 @@ export function Demo({
   caption,
   plate = false,
   anatomy,
+  fill = false,
 }: {
   component: ComponentType;
   source: string | CopyBundle;
@@ -115,6 +117,8 @@ export function Demo({
   plate?: boolean;
   /** The item whose parts a third tab labels, and the module it renders: an overlay's open `anatomy.tsx`, or this demo. */
   anatomy?: { item: string; component: ComponentType };
+  /** The preview takes the panel's full width, for a framed screen that scales to fit. */
+  fill?: boolean;
 }) {
   const [tab, setTab] = useState<string | number>('preview');
   const [fileIndex, setFileIndex] = useState(0);
@@ -163,7 +167,7 @@ export function Demo({
         </div>
         <Separator />
         <Tabs.Panel value="preview" keepMounted style={styles.preview}>
-          <ThemeBoundary data-component-preview style={styles.previewInner}>
+          <ThemeBoundary data-component-preview style={[styles.previewInner, fill && styles.fill]}>
             <Component />
           </ThemeBoundary>
         </Tabs.Panel>
