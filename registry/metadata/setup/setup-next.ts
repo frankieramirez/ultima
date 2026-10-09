@@ -39,7 +39,7 @@ export default {
     },
     {
       prose: 'Lint StyleX with its official ESLint plugin. Save https://ultima.systems/ultima.eslint.mjs beside eslint.config.mjs and append `ultimaStylex` to your flat config after the framework configuration, or follow https://ultima.systems/install#stylex-lint to add ESLint to a project without it. Setup never installs ESLint or writes eslint.config.*.',
-      unverifiable: 'Doctor does not read lint configuration yet; run npx eslint --print-config on a page, a component and lib/tokens.stylex.ts, then npx eslint .',
+      unverifiable: 'Doctor reports static lint presence under StyleX lint and never runs ESLint, so the effective config stays unverified; run npx eslint --print-config on a page, a component and lib/tokens.stylex.ts, then npx eslint .',
     },
     {
       prose: "A strict CSP needs a nonce: pass it to Base UI's `CSPProvider` at your app root.",

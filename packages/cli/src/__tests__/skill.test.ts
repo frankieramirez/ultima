@@ -50,6 +50,11 @@ describe('the consumer skill', () => {
     expect(SKILL).toContain('A zero CLI exit cannot prove the theme rendered');
   });
 
+  it('points to the StyleX lint recipe without claiming doctor runs lint', () => {
+    expect(SKILL).toContain('[StyleX lint recipe](https://ultima.systems/install#stylex-lint)');
+    expect(SKILL).toContain('`doctor` reports lint as `detected` at best, never as a lint pass');
+  });
+
   it.each([
     ['a token name', 'Read `--ult-color-accent` for the accent.', 'token name'],
     ['an item name', 'Wrap it in a Button.', 'item name'],

@@ -40,7 +40,7 @@ test('both setup items link the fragment and recipe in a hand step and never cla
     const step = setupItems[id].handSteps.find((candidate) => candidate.prose.includes('ultima.eslint.mjs'));
     assert.ok(step, `${id} has a lint hand step`);
     assert.ok(step.prose.includes('https://ultima.systems/ultima.eslint.mjs') && step.prose.includes('https://ultima.systems/install#stylex-lint'));
-    assert.ok(step.unverifiable && !('assertion' in step && step.assertion), `${id}'s lint step is unverifiable until doctor reads lint configuration`);
+    assert.ok(step.unverifiable && !('assertion' in step && step.assertion), `${id}'s lint step stays unverifiable: doctor reports static presence and never proves the effective config`);
     assert.ok(!(id === 'setup-vite' ? setupVite : setupNext).files.some((file) => /eslint/.test(file.path)), `${id} never writes an ESLint config`);
   }
 });

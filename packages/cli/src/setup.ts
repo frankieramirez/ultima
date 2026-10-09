@@ -944,7 +944,7 @@ function parse(file: string, ruleId: string, context: StepContext): { source: ts
   };
 }
 
-function position(source: ts.SourceFile, offset: number): Position {
+export function position(source: ts.SourceFile, offset: number): Position {
   const { line, character } = source.getLineAndCharacterOfPosition(offset);
   return { line: line + 1, column: character + 1 };
 }

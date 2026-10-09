@@ -2916,6 +2916,8 @@ Decided on [What doctor verifies per setup target](https://github.com/frankieram
 
 The [product-theme workflow](#discover-and-maintain-the-product-theme) adds the opt-in `doctor --theme [--json]` report. It compares local linked theme artifacts and leaves ordinary setup checks and remote registry drift ownership unchanged. JSON adds a versioned `theme` object with per-boundary artifact rows; `ULT-THEME-001` identifies mismatches and `ULT-THEME-002` identifies incomplete comparisons. Each row includes paths, source identity, scope/modes, actual differences and a repair. Every row states that rendering is outside static coverage.
 
+[StyleX lint in consumer projects](consumer-lint.md#doctor-diagnostics) adds a separate `lint` section to every `doctor` run. It reads lint packages and config text and never runs ESLint. Its advisory `ULT-LINT-NNN` findings stay outside the setup `diagnostics` and never change the exit. At best it reports `detected`, and the effective config stays `unverified`.
+
 **Finding the target.** Each setup item is identified by the files it installs: `ultima.vite.ts` for Vite, `app/ultima.css` with `babel.config.js` for Next.js, with `rsc` in `components.json` confirming it. `--target vite|next` replaces detection. No target found is one blocking finding whose repair is the setup command from Entry point. Both found without `--target` is a usage error.
 
 **What it checks.** File reads and syntax trees only: the TypeScript parser for config and layout modules, `tsconfig` read with its `extends` chain, and a CSS parser for stylesheets. `doctor` never builds a type program, because it must run in a repository that does not yet typecheck, and type-level contracts are `check`'s. A construct it cannot resolve statically, such as a `plugins` array built by a function call, is `ULT-ANALYSIS-001`, never a pass.
@@ -3035,6 +3037,8 @@ Decided on [What the consumer skill says and how it is versioned](https://github
 **What may be prose.** A line in the skill is allowed only when it is one of: the trigger description, the order of steps, a CLI command line, the meaning of an exit code, or a one-sentence imperative that names the `check` rule IDs enforcing it and links its docs anchor. Every imperative is therefore something `check` already enforces, and the skill states nothing the CLI cannot verify. Token names, component names, prop names, and values stay on `/llms.txt`. A test in `packages/cli` fails the build when the skill contains an `--ult-` token name, a catalogue item name other than inside `@ultima/<item>`, a color literal, or more than 80 lines.
 
 The [product-theme workflow](#discover-and-maintain-the-product-theme) amends this allowance for a short local discovery pointer and an offline branch. Update the authored skill and its guards when implementing that workflow; detailed precedence and repair guidance remain generated from the specification.
+
+[StyleX lint in consumer projects](consumer-lint.md#doctor-diagnostics) amends it again for one sentence. It points to the hosted lint recipe and says that `doctor` reports lint as `detected` at most, never as a pass. The recipe and its versions stay on the hosted pages.
 
 **Commands always name the package.** The skill spells every command `npx ultima-design`, never `npx ultima`. The `bin` is `ultima`, but where the CLI is not installed, `npx ultima` fetches an unrelated package with that name.
 

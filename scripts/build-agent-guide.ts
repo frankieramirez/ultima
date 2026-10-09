@@ -233,6 +233,9 @@ function describeRecipe(recipe: RecipeProjection): string {
   ].join('\n');
 }
 
+/** A pointer, not the recipe: docs/spec/consumer-lint.md owns the fragment, the tested versions and doctor's diagnostics. */
+const STYLEX_LINT = "Lint StyleX with its official ESLint plugin; `ultima-design check` never runs ESLint. https://ultima.systems/install#stylex-lint has the `ultima.eslint.mjs` fragment, a minimal config and the tested versions; append `ultimaStylex` after your framework configuration. `ultima-design doctor` reads lint files and versions only and reports `not-configured`, `unverified` or `detected`, never a lint pass. Confirm with `npx --no-install eslint --print-config <file>` on a page, a component and the token module, then run your lint script.";
+
 const BUILD_A_SCREEN_LEAD = "Walkthrough at https://ultima.systems/build-a-screen, from an Install-page setup to one themed, responsive Projects screen. Author in this order: adapt a block that matches the product; compose installed components, choosing variant, tone and size before overriding a part's `style`; copy a recipe; write local StyleX for layout with semantic tokens, keeping application-only sizes in the application's own token module. Each lesson's Code tab copies every bundle file at its path under the `@` alias directory. Source uses the default components.json aliases (`@/components/ui`, `@/lib`, `@/components`); substitute yours. Verify with `ultima-design doctor` and `ultima-design check`, then build in production and exercise each state in both modes at narrow and wide widths. Installed copy-bundle compilation is not yet verified.";
 
 function describeLesson(example: CompositionProjection, blocks: GuideBlock[]): string {
@@ -314,6 +317,10 @@ export function agentGuide({
     '### Check the installed result',
     '',
     section(spec, 'Check the installed result'),
+    '',
+    '## StyleX lint',
+    '',
+    STYLEX_LINT,
     '',
     '## Discover and maintain the product theme',
     '',

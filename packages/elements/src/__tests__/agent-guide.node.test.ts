@@ -95,6 +95,17 @@ test('publishes adoption, discovery and implemented diagnostics from the owning 
   expect(Buffer.byteLength(output)).toBeLessThanOrEqual(64 * 1024);
 });
 
+test('points to the StyleX lint recipe and doctor\'s static lint section', () => {
+  const output = guide([]);
+  const lint = output.slice(output.indexOf('## StyleX lint'), output.indexOf('## Discover and maintain'));
+  expect(output.match(/## StyleX lint/g)).toHaveLength(1);
+  expect(lint).toContain('https://ultima.systems/install#stylex-lint');
+  expect(lint).toContain('`ultimaStylex`');
+  expect(lint).toContain('`detected`, never a lint pass');
+  expect(lint).toContain('npx --no-install eslint --print-config <file>');
+  expect(Buffer.byteLength(lint)).toBeLessThan(600);
+});
+
 test('regeneration follows adoption and discovery prose changes in the spec', () => {
   const directory = mkdtempSync(join(tmpdir(), 'ultima-guide-'));
   try {

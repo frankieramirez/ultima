@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { appendFile, copyFile, mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
+import { LINT_PINS, VERIFIED_MAJORS } from '../packages/cli/src/lint.ts';
 import { toStylex } from '../packages/tokens/src/theme/export.ts';
 import type { ThemeDraft } from '../packages/tokens/src/theme/draft.ts';
 import { repository, type Run } from './consumer-helpers.ts';
@@ -11,8 +12,7 @@ import { LINT_CASES, type ConsumerLayout, type ConsumerReport } from './consumer
 
 /** The hosted fragment, served at https://ultima.systems/ultima.eslint.mjs and downloaded from the loopback registry here. */
 export const LINT_FRAGMENT = 'apps/docs/public/ultima.eslint.mjs';
-/** The combination the installed fixtures pass, which docs/spec/consumer-lint.md and the install walkthrough publish. */
-export const LINT_PINS = { eslint: '9.39.5', 'typescript-eslint': '8.71.1', '@stylexjs/eslint-plugin': '0.19.1' } as const;
+export { LINT_PINS };
 /** The supplied severities: 2 error, 1 warning, 0 off. */
 export const LINT_RULES: Record<string, number> = { '@stylexjs/valid-styles': 2, '@stylexjs/no-unused': 1, '@stylexjs/valid-shorthands': 1, '@stylexjs/no-conflicting-props': 1, '@stylexjs/sort-keys': 0 };
 /** The install command for a project without ESLint, as the walkthrough prints it. */
@@ -86,9 +86,9 @@ export function combinationProblems(versions: Record<string, string | null | und
   const problems: string[] = [];
   const major = (name: string) => Number(versions[name]?.split('.')[0]);
   if (!versions.eslint) problems.push('eslint is not installed');
-  else if (major('eslint') !== 9) problems.push(`eslint ${versions.eslint} is unverified; the tested line is ${LINT_PINS.eslint}`);
+  else if (major('eslint') !== VERIFIED_MAJORS.eslint) problems.push(`eslint ${versions.eslint} is unverified; the tested line is ${LINT_PINS.eslint}`);
   if (!versions['@typescript-eslint/parser']) problems.push('the typescript-eslint parser is not installed');
-  else if (major('@typescript-eslint/parser') !== 8) problems.push(`@typescript-eslint/parser ${versions['@typescript-eslint/parser']} is unverified; the tested line is ${LINT_PINS['typescript-eslint']}`);
+  else if (major('@typescript-eslint/parser') !== VERIFIED_MAJORS['@typescript-eslint/parser']) problems.push(`@typescript-eslint/parser ${versions['@typescript-eslint/parser']} is unverified; the tested line is ${LINT_PINS['typescript-eslint']}`);
   if (!versions['@stylexjs/eslint-plugin']) problems.push('@stylexjs/eslint-plugin is not installed');
   else if (versions['@stylexjs/eslint-plugin'] !== versions['@stylexjs/stylex']) problems.push(`@stylexjs/eslint-plugin ${versions['@stylexjs/eslint-plugin']} differs from @stylexjs/stylex ${versions['@stylexjs/stylex']}`);
   return problems;
@@ -294,6 +294,20 @@ async function tree(app: string): Promise<Record<string, string>> {
   return hashes;
 }
 
+// The built CLI, not the installed tarball, so it can read the Vite project before the tarball is installed.
+async function distDoctorLint(app: string, output: string, log: string, commands: Command[]): Promise<{ exit: number | null; state: string | null; rules: string[] }> {
+  const run = await offline(app, output, log, process.execPath, [join(repository, 'packages/cli/dist/cli.js'), 'doctor', '--json'], commands);
+  try {
+    const { lint } = JSON.parse(run.stdout) as { lint?: { state?: string; diagnostics?: { ruleId: string }[] } };
+    return { exit: run.exit, state: lint?.state ?? null, rules: (lint?.diagnostics ?? []).map(({ ruleId }) => ruleId) };
+  } catch {
+    return { exit: run.exit, state: null, rules: [] };
+  }
+}
+
+const doctorAdvises = (doctor: { state: string | null; rules: string[] }, rule: string) =>
+  doctor.state !== null && doctor.state !== 'detected' && doctor.rules.includes(rule) ? [] : [`doctor read ${doctor.state} with ${doctor.rules.join(', ') || 'no lint finding'}, expected an ${rule} advisory`];
+
 async function noEslint(app: string, layout: ConsumerLayout, output: string): Promise<LintSnapshot> {
   const commands: Command[] = [];
   const id = `${layout}/lint/node/no-eslint`;
@@ -304,8 +318,12 @@ async function noEslint(app: string, layout: ConsumerLayout, output: string): Pr
   try {
     const run = await offline(app, output, 'no-eslint.0.log', 'npx', ['--no-install', 'eslint', '.'], commands);
     const verdict = lintVerdict(run.exit, [], await versionsOf(app), `${run.stderr}\n${run.stdout}`);
-    const failures = verdict.verdict === 'incomplete' ? [] : [`a project without ${layout === 'vite' ? 'ESLint' : 'an ESLint config'} reads as ${verdict.verdict}, not incomplete`];
-    return { id, failures, observation: { setup: layout === 'vite' ? 'no ESLint installed' : 'no eslint.config.*', exit: run.exit, verdict }, commands, reproduce: '' };
+    const doctor = await distDoctorLint(app, output, 'no-eslint.1.log', commands);
+    const failures = [
+      ...(verdict.verdict === 'incomplete' ? [] : [`a project without ${layout === 'vite' ? 'ESLint' : 'an ESLint config'} reads as ${verdict.verdict}, not incomplete`]),
+      ...doctorAdvises(doctor, 'ULT-LINT-001'),
+    ];
+    return { id, failures, observation: { setup: layout === 'vite' ? 'no ESLint installed' : 'no eslint.config.*', exit: run.exit, verdict, doctor }, commands, reproduce: '' };
   } finally { if (layout !== 'vite') await rename(hidden, config); }
 }
 
@@ -381,7 +399,9 @@ export async function lintProof(app: string, layout: ConsumerLayout, execute: Ru
       if (!Array.isArray(options) || (options[1] as { allowOuterPseudoAndMedia?: boolean } | undefined)?.allowOuterPseudoAndMedia !== true) failures.push(`${item.path} valid-styles lacks allowOuterPseudoAndMedia`);
     }
     failures.push(...combinationProblems(versions));
-    return { failures, observation: { versions, probes: probes.map(({ path, ignored, parser, rules }) => ({ path, ignored, parser, rules: Object.fromEntries(Object.keys(LINT_RULES).map((rule) => [rule, rules[rule] ?? null])) })) } };
+    const doctor = await distDoctorLint(app, lintOutput, `config.${required.length}.log`, commands);
+    if (doctor.state !== 'detected' || doctor.rules.length > 0) failures.push(`doctor read the applied recipe as ${doctor.state}: ${doctor.rules.join(', ')}`);
+    return { failures, observation: { doctor, versions, probes: probes.map(({ path, ignored, parser, rules }) => ({ path, ignored, parser, rules: Object.fromEntries(Object.keys(LINT_RULES).map((rule) => [rule, rules[rule] ?? null])) })) } };
   });
 
   let coverage: string[] = [];
@@ -487,36 +507,38 @@ export async function lintProof(app: string, layout: ConsumerLayout, execute: Ru
   await record('no-eslint', { failures: absent.failures, observation: absent.observation, commands: absent.commands });
 
   /** A broken setup must read as incomplete or failed, never passed. */
-  const negative = (name: string, wanted: 'incomplete' | 'failed', setup: () => Promise<() => Promise<void>>) => guard(name, async (commands) => {
+  const negative = (name: string, wanted: 'incomplete' | 'failed', rule: string, setup: () => Promise<() => Promise<void>>) => guard(name, async (commands) => {
     const undo = await setup();
     try {
       const run = await lintJson(commands, `${name}.0.log`, [paths.semantic, paths.component]);
       const probes = [];
       for (const [index, path] of [paths.entry, paths.component].entries()) probes.push(await probe(commands, `${name}.${index + 1}.log`, path));
       const verdict = lintVerdict(run.exit, probes, await versionsOf(app), `${run.stderr}\n${run.stdout}`);
-      return { failures: verdict.verdict === wanted ? [] : [`expected ${wanted}, read ${verdict.verdict}: ${verdict.reasons.join('; ')}`], observation: { exit: run.exit, verdict } };
+      const doctor = await distDoctorLint(app, lintOutput, `${name}.3.log`, commands);
+      const failures = [...(verdict.verdict === wanted ? [] : [`expected ${wanted}, read ${verdict.verdict}: ${verdict.reasons.join('; ')}`]), ...doctorAdvises(doctor, rule)];
+      return { failures, observation: { exit: run.exit, verdict, doctor } };
     } finally { await undo(); }
   });
   const plugin = join(app, 'node_modules/@stylexjs/eslint-plugin');
-  await negative('missing-plugin', 'incomplete', async () => {
+  await negative('missing-plugin', 'incomplete', 'ULT-LINT-002', async () => {
     await rename(plugin, `${plugin}.hidden`);
     return () => rename(`${plugin}.hidden`, plugin);
   });
-  await negative('incompatible-package', 'incomplete', async () => {
+  await negative('incompatible-package', 'incomplete', 'ULT-LINT-003', async () => {
     const manifest = join(plugin, 'package.json');
     const original = await readFile(manifest, 'utf8');
     await writeFile(manifest, original.replace(/"version":\s*"[^"]+"/, '"version": "0.18.3"'));
     return () => writeFile(manifest, original);
   });
-  await negative('bad-config', 'incomplete', async () => {
+  await negative('bad-config', 'incomplete', 'ULT-LINT-005', async () => {
     await writeFile(config, `${composed}\nexport const broken = [;\n`);
     return () => writeFile(config, composed);
   });
-  await negative('ignored-tsx', 'incomplete', async () => {
+  await negative('ignored-tsx', 'incomplete', 'ULT-LINT-004', async () => {
     await writeFile(config, insertAfterFragment(`  { ignores: ['${paths.ui}/**'] },\n`));
     return () => writeFile(config, composed);
   });
-  await negative('severity-override', 'failed', async () => {
+  await negative('severity-override', 'failed', 'ULT-LINT-006', async () => {
     await writeFile(config, insertAfterFragment("  { rules: { '@stylexjs/valid-styles': 'off' } },\n"));
     return () => writeFile(config, composed);
   });
