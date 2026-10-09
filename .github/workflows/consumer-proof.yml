@@ -19,6 +19,8 @@ jobs:
     outputs:
       proof: ${{ steps.select.outputs.proof }}
       mode: ${{ steps.select.outputs.mode }}
+      copy: ${{ steps.select.outputs.copy }}
+      lint: ${{ steps.select.outputs.lint }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -91,12 +93,14 @@ jobs:
           retention-days: 90
 
   copy-bundles:
+    needs: select
+    if: ${{ needs.select.outputs.copy != '[]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
-        layout: [vite, next-app, next-src]
+        include: ${{ fromJSON(needs.select.outputs.copy) }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -117,12 +121,14 @@ jobs:
           retention-days: 90
 
   lint:
+    needs: select
+    if: ${{ needs.select.outputs.lint != '[]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
-        layout: [vite, next-app, next-src]
+        include: ${{ fromJSON(needs.select.outputs.lint) }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4

@@ -6,7 +6,7 @@ import { repository } from '../consumer-helpers.ts';
 import { CONSUMER_LAYOUTS, DELIVERY_PATHS } from '../consumer-report.ts';
 import { consumerMatrix } from '../consumer-select.ts';
 import { repositoryFiles } from './model.ts';
-import { plan, snapshot } from './plan.ts';
+import { type Plan, plan, snapshot } from './plan.ts';
 
 const current = snapshot(repositoryFiles(repository));
 const selected = (...paths: string[]) => consumerMatrix(plan({
@@ -17,26 +17,36 @@ const selected = (...paths: string[]) => consumerMatrix(plan({
 const every = {
   proof: CONSUMER_LAYOUTS.flatMap((layout) => DELIVERY_PATHS.map((path) => `${layout}/${path}`)).sort(),
   mode: [...CONSUMER_LAYOUTS].sort(),
+  copy: [...CONSUMER_LAYOUTS].sort(),
+  lint: [...CONSUMER_LAYOUTS].sort(),
 };
-const cells = ({ proof, mode }: ReturnType<typeof consumerMatrix>) => ({ proof: proof.map((cell) => `${cell.layout}/${cell['delivery-path']}`).sort(), mode: mode.map((cell) => cell.layout).sort() });
+const layouts = (list: { layout: string }[]) => list.map((cell) => cell.layout).sort();
+const cells = ({ proof, mode, copy, lint }: ReturnType<typeof consumerMatrix>) => ({ proof: proof.map((cell) => `${cell.layout}/${cell['delivery-path']}`).sort(), mode: layouts(mode), copy: layouts(copy), lint: layouts(lint) });
+const none = { proof: [], mode: [], copy: [], lint: [] };
 
 test('a release plan selects every installed-consumer cell', () => {
   assert.deepEqual(cells(consumerMatrix(plan({ mode: 'release', selectors: [], current }))), every);
 });
 
 test('a prose-only change selects no installed-consumer cell', () => {
-  assert.deepEqual(selected('docs/spec/consumer-proof.md', 'README.md'), { proof: [], mode: [] });
+  assert.deepEqual(selected('docs/spec/consumer-proof.md', 'README.md'), none);
 });
 
 test('token, theme export, StyleX config, runner and dependency changes select every cell', () => {
-  for (const path of ['packages/tokens/src/tokens.stylex.ts', 'packages/tokens/src/theme/export.ts', 'stylex.options.ts', 'scripts/consumer-proof.ts', 'pnpm-lock.yaml']) assert.deepEqual(cells(selected(path)), every, path);
+  for (const path of ['packages/tokens/src/tokens.stylex.ts', 'packages/tokens/src/theme/export.ts', 'stylex.options.ts', 'scripts/consumer-proof.ts', 'scripts/consumer-copy-bundles.ts', 'scripts/consumer-lint.ts', 'pnpm-lock.yaml']) assert.deepEqual(cells(selected(path)), every, path);
 });
 
 test('scene components, setup and the CLI select the cells that install them', () => {
-  assert.deepEqual(cells(selected('packages/ui/src/dialog.tsx')).proof, every.proof);
-  assert.deepEqual(cells(selected('registry/static/setup-next/postcss.config.js')), { proof: every.proof.filter((cell) => cell.startsWith('next-')), mode: ['next-app', 'next-src'] });
-  assert.deepEqual(cells(selected('packages/cli/src/stamp.ts')), { proof: CONSUMER_LAYOUTS.map((layout) => `${layout}/cli`).sort(), mode: [] });
-  assert.deepEqual(selected('packages/ui/src/tooltip.tsx'), { proof: [], mode: [] });
+  assert.deepEqual(cells(selected('packages/ui/src/dialog.tsx')), { ...every, mode: [] });
+  assert.deepEqual(cells(selected('registry/static/setup-next/postcss.config.js')), { proof: every.proof.filter((cell) => cell.startsWith('next-')), mode: ['next-app', 'next-src'], copy: every.copy, lint: ['next-app', 'next-src'] });
+  assert.deepEqual(cells(selected('packages/cli/src/stamp.ts')), { ...none, proof: CONSUMER_LAYOUTS.map((layout) => `${layout}/cli`).sort(), lint: every.lint });
+  assert.deepEqual(cells(selected('packages/ui/src/tooltip.tsx')), { ...none, lint: every.lint });
+});
+
+test('each exercise lands in its own job matrix', () => {
+  const argv = (exercise: string) => ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', 'vite', '--delivery-path', 'css', '--exercise', exercise];
+  assert.deepEqual(cells(consumerMatrix({ checks: [{ argv: argv('copy-bundles') }, { argv: argv('lint') }] as Plan['checks'] })), { ...none, copy: ['vite'], lint: ['vite'] });
+  assert.throws(() => consumerMatrix({ checks: [{ argv: argv('first-screen') }] as Plan['checks'] }), /first-screen/);
 });
 
 test('MDX code fences are prose, not imports', () => {
