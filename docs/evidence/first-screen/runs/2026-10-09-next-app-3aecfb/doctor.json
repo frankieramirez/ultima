@@ -1,0 +1,67 @@
+{
+  "exit": 0,
+  "report": {
+    "command": "doctor",
+    "target": "next",
+    "diagnostics": [],
+    "unsupported": [
+      {
+        "step": "Before UI edits, read project design guidance and trace the active local theme; preserve an existing brand. Choose a custom theme in http://127.0.0.1:41041/theme-studio when authorized. Follow http://127.0.0.1:41041/llms.txt#discover-and-maintain-the-product-theme and the install walkthrough at http://127.0.0.1:41041/install#theme-adoption.",
+        "reason": "Brand intent and the association between local documents, drafts and active themes require project evidence and review."
+      },
+      {
+        "step": "For an exported root theme, install the Studio registry item, keep ultima-theme.json and review DESIGN.md before replacement. After ./ultima.css, import ../ultima-theme.css from app/layout.tsx, or ../../ultima-theme.css from src/app/layout.tsx. Inspect the production cascade so it follows StyleX. Run npx ultima-design doctor and npx ultima-design check, then check the root, a control and an open popup in dark, light and system mode, including reduced motion and loaded fonts.",
+        "reason": "Ordinary doctor checks setup, not the production theme cascade, rendered values, fonts or portal inheritance."
+      },
+      {
+        "step": "Lint StyleX with its official ESLint plugin. Save http://127.0.0.1:41041/ultima.eslint.mjs beside eslint.config.mjs and append `ultimaStylex` to your flat config after the framework configuration, or follow http://127.0.0.1:41041/install#stylex-lint to add ESLint to a project without it. Setup never installs ESLint or writes eslint.config.*.",
+        "reason": "Doctor reports static lint presence under StyleX lint and never runs ESLint, so the effective config stays unverified; run npx eslint --print-config on a page, a component and lib/tokens.stylex.ts, then npx eslint ."
+      },
+      {
+        "step": "A strict CSP needs a nonce: pass it to Base UI's `CSPProvider` at your app root.",
+        "reason": "The headers are set at runtime or by the host."
+      }
+    ],
+    "lint": {
+      "schemaVersion": 1,
+      "state": "unverified",
+      "reason": "Static reading found a gap or an unverified combination; see the findings.",
+      "config": "eslint.config.mjs",
+      "versions": {
+        "eslint": "9.39.5",
+        "@typescript-eslint/parser": "8.71.1",
+        "@stylexjs/eslint-plugin": "0.19.1",
+        "@stylexjs/stylex": "0.19.0"
+      },
+      "tested": {
+        "eslint": "9.39.5",
+        "typescript-eslint": "8.71.1",
+        "@stylexjs/eslint-plugin": "0.19.1"
+      },
+      "files": [
+        "app/page.tsx",
+        "components/ui/badge.tsx",
+        "lib/tokens.stylex.ts",
+        "lib/themes.ts"
+      ],
+      "effective": "unverified",
+      "commands": [
+        "npx --no-install eslint --print-config app/page.tsx",
+        "npx --no-install eslint --print-config components/ui/badge.tsx",
+        "npx --no-install eslint --print-config lib/tokens.stylex.ts",
+        "npx --no-install eslint --print-config lib/themes.ts",
+        "npx --no-install eslint ."
+      ],
+      "diagnostics": [
+        {
+          "ruleId": "ULT-LINT-003",
+          "severity": "advisory",
+          "file": "package.json",
+          "message": "@stylexjs/eslint-plugin 0.19.1 differs from @stylexjs/stylex 0.19.0, an unverified combination: the recipe requires both at one version.",
+          "repair": "Run `npm install -D --save-exact @stylexjs/eslint-plugin@0.19.0`. Recipe: http://127.0.0.1:41041/install#stylex-lint",
+          "link": "https://github.com/frankieramirez/ultima/blob/7a574ba7c82de517e8df943a967464f194287fe0/docs/spec/consumer-lint.md#doctor-diagnostics"
+        }
+      ]
+    }
+  }
+}

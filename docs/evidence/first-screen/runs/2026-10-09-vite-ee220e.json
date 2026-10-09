@@ -1,0 +1,337 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-09-vite-ee220e",
+  "layout": "vite",
+  "brief": {
+    "path": "docs/evidence/first-screen/brief.md",
+    "sha256": "2b0662013937b1f550246297fc2ff8e0689fd32c9e36ad15107e39347e17d986",
+    "brand": "#A3237F"
+  },
+  "source": {
+    "head": "7a574ba7c82de517e8df943a967464f194287fe0",
+    "manifest": "60eca179a30d6193812f6595605816f369dad8ba975736cf024df2edc130e085",
+    "registryManifest": "09beca294c879a3e959dbdd7566253f8e6af8a2ad5ac40d0ca40307d1fc094af",
+    "cliTarball": {
+      "packed": "f1fcf02f5eec3a7eb8cf4faf2cc076eb47d232fab61046bb1116860a8582815c",
+      "served": "eb99f154de2af19626d06999e51d60c476313cc276a92f41522e845b49bb7402",
+      "version": "0.1.0"
+    },
+    "draftDigest": "2362c2cc7e7337b2b7a84ccd656298ccb22efdcaa9bc0fa84517864a970afda8",
+    "draftFingerprint": "93e116"
+  },
+  "host": {
+    "origin": "http://127.0.0.1:39161",
+    "standsFor": "https://ultima.systems",
+    "npm": "http://127.0.0.1:39161/npm/"
+  },
+  "theme": {
+    "madeIn": "Theme Studio",
+    "command": "npx shadcn@latest add \"http://127.0.0.1:39161/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\""
+  },
+  "prompt": {
+    "sha256": "f6f413ffa12a0bf398949692f9460448f067a94e2dbb9b53688af4686a9472be"
+  },
+  "agent": {
+    "harness": "claude-code",
+    "version": "2.1.295 (Claude Code)",
+    "flags": [
+      "-p",
+      "--safe-mode",
+      "--strict-mcp-config",
+      "--no-chrome",
+      "--permission-mode",
+      "auto",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--settings",
+      "settings: deny WebSearch, the live host, and other checkouts"
+    ],
+    "cwd": "an empty directory under ~/.cache/ultima-first-screen, outside any checkout",
+    "startedAt": "2026-10-09T16:18:48.521Z",
+    "finishedAt": "2026-10-09T16:27:07.047Z",
+    "exit": 0,
+    "model": "claude-opus-5-5",
+    "session": "096c9ae4-e6e5-4966-a34e-deb465097933",
+    "turns": 58,
+    "costUsd": 3.1171068000000006,
+    "durationMs": 497988,
+    "outcome": "success"
+  },
+  "transcript": {
+    "file": "2026-10-09-vite-ee220e.stream.jsonl.gz",
+    "sha256": "da5824f293f82e7cb729e1c74ae9948335809dd6a6af6a58bbebd990a8b25516",
+    "events": 385,
+    "commands": [
+      "pwd; ls -la; curl -s http://127.0.0.1:39161/llms.txt | head -200",
+      "cat /home/f/.claude/projects/-home-f--cache-ultima-first-screen-2026-10-09-vite-ee220e-work/096c9ae4-e6e5-4966-a34e-deb465097933/tool-results/b5vv0zmjg.txt",
+      "mkdir -p scratch && curl -s http://127.0.0.1:39161/llms.txt -o scratch/llms.txt && wc -l scratch/llms.txt",
+      "cd scratch && for p in install build-a-screen support; do curl -s http://127.0.0.1:39161/$p -o $p.html; curl -s -o /dev/null -w \"$p.md %{http_code}\\n\" http://127.0.0.1:39161/$p.md; done; ls -la; which python3 node npm; node -v",
+      "cat install.html; which chromium chromium-browser google-chrome; ls ~/.cache/ms-playwright 2>/dev/null",
+      "for p in install build-a-screen support; do timeout 60 chromium --headless --disable-gpu --virtual-time-budget=8000 --dump-dom http://127.0.0.1:39161/$p > $p.dom.html 2>/dev/null; python3 -I -c \"\nimport sys,html,re\ns=open(sys.argv[1]).read()\ns=re.sub(r'<(script|style)[^>]*>.*?</\\1>','',s,flags=re.S)\ns=re.sub(r'<(br|/p|/div|/li|/h[1-6]|/pre|/tr|/section)[^>]*>','\\n',s)\ns=re.sub(r'<[^>]+>','',s)\ns=html.unescape(s)\ns=re.sub(r'\\n\\s*\\n+','\\n\\n',s)\nopen(sys.argv[2],'w').write(s)\n\" $p.dom.html $p.txt; wc -l $p.txt; done",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-ee220e/work && npx -y ultima-design@latest init larder --framework vite --plan --json > scratch/ultima-init-plan.json; echo exit=$?; head -c 6000 scratch/ultima-init-plan.json",
+      "python3 -I -c \"\nimport json,sys\np=json.load(open('scratch/ultima-init-plan.json'))\nprint(list(p.keys()))\nfor o in p['operations']:\n    print('---',o['id'],o['kind'],o.get('path',''), (o.get('command') or {}).get('args',''))\n    if o['kind']=='write' and 'diff' not in o: print(o.get('content','')[:1500])\nfor k in p:\n    if k not in ('operations','payloads','dependencies','cli','recipe','request','target','inputs'): print(k, json.dumps(p[k])[:3000])\n\"",
+      "npx -y ultima-design@latest init --apply scratch/ultima-init-plan.json > scratch/init-apply.log 2>&1; echo exit=$?; tail -80 scratch/init-apply.log",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-ee220e/work/larder && cat src/main.tsx src/index.css src/App.tsx vite.config.ts components.json; ls; cat .oxlintrc.json",
+      "npx shadcn@latest add \"http://127.0.0.1:39161/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\" 2>&1 | tail -30; ls; git status 2>&1 | head -2",
+      "cat DESIGN.md; head -c 2500 ultima-theme.json; echo; grep -n \"accent\\|data-theme\\|@media\\|color-scheme\\|font-sans\" ultima-theme.css | head -60",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-ee220e/work/scratch && for i in crm-01 select field input badge toggle-group empty; do curl -s http://127.0.0.1:39161/r/$i.json -o r-$i.json; done; python3 -I -c \"\nimport json\nd=json.load(open('r-crm-01.json'))\nprint(d.get('registryDependencies'), d.get('dependencies'))\nfor f in d['files']: print(f['path'], len(f['content']))\n\"",
+      "python3 -I -c \"\nimport json\nd=json.load(open('r-crm-01.json'))\nfor f in d['files']:\n  if f['path'].endswith(('contact-list.tsx','crm-01.tsx')): print('=====',f['path']); print(f['content'])\n\"",
+      "grep -o 'href=\"[^\"]*\"' build-a-screen.dom.html | sort -u | grep -iv \"components/\\|^href=\\\"/blocks\" | head -40; grep -o '[a-zA-Z0-9_/.-]*\\(bundle\\|download\\|examples\\)[a-zA-Z0-9_/.?=-]*' build-a-screen.dom.html | sort -u | head",
+      "mkdir -p lesson && python3 -I -c \"\nimport re,urllib.parse,sys,os\ns=open('build-a-screen.dom.html').read()\nfor m in re.finditer(r'<a\\b[^>]*>',s):\n  t=m.group(0)\n  h=re.search(r'href=\\\"(data:[^\\\"]*)\\\"',t); d=re.search(r'download=\\\"([^\\\"]*)\\\"',t)\n  if h and d:\n    body=urllib.parse.unquote(h.group(1).split(',',1)[1])\n    name=d.group(1).replace('/','__')\n    open('lesson/'+name,'w').write(body); print(name,len(body))\n\"",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-ee220e/work/larder && npx shadcn@latest add @ultima/field @ultima/input @ultima/select @ultima/toggle-group @ultima/badge @ultima/empty 2>&1 | tail -25; git status 2>/dev/null; ls src/components/ui src/lib",
+      "npx shadcn@latest add @ultima/field @ultima/input @ultima/select @ultima/toggle-group @ultima/badge @ultima/empty --dry-run 2>&1 | head -5; grep -n \"export\\|Portal\\|container\" src/components/ui/select.tsx | head -40; grep -n \"^export\\|^  [A-Z][a-zA-Z]*:\" src/components/ui/field.tsx src/components/ui/toggle-group.tsx src/components/ui/badge.tsx src/components/ui/card.tsx; grep -n \"export\" src/lib/tokens.stylex.ts src/lib/themes.ts",
+      "sed -n 300,360p src/components/ui/select.tsx; sed -n 60,110p src/components/ui/field.tsx; sed -n 1,76p src/components/ui/toggle-group.tsx; sed -n 1,30p src/components/ui/card.tsx; sed -n 315,340p src/lib/tokens.stylex.ts",
+      "sed -n 1,40p src/components/ui/field.tsx; grep -n \"function Input\\|Props\\b\\|type=\" src/components/ui/input.tsx | head; grep -n \"function Badge\\|variant =\\|tone =\" src/components/ui/badge.tsx; grep -n \"function Root\\|function Title\\|function Description\\|const Empty\" src/components/ui/empty.tsx",
+      "mkdir -p src/components/pantry && cat > src/components/pantry/screen.stylex.ts <<'EOF'\nimport * as stylex from '@stylexjs/stylex';\n\n/** Sizes only the Pantry screen needs, outside Ultima's --ult-* tokens. */\nexport const screen = stylex.defineVars({\n  '--app-size-content-max': '72rem',\n});\n\n/** Where the stock list and the item detail move from one column to two. */\nexport const breakpoints = stylex.defineConsts({\n  wide: '@media (min-width: 48rem)',\n});\nEOF\ncat > src/components/pantry/pantry-data.ts <<'EOF'\nexport const categories = ['Canned goods', 'Dry goods', 'Produce', 'Toiletries'] as const;\n\nexport type Category = (typeof categories)[number];\n\nexport type PantryItem = {\n  id: string;\n  name: string;\n  category: Category;\n  quantity: number;\n  /** The day the item was last restocked, as `YYYY-MM-DD`. */\n  restocked: string;\n};\n\n/** Below this many on hand, an item reads as low stock. */\nexport const lowStock = 10;\n\nexport const sampleItems: PantryItem[] = [\n  { id: 'chickpeas', name: 'Chickpeas', category: 'Canned goods', quantity: 24, restocked: '2026-10-02' },\n  { id: 'chopped-tomatoes', name: 'Chopped tomatoes', category: 'Canned goods', quantity: 6, restocked: '2026-09-21' },\n  { id: 'brown-rice', name: 'Brown rice, 1 kg', category: 'Dry goods', quantity: 18, restocked: '2026-10-05' },\n  { id: 'rolled-oats', name: 'Rolled oats', category: 'Dry goods', quantity: 9, restocked: '2026-09-28' },\n  { id: 'apples', name: 'Apples', category: 'Produce', quantity: 40, restocked: '2026-10-08' },\n  { id: 'potatoes', name: 'Potatoes', category: 'Produce', quantity: 15, restocked: '2026-10-07' },\n  { id: 'toothpaste', name: 'Toothpaste', category: 'Toiletries', quantity: 12, restocked: '2026-09-30' },\n  { id: 'bar-soap', name: 'Bar soap', category: 'Toiletries', quantity: 4, restocked: '2026-09-15' },\n];\n\nexport function today(): string {\n  const now = new Date();\n  const pad = (value: number) => String(value).padStart(2, '0');\n  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;\n}\n\nconst dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'long' });\n\nexport function formatDate(day: string): string {\n  const [year, month, date] = day.split('-').map(Number);\n  return dateFormat.format(new Date(year!, month! - 1, date!));\n}\n\nexport function slug(name: string): string {\n  return name\n    .toLowerCase()\n    .replace(/[^a-z0-9]+/g, '-')\n    .replace(/^-|-$/g, '');\n}\nEOF\ncat > src/App.tsx <<'EOF'\nimport Pantry from '@/components/pantry/pantry';\n\nexport default function App() {\n  return <Pantry />;\n}\nEOF\npython3 - <<'EOF'\np='src/main.tsx'\ns=open(p).read()\ns=s.replace(\"import './index.css'\\n\",\"import './index.css'\\nimport '../ultima-theme.css'\\n\",1)\nopen(p,'w').write(s)\nEOF\ncat src/main.tsx",
+      "cat src/lib/visually-hidden.ts; sed -n 40,90p src/components/ui/card.tsx",
+      "python3 - <<'EOF'\np='src/components/pantry/pantry.tsx'\ns=open(p).read()\ns=s.replace(\"import { color, font, space, text } from '@/lib/tokens.stylex';\\n\",\"import { color, font, space, text } from '@/lib/tokens.stylex';\\nimport { visuallyHidden } from '@/lib/visually-hidden';\\n\",1)\ns=s.replace(\"<span {...stylex.props(visuallyHidden.root)}> on hand</span>\",\"<span {...stylex.props(visuallyHidden)}> on hand</span>\")\ns=s.replace(\"useRef<HTMLElement>(null)\",\"useRef<HTMLDivElement>(null)\")\ns=s.replace(\"ref: Ref<HTMLElement>; item\",\"ref: Ref<HTMLDivElement>; item\")\ns=s.replace(' aria-live=\"polite\" />} style={styles.detail}','  />} style={styles.detail}'.replace('  />','/>'))\nopen(p,'w').write(s)\nEOF\ngrep -n \"aria-live\\|visuallyHidden\\|HTMLDivElement\" src/components/pantry/pantry.tsx; npx tsc -b 2>&1 | head -30; echo tsc=$?",
+      "npm run build 2>&1 | tail -15; echo build=$?; npx --no-install ultima-design doctor; echo doctor=$?; npx --no-install ultima-design check; echo check=$?",
+      "npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 2>&1 | tail -3 && curl -s http://127.0.0.1:39161/ultima.eslint.mjs -o ultima.eslint.mjs && cat ultima.eslint.mjs && cat > eslint.config.mjs <<'EOF'\nimport tseslint from 'typescript-eslint';\nimport { ultimaStylex } from './ultima.eslint.mjs';\n\nexport default [\n  { ignores: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/out/**', '**/coverage/**'] },\n  {\n    files: ultimaStylex.files,\n    languageOptions: {\n      parser: tseslint.parser,\n      parserOptions: { ecmaFeatures: { jsx: true } },\n    },\n  },\n  ultimaStylex,\n];\nEOF\nnpm pkg set scripts.lint=\"oxlint && eslint .\" && grep lint package.json",
+      "for f in src/App.tsx src/components/pantry/pantry.tsx src/components/ui/badge.tsx src/lib/tokens.stylex.ts src/components/pantry/screen.stylex.ts; do printf \"%s: \" $f; npx --no-install eslint --print-config $f | python3 -I -c \"import json,sys;c=json.load(sys.stdin);print(c['languageOptions'].get('parser'), c['rules'].get('@stylexjs/valid-styles'))\"; done; npm run lint 2>&1 | tail -30; echo lint=$?",
+      "python3 - <<'EOF'\np='src/components/pantry/pantry.tsx'\ns=open(p).read()\nold_rows=\"\"\"      ':is([data-pressed])': { default: color['--ult-color-accent-subtle'], ':hover': color['--ult-color-accent-subtle'] },\"\"\"\nnew_rows=\"\"\"      ':is([data-pressed])': color['--ult-color-accent-subtle'],\n      ':is([data-pressed]):hover': color['--ult-color-accent-subtle'],\"\"\"\nassert old_rows in s; s=s.replace(old_rows,new_rows)\nold=\"\"\"    gridTemplateAreas: { default: '\"list\" \"detail\" \"donate\"', [breakpoints.wide]: '\"list detail\" \"list donate\"' },\n    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.wide]: 'minmax(0, 1fr) minmax(0, 1fr)' },\n  },\n  list: { gridArea: 'list' },\n  detail: { gridArea: 'detail', scrollMarginBlock: space['--ult-space-6'] },\n  donate: { gridArea: 'donate' },\n\"\"\"\nnew=\"\"\"    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.wide]: 'minmax(0, 1fr) minmax(0, 1fr)' },\n  },\n  stack: {\n    display: 'grid',\n    gap: space['--ult-space-8'],\n    gridTemplateColumns: 'minmax(0, 1fr)',\n  },\n  detail: {\n    scrollMarginBlock: space['--ult-space-6'],\n  },\n\"\"\"\nassert old in s; s=s.replace(old,new)\nold=\"\"\"          <StockList items={items} selectedId={selectedId} onSelect={select} />\n          <ItemDetail ref={detailRef} item={selected} />\n          <DonationForm onDonate={donate} />\"\"\"\nnew=\"\"\"          <StockList items={items} selectedId={selectedId} onSelect={select} />\n          <div {...stylex.props(styles.stack)}>\n            <ItemDetail ref={detailRef} item={selected} />\n            <DonationForm onDonate={donate} />\n          </div>\"\"\"\nassert old in s; s=s.replace(old,new)\ns=s.replace(\" style={styles.list}>\",\">\").replace(\" style={styles.donate}>\",\">\")\nopen(p,'w').write(s)\nEOF\ngrep -n \"styles.list\\|styles.donate\\|gridArea\" src/components/pantry/pantry.tsx; npx eslint src/components/pantry src/App.tsx; echo eslint=$?; npm run build 2>&1 | grep -E \"error|built\"; npx --no-install ultima-design check | tail -1",
+      "npm run lint > /dev/null 2>&1; echo lint=$?; npm run lint 2>&1 | grep -E \"problems|Found\"; npx --no-install ultima-design doctor 2>&1 | sed -n '/StyleX lint/,/^$/p'; echo doctor=${PIPESTATUS[0]}; ls /home/f/.local/share/mise/installs/npm-playwright/latest/node_modules/",
+      "npx --no-install ultima-design doctor --json 2>/dev/null | python3 -I -c \"\nimport json,sys\nd=json.load(sys.stdin)\ndef walk(o,path=''):\n  if isinstance(o,dict):\n    if any('lint' in str(v).lower() for v in o.values() if isinstance(v,str)) and ('id' in o or 'code' in o or 'rule' in o): print(json.dumps(o)[:800])\n    for k,v in o.items(): walk(v,path+'.'+k)\n  elif isinstance(o,list):\n    for v in o: walk(v,path)\nwalk(d)\n\" || npx --no-install ultima-design doctor 2>&1 | tail -25",
+      "npx --no-install ultima-design doctor 2>&1 | sed -n '/StyleX lint (static/,$p'",
+      "npm install -D --save-exact @stylexjs/eslint-plugin@0.19.0 2>&1 | tail -2; npx --no-install ultima-design doctor 2>&1 | sed -n '/StyleX lint (static/,$p'; npm run lint >/dev/null 2>&1; echo lint=$?; npx eslint src/components/pantry src/App.tsx src/lib; echo eslint=$?",
+      "python3 - <<'EOF'\np='src/components/pantry/pantry.tsx'\ns=open(p).read()\nold=\"\"\"  detail: {\n    scrollMarginBlock: space['--ult-space-6'],\n  },\n\"\"\"\nassert old in s; s=s.replace(old,\"\")\ns=s.replace(\"<Card.Root ref={ref} render={<section aria-labelledby={`${id}-heading`} />} style={styles.detail}>\",\"<Card.Root ref={ref} render={<section aria-labelledby={`${id}-heading`} />}>\")\nopen(p,'w').write(s)\nEOF\ngrep -n \"styles.detail\" src/components/pantry/pantry.tsx; npm run lint 2>&1 | grep -E \"error|problems\"; npm run lint >/dev/null 2>&1; echo lint=$?; npm run build 2>&1 | grep -E \"error|built\"; npx --no-install ultima-design doctor >/dev/null 2>&1; echo doctor=$?; npx --no-install ultima-design check | tail -1; echo check=$?",
+      "sed -i 's#render={<section aria-labelledby={`${id}-heading`}/>} style={styles.detail}>#render={<section aria-labelledby={`${id}-heading`} />}>#' src/components/pantry/pantry.tsx && grep -n \"styles.detail\" src/components/pantry/pantry.tsx; npm run lint 2>&1 | grep -B3 -A6 \"error \" | head -40",
+      "sed -n 108,120p src/components/ui/select.tsx",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-ee220e/work/scratch && grep -n -i -B2 -A2 \"eslint\\|stylex\\|lint\" support.txt | head -80",
+      "sed -n 95,160p support.txt",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-ee220e/work/larder && npm install -D --save-exact @stylexjs/eslint-plugin@0.19.1 2>&1 | tail -1; npm run lint 2>&1 | grep -E \" error |problems\"; npm run lint >/dev/null 2>&1; echo lint=$?; npm run build 2>&1 | grep -E \"error|built\"; npx --no-install ultima-design doctor >/dev/null 2>&1; echo doctor=$?; npx --no-install ultima-design check | tail -1; echo check=$?",
+      "npm run lint 2>&1 | grep \"^/\" ; (npx vite preview --port 4173 --strictPort > ../scratch/preview.log 2>&1 &) ; sleep 2; curl -s -o /dev/null -w \"%{http_code}\\n\" http://localhost:4173/",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-ee220e/work/scratch && mkdir -p shots && NODE_PATH=/home/f/.local/share/mise/installs/npm-playwright/latest/node_modules node verify.mjs http://localhost:4173/ shots 2>&1 | tail -50",
+      "sed -i \"s#^import { chromium } from 'playwright';#import { createRequire } from 'node:module';\\nconst { chromium } = createRequire('/home/f/.local/share/mise/installs/npm-playwright/latest/node_modules/')('playwright');#\" verify.mjs && node verify.mjs http://localhost:4173/ shots 2>&1 | tail -50",
+      "sed -i \"s#await chromium.launch()#await chromium.launch({ executablePath: '/usr/bin/chromium' })#\" verify.mjs && node verify.mjs http://localhost:4173/ shots 2>&1 | tail -50",
+      "cat > debug.mjs <<'EOF'\nimport { createRequire } from 'node:module';\nconst { chromium } = createRequire('/home/f/.local/share/mise/installs/npm-playwright/latest/node_modules/')('playwright');\nconst browser = await chromium.launch({ executablePath: '/usr/bin/chromium' });\nconst page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();\nawait page.goto(process.argv[2]);\nconst dump = async (t) => console.log(t, JSON.stringify(await page.$$eval('[aria-label=\"Pantry items\"] > *', (els) => els.map((e) => [e.textContent.slice(0, 12), e.getAttribute('aria-pressed'), e.hasAttribute('data-pressed'), e.tabIndex]))));\nawait dump('initial');\nawait page.getByLabel('Item name').fill('Carrots');\nawait page.getByRole('button', { name: 'Log donation' }).click();\nawait dump('after carrots');\nawait page.getByLabel('Item name').fill('apples');\nawait page.getByRole('button', { name: 'Log donation' }).click();\nawait dump('after apples');\nawait browser.close();\nEOF\nnode debug.mjs http://localhost:4173/",
+      "sed -i \"s#await dump('after apples');#await dump('after apples'); await page.waitForTimeout(600); console.log(await page.\\$\\$eval('[aria-label=\\\"Pantry items\\\"] > *', (els) => els.slice(0,6).map((e) => getComputedStyle(e).backgroundColor)));#\" debug.mjs && node debug.mjs http://localhost:4173/ | tail -1",
+      "node debug.mjs http://localhost:4173/ | tail -8",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-ee220e/work/larder && grep -n \"<title>\" index.html && sed -i 's#<title>.*</title>#<title>Pantry · Larder</title>#' index.html && pkill -f \"vite preview --port 4173\"; npm run build 2>&1 | grep -E \"error|built\"; npm run lint >/dev/null 2>&1; echo lint=$?; npx --no-install ultima-design doctor >/dev/null 2>&1; echo doctor=$?; npx --no-install ultima-design check >/dev/null 2>&1; echo check=$?",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-ee220e/work/larder && grep -n \"<title>\" index.html; pgrep -af \"vite preview\" | grep -v pgrep; npm run build 2>&1 | grep -E \"error|built\"; npm run lint >/dev/null 2>&1; echo lint=$?; npx --no-install ultima-design doctor >/dev/null 2>&1; echo doctor=$?; npx --no-install ultima-design check >/dev/null 2>&1; echo check=$?",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-09-vite-ee220e/work && python3 -I -m json.tool exercise-notes.json > /dev/null && echo valid; ls"
+    ],
+    "fetches": [],
+    "outsideReferences": []
+  },
+  "selfReport": {
+    "interventions": [
+      {
+        "step": "Reading the hosted docs",
+        "action": "Rendered /install, /build-a-screen and /support with headless Chromium (--dump-dom), stripped the HTML to text, and pulled the lesson's copy-bundle source (projects.tsx) out of the page's data: download links. Kept all of this in ./scratch.",
+        "reason": "The docs site renders on the client, so a plain fetch returns an empty shell, and there is no .md version. /llms.txt links these pages but cannot be read without rendering them."
+      },
+      {
+        "step": "Choosing a list pattern",
+        "action": "Downloaded http://127.0.0.1:39161/r/crm-01.json (plus select, field, input, badge, toggle-group and empty) into ./scratch and read CRM 01's contact-list.tsx without installing the block.",
+        "reason": "I wanted to follow Ultima's own pattern for a selectable list with a detail view, without installing a block whose sidebar, tabs and activity feed the product doesn't need."
+      },
+      {
+        "step": "StyleX lint versions",
+        "action": "Applied doctor's ULT-LINT-003 repair (@stylexjs/eslint-plugin@0.19.0). That made ESLint fail on the installed src/components/ui/select.tsx (numeric gridColumn), so I reinstalled the install page's tested pin, @stylexjs/eslint-plugin@0.19.1.",
+        "reason": "The install page and doctor give different plugin versions. Following doctor makes lint fail on Ultima's own source; following the install page leaves one non-blocking doctor advisory and lints clean."
+      },
+      {
+        "step": "Lint fix in screen code",
+        "action": "Removed scrollMarginBlock from the item detail style.",
+        "reason": "While testing @stylexjs/eslint-plugin 0.19.0 it reported that key as not allowed. I dropped it instead of keeping a property that one checked plugin version rejects."
+      },
+      {
+        "step": "Rendered verification",
+        "action": "Wrote a Playwright script (./scratch/verify.mjs) run against `vite preview` with the system Chromium (/usr/bin/chromium). At 390px and 1280px in dark and light it checks horizontal scroll, stacked versus side-by-side layout, the computed --ult-color-accent, color-scheme and console errors. It also checks the empty-name error and its aria-describedby link, opening the Select from the keyboard, Escape returning focus to the trigger, adding a new item, adding to an existing item, and data-theme=light overriding a dark system preference.",
+        "reason": "The docs ask for a production check of the root, a control and a portalled popup in each mode, but print no tool for doing it. Playwright's bundled browser wasn't downloaded, so the script points at the system Chromium."
+      }
+    ],
+    "decisions": [
+      {
+        "choice": "Built the screen from installed components (Card, ToggleGroup, Field, Input, Select, Button, Badge, Empty) instead of adapting a block.",
+        "options": [
+          "Adapt CRM 01 (list plus record)",
+          "Compose installed components",
+          "Adapt Settings 01"
+        ],
+        "why": "Build-a-screen says to adapt a block when its structure matches the product. CRM 01's workspace sidebar, tabs and activity feed don't match a one-screen pantry tool, so composing components was the first step that fit."
+      },
+      {
+        "choice": "The stock list is a vertical ToggleGroup with one controlled value, so each row is a button with aria-pressed.",
+        "options": [
+          "Vertical ToggleGroup (CRM 01 pattern)",
+          "Table with a select action per row",
+          "RadioGroup",
+          "Plain ghost Buttons"
+        ],
+        "why": "It is the pattern Ultima's own CRM 01 block uses for 'select a row, show its record', and it brings roving focus and pressed state without extra ARIA or key handlers."
+      },
+      {
+        "choice": "The category control is a portalled Select inside an inline form. The form does not open in a Dialog.",
+        "options": [
+          "Portalled Select",
+          "Form in a Dialog",
+          "Both"
+        ],
+        "why": "The form stays visible at the intake desk. Select portals to body, where the root CSS theme reaches it, and Base UI handles keyboard opening, Escape and focus return."
+      },
+      {
+        "choice": "Put the 48rem breakpoint in the app token module (src/components/pantry/screen.stylex.ts) with stylex.defineConsts, next to a defineVars group holding --app-size-content-max.",
+        "options": [
+          "Named module constant in pantry.tsx, as Ultima's principles and the Projects lesson do",
+          "defineConsts in the app's own .stylex.ts token module"
+        ],
+        "why": "Ultima says a breakpoint lives as a constant in the file that uses it. The brief says the app decides no lengths outside its theme and token modules, so the length goes in the token module and the screen reads it from there."
+      },
+      {
+        "choice": "Overrode the ToggleGroup row's pressed background to --ult-color-accent-subtle, with a sibling ':is([data-pressed]):hover' key, and set the 'Larder' eyebrow in --ult-color-accent-text.",
+        "options": [
+          "Keep the component's pressed --ult-color-surface-raised",
+          "Pressed rows in accent-subtle"
+        ],
+        "why": "Inside a Card, the default pressed color is the same as the Card surface, so the selected row disappeared. Accent-subtle shows the selection in the brand color without changing what status colors mean."
+      },
+      {
+        "choice": "Accepted the documented font fallback instead of loading Figtree or IBM Plex Mono.",
+        "options": [
+          "Load the named faces in the app (for example a font package)",
+          "Accept the fallback stack"
+        ],
+        "why": "The export names the faces but loads no files. Loading them would add a dependency the guidance doesn't supply, and the docs say accepting the fallback is acceptable."
+      },
+      {
+        "choice": "Kept @stylexjs/eslint-plugin at 0.19.1 and @stylexjs/stylex at init's pinned 0.19.0.",
+        "options": [
+          "Plugin 0.19.1 per the install page (doctor advisory ULT-LINT-003, lint passes)",
+          "Plugin 0.19.0 per doctor's repair (lint errors in the installed select.tsx)",
+          "Raise stylex and unplugin to 0.19.1 to match Support's tested matrix"
+        ],
+        "why": "It is the only choice where lint, doctor and check all exit 0 without editing installed Ultima source or moving the compiler off the version init pinned and verified."
+      },
+      {
+        "choice": "Skipped the optional agent setup (`git init` plus `ultima install --harness <name>`).",
+        "options": [
+          "Initialise a repository and install the skill and hooks",
+          "Skip it"
+        ],
+        "why": "init reported it as optional, and it would add a Git repository and hook files to the project. The hosted /llms.txt and docs were enough guidance for this run."
+      }
+    ]
+  },
+  "styling": {
+    "check": {
+      "exit": 0,
+      "counts": {
+        "errors": 0,
+        "advisories": 0,
+        "incomplete": 0,
+        "suppressions": 0
+      }
+    },
+    "doctor": {
+      "exit": 0
+    },
+    "lint": {
+      "state": "configured",
+      "config": "eslint.config.mjs",
+      "errors": 0,
+      "warnings": 18,
+      "exit": 0
+    },
+    "rawPaint": {
+      "files": [
+        "src/App.tsx",
+        "src/components/pantry/pantry-data.ts",
+        "src/components/pantry/pantry.tsx",
+        "src/index.css",
+        "src/main.tsx"
+      ],
+      "findings": []
+    }
+  },
+  "production": {
+    "status": "failed",
+    "layout": "vite",
+    "versions": {
+      "node": "v26.8.1",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "@stylexjs/stylex": "0.19.0",
+      "ultima-design": "0.1.0",
+      "vite": "8.3.4",
+      "chromium": "153.0.8010.12"
+    },
+    "cases": [
+      {
+        "id": "system-dark",
+        "status": "failed",
+        "snapshot": "system-dark.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"region\"]"
+        ]
+      },
+      {
+        "id": "system-light",
+        "status": "failed",
+        "snapshot": "system-light.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"region\"]"
+        ]
+      },
+      {
+        "id": "explicit-dark",
+        "status": "failed",
+        "snapshot": "explicit-dark.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"region\"]"
+        ]
+      },
+      {
+        "id": "explicit-light",
+        "status": "failed",
+        "snapshot": "explicit-light.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"region\"]"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "verdict": {
+    "conditions": {
+      "completed": "passed",
+      "publicGuidanceOnly": "passed",
+      "interventions": "failed",
+      "decisions": "failed",
+      "check": "passed",
+      "lint": "passed",
+      "rawPaint": "passed",
+      "production": "failed"
+    },
+    "status": "failed"
+  },
+  "review": {
+    "reviewer": "Claude Code (cast session for #774), from the stream-json transcript, the served-request log and the agent's notes",
+    "rule": "An intervention is an action on the project or its tooling that the guidance or CLI output did not print or link. A decision is a choice about setting up, theming or styling with Ultima that the guidance did not settle and that changed the output; product choices the brief leaves open (data, copy, arrangement, Select or Dialog) and choices between documented options are not counted. Writing a browser script for the production check the install page asks for, and skipping init's optional agent setup, follow the guidance.",
+    "interventions": [
+      {
+        "step": "Read the hosted docs",
+        "action": "Rendered /install, /build-a-screen and /support with headless Chromium (--dump-dom), pulled the lesson source out of the Code tabs' download links, and read CRM 01's source from /r/crm-01.json.",
+        "reason": "The linked docs and block pages render client-side, so a plain HTTP fetch returns an empty shell."
+      },
+      {
+        "step": "StyleX lint versions",
+        "action": "Applied doctor's ULT-LINT-003 repair (plugin 0.19.0), saw ESLint fail on installed select.tsx, reinstalled plugin 0.19.1 and removed scrollMarginBlock from the screen's styles because plugin 0.19.0 rejected it.",
+        "reason": "init, the lint walkthrough and doctor disagree on the StyleX version."
+      }
+    ],
+    "decisions": [
+      {
+        "choice": "Kept @stylexjs/eslint-plugin 0.19.1 over init's 0.19.0 runtime",
+        "options": [
+          "0.19.1 plugin (ULT-LINT-003 advisory)",
+          "0.19.0 plugin (valid-styles errors in installed select.tsx)",
+          "move the runtime to 0.19.1"
+        ],
+        "why": "The guidance does not settle the conflict."
+      }
+    ],
+    "notes": "Production failed only axe-open `region` in all four cases: the open Select's options, portalled to <body>, sit outside every landmark. check, doctor, lint and the raw-paint scan were clean. Toggle Group's pressed row matched the Card surface, so the agent overrode it with accent roles: component feedback, not counted."
+  }
+}

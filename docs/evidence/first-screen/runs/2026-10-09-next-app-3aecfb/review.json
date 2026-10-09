@@ -1,0 +1,14 @@
+{
+  "reviewer": "Claude Code (cast session for #774), from the stream-json transcript, the served-request log and the agent's notes",
+  "rule": "An intervention is an action on the project or its tooling that the guidance or CLI output did not print or link. A decision is a choice about setting up, theming or styling with Ultima that the guidance did not settle and that changed the output; product choices the brief leaves open (data, copy, arrangement, Select or Dialog) and choices between documented options are not counted. Writing a browser script for the production check the install page asks for follows the guidance; deleting init's now-unimported preview file after replacing the home route, as init's comment allows, is not counted.",
+  "interventions": [
+    { "step": "Read the hosted docs", "action": "Rendered /install, /build-a-screen and /support with chrome-headless-shell (--dump-dom), extracted lesson files from the Code tabs' download links and screen.stylex.ts from the site's JS bundle.", "reason": "The linked docs pages render client-side, so a plain HTTP fetch returns an empty shell, and a lesson's Code tab exposes only its first file." },
+    { "step": "Layout after init", "action": "Removed create-next-app's next/font/google Geist loading and className from app/layout.tsx.", "reason": "init leaves the scaffold's font loading, which the theme never reads and which fetches from Google at build; no guidance mentions it." },
+    { "step": "Typecheck after editing layout.tsx", "action": "Ran `next typegen` by hand before `tsc --noEmit`.", "reason": "init discards .next, so LayoutProps is undefined until route types are regenerated; no guidance prints the step." },
+    { "step": "StyleX lint versions", "action": "Applied doctor's ULT-LINT-003 repair (plugin 0.19.0), saw ESLint fail on installed select.tsx, tried moving the runtime to 0.19.1, then returned to plugin 0.19.1 over runtime 0.19.0.", "reason": "init, the lint walkthrough and doctor disagree on the StyleX version." }
+  ],
+  "decisions": [
+    { "choice": "Kept the StyleX runtime at init's 0.19.0 and the eslint plugin at 0.19.1", "options": ["0.19.1 plugin (ULT-LINT-003 advisory)", "0.19.0 plugin (valid-styles errors in installed select.tsx)", "every StyleX package at 0.19.1 (ULT-SETUP-017)"], "why": "The guidance does not settle the conflict." }
+  ],
+  "notes": "Production failed only axe-open `region` in all four cases. The flagged nodes are the open Select's role=option rows and their text; their ancestry is div[role=option] < div[role=listbox] < div[role=presentation] < div[role=presentation] < div[data-base-ui-portal] < body, while the page's own content sits in main and header. check, doctor, lint and the raw-paint scan were clean."
+}

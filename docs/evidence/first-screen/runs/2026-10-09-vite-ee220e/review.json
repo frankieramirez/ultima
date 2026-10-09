@@ -1,0 +1,12 @@
+{
+  "reviewer": "Claude Code (cast session for #774), from the stream-json transcript, the served-request log and the agent's notes",
+  "rule": "An intervention is an action on the project or its tooling that the guidance or CLI output did not print or link. A decision is a choice about setting up, theming or styling with Ultima that the guidance did not settle and that changed the output; product choices the brief leaves open (data, copy, arrangement, Select or Dialog) and choices between documented options are not counted. Writing a browser script for the production check the install page asks for, and skipping init's optional agent setup, follow the guidance.",
+  "interventions": [
+    { "step": "Read the hosted docs", "action": "Rendered /install, /build-a-screen and /support with headless Chromium (--dump-dom), pulled the lesson source out of the Code tabs' download links, and read CRM 01's source from /r/crm-01.json.", "reason": "The linked docs and block pages render client-side, so a plain HTTP fetch returns an empty shell." },
+    { "step": "StyleX lint versions", "action": "Applied doctor's ULT-LINT-003 repair (plugin 0.19.0), saw ESLint fail on installed select.tsx, reinstalled plugin 0.19.1 and removed scrollMarginBlock from the screen's styles because plugin 0.19.0 rejected it.", "reason": "init, the lint walkthrough and doctor disagree on the StyleX version." }
+  ],
+  "decisions": [
+    { "choice": "Kept @stylexjs/eslint-plugin 0.19.1 over init's 0.19.0 runtime", "options": ["0.19.1 plugin (ULT-LINT-003 advisory)", "0.19.0 plugin (valid-styles errors in installed select.tsx)", "move the runtime to 0.19.1"], "why": "The guidance does not settle the conflict." }
+  ],
+  "notes": "Production failed only axe-open `region` in all four cases: the open Select's options, portalled to <body>, sit outside every landmark. check, doctor, lint and the raw-paint scan were clean. Toggle Group's pressed row matched the Card surface, so the agent overrode it with accent roles: component feedback, not counted."
+}
