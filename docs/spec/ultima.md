@@ -2844,7 +2844,7 @@ Charted on [Map: A consumer CLI for Ultima](https://github.com/frankieramirez/ul
 
 ### Init
 
-[Consumer project bootstrap](consumer-setup.md) specifies `init`, and its [As built](consumer-setup.md#as-built) section records the implemented new Vite path: a reviewed, versioned plan, applied in private staging and published into the absent destination only after `doctor`, `check`, the typecheck and the build pass.
+[Consumer project bootstrap](consumer-setup.md) specifies `init`, and its [As built](consumer-setup.md#as-built) section records the implemented new-project paths for Vite and for Next with a root or `src` app directory: a reviewed, versioned plan, applied in private staging and published into the absent destination only after `doctor`, `check`, the typecheck and the build pass.
 
 ### Install
 
