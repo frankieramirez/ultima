@@ -1,0 +1,51 @@
+import { Demo } from '../../demo';
+import ScopedSelect from '../../demos/theme-scope/select';
+import selectSource from '../../demos/theme-scope/select?raw';
+import ScopedDatePicker from '../../demos/theme-scope/date-picker';
+import datePickerSource from '../../demos/theme-scope/date-picker?raw';
+
+# Theme Scope
+
+Theme one subtree in a single mode, such as a preview, an embedded widget, or a second brand, and keep the popups opened inside it in the same theme. The document-wide theme stays your root CSS file.
+
+## Install
+
+```bash
+npx shadcn add @ultima/theme-scope
+```
+
+The item installs `theme-mode` with it. Without a `mode`, a scope follows the document's resolved mode from `useThemeMode()`, and uses dark until hydration resolves it.
+
+## The failure to avoid
+
+A portalled control mounts under `<body>` by default. A Select, Dialog, or Date Picker inside a scope that does not pass the scope's container leaves the scope and reads the document theme. Its trigger wears the scope's theme and its popup does not. Catalogue components do not read the scope for you: every portal inside a scope passes the container itself.
+
+## Theme
+
+`theme` takes the `ultimaTheme` export of the Studio `ultima-theme.stylex.ts`: `{ dark, light }`, each an array of StyleX themes holding every themeable group. `ThemeScope` applies the mode's array and its `color-scheme`, then your `style`, which wins.
+
+```tsx
+<ThemeScope theme={ultimaTheme} mode="light">{children}</ThemeScope>
+```
+
+Pass the whole export. A StyleX theme replaces its whole group, so a key a hand-made theme leaves out falls back to the compiled base default, never to the root CSS theme or an outer scope. `ThemeScope` does not merge partial themes: change the draft in Studio and export again. The exported motion group carries the reduced-motion values, and the font group carries stacks only, so load any face the stack names yourself.
+
+## Base UI portals
+
+`useThemeScopeContainer()` returns the nearest scope's element: `undefined` outside every scope, `null` until the element mounts, then the element. Pass it to the portal part. Base UI waits while it is `null`.
+
+<Demo component={ScopedSelect} source={selectSource} />
+
+The demos use the docs' Neutral theme in place of your `ultimaTheme`.
+
+## Date Picker
+
+The Date Picker's Zag portal takes a ref and falls back to `<body>` while the ref is empty. Render nothing until the element exists, then pass `{ current: element }`.
+
+<Demo component={ScopedDatePicker} source={datePickerSource} />
+
+## Nesting
+
+Scopes resolve to the nearest. An inner scope's values win by inheritance, and `useThemeScopeContainer()` returns the inner element, so a popup opened inside it mounts inside it. A popup that is already open stays where it mounted.
+
+Wrapping the whole app in a `ThemeScope` does not theme a portal that skips the container. For a document-wide theme, import the root CSS file.

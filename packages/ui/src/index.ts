@@ -528,6 +528,11 @@ export {
   useThemeMode,
 } from './theme-mode';
 export {
+  type ThemeScopeProps,
+  ThemeScope,
+  useThemeScopeContainer,
+} from './theme-scope';
+export {
   Toast,
   type ToastViewportProps,
   type ToastRootProps,
