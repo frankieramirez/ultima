@@ -1,6 +1,7 @@
 // `init` for a new project: docs/spec/consumer-setup.md. It plans from typed recipe data, shows the plan, and applies
 // it in private staging beside the destination, publishing into the absent destination only after doctor, check,
-// typecheck and build pass. A failed run keeps its staging and logs and leaves the destination absent.
+// typecheck and build pass. A failed run keeps its staging and logs and leaves the destination absent. A directory
+// that already holds an application goes to existing.ts instead.
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import {
@@ -14,6 +15,7 @@ import {
   openSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   renameSync,
   rmSync,
   statSync,
@@ -24,6 +26,7 @@ import { parseArgs } from 'node:util';
 
 import { createTwoFilesPatch } from 'diff';
 
+import { type ExistingPlan, applyExistingFile, initExisting, isExistingProject } from './existing.ts';
 import { CLI_VERSION } from './install.ts';
 import { MANAGERS, type Manager, RECIPES, type Recipe, forManager, normalizeScaffold, sha256 } from './recipe.ts';
 import { compareVersions } from './setup.ts';
@@ -32,8 +35,8 @@ declare const __ULTIMA_COMMIT__: string | undefined;
 
 export const PLAN_KIND = 'ultima-init-plan';
 export const PLAN_VERSION = 1;
-const DEFAULT_REGISTRY = 'https://ultima.systems/r/{name}.json';
-const REGISTRY = /^https?:\/\/[^\s]+\/r\/\{name\}\.json$/;
+export const DEFAULT_REGISTRY = 'https://ultima.systems/r/{name}.json';
+export const REGISTRY = /^https?:\/\/[^\s]+\/r\/\{name\}\.json$/;
 const NAME = /^[a-z0-9][a-z0-9._-]*$/;
 const CHECKS = ['doctor', 'check', 'typecheck', 'build'] as const;
 type CheckName = (typeof CHECKS)[number];
@@ -112,7 +115,7 @@ export const defaultDeps: InitDeps = {
 };
 
 const USAGE =
-  'usage: ultima init <directory> --framework vite|next [--layout root|src] [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init --apply <plan.json> [--json]';
+  'usage: ultima init <directory> --framework vite|next [--layout root|src] [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init <existing-app> [--framework vite|next] [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init --apply <plan.json> [--json]';
 
 export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultDeps): Promise<number> {
   let args;
@@ -142,6 +145,7 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
     return applyFile(resolve(values.apply), json, io, deps);
   }
   if (positionals.length !== 1) return usage(io, positionals.length === 0 ? 'name the directory to create' : `init takes one directory, got ${positionals.join(' ')}`);
+  if (isExistingProject(resolve(positionals[0] as string))) return existing(resolve(positionals[0] as string), values, io, deps);
   const frameworks = [...new Set(deps.recipes.map(({ framework }) => framework as string))];
   if (values.framework === undefined) return usage(io, `a new project needs --framework ${frameworks.join(' or ')}`);
   if (!frameworks.includes(values.framework)) return usage(io, `--framework takes ${frameworks.join(' or ')}, got ${values.framework}`);
@@ -176,6 +180,29 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
   return apply(planned, false, io, deps);
 }
 
+/** An existing application: detection settles the framework, layout and manager, and the flags may only confirm them. */
+function existing(
+  directory: string,
+  values: { framework?: string; 'package-manager'?: string; plan?: boolean; json?: boolean; registry?: string; 'cli-tarball'?: string },
+  io: InitIO,
+  deps: InitDeps,
+): Promise<number> | number {
+  const { framework, 'package-manager': manager } = values;
+  if (framework !== undefined && framework !== 'vite' && framework !== 'next') return usage(io, `--framework takes vite or next for an existing application, got ${framework}`);
+  if (manager !== undefined && !(MANAGERS as string[]).includes(manager)) return usage(io, `--package-manager takes ${MANAGERS.join(' or ')}, got ${manager}`);
+  if (values.json && !values.plan) return usage(io, '--json prints a plan or an apply result: pass --plan --json, or --apply <plan.json> --json');
+  if (!values.plan && !io.interactive) return usage(io, 'init writes only a reviewed plan outside a terminal: run --plan --json > plan.json, then --apply plan.json');
+  const request = {
+    mode: 'existing' as const,
+    root: realpathSync(directory),
+    framework: (framework ?? null) as 'vite' | 'next' | null,
+    packageManager: (manager ?? null) as Manager | null,
+    registry: values.registry ?? DEFAULT_REGISTRY,
+    cliTarball: values['cli-tarball'] === undefined ? null : resolve(values['cli-tarball']),
+  };
+  return initExisting(request, { plan: values.plan ?? false, json: values.json ?? false }, io, deps);
+}
+
 function usage(io: InitIO, message: string): number {
   io.err(`ultima: ${message}\n${USAGE}\n`);
   return 2;
@@ -200,7 +227,7 @@ export async function planInit(request: InitRequest, deps: InitDeps): Promise<Pl
   const parent = dirname(request.destination);
   if (!isDirectory(parent)) return fail(2, `${parent} is not a directory; create it first`);
   if (exists(request.destination)) {
-    return fail(1, `${request.destination} already exists. init creates a new directory; existing projects follow the install walkthrough at https://ultima.systems/install`);
+    return fail(1, `${request.destination} already exists and holds no package.json. init creates a new directory, or sets up an existing application from its root`);
   }
   const workspace = enclosingWorkspace(parent);
   if (workspace) return fail(1, `${request.destination} would sit inside the workspace at ${workspace}, which init does not change; choose a directory outside it`);
@@ -279,7 +306,7 @@ export async function planInit(request: InitRequest, deps: InitDeps): Promise<Pl
   return { ...body, planHash: planHash(body) };
 }
 
-export function planHash(body: Omit<Plan, 'planHash'>): string {
+export function planHash(body: object): string {
   return sha256(JSON.stringify(body));
 }
 
@@ -291,11 +318,19 @@ function componentsWrite(content: string, registry: string, css: string): Operat
   return [{ id: 'write components.json', kind: 'write', path: 'components.json', content: after, replaces: sha256(content), diff: createTwoFilesPatch('components.json', 'components.json', content, after, '', '') }];
 }
 
-type Payload = { item: string; files: { path: string; content: string }[] };
+/** A registry item as served: `path` is the target without `~/`, or the served path; `target` is empty when the item's type places the file. */
+export type RegistryItem = {
+  item: string;
+  files: { path: string; type: string; target: string; content: string }[];
+  dependencies: string[];
+  devDependencies: string[];
+  /** The `@ultima` items it installs with, without the namespace. */
+  registryDependencies: string[];
+};
 
-async function registryPayloads(registry: string, roots: string[], fetchUrl: Fetch): Promise<{ hashes: Plan['payloads']; items: Payload[] } | Outcome> {
+export async function registryPayloads(registry: string, roots: string[], fetchUrl: Fetch): Promise<{ hashes: Plan['payloads']; items: RegistryItem[] } | Outcome> {
   const hashes: Plan['payloads'] = [];
-  const items: Payload[] = [];
+  const items: RegistryItem[] = [];
   const queue = [...roots];
   const seen = new Set<string>();
   while (queue.length > 0) {
@@ -311,17 +346,22 @@ async function registryPayloads(registry: string, roots: string[], fetchUrl: Fet
     } catch (error) {
       return fail(3, `${url} could not be fetched (${(error as Error).message}); check the network and --registry`);
     }
-    let json: { registryDependencies?: string[]; files?: { path: string; target?: string; content?: string }[] };
+    let json: { registryDependencies?: string[]; dependencies?: string[]; devDependencies?: string[]; files?: { path: string; type?: string; target?: string; content?: string }[] };
     try {
       json = JSON.parse(text);
     } catch {
       return fail(3, `${url} is not a registry item`);
     }
     hashes.push({ item, url, sha256: sha256(text) });
-    items.push({ item, files: (json.files ?? []).map(({ path, target, content }) => ({ path: (target ?? path).replace(/^~\//, ''), content: content ?? '' })) });
-    for (const dependency of json.registryDependencies ?? []) {
-      if (dependency.startsWith('@ultima/')) queue.push(dependency.slice('@ultima/'.length));
-    }
+    const ultima = (json.registryDependencies ?? []).flatMap((dependency) => (dependency.startsWith('@ultima/') ? [dependency.slice('@ultima/'.length)] : []));
+    items.push({
+      item,
+      files: (json.files ?? []).map(({ path, type, target, content }) => ({ path: (target ?? path).replace(/^~\//, ''), type: type ?? '', target: (target ?? '').replace(/^~\//, ''), content: content ?? '' })),
+      dependencies: json.dependencies ?? [],
+      devDependencies: json.devDependencies ?? [],
+      registryDependencies: ultima,
+    });
+    queue.push(...ultima);
   }
   hashes.sort((a, b) => a.item.localeCompare(b.item));
   return { hashes, items };
@@ -339,6 +379,7 @@ async function applyFile(path: string, json: boolean, io: InitIO, deps: InitDeps
   }
   const { planHash: recorded, ...body } = plan;
   if (planHash(body) !== recorded) return report(io, fail(1, `${path} was edited after it was planned; nothing was written. Plan again and apply the new plan unchanged`));
+  if ((plan as unknown as ExistingPlan).mode === 'existing') return applyExistingFile(path, plan as unknown as ExistingPlan, json, io, deps);
   if (!validRequest(plan.request)) return report(io, fail(1, `${path} holds an invalid request; nothing was written. Plan again`));
   const fresh = await planInit(plan.request, deps);
   if ('code' in fresh) return report(io, fresh);
@@ -583,7 +624,7 @@ function isFile(path: string): boolean {
   }
 }
 
-function commandLine({ command, args }: Command): string {
+export function commandLine({ command, args }: Command): string {
   return [command, ...args].map((part) => (/^[\w@./:{}=+-]+$/.test(part) ? part : `'${part.replaceAll("'", "'\\''")}'`)).join(' ');
 }
 
