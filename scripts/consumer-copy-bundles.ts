@@ -122,8 +122,8 @@ export const EXERCISES: Record<string, Exercise> = {
     viewport: DESKTOP,
     run: async (page) => {
       await page.getByText('Invite a teammate').waitFor();
-      assert.ok(await page.getByRole('button', { name: 'Resend invitation' }).isDisabled(), 'the overridden button stays disabled');
-      const send = page.getByRole('button', { name: 'Send invitation' });
+      assert.ok(await page.getByRole('button', { name: 'Resend invitation', exact: true }).isDisabled(), 'the overridden button stays disabled');
+      const send = page.getByRole('button', { name: 'Send invitation', exact: true });
       const height = await send.evaluate((element) => element.getBoundingClientRect().height);
       assert.equal(height, await tokenPixels(page, '--ult-space-11'), 'the size override reads --ult-space-11');
       for (let step = 0; step < 10 && await focusedName(page) !== 'Send invitation'; step++) await page.keyboard.press('Tab');
