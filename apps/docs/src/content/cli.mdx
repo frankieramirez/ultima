@@ -18,14 +18,15 @@ npx ultima-design install
 
 <InstallWrites />
 
-Everything it writes is a managed file it owns, rewrites on the next run, and removes with `uninstall`.
+Everything it writes is a managed file it owns, rewrites on the next run, and removes with `uninstall`. `init` runs this step for you when the application is the root of its Git repository.
 
 ## Commands
 
-`status` and `diff` fetch the hosted registry; everything else runs offline.
+`init`, `status` and `diff` fetch the hosted registry; everything else runs offline.
 
 | Command | What it does | Writes | Network |
 | --- | --- | --- | --- |
+| `npx ultima-design@latest init` | Sets up a new or existing Vite or Next.js application from a plan it shows first, and hands agent setup to `install` when the application is its Git root. [Set up with init](/install#set-up-with-init) walks through it. | Yes | Yes |
 | `npx ultima-design install` | Writes the managed skill and hook entries. Idempotent, and `--dry-run` prints the plan first. | Yes | No |
 | `npx ultima-design doctor` | Verifies the setup steps for your target. Reports and never writes; every repair is printed as the exact edit. | No | No |
 | `npx ultima-design check` | Reports consumer-rule findings, like a color literal or a native control where the catalogue has the item. `--files <path>...` scopes the run, which is what the hooks use. | No | No |

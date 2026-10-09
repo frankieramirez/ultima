@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -6,11 +7,13 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { ExistingPlan } from '../existing.ts';
 import { type InitDeps, type InitIO, init } from '../init.ts';
-import { CLI_VERSION } from '../install.ts';
+import { CLI_VERSION, install, readSkillStamp } from '../install.ts';
 import type { Journal } from '../journal.ts';
 import { VITE, sha256 } from '../recipe.ts';
 
 const REGISTRY = 'http://127.0.0.1:4321/r/{name}.json';
+// Git looks no further up than the temporary directory, so each case's repository, or its absence, is its own.
+process.env.GIT_CEILING_DIRECTORIES = realpathSync(tmpdir());
 const temporary: string[] = [];
 const scratch = (prefix: string) => {
   const directory = realpathSync(mkdtempSync(join(tmpdir(), prefix)));
@@ -281,7 +284,7 @@ describe('init on an existing Vite application', () => {
     expect(result.out).toContain('The preview is written to src/ultima-preview.tsx and not mounted yet.');
     expect(result.out).toContain("add `import UltimaPreview from './ultima-preview';`");
     expect(result.out).toMatch(/doctor\s+passed/);
-    expect(result.out).toMatch(/build\s+passed/);
+    expect(result.out).toMatch(/Build\s+passed/);
 
     const after = snapshot(root);
     for (const kept of ['src/App.tsx', 'src/main.tsx', 'src/pages/home.tsx', 'index.html', 'tsconfig.node.json', 'README.md', 'AGENTS.md', 'CLAUDE.md', 'DESIGN.md', '.claude/settings.json', 'package-lock.json']) {
@@ -410,7 +413,7 @@ describe('init on an existing Next application', () => {
     expect(code).toBe(0);
     expect(planned.target).toMatchObject({ framework: 'next', layout, entry: `${layout}/layout.tsx`, sourceRoot: layout === 'app' ? '' : 'src', packageManager: { name: 'pnpm', lockfile: 'pnpm-lock.yaml' } });
     expect(planned.theme).toEqual({ css: true, json: true, design: false, importedFrom: null });
-    expect(planned.manualSteps.some((step) => step.startsWith(`Theme: ultima-theme.css exists but ${layout}/layout.tsx does not import it`))).toBe(true);
+    expect(planned.manualSteps.some((step) => step.edit.startsWith(`ultima-theme.css exists but ${layout}/layout.tsx does not import it`))).toBe(true);
     expect(writes(planned)).toEqual([
       'edit package.json',
       'create components.json',
@@ -860,5 +863,198 @@ describe('recovery', () => {
     expect(blocked.err).toContain("src/App.tsx exists and is not @ultima/tokens's current source");
     expect(snapshot(root)).toEqual(before);
     expect(existsSync(join(root, '.ultima-init'))).toBe(false);
+  });
+});
+
+const gitInit = (directory: string) => expect(spawnSync('git', ['init', '-q'], { cwd: directory }).status).toBe(0);
+const SKILL = '.claude/skills/ultima-design/SKILL.md';
+
+describe('agent setup', () => {
+  it('installs the detected harness through install when the Git root is the application', async () => {
+    const root = viteApp();
+    gitInit(root);
+    const h = harness(root, 'vite');
+    const { code, plan: planned } = await plan(h);
+    expect(code).toBe(0);
+    expect(planned.agents).toEqual({
+      harnesses: ['claude'],
+      selection: 'detected',
+      gitRoot: root,
+      status: 'delegated',
+      reason: null,
+      files: [
+        { file: SKILL, action: 'create' },
+        { file: '.claude/settings.json', action: 'edit' },
+      ],
+      command: 'npm exec --no -- ultima install --harness claude',
+    });
+    expect(planned.operations.map(({ id }) => id)).toContain('install agent files');
+    expect(planned.preserved).not.toContain('.claude');
+    expect(planned.inputs.files).toMatchObject({ [SKILL]: null, '.claude/settings.json': expect.stringMatching(/^[0-9a-f]{64}$/) });
+
+    const output = io();
+    expect(await init(['--apply', (await plan(h)).path, '--json'], output.io, h.deps)).toBe(3);
+    const result = JSON.parse(output.out);
+    expect(result.agents).toMatchObject({ status: 'installed', harnesses: ['claude'], reason: null });
+    expect(result.outcomes).toEqual({ application: 'incomplete', agents: 'installed', staticChecks: 'passed', build: 'passed', browser: 'not run', manualSteps: { required: 1, optional: 3 } });
+    expect(result.files.created).toContain(SKILL);
+    expect(result.files.edited).toContain('.claude/settings.json');
+    expect(readSkillStamp(readFileSync(join(root, SKILL), 'utf8'))?.version).toBe(CLI_VERSION);
+    const settings = JSON.parse(readFileSync(join(root, '.claude/settings.json'), 'utf8'));
+    expect(JSON.stringify(settings.hooks.PostToolUse)).toContain('foreign-hook');
+    expect(JSON.stringify(settings.hooks.PostToolUse)).toContain('ultima-design hook claude');
+    expect(result.manualSteps.map(({ title }: { title: string }) => title)).toEqual(['Mount the preview', 'Theme', 'Strict CSP', 'Trust the agent hook']);
+
+    const applied = snapshot(root);
+    const again = await plan(h);
+    expect(again.plan.agents.files).toEqual([
+      { file: SKILL, action: 'unchanged' },
+      { file: '.claude/settings.json', action: 'unchanged' },
+    ]);
+    expect(again.plan.operations.map(({ id }) => id)).not.toContain('install agent files');
+    await apply(h, again.path);
+    expect(snapshot(root)).toEqual(applied);
+  });
+
+  it('journals the agent files, so --rollback restores the hook file and removes the skill', async () => {
+    const root = viteApp();
+    gitInit(root);
+    const settings = readFileSync(join(root, '.claude/settings.json'), 'utf8');
+    const h = harness(root, 'vite');
+    const output = io();
+    await init(['--apply', (await plan(h)).path, '--json'], output.io, h.deps);
+    const { runId, agents } = JSON.parse(output.out);
+    expect(agents.status).toBe('installed');
+    expect(existsSync(join(root, SKILL))).toBe(true);
+    const undone = io();
+    // 3: package.json is back to its original bytes too, and the report names the reinstall.
+    expect(await init([root, '--rollback', runId], undone.io, h.deps)).toBe(3);
+    expect(undone.out).toMatch(/Restored .*\.claude\/settings\.json/);
+    expect(undone.out).toMatch(/Removed .*\.claude\/skills\/ultima-design\/SKILL\.md/);
+    expect(readFileSync(join(root, '.claude/settings.json'), 'utf8')).toBe(settings);
+    expect(existsSync(join(root, SKILL))).toBe(false);
+  });
+
+  it('replaces detection with --harness', async () => {
+    const root = viteApp();
+    gitInit(root);
+    const h = harness(root, 'vite');
+    const { plan: planned } = await plan(h, ['--harness', 'codex']);
+    expect(planned.agents).toMatchObject({ harnesses: ['codex'], selection: 'explicit', status: 'delegated', command: 'npm exec --no -- ultima install --harness codex' });
+    expect(planned.agents.files).toEqual([
+      { file: '.agents/skills/ultima-design/SKILL.md', action: 'create' },
+      { file: '.codex/hooks.json', action: 'create' },
+    ]);
+    const before = readFileSync(join(root, '.claude/settings.json'), 'utf8');
+    const result = await apply(h, (await plan(h, ['--harness', 'codex'])).path);
+    expect(result.out).toContain('Agent setup    installed for codex: .agents/skills/ultima-design/SKILL.md create, .codex/hooks.json create');
+    expect(existsSync(join(root, '.codex/hooks.json'))).toBe(true);
+    expect(readFileSync(join(root, '.claude/settings.json'), 'utf8')).toBe(before);
+    expect(existsSync(join(root, SKILL))).toBe(false);
+  });
+
+  it('skips agent setup when no harness is detected or selected, without blocking the application', async () => {
+    const root = nextApp('app');
+    gitInit(root);
+    const h = harness(root, 'next');
+    const { plan: planned } = await plan(h);
+    expect(planned.agents).toMatchObject({ harnesses: [], selection: 'none', status: 'skipped', reason: 'no-harness', files: [] });
+    const step = planned.manualSteps.find(({ title }) => title === 'Agent setup');
+    expect(step).toMatchObject({ required: false, edit: 'No harness was detected or selected. When you want it: `pnpm exec ultima install --harness <claude|codex|cursor|copilot>`.' });
+    const result = await apply(h, (await plan(h)).path);
+    expect(result.code).toBe(0);
+    expect(result.out).toContain('Application    ready: the preview is mounted');
+    expect(result.out).toContain('Agent setup    skipped: no harness detected or selected');
+    expect(['.claude', '.codex', '.agents', '.cursor', '.github'].filter((directory) => existsSync(join(root, directory)))).toEqual([]);
+  });
+
+  it('defers a detected harness when the application has no Git repository, printing git init and the pinned install', async () => {
+    const root = viteApp();
+    const h = harness(root, 'vite');
+    const before = readFileSync(join(root, '.claude/settings.json'), 'utf8');
+    const { plan: planned, path } = await plan(h);
+    expect(planned.agents).toMatchObject({ harnesses: ['claude'], selection: 'detected', gitRoot: null, status: 'skipped', reason: 'no-git', files: [] });
+    expect(planned.preserved).toContain('.claude');
+    expect(planned.manualSteps.at(-1)).toMatchObject({ title: 'Agent setup', file: `${SKILL}, .claude/settings.json` });
+    expect(planned.manualSteps.at(-1)?.edit).toContain('When you want it: `git init`, then `npm exec --no -- ultima install --harness claude`.');
+    const result = await apply(h, path);
+    expect(result.out).toContain('Agent setup    deferred for claude: the application has no Git repository');
+    expect(readFileSync(join(root, '.claude/settings.json'), 'utf8')).toBe(before);
+    expect(existsSync(join(root, SKILL))).toBe(false);
+  });
+
+  it('defers agent setup in an application nested in another repository, which it cannot report agent-ready', async () => {
+    const root = viteApp();
+    gitInit(dirname(root));
+    const h = harness(root, 'vite');
+    const { plan: planned, path } = await plan(h, ['--harness', 'codex']);
+    expect(planned.agents).toMatchObject({ harnesses: ['codex'], gitRoot: dirname(root), status: 'skipped', reason: 'nested' });
+    const step = planned.manualSteps.at(-1);
+    expect(step?.file).toBe(join(dirname(root), '.codex/hooks.json'));
+    expect(step?.edit).toContain('not agent-ready');
+    expect(step?.edit).not.toContain('git init');
+    const result = await apply(h, path);
+    expect(result.out).toContain(`Agent setup    not agent-ready for codex: the application is nested in the Git repository at ${dirname(root)}`);
+    expect(existsSync(join(root, '.codex'))).toBe(false);
+    expect(existsSync(join(dirname(root), '.codex'))).toBe(false);
+  });
+
+  it('reports a nested application without a harness as nested, not as a missing harness', async () => {
+    const root = nextApp('app');
+    gitInit(dirname(root));
+    const { plan: planned } = await plan(harness(root, 'next'));
+    expect(planned.agents).toMatchObject({ harnesses: [], selection: 'none', reason: 'nested' });
+    expect(planned.manualSteps.at(-1)?.file).toBe(`the harness hook file in ${dirname(root)}`);
+  });
+
+  it('keeps a skill another installer wrote, and still merges the hook', async () => {
+    const root = viteApp();
+    gitInit(root);
+    const external = '---\nname: ultima-design\ndescription: from skills.sh\n---\n\n# ultima-design\n';
+    put(root, SKILL, external);
+    const h = harness(root, 'vite');
+    const { code, plan: planned, path } = await plan(h);
+    expect(code).toBe(0);
+    expect(planned.agents.files).toEqual([
+      { file: SKILL, action: 'preserve' },
+      { file: '.claude/settings.json', action: 'edit' },
+    ]);
+    expect(planned.preserved).toContain(SKILL);
+    await apply(h, path);
+    expect(readFileSync(join(root, SKILL), 'utf8')).toBe(external);
+    expect(readFileSync(join(root, '.claude/settings.json'), 'utf8')).toContain('ultima-design hook claude');
+  });
+
+  it('blocks on an edited managed skill and on a hook file that is not JSON, before any write', async () => {
+    for (const [file, damage, message] of [
+      [SKILL, (root: string) => {
+        install(root, { harnesses: ['claude'], dryRun: false, force: false });
+        put(root, SKILL, `${readFileSync(join(root, SKILL), 'utf8')}Local note.\n`);
+      }, "is Ultima's managed skill, edited since install wrote it"],
+      ['.claude/settings.json', (root: string) => put(root, '.claude/settings.json', '{ "hooks": '), 'is not valid JSON'],
+    ] as const) {
+      const root = viteApp();
+      gitInit(root);
+      damage(root);
+      const h = harness(root, 'vite');
+      const before = snapshot(root);
+      const blocked = await plan(h);
+      expect(blocked.code).toBe(1);
+      expect(JSON.parse(blocked.out)).toMatchObject({ status: 'blocked', conflicts: [expect.objectContaining({ file, message: expect.stringContaining(message) })] });
+      expect(snapshot(root)).toEqual(before);
+      expect(h.calls).toEqual([]);
+    }
+  });
+
+  it('goes stale when an agent file changes after planning', async () => {
+    const root = viteApp();
+    gitInit(root);
+    const h = harness(root, 'vite');
+    const { path } = await plan(h);
+    put(root, '.claude/settings.json', '{ "hooks": {} }\n');
+    const result = await apply(h, path);
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('is stale: inputs changed');
+    expect(existsSync(join(root, SKILL))).toBe(false);
   });
 });

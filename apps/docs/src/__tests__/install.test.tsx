@@ -121,3 +121,15 @@ test('no install paragraph reads like a table of inline-code chips', async () =>
     expect(paragraph.querySelectorAll('code').length, paragraph.textContent ?? '').toBeLessThanOrEqual(4);
   }
 });
+
+test('install leads with init, its review and agent setup, before the manual walkthrough', async () => {
+  const screen = await mount('/install');
+  const headings = [...document.querySelectorAll('main h2')].map((heading) => heading.textContent?.replace(/^\d+/, '').trim());
+  await expect.element(screen.getByRole('heading', { name: 'Set up with init', level: 2 })).toBeVisible();
+  expect(headings.indexOf('Set up with init')).toBe(0);
+  expect(headings.indexOf('Set up by hand')).toBe(1);
+  const prose = document.querySelector('main')!.textContent!;
+  for (const text of ['npx ultima-design@latest init my-app --framework vite', 'init . --plan --json > ultima-init-plan.json', 'init --apply ultima-init-plan.json', 'root of its Git repository', 'never creates one', '--rollback <run-id>']) {
+    expect(prose).toContain(text);
+  }
+});
