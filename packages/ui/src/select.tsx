@@ -52,7 +52,7 @@ const styles = stylex.create({
     flexShrink: 0,
   },
   positioner: {
-    outline: 0,
+    outline: '0',
     zIndex: z.popup,
   },
   popup: {
@@ -65,24 +65,28 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-sans'],
+    opacity: {
+      default: 1,
+      ':is([data-starting-style])': 0,
+      ':is([data-ending-style])': 0,
+    },
     outline: 'none',
     overflow: 'hidden',
     padding: space['--ult-space-1'],
     position: 'relative',
+    transform: {
+      default: 'none',
+      ':is([data-starting-style])': 'scale(0.98)',
+      ':is([data-ending-style])': 'scale(0.98)',
+    },
     transformOrigin: 'var(--transform-origin)',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'opacity, transform',
-    transitionTimingFunction: easing.enter,
+    transitionTimingFunction: {
+      default: easing.enter,
+      ':is([data-ending-style])': easing.exit,
+    },
     zIndex: z.popup,
-    ':is([data-starting-style])': {
-      opacity: 0,
-      transform: 'scale(0.98)',
-    },
-    ':is([data-ending-style])': {
-      opacity: 0,
-      transform: 'scale(0.98)',
-      transitionTimingFunction: easing.exit,
-    },
   },
   item: {
     alignItems: 'center',

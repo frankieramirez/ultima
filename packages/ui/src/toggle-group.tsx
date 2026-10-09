@@ -25,14 +25,12 @@ const styles = stylex.create({
       default: 'transparent',
       ':hover': color['--ult-color-surface-hover'],
       /**
-       * Nested rather than a sibling of `:hover`, which StyleX sorts above a data
-       * attribute: as siblings, hovering the pressed item would repaint it as a
-       * resting one and the selection would look like it had moved.
+       * StyleX sorts `:hover` above a lone data attribute, so the pressed item also
+       * names its hovered state: without it, hovering the pressed item would repaint
+       * it as a resting one and the selection would look like it had moved.
        */
-      ':is([data-pressed])': {
-        default: color['--ult-color-surface-raised'],
-        ':hover': color['--ult-color-surface-raised'],
-      },
+      ':is([data-pressed])': color['--ult-color-surface-raised'],
+      ':is([data-pressed]):hover': color['--ult-color-surface-raised'],
     },
     borderRadius: radius['--ult-radius-sm'],
     borderStyle: 'none',

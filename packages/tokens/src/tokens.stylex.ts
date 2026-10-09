@@ -334,6 +334,10 @@ export const relativeText = stylex.defineConsts({
   code: '0.875em',
 });
 
+export const scrollbar = stylex.defineConsts({
+  sidebar: 'var(--sidebar-scrollbar-width, auto)',
+});
+
 export const display = stylex.defineConsts({
   section: '1.625rem',
   headline: 'clamp(2rem, 4vw, 2.75rem)',

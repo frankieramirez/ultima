@@ -115,18 +115,14 @@ const sizes = stylex.create({
 
 const joined = stylex.create({
   horizontal: {
-    ':not(:first-child)': {
-      borderEndStartRadius: 0,
-      borderInlineStartWidth: 0,
-      borderStartStartRadius: 0,
-    },
+    borderEndStartRadius: { ':not(:first-child)': 0 },
+    borderInlineStartWidth: { ':not(:first-child)': 0 },
+    borderStartStartRadius: { ':not(:first-child)': 0 },
   },
   vertical: {
-    ':not(:first-child)': {
-      borderBlockStartWidth: 0,
-      borderStartEndRadius: 0,
-      borderStartStartRadius: 0,
-    },
+    borderBlockStartWidth: { ':not(:first-child)': 0 },
+    borderStartEndRadius: { ':not(:first-child)': 0 },
+    borderStartStartRadius: { ':not(:first-child)': 0 },
   },
 });
 

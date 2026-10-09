@@ -8,6 +8,7 @@ import {
   easing,
   font,
   motion,
+  scrollbar,
   space,
   text,
 } from "@ultima/tokens/tokens.stylex";
@@ -65,7 +66,7 @@ const styles = stylex.create({
       default: "auto",
       [DESKTOP]: { default: "auto", ":is([data-closed])": "hidden" },
     },
-    scrollbarWidth: "var(--sidebar-scrollbar-width, auto)",
+    scrollbarWidth: scrollbar.sidebar,
     paddingBlock: space["--ult-space-4"],
     paddingInline: {
       default: space["--ult-space-4"],
@@ -317,8 +318,14 @@ function Root({
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (!isMobile && resolvedMobileOpen) setMobileOpen(false);
-  }, [isMobile, resolvedMobileOpen, setMobileOpen]);
+    if (!resolvedMobileOpen) return;
+    const query = window.matchMedia(DESKTOP_CONDITION);
+    const closeAboveBreakpoint = () => {
+      if (query.matches) setMobileOpen(false);
+    };
+    query.addEventListener("change", closeAboveBreakpoint);
+    return () => query.removeEventListener("change", closeAboveBreakpoint);
+  }, [resolvedMobileOpen, setMobileOpen]);
 
   const state = useMemo<SidebarState>(
     () => ({

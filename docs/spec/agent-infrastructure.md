@@ -115,6 +115,7 @@ The grammar `ULT-TOKEN-001` applies, as delivered on [Enforce token and styling 
 | `grid-template` | the grid template and auto track properties | `fr`, percentages, zero, unitless counts, keywords, strings, `space` tokens, `repeat()`, `minmax()` |
 | `grid-placement` | `gridColumn`, `gridRow`, `gridArea` and their lines | line numbers, spans, keywords |
 | `aspect-ratio` | `aspectRatio` | unitless ratios, `auto`, a runtime value |
+| `scrollbar-width` | `scrollbarWidth` | any keyword, a runtime value, `scrollbar` constants |
 | `animation-name` | `animationName` | a `stylex.keyframes` binding in the same file, `none` |
 | `image` | `backgroundImage`, `maskImage` | `none`, and gradients |
 | `gradient` | the arguments of a gradient | `color` tokens, direction keywords, zero, percentages, angles |

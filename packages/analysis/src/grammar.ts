@@ -22,7 +22,8 @@ export type Family =
   | 'border'
   | 'z'
   | 'display'
-  | 'relative-text';
+  | 'relative-text'
+  | 'scrollbar';
 
 /** Semantic `defineVars` families, by key prefix. Longest prefix first. */
 const VAR_FAMILIES: readonly [string, Family][] = [
@@ -40,7 +41,7 @@ const VAR_FAMILIES: readonly [string, Family][] = [
 ];
 
 /** Compile-time constant groups a component may read, by export name: docs/spec/ultima.md, Token groups in v0. */
-const CONSTANT_GROUPS: Record<string, Family> = { easing: 'easing', border: 'border', z: 'z', display: 'display', relativeText: 'relative-text' };
+const CONSTANT_GROUPS: Record<string, Family> = { easing: 'easing', border: 'border', z: 'z', display: 'display', relativeText: 'relative-text', scrollbar: 'scrollbar' };
 
 /** A palette scale's steps: `stylex.defineConsts` keyed `dark1`..`light12`. Nothing outside the tokens package reads one. */
 const PALETTE_STEP = /^(dark|light)\d+$/;
@@ -98,6 +99,7 @@ export type CategoryId =
   | 'grid-template'
   | 'grid-placement'
   | 'aspect-ratio'
+  | 'scrollbar-width'
   | 'animation-name'
   | 'image'
   | 'gradient'
@@ -264,6 +266,7 @@ export const CATEGORIES: Readonly<Record<CategoryId, Category>> = {
   },
   'grid-placement': { id: 'grid-placement', noun: 'a grid placement', families: [], keywords: 'any', unitless: () => true, strings: true, runtime: true, source: 'grid lines and spans' },
   'aspect-ratio': { id: 'aspect-ratio', noun: 'an aspect ratio', families: [], keywords: ['auto'], unitless: () => true, runtime: true, source: 'a unitless ratio' },
+  'scrollbar-width': { id: 'scrollbar-width', noun: 'a scrollbar width', families: ['scrollbar'], keywords: 'any', runtime: true, source: 'a scrollbar width keyword or a scrollbar constant' },
   'animation-name': { id: 'animation-name', noun: 'an animation name', families: [], keywords: ['none'], source: 'a stylex.keyframes binding in the same file' },
   image: { id: 'image', noun: 'an image', families: [], keywords: ['none'], functions: GRADIENTS, source: 'a gradient over semantic color tokens' },
   gradient: {
@@ -398,7 +401,6 @@ const KEYWORD_PROPERTIES = [
   'scrollSnapType',
   'scrollSnapAlign',
   'scrollSnapStop',
-  'scrollbarWidth',
   'scrollbarGutter',
   'resize',
   'direction',
@@ -521,6 +523,7 @@ set('flex', 'flex');
 set('grid-template', 'gridTemplateColumns', 'gridTemplateRows', 'gridAutoColumns', 'gridAutoRows', 'gridTemplateAreas', 'gridTemplate');
 set('grid-placement', 'gridColumn', 'gridRow', 'gridArea', 'gridColumnStart', 'gridColumnEnd', 'gridRowStart', 'gridRowEnd');
 set('aspect-ratio', 'aspectRatio');
+set('scrollbar-width', 'scrollbarWidth');
 set('animation-name', 'animationName');
 set('image', 'backgroundImage', 'maskImage', 'WebkitMaskImage', 'listStyleImage', 'borderImageSource');
 set('clip', 'clipPath', 'clip');

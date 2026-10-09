@@ -1,6 +1,6 @@
 // Installed by the Ultima setup-next registry item.
 // Extracts the StyleX CSS into the file that carries the `@stylex;` marker.
-const babelConfig = require('./babel.config.js');
+const babelConfig = module.require('./babel.config.js');
 
 module.exports = {
   plugins: {

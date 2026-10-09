@@ -115,7 +115,7 @@ describe('ULT-TOKEN-001', () => {
     assert.notEqual(mutated, source(TOAST));
     const found = located(run({ [TOAST]: mutated }), TOAST);
     assert.ok(found.length > 0);
-    assert.ok(found.every((entry) => entry.ruleId === 'ULT-TOKEN-001' && entry.symbol === 'styles.root' && entry.target === 'transform' && entry.line === 13));
+    assert.ok(found.every((entry) => entry.ruleId === 'ULT-TOKEN-001' && entry.symbol === 'styles.root' && entry.target === 'transform' && entry.line === 12));
   });
 
   test('holds the zero-duration contracts to their exact part, condition and value', () => {
@@ -154,6 +154,15 @@ describe('ULT-TOKEN-001', () => {
     assert.notEqual(padded, source(code));
     const found = located(run({ [code]: padded }), code);
     assert.deepEqual(found.map(({ ruleId, symbol, target }) => [ruleId, symbol, target]), [['ULT-TOKEN-001', 'variants.inline', 'paddingInline']]);
+  });
+
+  test('takes the scrollbar constant for a scrollbar width and nowhere else', () => {
+    const sidebar = 'packages/ui/src/sidebar.tsx';
+    assert.deepEqual(located(run(), sidebar), []);
+    const margined = source(sidebar).replace('margin: 0,', 'margin: scrollbar.sidebar,');
+    assert.notEqual(margined, source(sidebar));
+    const found = located(run({ [sidebar]: margined }), sidebar);
+    assert.deepEqual(found.map(({ ruleId, symbol, target }) => [ruleId, symbol, target]), [['ULT-TOKEN-001', 'styles.panel', 'margin']]);
   });
 
   test('treats aliases of the StyleX import and of a token group as the same reads', () => {

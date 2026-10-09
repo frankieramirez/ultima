@@ -56,12 +56,13 @@ const styles = stylex.create({
     boxShadow: { default: shadow['--ult-shadow-sm'], ':is([data-dragging])': shadow['--ult-shadow-md'] },
     boxSizing: 'border-box',
     height: space['--ult-space-6'],
-    width: space['--ult-space-6'],
     /** The focusable element is the nested range input, so `:focus-visible` never matches here. */
-    ':has(:focus-visible)': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
+    outline: {
+      default: null,
+      ':has(:focus-visible)': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
+    outlineOffset: { default: null, ':has(:focus-visible)': border.focusOffset },
+    width: space['--ult-space-6'],
   },
 });
 

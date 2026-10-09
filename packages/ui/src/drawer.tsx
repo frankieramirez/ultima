@@ -8,12 +8,25 @@ import type { ComponentProps } from 'react';
 
 /** The dismiss direction the drawer is anchored to, as Base UI writes it onto Popup and SwipeArea. */
 const DOWN = ':is([data-swipe-direction="down"])';
-const UP = ':is([data-swipe-direction="up"])';
 const LEFT = ':is([data-swipe-direction="left"])';
 const RIGHT = ':is([data-swipe-direction="right"])';
 const HORIZONTAL = ':is([data-swipe-direction="left"], [data-swipe-direction="right"])';
 
-const TRANSITIONING = ':is([data-starting-style], [data-ending-style])';
+/**
+ * Spelled out rather than built from the directions above: the StyleX lint rejects a computed
+ * key unless it names a plain string constant.
+ */
+const HAS_DOWN = ':has([data-swipe-direction="down"])';
+const HAS_UP = ':has([data-swipe-direction="up"])';
+const HAS_RIGHT = ':has([data-swipe-direction="right"])';
+const DOWN_OR_LEFT = ':is([data-swipe-direction="down"], [data-swipe-direction="left"])';
+const DOWN_OR_RIGHT = ':is([data-swipe-direction="down"], [data-swipe-direction="right"])';
+const UP_OR_LEFT = ':is([data-swipe-direction="up"], [data-swipe-direction="left"])';
+const UP_OR_RIGHT = ':is([data-swipe-direction="up"], [data-swipe-direction="right"])';
+const DOWN_TRANSITIONING = ':is([data-swipe-direction="down"]):is([data-starting-style], [data-ending-style])';
+const UP_TRANSITIONING = ':is([data-swipe-direction="up"]):is([data-starting-style], [data-ending-style])';
+const LEFT_TRANSITIONING = ':is([data-swipe-direction="left"]):is([data-starting-style], [data-ending-style])';
+const RIGHT_TRANSITIONING = ':is([data-swipe-direction="right"]):is([data-starting-style], [data-ending-style])';
 
 const PANEL = `min(calc(4 * ${space['--ult-space-12']}), 100%)`;
 
@@ -26,14 +39,14 @@ const styles = stylex.create({
   viewport: {
     alignItems: {
       default: 'stretch',
-      [`:has(${DOWN})`]: 'flex-end',
-      [`:has(${UP})`]: 'flex-start',
+      [HAS_DOWN]: 'flex-end',
+      [HAS_UP]: 'flex-start',
     },
     display: 'flex',
     inset: 0,
     justifyContent: {
       default: 'flex-start',
-      [`:has(${RIGHT})`]: 'flex-end',
+      [HAS_RIGHT]: 'flex-end',
     },
     position: 'fixed',
     zIndex: z.popup,
@@ -70,12 +83,12 @@ const styles = stylex.create({
    */
   popup: {
     backgroundColor: color['--ult-color-surface-raised'],
-    borderBottomLeftRadius: { default: radius['--ult-radius-lg'], [`:is(${DOWN}, ${LEFT})`]: 0 },
-    borderBottomRightRadius: { default: radius['--ult-radius-lg'], [`:is(${DOWN}, ${RIGHT})`]: 0 },
+    borderBottomLeftRadius: { default: radius['--ult-radius-lg'], [DOWN_OR_LEFT]: 0 },
+    borderBottomRightRadius: { default: radius['--ult-radius-lg'], [DOWN_OR_RIGHT]: 0 },
     borderColor: color['--ult-color-border'],
     borderStyle: 'solid',
-    borderTopLeftRadius: { default: radius['--ult-radius-lg'], [`:is(${UP}, ${LEFT})`]: 0 },
-    borderTopRightRadius: { default: radius['--ult-radius-lg'], [`:is(${UP}, ${RIGHT})`]: 0 },
+    borderTopLeftRadius: { default: radius['--ult-radius-lg'], [UP_OR_LEFT]: 0 },
+    borderTopRightRadius: { default: radius['--ult-radius-lg'], [UP_OR_RIGHT]: 0 },
     borderWidth: border.hairline,
     boxShadow: shadow['--ult-shadow-md'],
     boxSizing: 'border-box',
@@ -94,10 +107,10 @@ const styles = stylex.create({
     padding: space['--ult-space-6'],
     transform: {
       default: 'translate(var(--drawer-swipe-movement-x), calc(var(--drawer-snap-point-offset) + var(--drawer-swipe-movement-y)))',
-      [`${DOWN}${TRANSITIONING}`]: 'translateY(100%)',
-      [`${UP}${TRANSITIONING}`]: 'translateY(-100%)',
-      [`${LEFT}${TRANSITIONING}`]: 'translateX(-100%)',
-      [`${RIGHT}${TRANSITIONING}`]: 'translateX(100%)',
+      [DOWN_TRANSITIONING]: 'translateY(100%)',
+      [UP_TRANSITIONING]: 'translateY(-100%)',
+      [LEFT_TRANSITIONING]: 'translateX(-100%)',
+      [RIGHT_TRANSITIONING]: 'translateX(100%)',
     },
     // The strength lands between 0.1 and 1 after a flick and is exactly 1 for every other close,
     // so one declaration covers a flick, a slow release, and a press on Close.

@@ -7,7 +7,7 @@ import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
 const styles = stylex.create({
-  positioner: { outline: 0 },
+  positioner: { outline: '0' },
   popup: {
     appearance: 'none',
     boxSizing: 'border-box',

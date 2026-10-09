@@ -16,7 +16,7 @@ import {
 
 const styles = stylex.create({
   positioner: {
-    outline: 0,
+    outline: '0',
   },
   popup: {
     backgroundColor: color['--ult-color-surface-raised'],

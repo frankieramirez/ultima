@@ -82,7 +82,7 @@ const styles = stylex.create({
   positioner: {
     height: 'var(--positioner-height)',
     maxWidth: 'var(--available-width)',
-    outline: 0,
+    outline: '0',
     transitionDuration: { default: motion['--ult-motion-base'], ':is([data-instant])': '0s' },
     transitionProperty: 'top, left, right, bottom',
     transitionTimingFunction: easing.standard,
