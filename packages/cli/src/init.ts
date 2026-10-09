@@ -25,7 +25,8 @@ import { parseArgs } from 'node:util';
 import { createTwoFilesPatch } from 'diff';
 
 import { CLI_VERSION } from './install.ts';
-import { MANAGERS, type Manager, RECIPES, type Recipe, normalizeScaffold, sha256 } from './recipe.ts';
+import { MANAGERS, type Manager, RECIPES, type Recipe, forManager, normalizeScaffold, sha256 } from './recipe.ts';
+import { compareVersions } from './setup.ts';
 
 declare const __ULTIMA_COMMIT__: string | undefined;
 
@@ -40,6 +41,7 @@ type CheckName = (typeof CHECKS)[number];
 export type InitRequest = {
   destination: string;
   framework: string;
+  layout: string;
   packageManager: Manager;
   registry: string;
   cliTarball: string | null;
@@ -51,6 +53,7 @@ export type Operation =
   | { id: string; kind: 'run'; command: Command }
   | { id: string; kind: 'verify-scaffold'; files: Record<string, string> }
   | { id: string; kind: 'write'; path: string; content: string; replaces: string | null; diff: string }
+  | { id: string; kind: 'move'; from: string; to: string; sha256: string }
   | { id: string; kind: 'remove'; path: string; sha256: string }
   | { id: string; kind: 'verify-versions'; versions: Record<string, string> }
   | { id: string; kind: 'check'; check: CheckName; command: Command };
@@ -66,7 +69,8 @@ export type Plan = {
   payloads: { item: string; url: string; sha256: string }[];
   dependencies: { dependencies: Record<string, string>; devDependencies: Record<string, string> };
   operations: Operation[];
-  previewUrl: string;
+  discard: string[];
+  preview: Recipe['preview'];
   manualSteps: string[];
   planHash: string;
 };
@@ -77,7 +81,7 @@ export type InitIO = { interactive: boolean; ask(question: string): Promise<bool
 export type InitDeps = {
   exec: Exec;
   fetch: Fetch;
-  recipes: Record<string, Recipe>;
+  recipes: Recipe[];
   managerVersion(manager: Manager, cwd: string): string | null;
 };
 
@@ -107,7 +111,8 @@ export const defaultDeps: InitDeps = {
   },
 };
 
-const USAGE = 'usage: ultima init <directory> --framework vite [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init --apply <plan.json> [--json]';
+const USAGE =
+  'usage: ultima init <directory> --framework vite|next [--layout root|src] [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init --apply <plan.json> [--json]';
 
 export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultDeps): Promise<number> {
   let args;
@@ -117,6 +122,7 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
       allowPositionals: true,
       options: {
         framework: { type: 'string' },
+        layout: { type: 'string' },
         'package-manager': { type: 'string' },
         plan: { type: 'boolean' },
         json: { type: 'boolean' },
@@ -136,8 +142,12 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
     return applyFile(resolve(values.apply), json, io, deps);
   }
   if (positionals.length !== 1) return usage(io, positionals.length === 0 ? 'name the directory to create' : `init takes one directory, got ${positionals.join(' ')}`);
-  if (values.framework === undefined) return usage(io, 'a new project needs --framework vite');
-  if (!(values.framework in deps.recipes)) return usage(io, `--framework takes ${Object.keys(deps.recipes).join(', ')}, got ${values.framework}`);
+  const frameworks = [...new Set(deps.recipes.map(({ framework }) => framework as string))];
+  if (values.framework === undefined) return usage(io, `a new project needs --framework ${frameworks.join(' or ')}`);
+  if (!frameworks.includes(values.framework)) return usage(io, `--framework takes ${frameworks.join(' or ')}, got ${values.framework}`);
+  const layouts = deps.recipes.filter(({ framework }) => framework === values.framework).map(({ layout }) => layout as string);
+  const layout = values.layout ?? (layouts[0] as string);
+  if (!layouts.includes(layout)) return usage(io, `--layout takes ${layouts.join(' or ')} for ${values.framework}, got ${layout}`);
   const manager = values['package-manager'] ?? 'npm';
   if (!(MANAGERS as string[]).includes(manager)) return usage(io, `--package-manager takes ${MANAGERS.join(' or ')}, got ${manager}`);
   if (json && !values.plan) return usage(io, '--json prints a plan or an apply result: pass --plan --json, or --apply <plan.json> --json');
@@ -147,6 +157,7 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
   const request: InitRequest = {
     destination: resolve(positionals[0] as string),
     framework: values.framework,
+    layout,
     packageManager: manager as Manager,
     registry: values.registry ?? DEFAULT_REGISTRY,
     cliTarball: values['cli-tarball'] === undefined ? null : resolve(values['cli-tarball']),
@@ -177,8 +188,12 @@ function report(io: InitIO, outcome: Outcome): number {
 
 /** Everything `--plan` shows and `--apply` rechecks. Reads only: it never creates a file or directory. */
 export async function planInit(request: InitRequest, deps: InitDeps): Promise<Plan | Outcome> {
-  const recipe = deps.recipes[request.framework];
-  if (!recipe) return fail(2, `no recipe for --framework ${request.framework}`);
+  const selected = deps.recipes.find(({ framework, layout }) => framework === request.framework && layout === request.layout);
+  if (!selected) return fail(2, `no recipe for --framework ${request.framework} --layout ${request.layout}`);
+  const recipe = forManager(selected, request.packageManager);
+  if (compareVersions(process.versions.node, recipe.node) < 0) {
+    return fail(1, `recipe ${recipe.id} is tested on Node ${recipe.node} or later, and this is Node ${process.versions.node}; upgrade Node and plan again`);
+  }
   const name = basename(request.destination);
   if (!NAME.test(name)) return fail(2, `${name} is not a lowercase package name; name the directory with a-z, 0-9, ".", "_" or "-"`);
   if (!REGISTRY.test(request.registry)) return fail(2, `--registry takes a URL ending in /r/{name}.json, got ${request.registry}`);
@@ -201,7 +216,7 @@ export async function planInit(request: InitRequest, deps: InitDeps): Promise<Pl
   if ('code' in payloads) return payloads;
 
   const cli = cliTarball ? `file:${cliTarball.path}` : CLI_VERSION;
-  const fill = (text: string) => text.replaceAll('{{name}}', name).replaceAll('{{cli}}', JSON.stringify(cli).slice(1, -1));
+  const fill = (text: string) => text.replaceAll('{{name}}', name).replaceAll('{{pnpm}}', managerVersion).replaceAll('{{cli}}', JSON.stringify(cli).slice(1, -1));
   const devDependencies = { ...recipe.devDependencies, 'ultima-design': cli };
   const versions = { ...recipe.dependencies, ...recipe.devDependencies, 'ultima-design': CLI_VERSION };
   const write = (file: Recipe['files'][number]): Operation => {
@@ -216,11 +231,17 @@ export async function planInit(request: InitRequest, deps: InitDeps): Promise<Pl
     pm === 'npm' ? { command: 'npx', args: ['--yes', `${pkg.package}@${pkg.version}`, ...rest], cwd } : { command: 'pnpm', args: ['dlx', `${pkg.package}@${pkg.version}`, ...rest], cwd };
   const exec = (rest: string[]): Command => (pm === 'npm' ? { command: 'npm', args: ['exec', '--no', '--', ...rest], cwd: 'app' } : { command: 'pnpm', args: ['exec', ...rest], cwd: 'app' });
   const setup = payloads.items.find(({ item }) => item === recipe.setupItem);
-  const components = setup?.files.find(({ path }) => path.endsWith('components.json'));
+  const components = setup?.files.find(({ path }) => path === 'components.json');
+  const moves: Operation[] = [];
+  for (const { from, to } of recipe.moves) {
+    const file = setup?.files.find(({ path }) => path === from);
+    if (!file) return fail(1, `${recipe.setupItem} no longer installs ${from}, which recipe ${recipe.id} moves to ${to}`);
+    moves.push({ id: `move ${from}`, kind: 'move', from, to, sha256: sha256(file.content) });
+  }
   const checks: Record<CheckName, Command> = {
     doctor: exec(['ultima', 'doctor']),
     check: exec(['ultima', 'check']),
-    typecheck: exec(['tsc', '-b']),
+    typecheck: exec(recipe.typecheck),
     build: { command: pm, args: ['run', 'build'], cwd: 'app' },
   };
 
@@ -230,11 +251,13 @@ export async function planInit(request: InitRequest, deps: InitDeps): Promise<Pl
     ...recipe.aliasFiles.map(write),
     { id: 'install', kind: 'run', command: { command: pm, args: pm === 'npm' ? ['install'] : ['install', '--no-frozen-lockfile'], cwd: 'app' } },
     { id: `add ${recipe.setupItem}`, kind: 'run', command: dlx(recipe.shadcn, ['add', request.registry.replace('{name}', recipe.setupItem), '--yes'], 'app') },
-    ...(request.registry !== DEFAULT_REGISTRY && components ? [registryWrite(components.content, request.registry)] : []),
+    ...(components ? componentsWrite(components.content, request.registry, recipe.css) : []),
     { id: `add ${recipe.items.join(', ')}`, kind: 'run', command: dlx(recipe.shadcn, ['add', ...recipe.items.map((item) => `@ultima/${item}`), '--yes'], 'app') },
+    ...moves,
     ...recipe.files.map(write),
     ...recipe.removes.map((path): Operation => ({ id: `remove ${path}`, kind: 'remove', path, sha256: recipe.scaffoldFiles[path] ?? '' })),
     { id: 'verify versions', kind: 'verify-versions', versions },
+    ...(recipe.typegen ? [{ id: 'typegen', kind: 'run', command: exec(recipe.typegen) } satisfies Operation] : []),
     ...CHECKS.map((check): Operation => ({ id: check, kind: 'check', check, command: checks[check] })),
   ];
 
@@ -249,7 +272,8 @@ export async function planInit(request: InitRequest, deps: InitDeps): Promise<Pl
     payloads: payloads.hashes,
     dependencies: { dependencies: recipe.dependencies, devDependencies },
     operations,
-    previewUrl: recipe.previewUrl,
+    discard: recipe.discard,
+    preview: recipe.preview,
     manualSteps: recipe.manualSteps,
   };
   return { ...body, planHash: planHash(body) };
@@ -259,10 +283,12 @@ export function planHash(body: Omit<Plan, 'planHash'>): string {
   return sha256(JSON.stringify(body));
 }
 
-function registryWrite(content: string, registry: string): Operation {
+/** Points the installed `components.json` at the layout's CSS entry and the requested registry, when the setup item's differ. */
+function componentsWrite(content: string, registry: string, css: string): Operation[] {
   const json = JSON.parse(content);
-  const after = `${JSON.stringify({ ...json, registries: { ...json.registries, '@ultima': registry } }, null, 2)}\n`;
-  return { id: 'write components.json', kind: 'write', path: 'components.json', content: after, replaces: sha256(content), diff: createTwoFilesPatch('components.json', 'components.json', content, after, '', '') };
+  if (json.tailwind?.css === css && json.registries?.['@ultima'] === registry) return [];
+  const after = `${JSON.stringify({ ...json, tailwind: { ...json.tailwind, css }, registries: { ...json.registries, '@ultima': registry } }, null, 2)}\n`;
+  return [{ id: 'write components.json', kind: 'write', path: 'components.json', content: after, replaces: sha256(content), diff: createTwoFilesPatch('components.json', 'components.json', content, after, '', '') }];
 }
 
 type Payload = { item: string; files: { path: string; content: string }[] };
@@ -292,7 +318,7 @@ async function registryPayloads(registry: string, roots: string[], fetchUrl: Fet
       return fail(3, `${url} is not a registry item`);
     }
     hashes.push({ item, url, sha256: sha256(text) });
-    items.push({ item, files: (json.files ?? []).map(({ path, target, content }) => ({ path: target ?? path, content: content ?? '' })) });
+    items.push({ item, files: (json.files ?? []).map(({ path, target, content }) => ({ path: (target ?? path).replace(/^~\//, ''), content: content ?? '' })) });
     for (const dependency of json.registryDependencies ?? []) {
       if (dependency.startsWith('@ultima/')) queue.push(dependency.slice('@ultima/'.length));
     }
@@ -333,6 +359,7 @@ function validRequest(request: unknown): request is InitRequest {
     typeof value.destination === 'string' &&
     value.destination === resolve(value.destination) &&
     typeof value.framework === 'string' &&
+    typeof value.layout === 'string' &&
     (MANAGERS as string[]).includes(value.packageManager) &&
     typeof value.registry === 'string' &&
     (value.cliTarball === null || typeof value.cliTarball === 'string')
@@ -414,6 +441,14 @@ async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps): Pro
       if (current !== operation.replaces) return stop(index, 1, `${operation.path} is not the file the plan expected to replace`);
       mkdirSync(dirname(path), { recursive: true });
       writeFileSync(path, operation.content);
+    } else if (operation.kind === 'move') {
+      const from = join(app, operation.from);
+      const to = join(app, operation.to);
+      if (!isFile(from) || sha256(readFileSync(from)) !== operation.sha256) return stop(index, 1, `${operation.from} is not the file ${plan.recipe.id} expected the setup item to install`);
+      if (exists(to)) return stop(index, 1, `${operation.to} already exists`);
+      mkdirSync(dirname(to), { recursive: true });
+      renameSync(from, to);
+      removeEmptyParents(app, dirname(from));
     } else if (operation.kind === 'remove') {
       const path = join(app, operation.path);
       if (!isFile(path) || sha256(readFileSync(path)) !== operation.sha256) return stop(index, 1, `${operation.path} is not the scaffold example the plan expected to remove`);
@@ -430,6 +465,7 @@ async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps): Pro
     row.status = 'done';
   }
 
+  for (const path of plan.discard) rmSync(join(app, path), { recursive: true, force: true });
   result.files = fileReport(app, plan);
   result.previewMounted = true;
   const claimFailure = claimDestination(destination);
@@ -466,7 +502,7 @@ function fileReport(app: string, plan: Plan): Result['files'] {
   const scaffold = Object.keys((plan.operations.find(({ kind }) => kind === 'verify-scaffold') as { files: Record<string, string> }).files);
   const written = new Set(plan.operations.flatMap((operation) => (operation.kind === 'write' ? [operation.path] : [])));
   const removed = plan.operations.flatMap((operation) => (operation.kind === 'remove' ? [operation.path] : []));
-  const now = listFiles(app, ['node_modules', 'dist']);
+  const now = listFiles(app, ['node_modules', 'dist', '.next']);
   return {
     created: now.filter((path) => !scaffold.includes(path)),
     edited: [...written].filter((path) => scaffold.includes(path)),
@@ -558,6 +594,7 @@ export function printPlan(plan: Plan): string {
     '',
     `Target    ${target.destination} (created only after every check passes)`,
     `Recipe    ${plan.recipe.id} revision ${plan.recipe.revision}: ${plan.recipe.title}`,
+    `Layout    ${target.framework} ${target.layout}`,
     `Manager   ${target.packageManager.name} ${target.packageManager.version}`,
     `Registry  ${plan.request.registry}`,
     `Plan      sha256 ${plan.planHash}`,
@@ -579,6 +616,7 @@ export function printPlan(plan: Plan): string {
     'File changes:',
     ...plan.operations.flatMap((operation) => {
       if (operation.kind === 'write') return [operation.diff.split('\n').slice(1).join('\n')];
+      if (operation.kind === 'move') return [`${operation.from}: moved to ${operation.to}, the layout's app directory\n`];
       if (operation.kind === 'remove') return [`${operation.path}: removed, the scaffold example the preview replaces\n`];
       return [];
     }),
@@ -607,11 +645,11 @@ function printResult(plan: Plan, result: Result): string {
     `Versions   ${Object.entries(result.versions).map(([name, version]) => `${name} ${version}`).join(', ')}`,
     `Logs       ${result.logs}`,
     '',
-    'The preview is mounted on / from src/App.tsx.',
+    `The preview is mounted on / from ${plan.preview.file}.`,
     `  cd ${plan.target.name}`,
-    `  ${pm} run dev        ${plan.previewUrl}`,
+    `  ${pm} run dev        ${plan.preview.dev}`,
     `  ${pm} run build`,
-    `  ${pm} run preview    http://localhost:4173/`,
+    `  ${`${pm} run ${plan.preview.production.script}`.padEnd(pm.length + 16)}${plan.preview.production.url}`,
     '',
     `Agent setup skipped: no harness was selected. Optional: git init, then ${pm} exec ultima install --harness <claude|codex|cursor|copilot>.`,
     '',
