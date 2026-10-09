@@ -86,7 +86,7 @@ test('a trailing slash still finds the page in the site order', async () => {
 
 test('the section number stays out of the heading name', async () => {
   const screen = await mount('/install');
-  await expect.element(screen.getByRole('heading', { name: 'Commands', exact: true, level: 2 })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { name: 'Set up with init', exact: true, level: 2 })).toBeVisible();
 });
 
 test('each hand step says whether doctor checks it, from the setup item', async () => {
@@ -98,13 +98,14 @@ test('each hand step says whether doctor checks it, from the setup item', async 
   expect(badges.filter((text) => text.endsWith("can't be checked"))).toHaveLength(steps.filter((step) => step.unverifiable).length);
 });
 
-test('the CLI commands table marks status and diff as the only network commands', async () => {
+test('the CLI commands table leads with init and marks init, status and diff as the only network commands', async () => {
   const screen = await mount('/cli');
   await expect.element(screen.getByRole('heading', { name: 'Commands' })).toBeVisible();
   const rows = [...document.querySelectorAll('main tbody tr')].map((row) =>
     [...row.querySelectorAll('td')].map((cell) => cell.textContent?.trim()),
   );
   expect(rows.map(([command]) => command)).toEqual([
+    'npx ultima-design@latest init',
     'npx ultima-design install',
     'npx ultima-design doctor',
     'npx ultima-design check',
@@ -113,6 +114,7 @@ test('the CLI commands table marks status and diff as the only network commands'
     'npx ultima-design uninstall',
   ]);
   expect(rows.filter((row) => row[3] === 'Yes').map(([command]) => command)).toEqual([
+    'npx ultima-design@latest init',
     'npx ultima-design status',
     'npx ultima-design diff <item>',
   ]);
@@ -129,15 +131,16 @@ async function railOf(path: string) {
 
 const RAILS: Record<string, string[]> = {
   '/install': [
-    '01 Commands',
-    '02 What the setup item installs',
-    '03 Steps you still do by hand',
-    '04 StyleX lint',
-    '05 Tokens without StyleX',
-    '06 Web components',
-    '07 For an agent',
-    '08 Theme adoption',
-    '09 Where to go next',
+    '01 Set up with init',
+    '02 Set up by hand',
+    '03 What the setup item installs',
+    '04 Steps you still do by hand',
+    '05 StyleX lint',
+    '06 Tokens without StyleX',
+    '07 Web components',
+    '08 For an agent',
+    '09 Theme adoption',
+    '10 Where to go next',
   ],
   '/cli': ['01 Install', '02 Commands', '03 In CI', '04 Other skill installers'],
   '/elements': ['01 Install', '02 How an element reads', '03 Styling', '04 The catalogue'],

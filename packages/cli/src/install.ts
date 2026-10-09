@@ -12,14 +12,14 @@ const MARKERS: Record<Harness, string[]> = {
   cursor: ['.cursor'],
   copilot: ['.github/copilot-instructions.md', '.github/skills', '.github/hooks'],
 };
-const DESTINATIONS: Record<Harness, string> = {
+export const DESTINATIONS: Record<Harness, string> = {
   claude: '.claude/skills/ultima-design',
   codex: '.agents/skills/ultima-design',
   cursor: '.agents/skills/ultima-design',
   copilot: '.agents/skills/ultima-design',
 };
 
-const HOOK_FILES: Record<Harness, string> = {
+export const HOOK_FILES: Record<Harness, string> = {
   claude: '.claude/settings.json',
   codex: '.codex/hooks.json',
   cursor: '.cursor/hooks.json',

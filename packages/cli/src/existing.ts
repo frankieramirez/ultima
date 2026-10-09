@@ -1,13 +1,15 @@
 // `init` for an existing application: docs/spec/consumer-setup.md, File and edit contract, existing-project column.
 // Detection names one application and layout; the plan holds every edit as content and diff, and every conflict
 // stops planning before anything is written. Apply plans again and requires the identical hash, then edits in
-// place under a recovery journal (journal.ts), and a rerun continues an unfinished run. Harness delegation is #769's.
+// place under a recovery journal (journal.ts), and a rerun continues an unfinished run. Agent setup goes to `install`
+// through agents.ts.
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 import { createTwoFilesPatch } from 'diff';
 import ts from 'typescript';
 
+import { type AgentPlan, type AgentResult, agentResult, agentStep, applyAgents, describeAgents, planAgents } from './agents.ts';
 import { type Conflict, type Detection, type Framework, detect, escapes } from './detect.ts';
 import { type EditResult, applyEdits, ensureJsonPath, layerResets, objectAt, parseJson, sideEffectImport, viteConfigEdits } from './edits.ts';
 import {
@@ -16,17 +18,22 @@ import {
   type InitDeps,
   type InitIO,
   type Operation,
+  type Outcomes,
   PLAN_KIND,
   PLAN_VERSION,
   REGISTRY,
   type RegistryItem,
   commandLine,
+  outcomes,
   planHash,
   registryPayloads,
+  stepLines,
+  summaryLines,
+  validHarnesses,
 } from './init.ts';
-import { CLI_VERSION } from './install.ts';
+import { CLI_VERSION, type Harness } from './install.ts';
 import { type Journal, createJournal, initCli, loadJournal, hashes, newRunId, recordOutputs, recoveryDirectory, rememberOriginals, saveJournal, unfinishedJournal, writeInPlace } from './journal.ts';
-import { MANAGERS, type Manager, VITE, VITE_PREVIEW, sha256 } from './recipe.ts';
+import { MANAGERS, type Manager, type ManualStep, VITE, VITE_PREVIEW, sha256 } from './recipe.ts';
 import { checkStep, compareVersions, resolveInstalledVersion } from './setup.ts';
 import { contentHash, readStamp } from './stamp.ts';
 
@@ -39,6 +46,8 @@ export type ExistingRequest = {
   packageManager: Manager | null;
   registry: string;
   cliTarball: string | null;
+  /** `--harness`, replacing `install`'s detection; null detects. */
+  harnesses: Harness[] | null;
 };
 
 /** A tested line: `floor` inclusive, `below` exclusive, `tested` the version an added dependency is pinned to. */
@@ -160,7 +169,8 @@ export type ExistingPlan = {
   preserved: string[];
   theme: { css: boolean; json: boolean; design: boolean; importedFrom: string | null };
   preview: { path: string; url: string; mounted: boolean; mountStep: string | null };
-  manualSteps: string[];
+  agents: AgentPlan;
+  manualSteps: ManualStep[];
   /** The unfinished run this plan continues: dependencies it declared that are not installed yet, items it left partly installed. */
   resume: { runId: string; install: Record<string, string>; items: string[] } | null;
   planHash: string;
@@ -213,13 +223,14 @@ export async function applyExistingFile(path: string, plan: ExistingPlan, json: 
     (request.framework === null || request.framework === 'vite' || request.framework === 'next') &&
     (request.packageManager === null || (MANAGERS as unknown[]).includes(request.packageManager)) &&
     typeof request.registry === 'string' &&
-    (request.cliTarball === null || typeof request.cliTarball === 'string');
+    (request.cliTarball === null || typeof request.cliTarball === 'string') &&
+    validHarnesses(request.harnesses);
   if (!valid) return report(io, fail(1, `${path} holds an invalid request; nothing was written. Plan again`), json);
   if (!isExistingProject(plan.request.root)) return report(io, fail(1, `${plan.request.root} is no longer an application directory; nothing was written. Plan again`), json);
   const fresh = await planExisting(plan.request, deps);
   if ('code' in fresh) return report(io, { ...fresh, message: `${fresh.message} (${path} cannot apply)` }, json);
   if (fresh.planHash !== plan.planHash) {
-    const changed = (['cli', 'recipe', 'target', 'inputs', 'payloads', 'dependencies', 'items', 'operations', 'preview'] as const).filter(
+    const changed = (['cli', 'recipe', 'target', 'inputs', 'payloads', 'dependencies', 'items', 'operations', 'preview', 'agents'] as const).filter(
       (key) => JSON.stringify(fresh[key]) !== JSON.stringify(plan[key]),
     );
     return report(io, fail(1, `${path} is stale: ${changed.join(', ') || 'its inputs'} changed since it was planned; nothing was written. Plan again`), json);
@@ -577,12 +588,18 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
     if (operation.kind === 'write' && escapes(root, operation.path)) conflict(operation.path, `${operation.path} resolves outside the application through a symlink.`, 'Remove the symlink, then plan again.');
   }
 
+  // Agent setup: install's detection or --harness, delegated only when the Git root is this application.
+  const { agents, conflicts: agentConflicts } = planAgents(root, { exists: true, harnesses: request.harnesses, pm, read });
+  conflicts.push(...agentConflicts);
+  const agentWrites = agents.files.filter(({ action }) => action === 'create' || action === 'edit').map(({ file }) => file);
+  for (const { file, action } of agents.files) if (action === 'unchanged' || action === 'preserve') preserved.add(file);
+
   if (conflicts.length > 0) return blocked();
 
   // Theme artifacts and root documents are reported and preserved, never written.
   const themeImporter = (read(detection.entry) ?? '').includes('ultima-theme.css') ? detection.entry : null;
   const theme = { css: has('ultima-theme.css'), json: has('ultima-theme.json'), design: has('DESIGN.md'), importedFrom: themeImporter };
-  for (const document of ROOT_DOCUMENTS) if (has(document)) preserved.add(document);
+  for (const document of ROOT_DOCUMENTS) if (has(document) && !agentWrites.some((file) => file.startsWith(`${document}/`))) preserved.add(document);
   for (const file of detection.framework === 'vite' ? ['index.html', 'src/main.tsx', 'src/App.tsx'] : [detection.entry, `${detection.layout}/page.tsx`]) {
     if (has(file) && ![...early, ...late].some((operation) => operation.kind === 'write' && operation.path === file)) preserved.add(file);
   }
@@ -600,6 +617,7 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
     ...(hasAdded ? [{ id: 'install', kind: 'run', command: { command: pm, args: pm === 'npm' ? ['install'] : ['install', '--no-frozen-lockfile'], cwd: 'app' } } satisfies Operation] : []),
     ...(add.length > 0 ? [{ id: `add ${add.join(', ')}`, kind: 'run', command: dlx(['add', ...add.map((item) => `@ultima/${item}`), '--yes']) } satisfies Operation] : []),
     ...late,
+    ...(agentWrites.length > 0 ? [{ id: 'install agent files', kind: 'install-agents' } satisfies Operation] : []),
     ...(Object.keys(versionsToVerify).length > 0 ? [{ id: 'verify versions', kind: 'verify-versions', versions: { ...versionsToVerify, ...('ultima-design' in versionsToVerify ? { 'ultima-design': CLI_VERSION } : {}) } } satisfies Operation] : []),
     { id: 'doctor', kind: 'check', check: 'doctor', command: run(['ultima', 'doctor']) },
     { id: 'check', kind: 'check', check: 'check', command: run(['ultima', 'check']) },
@@ -614,19 +632,29 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
   const host = has('src/App.tsx') ? 'src/App.tsx' : 'src/main.tsx';
   const router = ['react-router', 'react-router-dom', '@tanstack/react-router'].find((name) => name in declared);
   const rerun = `${initCli(pm)} .`;
-  const mountStep =
+  const mountStep: ManualStep | null =
     detection.framework === 'vite' && !mounted
-      ? `Mount the preview. In ${host}, add \`import UltimaPreview from '${relativeImport(host)}';\` and render \`<UltimaPreview />\`${router ? ` on a route of its own, for example \`<Route path="/ultima-preview" element={<UltimaPreview />} />\` with ${router}` : ' where you want to see it'}. Verify: \`${pm} run dev\`, open ${recipe.devUrl}${router ? 'ultima-preview' : ''} and see "Ultima is ready"; then run \`${rerun}\` again, which checks setup and build and reports the preview mounted.`
+      ? {
+          title: 'Mount the preview',
+          required: true,
+          file: host,
+          edit: `In ${host}, add \`import UltimaPreview from '${relativeImport(host)}';\` and render \`<UltimaPreview />\`${router ? ` on a route of its own, for example \`<Route path="/ultima-preview" element={<UltimaPreview />} />\` with ${router}` : ' where you want to see it'}.`,
+          verify: `\`${pm} run dev\`, open ${recipe.devUrl}${router ? 'ultima-preview' : ''} and see "Ultima is ready"; then run \`${rerun}\` again, which checks setup and build and reports the preview mounted.`,
+        }
       : null;
-  const manualSteps = [
+  const themeVerify = 'With the dev server running, check the root, a control and an open popup in dark and light mode, as https://ultima.systems/install#theme-adoption describes.';
+  const themeEdit = theme.css
+    ? theme.importedFrom
+      ? `${theme.importedFrom} imports ultima-theme.css, and init leaves it as it is.`
+      : `ultima-theme.css exists but ${detection.entry} does not import it. Import it after your base CSS, then check the cascade.`
+    : 'No exported Ultima theme was found, so the components paint with the Neutral base tokens and your own styles keep your brand. To match it, make a theme in https://ultima.systems/theme-studio and install it as https://ultima.systems/install#theme-adoption describes. init never substitutes one for you.';
+  const agentManual = agentStep(agents, root);
+  const manualSteps: ManualStep[] = [
     ...(mountStep ? [mountStep] : []),
-    ...(pkg.scripts?.build ? [] : [`Build: package.json has no build script, so init cannot run the production build. Add one, then run \`${rerun}\` again.`]),
-    theme.css
-      ? theme.importedFrom
-        ? `Theme: ${theme.importedFrom} imports ultima-theme.css and init leaves it as it is. Check the root, a control and an open popup in dark and light mode, as https://ultima.systems/install#theme-adoption describes.`
-        : `Theme: ultima-theme.css exists but ${detection.entry} does not import it. Import it after your base CSS in ${detection.entry}, then check the cascade as https://ultima.systems/install#theme-adoption describes.`
-      : 'Theme: no exported Ultima theme was found, so the components paint with the Neutral base tokens and your own styles keep your brand. To match it, make a theme in https://ultima.systems/theme-studio and install it as https://ultima.systems/install#theme-adoption describes. init never substitutes one for you.',
-    "Strict CSP: pass the nonce to Base UI's `CSPProvider` at the app root.",
+    ...(pkg.scripts?.build ? [] : [{ title: 'Build script', required: true, file: 'package.json', edit: 'Add a `build` script; without one init cannot run the production build.', verify: `Run \`${rerun}\` again; it runs the build and reports it passed.` }]),
+    { title: 'Theme', required: false, file: theme.importedFrom ?? detection.entry, edit: themeEdit, verify: themeVerify },
+    { title: 'Strict CSP', required: false, file: detection.entry, edit: "Pass your nonce to Base UI's `CSPProvider` at the app root.", verify: 'Load the production build under your Content-Security-Policy; the console reports no blocked style.' },
+    ...(agentManual ? [agentManual] : []),
   ];
 
   const body: Omit<ExistingPlan, 'planHash'> = {
@@ -651,7 +679,8 @@ export async function planExisting(request: ExistingRequest, deps: InitDeps): Pr
     operations,
     preserved: [...preserved].sort(),
     theme,
-    preview: { path: previewPath, url: previewUrl, mounted, mountStep },
+    preview: { path: previewPath, url: previewUrl, mounted, mountStep: mountStep?.edit ?? null },
+    agents,
     manualSteps,
     resume: journal ? { runId: journal.runId, install: pending, items: readded } : null,
   };
@@ -772,7 +801,9 @@ type Result = {
   files: { created: string[]; edited: string[]; preserved: string[] };
   previewMounted: boolean;
   browserChecks: 'not run';
-  manualSteps: string[];
+  agents: AgentResult;
+  manualSteps: ManualStep[];
+  outcomes: Outcomes;
   error?: string;
 };
 
@@ -786,6 +817,8 @@ async function payloadsChangedSincePlan(plan: ExistingPlan, deps: InitDeps): Pro
   return [...items].filter((item) => hash(served.hashes, item) !== hash(plan.payloads, item)).map((item) => `@ultima/${item}`);
 }
 
+const agentFiles = (agents: AgentPlan, action: 'create' | 'edit') => agents.files.flatMap((file) => (file.action === action ? [file.file] : []));
+
 /** Applies a fresh, identical plan in place. A failed step stops the run; nothing after it runs. */
 async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps: InitDeps): Promise<number> {
   const progress = json ? io.err : io.out;
@@ -795,6 +828,7 @@ async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps
   const touches = (operation: Operation, creates: string[]): string[] => {
     if (operation.kind === 'write') return [operation.path];
     if (operation.kind === 'run') return ['package.json', lockfile, ...(operation.id.startsWith('add ') ? creates : [])];
+    if (operation.kind === 'install-agents') return [...agentFiles(plan.agents, 'create'), ...agentFiles(plan.agents, 'edit')];
     return [];
   };
   const inventory = [...new Set(plan.operations.flatMap((operation) => touches(operation, plan.items.creates)))];
@@ -835,15 +869,18 @@ async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps
     checks: {},
     versions: {},
     files: {
-      created: [...writes.filter(({ replaces }) => replaces === null).map(({ path }) => path), ...plan.items.creates].sort(),
-      edited: writes.filter(({ replaces }) => replaces !== null).map(({ path }) => path).sort(),
+      created: [...writes.filter(({ replaces }) => replaces === null).map(({ path }) => path), ...plan.items.creates, ...agentFiles(plan.agents, 'create')].sort(),
+      edited: [...writes.filter(({ replaces }) => replaces !== null).map(({ path }) => path), ...agentFiles(plan.agents, 'edit')].sort(),
       preserved: plan.preserved,
     },
     previewMounted: plan.preview.mounted,
     browserChecks: 'not run',
+    agents: agentResult(plan.agents, 'not run'),
     manualSteps: plan.manualSteps,
+    outcomes: undefined as unknown as Outcomes,
   };
   const finish = (code: 0 | 1 | 3): number => {
+    result.outcomes = outcomes(result.status, result.checks, result.agents, result.manualSteps);
     writeFileSync(join(logs, `${attemptPrefix}result.json`), `${JSON.stringify(result, null, 2)}\n`);
     io.out(json ? `${JSON.stringify(result, null, 2)}\n` : printExistingResult(plan, result));
     return code;
@@ -861,6 +898,7 @@ async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps
     result.status = code === 1 ? 'failed' : 'incomplete';
     result.error = `${plan.operations[index]?.id}: ${message}`;
     (result.operations[index] as Result['operations'][number]).status = 'failed';
+    if (plan.operations[index]?.kind === 'install-agents') result.agents = agentResult(plan.agents, 'failed');
     settle('failed', { ...extra, error: message });
     if (journal) {
       journal.status = 'stopped';
@@ -914,6 +952,15 @@ async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps
       });
       if (mismatched.length > 0) return stop(index, 1, mismatched.join('; '));
       settle('done');
+    } else if (operation.kind === 'install-agents') {
+      const changed = plan.agents.files.find(({ file }) => {
+        const path = join(root, file);
+        return (existsSync(path) ? sha256(readFileSync(path)) : null) !== plan.inputs.files[file];
+      });
+      if (changed) return stop(index, 1, `${changed.file} changed after it was planned`);
+      const problem = applyAgents(root, plan.agents);
+      if (problem) return stop(index, 1, problem);
+      settle('done');
     } else {
       return stop(index, 3, `${operation.kind} is not an existing-project operation`);
     }
@@ -923,6 +970,7 @@ async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps
     journal.status = 'finished';
     saveJournal(journal);
   }
+  if (plan.agents.status === 'delegated') result.agents = agentResult(plan.agents, 'installed');
   for (const [name, version] of Object.entries(plan.dependencies.present)) result.versions[name] ??= version;
   const complete = plan.preview.mounted && 'build' in result.checks;
   result.status = complete ? 'completed' : 'incomplete';
@@ -941,6 +989,7 @@ export function printExistingPlan(plan: ExistingPlan): string {
     `Recipe       ${plan.recipe.id} revision ${plan.recipe.revision}`,
     `Manager      ${target.packageManager.name} ${target.packageManager.version} (from ${target.packageManager.lockfile ?? target.packageManager.source})`,
     `Registry     ${plan.request.registry}`,
+    `Agents       ${describeAgents(plan.agents)}`,
     `Plan         sha256 ${plan.planHash}`,
     ...(plan.resume
       ? [
@@ -961,6 +1010,7 @@ export function printExistingPlan(plan: ExistingPlan): string {
       const step = `  ${String(index + 1).padStart(2)}. `;
       if (operation.kind === 'run' || operation.kind === 'check') return `${step}${operation.id}: ${commandLine(operation.command)}`;
       if (operation.kind === 'verify-versions') return `${step}verify every added version against the plan`;
+      if (operation.kind === 'install-agents') return `${step}install agent files: ultima install ${plan.agents.harnesses.map((harness) => `--harness ${harness}`).join(' ')}, writing ${agentFiles(plan.agents, 'create').concat(agentFiles(plan.agents, 'edit')).join(', ')}`;
       return `${step}${operation.id}`;
     }),
     '',
@@ -969,8 +1019,9 @@ export function printExistingPlan(plan: ExistingPlan): string {
     `Preserved: ${plan.preserved.join(', ') || 'none'}`,
     '',
     `Preview: ${plan.preview.path}, ${plan.preview.mounted ? `at ${plan.preview.url}` : 'not mounted yet'}`,
-    'After setup:',
-    ...plan.manualSteps.map((step) => `  - ${step}`),
+    '',
+    'Steps left to you after setup:',
+    ...stepLines(plan.manualSteps),
     '',
   ];
   return `${lines.join('\n')}\n`;
@@ -979,13 +1030,16 @@ export function printExistingPlan(plan: ExistingPlan): string {
 function printExistingResult(plan: ExistingPlan, result: Result): string {
   const pm = plan.target.packageManager.name;
   const list = (paths: string[]) => (paths.length > 0 ? paths.join(', ') : 'none');
-  const checks = ['doctor', 'check', 'typecheck', 'build'] as const;
+  const application =
+    result.status === 'completed'
+      ? 'ready: the preview is mounted'
+      : result.error
+        ? `${result.status}: stopped at ${result.error}`
+        : `incomplete until you finish the required steps below: ${result.manualSteps.filter(({ required }) => required).map(({ title }) => title.toLowerCase()).join(', ')}`;
   const lines = [
     `${result.status === 'completed' ? 'Set up' : result.status === 'failed' ? 'Stopped setting up' : 'Set up, with steps left,'} ${result.root} with ${plan.recipe.id} revision ${plan.recipe.revision}.`,
     '',
-    'Checks:',
-    ...checks.map((check) => `  ${check.padEnd(10)}${result.checks[check] ?? 'not run'}`),
-    '  browser   not run by init',
+    ...summaryLines(application, result.checks, result.agents, result.manualSteps, 'package.json has no build script'),
     '',
     `Created    ${list(result.files.created)}`,
     `Edited     ${list(result.files.edited)}`,
@@ -993,14 +1047,13 @@ function printExistingResult(plan: ExistingPlan, result: Result): string {
     '',
     `Versions   ${Object.entries(result.versions).map(([name, version]) => `${name} ${version}`).join(', ') || 'unchanged'}`,
     `Logs       ${result.logs}`,
-    ...(result.recovery ? [`Recovery   ${result.recovery.journal}; undo this run with \`${result.recovery.rollback}\``] : []),
+    result.recovery ? `Recovery   ${result.recovery.journal}; undo this run with \`${result.recovery.rollback}\`` : 'Recovery   nothing to undo: this run wrote no file.',
     '',
     plan.preview.mounted ? `The preview is at ${plan.preview.url} (${plan.preview.path}).` : `The preview is written to ${plan.preview.path} and not mounted yet.`,
     `  ${pm} run dev`,
+    ...(plan.operations.some((operation) => operation.kind === 'check' && operation.check === 'build') ? [`  ${pm} run build`] : []),
     '',
-    `Agent setup skipped: no harness was selected. Optional: ${pm} exec ultima install --harness <claude|codex|cursor|copilot>.`,
-    '',
-    ...(result.manualSteps.length > 0 ? [plan.preview.mounted ? 'Next steps:' : 'Next steps (the first is required):', ...result.manualSteps.map((step) => `  - ${step}`), ''] : []),
+    ...(result.manualSteps.length > 0 ? ['Steps left to you:', ...stepLines(result.manualSteps), ''] : []),
   ];
   return `${lines.join('\n')}\n`;
 }

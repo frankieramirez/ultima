@@ -11,6 +11,9 @@ export type Layout = 'root' | 'src';
 /** A file the recipe writes. `before` is the pinned scaffold's text, so a plan can show the diff; a file without it replaces a scaffold example whole. */
 export type RecipeFile = { path: string; before?: string; after: string };
 
+/** A step `init` leaves to the consumer: the file it touches, the edit or command, and how to see that it worked. */
+export type ManualStep = { title: string; required: boolean; file: string; edit: string; verify: string };
+
 /** What the scaffold does differently for one manager: the arguments that select it, and the files it adds or writes differently. */
 export type ManagerVariant = { args: string[]; scaffoldFiles?: Record<string, string>; aliasFiles?: RecipeFile[] };
 
@@ -48,7 +51,7 @@ export type Recipe = {
   /** Build output that records the staging directory's absolute paths, removed before publishing so the first build in place starts clean. */
   discard: string[];
   preview: { file: string; dev: string; production: { script: string; url: string } };
-  manualSteps: string[];
+  manualSteps: ManualStep[];
 };
 
 /** The recipe as the selected manager runs it, its variant folded in. */
@@ -296,6 +299,27 @@ export default function App() {
 }
 `;
 
+
+function themeStep(entry: string): ManualStep {
+  return {
+    title: 'Theme',
+    required: false,
+    file: entry,
+    edit: `Make a custom theme in https://ultima.systems/theme-studio, install it and import ultima-theme.css from ${entry}, as https://ultima.systems/install#theme-adoption describes. Until then the preview uses the Neutral base in the system color mode, dark when the system states no preference.`,
+    verify: 'With the dev server running, check the page root, the Button and the open Dialog in dark and light mode.',
+  };
+}
+
+function cspStep(entry: string): ManualStep {
+  return {
+    title: 'Strict CSP',
+    required: false,
+    file: entry,
+    edit: "Pass your nonce to Base UI's `CSPProvider` at the app root.",
+    verify: 'Load the production build under your Content-Security-Policy; the console reports no blocked style.',
+  };
+}
+
 export const VITE: Recipe = {
   id: 'vite-react-ts',
   revision: 1,
@@ -361,10 +385,7 @@ export const VITE: Recipe = {
   typecheck: ['tsc', '-b'],
   discard: [],
   preview: { file: 'src/App.tsx', dev: 'http://localhost:5173/', production: { script: 'preview', url: 'http://localhost:4173/' } },
-  manualSteps: [
-    'Theme: choose a custom theme in https://ultima.systems/theme-studio and install it as https://ultima.systems/install#theme-adoption describes. Until then the preview uses the Neutral base in the system color mode, dark when the system states no preference.',
-    "Strict CSP: pass the nonce to Base UI's `CSPProvider` at the app root in src/main.tsx.",
-  ],
+  manualSteps: [themeStep('src/main.tsx'), cspStep('src/main.tsx')],
 };
 
 
@@ -646,10 +667,7 @@ function nextRecipe(layout: Layout): Recipe {
     typecheck: ['tsc', '--noEmit'],
     discard: ['.next'],
     preview: { file: `${app}/page.tsx`, dev: 'http://localhost:3000/', production: { script: 'start', url: 'http://localhost:3000/' } },
-    manualSteps: [
-      VITE.manualSteps[0] as string,
-      `Strict CSP: pass the nonce to Base UI's \`CSPProvider\` at the app root in ${app}/layout.tsx.`,
-    ],
+    manualSteps: [themeStep(`${app}/layout.tsx`), cspStep(`${app}/layout.tsx`)],
   };
 }
 
