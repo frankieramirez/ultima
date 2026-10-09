@@ -19,7 +19,8 @@ export const BUNDLE_ASSERTIONS = {
   lifecycle: ['registration', 'upgrade', 'reconnect', 'attribute-update', 'tabs-keyboard', 'tabs-theme'],
 } as const satisfies Record<Bundle, readonly string[]>;
 const CELLS_PER_ENGINE = 2;
-export const CELL_DEADLINES_MS: Record<Bundle, number> = { 'theme-css': 120_000, 'overlay-keyboard': 120_000, form: 120_000, hydration: 120_000, lifecycle: 120_000 };
+/** About five times each bundle's slowest cell in the first complete CI run (#804), never under 30 seconds. */
+export const CELL_DEADLINES_MS: Record<Bundle, number> = { 'theme-css': 60_000, 'overlay-keyboard': 30_000, form: 30_000, hydration: 45_000, lifecycle: 30_000 };
 const LAUNCHERS: Record<Engine, BrowserType> = { chromium, firefox, webkit };
 
 const RESET = '@layer reset { *, *::before, *::after { box-sizing: border-box; } body { margin: 0; } button { margin: 0; padding: 0; border: 0; background: none; font: inherit; } }\n';
