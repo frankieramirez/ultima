@@ -2,12 +2,14 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 
 import { useAnatomyReport } from './block-anatomy';
 import { BlockPage } from './block-page';
+import { SCREEN_LESSONS, ScreenPreview } from './build-a-screen';
 import { ComponentPage } from './component-page';
 import { components } from './components';
 import { blockTitle, componentTitle } from './document-title';
 import { blocks } from './generated/blocks';
 import { componentPages } from './generated/component-pages';
 import { BlocksPage } from './routes/blocks';
+import { BuildAScreenPage } from './routes/build-a-screen';
 import { CliPage } from './routes/cli';
 import { ComponentsPage } from './routes/components';
 import { Home } from './routes/home';
@@ -54,6 +56,25 @@ const installUpdateRoute = createRoute({
   component: InstallUpdatePage,
   staticData: { title: 'Update the base theme' },
 });
+
+const buildAScreenRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/build-a-screen',
+  component: BuildAScreenPage,
+  staticData: { title: 'Build a screen' },
+});
+
+const screenPreviewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/build-a-screen/$lesson/preview',
+  component: ScreenPreviewPage,
+  staticData: { title: 'Build a screen preview', bare: true },
+});
+
+function ScreenPreviewPage() {
+  const { lesson } = screenPreviewRoute.useParams();
+  return SCREEN_LESSONS.includes(lesson) ? <ScreenPreview id={lesson} /> : <NotFound />;
+}
 
 const elementsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -160,6 +181,8 @@ export const routeTree = rootRoute.addChildren([
   indexRoute,
   installRoute,
   installUpdateRoute,
+  buildAScreenRoute,
+  screenPreviewRoute,
   cliRoute,
   elementsRoute,
   tokensRoute,

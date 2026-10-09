@@ -4,11 +4,11 @@ import { components } from '../components';
 import { blocks } from '../generated/blocks';
 import { router } from '../router';
 
-/** A route's pages: a param route lists every item it serves, and a block preview exists only to be framed. */
+/** A route's pages: a param route lists every item it serves, and a block or screen preview exists only to be framed. */
 function pagesOf(path: string): string[] {
   if (path === '/components/$name') return components.map(({ item }) => `/components/${item}`);
   if (path === '/blocks/$id') return blocks.map(({ id }) => `/blocks/${id}`);
-  if (path === '/blocks/$id/preview') return [];
+  if (path === '/blocks/$id/preview' || path === '/build-a-screen/$lesson/preview') return [];
   return [path];
 }
 

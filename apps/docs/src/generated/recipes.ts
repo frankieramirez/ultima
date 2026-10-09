@@ -205,26 +205,6 @@ export const recipes = [
   }
 ];
 export const recipeSources: Record<string, CopyBundle> = {
-  "apps/docs/src/demos/code/typography.tsx": {
-    "entry": "apps/docs/src/demos/code/typography.tsx",
-    "files": [
-      {
-        "source": "apps/docs/src/demos/code/typography.tsx",
-        "path": "examples/demos/code/typography.tsx",
-        "content": "'use client';\n\nimport * as stylex from '@stylexjs/stylex';\nimport { border, color, font, space, text } from '@/lib/tokens.stylex';\nimport { Code } from '@/components/ui/code';\nimport { ScrollArea } from '@/components/ui/scroll-area';\nimport { Separator } from '@/components/ui/separator';\nimport { Table } from '@/components/ui/table';\n\nconst styles = stylex.create({\n  h1: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-8'],\n    fontWeight: font['--ult-font-weight-medium'],\n    letterSpacing: font['--ult-font-tracking-tight'],\n    lineHeight: font['--ult-font-leading-tight'],\n    marginBlock: 0,\n    marginBottom: space['--ult-space-5'],\n  },\n  h2: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-6'],\n    fontWeight: font['--ult-font-weight-medium'],\n    letterSpacing: font['--ult-font-tracking-tight'],\n    lineHeight: font['--ult-font-leading-tight'],\n    marginBottom: space['--ult-space-4'],\n    marginTop: space['--ult-space-7'],\n  },\n  h3: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-5'],\n    fontWeight: font['--ult-font-weight-semibold'],\n    lineHeight: font['--ult-font-leading-snug'],\n    marginBottom: space['--ult-space-3'],\n    marginTop: space['--ult-space-6'],\n  },\n  p: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-4'],\n    lineHeight: font['--ult-font-leading-normal'],\n    marginBlock: space['--ult-space-4'],\n  },\n  list: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-4'],\n    lineHeight: font['--ult-font-leading-normal'],\n    marginBlock: space['--ult-space-4'],\n    paddingInlineStart: space['--ult-space-6'],\n  },\n  li: {\n    marginBlock: space['--ult-space-2'],\n  },\n  a: {\n    color: color['--ult-color-highlight-text'],\n    textDecoration: 'underline',\n    textUnderlineOffset: space['--ult-space-2'],\n    ':focus-visible': {\n      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,\n      outlineOffset: border.focusOffset,\n    },\n  },\n  blockquote: {\n    borderInlineStartColor: color['--ult-color-border'],\n    borderInlineStartStyle: 'solid',\n    borderInlineStartWidth: space['--ult-space-1'],\n    color: color['--ult-color-text-muted'],\n    fontSize: text['--ult-text-4'],\n    marginBlock: space['--ult-space-5'],\n    marginInline: 0,\n    paddingInlineStart: space['--ult-space-5'],\n  },\n  rule: {\n    marginBlock: space['--ult-space-6'],\n  },\n  scroll: {\n    marginBlock: space['--ult-space-5'],\n  },\n});\n\nexport default function TypographyRecipe() {\n  return (\n    <article>\n      <h1 {...stylex.props(styles.h1)}>The prose mapping</h1>\n      <p {...stylex.props(styles.p)}>\n        Long-form text maps each element to a token style or an Ultima component. Inline code like{' '}\n        <Code>pnpm test</Code> and links like <a href=\"#typography\" {...stylex.props(styles.a)}>the\n        component catalogue</a> keep the surrounding rhythm.\n      </p>\n      <h2 {...stylex.props(styles.h2)}>Headings and lists</h2>\n      <p {...stylex.props(styles.p)}>Headings step down the type scale; lists share the body size.</p>\n      <ul {...stylex.props(styles.list)}>\n        <li {...stylex.props(styles.li)}>Tokens for every raw value</li>\n        <li {...stylex.props(styles.li)}>One styling engine</li>\n      </ul>\n      <ol {...stylex.props(styles.list)}>\n        <li {...stylex.props(styles.li)}>Install the dependencies</li>\n        <li {...stylex.props(styles.li)}>Copy the mapping</li>\n      </ol>\n      <h3 {...stylex.props(styles.h3)}>Quoted text</h3>\n      <blockquote {...stylex.props(styles.blockquote)}>\n        A literal in component code is a bug, not a shortcut.\n      </blockquote>\n      <h3 {...stylex.props(styles.h3)}>Code blocks</h3>\n      <Code variant=\"block\">\n        {'npx shadcn add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area'}\n      </Code>\n      <Separator style={styles.rule} />\n      <h3 {...stylex.props(styles.h3)}>Tables</h3>\n      <ScrollArea.Root style={styles.scroll}>\n        <ScrollArea.Viewport>\n          <ScrollArea.Content>\n            <Table.Root>\n              <Table.Head>\n                <Table.Row>\n                  <Table.HeadCell>Element</Table.HeadCell>\n                  <Table.HeadCell>Maps to</Table.HeadCell>\n                </Table.Row>\n              </Table.Head>\n              <Table.Body>\n                <Table.Row>\n                  <Table.Cell>code, pre</Table.Cell>\n                  <Table.Cell>Code, inline and block</Table.Cell>\n                </Table.Row>\n                <Table.Row>\n                  <Table.Cell>hr</Table.Cell>\n                  <Table.Cell>Separator</Table.Cell>\n                </Table.Row>\n                <Table.Row>\n                  <Table.Cell>table, th, td</Table.Cell>\n                  <Table.Cell>Table inside ScrollArea</Table.Cell>\n                </Table.Row>\n              </Table.Body>\n            </Table.Root>\n          </ScrollArea.Content>\n        </ScrollArea.Viewport>\n        <ScrollArea.Scrollbar orientation=\"horizontal\">\n          <ScrollArea.Thumb />\n        </ScrollArea.Scrollbar>\n      </ScrollArea.Root>\n    </article>\n  );\n}\n"
-      }
-    ],
-    "items": [
-      "code",
-      "scroll-area",
-      "separator",
-      "table",
-      "tokens"
-    ],
-    "dependencies": [
-      "@stylexjs/stylex"
-    ]
-  },
   "apps/docs/src/examples/complete-screen/projects.tsx": {
     "entry": "apps/docs/src/examples/complete-screen/projects.tsx",
     "files": [
@@ -282,6 +262,64 @@ export const recipeSources: Record<string, CopyBundle> = {
       }
     ],
     "items": [],
+    "dependencies": [
+      "@stylexjs/stylex"
+    ]
+  },
+  "apps/docs/src/demos/code/typography.tsx": {
+    "entry": "apps/docs/src/demos/code/typography.tsx",
+    "files": [
+      {
+        "source": "apps/docs/src/demos/code/typography.tsx",
+        "path": "examples/demos/code/typography.tsx",
+        "content": "'use client';\n\nimport * as stylex from '@stylexjs/stylex';\nimport { border, color, font, space, text } from '@/lib/tokens.stylex';\nimport { Code } from '@/components/ui/code';\nimport { ScrollArea } from '@/components/ui/scroll-area';\nimport { Separator } from '@/components/ui/separator';\nimport { Table } from '@/components/ui/table';\n\nconst styles = stylex.create({\n  h1: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-8'],\n    fontWeight: font['--ult-font-weight-medium'],\n    letterSpacing: font['--ult-font-tracking-tight'],\n    lineHeight: font['--ult-font-leading-tight'],\n    marginBlock: 0,\n    marginBottom: space['--ult-space-5'],\n  },\n  h2: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-6'],\n    fontWeight: font['--ult-font-weight-medium'],\n    letterSpacing: font['--ult-font-tracking-tight'],\n    lineHeight: font['--ult-font-leading-tight'],\n    marginBottom: space['--ult-space-4'],\n    marginTop: space['--ult-space-7'],\n  },\n  h3: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-5'],\n    fontWeight: font['--ult-font-weight-semibold'],\n    lineHeight: font['--ult-font-leading-snug'],\n    marginBottom: space['--ult-space-3'],\n    marginTop: space['--ult-space-6'],\n  },\n  p: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-4'],\n    lineHeight: font['--ult-font-leading-normal'],\n    marginBlock: space['--ult-space-4'],\n  },\n  list: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-4'],\n    lineHeight: font['--ult-font-leading-normal'],\n    marginBlock: space['--ult-space-4'],\n    paddingInlineStart: space['--ult-space-6'],\n  },\n  li: {\n    marginBlock: space['--ult-space-2'],\n  },\n  a: {\n    color: color['--ult-color-highlight-text'],\n    textDecoration: 'underline',\n    textUnderlineOffset: space['--ult-space-2'],\n    ':focus-visible': {\n      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,\n      outlineOffset: border.focusOffset,\n    },\n  },\n  blockquote: {\n    borderInlineStartColor: color['--ult-color-border'],\n    borderInlineStartStyle: 'solid',\n    borderInlineStartWidth: space['--ult-space-1'],\n    color: color['--ult-color-text-muted'],\n    fontSize: text['--ult-text-4'],\n    marginBlock: space['--ult-space-5'],\n    marginInline: 0,\n    paddingInlineStart: space['--ult-space-5'],\n  },\n  rule: {\n    marginBlock: space['--ult-space-6'],\n  },\n  scroll: {\n    marginBlock: space['--ult-space-5'],\n  },\n});\n\nexport default function TypographyRecipe() {\n  return (\n    <article>\n      <h1 {...stylex.props(styles.h1)}>The prose mapping</h1>\n      <p {...stylex.props(styles.p)}>\n        Long-form text maps each element to a token style or an Ultima component. Inline code like{' '}\n        <Code>pnpm test</Code> and links like <a href=\"#typography\" {...stylex.props(styles.a)}>the\n        component catalogue</a> keep the surrounding rhythm.\n      </p>\n      <h2 {...stylex.props(styles.h2)}>Headings and lists</h2>\n      <p {...stylex.props(styles.p)}>Headings step down the type scale; lists share the body size.</p>\n      <ul {...stylex.props(styles.list)}>\n        <li {...stylex.props(styles.li)}>Tokens for every raw value</li>\n        <li {...stylex.props(styles.li)}>One styling engine</li>\n      </ul>\n      <ol {...stylex.props(styles.list)}>\n        <li {...stylex.props(styles.li)}>Install the dependencies</li>\n        <li {...stylex.props(styles.li)}>Copy the mapping</li>\n      </ol>\n      <h3 {...stylex.props(styles.h3)}>Quoted text</h3>\n      <blockquote {...stylex.props(styles.blockquote)}>\n        A literal in component code is a bug, not a shortcut.\n      </blockquote>\n      <h3 {...stylex.props(styles.h3)}>Code blocks</h3>\n      <Code variant=\"block\">\n        {'npx shadcn add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area'}\n      </Code>\n      <Separator style={styles.rule} />\n      <h3 {...stylex.props(styles.h3)}>Tables</h3>\n      <ScrollArea.Root style={styles.scroll}>\n        <ScrollArea.Viewport>\n          <ScrollArea.Content>\n            <Table.Root>\n              <Table.Head>\n                <Table.Row>\n                  <Table.HeadCell>Element</Table.HeadCell>\n                  <Table.HeadCell>Maps to</Table.HeadCell>\n                </Table.Row>\n              </Table.Head>\n              <Table.Body>\n                <Table.Row>\n                  <Table.Cell>code, pre</Table.Cell>\n                  <Table.Cell>Code, inline and block</Table.Cell>\n                </Table.Row>\n                <Table.Row>\n                  <Table.Cell>hr</Table.Cell>\n                  <Table.Cell>Separator</Table.Cell>\n                </Table.Row>\n                <Table.Row>\n                  <Table.Cell>table, th, td</Table.Cell>\n                  <Table.Cell>Table inside ScrollArea</Table.Cell>\n                </Table.Row>\n              </Table.Body>\n            </Table.Root>\n          </ScrollArea.Content>\n        </ScrollArea.Viewport>\n        <ScrollArea.Scrollbar orientation=\"horizontal\">\n          <ScrollArea.Thumb />\n        </ScrollArea.Scrollbar>\n      </ScrollArea.Root>\n    </article>\n  );\n}\n"
+      }
+    ],
+    "items": [
+      "code",
+      "scroll-area",
+      "separator",
+      "table",
+      "tokens"
+    ],
+    "dependencies": [
+      "@stylexjs/stylex"
+    ]
+  },
+  "apps/docs/src/examples/complete-screen/style-overrides.tsx": {
+    "entry": "apps/docs/src/examples/complete-screen/style-overrides.tsx",
+    "files": [
+      {
+        "source": "apps/docs/src/examples/complete-screen/style-overrides.tsx",
+        "path": "components/examples/style-overrides.tsx",
+        "content": "'use client';\n\nimport * as stylex from '@stylexjs/stylex';\nimport { border, color, space, text } from '@/lib/tokens.stylex';\nimport { Button } from '@/components/ui/button';\nimport { Card } from '@/components/ui/card';\n\n/**\n * Each override sets layout, size or a semantic role through the part's own `style` prop. None touches\n * focus, disabled opacity or cursor, so the component keeps its focus ring and disabled behavior.\n */\nconst styles = stylex.create({\n  card: {\n    borderColor: color['--ult-color-border-strong'],\n  },\n  header: {\n    borderBlockEndColor: color['--ult-color-border'],\n    borderBlockEndStyle: 'solid',\n    borderBlockEndWidth: border.hairline,\n    marginBlockEnd: space['--ult-space-6'],\n  },\n  title: {\n    fontSize: text['--ult-text-7'],\n  },\n  footer: {\n    flexWrap: 'wrap',\n    justifyContent: 'flex-end',\n  },\n  roomy: {\n    height: space['--ult-space-11'],\n    paddingInline: space['--ult-space-8'],\n  },\n});\n\nexport default function StyleOverrides() {\n  return (\n    <Card.Root style={styles.card}>\n      <Card.Header style={styles.header}>\n        <Card.Title style={styles.title}>Invite a teammate</Card.Title>\n        <Card.Description>They join the Northwind workspace with editor access.</Card.Description>\n      </Card.Header>\n      <Card.Body>\n        <p>Invitations expire after seven days. A pending invitation can be sent again once a day.</p>\n      </Card.Body>\n      <Card.Footer style={styles.footer}>\n        <Button variant=\"outline\" disabled style={styles.roomy}>\n          Resend invitation\n        </Button>\n        <Button style={styles.roomy}>Send invitation</Button>\n      </Card.Footer>\n    </Card.Root>\n  );\n}\n"
+      }
+    ],
+    "items": [
+      "button",
+      "card",
+      "tokens"
+    ],
+    "dependencies": [
+      "@stylexjs/stylex"
+    ]
+  },
+  "apps/docs/src/examples/complete-screen/interaction-states.tsx": {
+    "entry": "apps/docs/src/examples/complete-screen/interaction-states.tsx",
+    "files": [
+      {
+        "source": "apps/docs/src/examples/complete-screen/interaction-states.tsx",
+        "path": "components/examples/interaction-states.tsx",
+        "content": "'use client';\n\nimport * as stylex from '@stylexjs/stylex';\nimport { color, space, text } from '@/lib/tokens.stylex';\nimport { Button } from '@/components/ui/button';\nimport { Dialog } from '@/components/ui/dialog';\nimport { Field } from '@/components/ui/field';\nimport { Input } from '@/components/ui/input';\nimport { type ComponentProps, type FormEvent, useState } from 'react';\n\nconst styles = stylex.create({\n  form: {\n    display: 'grid',\n    gap: space['--ult-space-5'],\n  },\n  actions: {\n    display: 'flex',\n    flexWrap: 'wrap',\n    gap: space['--ult-space-4'],\n  },\n  announcement: {\n    color: color['--ult-color-text-muted'],\n    fontSize: text['--ult-text-3'],\n    margin: 0,\n  },\n});\n\ntype Container = ComponentProps<typeof Dialog.Portal>['container'];\n\n/** `container` is where the Dialog portals, the document body by default; a subtree theme passes its own element. */\nexport default function InteractionStates({ container }: { container?: Container }) {\n  const [email, setEmail] = useState('');\n  const [error, setError] = useState('');\n  const [pending, setPending] = useState<string[]>([]);\n  const [announcement, setAnnouncement] = useState('');\n\n  function submit(event: FormEvent<HTMLFormElement>) {\n    event.preventDefault();\n    const address = email.trim();\n    if (!address.includes('@')) {\n      setError('Enter an email address that includes @.');\n      setAnnouncement('');\n      return;\n    }\n    setPending([...pending, address]);\n    setEmail('');\n    setError('');\n    setAnnouncement(`Invited ${address}.`);\n  }\n\n  return (\n    <form aria-label=\"Invite by email\" noValidate onSubmit={submit} {...stylex.props(styles.form)}>\n      <Field.Root name=\"email\" invalid={error !== ''}>\n        <Field.Label>Email address</Field.Label>\n        <Input\n          type=\"email\"\n          required\n          value={email}\n          onValueChange={(value) => {\n            setEmail(value);\n            setError('');\n          }}\n        />\n        <Field.Description>Send invite stays disabled until you type an address.</Field.Description>\n        {error ? <Field.Error match>{error}</Field.Error> : null}\n      </Field.Root>\n      <div {...stylex.props(styles.actions)}>\n        <Button type=\"submit\" disabled={email.trim() === ''}>\n          Send invite\n        </Button>\n        <RevokeInvites\n          container={container}\n          count={pending.length}\n          onRevoke={() => {\n            setAnnouncement(`Revoked ${pending.length} pending ${pending.length === 1 ? 'invite' : 'invites'}.`);\n            setPending([]);\n          }}\n        />\n      </div>\n      <p role=\"status\" {...stylex.props(styles.announcement)}>\n        {announcement}\n      </p>\n    </form>\n  );\n}\n\nfunction RevokeInvites({ container, count, onRevoke }: { container?: Container; count: number; onRevoke: () => void }) {\n  const [open, setOpen] = useState(false);\n\n  return (\n    <Dialog.Root open={open} onOpenChange={setOpen}>\n      <Dialog.Trigger render={<Button variant=\"outline\" />}>Review pending invites</Dialog.Trigger>\n      <Dialog.Portal container={container}>\n        <Dialog.Backdrop />\n        <Dialog.Viewport>\n          <Dialog.Popup>\n            <Dialog.Title>Pending invites</Dialog.Title>\n            <Dialog.Description>\n              {count === 0 ? 'No invites are waiting for an answer.' : `${count} ${count === 1 ? 'invite is' : 'invites are'} waiting for an answer.`}\n            </Dialog.Description>\n            <div {...stylex.props(styles.actions)}>\n              <Button\n                tone=\"danger\"\n                disabled={count === 0}\n                onClick={() => {\n                  onRevoke();\n                  setOpen(false);\n                }}\n              >\n                Revoke all\n              </Button>\n              <Dialog.Close render={<Button variant=\"outline\" />}>Close</Dialog.Close>\n            </div>\n          </Dialog.Popup>\n        </Dialog.Viewport>\n      </Dialog.Portal>\n    </Dialog.Root>\n  );\n}\n"
+      }
+    ],
+    "items": [
+      "button",
+      "dialog",
+      "field",
+      "input",
+      "tokens"
+    ],
     "dependencies": [
       "@stylexjs/stylex"
     ]
@@ -507,22 +545,10 @@ export const recipeSources: Record<string, CopyBundle> = {
 };
 export const compositionExamples = [
   {
-    "id": "typography",
-    "title": "Typography",
-    "recipe": "typography",
-    "route": "/components/code",
-    "anchor": "typography",
-    "files": [
-      {
-        "source": "apps/docs/src/demos/code/typography.tsx",
-        "destination": "examples/demos/code/typography.tsx"
-      }
-    ],
-    "install": "npx shadcn add @ultima/code @ultima/scroll-area @ultima/separator @ultima/table"
-  },
-  {
     "id": "projects",
-    "title": "Projects screen",
+    "title": "Responsive screen",
+    "route": "/build-a-screen",
+    "anchor": "responsive-screen",
     "files": [
       {
         "source": "apps/docs/src/examples/complete-screen/projects.tsx",
@@ -538,5 +564,75 @@ export const compositionExamples = [
       }
     ],
     "install": "npx shadcn add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table"
+  },
+  {
+    "id": "typography",
+    "title": "Typography",
+    "recipe": "typography",
+    "route": "/components/code",
+    "anchor": "typography",
+    "files": [
+      {
+        "source": "apps/docs/src/demos/code/typography.tsx",
+        "destination": "examples/demos/code/typography.tsx"
+      }
+    ],
+    "install": "npx shadcn add @ultima/code @ultima/scroll-area @ultima/separator @ultima/table"
+  },
+  {
+    "id": "style-overrides",
+    "title": "Component style overrides",
+    "route": "/build-a-screen",
+    "anchor": "component-style-overrides",
+    "files": [
+      {
+        "source": "apps/docs/src/examples/complete-screen/style-overrides.tsx",
+        "destination": "components/examples/style-overrides.tsx"
+      }
+    ],
+    "install": "npx shadcn add @ultima/button @ultima/card"
+  },
+  {
+    "id": "interaction-states",
+    "title": "Interaction states",
+    "route": "/build-a-screen",
+    "anchor": "interaction-states",
+    "files": [
+      {
+        "source": "apps/docs/src/examples/complete-screen/interaction-states.tsx",
+        "destination": "components/examples/interaction-states.tsx"
+      }
+    ],
+    "install": "npx shadcn add @ultima/button @ultima/dialog @ultima/field @ultima/input"
+  },
+  {
+    "id": "product-tokens",
+    "title": "Product semantic tokens",
+    "route": "/build-a-screen",
+    "anchor": "product-semantic-tokens",
+    "files": [
+      {
+        "source": "apps/docs/src/examples/complete-screen/projects.tsx",
+        "destination": "components/projects/projects.tsx"
+      },
+      {
+        "source": "apps/docs/src/examples/complete-screen/projects-data.ts",
+        "destination": "components/projects/projects-data.ts"
+      },
+      {
+        "source": "apps/docs/src/examples/complete-screen/screen.stylex.ts",
+        "destination": "components/projects/screen.stylex.ts"
+      }
+    ],
+    "install": "npx shadcn add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table"
+  },
+  {
+    "id": "settings-01-adaptation",
+    "title": "Adapt an existing block",
+    "block": "settings-01",
+    "route": "/build-a-screen",
+    "anchor": "adapt-an-existing-block",
+    "files": [],
+    "install": "npx shadcn add @ultima/settings-01"
   }
 ];

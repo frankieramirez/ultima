@@ -129,3 +129,25 @@ test('lists the components under one heading per group, in the order given', () 
   ]);
   expect(components).toContain('npx shadcn add @ultima/input');
 });
+
+test('emits a Build a screen section from the published lessons, with a block lesson by its entry import', () => {
+  const lesson = { id: 'screen', title: 'Screen lesson', route: '/build-a-screen', anchor: 'screen-lesson', files: [{ source: 'a.tsx', destination: 'components/screen/a.tsx' }], install: 'npx shadcn add @ultima/button' };
+  const block = { id: 'adapt', title: 'Block lesson', block: 'settings-01', route: '/build-a-screen', anchor: 'block-lesson', files: [], install: 'npx shadcn add @ultima/settings-01' };
+  const output = agentGuide({
+    specPath: join(root, 'docs/spec/ultima.md'),
+    tokensJsonPath: join(root, 'packages/tokens/dist/tokens.json'),
+    groups: [],
+    elements: [],
+    blocks: [{ name: 'settings-01', title: 'Settings 01', description: 'Settings.', primaryExport: 'Settings01', builtFrom: [] }],
+    examples: [lesson, block, { ...lesson, id: 'unpublished', title: 'Unpublished lesson', route: undefined, anchor: undefined }],
+  });
+  const section = output.split('\n## Build a screen\n')[1]!.split('\n## ')[0]!;
+  expect(section).toContain('https://ultima.systems/build-a-screen#screen-lesson. Files: components/screen/a.tsx. Install: `npx shadcn add @ultima/button`');
+  expect(section).toContain("`import { Settings01 } from '@/components/settings-01/settings-01'`");
+  expect(section).toContain('Install: `npx shadcn add @ultima/settings-01`');
+  expect(section).not.toContain('Unpublished lesson');
+});
+
+test('emits no Build a screen heading without lessons', () => {
+  expect(guide([])).not.toContain('## Build a screen');
+});

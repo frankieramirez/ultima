@@ -124,6 +124,16 @@ export default [
     authority: 'docs/spec/ultima.md#the-docs-site-theme',
   },
   {
+    id: 'build-a-screen-preview-applies-the-product-draft',
+    rule: 'ULT-STYLE-001',
+    path: 'apps/docs/src/build-a-screen.tsx',
+    symbol: 'ScreenPreview',
+    target: 'style.setProperty',
+    count: 1,
+    reason: "The framed product-token lesson sets the proof draft's resolved --ult-* table on the root, as the installed theme stylesheet does, so the document ground and body portals wear it.",
+    authority: 'docs/spec/screen-composition.md#bounded-example-inventory',
+  },
+  {
     id: 'landing-scale-band-wears-its-scale',
     rule: 'ULT-STYLE-001',
     path: 'apps/docs/src/landing-scales.tsx',
