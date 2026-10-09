@@ -97,7 +97,9 @@ for (const [layout, base] of [['vite', 'consumer-proof'], ['next-app', 'consumer
   CONFIGURATION[`consumer-copy-${layout}`] = [...CONFIGURATION[base]!, 'scripts/consumer-copy-bundles.ts', 'scripts/catalogue/composition-examples.ts', 'apps/docs/package.json'];
   CONFIGURATION[`consumer-lint-${layout}`] = [...CONFIGURATION[base]!, 'scripts/consumer-lint.ts', 'apps/docs/public/ultima.eslint.mjs', 'packages/analysis/fixtures/app/palette.tsx', 'packages/analysis/fixtures/app/paint.tsx'];
 }
-CONFIGURATION['consumer-bundles-vite'] = [...CONFIGURATION['consumer-proof']!, 'scripts/consumer-bundles.ts', 'scripts/consumer-next.ts'];
+CONFIGURATION['consumer-bundles-vite'] = [...CONFIGURATION['consumer-proof']!, 'scripts/consumer-bundles.ts', 'scripts/consumer-next.ts', 'scripts/consumer-elements.ts'];
+for (const layout of ['next-app', 'next-src'] as const) CONFIGURATION[`consumer-bundles-${layout}`] = [...CONFIGURATION[`consumer-proof-${layout}`]!, 'scripts/consumer-bundles.ts', 'scripts/consumer-elements.ts'];
+CONFIGURATION['consumer-elements'] = ['scripts/consumer-proof.ts', 'scripts/consumer-helpers.ts', 'scripts/consumer-report.ts', 'scripts/consumer-bundles.ts', 'scripts/consumer-elements.ts', 'scripts/consumer-next.ts', 'scripts/consumer-delivery.ts', 'package.json', 'scripts/build-registry.ts', 'packages/elements/scripts/build.ts', 'packages/elements/scripts/bundle.ts', 'registry/metadata/schema.ts'];
 
 /**
  * Where each suite's runner finds its tests, as the runner's own configuration states it: Vitest's
@@ -559,7 +561,7 @@ const consumerProofAdapter: Adapter = {
     const modeValidator = exercise === 'theme-mode' ? await import('../consumer-mode.ts') : undefined;
     const copyValidator = exercise === 'copy-bundles' ? await import('../consumer-copy-bundles.ts') : undefined;
     const lintValidator = exercise === 'lint' ? await import('../consumer-lint.ts') : undefined;
-    const bundleValidator = exercise === 'bundles' ? await import('../consumer-bundles.ts') : undefined;
+    const bundleValidator = exercise === 'bundles' || exercise === 'elements' ? await import('../consumer-bundles.ts') : undefined;
     const output = join(context.artifacts, context.check.id);
     const reportPath = join(output, 'report.json');
     const { process } = await logged(context, [...context.check.argv, '--output', output]);
@@ -785,5 +787,8 @@ export const ADAPTERS: Adapters = {
   'consumer-lint-next-app': consumerProofAdapter,
   'consumer-lint-next-src': consumerProofAdapter,
   'consumer-bundles-vite': consumerProofAdapter,
+  'consumer-bundles-next-app': consumerProofAdapter,
+  'consumer-bundles-next-src': consumerProofAdapter,
+  'consumer-elements': consumerProofAdapter,
   'production-scenarios': productionAdapter,
 };

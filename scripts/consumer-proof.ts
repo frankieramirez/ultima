@@ -9,7 +9,7 @@ import { draftFingerprint } from '../packages/tokens/src/theme/codec.ts';
 import { presetDraft, resolveDraft, stockDraft, type ThemeDraft } from '../packages/tokens/src/theme/draft.ts';
 import { gate } from '../packages/tokens/src/theme/gate.ts';
 import { packCli, repository, run, scaffold, serveRegistry, type Run } from './consumer-helpers.ts';
-import { BUNDLE_ITEMS, CONSUMER_LAYOUTS, DELIVERY_PATHS, ENGINES, bundleCases, copyBundleCases, lintCases, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, modeCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath, type Engine } from './consumer-report.ts';
+import { BUNDLE_ITEMS, CONSUMER_LAYOUTS, DELIVERY_PATHS, ELEMENT_ITEMS, ENGINES, bundleCases, copyBundleCases, elementCases, lintCases, consumerCases, consumerCell, consumerPrerequisites, consumerReproduction, modeCases, type ConsumerLayout, type ConsumerReport, type DeliveryPath, type Engine } from './consumer-report.ts';
 import { THEME_PRESETS } from '../packages/tokens/src/theme/draft.ts';
 import { modeProof, modeScene } from './consumer-mode.ts';
 import { installScene, isSceneFault, SCENE_FAULTS, SCENE_INSTALL, SCENE_ITEMS } from './consumer-scene.ts';
@@ -29,6 +29,7 @@ import { COPY_FAULTS, COPY_ITEMS, copyBundleProof, copyBundleScene } from './con
 import { lintProof, lintScene } from './consumer-lint.ts';
 import { externalProof } from './consumer-external.ts';
 import { bundleProof, bundleScene } from './consumer-bundles.ts';
+import { elementScene } from './consumer-elements.ts';
 
 export function proofDraft(): ThemeDraft {
   const draft = sharedProofDraft();
@@ -42,7 +43,7 @@ export function proofDraft(): ThemeDraft {
 }
 
 export const PROOF_FAULTS = ['theme-import', 'stylex-extraction', 'src-extraction', 'hydration-mismatch', 'partial-group', 'mode-script', ...SCENE_FAULTS, ...COPY_FAULTS] as const;
-export const PROOF_EXERCISES = ['theme-mode', 'copy-bundles', 'lint', 'bundles'] as const;
+export const PROOF_EXERCISES = ['theme-mode', 'copy-bundles', 'lint', 'bundles', 'elements'] as const;
 export type ProofOptions = { layout: ConsumerLayout; deliveryPath: DeliveryPath; output?: string; case?: string; preset?: 'ultima'; exercise?: typeof PROOF_EXERCISES[number]; fault?: typeof PROOF_FAULTS[number]; engines?: Engine[] };
 const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
@@ -105,9 +106,11 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   if (options.fault === 'unresolved-copy-import' && options.exercise !== 'copy-bundles') throw new Error('unresolved-copy-import requires the copy-bundles exercise');
   if (options.fault && options.exercise === 'lint') throw new Error('the lint exercise seeds its own negative cases; it takes no --fault');
   if (options.case && !consumerCases(options.layout, options.deliveryPath).includes(options.case)) throw new Error(`unknown consumer cell: ${options.case}`);
-  if (options.exercise === 'bundles' && options.layout !== 'vite') throw new Error('the bundles exercise runs on the canonical Vite fixture');
-  if (options.engines && options.exercise !== 'bundles') throw new Error('--engine selects bundle cells; the other cells run in Chromium');
-  const engines = options.exercise === 'bundles' ? ENGINES.filter((engine) => !options.engines || options.engines.includes(engine)) : [];
+  if (options.exercise === 'elements' && options.layout !== 'vite') throw new Error('the elements exercise runs on its own vanilla Vite fixture');
+  if (options.exercise === 'elements' && options.fault) throw new Error('the elements exercise takes no --fault');
+  const crossEngine = options.exercise === 'bundles' || options.exercise === 'elements';
+  if (options.engines && !crossEngine) throw new Error('--engine selects bundle and element cells; the other cells run in Chromium');
+  const engines = crossEngine ? ENGINES.filter((engine) => !options.engines || options.engines.includes(engine)) : [];
   const isNext = options.layout !== 'vite';
   const src = options.layout === 'next-src';
   const setupItem = isNext ? 'setup-next' : 'setup-vite';
@@ -127,7 +130,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     source: { head: source.head, manifest: source.manifest, registryManifestHash: null, cliTarballDigest: null, draftDigest: null, draftFingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion },
     command: process.argv.slice(1), work: null, versions: { node: process.version }, installedItems: [setupItem, ...SCENE_ITEMS, 'tokens', 'lib', 'ultima-theme'],
     ...(options.exercise && { exercise: options.exercise }),
-    expected: options.exercise === 'theme-mode' ? modeCases(options.layout) : options.exercise === 'copy-bundles' ? copyBundleCases(options.layout) : options.exercise === 'lint' ? lintCases(options.layout) : options.exercise === 'bundles' ? bundleCases(engines) : options.case ? [options.case] : consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {}, ...(options.case ? { selectedCase: options.case } : {}), ...(options.exercise === 'bundles' && { engines }),
+    expected: options.exercise === 'theme-mode' ? modeCases(options.layout) : options.exercise === 'copy-bundles' ? copyBundleCases(options.layout) : options.exercise === 'lint' ? lintCases(options.layout) : options.exercise === 'bundles' ? bundleCases(engines, options.layout) : options.exercise === 'elements' ? elementCases(engines) : options.case ? [options.case] : consumerCases(options.layout, options.deliveryPath), executed: [], cases: [], errors: [], drafts: {}, ...(options.case ? { selectedCase: options.case } : {}), ...(crossEngine && { engines }),
   };
   const execute: Run = async (cwd, command, args) => {
     await appendFile(join(output, 'commands.log'), `${JSON.stringify({ cwd, command, args })}\n`);
@@ -142,6 +145,13 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
   };
   const servers: Awaited<ReturnType<typeof serveRegistry>>[] = [];
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
+  const finish = () => {
+    const unexecuted = report.expected.filter((id) => !report.executed.includes(id));
+    if (unexecuted.length) report.errors.push(`not executed: ${unexecuted.join(', ')}`);
+    report.status = report.errors.length ? 'incomplete' : [...(report.prerequisites ?? []), ...report.cases].some((row) => row.status === 'failed') ? 'failed' : 'passed';
+    const after = hashSource(repository);
+    assert.ok(after.ok && after.manifest.digest === source.manifest.digest, 'source changed while consumer proof ran');
+  };
   try {
     const work = await mkdtemp(join(tmpdir(), 'ultima-consumer-'));
     assert.ok(relative(repository, work).startsWith('..'), 'consumer must be outside the workspace');
@@ -150,11 +160,30 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     await cp(join(repository, 'apps/docs/public/r'), join(work, 'registry/r'), { recursive: true });
     report.source.registryManifestHash = digest(await readFile(join(work, 'registry/r/registry.json')));
     await cp(join(work, 'registry/r/registry.json'), join(output, 'registry.json'));
+    const registry = await serveRegistry(join(work, 'registry'));
+    servers.push(registry);
+    if (options.exercise === 'elements') {
+      const app = join(work, 'elements');
+      await scaffold('vanilla', app, execute);
+      await elementScene(app, registry.url, execute);
+      report.installedItems = [...ELEMENT_ITEMS, 'tokens-css'];
+      const installed = await installTheme(app, join(work, 'registry'), registry.url, draft, 'vite', 'css', execute, true);
+      report.drafts!['non-stock'] = { digest: digest(installed), fingerprint: draftFingerprint(draft), recipeVersion: draft.recipeVersion };
+      report.source.draftDigest = digest(installed);
+      for (const name of ['package.json', 'package-lock.json', 'tsconfig.json', 'index.html', 'src', 'ultima-theme.css', 'ultima-theme.json', 'ultima-tokens.css']) await cp(join(app, name), join(output, name), { recursive: true });
+      for (const name of ['vite', 'typescript']) report.versions[name] = JSON.parse(await readFile(join(app, 'node_modules', name, 'package.json'), 'utf8')).version;
+      report.versions.npm = (await execute(app, 'npm', ['--version'])).trim();
+      try { await writeFile(join(output, 'build.log'), await execute(app, 'npm', ['run', 'build'])); }
+      catch (error) { await writeFile(join(output, 'build.log'), String(error)); throw error; }
+      const production = await serveRegistry(join(app, 'dist'), true, join(output, 'server.log'));
+      servers.push(production);
+      await bundleProof(production.url, app, report, output, resolveDraft(draft), resolveDraft(presetDraft('neutral')), engines);
+      finish();
+      return report;
+    }
     await execute(repository, 'pnpm', ['--filter', 'ultima-design', 'build']);
     const tarball = await packCli(work, execute);
     report.source.cliTarballDigest = digest(await readFile(tarball));
-    const registry = await serveRegistry(join(work, 'registry'));
-    servers.push(registry);
     const app = join(work, options.layout);
     await scaffold(isNext ? (src ? 'next-src' : 'next-root') : 'vite', app, execute, { eslint: options.exercise === 'lint' });
     const setup = await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', `${registry.url}/r/${setupItem}.json`, '--yes']);
@@ -211,7 +240,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       await copyBundleScene(app, options.layout, execute, options.fault);
       report.installedItems.push(...COPY_ITEMS.filter((id) => !report.installedItems.includes(id)));
     }
-    if (options.exercise === 'bundles') {
+    if (options.exercise === 'bundles' && !isNext) {
       await bundleScene(app, execute);
       report.installedItems.push(...BUNDLE_ITEMS);
     }
@@ -378,11 +407,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       await production.close();
       servers.pop();
     }
-    const unexecuted = report.expected.filter((id) => !report.executed.includes(id));
-    if (unexecuted.length) report.errors.push(`not executed: ${unexecuted.join(', ')}`);
-    report.status = report.errors.length ? 'incomplete' : [...(report.prerequisites ?? []), ...report.cases].some((row) => row.status === 'failed') ? 'failed' : 'passed';
-    const after = hashSource(repository);
-    assert.ok(after.ok && after.manifest.digest === source.manifest.digest, 'source changed while consumer proof ran');
+    finish();
   } catch (error) { report.errors.push(String(error)); report.status = 'incomplete'; }
   finally {
     await browser?.close();

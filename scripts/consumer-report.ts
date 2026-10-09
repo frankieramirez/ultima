@@ -1,5 +1,5 @@
 import type { Manifest } from './verification/source.ts';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import ts from 'typescript';
 
 export function registryPresets(): string[] {
@@ -33,11 +33,19 @@ export const ENGINES = ['chromium', 'firefox', 'webkit'] as const;
 export type Engine = typeof ENGINES[number];
 /** The first three production bundles of docs/spec/consumer-support.md#bounded-production-proof; scripts/consumer-bundles.ts holds each one's assertions. */
 export const BUNDLES = ['theme-css', 'overlay-keyboard', 'form'] as const;
-export type Bundle = typeof BUNDLES[number];
-/** The bundles exercise runs on the canonical Vite fixture only: every bundle in both modes, per engine. */
-export const bundleCases = (engines: readonly Engine[] = ENGINES) => engines.flatMap((engine) => BUNDLES.flatMap((bundle) => ['dark', 'light'].map((mode) => `vite/bundles/${engine}/${bundle}-${mode}`)));
+export const NEXT_BUNDLES = ['hydration'] as const;
+export const ELEMENT_BUNDLES = ['lifecycle'] as const;
+export type Bundle = typeof BUNDLES[number] | typeof NEXT_BUNDLES[number] | typeof ELEMENT_BUNDLES[number];
+export const MATRIX_BUNDLES: readonly Bundle[] = [...BUNDLES, ...NEXT_BUNDLES, ...ELEMENT_BUNDLES];
+const cells = (prefix: string, bundles: readonly Bundle[], engines: readonly Engine[]) => engines.flatMap((engine) => bundles.flatMap((bundle) => ['dark', 'light'].map((mode) => `${prefix}/${engine}/${bundle}-${mode}`)));
+/** The bundles exercise: the Vite bundles on the canonical Vite fixture, the hydration bundle on each Next layout; every bundle in both modes, per engine. */
+export const bundleCases = (engines: readonly Engine[] = ENGINES, layout: ConsumerLayout = 'vite') => cells(`${layout}/bundles`, layout === 'vite' ? BUNDLES : NEXT_BUNDLES, engines);
+export const elementCases = (engines: readonly Engine[] = ENGINES) => cells('vite/elements', ELEMENT_BUNDLES, engines);
+/** Every cell of the cross-engine matrix in docs/spec/consumer-support.md#bounded-production-proof that the runner registers. */
+export const matrixCases = () => [...CONSUMER_LAYOUTS.flatMap((layout) => bundleCases(ENGINES, layout)), ...elementCases()];
 /** The items the bundles exercise installs beside the Projects scene, for its scoped popups and form controls. */
 export const BUNDLE_ITEMS = ['checkbox', 'popover'];
+export const ELEMENT_ITEMS = readdirSync(new URL('../registry/metadata/element/', import.meta.url)).filter((name) => name.endsWith('.ts')).map((name) => name.slice(0, -'.ts'.length)).sort();
 /** The worked block-adaptation path the copy-bundles exercise installs and adapts. */
 export const ADAPTED_BLOCK = 'settings-01';
 /** The fixture prefix and mode of a cell id, the inverse of `consumerCases`. */
@@ -61,7 +69,7 @@ export type ConsumerReport = {
   status: 'passed' | 'failed' | 'incomplete';
   layout: ConsumerLayout;
   deliveryPath: DeliveryPath;
-  exercise?: 'theme-mode' | 'copy-bundles' | 'lint' | 'bundles';
+  exercise?: 'theme-mode' | 'copy-bundles' | 'lint' | 'bundles' | 'elements';
   source: {
     head: string | null;
     manifest: Manifest;
@@ -82,7 +90,7 @@ export type ConsumerReport = {
   drafts?: Record<string, { digest: string; fingerprint: string; recipeVersion: number }>;
   cliReports?: { doctor: string; check: string };
   engines?: Engine[];
-  /** The bundles exercise's one production build, shared by every engine: the hash of its served output and its lockfile. */
+  /** The bundles or elements exercise's one production build, shared by every engine: the hash of its served output and its lockfile. */
   fixture?: { hash: string; lock: string };
   platform?: { os: string; release: string; arch: string };
   lint?: { fragment: { path: string; digest: string }; config: string; lintScript: string | null; network: string; versions: Record<string, string | null>; files: string[] };
@@ -96,21 +104,22 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
   const problems: string[] = [];
   if (report.schemaVersion !== 1 || !CONSUMER_LAYOUTS.includes(report.layout) || !DELIVERY_PATHS.includes(report.deliveryPath) || (layout && report.layout !== layout) || (path && report.deliveryPath !== path)) problems.push('unknown consumer-proof schema or parameters');
   if (!['passed', 'failed', 'incomplete'].includes(report.status)) problems.push('unknown consumer-proof status');
-  if (report.exercise !== undefined && !['theme-mode', 'copy-bundles', 'lint', 'bundles'].includes(report.exercise)) problems.push('unknown consumer exercise');
+  if (report.exercise !== undefined && !['theme-mode', 'copy-bundles', 'lint', 'bundles', 'elements'].includes(report.exercise)) problems.push('unknown consumer exercise');
   if (report.exercise !== undefined && report.deliveryPath !== 'css') problems.push(`${report.exercise} requires CSS delivery`);
   if (report.exercise === 'copy-bundles' && !report.installedItems?.includes(ADAPTED_BLOCK)) problems.push('copy-bundles installed source inventory is incomplete');
   if (report.exercise === 'theme-mode' && !['theme-mode', 'popover'].every((item) => report.installedItems?.includes(item))) problems.push('theme-mode installed source inventory is incomplete');
   if (report.exercise === 'lint' && !['button', 'sidebar', ADAPTED_BLOCK].every((item) => report.installedItems?.includes(item))) problems.push('lint installed source inventory is incomplete');
   if (report.exercise === 'lint' && report.status !== 'incomplete' && (!report.lint || !/^[a-f0-9]{64}$/.test(report.lint.fragment?.digest ?? '') || typeof report.lint.network !== 'string' || !report.lint.versions?.eslint || !report.lint.versions?.['@stylexjs/eslint-plugin'] || !Array.isArray(report.lint.files) || report.lint.files.length === 0)) problems.push('lint fragment, network, version or coverage evidence is missing');
-  if (report.exercise === 'bundles') {
-    if (report.layout !== 'vite') problems.push('bundles run on the canonical Vite fixture');
-    if (!BUNDLE_ITEMS.every((item) => report.installedItems?.includes(item))) problems.push('bundles installed source inventory is incomplete');
+  if (report.exercise === 'bundles' || report.exercise === 'elements') {
+    if (report.exercise === 'elements' && report.layout !== 'vite') problems.push('elements run on their own vanilla Vite fixture');
+    if (!(report.exercise === 'elements' ? ELEMENT_ITEMS : report.layout === 'vite' ? BUNDLE_ITEMS : []).every((item) => report.installedItems?.includes(item))) problems.push('bundles installed source inventory is incomplete');
     if (!Array.isArray(report.engines) || !report.engines.length || report.engines.some((engine, index) => !ENGINES.includes(engine) || report.engines!.indexOf(engine) !== index)) problems.push('unknown bundle engines');
     else if (report.status !== 'incomplete' && report.engines.some((engine) => typeof report.versions?.[engine] !== 'string' || !report.versions[engine])) problems.push('bundle browser identity is missing');
     const sha = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
     if (report.status !== 'incomplete' && (!sha(report.fixture?.hash) || !sha(report.fixture?.lock) || !report.platform?.os || !report.platform.release || !report.platform.arch)) problems.push('bundle fixture or platform identity is missing');
   }
-  const all = report.exercise === 'theme-mode' ? modeCases(report.layout) : report.exercise === 'copy-bundles' ? copyBundleCases(report.layout) : report.exercise === 'lint' ? lintCases(report.layout) : report.exercise === 'bundles' ? bundleCases(Array.isArray(report.engines) ? report.engines.filter((engine) => ENGINES.includes(engine)) : []) : consumerCases(report.layout, report.deliveryPath);
+  const engines = Array.isArray(report.engines) ? report.engines.filter((engine) => ENGINES.includes(engine)) : [];
+  const all = report.exercise === 'theme-mode' ? modeCases(report.layout) : report.exercise === 'copy-bundles' ? copyBundleCases(report.layout) : report.exercise === 'lint' ? lintCases(report.layout) : report.exercise === 'bundles' ? bundleCases(engines, report.layout) : report.exercise === 'elements' ? elementCases(engines) : consumerCases(report.layout, report.deliveryPath);
   if (report.selectedCase && (report.exercise !== undefined || !all.includes(report.selectedCase))) problems.push('unknown selected consumer case');
   const expected = report.selectedCase ? [report.selectedCase] : all;
   const same = (values: unknown, wanted = expected) => Array.isArray(values) && values.length === wanted.length && new Set(values).size === values.length && wanted.every((id) => values.includes(id));
@@ -134,7 +143,7 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
     if (!selected || !digest(selected.digest) || selected.digest !== report.source?.draftDigest || selected.fingerprint !== report.source?.draftFingerprint || selected.recipeVersion !== report.source?.recipeVersion) problems.push('selected registry provenance disagrees with source');
   }
   if (report.deliveryPath === 'cli' && (!report.cliReports?.doctor || !report.cliReports?.check)) problems.push('packed CLI reports are missing');
-  if (!report.source || !/^[a-f0-9]{40,64}$/.test(report.source.head ?? '') || !digest(report.source.manifest?.digest) || report.source.manifest.algorithm !== 'sha256' || report.source.manifest.version !== 1 || !Array.isArray(report.source.manifest?.entries) || report.source.manifest.files !== report.source.manifest.entries.length || !digest(report.source.registryManifestHash) || !digest(report.source.cliTarballDigest) || !digest(report.source.draftDigest) || typeof report.source.draftFingerprint !== 'string' || !report.source.draftFingerprint || !Number.isInteger(report.source.recipeVersion)) problems.push('consumer-proof source identity is incomplete');
+  if (!report.source || !/^[a-f0-9]{40,64}$/.test(report.source.head ?? '') || !digest(report.source.manifest?.digest) || report.source.manifest.algorithm !== 'sha256' || report.source.manifest.version !== 1 || !Array.isArray(report.source.manifest?.entries) || report.source.manifest.files !== report.source.manifest.entries.length || !digest(report.source.registryManifestHash) || (report.exercise === 'elements' ? report.source.cliTarballDigest !== null : !digest(report.source.cliTarballDigest)) || !digest(report.source.draftDigest) || typeof report.source.draftFingerprint !== 'string' || !report.source.draftFingerprint || !Number.isInteger(report.source.recipeVersion)) problems.push('consumer-proof source identity is incomplete');
   if (!Array.isArray(report.errors) || report.errors.some((error) => typeof error !== 'string') || (report.status === 'passed' && report.errors.length !== 0)) problems.push('invalid consumer-proof errors');
   return problems;
 }

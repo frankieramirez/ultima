@@ -40,6 +40,9 @@ export type CheckId = `${ConsumerCheckBase}-${'stylex-subtree' | 'registry' | 'c
   | 'consumer-lint-next-app'
   | 'consumer-lint-next-src'
   | 'consumer-bundles-vite'
+  | 'consumer-bundles-next-app'
+  | 'consumer-bundles-next-src'
+  | 'consumer-elements'
   | 'production-scenarios';
 
 /**
@@ -420,6 +423,28 @@ const BASE_CHECKS: readonly CheckDefinition[] = [
     needs: ['network', 'loopback-port', 'chromium'], deadlineSeconds: 1200,
     scope: 'scoped', selector: 'none', adapter: { status: 'available', since: '#770 (Firefox and WebKit bundles)' },
   },
+  ...(['next-app', 'next-src'] as const).map((layout): CheckDefinition => ({
+    id: `consumer-bundles-${layout}`,
+    title: `Installed production bundles: ${layout} hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit`,
+    argv: ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', layout, '--delivery-path', 'css', '--exercise', 'bundles'],
+    cwd: '.',
+    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', `fresh external Next ${layout === 'next-src' ? 'src/app' : 'root app'} scaffold`, 'shadcn setup, the Projects scene and theme installation', 'one npm run build', 'Chromium, Firefox and WebKit, two cells at a time, against the one next start server'],
+    prerequisites: ['registry-build'], after: READ_FIRST,
+    locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
+    needs: ['network', 'loopback-port', 'chromium'], deadlineSeconds: 1200,
+    scope: 'scoped', selector: 'none', adapter: { status: 'available', since: '#772 (Next hydration cells)' },
+  })),
+  {
+    id: 'consumer-elements',
+    title: 'Installed element lifecycle: registration, reconnect, attribute updates and ult-tabs keyboard and theme on a light-DOM fixture in both modes across Chromium, Firefox and WebKit',
+    argv: ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', 'vite', '--delivery-path', 'css', '--exercise', 'elements'],
+    cwd: '.',
+    nested: ['pnpm registry:build', 'fresh external vanilla Vite scaffold', 'shadcn add of every element item with tokens-css', 'the generated CSS theme', 'one npm run build', 'Chromium, Firefox and WebKit, two cells at a time, against the one served build'],
+    prerequisites: ['registry-build'], after: READ_FIRST,
+    locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
+    needs: ['network', 'loopback-port', 'chromium'], deadlineSeconds: 900,
+    scope: 'scoped', selector: 'none', adapter: { status: 'available', since: '#772 (element lifecycle cells)' },
+  },
   {
     id: 'production-scenarios',
     title: 'Production browser scenarios against the built docs',
@@ -471,7 +496,10 @@ export const CI_OBLIGATIONS: readonly { workflow: string; command: string; check
   { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise copy-bundles --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-copy-vite', 'consumer-copy-next-app', 'consumer-copy-next-src'] },
   { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise lint --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-lint-vite', 'consumer-lint-next-app', 'consumer-lint-next-src'] },
   { workflow: 'consumer-proof.yml', command: 'pnpm exec playwright install --with-deps chromium firefox webkit', preparation: 'the three engines the production bundles run in' },
-  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout vite --delivery-path css --exercise bundles --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-bundles-vite'] },
+  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise bundles --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-bundles-vite', 'consumer-bundles-next-app', 'consumer-bundles-next-src'] },
+  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout vite --delivery-path css --exercise elements --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-elements'] },
+  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-matrix.ts "$RUNNER_TEMP/reports" --summary "$RUNNER_TEMP/matrix.md"', checks: [...(['vite', 'next-app', 'next-src'] as const).map((layout): CheckId => `consumer-bundles-${layout}`), 'consumer-elements'] },
+  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-matrix.ts --file-issue "$RUNNER_TEMP/matrix.md"', preparation: 'a scheduled run that failed opens or updates its tracked support-gap issue' },
   { workflow: 'ci.yml', command: 'pnpm install --frozen-lockfile', preparation: 'dependency installation from the lockfile' },
   { workflow: 'ci.yml', command: 'pnpm catalogue:check', checks: ['catalogue-freshness'] },
   { workflow: 'ci.yml', command: 'pnpm check:architecture', checks: ['architecture'] },

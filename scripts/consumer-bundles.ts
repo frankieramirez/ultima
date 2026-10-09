@@ -2,11 +2,12 @@ import { createHash } from 'node:crypto';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { arch, release, type } from 'node:os';
 import { join, relative } from 'node:path';
-import { chromium, firefox, webkit, type Browser, type BrowserType, type Page } from 'playwright';
+import { chromium, firefox, webkit, type Browser, type BrowserContextOptions, type BrowserType, type Page } from 'playwright';
 import type { ResolvedDraft, TokenTable } from '../packages/tokens/src/theme/draft.ts';
 import type { Run } from './consumer-helpers.ts';
-import { browserErrors, type BrowserLog } from './consumer-next.ts';
-import { BUNDLES, BUNDLE_ITEMS, bundleCases, type Bundle, type ConsumerReport, type Engine } from './consumer-report.ts';
+import { lifecycle } from './consumer-elements.ts';
+import { browserErrors, hydrationProblems, hydrationState, type BrowserLog, type HydrationState } from './consumer-next.ts';
+import { BUNDLE_ITEMS, MATRIX_BUNDLES, bundleCases, elementCases, type Bundle, type ConsumerLayout, type ConsumerReport, type Engine } from './consumer-report.ts';
 import { consumerValues, sceneProbes } from './consumer-values.ts';
 
 /** Every assertion a bundle cell executes, in order; a cell passes only when each one ran and held. */
@@ -14,9 +15,12 @@ export const BUNDLE_ASSERTIONS = {
   'theme-css': ['non-stock-tokens', 'control-paint', 'layered-reset', 'state-styles', 'scoped-portal', 'reduced-motion'],
   'overlay-keyboard': ['dialog-open', 'initial-focus', 'tab-containment', 'escape-close', 'focus-restored', 'select-keyboard', 'select-pointer', 'popup-clipping', 'scroll-lock'],
   form: ['labels', 'uncontrolled-defaults', 'controlled-update', 'disabled-read-only', 'required-rejection', 'checkbox-select', 'submitted-form-data', 'reset'],
+  hydration: ['server-render', 'hydration', 'assets', 'dialog-keyboard', 'extraction', 'theme', 'portal-theme', 'escape-focus-return'],
+  lifecycle: ['registration', 'upgrade', 'reconnect', 'attribute-update', 'tabs-keyboard', 'tabs-theme'],
 } as const satisfies Record<Bundle, readonly string[]>;
 const CELLS_PER_ENGINE = 2;
-const CELL_TIMEOUT_MS = 120_000;
+/** About five times each bundle's slowest cell in the first complete CI run (#804), never under 30 seconds. */
+export const CELL_DEADLINES_MS: Record<Bundle, number> = { 'theme-css': 60_000, 'overlay-keyboard': 30_000, form: 30_000, hydration: 45_000, lifecycle: 30_000 };
 const LAUNCHERS: Record<Engine, BrowserType> = { chromium, firefox, webkit };
 
 const RESET = '@layer reset { *, *::before, *::after { box-sizing: border-box; } body { margin: 0; } button { margin: 0; padding: 0; border: 0; background: none; font: inherit; } }\n';
@@ -109,26 +113,28 @@ export async function bundleScene(app: string, execute: Run): Promise<void> {
   await writeFile(join(app, 'src/App.tsx'), "import ThemeConsumer from './ThemeConsumer';\nimport BundleProbes from './BundleProbes';\nexport default function App() { return <><ThemeConsumer /><BundleProbes /></>; }\n");
 }
 
-/** The served output every engine loads, and the lockfile it was installed from. */
-async function fixtureIdentity(app: string): Promise<{ hash: string; lock: string }> {
+async function fixtureIdentity(app: string, layout: ConsumerLayout): Promise<{ hash: string; lock: string }> {
   const hash = createHash('sha256');
-  const walk = async (folder: string): Promise<string[]> => (await Promise.all((await readdir(folder, { withFileTypes: true })).map((item) => item.isDirectory() ? walk(join(folder, item.name)) : [join(folder, item.name)]))).flat();
-  const dist = join(app, 'dist');
-  for (const file of (await walk(dist)).sort()) hash.update(`${relative(dist, file)}\0`).update(await readFile(file)).update('\0');
+  const root = join(app, layout === 'vite' ? 'dist' : '.next');
+  const walk = async (folder: string): Promise<string[]> => (await Promise.all((await readdir(folder, { withFileTypes: true })).filter((item) => !(folder === root && item.name === 'cache')).map((item) => item.isDirectory() ? walk(join(folder, item.name)) : [join(folder, item.name)]))).flat();
+  for (const file of (await walk(root)).sort()) hash.update(`${relative(root, file)}\0`).update(await readFile(file)).update('\0');
   return { hash: hash.digest('hex'), lock: createHash('sha256').update(await readFile(join(app, 'package-lock.json'))).digest('hex') };
 }
 
-export const bundleReproduction = (engine: Engine, fault?: string) => ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', 'vite', '--delivery-path', 'css', '--exercise', 'bundles', '--engine', engine, ...(fault ? ['--fault', fault] : [])];
+export const bundleReproduction = (engine: Engine, fault?: string, layout: ConsumerLayout = 'vite', exercise: 'bundles' | 'elements' = 'bundles') => ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', layout, '--delivery-path', 'css', '--exercise', exercise, '--engine', engine, ...(fault ? ['--fault', fault] : [])];
 
 type Assertion = { name: string; expected: unknown; actual: unknown; status: 'passed' | 'failed'; error?: string };
 type Check = (name: string, expected: unknown, action: () => Promise<unknown>) => Promise<void>;
-type Cell = { page: Page; check: Check; table: TokenTable; mode: 'dark' | 'light'; tables: ResolvedDraft; stock: TokenTable; id: string; engine: Engine };
+export type Cell = {
+  page: Page; check: Check; table: TokenTable; mode: 'dark' | 'light'; tables: ResolvedDraft; stock: TokenTable; id: string; engine: Engine; layout: ConsumerLayout;
+  browser: Browser; contextOptions: BrowserContextOptions; url: string; log: BrowserLog; errors: string[]; output: string; file: string; artifacts: Record<string, string>;
+};
 
-const settle = (page: Page) => page.evaluate(async () => {
+export const settle = (page: Page) => page.evaluate(async () => {
   await new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done())));
   await Promise.all(document.getAnimations().filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished.catch(() => {})));
 });
-const computedColors = (page: Page, values: Record<string, string>) => page.evaluate((values) => {
+export const computedColors = (page: Page, values: Record<string, string>) => page.evaluate((values) => {
   const probe = document.createElement('span');
   document.body.append(probe);
   const result = Object.fromEntries(Object.entries(values).map(([name, value]) => { probe.style.color = value; return [name, getComputedStyle(probe).color]; }));
@@ -376,22 +382,74 @@ async function form({ page, check }: Cell) {
   });
 }
 
-const EXERCISES: Record<Bundle, (cell: Cell) => Promise<void>> = { 'theme-css': themeCss, 'overlay-keyboard': overlayKeyboard, form };
+async function hydration({ browser, contextOptions, url, page, check, table, mode, id, engine, layout, log, errors, output, file, artifacts }: Cell) {
+  const { portal: dialog } = sceneProbes(page);
+  const trigger = page.getByRole('button', { name: 'Edit Aster', exact: true });
+  const hydrated = await hydrationState(page);
+  let server: HydrationState = { attributes: {}, content: null };
+  await check('server-render', { status: 200, theme: mode, proofMode: mode, content: true, stylesheets: true }, async () => {
+    const context = await browser.newContext({ ...contextOptions, javaScriptEnabled: false });
+    try {
+      await context.addCookies([{ name: 'proof-mode', value: mode, url }]);
+      const serverPage = await context.newPage();
+      const response = await serverPage.goto(url, { waitUntil: 'networkidle' });
+      artifacts.server = `${file}.server.html`;
+      await writeFile(join(output, artifacts.server), (await response?.text()) ?? '');
+      server = await hydrationState(serverPage);
+      const stylesheets = await serverPage.evaluate(() => document.querySelectorAll('link[rel="stylesheet"]').length > 0);
+      return { status: response?.status() ?? null, theme: server.attributes['data-theme'], proofMode: server.attributes['data-proof-mode'], content: !!server.content, stylesheets };
+    } finally { await context.close(); }
+  });
+  await check('hydration', [], async () => hydrationProblems({ server, hydrated, ready: await page.evaluate(() => document.body.dataset.hydrated === 'true'), errors: [...errors] }));
+  await check('assets', { failed: [], styled: true }, async () => ({
+    failed: log.failedRequests.filter((entry) => entry.required).map((entry) => entry.url),
+    styled: await page.evaluate(() => [...document.styleSheets].some((sheet) => { try { return sheet.cssRules.length > 0; } catch { return false; } })),
+  }));
+  await check('dialog-keyboard', { open: true, focusInside: true, portalled: true }, async () => {
+    await page.mouse.move(0, 0);
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await dialog.waitFor();
+    await settle(page);
+    return dialog.evaluate((element) => ({ open: element.checkVisibility(), focusInside: element.contains(document.activeElement), portalled: element.closest('main') === null }));
+  });
+  const snapshot = await consumerValues(page, table, mode, id, layout, 'css', engine).catch((error: unknown) => new Error(`values unavailable: ${error}`));
+  const measured = snapshot instanceof Error ? undefined : snapshot;
+  const values = <T>(pick: (values: NonNullable<typeof measured>) => T) => async () => { if (!measured) throw snapshot; return pick(measured); };
+  const mismatched = (variables: Record<string, { expected: string; actual: string }>) => Object.entries(variables).filter(([, value]) => value.actual !== value.expected).map(([token]) => token);
+  await check('extraction', measured?.extraction.expected ?? 'measured', values((current) => current.extraction.actual));
+  await check('theme', { root: [], control: [], paint: measured && { root: measured.expected.root, control: measured.expected.control, status: measured.expected.status }, colorScheme: mode }, values((current) => ({
+    root: mismatched(current.variables), control: mismatched(current.controlVariables), paint: { root: current.actual.root, control: current.actual.control, status: current.actual.status }, colorScheme: current.colorScheme,
+  })));
+  await check('portal-theme', { tokens: [], paint: measured?.expected.portal, colorScheme: mode }, values((current) => ({ tokens: mismatched(current.portalVariables), paint: current.actual.portal, colorScheme: current.portal.colorScheme })));
+  await check('escape-focus-return', { closed: true, focused: true }, async () => {
+    await page.keyboard.press('Escape');
+    await dialog.waitFor({ state: 'hidden' });
+    return { closed: await dialog.count() === 0, focused: await trigger.evaluate((element) => element === document.activeElement) };
+  });
+}
+
+const EXERCISES: Record<Bundle, (cell: Cell) => Promise<void>> = { 'theme-css': themeCss, 'overlay-keyboard': overlayKeyboard, form, hydration, lifecycle };
 
 export type BundleSnapshot = {
   id: string; engine: Engine; bundle: Bundle; mode: 'dark' | 'light';
   browser: { name: Engine; version: string }; userAgent: string | null; platform: NonNullable<ConsumerReport['platform']>; fixture: NonNullable<ConsumerReport['fixture']>;
-  assertions: Assertion[]; failures: string[]; reproduceArgv: string[]; reproduce: string; artifacts: Record<string, string>;
+  assertions: Assertion[]; failures: string[]; durationMs: number; reproduceArgv: string[]; reproduce: string; artifacts: Record<string, string>;
 };
 
 const platformIdentity = () => ({ os: type(), release: release(), arch: arch() });
 
 async function runCell(browser: Browser, engine: Engine, id: string, url: string, output: string, report: ConsumerReport, tables: ResolvedDraft, stock: ResolvedDraft, fixture: NonNullable<ConsumerReport['fixture']>, fault?: string) {
-  const name = id.split('/').at(-1)!;
-  const bundle = BUNDLES.find((candidate) => name.startsWith(`${candidate}-`))!;
+  const started = Date.now();
+  const [layout, exercise, , name] = id.split('/') as [ConsumerLayout, 'bundles' | 'elements', Engine, string];
+  const bundle = MATRIX_BUNDLES.find((candidate) => name.startsWith(`${candidate}-`))!;
   const mode = name.endsWith('-dark') ? 'dark' : 'light';
   const file = `${engine}-${name}`;
-  const context = await browser.newContext({ colorScheme: mode, reducedMotion: 'no-preference', viewport: { width: 1280, height: 720 } });
+  const modeFromCookie = bundle === 'hydration';
+  const oppositeScheme = mode === 'dark' ? 'light' : 'dark';
+  const contextOptions: BrowserContextOptions = { colorScheme: modeFromCookie ? oppositeScheme : mode, reducedMotion: 'no-preference', viewport: { width: 1280, height: 720 } };
+  const context = await browser.newContext(contextOptions);
+  if (modeFromCookie) await context.addCookies([{ name: 'proof-mode', value: mode, url }]);
   await context.tracing.start({ screenshots: true, snapshots: true });
   const page = await context.newPage();
   page.setDefaultTimeout(5000);
@@ -399,6 +457,7 @@ async function runCell(browser: Browser, engine: Engine, id: string, url: string
   const errors = browserErrors(page, log);
   const assertions: Assertion[] = [];
   const failures: string[] = [];
+  const artifacts: Record<string, string> = { browser: `${file}.browser.json` };
   const check: Check = async (assertion, expected, action) => {
     let actual: unknown = null;
     let error: string | undefined;
@@ -410,25 +469,25 @@ async function runCell(browser: Browser, engine: Engine, id: string, url: string
   const work = (async () => {
     await page.goto(url, { waitUntil: 'networkidle' });
     await page.locator('body[data-hydrated="true"]').waitFor();
-    await EXERCISES[bundle]({ page, check, table: tables[mode], mode, tables, stock: stock[mode], id, engine });
+    await EXERCISES[bundle]({ page, check, table: tables[mode], mode, tables, stock: stock[mode], id, engine, layout, browser, contextOptions, url, log, errors, output, file, artifacts });
   })();
   work.catch(() => {});
   let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = CELL_DEADLINES_MS[bundle];
   try {
-    await Promise.race([work, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`timed out after ${CELL_TIMEOUT_MS / 1000}s`)), CELL_TIMEOUT_MS); })]);
+    await Promise.race([work, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`timed out after ${deadline / 1000}s`)), deadline); })]);
   } catch (error) { failures.push(String(error)); }
   finally { clearTimeout(timer); }
   for (const assertion of BUNDLE_ASSERTIONS[bundle]) if (!assertions.some((row) => row.name === assertion)) assertions.push({ name: assertion, expected: 'reached', actual: null, status: 'failed', error: 'not reached' });
   failures.push(...errors);
   const userAgent = await page.evaluate(() => navigator.userAgent).catch(() => null);
-  const artifacts: Record<string, string> = { browser: `${file}.browser.json` };
   await page.screenshot({ path: join(output, `${file}.png`), fullPage: true }).then(() => { artifacts.screenshot = `${file}.png`; }, (error) => failures.push(`screenshot unavailable: ${error}`));
   const trace = failures.length ? `${file}.trace.zip` : undefined;
   await context.tracing.stop(trace ? { path: join(output, trace) } : {}).then(() => { if (trace) artifacts.trace = trace; }, (error) => failures.push(`trace unavailable: ${error}`));
   await context.close();
   await writeFile(join(output, artifacts.browser!), `${JSON.stringify(log, null, 2)}\n`);
-  const reproduceArgv = bundleReproduction(engine, fault);
-  const snapshot: BundleSnapshot = { id, engine, bundle, mode, browser: { name: engine, version: browser.version() }, userAgent, platform: report.platform!, fixture, assertions, failures, reproduceArgv, reproduce: reproduceArgv.join(' '), artifacts };
+  const reproduceArgv = bundleReproduction(engine, fault, layout, exercise);
+  const snapshot: BundleSnapshot = { id, engine, bundle, mode, browser: { name: engine, version: browser.version() }, userAgent, platform: report.platform!, fixture, assertions, failures, durationMs: Date.now() - started, reproduceArgv, reproduce: reproduceArgv.join(' '), artifacts };
   await writeFile(join(output, `${file}.values.json`), `${JSON.stringify(snapshot, null, 2)}\n`);
   report.executed.push(id);
   report.cases.push({ id, status: failures.length ? 'failed' : 'passed', snapshot: `${file}.values.json`, failures });
@@ -439,7 +498,7 @@ async function runCell(browser: Browser, engine: Engine, id: string, url: string
  * its cells unexecuted and records why, so the run is incomplete rather than passing on fewer engines.
  */
 export async function bundleProof(url: string, app: string, report: ConsumerReport, output: string, tables: ResolvedDraft, stock: ResolvedDraft, engines: readonly Engine[], fault?: string, launch = (engine: Engine) => LAUNCHERS[engine].launch({ headless: true })): Promise<void> {
-  const fixture = await fixtureIdentity(app);
+  const fixture = await fixtureIdentity(app, report.layout);
   report.fixture = fixture;
   report.platform = platformIdentity();
   for (const engine of engines) {
@@ -453,7 +512,7 @@ export async function bundleProof(url: string, app: string, report: ConsumerRepo
     }
     try {
       report.versions[engine] = browser.version();
-      const queue = bundleCases([engine]);
+      const queue = report.exercise === 'elements' ? elementCases([engine]) : bundleCases([engine], report.layout);
       await Promise.all(Array.from({ length: CELLS_PER_ENGINE }, async () => {
         for (let id = queue.shift(); id; id = queue.shift()) await runCell(browser, engine, id, url, output, report, tables, stock, fixture, fault);
       }));
@@ -466,15 +525,16 @@ export function bundleSnapshotProblems(snapshot: unknown, row: { id: string; sta
   const value = snapshot as Partial<BundleSnapshot> | null;
   if (!value || typeof value !== 'object') return ['missing bundle snapshot'];
   const problems: string[] = [];
-  const [, , engine, name] = row.id.split('/');
-  const bundle = BUNDLES.find((candidate) => name?.startsWith(`${candidate}-`));
+  const [layout, exercise, engine, name] = row.id.split('/');
+  const bundle = MATRIX_BUNDLES.find((candidate) => name?.startsWith(`${candidate}-`));
   if (value.id !== row.id || value.engine !== engine || value.bundle !== bundle || JSON.stringify(value.failures) !== JSON.stringify(row.failures)) problems.push('snapshot disagrees with its case');
   if (!bundle) return [...problems, 'unknown bundle case'];
   const names = Array.isArray(value.assertions) ? value.assertions.map((assertion) => assertion?.name) : [];
   if (names.length !== BUNDLE_ASSERTIONS[bundle].length || BUNDLE_ASSERTIONS[bundle].some((assertion) => !names.includes(assertion))) problems.push('incomplete bundle assertion inventory');
   if (row.status === 'passed' && value.assertions?.some((assertion) => assertion.status !== 'passed' || JSON.stringify(assertion.expected) !== JSON.stringify(assertion.actual))) problems.push('passing cell holds a failed assertion');
   if (!value.browser || value.browser.name !== engine || value.browser.version !== report.versions?.[engine as Engine] || !value.platform?.os || JSON.stringify(value.fixture) !== JSON.stringify(report.fixture)) problems.push('browser, platform or fixture identity disagrees with the report');
-  if (JSON.stringify(value.reproduceArgv) !== JSON.stringify(bundleReproduction(engine as Engine, value.reproduceArgv?.includes('--fault') ? value.reproduceArgv.at(-1) : undefined)) || value.reproduce !== value.reproduceArgv?.join(' ')) problems.push('invalid reproduction');
-  for (const kind of ['browser', row.status === 'passed' ? 'screenshot' : 'trace']) if (typeof value.artifacts?.[kind] !== 'string') problems.push(`missing ${kind} artifact`);
+  if (JSON.stringify(value.reproduceArgv) !== JSON.stringify(bundleReproduction(engine as Engine, value.reproduceArgv?.includes('--fault') ? value.reproduceArgv.at(-1) : undefined, layout as ConsumerLayout, exercise as 'bundles' | 'elements')) || value.reproduce !== value.reproduceArgv?.join(' ')) problems.push('invalid reproduction');
+  if (typeof value.durationMs !== 'number' || value.durationMs < 0) problems.push('missing cell duration');
+  for (const kind of ['browser', row.status === 'passed' ? 'screenshot' : 'trace', ...(bundle === 'hydration' ? ['server'] : [])]) if (typeof value.artifacts?.[kind] !== 'string') problems.push(`missing ${kind} artifact`);
   return problems;
 }
