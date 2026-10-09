@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "first-screen.agent-runs",
+  "title": "A fresh agent builds the brief's themed screen in each layout from public guidance alone",
+  "intent": "With the candidate's docs, registry, Theme Studio and CLI served at a loopback host that stands in for the public host, a fresh coding agent in an empty directory outside any checkout receives only the brief, the documented init command and Theme Studio's install command, and builds the Pantry screen in Vite, Next root app and Next src/app. Each run passes with no manual intervention outside printed hand steps, no undocumented decision, clean check and lint, no raw paint outside theme and token modules, and every external-mode production assertion in Chromium; its record names the run ID and source identity, and no failed condition is waived.",
+  "contract": "docs/spec/adoption-delivery.md#first-screen-exercise",
+  "aliases": ["first-screen run", "agent exercise", "external mode", "run record", "manual intervention", "undocumented decision", "raw paint"],
+  "items": [],
+  "sources": ["scripts/first-screen.ts", "scripts/first-screen-record.ts"],
+  "demos": [],
+  "routes": [],
+  "fixtures": [],
+  "preconditions": [
+    "The candidate docs build is current: pnpm --filter @ultima/docs build.",
+    "The runs need Claude Code signed in, network access to npm, a loopback port and Chromium. They run one layout at a time, outside CI."
+  ],
+  "steps": [
+    {
+      "action": "Run node --experimental-strip-types scripts/first-screen.ts run --layout <vite|next-app|next-src>.",
+      "expect": "The harness serves the candidate at a loopback origin with an npm shim for the packed CLI, makes the brand theme in the served Theme Studio and copies its install command, then runs claude -p in safe mode in an empty directory with the brief and the documented init command, and keeps the stream-json transcript."
+    },
+    {
+      "action": "Let the harness measure the result.",
+      "expect": "ultima-design check and doctor, the project's ESLint with the Ultima fragment, the raw-paint scan of consumer-authored styles and the runner's external-project mode all run against the built application, and the record carries the candidate commit, source manifest, registry manifest hash, CLI tarball digests and draft digest."
+    },
+    {
+      "action": "Read the transcript and apply the review with first-screen.ts review <record> <review.json>, then retain the run.",
+      "expect": "Every intervention and undocumented decision is listed; the verdict is recomputed from the evidence and passes only when every condition passes. A failure files a defect against the guidance or product and the layout is rerun after the fix."
+    },
+    {
+      "action": "Run the docs test bound to this scenario.",
+      "expect": "The brief names a brand color at least 30 degrees from every preset hue and the screen's required parts, and every retained record has complete source identity and the verdict its own evidence gives."
+    }
+  ],
+  "targets": [
+    { "target": "docs-vitest", "variants": "default" }
+  ]
+}

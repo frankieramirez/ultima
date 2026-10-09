@@ -1,0 +1,75 @@
+{
+  "exit": 0,
+  "report": {
+    "command": "check",
+    "status": "clean",
+    "scopes": [
+      {
+        "kind": "app",
+        "files": 22
+      },
+      {
+        "kind": "stylesheet",
+        "files": 3
+      }
+    ],
+    "rules": [
+      {
+        "id": "ULT-APP-CONTRAST-001",
+        "status": "blocking",
+        "scope": "Semantic color overrides in consumer stylex.createTheme calls and CSS, in each mode they apply to",
+        "link": "http://127.0.0.1:46629/tokens#pairings"
+      },
+      {
+        "id": "ULT-APP-THEME-001",
+        "status": "blocking",
+        "scope": "Role base color overrides in consumer stylex.createTheme calls and CSS",
+        "link": "http://127.0.0.1:46629/tokens#overriding"
+      },
+      {
+        "id": "ULT-APP-PALETTE-001",
+        "status": "blocking",
+        "scope": "Consumer code reading a palette scale",
+        "link": "http://127.0.0.1:46629/tokens#color"
+      },
+      {
+        "id": "ULT-APP-PAINT-001",
+        "status": "advisory",
+        "scope": "Paint in consumer stylex.create and stylex.keyframes tables and literal JSX style objects",
+        "link": "http://127.0.0.1:46629/tokens"
+      },
+      {
+        "id": "ULT-APP-PRIMITIVE-001",
+        "status": "advisory",
+        "scope": "Consumer imports of a Base UI primitive an installed item wraps",
+        "link": "http://127.0.0.1:46629/components"
+      },
+      {
+        "id": "ULT-APP-CONTROL-001",
+        "status": "advisory",
+        "scope": "Native controls and interactive roles in consumer JSX where an installed item provides the control",
+        "link": "http://127.0.0.1:46629/components"
+      },
+      {
+        "id": "ULT-APP-SUPPRESSION-001",
+        "status": "advisory",
+        "scope": "ultima-check-ignore comments in consumer code",
+        "link": "https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md#check"
+      },
+      {
+        "id": "ULT-ANALYSIS-001",
+        "status": "blocking",
+        "scope": "Values and imports a rule needs; advisory against an advisory rule",
+        "link": "https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md#check"
+      }
+    ],
+    "unsupported": [],
+    "counts": {
+      "errors": 0,
+      "advisories": 0,
+      "incomplete": 0,
+      "suppressions": 0
+    },
+    "diagnostics": []
+  }
+}

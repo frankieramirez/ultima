@@ -1,0 +1,14 @@
+{
+  "reviewer": "Claude Code (cast session for #774), from the stream-json transcript, the served-request log and the agent's notes",
+  "rule": "An intervention is an action on the project or its tooling that the guidance or CLI output did not print or link. A decision is a choice about setting up, theming or styling with Ultima that the guidance did not settle and that changed the output; product choices the brief leaves open (data, copy, arrangement, Select or Dialog) and choices between documented options are not counted. Running git init and ultima install, which init's report prints, follows the guidance.",
+  "interventions": [
+    { "step": "Read the hosted docs", "action": "Rendered /install, /build-a-screen, /support, /cli and seven component pages with headless Chromium through Playwright to read their text and example source.", "reason": "The linked docs pages render client-side, so a plain HTTP fetch returns an empty shell; /llms.txt points to them for the lint fragment, the theme steps and the example source." },
+    { "step": "StyleX lint and doctor", "action": "Moved @stylexjs/stylex, babel-plugin and postcss-plugin from init's 0.19.0 pins to 0.19.1, after doctor's ULT-LINT-003 repair (plugin 0.19.0) made installed components/ui/select.tsx fail valid-styles on `gridColumn: 2`.", "reason": "init pins StyleX 0.19.0, the install page installs plugin 0.19.1, and doctor requires the plugin to equal the runtime; no guidance resolves the three." },
+    { "step": "Theme adoption", "action": "Removed create-next-app's next/font/google Geist loading, its className and metadata from app/layout.tsx.", "reason": "init leaves the scaffold's font loading in place and no guidance says whether to keep it; no Ultima token reads it." },
+    { "step": "Theme freshness", "action": "Downloaded the theme item again and hashed DESIGN.md regions after `doctor --theme` reported the generated region as edited.", "reason": "Harness defect, now fixed: the loopback host rewrote the origin inside the generated DESIGN.md region after its digest was computed." }
+  ],
+  "decisions": [
+    { "choice": "Moved every StyleX package to 0.19.1, leaving doctor's ULT-SETUP-017 advisory", "options": ["0.19.1 plugin over 0.19.0 runtime (ULT-LINT-003)", "0.19.0 plugin (2 lint errors in installed source)", "every StyleX package at 0.19.1 (ULT-SETUP-017)"], "why": "Every option leaves an advisory or a lint error; the guidance does not settle it." }
+  ],
+  "notes": "Production failed only axe-open `region`, in all four cases: the open Select's options, portalled to <body>, sit outside every landmark. axe exempts dialogs from region but not listboxes. check, doctor, lint and the raw-paint scan were clean."
+}

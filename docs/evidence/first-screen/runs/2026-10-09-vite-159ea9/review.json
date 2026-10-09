@@ -1,0 +1,27 @@
+{
+  "reviewer": "Claude Code (cast session for #774), from the stream-json transcript, the served-request log and the agent's notes",
+  "rule": "An intervention is an action on the project or its tooling that the guidance or CLI output did not print or link. A decision is a choice about setting up, theming or styling with Ultima that the guidance did not settle and that changed the output; product choices the brief leaves open (data, copy, arrangement, Select or Dialog) and choices between documented options are not counted. Running a printed command with stdin closed, and writing a browser script to perform the production check the install page asks for, follow the guidance and are not counted.",
+  "interventions": [
+    {
+      "step": "Read the hosted docs",
+      "action": "Rendered /install, /build-a-screen and /support with headless Chromium and pulled lesson source out of the Code tabs' download links.",
+      "reason": "The linked docs pages render client-side, so a plain HTTP fetch returns an empty shell, and only the first file of a lesson's Code tab is downloadable; screen.stylex.ts and projects-data.ts stayed unreachable."
+    },
+    {
+      "step": "StyleX lint",
+      "action": "Built a scratch project to lint the installed select.tsx with @stylexjs/eslint-plugin 0.19.0 and 0.19.1, then reverted doctor's printed ULT-LINT-003 repair back to 0.19.1.",
+      "reason": "init pins @stylexjs/stylex 0.19.0, the install page installs plugin 0.19.1, and doctor's repair (plugin equal to the runtime, 0.19.0) makes installed select.tsx fail valid-styles on `gridColumn: 2`."
+    }
+  ],
+  "decisions": [
+    {
+      "choice": "Kept @stylexjs/eslint-plugin 0.19.1 against @stylexjs/stylex 0.19.0, leaving doctor's ULT-LINT-003 advisory",
+      "options": [
+        "0.19.1 as the install page says",
+        "0.19.0 as doctor repairs, with 2 lint errors in installed source"
+      ],
+      "why": "The install page and doctor contradict each other for an init project."
+    }
+  ],
+  "notes": "Production failed only axe-open, in all four cases: `region` (the portalled Select listbox sits outside every landmark) and `aria-hidden-focus` (Base UI's tabbable focus-guard spans carry aria-hidden). check, doctor, lint and the raw-paint scan were clean. The agent overrode Toggle Group's pressed background with accent roles because the default pressed surface was hard to see in dark mode; that is component feedback, not counted."
+}

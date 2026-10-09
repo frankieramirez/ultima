@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "first-screen",
+  "title": "First-screen exercise",
+  "summary": "The adoption effort's acceptance test: a fresh coding agent with only public guidance, served from the candidate build at a loopback host, builds the brief's themed screen in Vite, Next root app and Next src/app, and each run's record holds its transcript, interventions, decisions, check, lint, raw paint and production assertions with source identity.",
+  "knowledge": "proposed",
+  "aliases": ["first screen", "first-screen exercise", "agent run", "fresh agent", "adoption acceptance", "product brief", "larder", "stranger path", "plug and play"],
+  "contract": "docs/spec/adoption-delivery.md#first-screen-exercise",
+  "items": [],
+  "sourceRoots": ["scripts/first-screen.ts", "scripts/first-screen-record.ts"],
+  "extraDependencies": [
+    {
+      "path": "docs/evidence/first-screen/brief.md",
+      "reason": "The fixed product brief every run receives verbatim; its brand color and screen requirements are the exercise's input."
+    },
+    {
+      "path": "scripts/consumer-external.ts",
+      "reason": "The runner's external-project mode supplies each run's production assertions."
+    }
+  ],
+  "supporting": []
+}

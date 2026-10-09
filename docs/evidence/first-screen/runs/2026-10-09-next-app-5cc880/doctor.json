@@ -1,0 +1,91 @@
+{
+  "exit": 0,
+  "report": {
+    "command": "doctor",
+    "target": "next",
+    "diagnostics": [
+      {
+        "ruleId": "ULT-SETUP-017",
+        "file": "package.json",
+        "start": {
+          "line": 13,
+          "column": 25
+        },
+        "end": {
+          "line": 13,
+          "column": 33
+        },
+        "message": "@stylexjs/stylex resolves to 0.19.1, above 0.19.0, the newest version this CLI was tested with.",
+        "repair": "Nothing to do if it works; `npm install @stylexjs/stylex@0.19.0` returns to the tested version.",
+        "severity": "advisory",
+        "link": "https://github.com/frankieramirez/ultima/blob/6f5dd1695343f57f728584979f1c8ceeb227558a/docs/spec/ultima.md#doctor"
+      },
+      {
+        "ruleId": "ULT-SETUP-017",
+        "file": "package.json",
+        "start": {
+          "line": 19,
+          "column": 31
+        },
+        "end": {
+          "line": 19,
+          "column": 39
+        },
+        "message": "@stylexjs/babel-plugin resolves to 0.19.1, above 0.19.0, the newest version this CLI was tested with.",
+        "repair": "Nothing to do if it works; `npm install @stylexjs/babel-plugin@0.19.0` returns to the tested version.",
+        "severity": "advisory",
+        "link": "https://github.com/frankieramirez/ultima/blob/6f5dd1695343f57f728584979f1c8ceeb227558a/docs/spec/ultima.md#doctor"
+      }
+    ],
+    "unsupported": [
+      {
+        "step": "Before UI edits, read project design guidance and trace the active local theme; preserve an existing brand. Choose a custom theme in http://127.0.0.1:32813/theme-studio when authorized. Follow http://127.0.0.1:32813/llms.txt#discover-and-maintain-the-product-theme and the install walkthrough at http://127.0.0.1:32813/install#theme-adoption.",
+        "reason": "Brand intent and the association between local documents, drafts and active themes require project evidence and review."
+      },
+      {
+        "step": "For an exported root theme, install the Studio registry item, keep ultima-theme.json and review DESIGN.md before replacement. After ./ultima.css, import ../ultima-theme.css from app/layout.tsx, or ../../ultima-theme.css from src/app/layout.tsx. Inspect the production cascade so it follows StyleX. Run npx ultima-design doctor and npx ultima-design check, then check the root, a control and an open popup in dark, light and system mode, including reduced motion and loaded fonts.",
+        "reason": "Ordinary doctor checks setup, not the production theme cascade, rendered values, fonts or portal inheritance."
+      },
+      {
+        "step": "Lint StyleX with its official ESLint plugin. Save http://127.0.0.1:32813/ultima.eslint.mjs beside eslint.config.mjs and append `ultimaStylex` to your flat config after the framework configuration, or follow http://127.0.0.1:32813/install#stylex-lint to add ESLint to a project without it. Setup never installs ESLint or writes eslint.config.*.",
+        "reason": "Doctor reports static lint presence under StyleX lint and never runs ESLint, so the effective config stays unverified; run npx eslint --print-config on a page, a component and lib/tokens.stylex.ts, then npx eslint ."
+      },
+      {
+        "step": "A strict CSP needs a nonce: pass it to Base UI's `CSPProvider` at your app root.",
+        "reason": "The headers are set at runtime or by the host."
+      }
+    ],
+    "lint": {
+      "schemaVersion": 1,
+      "state": "detected",
+      "reason": "eslint.config.mjs registers @stylexjs/eslint-plugin in a verified combination. Static presence only; ESLint was not run, so the effective config is unverified.",
+      "config": "eslint.config.mjs",
+      "versions": {
+        "eslint": "9.39.5",
+        "@typescript-eslint/parser": "8.71.1",
+        "@stylexjs/eslint-plugin": "0.19.1",
+        "@stylexjs/stylex": "0.19.1"
+      },
+      "tested": {
+        "eslint": "9.39.5",
+        "typescript-eslint": "8.71.1",
+        "@stylexjs/eslint-plugin": "0.19.1"
+      },
+      "files": [
+        "app/page.tsx",
+        "components/ui/badge.tsx",
+        "lib/tokens.stylex.ts",
+        "lib/themes.ts"
+      ],
+      "effective": "unverified",
+      "commands": [
+        "npx --no-install eslint --print-config app/page.tsx",
+        "npx --no-install eslint --print-config components/ui/badge.tsx",
+        "npx --no-install eslint --print-config lib/tokens.stylex.ts",
+        "npx --no-install eslint --print-config lib/themes.ts",
+        "npx --no-install eslint ."
+      ],
+      "diagnostics": []
+    }
+  }
+}

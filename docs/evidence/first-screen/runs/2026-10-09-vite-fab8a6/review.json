@@ -1,0 +1,39 @@
+{
+  "reviewer": "Claude Code (cast session for #774), from the stream-json transcript and the served-request log",
+  "invalid": "Harness defect: the served ultima-design tarball was packed without building the CLI, so it had no dist/cli.js and init, doctor and check could not run. The harness now builds the CLI before packing. The run is kept as evidence and does not count toward the exercise.",
+  "interventions": [
+    {
+      "step": "Set up with init",
+      "action": "Inspected the npx cache and downloaded the served tarball after `npx ultima-design@latest init` failed with `ultima: command not found`.",
+      "reason": "Harness defect: the tarball had no dist/cli.js."
+    },
+    {
+      "step": "Scaffold the application",
+      "action": "Ran `npm create vite@latest larder -- --template react-ts` and the hand setup path instead of init.",
+      "reason": "init could not run; no guidance prints the scaffold command for the hand path."
+    },
+    {
+      "step": "Read the hosted docs",
+      "action": "Installed playwright-core and drove a headless Chromium to read /install, /build-a-screen, /cli, /support and the Projects lesson's Code tab.",
+      "reason": "The docs pages render client-side, so a plain HTTP fetch of a page that /llms.txt links returns no content (the harness also answered 404 for non-HTML Accept headers, which Cloudflare Pages does not)."
+    },
+    {
+      "step": "Choose a list-selection pattern",
+      "action": "Read CRM 01's source from /r/crm-01.json without installing it.",
+      "reason": "Reading an item's registry JSON directly is not a printed step."
+    },
+    {
+      "step": "Replace scaffold demo styling",
+      "action": "Replaced create-vite's index.css and deleted App.css and the template assets.",
+      "reason": "The hand path does not say to remove the template's own colors, fonts and lengths."
+    },
+    {
+      "step": "Run doctor and check",
+      "action": "Skipped doctor, check, status and install and verified by hand.",
+      "reason": "Harness defect: the CLI had no executable."
+    }
+  ],
+  "decisions": [],
+  "notes": "axe-open failed in all four cases on the `region` rule: the portalled Select listbox sits outside every landmark.",
+  "rule": "Same rule as the later runs. The run is invalid; its record is kept as evidence of the harness defect."
+}
