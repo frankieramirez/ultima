@@ -349,7 +349,6 @@ function selectItem(selection: Selection, id: string, reason: string) {
     if (['theme-mode', 'button', 'badge', 'popover', 'tokens', 'lib', 'setup-next'].includes(id)) for (const check of ['consumer-mode-next-app', 'consumer-mode-next-src'] as const) selection.need(check, `${id} is installed by the Next theme-mode production scene`);
     if (inCopyBundles(current, id)) for (const check of COPY_CHECKS) selection.need(check, `${id} is installed by the copy-bundle consumers`);
   }
-  // scripts/consumer-lint.ts installs every registry:ui and registry:block item and lints it.
   if (summary.kind === 'react' || summary.kind === 'block' || id === 'lib') for (const check of LINT_CHECKS) selection.need(check, `${id} is installed and linted by the StyleX lint consumers`);
   if (id === 'setup-vite') selection.need('consumer-lint-vite', 'setup-vite is installed and linted by the Vite StyleX lint consumer');
   if (id === 'setup-next') for (const check of ['consumer-lint-next-app', 'consumer-lint-next-src'] as const) selection.need(check, 'setup-next is installed and linted by the Next StyleX lint consumers');

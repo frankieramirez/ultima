@@ -216,7 +216,6 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     const fixtures = [...(options.deliveryPath === 'registry' ? [{ name: 'css-reference', draft }] : []), { name: '', draft }, ...(options.deliveryPath === 'registry' ? THEME_PRESETS.map((preset) => ({ name: preset.id, draft: presetDraft(preset.id) })) : [])];
     const cssReference = new Map<string, Awaited<ReturnType<typeof consumerValues>>>();
     const prerequisites = consumerPrerequisites(options.layout, options.deliveryPath, options.case);
-    // The lint exercise renders nothing, so it starts no browser.
     if (options.exercise !== 'lint') {
       browser = await chromium.launch({ headless: true });
       report.versions.chromium = browser.version();

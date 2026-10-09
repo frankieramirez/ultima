@@ -264,8 +264,7 @@ async function versionsOf(app: string): Promise<Record<string, string | null>> {
   return Object.fromEntries(entries);
 }
 
-/** Every source file under the installed catalogue directories, which a positive run must lint. */
-async function catalogueFiles(app: string, layout: ConsumerLayout, items: string[]): Promise<string[]> {
+async function requiredLintFiles(app: string, layout: ConsumerLayout, items: string[]): Promise<string[]> {
   const paths = lintPaths(layout);
   const folders = [paths.ui, paths.lib, ...items.filter((id) => existsSync(join(app, at(layout, `components/${id}`)))).map((id) => at(layout, `components/${id}`))];
   const files: string[] = [];
@@ -345,10 +344,9 @@ export async function lintProof(app: string, layout: ConsumerLayout, execute: Ru
   const ultima = async (commands: Command[], log: string, args: string[]) => {
     const run = await offline(app, lintOutput, log, 'npx', ['--no-install', 'ultima-design', ...args, '--json'], commands);
     let value: { counts?: { errors: number; advisories: number }; diagnostics?: { ruleId: string; severity: string; file: string }[] } = {};
-    try { value = JSON.parse(run.stdout); } catch { /* recorded as an unreadable report below */ }
+    try { value = JSON.parse(run.stdout); } catch { /* an unreadable report leaves counts null, which every case reads as a failure */ }
     return { exit: run.exit, counts: value.counts ?? null, rules: (value.diagnostics ?? []).map((diagnostic) => `${diagnostic.severity} ${diagnostic.ruleId}`) };
   };
-  /** Writes a fixture under lint-fixtures, runs the case, and removes it again. */
   const withFixture = async <T>(name: string, content: string, body: (path: string) => Promise<T>): Promise<T> => {
     const path = join(paths.fixtures, `${name}.tsx`);
     await mkdir(join(app, paths.fixtures), { recursive: true });
@@ -390,7 +388,7 @@ export async function lintProof(app: string, layout: ConsumerLayout, execute: Ru
   await guard('catalogue', async (commands) => {
     const run = await lintJson(commands, 'catalogue.0.log', ['.']);
     const linted = new Set(run.results.map((result) => relative(app, result.filePath)));
-    const expected = await catalogueFiles(app, layout, scene.items);
+    const expected = await requiredLintFiles(app, layout, scene.items);
     coverage = [...linted].sort();
     const missing = expected.filter((path) => !linted.has(path));
     const errors = run.messages.filter((message) => message.severity === 2);

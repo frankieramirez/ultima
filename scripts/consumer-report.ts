@@ -71,7 +71,6 @@ export type ConsumerReport = {
   errors: string[];
   drafts?: Record<string, { digest: string; fingerprint: string; recipeVersion: number }>;
   cliReports?: { doctor: string; check: string };
-  /** The lint stage: the downloaded fragment, how the network was denied, exact versions and every linted file. */
   lint?: { fragment: { path: string; digest: string }; config: string; lintScript: string | null; network: string; versions: Record<string, string | null>; files: string[] };
   selectedCase?: string;
   prerequisites?: ConsumerCase[];
