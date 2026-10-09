@@ -20,6 +20,7 @@ export const pages = [
   { label: 'Home', to: '/' },
   { label: 'Install', to: '/install' },
   { label: 'Update the base theme', to: '/install/update' },
+  { label: 'Build a screen', to: '/build-a-screen' },
   { label: 'CLI', to: '/cli' },
   { label: 'Elements', to: '/elements' },
   { label: 'Tokens', to: '/tokens' },

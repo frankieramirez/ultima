@@ -289,7 +289,10 @@ export function headingAnchors(text: string): Set<string> {
 export function mdxImports(path: string, text: string): Import[] {
   const statements: string[] = [];
   let current: string[] | undefined;
+  let fenced = false;
   for (const line of text.split('\n')) {
+    if (!current && /^\s*(```|~~~)/.test(line)) fenced = !fenced;
+    if (fenced) continue;
     if (!current && /^import\s/.test(line)) current = [];
     if (!current) continue;
     current.push(line);

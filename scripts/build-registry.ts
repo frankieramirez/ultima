@@ -342,6 +342,7 @@ function publishExports({ components, elements, tokensCss }: Sources) {
     specPath: SPEC,
     tokensJsonPath: join(TOKENS_DIST, 'tokens.json'),
     recipes: composition.recipes,
+    examples: composition.examples,
     groups: catalogue.groups.map(({ id, label }) => ({
       label,
       components: components

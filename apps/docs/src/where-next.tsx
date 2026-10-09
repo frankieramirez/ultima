@@ -49,6 +49,11 @@ type Destination = { title: string; to: NonNullable<LinkProps['to']>; descriptio
 
 const DESTINATIONS: Destination[] = [
   {
+    title: 'Build a screen',
+    to: '/build-a-screen',
+    description: 'Take an empty application to one themed, responsive screen, in six lessons with copyable source.',
+  },
+  {
     title: 'Components',
     to: '/components',
     description: `${components.length} components in ${GROUPS.length} groups, each page with live demos and its install command.`,

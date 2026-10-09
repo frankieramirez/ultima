@@ -6,7 +6,7 @@
  * documentation, so nothing here may be a second copy of a convention.
  */
 import { readFileSync } from 'node:fs';
-import type { RecipeProjection } from './catalogue/compositions.ts';
+import type { CompositionProjection, RecipeProjection } from './catalogue/compositions.ts';
 
 const MAX_BYTES = 64 * 1024;
 
@@ -233,6 +233,16 @@ function describeRecipe(recipe: RecipeProjection): string {
   ].join('\n');
 }
 
+const BUILD_A_SCREEN_LEAD = "Walkthrough at https://ultima.systems/build-a-screen, from an Install-page setup to one themed, responsive Projects screen. Author in this order: adapt a block that matches the product; compose installed components, choosing variant, tone and size before overriding a part's `style`; copy a recipe; write local StyleX for layout with semantic tokens, keeping application-only sizes in the application's own token module. Each lesson's Code tab copies every bundle file at its path under the `@` alias directory. Source uses the default components.json aliases (`@/components/ui`, `@/lib`, `@/components`); substitute yours. Verify with `ultima-design doctor` and `ultima-design check`, then build in production and exercise each state in both modes at narrow and wide widths. Installed copy-bundle compilation is not yet verified.";
+
+function describeLesson(example: CompositionProjection, blocks: GuideBlock[]): string {
+  const block = example.block ? blocks.find(({ name }) => name === example.block) : undefined;
+  const contents = block
+    ? `Installable block; render \`import { ${block.primaryExport} } from '@/components/${block.name}/${block.name}'\` and adapt its files.`
+    : `Files: ${example.files.map(({ destination }) => destination).join(', ')}.`;
+  return `### ${example.title}\n\nhttps://ultima.systems${example.route}#${example.anchor}. ${contents} Install: \`${example.install}\``;
+}
+
 function describeTokens(tokens: TokensJson['tokens']): string {
   const groups = new Map<string, string[]>();
   for (const [name, { group }] of Object.entries(tokens)) {
@@ -264,6 +274,7 @@ export function agentGuide({
   elements,
   blocks = [],
   recipes = [],
+  examples = [],
 }: {
   specPath: string;
   tokensJsonPath: string;
@@ -271,6 +282,8 @@ export function agentGuide({
   elements: GuideComponent[];
   blocks?: GuideBlock[];
   recipes?: RecipeProjection[];
+  /** The Build a screen lessons, from the composition inventory; only those with a published route. */
+  examples?: CompositionProjection[];
 }): string {
   const spec = readFileSync(specPath, 'utf8');
   const { tokens } = JSON.parse(readFileSync(tokensJsonPath, 'utf8')) as TokensJson;
@@ -327,6 +340,10 @@ export function agentGuide({
       '', '## Recipes', '',
       'Copyable compositions, listed at https://ultima.systems/recipes. Recipes have no registry item: install the dependencies below, then copy every file shown at the canonical example. Source uses the default components.json aliases; substitute your configured aliases. Keep interactive source behind a Next.js client boundary. Run ultima-design doctor and ultima-design check, build your application, and exercise the documented states in both modes. Installed copy-bundle compilation is not yet verified.',
       '', recipes.map(describeRecipe).join('\n\n'),
+    ]),
+    ...(examples.length === 0 ? [] : [
+      '', '## Build a screen', '', BUILD_A_SCREEN_LEAD,
+      '', examples.filter(({ route }) => route !== undefined).map((example) => describeLesson(example, blocks)).join('\n\n'),
     ]),
     '',
     '## Tokens',

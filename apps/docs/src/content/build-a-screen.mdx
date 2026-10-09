@@ -1,0 +1,133 @@
+import { InfoIcon } from '@phosphor-icons/react';
+
+import {
+  CompleteScreens,
+  InteractionStatesPreview,
+  LessonInstall,
+  ProductThemeInstall,
+  ProductTokensFrame,
+  ProjectsFrame,
+  SettingsPreview,
+  lessonSource,
+} from '../build-a-screen';
+import { Demo } from '../demo';
+import Typography from '../demos/code/typography';
+import StyleOverrides from '../examples/complete-screen/style-overrides';
+import { Callout } from '../foundation';
+
+# Build a screen
+
+This guide takes an empty Vite or Next.js application to one themed, responsive Projects screen. Follow it from the top, or jump to the lesson you need.
+
+## Before you start
+
+Set up the application with [Install](/install): run the setup item for your framework and do the hand steps it prints. To keep a product brand, make its theme in [Theme Studio](/theme-studio) and install it as the install page describes. Then run `npx ultima-design status` to see what is installed before you change anything.
+
+Each lesson below shows a live preview and its source. The Code tab lists every file in the lesson's copy bundle with the path to save it at. Copy or download each file, install the items the lesson names, and own the copied source from then on.
+
+## Choosing what to author
+
+Work down this list and stop at the first step that fits.
+
+1. **Adapt an existing block** when its screen structure and behavior match your product. Install it and edit the files it gives you.
+2. **Compose installed components** for controls and painted containers. Choose the supported variant, tone and size before you override a part's `style` slot. A compound root's style does not reach its children.
+3. **Copy a [recipe](/recipes)** for the named composition it teaches. Install the components and engine packages it lists, then own the copied source.
+4. **Write local StyleX** for page arrangement, responsive rules, type and flow spacing. Prefer semantic tokens. A sizing need only your application has can live in your application's own token module.
+
+Controls keep their component behavior, surfaces use components, and plain layout elements arrange the content. Keep the `style` prop and StyleX when you override. Keep accessible names, visible keyboard focus, contrast, component state selectors and reduced motion. Let component state drive interaction rather than writing a second set of ARIA attributes or key handlers. Keep native scrollbars, or use ScrollArea or `Table.Scroll` for a region that scrolls.
+
+These blocks are complete screens you can install and adapt:
+
+<CompleteScreens />
+
+## Substitute your aliases
+
+Copied source uses the default `components.json` aliases. Components import from `@/components/ui`, the token module from `@/lib/tokens.stylex`, and the lesson's own files sit under `@/components`. If your `components.json` names other aliases, replace those prefixes with yours.
+
+The file paths start where your `@` alias points: `src/` for Vite and for Next.js with a `src` directory, and the project root for Next.js with a root `app` directory. Keep the `'use client'` line at the top of interactive files so Next.js treats them as client components. Ultima has no npm package to install for the source; the CLI copies each component into your project.
+
+## Responsive screen
+
+The Projects screen has a page heading, route navigation, a labelled form with a required field and a selection, a submit and reset result, a captioned data table with an empty state, and a Dialog. It is one column at narrow widths and splits into two columns when there is room. The table scrolls inside its captioned region instead of widening the page.
+
+<Demo component={ProjectsFrame} source={lessonSource('projects')} title="Projects" fill />
+
+Install the components the screen uses, then save the three files from the Code tab and render `Projects` from a route:
+
+<LessonInstall id="projects" />
+
+```tsx title="src/App.tsx"
+import Projects from '@/components/projects/projects';
+
+export default function App() {
+  return <Projects />;
+}
+```
+
+In Next.js, render it from `app/page.tsx` the same way. The screen file already starts with `'use client'`.
+
+## Typography
+
+Typography is a recipe for prose: headings, lists, links, quotes, code and wide tables in token-based type. It delegates code to Code, rules to Separator and tables to Table inside ScrollArea. Its canonical page is [Code, Typography](/components/code#typography).
+
+<Demo component={Typography} source={lessonSource('typography')} title="Typography" />
+
+<LessonInstall id="typography" />
+
+## Component style overrides
+
+Override a component through each part's `style` prop. Here the Button gets a taller, roomier size from space tokens, and the Card's root, header, title and footer each take their own style. The overrides change layout, size and border roles only, so the focus ring, the disabled Button and the text contrast stay as the component defines them in both modes.
+
+<Demo component={StyleOverrides} source={lessonSource('style-overrides')} title="Overrides" />
+
+<LessonInstall id="style-overrides" />
+
+## Interaction states
+
+Each state here is reached by real input. Type an address without `@` and submit to see an error tied to the field. The submit button is disabled while the field is empty. A valid address announces success as text. Review pending invites opens a Dialog; Escape or Close returns focus to the button that opened it. Field, Input, Button and Dialog set the state attributes their styles read, so the example adds no state styling of its own.
+
+<Demo component={InteractionStatesPreview} source={lessonSource('interaction-states')} title="States" />
+
+<LessonInstall id="interaction-states" />
+
+## Product semantic tokens
+
+This is the Projects screen again, under a custom Studio theme that passes every contrast pairing in both modes. The screen reads product roles from semantic tokens, so accent, success and warning keep their meaning when the brand changes. Its layout reads one application token, `--app-size-content-max`, from `screen.stylex.ts`. That module is a namespaced `stylex.defineVars` group the application owns, outside Ultima's `--ult-*` tokens.
+
+<Demo component={ProductTokensFrame} source={lessonSource('product-tokens')} title="Themed" fill />
+
+The lesson uses the Responsive screen's components and files:
+
+<LessonInstall id="product-tokens" />
+
+Install this theme the way you would install your own Studio export:
+
+<ProductThemeInstall />
+
+Import `ultima-theme.css` after your StyleX output, as [Install](/install#theme-adoption) shows. Fonts are your responsibility; the theme exports font stacks and loads no font faces. A root CSS theme reaches the document and the popups that portal to `document.body`. For a theme on one subtree, see [Theme Scope](/components/theme-scope).
+
+<Callout title="Application tokens" icon={<InfoIcon />}>
+  Use Ultima's space tokens for ordinary spacing and its semantic roles for color. A new application color role needs its own dark, light, state and contrast contract, so keep application tokens to sizes your layout needs.
+</Callout>
+
+## Adapt an existing block
+
+Settings 01 is a Notifications settings page. Install it, render its entry, and change its labels and data in the files it gives you. Keep its components and responsive rules, so the desktop sidebar, the mobile menu, the form, its feedback and its focus behavior keep working.
+
+<SettingsPreview />
+
+<LessonInstall id="settings-01-adaptation" />
+
+```tsx title="src/App.tsx"
+import { Settings01 } from '@/components/settings-01/settings-01';
+
+export default function App() {
+  return <Settings01 />;
+}
+```
+
+The block installs its files under `components/settings-01/`. Change the starting values in `settings-01.tsx`, the form's labels in `notifications-form.tsx` and the navigation in `settings-sidebar.tsx`. Saving only moves the current values into the block's saved state; persist them from the submit handler in `notifications-form.tsx`. See [Settings 01](/blocks/settings-01) for its parts and both preview sizes.
+
+## Check the result
+
+Run `npx ultima-design doctor`, `npx ultima-design check --files` with the files you changed, and `npx ultima-design check`. Build the application in production mode and try each screen in dark and light mode, at a narrow and a wide width. Submit the form empty and valid, reset it, use the navigation and the Dialog from the keyboard, and scroll the table. Look at the root, a control and an open popup to confirm they wear your theme.
