@@ -149,6 +149,7 @@ test('the probes parse as TSX and import only installed items', () => {
   }
   for (const item of BUNDLE_ITEMS) assert.ok(imports.includes(item), item);
   assert.ok(PROBES_SOURCE && DATE_PROBES_SOURCE.includes("locale=\"en-US\"") && DATE_PROBES_SOURCE.includes("locale=\"en-GB\""), 'both date locales');
+  assert.equal(DATE_PROBES_SOURCE.match(/parse=\{parseEntry\}/g)?.length, 2, 'both typed pickers use the fixture\'s deterministic parser, never the engine\'s Date.parse');
   assert.ok(DIRECTION_PROBES_SOURCE.includes('dir="rtl"') && /[\u0600-\u06ff]/.test(DIRECTION_PROBES_SOURCE), 'the RTL fixture carries Zag\'s dir prop and Arabic labels');
 });
 

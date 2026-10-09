@@ -136,6 +136,19 @@ import { DatePicker } from '@/components/ui/date-picker';
 
 ${SERIALIZE}
 const isDateUnavailable = (date: DateValue) => date.toString() === '2024-03-13';
+/**
+ * The documented entry parser. Zag's default falls back to the engine's Date.parse for any field it cannot read,
+ * so the same keystrokes commit different dates in different engines. This accepts exact digits in the locale's
+ * day and month order and a real calendar date, and returns nothing otherwise, so invalid text keeps the value.
+ */
+const parseEntry = (text: string, { locale }: { locale: string }) => {
+  const match = /^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/.exec(text.trim());
+  if (!match) return undefined;
+  const [first, second, year] = match.slice(1).map(Number) as [number, number, number];
+  const [month, day] = locale === 'en-GB' ? [second, first] : [first, second];
+  try { return parse(\`\${year}-\${String(month).padStart(2, '0')}-\${String(day).padStart(2, '0')}\`); }
+  catch { return undefined; }
+};
 
 export function DateCalendar() {
   return <DatePicker.Portal><DatePicker.Positioner><DatePicker.Content>
@@ -169,7 +182,7 @@ export default function DateProbes() {
   function reset() { setRelease([]); setSprint([]); setResult(''); }
   return <form aria-label="Schedule" noValidate onSubmit={submit} onReset={reset} style={{ background: 'var(--ult-color-surface)', color: 'var(--ult-color-text)', display: 'grid', gap: '1rem', maxWidth: '22rem', padding: '2rem' }}>
     <section aria-label="Release picker">
-      <DatePicker.Root name="release" locale="en-US" value={release} onValueChange={record('release', setRelease)} min={parse('2024-01-15')} max={parse('2024-12-15')} isDateUnavailable={isDateUnavailable} defaultFocusedValue={parse('2024-02-01')}>
+      <DatePicker.Root name="release" locale="en-US" parse={parseEntry} value={release} onValueChange={record('release', setRelease)} min={parse('2024-01-15')} max={parse('2024-12-15')} isDateUnavailable={isDateUnavailable} defaultFocusedValue={parse('2024-02-01')}>
         <DatePicker.Label>Release date</DatePicker.Label>
         <DatePicker.Control><DatePicker.Input /><DatePicker.ClearTrigger /><DatePicker.Trigger /></DatePicker.Control>
         <DateCalendar />
@@ -177,7 +190,7 @@ export default function DateProbes() {
       <input type="hidden" name="releaseIso" value={serialize(release[0])} />
     </section>
     <section aria-label="Sprint picker">
-      <DatePicker.Root name="sprint" locale="en-GB" selectionMode="range" value={sprint} onValueChange={record('sprint', setSprint)} defaultFocusedValue={parse('2024-03-01')}>
+      <DatePicker.Root name="sprint" locale="en-GB" parse={parseEntry} selectionMode="range" value={sprint} onValueChange={record('sprint', setSprint)} defaultFocusedValue={parse('2024-03-01')}>
         <DatePicker.Label>Sprint window</DatePicker.Label>
         <DatePicker.Control><DatePicker.Input index={0} aria-label="Sprint start" /><DatePicker.Input index={1} aria-label="Sprint end" /><DatePicker.ClearTrigger /><DatePicker.Trigger /></DatePicker.Control>
         <DateCalendar />
@@ -689,14 +702,11 @@ async function datePicker({ page, check, open }: Cell) {
     const events = await date.fired(() => date.commit(input, '02/29/2024'));
     return { ...(await state()), events };
   });
-  // Zag's input accepts only digits and separators, and its default parse constrains an out-of-range field to the nearest valid date, then to min and max.
-  await check('invalid-input', {
-    abc: { input: '02/29/2024', value: '2024-02-29', events: [] },
-    '04/31/2024': { input: '04/30/2024', value: '2024-04-30', events: [releaseEvent(['2024-04-30'], ['04/30/2024'])] },
-    '13/45/2024': { input: '12/15/2024', value: '2024-12-15', events: [releaseEvent(['2024-12-15'], ['12/15/2024'])] },
-  }, async () => {
+  // Zag's input drops letters, and the fixture's parser rejects an impossible date, so each commit keeps the value and fires nothing.
+  const kept = { input: '02/29/2024', value: '2024-02-29', events: [] };
+  await check('invalid-input', { abc: kept, '04/31/2024': kept, '13/45/2024': kept, '2/30/2024': kept }, async () => {
     const result: Record<string, unknown> = {};
-    for (const text of ['abc', '04/31/2024', '13/45/2024']) {
+    for (const text of ['abc', '04/31/2024', '13/45/2024', '2/30/2024']) {
       const events = await date.fired(async () => { await date.commit(input, text); await page.keyboard.press('Tab'); });
       result[text] = { ...(await state()), events };
     }
