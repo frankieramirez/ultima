@@ -30,6 +30,7 @@ export const pages = [
   { label: 'Components', to: '/components' },
   { label: 'Blocks', to: '/blocks' },
   { label: 'Recipes', to: '/recipes' },
+  { label: 'Support', to: '/support' },
 ] satisfies NavLink[];
 
 /** Every component in catalogue-number order, which is alphabetical. */
