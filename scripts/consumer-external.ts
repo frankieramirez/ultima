@@ -38,6 +38,30 @@ export function externalLayout(manifest: { dependencies?: Record<string, string>
   return dependencies.vite ? 'vite' : null;
 }
 
+/** axe-core's own `region` exemptions, from its rule definition. */
+const AXE_REGIONS = 'dialog, [role=dialog], [role=alertdialog], svg';
+const OWNED_POPUP = 'data-ultima-owned-popup';
+
+/**
+ * axe over the whole page. Its best-practice `region` rule exempts dialogs but not a listbox or menu, though both
+ * are popups that belong to the control that opened them: the external-mode decision on #809 exempts a listbox or
+ * menu popup the same way when an expanded control names it with `aria-controls` or `aria-owns`. Anything else
+ * outside a landmark still fails `region`.
+ */
+export async function externalAxe(page: Page): Promise<{ violations: { id: string; nodes: { target: unknown[] }[] }[] }> {
+  await page.addScriptTag({ path: axePath });
+  return page.evaluate(async ({ regions, marker }) => {
+    const owned = [...document.querySelectorAll('[aria-expanded="true"]')]
+      .flatMap((control) => `${control.getAttribute('aria-controls') ?? ''} ${control.getAttribute('aria-owns') ?? ''}`.split(/\s+/))
+      .map((id) => (id ? document.getElementById(id) : null))
+      .filter((popup): popup is HTMLElement => !!popup && (popup.matches('[role=listbox], [role=menu]') || !!popup.querySelector('[role=listbox], [role=menu]')));
+    for (const popup of owned) popup.setAttribute(marker, '');
+    const axe = (window as unknown as { axe: { configure: (spec: unknown) => void; run: () => Promise<{ violations: { id: string; nodes: { target: unknown[] }[] }[] }> } }).axe;
+    axe.configure({ checks: [{ id: 'region', options: { regionMatcher: `${regions}, [${marker}]` } }] });
+    try { return await axe.run(); } finally { for (const popup of owned) popup.removeAttribute(marker); }
+  }, { regions: AXE_REGIONS, marker: OWNED_POPUP });
+}
+
 function tokenProblems(element: Locator, table: TokenTable, mode: 'dark' | 'light'): Promise<string[]> {
   return element.evaluate((target, { table, mode }) => {
     const probe = document.createElement('div');
@@ -77,8 +101,7 @@ async function externalCase(page: Page, tables: ResolvedDraft, id: typeof EXTERN
     await Promise.all(document.getAnimations().filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished.catch(() => {})));
   });
   const violations = async (state: string) => {
-    await page.addScriptTag({ path: axePath });
-    const result = await page.evaluate(() => (window as unknown as { axe: { run: () => Promise<{ violations: { id: string }[] }> } }).axe.run());
+    const result = await externalAxe(page);
     axe[state] = result;
     return result.violations.map((violation) => violation.id);
   };
