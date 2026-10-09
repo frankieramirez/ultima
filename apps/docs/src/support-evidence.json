@@ -1,0 +1,283 @@
+{
+  "schemaVersion": 1,
+  "run": {
+    "id": 37940901852,
+    "url": "https://github.com/frankieramirez/ultima/actions/runs/37940901852",
+    "event": "push",
+    "date": "2026-10-09T13:59:58Z",
+    "revision": "2c5a623c8e5b48e3574608b8a57f68188f823498"
+  },
+  "matrix": {
+    "status": "passed",
+    "cells": 54,
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ]
+  },
+  "platform": {
+    "os": "Linux",
+    "release": "6.17.0-1022-azure",
+    "arch": "x64"
+  },
+  "tools": {
+    "node": "v22.23.3",
+    "npm": "10.9.9"
+  },
+  "browsers": {
+    "chromium": "153.0.8010.12",
+    "firefox": "155.0",
+    "webkit": "26.6"
+  },
+  "cli": {
+    "version": "0.1.0",
+    "tarballDigest": "09065ab2215f96088a32b5333d6cade009defa41a8b2ac6cbaae320551c692b9"
+  },
+  "fixtures": [
+    {
+      "id": "consumer-proof-next-app-bundles",
+      "report": "consumer-proof-next-app-bundles/report.json",
+      "reportDigest": "0daea93ae8b38389136f24d9cb00e76a1245ad3b0014892d956471beb39fcc9c",
+      "layout": "next-app",
+      "exercise": "bundles",
+      "cells": 6,
+      "setup": "setup-next",
+      "installedItems": [
+        "button",
+        "card",
+        "dialog",
+        "empty",
+        "field",
+        "input",
+        "lib",
+        "select",
+        "setup-next",
+        "sidebar",
+        "table",
+        "tokens",
+        "ultima-theme"
+      ],
+      "versions": {
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
+        "typescript": "5.9.3",
+        "next": "16.4.0",
+        "@stylexjs/stylex": "0.19.1",
+        "@stylexjs/babel-plugin": "0.19.1",
+        "@stylexjs/postcss-plugin": "0.19.1",
+        "@base-ui/react": "1.9.0",
+        "ultima-design": "0.1.0"
+      }
+    },
+    {
+      "id": "consumer-proof-next-src-bundles",
+      "report": "consumer-proof-next-src-bundles/report.json",
+      "reportDigest": "531a9f00cdfbd51d5ef369c0be79053ee883c37e088e25ba79caedfdb556777d",
+      "layout": "next-src",
+      "exercise": "bundles",
+      "cells": 6,
+      "setup": "setup-next",
+      "installedItems": [
+        "button",
+        "card",
+        "dialog",
+        "empty",
+        "field",
+        "input",
+        "lib",
+        "select",
+        "setup-next",
+        "sidebar",
+        "table",
+        "tokens",
+        "ultima-theme"
+      ],
+      "versions": {
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
+        "typescript": "5.9.3",
+        "next": "16.4.0",
+        "@stylexjs/stylex": "0.19.1",
+        "@stylexjs/babel-plugin": "0.19.1",
+        "@stylexjs/postcss-plugin": "0.19.1",
+        "@base-ui/react": "1.9.0",
+        "ultima-design": "0.1.0"
+      }
+    },
+    {
+      "id": "consumer-proof-vite-bundles",
+      "report": "consumer-proof-vite-bundles/report.json",
+      "reportDigest": "a44b7c5a09fe0e3565f42deaec97f8c2ee2c217fd93ee6f091e6d38a839cb155",
+      "layout": "vite",
+      "exercise": "bundles",
+      "cells": 36,
+      "setup": "setup-vite",
+      "installedItems": [
+        "button",
+        "card",
+        "checkbox",
+        "date-picker",
+        "dialog",
+        "empty",
+        "field",
+        "input",
+        "lib",
+        "popover",
+        "select",
+        "setup-vite",
+        "sidebar",
+        "table",
+        "tabs",
+        "tokens",
+        "ultima-theme"
+      ],
+      "versions": {
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
+        "typescript": "6.0.3",
+        "vite": "8.3.4",
+        "@stylexjs/stylex": "0.19.1",
+        "@stylexjs/unplugin": "0.19.1",
+        "@stylexjs/babel-plugin": "0.19.1",
+        "@base-ui/react": "1.9.0",
+        "@zag-js/react": "1.45.0",
+        "@zag-js/date-picker": "1.45.0",
+        "ultima-design": "0.1.0"
+      }
+    },
+    {
+      "id": "consumer-proof-vite-elements",
+      "report": "consumer-proof-vite-elements/report.json",
+      "reportDigest": "fbe9c949f0ba5a7193b12560ad48fcc568a79415904357a6900adda88a36032b",
+      "layout": "vite",
+      "exercise": "elements",
+      "cells": 6,
+      "setup": null,
+      "installedItems": [
+        "tokens-css",
+        "ult-badge",
+        "ult-button",
+        "ult-card",
+        "ult-code",
+        "ult-meter",
+        "ult-stat",
+        "ult-table",
+        "ult-tabs",
+        "ult-tooltip"
+      ],
+      "versions": {
+        "typescript": "6.0.3",
+        "vite": "8.3.4"
+      }
+    }
+  ],
+  "knownGaps": [
+    {
+      "bundle": "direction-locale",
+      "assertion": "tabs-indicator",
+      "component": "tabs",
+      "issue": null,
+      "engines": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "reason": "Indicator sets inset-inline-start from Base UI's physical --active-tab-left, so under dir=\"rtl\" it sits at the far end of the list instead of under the selected tab.",
+      "observed": [
+        "vite/bundles/chromium/direction-locale-dark",
+        "vite/bundles/chromium/direction-locale-light",
+        "vite/bundles/firefox/direction-locale-dark",
+        "vite/bundles/firefox/direction-locale-light",
+        "vite/bundles/webkit/direction-locale-dark",
+        "vite/bundles/webkit/direction-locale-light"
+      ]
+    },
+    {
+      "bundle": "direction-locale",
+      "assertion": "date-picker-glyphs",
+      "component": "date-picker",
+      "issue": null,
+      "engines": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "reason": "PrevTrigger and NextTrigger draw fixed left and right chevrons, so under dir=\"rtl\" previous points away from the inline start.",
+      "observed": [
+        "vite/bundles/chromium/direction-locale-dark",
+        "vite/bundles/chromium/direction-locale-light",
+        "vite/bundles/firefox/direction-locale-dark",
+        "vite/bundles/firefox/direction-locale-light",
+        "vite/bundles/webkit/direction-locale-dark",
+        "vite/bundles/webkit/direction-locale-light"
+      ]
+    },
+    {
+      "bundle": "narrow-touch",
+      "assertion": "range-date-picker-fits",
+      "component": "date-picker",
+      "issue": "#806",
+      "engines": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "reason": "A range Date Picker cannot shrink below its two inputs' natural widths, so in a grid form it widens a 390px page.",
+      "observed": [
+        "vite/bundles/chromium/narrow-touch-dark",
+        "vite/bundles/chromium/narrow-touch-light",
+        "vite/bundles/firefox/narrow-touch-dark",
+        "vite/bundles/firefox/narrow-touch-light",
+        "vite/bundles/webkit/narrow-touch-dark",
+        "vite/bundles/webkit/narrow-touch-light"
+      ]
+    },
+    {
+      "bundle": "narrow-touch",
+      "assertion": "drawer-backdrop-dismiss",
+      "component": "sidebar",
+      "issue": "#807",
+      "engines": [
+        "firefox"
+      ],
+      "reason": "In Firefox touch emulation a tap on a modal Dialog's backdrop does not dismiss the Sidebar drawer; it needs a physical Android check.",
+      "observed": [
+        "vite/bundles/firefox/narrow-touch-dark",
+        "vite/bundles/firefox/narrow-touch-light"
+      ]
+    }
+  ],
+  "openGaps": [
+    {
+      "id": "desktop-browsers",
+      "title": "Actual desktop browsers",
+      "closes": "A keyboard, form and overlay smoke in branded Chrome and Edge and stable Firefox on Windows and macOS. The matrix runs Playwright's Chromium and Firefox builds on Linux."
+    },
+    {
+      "id": "safari",
+      "title": "Actual Safari",
+      "closes": "The same smoke in current stable Safari on current stable macOS. The matrix runs Playwright's WebKit, a test environment."
+    },
+    {
+      "id": "phones",
+      "title": "Physical phones",
+      "closes": "One iPhone in Safari and one Android phone in Chrome: touch targets, virtual keyboard and viewport resize, scrolling, popup dismissal, date entry and orientation. The narrow touch cells are emulation."
+    },
+    {
+      "id": "screen-readers",
+      "title": "VoiceOver and NVDA",
+      "closes": "VoiceOver with Safari and NVDA with Chrome: labels, announced state and focus order."
+    },
+    {
+      "id": "rtl-catalogue",
+      "title": "RTL beyond the fixture",
+      "closes": "RTL cases for components other than Sidebar navigation, Tabs, Select and Date Picker. The RTL claim covers only those four, less their named exclusions."
+    },
+    {
+      "id": "next-date-picker",
+      "title": "Date Picker hydration in Next",
+      "closes": "Date Picker cells in the Next root and src layouts. The hydration cells run the Projects scene, which has no Date Picker."
+    }
+  ]
+}

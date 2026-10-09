@@ -7,6 +7,7 @@
  */
 import { readFileSync } from 'node:fs';
 import type { CompositionProjection, RecipeProjection } from './catalogue/compositions.ts';
+import type { EvidenceManifest } from './consumer-evidence.ts';
 
 const MAX_BYTES = 64 * 1024;
 
@@ -256,6 +257,12 @@ function describeTokens(tokens: TokensJson['tokens']): string {
     .join('\n\n');
 }
 
+/** One line, from the evidence manifest the support page renders: the guide is near its byte limit. */
+function describeSupport({ run, knownGaps }: EvidenceManifest): string {
+  const issues = knownGaps.flatMap((gap) => gap.issue ? [gap.issue] : []);
+  return `https://ultima.systems/support: tested versions, setups and known gaps (frankieramirez/ultima${issues.join(', ')}) from the ${run.date.slice(0, 10)} full run at ${run.revision.slice(0, 7)}. Treat newer versions as untested.`;
+}
+
 function htmlTagsIn(markdown: string): string[] {
   const prose = markdown.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
   return [...prose.matchAll(/<\/?[A-Za-z][^>]*>/g)].map((match) => match[0]);
@@ -278,6 +285,7 @@ export function agentGuide({
   blocks = [],
   recipes = [],
   examples = [],
+  support,
 }: {
   specPath: string;
   tokensJsonPath: string;
@@ -287,6 +295,8 @@ export function agentGuide({
   recipes?: RecipeProjection[];
   /** The Build a screen lessons, from the composition inventory; only those with a published route. */
   examples?: CompositionProjection[];
+  /** The evidence manifest the support page renders, `apps/docs/src/support-evidence.json`. */
+  support?: EvidenceManifest;
 }): string {
   const spec = readFileSync(specPath, 'utf8');
   const { tokens } = JSON.parse(readFileSync(tokensJsonPath, 'utf8')) as TokensJson;
@@ -322,6 +332,7 @@ export function agentGuide({
     '',
     STYLEX_LINT,
     '',
+    ...(support ? ['## Support', '', describeSupport(support), ''] : []),
     '## Discover and maintain the product theme',
     '',
     themeDiscovery(spec),

@@ -23,6 +23,7 @@ import { Root } from './routes/root';
 import { ThemeStudio } from './routes/theme-studio';
 import { TokensPage } from './routes/tokens';
 import { RecipesPage } from './routes/recipes';
+import { SupportPage } from './routes/support';
 
 const rootRoute = createRootRoute({
   component: Root,
@@ -135,6 +136,13 @@ const recipesRoute = createRoute({
   staticData: { title: 'Recipes' },
 });
 
+const supportRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/support',
+  component: SupportPage,
+  staticData: { title: 'Support' },
+});
+
 const blockRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/blocks/$id',
@@ -191,6 +199,7 @@ export const routeTree = rootRoute.addChildren([
   componentNameRoute,
   blocksRoute,
   recipesRoute,
+  supportRoute,
   blockRoute,
   blockPreviewRoute,
   rationaleRoute,

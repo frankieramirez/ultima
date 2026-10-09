@@ -1,0 +1,45 @@
+import { EvidenceReports, EvidenceSummary, KnownGaps, OpenGaps, RtlClaim, TestedRecipes, TestedVersions } from '../support';
+
+# Support
+
+What Ultima has been tested against, in which setups, and what is still unproven. Every version, count and gap below comes from the evidence manifest of the last full installed-consumer run.
+
+<EvidenceSummary />
+
+## Tested versions
+
+Each cell scaffolds a fresh application outside the repository, installs Ultima from the registry, builds it for production and drives it in a browser. The versions are the ones that run used, read from each fixture's lockfile. A newer browser or framework is covered only once a run on it passes.
+
+<TestedVersions />
+
+## Supported setups
+
+Three React layouts and one custom-element page. Set each one up as the [Install](/install) page describes. The bundles cover theme and CSS, overlays and keyboard, forms, Date Picker, direction and locale, and a 390-pixel touch viewport on Vite. Each Next.js layout runs server rendering, hydration and theming. The element page covers registration, reconnects, attribute updates and `ult-tabs`.
+
+<TestedRecipes />
+
+**Right to left.** Set `dir="rtl"` and `lang` on the document and wrap the app in Base UI's `DirectionProvider direction="rtl"`. Zag components read neither, so give each Date Picker or Calendar `Root` its own `dir="rtl"`. The RTL cells cover Sidebar navigation, Tabs, Select and Date Picker.
+
+<RtlClaim />
+
+**Date entry.** The tested baseline is Gregorian dates in `en-US` and `en-GB`. Pass Date Picker a `parse` of your own that reads the locale's order and rejects impossible dates. Zag's default parse falls back to the engine's `Date.parse`, which differs between browsers. Calendar dates keep their year, month and day through typing, selection, submission and reset in UTC and America/New_York.
+
+## Known gaps
+
+These defects are filed. Their assertions still run in every cell; a break is recorded against its issue instead of failing the run, and anything else that breaks still fails it. A gap leaves this list when its issue closes and its assertion passes in every engine.
+
+<KnownGaps />
+
+## Open evidence gaps
+
+The matrix runs Playwright's browser builds on Linux. These checks need a person, a device or a real browser, and stay open until someone records the operator, date, versions, steps and result.
+
+<OpenGaps />
+
+## Outside the support promise
+
+Older browsers, Firefox ESR, embedded webviews and other mobile browsers. The Next.js Pages Router and custom compiler setups. Locales other than `en-US` and `en-GB`, non-Gregorian calendars and time-zone conversion. Report a defect against unmodified installed source; a target joins this page only with a passing run.
+
+## Evidence
+
+<EvidenceReports />

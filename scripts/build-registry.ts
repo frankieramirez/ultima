@@ -343,6 +343,7 @@ function publishExports({ components, elements, tokensCss }: Sources) {
     tokensJsonPath: join(TOKENS_DIST, 'tokens.json'),
     recipes: composition.recipes,
     examples: composition.examples,
+    support: JSON.parse(readFileSync(join(root, 'apps/docs/src/support-evidence.json'), 'utf8')),
     groups: catalogue.groups.map(({ id, label }) => ({
       label,
       components: components
