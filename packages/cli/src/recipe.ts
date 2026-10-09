@@ -205,7 +205,7 @@ const ROOT_CSS = `@layer reset {
 }
 `;
 
-const VITE_PREVIEW = `import * as stylex from '@stylexjs/stylex';
+export const VITE_PREVIEW = `import * as stylex from '@stylexjs/stylex';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';

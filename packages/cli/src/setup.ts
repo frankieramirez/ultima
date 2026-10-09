@@ -770,7 +770,7 @@ const UNSCOPED_AT_RULES = ['media', 'supports', 'container'];
 
 const LEGACY_PSEUDO_ELEMENTS = [':before', ':after', ':first-line', ':first-letter'];
 
-function unlayeredResets(rule: Rule): string[] {
+export function unlayeredResets(rule: Rule): string[] {
   for (let parent = rule.parent; parent && parent.type !== 'root'; parent = parent.parent) {
     if (parent.type !== 'atrule') return [];
     const name = (parent as AtRule).name.toLowerCase();
