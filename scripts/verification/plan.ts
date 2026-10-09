@@ -749,6 +749,10 @@ export function plan(input: PlanInput): Plan {
       const sides = [...(now ? [{ path: change.path, removed: false }] : [{ path: change.path, removed: true }]), ...(change.from ? [{ path: change.from, removed: true }] : [])];
       for (const side of sides) {
         const mapped = side.removed ? seedRemoved(selection, side.path) : seedCurrent(selection, side.path, `changed (${change.sources.join(', ')})`);
+        if (within(side.path, 'packages/cli')) {
+          for (const entry of CHECKS.filter((candidate) => /^consumer-proof.*-cli$/.test(candidate.id))) selection.need(entry.id, `${side.path} is in the packed CLI each installed consumer runs`);
+          for (const check of LINT_CHECKS) selection.need(check, `${side.path} is in the packed CLI whose doctor and check the StyleX lint consumers run`);
+        }
         if (!side.removed && base && (base.files.read(side.path) !== undefined)) {
           // Its dependants at the base, too: an import this change removed still had a consumer there.
           for (const reach of dependantsOf(base.graph, [side.path]).values()) {
