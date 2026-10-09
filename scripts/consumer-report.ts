@@ -31,8 +31,8 @@ export const lintCases = (layout: ConsumerLayout) => LINT_CASES.map((name) => `$
 /** The browser engines a runner cell can name. The scene matrices run Chromium; the production bundles run all three. */
 export const ENGINES = ['chromium', 'firefox', 'webkit'] as const;
 export type Engine = typeof ENGINES[number];
-/** The first three production bundles of docs/spec/consumer-support.md#bounded-production-proof; scripts/consumer-bundles.ts holds each one's assertions. */
-export const BUNDLES = ['theme-css', 'overlay-keyboard', 'form'] as const;
+/** The six Vite production bundles of docs/spec/consumer-support.md#bounded-production-proof; scripts/consumer-bundles.ts holds each one's assertions. */
+export const BUNDLES = ['theme-css', 'overlay-keyboard', 'form', 'date-picker', 'direction-locale', 'narrow-touch'] as const;
 export const NEXT_BUNDLES = ['hydration'] as const;
 export const ELEMENT_BUNDLES = ['lifecycle'] as const;
 export type Bundle = typeof BUNDLES[number] | typeof NEXT_BUNDLES[number] | typeof ELEMENT_BUNDLES[number];
@@ -43,8 +43,8 @@ export const bundleCases = (engines: readonly Engine[] = ENGINES, layout: Consum
 export const elementCases = (engines: readonly Engine[] = ENGINES) => cells('vite/elements', ELEMENT_BUNDLES, engines);
 /** Every cell of the cross-engine matrix in docs/spec/consumer-support.md#bounded-production-proof that the runner registers. */
 export const matrixCases = () => [...CONSUMER_LAYOUTS.flatMap((layout) => bundleCases(ENGINES, layout)), ...elementCases()];
-/** The items the bundles exercise installs beside the Projects scene, for its scoped popups and form controls. */
-export const BUNDLE_ITEMS = ['checkbox', 'popover'];
+/** The items the bundles exercise installs beside the Projects scene, for its scoped popups, form controls, dates and RTL layout. */
+export const BUNDLE_ITEMS = ['checkbox', 'popover', 'date-picker', 'tabs'];
 export const ELEMENT_ITEMS = readdirSync(new URL('../registry/metadata/element/', import.meta.url)).filter((name) => name.endsWith('.ts')).map((name) => name.slice(0, -'.ts'.length)).sort();
 /** The worked block-adaptation path the copy-bundles exercise installs and adapts. */
 export const ADAPTED_BLOCK = 'settings-01';
@@ -92,6 +92,8 @@ export type ConsumerReport = {
   engines?: Engine[];
   /** The bundles or elements exercise's one production build, shared by every engine: the hash of its served output and its lockfile. */
   fixture?: { hash: string; lock: string };
+  /** Each assertion a bundle cell recorded as `excluded` under a named exclusion or known gap, with its issue. */
+  knownGaps?: { id: string; assertion: string; component: string; issue?: string }[];
   platform?: { os: string; release: string; arch: string };
   lint?: { fragment: { path: string; digest: string }; config: string; lintScript: string | null; network: string; versions: Record<string, string | null>; files: string[] };
   selectedCase?: string;
@@ -116,6 +118,7 @@ export function consumerReportProblems(value: unknown, layout?: ConsumerLayout, 
     if (!Array.isArray(report.engines) || !report.engines.length || report.engines.some((engine, index) => !ENGINES.includes(engine) || report.engines!.indexOf(engine) !== index)) problems.push('unknown bundle engines');
     else if (report.status !== 'incomplete' && report.engines.some((engine) => typeof report.versions?.[engine] !== 'string' || !report.versions[engine])) problems.push('bundle browser identity is missing');
     const sha = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
+    if (report.knownGaps !== undefined && (!Array.isArray(report.knownGaps) || report.knownGaps.some((gap) => !gap || !report.executed?.includes(gap.id) || typeof gap.assertion !== 'string' || typeof gap.component !== 'string'))) problems.push('known gaps must name executed cells');
     if (report.status !== 'incomplete' && (!sha(report.fixture?.hash) || !sha(report.fixture?.lock) || !report.platform?.os || !report.platform.release || !report.platform.arch)) problems.push('bundle fixture or platform identity is missing');
   }
   const engines = Array.isArray(report.engines) ? report.engines.filter((engine) => ENGINES.includes(engine)) : [];
