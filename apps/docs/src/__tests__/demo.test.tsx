@@ -5,7 +5,8 @@ import { Button, Input } from '@ultima/ui';
 import { useState } from 'react';
 
 import { Demo } from '../demo';
-import { recipeSources } from '../generated/recipes';
+import { scenario } from '../../../../scripts/verification/register.ts';
+import { compositionExamples, recipeSources, recipes } from '../generated/recipes';
 
 function Example() {
   const [count, setCount] = useState(0);
@@ -19,25 +20,29 @@ function Example() {
 const SOURCE =
   'export default function Example() {\n  return <Button>Solid</Button>;\n}';
 
-test('projected code, clipboard and download share exact bytes for every bundled file', async () => {
-  const source = recipeSources['apps/docs/src/demos/table/data-table-sorting.tsx']!;
+test('every exposed bundle shows, copies and downloads the exact projected bytes', scenario('screen-composition.copy-bundles', 'docs-vitest', async () => {
+  const entries = new Set([...compositionExamples.flatMap((example) => example.files.slice(0, 1).map((file) => file.source)), ...recipes.flatMap((recipe) => recipe.sources)]);
   const written: string[] = [];
   Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
     writeText: (value: string) => (written.push(value), Promise.resolve()),
   } });
-  const screen = await render(<Demo component={Example} source={source} />);
-  await userEvent.click(screen.getByRole('tab', { name: 'Code', exact: true }));
-  for (const file of source.files) {
-    if (source.files.length > 1) await userEvent.click(screen.getByRole('tab', { name: file.path, exact: true }));
-    expect(screen.container.querySelector('pre')?.textContent).toBe(file.content);
-    await userEvent.click(screen.getByRole('button', { name: 'Copy example source' }));
-    const download = screen.getByRole('button', { name: 'Download source' }).element();
-    expect(decodeURIComponent(download.getAttribute('href')!.split(',').slice(1).join(','))).toBe(file.content);
-    expect(download.getAttribute('download')).toBe(file.path.split('/').at(-1));
-    expect(written.at(-1)).toBe(file.content);
-    expect(file.content).not.toMatch(/from ['"]@ultima\//);
+  for (const entry of entries) {
+    const source = recipeSources[entry]!;
+    const screen = await render(<Demo component={Example} source={source} />);
+    await userEvent.click(screen.getByRole('tab', { name: 'Code', exact: true }));
+    for (const file of source.files) {
+      if (source.files.length > 1) await userEvent.click(screen.getByRole('tab', { name: file.path, exact: true }));
+      expect(screen.container.querySelector('pre')?.textContent).toBe(file.content);
+      await userEvent.click(screen.getByRole('button', { name: 'Copy example source' }));
+      const download = screen.getByRole('button', { name: 'Download source' }).element();
+      expect(decodeURIComponent(download.getAttribute('href')!.split(',').slice(1).join(','))).toBe(file.content);
+      expect(download.getAttribute('download')).toBe(file.path.split('/').at(-1));
+      expect(written.at(-1)).toBe(file.content);
+      expect(file.content).not.toMatch(/from ['"]@ultima\//);
+    }
+    await screen.unmount();
   }
-});
+}));
 
 test('a bundle exposes every local dependency with matching clipboard and download bytes', async () => {
   const main = recipeSources['apps/docs/src/demos/code/typography.tsx']!;

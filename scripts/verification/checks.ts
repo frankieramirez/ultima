@@ -33,6 +33,9 @@ export type CheckId = `${ConsumerCheckBase}-${'stylex-subtree' | 'registry' | 'c
   | 'consumer-mode-vite'
   | 'consumer-mode-next-app'
   | 'consumer-mode-next-src'
+  | 'consumer-copy-vite'
+  | 'consumer-copy-next-app'
+  | 'consumer-copy-next-src'
   | 'production-scenarios';
 
 /**
@@ -380,6 +383,17 @@ const BASE_CHECKS: readonly CheckDefinition[] = [
     needs: ['network', 'loopback-port', 'chromium'], deadlineSeconds: 900,
     scope: 'scoped', selector: 'none', adapter: { status: 'available', since: '#754 (theme-mode)' },
   })),
+  ...(['vite', 'next-app', 'next-src'] as const).map((layout): CheckDefinition => ({
+    id: `consumer-copy-${layout}`,
+    title: `Installed copy bundles: ${layout} typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01`,
+    argv: ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', layout, '--delivery-path', 'css', '--exercise', 'copy-bundles'],
+    cwd: '.',
+    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', 'fresh external scaffold', 'shadcn setup, every bundle item, engines, Settings 01 and theme installation', 'npm run build and tsc', 'Chromium recipe interactions, Projects at 200% zoom and Settings 01 at desktop and narrow widths'],
+    prerequisites: ['registry-build'], after: READ_FIRST,
+    locks: ['browser', 'writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
+    needs: ['network', 'loopback-port', 'chromium'], deadlineSeconds: 1200,
+    scope: 'scoped', selector: 'none', adapter: { status: 'available', since: '#764 (copy bundles)' },
+  })),
   {
     id: 'production-scenarios',
     title: 'Production browser scenarios against the built docs',
@@ -428,6 +442,7 @@ export const DEFAULT_DEADLINE_SECONDS = 5400;
  */
 export const CI_OBLIGATIONS: readonly { workflow: string; command: string; checks?: CheckId[]; preparation?: string }[] = [
   { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise theme-mode --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-mode-vite', 'consumer-mode-next-app', 'consumer-mode-next-src'] },
+  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise copy-bundles --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-copy-vite', 'consumer-copy-next-app', 'consumer-copy-next-src'] },
   { workflow: 'ci.yml', command: 'pnpm install --frozen-lockfile', preparation: 'dependency installation from the lockfile' },
   { workflow: 'ci.yml', command: 'pnpm catalogue:check', checks: ['catalogue-freshness'] },
   { workflow: 'ci.yml', command: 'pnpm check:architecture', checks: ['architecture'] },

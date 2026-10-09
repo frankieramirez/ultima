@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "screen-composition.recipe-index",
+  "title": "Every recipe appears once on /recipes with its canonical anchor and derived install commands",
+  "intent": "The Recipes index lists each recipe descriptor exactly once, links its canonical component-page anchor, prints the registry install derived from its demos and, when it has engines, the npm command with their type packages, and never offers an install for the recipe itself.",
+  "contract": "docs/spec/screen-composition.md#public-reading-path",
+  "aliases": ["recipes page", "recipe index", "install commands", "engines", "llms.txt recipes"],
+  "items": ["carousel", "chart", "command-dialog", "data-table", "item", "kbd", "react-hook-form", "sheet", "typography"],
+  "sources": ["apps/docs/src/routes/recipes.tsx"],
+  "demos": [],
+  "routes": [
+    { "kind": "application", "definition": "apps/docs/src/router.tsx", "pathname": "/recipes" }
+  ],
+  "fixtures": [],
+  "preconditions": ["The generated recipe projection is current: pnpm catalogue:check passes."],
+  "steps": [
+    {
+      "action": "Render /recipes.",
+      "expect": "One card per recipe descriptor, each heading linked to /components/<page>#<section>, with its description."
+    },
+    {
+      "action": "Read each card's Install dependencies block.",
+      "expect": "It is the derived npx shadcn add command, then any npm engine install and its -D type packages; no card installs @ultima/<recipe>."
+    }
+  ],
+  "targets": [
+    { "target": "docs-vitest", "variants": "default" }
+  ]
+}

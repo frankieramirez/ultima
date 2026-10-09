@@ -63,3 +63,29 @@ jobs:
           path: ${{ runner.temp }}/consumer-proof
           if-no-files-found: error
           retention-days: 90
+
+  copy-bundles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        layout: [vite, next-app, next-src]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Production installed copy bundles
+        run: node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise copy-bundles --output "$RUNNER_TEMP/consumer-proof"
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: consumer-proof-${{ matrix.layout }}-copy-bundles
+          path: ${{ runner.temp }}/consumer-proof
+          if-no-files-found: error
+          retention-days: 90
