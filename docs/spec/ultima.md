@@ -404,7 +404,7 @@ Decided on [Decide the complete-screen composition guide and recipe discovery](h
 
 ## Consumer StyleX linting
 
-Decided on [Decide the StyleX linting contract for consumer projects](https://github.com/frankieramirez/ultima/issues/730). Status: accepted for implementation. The [consumer lint contract](consumer-lint.md) owns candidate compatibility, the consumer-owned flat-config recipe, severities, local/CI commands and installed-fixture proof. Setup guidance will offer the official StyleX plugin with `valid-styles` as an error, cleanup warnings and key sorting off. Doctor will advise about integration gaps without executing config code; `check` retains Ultima's policies. Compatibility and lint execution remain unverified until the named fixtures run.
+Decided on [Decide the StyleX linting contract for consumer projects](https://github.com/frankieramirez/ultima/issues/730). Status: implemented apart from doctor diagnostics. The [consumer lint contract](consumer-lint.md) owns the published compatibility, the consumer-owned flat-config recipe, severities, local/CI commands and installed-fixture proof. Both setup items link a hand step to the downloadable `ultima.eslint.mjs` and the [install walkthrough](https://ultima.systems/install#stylex-lint): the official StyleX plugin with `valid-styles` as an error, cleanup warnings and key sorting off. The runner's `lint` exercise proves it in installed Vite, Next root and Next `src` projects. Doctor will advise about integration gaps without executing config code; `check` retains Ultima's policies.
 
 ## Adoption delivery
 

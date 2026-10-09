@@ -36,6 +36,9 @@ export type CheckId = `${ConsumerCheckBase}-${'stylex-subtree' | 'registry' | 'c
   | 'consumer-copy-vite'
   | 'consumer-copy-next-app'
   | 'consumer-copy-next-src'
+  | 'consumer-lint-vite'
+  | 'consumer-lint-next-app'
+  | 'consumer-lint-next-src'
   | 'production-scenarios';
 
 /**
@@ -394,6 +397,17 @@ const BASE_CHECKS: readonly CheckDefinition[] = [
     needs: ['network', 'loopback-port', 'chromium'], deadlineSeconds: 1200,
     scope: 'scoped', selector: 'none', adapter: { status: 'available', since: '#764 (copy bundles)' },
   })),
+  ...(['vite', 'next-app', 'next-src'] as const).map((layout): CheckDefinition => ({
+    id: `consumer-lint-${layout}`,
+    title: `Installed StyleX lint: ${layout} fragment, effective config, positive catalogue, negative and offline cases, then one build`,
+    argv: ['node', '--experimental-strip-types', 'scripts/consumer-proof.ts', '--layout', layout, '--delivery-path', 'css', '--exercise', 'lint'],
+    cwd: '.',
+    nested: ['pnpm registry:build', 'pnpm --filter ultima-design build', `fresh external scaffold${layout === 'vite' ? '' : ' with ESLint'}`, 'shadcn setup, every registry:ui and registry:block item and theme installation', 'the downloaded ultima.eslint.mjs and pinned lint dependencies', 'eslint --print-config and eslint . with the network denied', 'packed CLI doctor and check', 'npm run build'],
+    prerequisites: ['registry-build'], after: READ_FIRST,
+    locks: ['writes:tokens-dist', 'writes:elements-dist', 'writes:registry'],
+    needs: ['network', 'loopback-port'], deadlineSeconds: 1200,
+    scope: 'scoped', selector: 'none', adapter: { status: 'available', since: '#756 (StyleX lint)' },
+  })),
   {
     id: 'production-scenarios',
     title: 'Production browser scenarios against the built docs',
@@ -443,6 +457,7 @@ export const DEFAULT_DEADLINE_SECONDS = 5400;
 export const CI_OBLIGATIONS: readonly { workflow: string; command: string; checks?: CheckId[]; preparation?: string }[] = [
   { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise theme-mode --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-mode-vite', 'consumer-mode-next-app', 'consumer-mode-next-src'] },
   { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise copy-bundles --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-copy-vite', 'consumer-copy-next-app', 'consumer-copy-next-src'] },
+  { workflow: 'consumer-proof.yml', command: 'node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise lint --output "$RUNNER_TEMP/consumer-proof"', checks: ['consumer-lint-vite', 'consumer-lint-next-app', 'consumer-lint-next-src'] },
   { workflow: 'ci.yml', command: 'pnpm install --frozen-lockfile', preparation: 'dependency installation from the lockfile' },
   { workflow: 'ci.yml', command: 'pnpm catalogue:check', checks: ['catalogue-freshness'] },
   { workflow: 'ci.yml', command: 'pnpm check:architecture', checks: ['architecture'] },

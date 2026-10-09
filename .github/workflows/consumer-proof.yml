@@ -89,3 +89,28 @@ jobs:
           path: ${{ runner.temp }}/consumer-proof
           if-no-files-found: error
           retention-days: 90
+
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        layout: [vite, next-app, next-src]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Installed StyleX lint
+        run: node --experimental-strip-types scripts/consumer-proof.ts --layout "${{ matrix.layout }}" --delivery-path css --exercise lint --output "$RUNNER_TEMP/consumer-proof"
+      - if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: consumer-proof-${{ matrix.layout }}-lint
+          path: ${{ runner.temp }}/consumer-proof
+          if-no-files-found: error
+          retention-days: 90

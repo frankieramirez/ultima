@@ -75,6 +75,93 @@ The `docs` field on each setup item prints the same list at install. This page a
 
 **Only if you follow the Data Table recipe.** `@tanstack/react-table` v9 is ESM-only. It ships no CJS and no UMD build and declares `engines.node >= 20`, so a toolchain that `require()`s it cannot load it: a CJS config path, or a test runner without ESM support. Nothing else Ultima documents asks this of you, and Ultima does not pin the last dual-published major to buy CJS back — it is more than a year old, and a toolchain that cannot resolve ESM cannot compile StyleX either.
 
+## StyleX lint
+
+The StyleX compiler can accept styles that are not valid, so [StyleX recommends its ESLint plugin](https://stylexjs.com/docs/learn/installation/#eslint). Ultima ships the plugin's configuration as one file. Download [`ultima.eslint.mjs`](/ultima.eslint.mjs) and save it next to `eslint.config.mjs`. From then on the file is yours. Setup items never write an ESLint config and never install ESLint.
+
+```js title="ultima.eslint.mjs"
+// Ultima's StyleX lint fragment for an ESLint 9 flat config: https://ultima.systems/install#stylex-lint
+// Save it beside eslint.config.mjs; you own it from then on. Append `ultimaStylex` to your config array
+// after your framework's configuration, and put your own overrides after it.
+// Tested with eslint 9.39.5, typescript-eslint 8.71.1 and @stylexjs/eslint-plugin 0.19.1.
+import stylex from '@stylexjs/eslint-plugin';
+
+export const ultimaStylex = {
+  name: 'ultima/stylex',
+  files: ['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'],
+  plugins: { '@stylexjs': stylex },
+  rules: {
+    '@stylexjs/valid-styles': ['error', { allowOuterPseudoAndMedia: true }],
+    '@stylexjs/no-unused': 'warn',
+    '@stylexjs/valid-shorthands': 'warn',
+    '@stylexjs/no-conflicting-props': 'warn',
+    '@stylexjs/sort-keys': 'off',
+  },
+};
+```
+
+Invalid styles are errors. `allowOuterPseudoAndMedia` accepts the namespace-level `':hover'` and `@media` blocks that installed components use. Unused styles, shorthand advice and conflicting props are warnings. Key order is your choice, so `sort-keys` is off, and so is every other upstream rule.
+
+**A project without ESLint.** This includes a create-vite app, which ships oxlint. Install the tested versions:
+
+```sh title="Terminal"
+npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1
+```
+
+Then create the config. It parses TypeScript and JSX syntax only. It adds no type-aware linting and no general TypeScript rules.
+
+```js title="eslint.config.mjs"
+import tseslint from 'typescript-eslint';
+import { ultimaStylex } from './ultima.eslint.mjs';
+
+export default [
+  { ignores: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/out/**', '**/coverage/**'] },
+  {
+    files: ultimaStylex.files,
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+  },
+  ultimaStylex,
+];
+```
+
+If `package.json` has no `lint` script, add `"lint": "eslint ."`. If it already runs another linter, such as create-vite's oxlint, keep that linter and run ESLint after it: `"lint": "oxlint && eslint ."`.
+
+**An existing ESLint 9 flat config.** Install only the plugin, `npm install -D --save-exact @stylexjs/eslint-plugin@0.19.1`, and keep your parser, rules and ignores. Import the fragment and put it after your framework's configuration. In a create-next-app project with ESLint, that looks like this:
+
+```js title="eslint.config.mjs"
+import { ultimaStylex } from './ultima.eslint.mjs';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTs from 'eslint-config-next/typescript';
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  ultimaStylex,
+  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
+]);
+
+export default eslintConfig;
+```
+
+Put your own rule overrides after `ultimaStylex`, where they win. If your config already registers `@stylexjs` from `@stylexjs/eslint-plugin`, keep it: the fragment registers the same plugin object, so ESLint accepts both. If you registered a different object under that name, use one object and merge the rules into it. ESLint 8 legacy configs and ESLint 10 are not verified. Ultima does not migrate them.
+
+**Check the effective config.** Run each command from the package that holds `eslint.config.mjs`:
+
+```sh title="Terminal"
+npx eslint --print-config src/App.tsx
+npx eslint .
+npx ultima-design doctor
+npx ultima-design check
+```
+
+For Next.js, probe the page under `app/` or `src/app/` instead. Also probe an installed component and the token and theme modules in your lib folder. Each should name the typescript-eslint parser and show `@stylexjs/valid-styles` at severity 2. A file that prints `undefined` is ignored, and an ignored component means lint does not cover it.
+
+ESLint exits 0 when it reports only warnings, 1 when it reports errors and 2 when it could not run. Run the lint script once in CI, without `--fix` and without `--max-warnings 0` unless your project already wants that. Review autofixes locally. After installation, every command uses local packages and runs offline. `ultima-design check` never runs ESLint, and passing lint does not mean the build applied your theme.
+
 ## Tokens without StyleX
 
 Components need a StyleX compiler. Tokens do not.
