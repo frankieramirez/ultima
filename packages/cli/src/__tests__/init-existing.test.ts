@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -6,10 +7,13 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { ExistingPlan } from '../existing.ts';
 import { type InitDeps, type InitIO, init } from '../init.ts';
-import { CLI_VERSION } from '../install.ts';
-import { VITE } from '../recipe.ts';
+import { CLI_VERSION, install, readSkillStamp } from '../install.ts';
+import type { Journal } from '../journal.ts';
+import { VITE, sha256 } from '../recipe.ts';
 
 const REGISTRY = 'http://127.0.0.1:4321/r/{name}.json';
+// Git looks no further up than the temporary directory, so each case's repository, or its absence, is its own.
+process.env.GIT_CEILING_DIRECTORIES = realpathSync(tmpdir());
 const temporary: string[] = [];
 const scratch = (prefix: string) => {
   const directory = realpathSync(mkdtempSync(join(tmpdir(), prefix)));
@@ -34,7 +38,7 @@ function snapshot(root: string, prefix = ''): Record<string, string> {
   const files: Record<string, string> = {};
   for (const entry of readdirSync(join(root, prefix), { withFileTypes: true })) {
     const path = prefix ? `${prefix}/${entry.name}` : entry.name;
-    if (path === 'node_modules') continue;
+    if (path === 'node_modules' || path === '.ultima-init') continue;
     if (entry.isDirectory()) Object.assign(files, snapshot(root, path));
     else if (entry.isFile()) files[path] = readFileSync(join(root, path), 'utf8');
   }
@@ -96,10 +100,18 @@ function served(framework: 'vite' | 'next', layout: 'app' | 'src/app' = 'app'): 
   };
 }
 
-type Harness = { root: string; deps: InitDeps; calls: string[][]; registry: Record<string, unknown>; failing: Set<string> };
+type Harness = {
+  root: string;
+  deps: InitDeps;
+  calls: string[][];
+  registry: Record<string, unknown>;
+  failing: Set<string>;
+  beforeStep: Map<string, () => void>;
+  crashAfterWriting: string | null;
+};
 
 function harness(root: string, framework: 'vite' | 'next'): Harness {
-  const h: Harness = { root, calls: [], registry: served(framework), failing: new Set(), deps: undefined as unknown as InitDeps };
+  const h: Harness = { root, calls: [], registry: served(framework), failing: new Set(), beforeStep: new Map(), crashAfterWriting: null, deps: undefined as unknown as InitDeps };
   h.deps = {
     recipes: [VITE],
     managerVersion: (manager) => (manager === 'npm' ? '11.0.0' : '10.0.0'),
@@ -112,10 +124,11 @@ function harness(root: string, framework: 'vite' | 'next'): Harness {
       h.calls.push([command, ...args]);
       writeFileSync(log, `${command} ${args.join(' ')}\n`, { flag: 'a' });
       const step = args[0] === 'install' ? 'install' : args.includes('add') ? 'add' : (args.find((arg) => ['doctor', 'check', 'build', 'tsc'].includes(arg)) ?? 'unknown');
+      h.beforeStep.get(step)?.();
       if (step === 'install') {
         const pkg = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8'));
         const declared: Record<string, string> = { ...pkg.dependencies, ...pkg.devDependencies };
-        installed(cwd, Object.fromEntries(Object.entries(declared).filter(([, version]) => /^\d/.test(version)).map(([name, version]) => [name, version])));
+        installed(cwd, Object.fromEntries(Object.entries(declared).filter(([, version]) => /^[~^]?\d/.test(version)).map(([name, version]) => [name, version.replace(/^[~^]/, '')])));
         if (declared['ultima-design']) installed(cwd, { 'ultima-design': CLI_VERSION });
       } else if (step === 'add') {
         const components = JSON.parse(readFileSync(join(cwd, 'components.json'), 'utf8'));
@@ -130,6 +143,7 @@ function harness(root: string, framework: 'vite' | 'next'): Harness {
           for (const file of body.files) {
             const path = join(base(file.type === 'registry:ui' ? components.aliases.ui : components.aliases.lib), file.path.split('/').at(-1) as string);
             if (!existsSync(path)) put(path, '', file.content);
+            if (h.crashAfterWriting !== null && path === join(cwd, h.crashAfterWriting)) throw new Error('interrupted');
           }
           queue.push(...(body.registryDependencies ?? []).map((name) => name.slice(8)));
         }
@@ -270,7 +284,7 @@ describe('init on an existing Vite application', () => {
     expect(result.out).toContain('The preview is written to src/ultima-preview.tsx and not mounted yet.');
     expect(result.out).toContain("add `import UltimaPreview from './ultima-preview';`");
     expect(result.out).toMatch(/doctor\s+passed/);
-    expect(result.out).toMatch(/build\s+passed/);
+    expect(result.out).toMatch(/Build\s+passed/);
 
     const after = snapshot(root);
     for (const kept of ['src/App.tsx', 'src/main.tsx', 'src/pages/home.tsx', 'index.html', 'tsconfig.node.json', 'README.md', 'AGENTS.md', 'CLAUDE.md', 'DESIGN.md', '.claude/settings.json', 'package-lock.json']) {
@@ -399,7 +413,7 @@ describe('init on an existing Next application', () => {
     expect(code).toBe(0);
     expect(planned.target).toMatchObject({ framework: 'next', layout, entry: `${layout}/layout.tsx`, sourceRoot: layout === 'app' ? '' : 'src', packageManager: { name: 'pnpm', lockfile: 'pnpm-lock.yaml' } });
     expect(planned.theme).toEqual({ css: true, json: true, design: false, importedFrom: null });
-    expect(planned.manualSteps.some((step) => step.startsWith(`Theme: ultima-theme.css exists but ${layout}/layout.tsx does not import it`))).toBe(true);
+    expect(planned.manualSteps.some((step) => step.edit.startsWith(`ultima-theme.css exists but ${layout}/layout.tsx does not import it`))).toBe(true);
     expect(writes(planned)).toEqual([
       'edit package.json',
       'create components.json',
@@ -626,5 +640,421 @@ describe('conflicts', () => {
     expect(fresh.err).toBe('');
     expect(fresh.code).toBe(0);
     expect((await apply(h, fresh.path)).code).toBe(framework === 'vite' ? 3 : 0);
+  });
+});
+
+const journalOf = (root: string) => {
+  const runs = readdirSync(join(root, '.ultima-init')).filter((name) => name !== '.gitignore').sort();
+  return { runs, journal: JSON.parse(readFileSync(join(root, '.ultima-init', runs.at(-1) as string, 'journal.json'), 'utf8')) as Journal };
+};
+
+async function straightApplySnapshot(adjust: (h: Harness) => void = () => {}): Promise<Record<string, string>> {
+  const h = harness(viteApp(), 'vite');
+  adjust(h);
+  await apply(h, (await plan(h)).path);
+  return snapshot(h.root);
+}
+
+const interrupt = () => {
+  throw new Error('interrupted');
+};
+const CHECKS = ['verify versions', 'doctor', 'check', 'typecheck', 'build'];
+
+describe('recovery', () => {
+  it('saves the original bytes and modes and journals each step before it runs', async () => {
+    const root = viteApp();
+    chmodSync(join(root, 'package.json'), 0o640);
+    const original = readFileSync(join(root, 'package.json'));
+    const h = harness(root, 'vite');
+    let atInstall: Journal | undefined;
+    h.beforeStep.set('install', () => {
+      atInstall = journalOf(root).journal;
+    });
+    const result = await apply(h, (await plan(h)).path);
+    expect(result.code).toBe(3);
+
+    const { runs, journal } = journalOf(root);
+    expect(runs).toHaveLength(1);
+    const directory = join(root, '.ultima-init', runs[0] as string);
+    expect(statSync(directory).mode & 0o777).toBe(0o700);
+    expect(readFileSync(join(root, '.ultima-init/.gitignore'), 'utf8')).toBe('*\n');
+    expect(journal).toMatchObject({ status: 'finished', manager: 'npm', lockfile: 'package-lock.json', originals: { 'package.json': { sha256: sha256(original), mode: 0o640 }, 'components.json': null, 'src/components/ui/button.tsx': null } });
+    expect(readFileSync(join(directory, 'files', sha256(original)))).toEqual(original);
+    expect(statSync(join(root, 'package.json')).mode & 0o777).toBe(0o640);
+    expect(journal.directories).toEqual(expect.arrayContaining(['src/components', 'src/components/ui', 'src/lib']));
+    expect(atInstall?.operations.map(({ id, status }) => `${id}: ${status}`)).toEqual([
+      'edit package.json: done',
+      'edit tsconfig.json: done',
+      'edit tsconfig.app.json: done',
+      'create components.json: done',
+      'create ultima.vite.ts: done',
+      'install: started',
+    ]);
+    const edited = sha256(readFileSync(join(root, 'package.json')));
+    expect(journal.operations.find(({ id }) => id === 'edit package.json')).toMatchObject({ before: { 'package.json': sha256(original) }, after: { 'package.json': edited } });
+    expect(journal.operations.find(({ id }) => id === 'install')).toMatchObject({ status: 'done', exit: 0, log: join(directory, '06-install.log') });
+    expect(journal.outputs).toMatchObject({ 'package.json': edited, 'components.json': expect.any(String), 'src/lib/tokens.stylex.ts': sha256(FILES.tokens) });
+    expect(journal.outputs).not.toHaveProperty('package-lock.json');
+    expect(result.out).toContain(`undo this run with \`npx ultima-design init . --rollback ${runs[0]}\``);
+  });
+
+  it('resumes an interrupted package install, installing what the run declared and planning nothing it finished', async () => {
+    const clean = await straightApplySnapshot();
+    const root = viteApp();
+    const h = harness(root, 'vite');
+    // npm dies mid-reify, having moved one of the consumer's own packages out of node_modules.
+    h.beforeStep.set('install', () => {
+      rmSync(join(root, 'node_modules/react'), { recursive: true });
+      interrupt();
+    });
+    await expect(apply(h, (await plan(h)).path)).rejects.toThrow('interrupted');
+    const first = journalOf(root);
+    expect(first.journal.status).toBe('running');
+    expect(first.journal.operations.at(-1)).toMatchObject({ id: 'install', status: 'started' });
+
+    h.beforeStep.clear();
+    const resumed = await plan(h);
+    expect(resumed.err).toBe('');
+    expect(resumed.plan.resume).toEqual({ runId: first.runs[0], install: { react: '19.2.0', '@base-ui/react': '1.8.0', '@stylexjs/stylex': '0.19.0', '@stylexjs/unplugin': '0.19.0', unplugin: '2.3.11', 'ultima-design': CLI_VERSION }, items: [] });
+    expect(resumed.plan.operations.find(({ id }) => id === 'verify versions')).toMatchObject({ versions: { react: '19.2.0', unplugin: '2.3.11' } });
+    expect(resumed.plan.operations.map(({ id }) => id)).toEqual(['install', 'add button, card, dialog', 'edit vite.config.ts', 'edit src/index.css', 'create src/ultima-preview.tsx', ...CHECKS]);
+    const printed = io();
+    await init([root, '--plan', '--registry', REGISTRY], printed.io, h.deps);
+    expect(printed.out).toContain(`Resumes      run ${first.runs[0]}, which stopped before it finished; it still installs react, @stylexjs/stylex, @base-ui/react, @stylexjs/unplugin, unplugin, ultima-design. Steps it finished are not planned again.`);
+
+    expect((await apply(h, resumed.path)).code).toBe(3);
+    expect(snapshot(root)).toEqual(clean);
+    const { runs, journal } = journalOf(root);
+    expect(runs).toEqual(first.runs);
+    expect(journal).toMatchObject({ status: 'finished', plans: [first.journal.plans[0], resumed.plan.planHash] });
+    expect(readdirSync(join(root, '.ultima-init', runs[0] as string))).toEqual(expect.arrayContaining(['plan.json', '2.plan.json', '2.result.json', '2.01-install.log']));
+  });
+
+  it('resumes an interrupted registry install, adding again the item shadcn left partly written', async () => {
+    const twoFileDialog = (h: Harness) => (h.registry.dialog as { files: unknown[] }).files.push({ path: 'ultima/ui/dialog-parts.tsx', type: 'registry:ui', content: 'export const Parts = {};\n' });
+    const clean = await straightApplySnapshot(twoFileDialog);
+    const root = viteApp();
+    const h = harness(root, 'vite');
+    twoFileDialog(h);
+    h.crashAfterWriting = 'src/components/ui/dialog.tsx';
+    await expect(apply(h, (await plan(h)).path)).rejects.toThrow('interrupted');
+    expect(existsSync(join(root, 'src/components/ui/dialog.tsx'))).toBe(true);
+    expect(existsSync(join(root, 'src/components/ui/dialog-parts.tsx'))).toBe(false);
+
+    h.crashAfterWriting = null;
+    h.calls.length = 0;
+    const resumed = await plan(h);
+    expect(resumed.err).toBe('');
+    expect(resumed.plan.resume).toMatchObject({ install: {}, items: ['dialog'] });
+    expect(resumed.plan.items).toEqual({ add: ['dialog'], present: ['button', 'card'], creates: ['src/components/ui/dialog-parts.tsx', 'src/lib/themes.ts', 'src/lib/tokens.stylex.ts'] });
+    expect(resumed.plan.operations.map(({ id }) => id)).toEqual(['add dialog', 'edit vite.config.ts', 'edit src/index.css', 'create src/ultima-preview.tsx', ...CHECKS]);
+    expect((await apply(h, resumed.path)).code).toBe(3);
+    expect(snapshot(root)).toEqual(clean);
+    expect(h.calls.filter((call) => call.includes('add'))).toEqual([['npx', '--yes', 'shadcn@4.21.4', 'add', '@ultima/dialog', '--yes']]);
+  });
+
+  it('resumes config edits stopped by a consumer edit, keeping that edit and adding nothing twice', async () => {
+    const root = viteApp();
+    const h = harness(root, 'vite');
+    const consumerCss = VITE_INDEX_CSS.replace('.shell {', '.cart {\n  color: red;\n}\n\n.shell {');
+    h.beforeStep.set('add', () => put(root, 'src/index.css', consumerCss));
+    const stopped = await apply(h, (await plan(h)).path);
+    expect(stopped.code).toBe(1);
+    expect(stopped.err).toContain('stopped at edit src/index.css: src/index.css changed after it was planned');
+    const { runs, journal } = journalOf(root);
+    expect(stopped.err).toContain(`Run \`npx ultima-design init .\` to plan the rest of this run, or \`npx ultima-design init . --rollback ${runs[0]}\` to undo it.`);
+    expect(journal.status).toBe('stopped');
+    expect(journal.operations.at(-1)).toMatchObject({ id: 'edit src/index.css', status: 'failed' });
+
+    h.beforeStep.clear();
+    const resumed = await plan(h);
+    expect(resumed.plan.resume?.runId).toBe(runs[0]);
+    expect(resumed.plan.operations.map(({ id }) => id)).toEqual(['edit src/index.css', 'create src/ultima-preview.tsx', ...CHECKS]);
+    expect((await apply(h, resumed.path)).code).toBe(3);
+    const css = readFileSync(join(root, 'src/index.css'), 'utf8');
+    expect(css).toContain('.cart {\n  color: red;\n}');
+    expect(css.match(/@layer reset/g)).toHaveLength(1);
+    const config = readFileSync(join(root, 'vite.config.ts'), 'utf8');
+    expect(config.match(/ultimaStylex/g)).toHaveLength(2);
+    expect(journalOf(root).journal.status).toBe('finished');
+  });
+
+  it('rolls back to the original bytes and modes, then the next plan starts over', async () => {
+    const root = viteApp();
+    chmodSync(join(root, 'package.json'), 0o640);
+    const before = snapshot(root);
+    const h = harness(root, 'vite');
+    await apply(h, (await plan(h)).path);
+    const { runs } = journalOf(root);
+
+    const output = io();
+    expect(await init([root, '--rollback', runs[0] as string], output.io, h.deps)).toBe(3);
+    expect(snapshot(root)).toEqual(before);
+    expect(statSync(join(root, 'package.json')).mode & 0o777).toBe(0o640);
+    for (const directory of ['src/components', 'src/lib']) expect(existsSync(join(root, directory)), directory).toBe(false);
+    expect(output.out).toContain('Restored   package.json, src/index.css, tsconfig.app.json, tsconfig.json, vite.config.ts');
+    expect(output.out).toContain('Removed    components.json, src/components/ui/button.tsx');
+    expect(output.out).toContain('Left       none');
+    expect(output.out).toContain('package.json is back to its original bytes, and node_modules still holds what the run installed. Reinstall:\n  npm ci\n');
+    expect(journalOf(root).journal).toMatchObject({ status: 'rolled back', rollback: { left: [] } });
+
+    const again = io();
+    expect(await init([root, '--rollback', runs[0] as string], again.io, h.deps)).toBe(0);
+    expect(again.out).toContain('Restored   none');
+    const unknown = io();
+    expect(await init([root, '--rollback', 'nope'], unknown.io, h.deps)).toBe(2);
+    expect(unknown.err).toContain(`has no init run nope. Runs recorded there: ${runs[0]}`);
+
+    const fresh = await plan(h);
+    expect(fresh.plan.resume).toBeNull();
+    expect(writes(fresh.plan)).toContain('edit package.json');
+  });
+
+  it('leaves a file the consumer changed after the run, and names it with its original', async () => {
+    const root = viteApp();
+    const before = snapshot(root);
+    const h = harness(root, 'vite');
+    await apply(h, (await plan(h)).path);
+    const { runs, journal } = journalOf(root);
+    const config = `${readFileSync(join(root, 'vite.config.ts'), 'utf8')}// the consumer's note\n`;
+    put(root, 'vite.config.ts', config);
+    put(root, 'src/ultima-preview.tsx', `${readFileSync(join(root, 'src/ultima-preview.tsx'), 'utf8')}// edited\n`);
+
+    const output = io();
+    expect(await init([root, '--rollback', runs[0] as string], output.io, h.deps)).toBe(1);
+    const { 'src/ultima-preview.tsx': preview, ...after } = snapshot(root);
+    expect(preview).toContain('// edited');
+    expect(after['vite.config.ts']).toBe(config);
+    expect({ ...after, 'vite.config.ts': before['vite.config.ts'] }).toEqual(before);
+    expect(existsSync(join(root, 'src/components'))).toBe(false);
+    expect(output.out).toContain('Left       src/ultima-preview.tsx, vite.config.ts');
+    const original = join(root, '.ultima-init', runs[0] as string, 'files', journal.originals['vite.config.ts']?.sha256 as string);
+    expect(readFileSync(original, 'utf8')).toBe(VITE_CONFIG);
+    expect(output.out).toContain(`vite.config.ts changed after this run wrote it, so it was left as it is. Its original is ${original}: compare and restore it by hand.`);
+    expect(output.out).toContain('src/ultima-preview.tsx did not exist before this run and changed after it was written, so it was left. Delete it by hand if you do not want it.');
+  });
+
+  it('rejects a registry payload that changed after planning, before shadcn writes', async () => {
+    const root = viteApp();
+    const h = harness(root, 'vite');
+    const { path } = await plan(h);
+    h.beforeStep.set('install', () => {
+      ((h.registry.card as { files: { content: string }[] }).files[0] as { content: string }).content = 'export const Card = "changed";\n';
+    });
+    const result = await apply(h, path);
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('stopped at add button, card, dialog: the registry changed @ultima/card since this plan pinned it, so shadcn did not run');
+    expect(h.calls.some((call) => call.includes('add'))).toBe(false);
+    expect(existsSync(join(root, 'src/components/ui/card.tsx'))).toBe(false);
+    expect(journalOf(root).journal.operations.at(-1)).toMatchObject({ id: 'add button, card, dialog', status: 'failed' });
+  });
+
+  it('rejects registry targets outside the application or onto consumer files before any write', async () => {
+    const root = viteApp();
+    const h = harness(root, 'vite');
+    (h.registry.tokens as { files: unknown[] }).files.push(
+      { path: 'ultima/escape.ts', type: 'registry:file', target: '~/../escape.ts', content: '' },
+      { path: 'ultima/app.tsx', type: 'registry:file', target: '~/src/App.tsx', content: 'export default null;\n' },
+    );
+    const before = snapshot(root);
+    const blocked = await plan(h);
+    expect(blocked.code).toBe(1);
+    expect(blocked.err).toContain('@ultima/tokens would install ../escape.ts, outside the application.');
+    expect(blocked.err).toContain("src/App.tsx exists and is not @ultima/tokens's current source");
+    expect(snapshot(root)).toEqual(before);
+    expect(existsSync(join(root, '.ultima-init'))).toBe(false);
+  });
+});
+
+const gitInit = (directory: string) => expect(spawnSync('git', ['init', '-q'], { cwd: directory }).status).toBe(0);
+const SKILL = '.claude/skills/ultima-design/SKILL.md';
+
+describe('agent setup', () => {
+  it('installs the detected harness through install when the Git root is the application', async () => {
+    const root = viteApp();
+    gitInit(root);
+    const h = harness(root, 'vite');
+    const { code, plan: planned } = await plan(h);
+    expect(code).toBe(0);
+    expect(planned.agents).toEqual({
+      harnesses: ['claude'],
+      selection: 'detected',
+      gitRoot: root,
+      status: 'delegated',
+      reason: null,
+      files: [
+        { file: SKILL, action: 'create' },
+        { file: '.claude/settings.json', action: 'edit' },
+      ],
+      command: 'npm exec --no -- ultima install --harness claude',
+    });
+    expect(planned.operations.map(({ id }) => id)).toContain('install agent files');
+    expect(planned.preserved).not.toContain('.claude');
+    expect(planned.inputs.files).toMatchObject({ [SKILL]: null, '.claude/settings.json': expect.stringMatching(/^[0-9a-f]{64}$/) });
+
+    const output = io();
+    expect(await init(['--apply', (await plan(h)).path, '--json'], output.io, h.deps)).toBe(3);
+    const result = JSON.parse(output.out);
+    expect(result.agents).toMatchObject({ status: 'installed', harnesses: ['claude'], reason: null });
+    expect(result.outcomes).toEqual({ application: 'incomplete', agents: 'installed', staticChecks: 'passed', build: 'passed', browser: 'not run', manualSteps: { required: 1, optional: 3 } });
+    expect(result.files.created).toContain(SKILL);
+    expect(result.files.edited).toContain('.claude/settings.json');
+    expect(readSkillStamp(readFileSync(join(root, SKILL), 'utf8'))?.version).toBe(CLI_VERSION);
+    const settings = JSON.parse(readFileSync(join(root, '.claude/settings.json'), 'utf8'));
+    expect(JSON.stringify(settings.hooks.PostToolUse)).toContain('foreign-hook');
+    expect(JSON.stringify(settings.hooks.PostToolUse)).toContain('ultima-design hook claude');
+    expect(result.manualSteps.map(({ title }: { title: string }) => title)).toEqual(['Mount the preview', 'Theme', 'Strict CSP', 'Trust the agent hook']);
+
+    const applied = snapshot(root);
+    const again = await plan(h);
+    expect(again.plan.agents.files).toEqual([
+      { file: SKILL, action: 'unchanged' },
+      { file: '.claude/settings.json', action: 'unchanged' },
+    ]);
+    expect(again.plan.operations.map(({ id }) => id)).not.toContain('install agent files');
+    await apply(h, again.path);
+    expect(snapshot(root)).toEqual(applied);
+  });
+
+  it('journals the agent files, so --rollback restores the hook file and removes the skill', async () => {
+    const root = viteApp();
+    gitInit(root);
+    const settings = readFileSync(join(root, '.claude/settings.json'), 'utf8');
+    const h = harness(root, 'vite');
+    const output = io();
+    await init(['--apply', (await plan(h)).path, '--json'], output.io, h.deps);
+    const { runId, agents } = JSON.parse(output.out);
+    expect(agents.status).toBe('installed');
+    expect(existsSync(join(root, SKILL))).toBe(true);
+    const undone = io();
+    // 3: package.json is back to its original bytes too, and the report names the reinstall.
+    expect(await init([root, '--rollback', runId], undone.io, h.deps)).toBe(3);
+    expect(undone.out).toMatch(/Restored .*\.claude\/settings\.json/);
+    expect(undone.out).toMatch(/Removed .*\.claude\/skills\/ultima-design\/SKILL\.md/);
+    expect(readFileSync(join(root, '.claude/settings.json'), 'utf8')).toBe(settings);
+    expect(existsSync(join(root, SKILL))).toBe(false);
+  });
+
+  it('replaces detection with --harness', async () => {
+    const root = viteApp();
+    gitInit(root);
+    const h = harness(root, 'vite');
+    const { plan: planned } = await plan(h, ['--harness', 'codex']);
+    expect(planned.agents).toMatchObject({ harnesses: ['codex'], selection: 'explicit', status: 'delegated', command: 'npm exec --no -- ultima install --harness codex' });
+    expect(planned.agents.files).toEqual([
+      { file: '.agents/skills/ultima-design/SKILL.md', action: 'create' },
+      { file: '.codex/hooks.json', action: 'create' },
+    ]);
+    const before = readFileSync(join(root, '.claude/settings.json'), 'utf8');
+    const result = await apply(h, (await plan(h, ['--harness', 'codex'])).path);
+    expect(result.out).toContain('Agent setup    installed for codex: .agents/skills/ultima-design/SKILL.md create, .codex/hooks.json create');
+    expect(existsSync(join(root, '.codex/hooks.json'))).toBe(true);
+    expect(readFileSync(join(root, '.claude/settings.json'), 'utf8')).toBe(before);
+    expect(existsSync(join(root, SKILL))).toBe(false);
+  });
+
+  it('skips agent setup when no harness is detected or selected, without blocking the application', async () => {
+    const root = nextApp('app');
+    gitInit(root);
+    const h = harness(root, 'next');
+    const { plan: planned } = await plan(h);
+    expect(planned.agents).toMatchObject({ harnesses: [], selection: 'none', status: 'skipped', reason: 'no-harness', files: [] });
+    const step = planned.manualSteps.find(({ title }) => title === 'Agent setup');
+    expect(step).toMatchObject({ required: false, edit: 'No harness was detected or selected. When you want it: `pnpm exec ultima install --harness <claude|codex|cursor|copilot>`.' });
+    const result = await apply(h, (await plan(h)).path);
+    expect(result.code).toBe(0);
+    expect(result.out).toContain('Application    ready: the preview is mounted');
+    expect(result.out).toContain('Agent setup    skipped: no harness detected or selected');
+    expect(['.claude', '.codex', '.agents', '.cursor', '.github'].filter((directory) => existsSync(join(root, directory)))).toEqual([]);
+  });
+
+  it('defers a detected harness when the application has no Git repository, printing git init and the pinned install', async () => {
+    const root = viteApp();
+    const h = harness(root, 'vite');
+    const before = readFileSync(join(root, '.claude/settings.json'), 'utf8');
+    const { plan: planned, path } = await plan(h);
+    expect(planned.agents).toMatchObject({ harnesses: ['claude'], selection: 'detected', gitRoot: null, status: 'skipped', reason: 'no-git', files: [] });
+    expect(planned.preserved).toContain('.claude');
+    expect(planned.manualSteps.at(-1)).toMatchObject({ title: 'Agent setup', file: `${SKILL}, .claude/settings.json` });
+    expect(planned.manualSteps.at(-1)?.edit).toContain('When you want it: `git init`, then `npm exec --no -- ultima install --harness claude`.');
+    const result = await apply(h, path);
+    expect(result.out).toContain('Agent setup    deferred for claude: the application has no Git repository');
+    expect(readFileSync(join(root, '.claude/settings.json'), 'utf8')).toBe(before);
+    expect(existsSync(join(root, SKILL))).toBe(false);
+  });
+
+  it('defers agent setup in an application nested in another repository, which it cannot report agent-ready', async () => {
+    const root = viteApp();
+    gitInit(dirname(root));
+    const h = harness(root, 'vite');
+    const { plan: planned, path } = await plan(h, ['--harness', 'codex']);
+    expect(planned.agents).toMatchObject({ harnesses: ['codex'], gitRoot: dirname(root), status: 'skipped', reason: 'nested' });
+    const step = planned.manualSteps.at(-1);
+    expect(step?.file).toBe(join(dirname(root), '.codex/hooks.json'));
+    expect(step?.edit).toContain('not agent-ready');
+    expect(step?.edit).not.toContain('git init');
+    const result = await apply(h, path);
+    expect(result.out).toContain(`Agent setup    not agent-ready for codex: the application is nested in the Git repository at ${dirname(root)}`);
+    expect(existsSync(join(root, '.codex'))).toBe(false);
+    expect(existsSync(join(dirname(root), '.codex'))).toBe(false);
+  });
+
+  it('reports a nested application without a harness as nested, not as a missing harness', async () => {
+    const root = nextApp('app');
+    gitInit(dirname(root));
+    const { plan: planned } = await plan(harness(root, 'next'));
+    expect(planned.agents).toMatchObject({ harnesses: [], selection: 'none', reason: 'nested' });
+    expect(planned.manualSteps.at(-1)?.file).toBe(`the harness hook file in ${dirname(root)}`);
+  });
+
+  it('keeps a skill another installer wrote, and still merges the hook', async () => {
+    const root = viteApp();
+    gitInit(root);
+    const external = '---\nname: ultima-design\ndescription: from skills.sh\n---\n\n# ultima-design\n';
+    put(root, SKILL, external);
+    const h = harness(root, 'vite');
+    const { code, plan: planned, path } = await plan(h);
+    expect(code).toBe(0);
+    expect(planned.agents.files).toEqual([
+      { file: SKILL, action: 'preserve' },
+      { file: '.claude/settings.json', action: 'edit' },
+    ]);
+    expect(planned.preserved).toContain(SKILL);
+    await apply(h, path);
+    expect(readFileSync(join(root, SKILL), 'utf8')).toBe(external);
+    expect(readFileSync(join(root, '.claude/settings.json'), 'utf8')).toContain('ultima-design hook claude');
+  });
+
+  it('blocks on an edited managed skill and on a hook file that is not JSON, before any write', async () => {
+    for (const [file, damage, message] of [
+      [SKILL, (root: string) => {
+        install(root, { harnesses: ['claude'], dryRun: false, force: false });
+        put(root, SKILL, `${readFileSync(join(root, SKILL), 'utf8')}Local note.\n`);
+      }, "is Ultima's managed skill, edited since install wrote it"],
+      ['.claude/settings.json', (root: string) => put(root, '.claude/settings.json', '{ "hooks": '), 'is not valid JSON'],
+    ] as const) {
+      const root = viteApp();
+      gitInit(root);
+      damage(root);
+      const h = harness(root, 'vite');
+      const before = snapshot(root);
+      const blocked = await plan(h);
+      expect(blocked.code).toBe(1);
+      expect(JSON.parse(blocked.out)).toMatchObject({ status: 'blocked', conflicts: [expect.objectContaining({ file, message: expect.stringContaining(message) })] });
+      expect(snapshot(root)).toEqual(before);
+      expect(h.calls).toEqual([]);
+    }
+  });
+
+  it('goes stale when an agent file changes after planning', async () => {
+    const root = viteApp();
+    gitInit(root);
+    const h = harness(root, 'vite');
+    const { path } = await plan(h);
+    put(root, '.claude/settings.json', '{ "hooks": {} }\n');
+    const result = await apply(h, path);
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('is stale: inputs changed');
+    expect(existsSync(join(root, SKILL))).toBe(false);
   });
 });

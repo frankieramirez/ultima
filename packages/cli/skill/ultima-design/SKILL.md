@@ -1,6 +1,6 @@
 ---
 name: ultima-design
-description: Use for UI work in a repository whose components.json has an @ultima registry, when adding or editing a component, styling, theming, or replacing a native control.
+description: Use for UI work in a repository whose components.json has an @ultima registry, when adding or editing a component, styling, theming, or replacing a native control, and to set Ultima up in an application.
 ---
 
 # ultima-design
@@ -8,6 +8,8 @@ description: Use for UI work in a repository whose components.json has an @ultim
 ## 1. When it applies
 
 UI work in a repository whose `components.json` names an `@ultima` registry: adding or editing a component, styling, theming, or replacing a native control.
+
+To set Ultima up in a Vite or Next.js application without it, plan with `npx ultima-design@latest init <directory> --plan --json > plan.json`, review the plan, apply it with `npx ultima-design@latest init --apply plan.json`, then follow the steps its report leaves ([install walkthrough](https://ultima.systems/install#set-up-with-init)).
 
 ## 2. Read first
 

@@ -1905,7 +1905,14 @@ The namespace is `@ultima`, written into the `registries` map of the `components
 
 ### Entry point
 
-`npx shadcn init` is not supported and never will be while its preflight requires Tailwind on disk. The documented entry is:
+The documented entry is `init`, for a new or existing Vite or Next.js App Router TypeScript application. It shows a plan before it writes, and an agent reviews the plan with `--plan --json` before applying it with `--apply <plan.json>` ([Set up with init](https://ultima.systems/install#set-up-with-init)):
+
+```bash
+npx ultima-design@latest init my-app --framework vite   # or --framework next
+npx ultima-design@latest init .                          # an existing application
+```
+
+The registry path below stays available for every project `init` does not automate. `npx shadcn init` is not supported and never will be while its preflight requires Tailwind on disk. The registry entry is:
 
 ```bash
 npx shadcn add https://ultima.systems/r/setup-vite.json   # or setup-next.json
@@ -1916,7 +1923,7 @@ The setup items are universal `registry:item`s, so the first command installs in
 
 ### Setup items
 
-The planned [consumer project bootstrap](consumer-setup.md), decided on [Decide the supported project bootstrap experience](https://github.com/frankieramirez/ultima/issues/726), adds `ultima-design init` as the guided entry for new and existing supported projects. Its command journey, supported layouts, edit/recovery contract and acceptance scenarios are accepted for implementation. The direct registry path and hand steps below remain usable; setup items retain their existing ownership rule.
+The [consumer project bootstrap](consumer-setup.md), decided on [Decide the supported project bootstrap experience](https://github.com/frankieramirez/ultima/issues/726), makes `ultima-design init` the guided entry for new and existing supported projects; its As built section records what is implemented. The direct registry path and hand steps below remain usable; setup items retain their existing ownership rule.
 
 There is one setup item per target, and a setup item never overwrites a file the consumer's scaffold owns.
 

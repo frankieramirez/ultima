@@ -10,11 +10,40 @@ import { WhereNext } from '../where-next';
 
 Ultima ships as a shadcn-compatible registry. You copy source into your project with the CLI and own it after that.
 
+Start with `init`. It sets up a new or existing Vite or Next.js App Router application in one reviewed step. The walkthrough after it does the same by hand, for every project `init` does not cover.
+
 Already using Ultima? Read [Update the base theme](/install/update) before reinstalling tokens. It explains the Neutral/Tight change and how to keep the previous appearance.
 
 <Callout icon={<InfoIcon />} title={<><Code>npx shadcn init</Code> is not supported.</>}>Its preflight requires Tailwind on disk, and Ultima does not use Tailwind. The entry is a per-target setup item, which is a universal `registry:item` and installs into a project that has no `components.json` yet.</Callout>
 
-## Commands
+## Set up with init
+
+```bash title="Terminal"
+npx ultima-design@latest init my-app --framework vite
+npx ultima-design@latest init my-next-app --framework next --layout src
+npx ultima-design@latest init .
+```
+
+**A new directory.** `init` runs the framework's own scaffold in a private staging directory. It installs the setup item with Button, Card and Dialog, wires the compiler and resets, and puts a small preview on the home route. The directory appears only after the setup checks and the production build pass.
+
+**An existing application.** `init` detects the framework, layout and package manager, then plans only what is missing. Your pages, providers, root documents and theme files stay as they are. The preview goes on its own route in Next.js; in Vite, the report tells you where to mount it.
+
+**Review first.** Before anything is written, `init` shows every dependency, file diff and command, and asks in a terminal. Elsewhere, save the plan, read it, then apply it unchanged:
+
+```bash title="Terminal"
+npx ultima-design@latest init . --plan --json > ultima-init-plan.json
+npx ultima-design@latest init --apply ultima-init-plan.json
+```
+
+**Agent setup.** The CLI's `install` writes the skill and post-edit hooks for the harnesses it detects, or the ones you name with `--harness`. `init` hands that step to it only when the application is the root of its Git repository, because the hooks run from that root. A new project has no repository, and `init` never creates one, so the report prints the commands for later. A project nested in another repository wires its hook by hand.
+
+**The report.** It names the files created, edited and preserved, the resolved versions, the logs, and each check, including the production build. It says whether the preview is mounted and that no browser check ran. Each step left to you names its file, the edit and how to verify it.
+
+**Recovery.** In an existing application, `init` saves the original of every file before it writes. If a run stops, running `init` again plans only what is left. The report prints the command that undoes the run, `npx ultima-design init . --rollback <run-id>`, which restores only the files nobody changed since.
+
+Yarn, Bun, workspaces, the Pages Router and JavaScript-only projects are not automated yet. Set them up by hand below.
+
+## Set up by hand
 
 <InstallCommands />
 
@@ -178,7 +207,7 @@ Nine components also ship as custom elements for a host that cannot run React, i
 
 ## For an agent
 
-Install the `ultima-design` skill through skills.sh, the Ultima marketplace in Claude Code, or the consumer CLI. The [CLI page](/cli#other-skill-installers) lists the commands and explains which route also installs post-edit hooks. GitHub installation requires repository access until Ultima becomes public.
+`init` sets up the skill and hooks through the consumer CLI, as described above. To add them later, or to a project you set up by hand, install the `ultima-design` skill through skills.sh, the Ultima marketplace in Claude Code, or the consumer CLI. The [CLI page](/cli#other-skill-installers) lists the commands and explains which route also installs post-edit hooks. GitHub installation requires repository access until Ultima becomes public.
 
 Before UI edits, the skill asks your agent to read applicable project instructions and local design guidance, then trace the active theme at each affected boundary. It links the hosted [discovery and safe-update workflow](/llms.txt#discover-and-maintain-the-product-theme), including conflicts and offline work. The guide also contains conventions and component APIs. When the host is unavailable, use known guidance and installed source, report the gap, and run the pinned local CLI with `npx --no-install ultima-design doctor` and `npx --no-install ultima-design check`. Registry comparisons remain unverified offline.
 

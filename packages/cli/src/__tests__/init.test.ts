@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +13,8 @@ import { run } from '../run.ts';
 import { supportedRanges } from '../../scripts/supported-ranges.ts';
 
 const REGISTRY = 'http://127.0.0.1:4321/r/{name}.json';
+// Git looks no further up than the temporary directory, so each case's repository, or its absence, is its own.
+process.env.GIT_CEILING_DIRECTORIES = realpathSync(tmpdir());
 const temporary: string[] = [];
 const scratch = (prefix: string) => {
   const directory = mkdtempSync(join(tmpdir(), prefix));
@@ -49,7 +52,7 @@ const RECIPE: Recipe = {
   typecheck: ['tsc', '-b'],
   discard: [],
   preview: { file: 'src/App.tsx', dev: 'http://localhost:5173/', production: { script: 'preview', url: 'http://localhost:4173/' } },
-  manualSteps: ['Theme: optional.'],
+  manualSteps: [{ title: 'Theme', required: false, file: 'src/main.tsx', edit: 'Optional.', verify: 'Look.' }],
 };
 const WORKSPACE_YAML = 'ignoredBuiltDependencies:\n  - sharp\n';
 /** A Next-shaped recipe: a src layout whose setup marker moves out of the root app directory, a typegen step and a pnpm variant. */
@@ -207,7 +210,7 @@ describe('init --plan', () => {
       '-  "name": "my-app"',
       '+    "@ultima": "http://127.0.0.1:4321/r/{name}.json"',
       'src/App.css: removed',
-      'Theme: optional.',
+      '1. Theme (optional)',
     ]) {
       expect(output.out).toContain(line);
     }
@@ -463,6 +466,28 @@ describe('init --apply', () => {
     expect(output.err).toContain('stopped at install: exited 1');
     expect(existsSync(join(h.parent, 'my-app'))).toBe(false);
   });
+
+  it('keeps an interrupted scaffold in staging, and the same plan then publishes the destination once', async () => {
+    const h = harness();
+    const path = await planFile(h);
+    h.during.set('scaffold', () => {
+      h.during.delete('scaffold');
+      throw new Error('interrupted');
+    });
+    await expect(init(['--apply', path], io().io, h.deps)).rejects.toThrow('interrupted');
+    expect(existsSync(join(h.parent, 'my-app'))).toBe(false);
+    const interrupted = stagingDirectories(h.parent);
+    expect(interrupted).toHaveLength(1);
+    expect(readdirSync(join(h.parent, interrupted[0] as string, 'logs'))).toEqual(['01-scaffold.log', 'plan.json']);
+
+    expect(await init(['--apply', path], io().io, h.deps)).toBe(0);
+    const clean = harness();
+    expect(await init(['--apply', await planFile(clean)], io().io, clean.deps)).toBe(0);
+    const published = (parent: string) => listing(join(parent, 'my-app')).filter((path) => !path.startsWith('node_modules') && !path.startsWith('.next'));
+    expect(published(h.parent)).toEqual(published(clean.parent));
+    expect(readFileSync(join(h.parent, 'my-app/package.json'), 'utf8')).toBe(readFileSync(join(clean.parent, 'my-app/package.json'), 'utf8'));
+    expect(stagingDirectories(h.parent)).toEqual(interrupted);
+  });
 });
 
 describe('the recipes', () => {
@@ -591,5 +616,67 @@ describe('the init command line', () => {
     expect(result.code).toBe(2);
     expect(result.stderr).toContain('--plan --json');
     expect(readdirSync(parent)).toEqual([]);
+  });
+});
+
+describe('agent setup for a new project', () => {
+  it('records an explicit harness and defers it until the consumer creates a repository', async () => {
+    const h = harness();
+    const output = io();
+    expect(await init([join(h.parent, 'my-app'), '--framework', 'vite', '--harness', 'codex', '--registry', REGISTRY, '--plan', '--json'], output.io, h.deps)).toBe(0);
+    const plan: Plan = JSON.parse(output.out);
+    expect(plan.request.harnesses).toEqual(['codex']);
+    expect(plan.agents).toEqual({ harnesses: ['codex'], selection: 'explicit', gitRoot: null, status: 'skipped', reason: 'no-git', files: [], command: 'npm exec --no -- ultima install --harness codex' });
+    expect(plan.manualSteps.at(-1)).toMatchObject({ title: 'Agent setup', required: false, file: '.agents/skills/ultima-design/SKILL.md, .codex/hooks.json' });
+    expect(plan.manualSteps.at(-1)?.edit).toContain('When you want it: `git init`, then `npm exec --no -- ultima install --harness codex`.');
+    expect(plan.operations.map(({ kind }) => kind)).not.toContain('install-agents');
+
+    const path = join(scratch('ultima-plan-'), 'plan.json');
+    writeFileSync(path, output.out);
+    const applied = io();
+    expect(await init(['--apply', path], applied.io, h.deps)).toBe(0);
+    const app = join(h.parent, 'my-app');
+    expect(['.git', '.codex', '.agents'].filter((entry) => existsSync(join(app, entry)))).toEqual([]);
+    for (const line of [
+      'Application    ready: the preview is mounted',
+      'Agent setup    deferred for codex: the application has no Git repository',
+      'Static checks  doctor passed, check passed, typecheck passed',
+      'Build          passed',
+      'Browser        not run: init runs no browser checks',
+      'Manual steps   0 required, 2 optional, listed below',
+      `Recovery   init wrote nothing outside ${app}; delete it to undo this run.`,
+      '  2. Agent setup (optional)',
+    ]) {
+      expect(applied.out).toContain(line);
+    }
+    const [logs] = readdirSync(join(app, 'node_modules/.ultima-init'));
+    const result = JSON.parse(readFileSync(join(app, 'node_modules/.ultima-init', logs as string, 'result.json'), 'utf8'));
+    expect(result.agents).toEqual({ status: 'deferred', harnesses: ['codex'], reason: 'no-git', gitRoot: null, files: [] });
+    expect(result.outcomes).toEqual({ application: 'ready', agents: 'deferred', staticChecks: 'passed', build: 'passed', browser: 'not run', manualSteps: { required: 0, optional: 2 } });
+  });
+
+  it('reports a new project inside another repository as nested, never as agent-ready', async () => {
+    const h = harness();
+    expect(spawnSync('git', ['init', '-q'], { cwd: h.parent }).status).toBe(0);
+    const output = io();
+    expect(await init([join(h.parent, 'my-app'), '--framework', 'vite', '--harness', 'claude', '--registry', REGISTRY, '--plan'], output.io, h.deps)).toBe(0);
+    expect(output.out).toContain(`Agents    not agent-ready for claude: the application is nested in the Git repository at ${realpathSync(h.parent)}`);
+    expect(output.out).not.toContain('git init');
+  });
+
+  it('skips agent setup without a harness, and names the flag', async () => {
+    const h = harness();
+    const output = io();
+    expect(await init([join(h.parent, 'my-app'), '--framework', 'vite', '--registry', REGISTRY, '--plan', '--json'], output.io, h.deps)).toBe(0);
+    const plan: Plan = JSON.parse(output.out);
+    expect(plan.agents).toMatchObject({ harnesses: [], selection: 'none', reason: 'no-harness' });
+    expect(plan.manualSteps.at(-1)?.edit).toContain('`git init`, then `npm exec --no -- ultima install --harness <claude|codex|cursor|copilot>`');
+  });
+
+  it('refuses an unknown harness', async () => {
+    const h = harness();
+    const output = io();
+    expect(await init([join(h.parent, 'my-app'), '--framework', 'vite', '--harness', 'emacs', '--plan'], output.io, h.deps)).toBe(2);
+    expect(output.err).toContain('--harness takes claude, codex, cursor, copilot, got emacs');
   });
 });

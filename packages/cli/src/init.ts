@@ -26,9 +26,11 @@ import { parseArgs } from 'node:util';
 
 import { createTwoFilesPatch } from 'diff';
 
+import { type AgentPlan, type AgentResult, agentResult, agentStep, describeAgents, planAgents } from './agents.ts';
 import { type ExistingPlan, applyExistingFile, initExisting, isExistingProject } from './existing.ts';
-import { CLI_VERSION } from './install.ts';
-import { MANAGERS, type Manager, RECIPES, type Recipe, forManager, normalizeScaffold, sha256 } from './recipe.ts';
+import { CLI_VERSION, HARNESSES, type Harness } from './install.ts';
+import { rollback } from './journal.ts';
+import { MANAGERS, type Manager, type ManualStep, RECIPES, type Recipe, forManager, normalizeScaffold, sha256 } from './recipe.ts';
 import { compareVersions } from './setup.ts';
 
 declare const __ULTIMA_COMMIT__: string | undefined;
@@ -39,7 +41,7 @@ export const DEFAULT_REGISTRY = 'https://ultima.systems/r/{name}.json';
 export const REGISTRY = /^https?:\/\/[^\s]+\/r\/\{name\}\.json$/;
 const NAME = /^[a-z0-9][a-z0-9._-]*$/;
 const CHECKS = ['doctor', 'check', 'typecheck', 'build'] as const;
-type CheckName = (typeof CHECKS)[number];
+export type CheckName = (typeof CHECKS)[number];
 
 export type InitRequest = {
   destination: string;
@@ -48,6 +50,8 @@ export type InitRequest = {
   packageManager: Manager;
   registry: string;
   cliTarball: string | null;
+  /** `--harness`, replacing `install`'s detection; null detects. */
+  harnesses: Harness[] | null;
 };
 
 export type Command = { command: string; args: string[]; cwd: 'staging' | 'app' };
@@ -59,6 +63,8 @@ export type Operation =
   | { id: string; kind: 'move'; from: string; to: string; sha256: string }
   | { id: string; kind: 'remove'; path: string; sha256: string }
   | { id: string; kind: 'verify-versions'; versions: Record<string, string> }
+  /** Hands the plan's `agents` to `install`, which writes only what the plan listed. */
+  | { id: string; kind: 'install-agents' }
   | { id: string; kind: 'check'; check: CheckName; command: Command };
 
 export type Plan = {
@@ -74,7 +80,8 @@ export type Plan = {
   operations: Operation[];
   discard: string[];
   preview: Recipe['preview'];
-  manualSteps: string[];
+  agents: AgentPlan;
+  manualSteps: ManualStep[];
   planHash: string;
 };
 
@@ -115,7 +122,7 @@ export const defaultDeps: InitDeps = {
 };
 
 const USAGE =
-  'usage: ultima init <directory> --framework vite|next [--layout root|src] [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init <existing-app> [--framework vite|next] [--package-manager npm|pnpm] [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init --apply <plan.json> [--json]';
+  'usage: ultima init <directory> --framework vite|next [--layout root|src] [--package-manager npm|pnpm] [--harness <name>]... [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init <existing-app> [--framework vite|next] [--package-manager npm|pnpm] [--harness <name>]... [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init --apply <plan.json> [--json]\n       ultima init [<existing-app>] --rollback <run-id>';
 
 export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultDeps): Promise<number> {
   let args;
@@ -127,11 +134,13 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
         framework: { type: 'string' },
         layout: { type: 'string' },
         'package-manager': { type: 'string' },
+        harness: { type: 'string', multiple: true },
         plan: { type: 'boolean' },
         json: { type: 'boolean' },
         apply: { type: 'string' },
         registry: { type: 'string' },
         'cli-tarball': { type: 'string' },
+        rollback: { type: 'string' },
       },
     });
   } catch (error) {
@@ -144,7 +153,16 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
     if (extra.length > 0) return usage(io, `--apply takes only the plan path, so nothing can change the reviewed operations; got ${extra.join(', ')}`);
     return applyFile(resolve(values.apply), json, io, deps);
   }
+  if (values.rollback !== undefined) {
+    const extra = Object.keys(values).filter((flag) => flag !== 'rollback');
+    if (extra.length > 0 || positionals.length > 1) return usage(io, `--rollback takes the run id and, at most, the application directory; got ${[...positionals.slice(1), ...extra].join(', ')}`);
+    const directory = resolve(positionals[0] ?? '.');
+    if (!isExistingProject(directory)) return usage(io, `${directory} holds no package.json; name the application the run set up`);
+    return rollback(realpathSync(directory), values.rollback, io);
+  }
   if (positionals.length !== 1) return usage(io, positionals.length === 0 ? 'name the directory to create' : `init takes one directory, got ${positionals.join(' ')}`);
+  const unknown = values.harness?.find((name) => !(HARNESSES as string[]).includes(name));
+  if (unknown !== undefined) return usage(io, `--harness takes ${HARNESSES.join(', ')}, got ${unknown}`);
   if (isExistingProject(resolve(positionals[0] as string))) return existing(resolve(positionals[0] as string), values, io, deps);
   const frameworks = [...new Set(deps.recipes.map(({ framework }) => framework as string))];
   if (values.framework === undefined) return usage(io, `a new project needs --framework ${frameworks.join(' or ')}`);
@@ -165,6 +183,7 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
     packageManager: manager as Manager,
     registry: values.registry ?? DEFAULT_REGISTRY,
     cliTarball: values['cli-tarball'] === undefined ? null : resolve(values['cli-tarball']),
+    harnesses: harnessesOf(values.harness),
   };
   const planned = await planInit(request, deps);
   if ('code' in planned) return report(io, planned);
@@ -183,7 +202,7 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
 /** An existing application: detection settles the framework, layout and manager, and the flags may only confirm them. */
 function existing(
   directory: string,
-  values: { framework?: string; 'package-manager'?: string; plan?: boolean; json?: boolean; registry?: string; 'cli-tarball'?: string },
+  values: { framework?: string; 'package-manager'?: string; harness?: string[]; plan?: boolean; json?: boolean; registry?: string; 'cli-tarball'?: string },
   io: InitIO,
   deps: InitDeps,
 ): Promise<number> | number {
@@ -199,8 +218,19 @@ function existing(
     packageManager: (manager ?? null) as Manager | null,
     registry: values.registry ?? DEFAULT_REGISTRY,
     cliTarball: values['cli-tarball'] === undefined ? null : resolve(values['cli-tarball']),
+    harnesses: harnessesOf(values.harness),
   };
   return initExisting(request, { plan: values.plan ?? false, json: values.json ?? false }, io, deps);
+}
+
+/** Repeated flags name each harness once, in the order install lists them. */
+function harnessesOf(names: string[] | undefined): Harness[] | null {
+  return names === undefined ? null : HARNESSES.filter((harness) => names.includes(harness));
+}
+
+/** A request's harnesses as a plan file records them: null, or known names. */
+export function validHarnesses(value: unknown): boolean {
+  return value === null || (Array.isArray(value) && value.every((name) => (HARNESSES as unknown[]).includes(name)));
 }
 
 function usage(io: InitIO, message: string): number {
@@ -288,6 +318,10 @@ export async function planInit(request: InitRequest, deps: InitDeps): Promise<Pl
     ...CHECKS.map((check): Operation => ({ id: check, kind: 'check', check, command: checks[check] })),
   ];
 
+  // The destination does not exist yet, so its Git root is never its own and agent setup is always the consumer's step.
+  const { agents } = planAgents(request.destination, { exists: false, harnesses: request.harnesses, pm });
+  const agentManual = agentStep(agents, name);
+
   const body: Omit<Plan, 'planHash'> = {
     kind: PLAN_KIND,
     schemaVersion: PLAN_VERSION,
@@ -301,7 +335,8 @@ export async function planInit(request: InitRequest, deps: InitDeps): Promise<Pl
     operations,
     discard: recipe.discard,
     preview: recipe.preview,
-    manualSteps: recipe.manualSteps,
+    agents,
+    manualSteps: [...recipe.manualSteps, ...(agentManual ? [agentManual] : [])],
   };
   return { ...body, planHash: planHash(body) };
 }
@@ -403,7 +438,8 @@ function validRequest(request: unknown): request is InitRequest {
     typeof value.layout === 'string' &&
     (MANAGERS as string[]).includes(value.packageManager) &&
     typeof value.registry === 'string' &&
-    (value.cliTarball === null || typeof value.cliTarball === 'string')
+    (value.cliTarball === null || typeof value.cliTarball === 'string') &&
+    validHarnesses(value.harnesses)
   );
 }
 
@@ -421,9 +457,54 @@ type Result = {
   files: { created: string[]; edited: string[]; removed: string[]; preserved: string[] };
   previewMounted: boolean;
   browserChecks: 'not run';
-  manualSteps: string[];
+  agents: AgentResult;
+  manualSteps: ManualStep[];
+  outcomes: Outcomes;
   error?: string;
 };
+
+/** Each outcome reported separately: an application can be ready while its agent setup waits. */
+export type Outcomes = {
+  application: 'ready' | 'incomplete' | 'failed';
+  agents: AgentResult['status'];
+  staticChecks: 'passed' | 'failed' | 'not run';
+  build: 'passed' | 'failed' | 'not run';
+  browser: 'not run';
+  manualSteps: { required: number; optional: number };
+};
+
+export function outcomes(status: Result['status'], checks: Result['checks'], agents: AgentResult, steps: ManualStep[]): Outcomes {
+  const statics = (['doctor', 'check', 'typecheck'] as const).map((check) => checks[check]);
+  return {
+    application: status === 'completed' ? 'ready' : status,
+    agents: agents.status,
+    staticChecks: statics.includes('failed') ? 'failed' : statics.every((check) => check === 'passed') ? 'passed' : 'not run',
+    build: checks.build ?? 'not run',
+    browser: 'not run',
+    manualSteps: { required: steps.filter(({ required }) => required).length, optional: steps.filter(({ required }) => !required).length },
+  };
+}
+
+export function summaryLines(application: string, checks: Result['checks'], agents: AgentResult, steps: ManualStep[], noBuild?: string): string[] {
+  const required = steps.filter((step) => step.required).length;
+  return [
+    `Application    ${application}`,
+    `Agent setup    ${describeAgents(agents, agents.status)}`,
+    `Static checks  ${(['doctor', 'check', 'typecheck'] as const).map((check) => `${check} ${checks[check] ?? 'not run'}`).join(', ')}`,
+    `Build          ${checks.build ?? (noBuild ? `not run: ${noBuild}` : 'not run')}`,
+    'Browser        not run: init runs no browser checks',
+    `Manual steps   ${required} required, ${steps.length - required} optional${steps.length > 0 ? ', listed below' : ''}`,
+  ];
+}
+
+export function stepLines(steps: ManualStep[]): string[] {
+  return steps.flatMap((step, index) => [
+    `  ${index + 1}. ${step.title} (${step.required ? 'required' : 'optional'})`,
+    `     File    ${step.file}`,
+    `     Edit    ${step.edit}`,
+    `     Verify  ${step.verify}`,
+  ]);
+}
 
 async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps): Promise<number> {
   const progress = json ? io.err : io.out;
@@ -449,13 +530,16 @@ async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps): Pro
     files: { created: [], edited: [], removed: [], preserved: [] },
     previewMounted: false,
     browserChecks: 'not run',
+    agents: agentResult(plan.agents, 'not run'),
     manualSteps: plan.manualSteps,
+    outcomes: undefined as unknown as Outcomes,
   };
   writeFileSync(join(logs, 'plan.json'), `${JSON.stringify(plan, null, 2)}\n`);
 
   const stop = (index: number, code: 1 | 3, message: string): number => {
     result.status = code === 1 ? 'failed' : 'incomplete';
     result.error = `${plan.operations[index]?.id ?? 'publish'}: ${message}`;
+    result.outcomes = outcomes(result.status, result.checks, result.agents, result.manualSteps);
     if (index < result.operations.length) (result.operations[index] as Result['operations'][number]).status = 'failed';
     writeFileSync(join(logs, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);
     if (json) io.out(`${JSON.stringify(result, null, 2)}\n`);
@@ -495,6 +579,8 @@ async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps): Pro
       if (!isFile(path) || sha256(readFileSync(path)) !== operation.sha256) return stop(index, 1, `${operation.path} is not the scaffold example the plan expected to remove`);
       rmSync(path);
       removeEmptyParents(app, dirname(path));
+    } else if (operation.kind === 'install-agents') {
+      return stop(index, 3, 'a new project defers agent setup, so its plan never installs agent files');
     } else {
       const mismatched = Object.entries(operation.versions).flatMap(([name, expected]) => {
         const actual = installedVersion(app, name);
@@ -514,6 +600,7 @@ async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps): Pro
   for (const entry of readdirSync(app)) renameSync(join(app, entry), join(destination, entry));
   const kept = join(destination, 'node_modules/.ultima-init', runId);
   result.status = 'completed';
+  result.outcomes = outcomes(result.status, result.checks, result.agents, result.manualSteps);
   result.staging = null;
   result.logs = kept;
   result.operations = result.operations.map((row) => (row.log ? { ...row, log: row.log.replace(logs, kept) } : row));
@@ -638,6 +725,7 @@ export function printPlan(plan: Plan): string {
     `Layout    ${target.framework} ${target.layout}`,
     `Manager   ${target.packageManager.name} ${target.packageManager.version}`,
     `Registry  ${plan.request.registry}`,
+    `Agents    ${describeAgents(plan.agents)}`,
     `Plan      sha256 ${plan.planHash}`,
     '',
     'Dependencies, exact:',
@@ -661,8 +749,8 @@ export function printPlan(plan: Plan): string {
       if (operation.kind === 'remove') return [`${operation.path}: removed, the scaffold example the preview replaces\n`];
       return [];
     }),
-    'After setup, optional:',
-    ...plan.manualSteps.map((step) => `  - ${step}`),
+    'Steps left to you after setup:',
+    ...stepLines(plan.manualSteps),
     '',
   ];
   return `${lines.join('\n')}\n`;
@@ -674,9 +762,7 @@ function printResult(plan: Plan, result: Result): string {
   const lines = [
     `Created ${result.destination} from ${plan.recipe.id} revision ${plan.recipe.revision}.`,
     '',
-    'Checks:',
-    ...CHECKS.map((check) => `  ${check.padEnd(10)}${result.checks[check] ?? 'not run'}`),
-    '  browser   not run by init',
+    ...summaryLines('ready: the preview is mounted', result.checks, result.agents, result.manualSteps),
     '',
     `Created    ${list(result.files.created)}`,
     `Edited     ${list(result.files.edited)}`,
@@ -685,6 +771,7 @@ function printResult(plan: Plan, result: Result): string {
     '',
     `Versions   ${Object.entries(result.versions).map(([name, version]) => `${name} ${version}`).join(', ')}`,
     `Logs       ${result.logs}`,
+    `Recovery   init wrote nothing outside ${result.destination}; delete it to undo this run.`,
     '',
     `The preview is mounted on / from ${plan.preview.file}.`,
     `  cd ${plan.target.name}`,
@@ -692,10 +779,8 @@ function printResult(plan: Plan, result: Result): string {
     `  ${pm} run build`,
     `  ${`${pm} run ${plan.preview.production.script}`.padEnd(pm.length + 16)}${plan.preview.production.url}`,
     '',
-    `Agent setup skipped: no harness was selected. Optional: git init, then ${pm} exec ultima install --harness <claude|codex|cursor|copilot>.`,
-    '',
-    'Optional next steps:',
-    ...result.manualSteps.map((step) => `  - ${step}`),
+    'Steps left to you:',
+    ...stepLines(result.manualSteps),
     '',
   ];
   return `${lines.join('\n')}\n`;
