@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createProcessor } from '@mdx-js/mdx';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { markdownGuidance } from '../markdown-guidance.ts';
@@ -38,20 +39,46 @@ test('support and lesson exports retain dynamic evidence and reject unhandled co
   await assert.rejects(markdownGuidance(files, catalogue, { ...composition, sources: {} }), /missing copy bundle/);
 });
 
+test('link rewriting preserves labels, titles and encoded destinations', async () => {
+  const cases = [
+    ['[/install](/install "/install")', '[/install](https://ultima.systems/guides/install.md "/install")'],
+    ['[**/install** and `code`](/install#part%20one "/install")', '[**/install** and `code`](https://ultima.systems/guides/install.md#part%20one "/install")'],
+    [String.raw`[escaped](/install#part\) "/install")`, String.raw`[escaped](https://ultima.systems/guides/install.md#part\) "/install")`],
+    ['[angle](</install#part%20one> "/install")', '[angle](<https://ultima.systems/guides/install.md#part%20one> "/install")'],
+    ['[encoded](/inst&#97;ll "/install")', '[encoded](https://ultima.systems/guides/install.md "/install")'],
+    ['[entity](/install#&amp;copy;)', '[entity](https://ultima.systems/guides/install.md#&amp;copy;)'],
+    ['[Space](/install#part&#32;one)', '[Space](https://ultima.systems/guides/install.md#part&#32;one)'],
+    ['[Tab](/install#part&#9;one)', '[Tab](https://ultima.systems/guides/install.md#part&#9;one)'],
+    ['[Newline](/install#part&#10;one)', '[Newline](https://ultima.systems/guides/install.md#part&#10;one)'],
+    ['[](/install)', '[](https://ultima.systems/guides/install.md)'],
+    ['[<Code>/install</Code>](/install)', '[`/install`](https://ultima.systems/guides/install.md)'],
+    ['[/install]: /install "/install"', '[/install]: https://ultima.systems/guides/install.md "/install"'],
+  ];
+  const source = cases.map(([input]) => input).join('\n\n') + '\n';
+  const guides = await markdownGuidance({ ...files, read: (path) => path.endsWith('install.mdx') ? source : files.read(path) }, catalogue, composition);
+  assert.equal(guides.get('install.md'), cases.map(([, expected]) => expected).join('\n\n') + '\n');
+  const parsed = createProcessor().parse(guides.get('install.md')!);
+  for (const whitespace of [' ', '\t', '\n']) assert.ok(parsed.children.some((node) => node.type === 'paragraph' && node.children.some((child) => child.type === 'link' && child.url === `https://ultima.systems/guides/install.md#part${whitespace}one`)));
+});
+
 test('published guidance detects edited, missing and obsolete artifacts', async () => {
   const { mkdtempSync, rmSync, writeFileSync, unlinkSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
-  const { join } = await import('node:path');
+  const { join, sep } = await import('node:path');
   const { checkGuidance, publishGuidance } = await import('../markdown-guidance.ts');
   const directory = mkdtempSync(join(tmpdir(), 'ultima-guidance-'));
   try {
     const guides = await markdownGuidance(files, catalogue, composition);
     publishGuidance(directory, guides);
     assert.deepEqual(checkGuidance(directory, guides), []);
+    assert.deepEqual(checkGuidance(directory + sep, guides), []);
     writeFileSync(join(directory, 'install.md'), 'outdated');
     unlinkSync(join(directory, 'support.md'));
-    writeFileSync(join(directory, 'old.md'), 'obsolete');
-    assert.deepEqual(checkGuidance(directory, guides).sort(), ['install.md', 'old.md', 'support.md']);
+    unlinkSync(join(directory, 'lessons/projects.md'));
+    writeFileSync(join(directory, 'lessons/old.md'), 'obsolete');
+    const stale = ['install.md', 'lessons/old.md', 'lessons/projects.md', 'support.md'];
+    assert.deepEqual(checkGuidance(directory, guides).sort(), stale);
+    assert.deepEqual(checkGuidance(directory + sep, guides).sort(), stale);
     publishGuidance(directory, guides);
     assert.deepEqual(checkGuidance(directory, guides), []);
   } finally {

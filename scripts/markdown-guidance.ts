@@ -1,6 +1,6 @@
 import { createProcessor } from '@mdx-js/mdx';
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
 import { INSTALL_TARGETS } from '../apps/docs/src/install-targets.ts';
 import { proofDraft } from '../apps/docs/src/proof-draft.ts';
 import { ultimaPresetUrl } from '../apps/docs/src/ultima-preset.ts';
@@ -125,8 +125,27 @@ export async function markdownGuidance(files: Files, catalogue: Catalogue, compo
       const start = node.position.start.offset;
       const end = node.position.end.offset;
       let text = source.slice(start, end);
+      if ((node.type === 'link' || node.type === 'definition') && node.url && rewriteLink(node.url) !== node.url) {
+        const prefix = node.type === 'definition' ? /^\[(?:\\.|[^\]\\])*\]:\s*/.exec(text)?.[0].length : text.indexOf('](', (node.children?.at(-1)?.position.end.offset ?? start + 1) - start) + 2;
+        if (prefix === undefined || prefix < 2) throw new Error(`missing guidance link destination: ${text}`);
+        let offset = prefix;
+        while (/\s/.test(text[offset] ?? '') && offset < text.length) offset++;
+        const angled = text[offset] === '<';
+        if (angled) offset++;
+        let finish = offset;
+        let depth = 0;
+        while (finish < text.length) {
+          const character = text[finish]!;
+          if (character === '\\') { finish += 2; continue; }
+          if (angled ? character === '>' : /\s/.test(character) || character === ')' && depth === 0) break;
+          if (character === '(') depth++;
+          if (character === ')') depth--;
+          finish++;
+        }
+        const destination = rewriteLink(node.url).replaceAll('&', '&amp;').replace(/\s/g, (character) => `&#${character.codePointAt(0)};`).replace(angled ? /[\\<>]/g : /[\\()<>]/g, '\\$&');
+        text = text.slice(0, offset) + destination + text.slice(finish);
+      }
       for (const child of [...(node.children ?? [])].reverse()) text = text.slice(0, child.position.start.offset - start) + render(child) + text.slice(child.position.end.offset - start);
-      if ((node.type === 'link' || node.type === 'definition') && node.url) text = text.replace(node.url, rewriteLink(node.url));
       return text;
     };
     return render(root).trim() + '\n';
@@ -160,6 +179,6 @@ export function publishGuidance(directory: string, guides: Map<string, string>):
 }
 
 export function checkGuidance(directory: string, guides: Map<string, string>): string[] {
-  const actual = new Set(readdirSync(directory, { recursive: true, withFileTypes: true }).filter((entry) => entry.isFile()).map((entry) => join(entry.parentPath, entry.name).slice(directory.length + 1)));
+  const actual = new Set(readdirSync(directory, { recursive: true, withFileTypes: true }).filter((entry) => entry.isFile()).map((entry) => relative(directory, join(entry.parentPath, entry.name)).split(sep).join('/')));
   return [...new Set([...guides.keys(), ...actual])].filter((path) => !guides.has(path) || !actual.has(path) || readFileSync(join(directory, path), 'utf8') !== guides.get(path));
 }

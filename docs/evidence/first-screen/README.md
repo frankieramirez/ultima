@@ -70,7 +70,7 @@ One runner defect is fixed too: external mode looked for the required field only
 
 ## Markdown guidance reruns (#810)
 
-The candidate is `54d1a40` plus the #810 working-tree implementation, identified by source manifest `466fd90a233aa300aa79b4630ddbd9c6f50db28c283a25c1d0b9acbe58326f3a`. The registry manifest and packed CLI digests also match across layouts. Later changes in this PR update assertions and retain evidence; they do not change the served implementation.
+The run-start candidate is `54d1a40` plus the #810 working-tree implementation. All three run-start source manifests match `466fd90a233aa300aa79b4630ddbd9c6f50db28c283a25c1d0b9acbe58326f3a`, as do their registry manifest and packed CLI digests. Next src's later [production report](runs/2026-10-11-next-src-def696/production/report.json) records source manifest `c9a6791501c3dfc5591b4570a2390f4be6ef6d06027bca72bcc19e596bef2ef5`, so the common source-tree claim applies only at run startup.
 
 | Run | Layout | Guidance/source retrieval | Production | Overall verdict |
 | --- | --- | --- | --- | --- |
@@ -80,7 +80,7 @@ The candidate is `54d1a40` plus the #810 working-tree implementation, identified
 
 Each run fetched the install, update, screen-building, support and Recipes exports through links in `/llms.txt`. All three fetched complete lesson bundles; Next root also fetched the Item recipe. None rendered documentation pages, decoded data links or extracted a JavaScript bundle. The Theme Studio browser requests in each request log belong to the harness exporting the input theme. Consumer-app browser checks follow the install guide.
 
-All three runs passed `check`, StyleX lint, the raw-paint scan and every external production assertion. The operator reviews retain separate problems: Next font cleanup and route-type regeneration (#811), the selected-row workaround (#813), a Chromium Unix socket path failure under the long exercise TMPDIR, and an ambiguity between the brief's token-only lengths and the documented media-condition exception. Vite also used an undocumented help probe and inspected CRM 01's raw registry source. Its nested pressed-hover selector needed a lint repair. The self-reports remain intact; reviews exclude product choices and documented alternatives from their counts.
+All three runs passed `check`, StyleX lint, the raw-paint scan and every external production assertion. The operator reviews retain separate problems: Next font cleanup and route-type regeneration (#811), the selected-row workaround (#813), a Chromium Unix socket path failure under the long exercise TMPDIR, and an ambiguity between the brief's token-only lengths and the documented media-condition exception. Vite and Next src both inspected CRM 01's raw registry source. Vite also used an undocumented help probe, and its nested pressed-hover selector needed a lint repair. The self-reports remain intact; reviews exclude product choices and documented alternatives from their counts.
 
 The production Markdown check fetched 21 documents with zero failures and verified source parity and reachable guidance anchors. An independent check matched all 21 projected copy-file occurrences against their destination paths and complete source bytes in the production artifacts. Installed-consumer `copy-bundles` checks passed in Vite, Next root and Next src. These checks establish the local candidate's export and consumer behavior. The full S9 gate remains unmet. The human exercise (#775), deployed domain and publication remain unverified.
 

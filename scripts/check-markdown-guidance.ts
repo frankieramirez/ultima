@@ -9,12 +9,14 @@ import { loadCatalogue } from './catalogue/model.ts';
 import { headingAnchors } from './catalogue/source.ts';
 import { checkGuidance, markdownGuidance } from './markdown-guidance.ts';
 
-export async function checkMarkdownGuidance(root: string): Promise<{ fetched: number; failures: string[] }> {
+export async function checkMarkdownGuidance(root: string): Promise<{ fetched: number; failures: string[]; indexBytes: number; indexRemainingBytes: number }> {
   const files = diskFiles(fileURLToPath(new URL('..', import.meta.url)));
   const { catalogue, diagnostics } = loadCatalogue(files);
   const composition = compositionProjection(files, catalogue);
   if (diagnostics.length || composition.diagnostics.length) throw new Error('invalid guidance catalogue');
   const expected = await markdownGuidance(files, catalogue, composition);
+  const indexBytes = readFileSync(join(root, 'llms.txt')).byteLength;
+  const indexRemainingBytes = 64 * 1024 - indexBytes;
   const failures = checkGuidance(join(root, 'guides'), expected).map((path) => `stale Markdown output: ${path}`);
   failures.push(...routeShadows(root, docsRoutes()).map((shadow) => `route shadow: ${shadow.source}`));
   const server = await startStaticServer({ root, nonce: 'markdown-guidance-check', manifestDigest: 'source-parity-check' });
@@ -38,11 +40,11 @@ export async function checkMarkdownGuidance(root: string): Promise<{ fetched: nu
       }
     }
     for (const path of expected.keys()) if (!fetched.has(`/guides/${path}`)) failures.push(`not discoverable from llms.txt: ${path}`);
-    if (Buffer.byteLength(readFileSync(join(root, 'llms.txt'))) > 64 * 1024) failures.push('llms.txt exceeds 64 KiB');
+    if (indexRemainingBytes < 0) failures.push('llms.txt exceeds 64 KiB');
   } finally {
     await server.close();
   }
-  return { fetched: fetched.size, failures };
+  return { fetched: fetched.size, failures, indexBytes, indexRemainingBytes };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -50,6 +52,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (!root) throw new Error('usage: check-markdown-guidance.ts <production-build>');
   const result = await checkMarkdownGuidance(resolve(root));
   console.log(`Markdown HTTP check: ${result.fetched} documents fetched; ${result.failures.length} failures.`);
+  console.log(`llms.txt: ${result.indexBytes} bytes; ${result.indexRemainingBytes} bytes remaining before the 64 KiB limit.`);
   for (const failure of result.failures) console.error(failure);
   process.exitCode = result.failures.length ? 1 : 0;
 }
