@@ -395,7 +395,7 @@ Updating an existing consumer requires a visible review of its base token and th
 - This section owns the adoption contract. The Theme Studio spec owns the draft and export format, and the install page owns the long consumer walkthrough.
 - README links directly to Theme Studio and the install walkthrough, with a short choose, install, apply, check path.
 - `registry/metadata/setup/setup-vite.ts` and `setup-next.ts` add short theme hand steps that the registry item prints; their assertions cover only what `doctor` can prove. The install page carries the Vite and Next examples above and the production check.
-- `scripts/build-agent-guide.ts` adds a compact adoption section to `/llms.txt` from this contract, alongside the existing conventions and token names. The generated guide points agents to the install page for the full walkthrough.
+- `scripts/build-agent-guide.ts` adds a compact adoption section to `/llms.txt` from this contract, alongside the existing conventions and token names. The generated guide links the install page and its generated Markdown walkthrough for HTTP readers.
 - `packages/cli/skill/ultima-design/SKILL.md` stays a workflow pointer: it tells agents to fetch `/llms.txt`, preserve an existing product brand, use Studio for a custom theme, and run the CLI and rendered checks. It does not copy token values or the full contract.
 
 ## Complete-screen composition
@@ -2753,12 +2753,15 @@ The consumer CLI's `install` writes managed hook entries and the `ultima-design`
 
 A setup item still does not overwrite root documents. The opt-in `design-md` item and Theme Studio theme item can write `DESIGN.md` at the root. The consumer owns that file and updates it with the theme; reinstalling uses shadcn's overwrite flow. A copied file can go stale, so the Theme Studio export names its source draft and the default item names the compiled token source. Both direct readers to export a new file after theme edits.
 
+The [generated Markdown export amendment](../adr/0005-hosted-agent-guidance.md#amendment-2026-10-11-generated-markdown-guidance) adds HTTP-readable guidance indexed by `/llms.txt`. The registry build owns `/guides/install.md`, `/guides/install/update.md`, `/guides/build-a-screen.md`, `/guides/support.md`, `/guides/recipes.md`, and the lesson and recipe bundles. MDX owns prose; setup descriptors and shared framework data own commands and hand steps; the composition projection owns complete copied source and dependencies; the support evidence manifest owns tested versions and gaps. Required dynamic content is projected explicitly, and an unknown component or missing source fails generation. The docs production build checks source parity, links and HTTP responses. Theme Studio remains interactive. These exports add no managed consumer file or root document.
+
 ADR 0005 keeps shared guidance hosted on these surfaces:
 
 | Surface | Audience | Holds |
 | --- | --- | --- |
 | The `docs` field on each registry item | install time | The import and a minimal usage, printed once by the CLI |
-| `/llms.txt` | an agent in a consumer's repository | The conventions, the token names, and the component list as plain Markdown at one fetchable URL |
+| `/llms.txt` | an agent in a consumer's repository | The conventions, token names and component list, plus the index of generated Markdown guidance, within 64 KiB |
+| `/guides/*.md`, `/guides/lessons/<id>.md` and `/guides/recipes/<id>.md` | an HTTP reader | Generated install, screen-building, support and recipe instructions, including every projected source file, destination path and dependency command |
 | `/rationale` and the component pages | a human | The long form |
 
 `/llms.txt` is generated build output beside `/tokens.css`, not a hand-written file and not a route. It leads with the Principles section, then the component list with each component's import and the props Ultima adds, under one heading per [catalogue group](#catalogue-groups), then the semantic token names. It is generated from this specification and the registry manifest, so no convention gets a third place to be updated.

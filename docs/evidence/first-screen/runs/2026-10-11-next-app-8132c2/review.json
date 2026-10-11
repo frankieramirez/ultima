@@ -1,0 +1,32 @@
+{
+  "reviewer": "Codex, cast #810: transcript, request log, notes and production report",
+  "rule": "An intervention is an action on the project or tooling that the guidance or CLI output did not print or link. A decision is an unresolved Ultima setup, theme or styling choice that changed the output. Product choices and documented alternatives do not count. Browser checks of the consumer application follow the guidance; rendering documentation to retrieve guidance or source would count.",
+  "interventions": [
+    {
+      "step": "Typecheck after editing app/layout.tsx",
+      "action": "Ran `npm run build` (which runs Next's typegen) before re-running `npx tsc --noEmit`, instead of running tsc directly after init.",
+      "reason": "A standalone `tsc --noEmit` failed with TS2304 `Cannot find name 'LayoutProps'`. init's plan runs `next typegen` and then discards `.next`, so the generated route types are gone until a build or typegen recreates them. Nothing printed by init or the guides says to regenerate them."
+    },
+    {
+      "step": "Root layout cleanup",
+      "action": "Removed the create-next-app Geist and Geist_Mono `next/font/google` loaders and their className from app/layout.tsx, and replaced the placeholder metadata with Larder's title and description.",
+      "reason": "Nothing reads the `--font-geist-*` variables: the theme's `--ult-font-sans` names Figtree. They only preloaded unused Google font files. init kept them and its report said nothing about them."
+    },
+    {
+      "step": "Production browser verification",
+      "action": "Installed playwright-core in ./.scratch/verify, outside the app, and drove /usr/bin/chromium against `next start`. Ran it with TMPDIR pointed at a short temporary directory under /tmp, which was deleted right after the run.",
+      "reason": "The guidance asks for computed-value and interaction checks in a production build but names no tool. Chromium aborted with 'Socket path too long' because the sandbox's TMPDIR is longer than the Unix socket path limit."
+    }
+  ],
+  "decisions": [
+    {
+      "choice": "Put the layout breakpoint in the app's token module as `stylex.defineConsts` (components/pantry/pantry.stylex.ts, `breakpoints.wide`), next to the defineVars group for `--app-size-content-max`.",
+      "options": [
+        "A named module constant in the screen file, as the Principles section and the Projects lesson do",
+        "A defineConsts entry in the application's token module"
+      ],
+      "why": "The brief requires that no lengths be decided outside theme and token modules. Ultima's convention puts the media-query length in the component file. defineConsts satisfies both, since StyleX accepts it as a media-query key, and the StyleX lint and `ultima-design check` both accept it."
+    }
+  ],
+  "notes": "No documentation rendering, data-link decoding or JavaScript-bundle extraction. All five guides, three lesson bundles and the Item recipe were fetched over HTTP. Guessed /components/*.md paths returned 404, and a curl of /components/select returned the SPA shell; the agent used llms.txt APIs and installed source. Only the harness rendered Theme Studio. Production, check, lint and raw-paint assertions passed. Font removal and route type regeneration reproduce #811; the shorter Chromium TMPDIR is an environment workaround. The breakpoint-location ambiguity needs separate triage. Documented font fallback and product choices about selection and form placement are excluded."
+}

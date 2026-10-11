@@ -1,10 +1,4 @@
-/**
- * Writes the agent guide, `apps/docs/public/llms.txt`, from `docs/spec/ultima.md`,
- * the registry manifest, and the tokens JSON export. Per the Agent surface section
- * of the specification and ADR 0005, guidance is hosted and generated: this file is
- * the only thing an agent in a consumer's repository reads, and Ultima installs no
- * documentation, so nothing here may be a second copy of a convention.
- */
+import { guidePath, lessonPath, recipePath } from './markdown-guidance.ts';
 import { readFileSync } from 'node:fs';
 import type { CompositionProjection, RecipeProjection } from './catalogue/compositions.ts';
 import type { EvidenceManifest } from './consumer-evidence.ts';
@@ -223,14 +217,7 @@ function describeRecipe(recipe: RecipeProjection): string {
     '',
     recipe.description,
     '',
-    `Canonical example and copy/download source: https://ultima.systems${recipe.url}`,
-    '',
-    `Items: ${recipe.items.join(', ')}. Engine dependencies: ${recipe.dependencies.join(', ') || 'None'}.`,
-    '',
-    '```bash',
-    recipe.install,
-    ...(recipe.engines ? [recipe.engines] : []),
-    '```',
+    `Canonical example: https://ultima.systems${recipe.url}. [Markdown and complete source](https://ultima.systems${recipePath(recipe.id)}).`,
   ].join('\n');
 }
 
@@ -244,7 +231,7 @@ function describeLesson(example: CompositionProjection, blocks: GuideBlock[]): s
   const contents = block
     ? `Installable block; render \`import { ${block.primaryExport} } from '@/components/${block.name}/${block.name}'\` and adapt its files.`
     : `Files: ${example.files.map(({ destination }) => destination).join(', ')}.`;
-  return `### ${example.title}\n\nhttps://ultima.systems${example.route}#${example.anchor}. ${contents} Install: \`${example.install}\``;
+  return `### ${example.title}\n\nhttps://ultima.systems${example.route}#${example.anchor}. [Markdown bundle](https://ultima.systems${lessonPath(example.id)}). ${contents} Install: \`${example.install}\``;
 }
 
 function describeTokens(tokens: TokensJson['tokens']): string {
@@ -307,6 +294,12 @@ export function agentGuide({
     elements.length === 0
       ? 'Ultima is a design system for React, built on Base UI and StyleX and distributed as a shadcn-compatible registry: you install the source into your own repository and own it from then on. This file is generated from Ultima\'s specification and its registry manifest on every build, and it is the hosted source of Ultima\'s conventions and component APIs for an agent working in a consumer\'s repository. The consumer CLI\'s `install` manages only the `ultima-design` pointer skill and project hook entries, which point here and restate no convention; it writes no root documents. A `DESIGN.md` at the project root arrives only when the consumer explicitly installs a Theme Studio theme item or the `design-md` item: it describes their theme, they own it, and they revise or re-export it when the theme changes.'
       : 'Ultima is a design system with two render targets: React components built on Base UI and StyleX, and custom elements for a host that cannot run React. It is distributed as a shadcn-compatible registry: you install the source into your own repository and own it from then on. This file is generated from Ultima\'s specification and its registry manifest on every build, and it is the hosted source of Ultima\'s conventions and component APIs for an agent working in a consumer\'s repository. The consumer CLI\'s `install` manages only the `ultima-design` pointer skill and project hook entries, which point here and restate no convention; it writes no root documents. A `DESIGN.md` at the project root arrives only when the consumer explicitly installs a Theme Studio theme item or the `design-md` item: it describes their theme, they own it, and they revise or re-export it when the theme changes.',
+    '',
+    '## Markdown guidance',
+    '',
+    'Read these exports over HTTP without rendering browser pages. Each source bundle includes every file at its consumer path. Theme Studio remains the interactive theme editor.',
+    '',
+    ...['/install', '/install/update', '/build-a-screen', '/support', '/recipes'].map((route) => `- [${route.slice(1)}](https://ultima.systems${guidePath(route)})`),
     '',
     '## Install',
     '',

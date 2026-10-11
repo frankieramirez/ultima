@@ -1,0 +1,33 @@
+{
+  "reviewer": "Codex, cast #810: transcript, request log, notes and production report",
+  "rule": "An intervention is an action on the project or tooling that the guidance or CLI output did not print or link. A decision is an unresolved Ultima setup, theme or styling choice that changed the output. Product choices and documented alternatives do not count. Browser checks of the consumer application follow the guidance; rendering documentation to retrieve guidance or source would count.",
+  "interventions": [
+    {
+      "step": "Accidental repeat of the component install",
+      "action": "Ran `npx shadcn@4.21.4 add @ultima/field @ultima/input @ultima/select @ultima/toggle-group @ultima/badge @ultima/empty --yes` a second time with an unprinted `--overwrite=false` flag, while trying to see the full install output.",
+      "reason": "Mistake while reading output. The installed files were unchanged and doctor and check still passed."
+    },
+    {
+      "step": "Choosing the stock-list pattern",
+      "action": "Fetched the raw registry item http://127.0.0.1:35551/r/crm-01.json and read its contact-list source without installing the block.",
+      "reason": "The component docs are HTML-only, and llms.txt does not say how to build a selectable master list. CRM 01 is the documented block with a list-plus-record structure, so I reused its vertical ToggleGroup pattern instead of installing the whole block."
+    },
+    {
+      "step": "Root layout fonts",
+      "action": "Removed the scaffold's next/font/google Geist and Geist_Mono loading and the className on <html> from src/app/layout.tsx.",
+      "reason": "Ultima's tokens never read the Geist variables, and the theme's font stacks name Figtree and IBM Plex Mono. Loading Geist also fetched from Google at build time, outside the public host this run is limited to."
+    },
+    {
+      "step": "Browser verification of the production build",
+      "action": "Installed playwright-core in scratch/pw (outside the app) and drove Playwright's cached chromium headless shell against `next start`. The scripts are in scratch/scripts.",
+      "reason": "The guidance asks for a check of computed values in dark, light and system mode on the root, a control and a portalled popup, plus reduced motion, but names no tool. The system Chromium aborted because the temp path was too long for its singleton socket, so I used the headless shell."
+    },
+    {
+      "step": "Route types after init",
+      "action": "Ran the production build after standalone tsc failed on LayoutProps; tsc then passed.",
+      "reason": "The transcript records the #811 route-type loss although the self-report omits it."
+    }
+  ],
+  "decisions": [],
+  "notes": "No documentation rendering, data-link decoding or JavaScript-bundle extraction. All five guides and three complete lesson bundles were fetched over HTTP. Guessed component Markdown URLs returned 404; curl of the human Select route returned its SPA shell. The agent used llms.txt APIs, installed source and public CRM registry JSON. Theme Studio was rendered by the harness. Production, check, lint and raw-paint assertions passed. Font removal and route-type regeneration reproduce #811. The Chromium socket failure required the cached headless shell. The repeated install flag is a recorded operator mistake. Deleting the unused setup-check page follows the starter comment permitting replacement. Every self-reported decision uses documented alternatives, product choices or the named media-condition exception, so none is counted. No operator edited the application."
+}

@@ -10,6 +10,7 @@ import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync,
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { markdownGuidance, publishGuidance } from './markdown-guidance.ts';
 import { BASE_THEME, BASE_THEME_MARKER } from '../packages/cli/src/base-theme.ts';
 import {
   REGISTRY_FORMAT,
@@ -333,7 +334,7 @@ function shadcnBuild() {
   });
 }
 
-function publishExports({ components, elements, tokensCss }: Sources) {
+async function publishExports({ components, elements, tokensCss }: Sources) {
   writeFileSync(join(PUBLIC_DIR, 'tokens.css'), tokensCss.text);
   copyFileSync(join(TOKENS_DIST, 'tokens.json'), join(PUBLIC_DIR, 'tokens.json'));
   const composition = compositionProjection(files, catalogue);
@@ -373,6 +374,8 @@ function publishExports({ components, elements, tokensCss }: Sources) {
       }),
     ),
   });
+  const guides = await markdownGuidance(files, catalogue, composition);
+  publishGuidance(join(PUBLIC_DIR, 'guides'), guides);
   writeFileSync(join(PUBLIC_DIR, 'llms.txt'), guide);
 }
 
@@ -424,7 +427,7 @@ const staged = await stageSources();
 const registry = describeRegistry(staged);
 writeFileSync(join(REGISTRY_DIR, 'registry.json'), `${JSON.stringify(registry, null, 2)}\n`);
 shadcnBuild();
-publishExports(staged);
+await publishExports(staged);
 publishElements();
 await verifyStamps();
 verifyUnmarked();

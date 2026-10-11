@@ -153,7 +153,9 @@ test('emits a Build a screen section from the published lessons, with a block le
     examples: [lesson, block, { ...lesson, id: 'unpublished', title: 'Unpublished lesson', route: undefined, anchor: undefined }],
   });
   const section = output.split('\n## Build a screen\n')[1]!.split('\n## ')[0]!;
-  expect(section).toContain('https://ultima.systems/build-a-screen#screen-lesson. Files: components/screen/a.tsx. Install: `npx shadcn add @ultima/button`');
+  expect(section).toContain('https://ultima.systems/build-a-screen#screen-lesson');
+  expect(section).toContain('https://ultima.systems/guides/lessons/screen.md');
+  expect(section).toContain('Files: components/screen/a.tsx. Install: `npx shadcn add @ultima/button`');
   expect(section).toContain("`import { Settings01 } from '@/components/settings-01/settings-01'`");
   expect(section).toContain('Install: `npx shadcn add @ultima/settings-01`');
   expect(section).not.toContain('Unpublished lesson');

@@ -4,19 +4,8 @@ import { space } from '@ultima/tokens/tokens.stylex';
 import { Tabs } from '@ultima/ui';
 
 import { Fence } from './prose';
-
-export const INSTALL_TARGETS = [
-  {
-    value: 'vite',
-    label: 'Vite',
-    commands: ['npx shadcn add https://ultima.systems/r/setup-vite.json', 'npx shadcn add @ultima/button'],
-  },
-  {
-    value: 'next',
-    label: 'Next.js',
-    commands: ['npx shadcn add https://ultima.systems/r/setup-next.json', 'npx shadcn add @ultima/button'],
-  },
-] as const;
+import { INSTALL_TARGETS } from './install-targets';
+export { INSTALL_TARGETS } from './install-targets';
 
 const styles = stylex.create({
   root: { marginBlock: space['--ult-space-6'] },

@@ -26,3 +26,7 @@
 # Vite fingerprints everything here, so a changed byte is a changed URL.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+/guides/*.md
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=0, must-revalidate
