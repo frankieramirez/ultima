@@ -1,0 +1,41 @@
+{
+  "reviewer": "Codex, cast #810: transcript, request log, notes and production report",
+  "rule": "An intervention is an action on the project or tooling that the guidance or CLI output did not print or link. A decision is an unresolved Ultima setup, theme or styling choice that changed the output. Product choices and documented alternatives do not count. Browser checks of the consumer application follow the guidance; rendering documentation to retrieve guidance or source would count.",
+  "interventions": [
+    {
+      "step": "Before init",
+      "action": "Ran `npx ultima-design@latest init --help` to see the options.",
+      "reason": "No guidance printed a help command. The CLI rejected `--help` but printed its usage, which confirmed the `--plan --json` / `--apply` flow the install guide describes."
+    },
+    {
+      "step": "Choosing a list pattern",
+      "action": "Downloaded http://127.0.0.1:38277/r/crm-01.json with curl and read contact-list.tsx without installing the block.",
+      "reason": "I wanted the block's selectable-list pattern (a vertical ToggleGroup) for the stock list without installing a whole CRM screen. The guidance links the block's install command, not its raw registry JSON."
+    },
+    {
+      "step": "Browser verification",
+      "action": "Installed playwright-core in ./.scratch/browser and drove the system Chromium against `vite preview` of the production build. TMPDIR pointed at a short /tmp/lrdr path, deleted afterwards. The script checked layout at 375px and 1280px, sideways overflow, computed --ult-* values and color-scheme on the root, a control and the portalled Select popup, data-theme overrides, reduced motion, the empty-name error, opening the Select from the keyboard and closing it with Escape, and adding new and existing donations.",
+      "reason": "The guidance asks for a rendered check in a production build but names no tool. Chromium aborted under the long default TMPDIR (\"Socket path too long\")."
+    }
+  ],
+  "decisions": [
+    {
+      "choice": "Put the layout breakpoint in the app token module (screen.stylex.ts) as `stylex.defineConsts`, next to the app's `defineVars` sizes.",
+      "options": [
+        "Named constant in the file that uses it (llms.txt principle, Sidebar precedent)",
+        "defineConsts in the app's .stylex.ts token module"
+      ],
+      "why": "The brief says the app sets no lengths outside its theme and token modules. A media condition cannot read a custom property, so a compile-time const in the token module satisfies both rules."
+    },
+    {
+      "choice": "Selected stock rows use --ult-color-accent-subtle as their background, through ToggleGroup.Item's style slot. The hovered pressed state uses the compound key that toggle-group.tsx uses.",
+      "options": [
+        "Keep ToggleGroup's default pressed fill (--ult-color-surface-raised)",
+        "Override the pressed fill with an accent role",
+        "Drop the Card around the list"
+      ],
+      "why": "Card.Root paints --ult-color-surface-raised, so the default pressed fill was invisible inside the Card (seen in screenshots). The accent is the brand mark, not a status, so success, warning and danger keep their meanings. The nested `':is([data-pressed])': { ':hover' }` form from the conventions fails @stylexjs/valid-styles, so I used `':is([data-pressed]):hover'` as the installed toggle-group.tsx does."
+    }
+  ],
+  "notes": "No documentation rendering, data-link decoding or JavaScript-bundle extraction. The request log contains the five generated guides and projects/interaction-states bundles; the only documentation browser requests are the harness-owned Theme Studio export. The app production assertions, check, lint and raw-paint scan passed. The browser profile needed a shorter TMPDIR. The selected-row workaround concerns #813; the nested pseudo-selector lint rejection and breakpoint-location ambiguity need separate triage. Saving the unchanged init plan under .scratch is a path choice. Select versus Dialog, documented font fallbacks, optional agent setup and a system-only mode are documented or product choices, excluded from the review counts."
+}

@@ -51,7 +51,7 @@ export async function serveRegistry(folder: string, fallback = false, log?: stri
         if (!fallback || /^\/r\/|^\/tokens\.(css|json)$|^\/llms\.txt$/.test(path)) throw new Error('missing file');
         file = join(folder, 'index.html');
       }
-      const types: Record<string, string> = { '.css': 'text/css', '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.svg': 'image/svg+xml', '.txt': 'text/plain' };
+      const types: Record<string, string> = { '.css': 'text/css', '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.svg': 'image/svg+xml', '.txt': 'text/plain', '.md': 'text/markdown; charset=utf-8' };
       response.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream' });
       response.end(await readFile(file));
     } catch { response.writeHead(404).end('not found'); }

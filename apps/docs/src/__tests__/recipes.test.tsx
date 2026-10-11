@@ -20,14 +20,19 @@ test('every recipe appears once with its canonical anchor and derived install co
   expect(recipes.find((recipe) => recipe.id === 'chart')?.engines).toContain('npm install -D @types/d3-array @types/d3-format @types/d3-scale');
 }));
 
-test('llms.txt lists every recipe once and includes the Chart, Data Table and React Hook Form engines', async () => {
+test('llms.txt indexes every recipe and its Markdown export includes install and engine commands', async () => {
   const guide = await (await fetch('/llms.txt')).text();
   const section = guide.split('\n## Recipes\n')[1]!.split('\n## ')[0]!;
   for (const recipe of recipes) {
     expect(section.split(`### ${recipe.title}\n`).length - 1).toBe(1);
     expect(section).toContain(`https://ultima.systems${recipe.url}`);
-    expect(section).toContain(recipe.install);
-    if (recipe.engines) expect(section).toContain(recipe.engines);
+    const path = `/guides/recipes/${recipe.id}.md`;
+    expect(section).toContain(`https://ultima.systems${path}`);
+    const response = await fetch(path);
+    expect(response.status).toBe(200);
+    const bundle = await response.text();
+    expect(bundle).toContain(recipe.install);
+    if (recipe.engines) expect(bundle).toContain(recipe.engines);
   }
   for (const id of ['chart', 'data-table', 'react-hook-form']) expect(recipes.find((recipe) => recipe.id === id)?.engines).toMatch(/^npm install /);
 });

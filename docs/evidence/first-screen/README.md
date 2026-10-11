@@ -43,7 +43,7 @@ The review counts an **intervention** as any action on the project or its toolin
 | `2026-10-09-vite-ee220e` | `7a574ba` | Vite | failed | interventions, decisions, production (`axe-open`: `region`) |
 | `2026-10-09-next-app-3aecfb` | `7a574ba` | Next root `app` | failed | interventions, decisions, production (`axe-open`: `region`) |
 
-The runs stopped before Next `src/app` on `7a574ba`. Its earlier run failed the same way. No layout passes, and the S9 acceptance criterion is not met. Two of the three shared failures are fixed below; the third, [#810](https://github.com/frankieramirez/ultima/issues/810), still blocks a full pass, so the layouts have not been rerun.
+The initial runs stopped before Next `src/app` on `7a574ba`. Its earlier run failed the same way. None of those runs passed S9. The #810 reruns below preserve these original measurements.
 
 In every valid run, `init`, `ultima-design check`, `doctor`, the StyleX lint and the raw-paint scan were clean. The Dialog-form app from `vite-bd8866` passes every external assertion under the fixed runner.
 
@@ -59,7 +59,7 @@ One runner defect is fixed too: external mode looked for the required field only
 
 | Defect | State |
 | --- | --- |
-| The docs pages linked from `/llms.txt` have no content over HTTP, and a lesson's Code tab offers only its first file. | [#810](https://github.com/frankieramirez/ultima/issues/810). It blocks a full pass: every agent needed a headless browser to read the guidance. |
+| The docs pages linked from `/llms.txt` have no content over HTTP, and a lesson's Code tab offers only its first file. | [#810](https://github.com/frankieramirez/ultima/issues/810) adds generated Markdown guides and complete copy bundles. See the reruns below for executed evidence. |
 | `init`, the lint walkthrough and doctor disagreed on the StyleX version. | Fixed here. StyleX is 0.19.1 everywhere: `init`'s recipes, the existing-project band, the workspace lockfile (so doctor's tested ceiling), both specs and the install page. Doctor's ULT-LINT-003 moves an older runtime up to the tested plugin instead of the plugin down. Every UI, block and token source lints with 0 errors under plugin 0.19.1. |
 | A portalled Select could not pass external mode's `axe-open`. axe flagged only the open Select's `role="option"` rows, whose ancestry is `div[role=option] < div[role=listbox] < div[role=presentation] < div[role=presentation] < div[data-base-ui-portal] < body`. | Fixed here, in external mode. The Select is unchanged. axe's `region` rule exempts a dialog; external mode exempts a listbox or menu popup the same way when an expanded control names it with `aria-controls` or `aria-owns`. An orphaned element outside every landmark still fails (`scripts/verification/consumer-external.test.ts`). |
 | `init`'s Next output keeps create-next-app's Geist font loading and discards `.next` route types. | [#811](https://github.com/frankieramirez/ultima/issues/811) |
@@ -67,6 +67,22 @@ One runner defect is fixed too: external mode looked for the required field only
 | The Toggle Group's pressed row is hard to see in dark mode and inside a Card. | [#813](https://github.com/frankieramirez/ultima/issues/813) |
 
 `runs/2026-10-09-next-app-3aecfb/external-rerun/` shows the region fix on a real agent app. The app was rebuilt by replaying that run's transcript: its file writes, edits and setup commands, without its browser checks or servers. External mode then ran on the result with both fixes, on top of `f2eb117`, and every assertion passed in all four cases. That includes `axe-open` with the Select's listbox open, and `required-error-name`. The run's own record keeps its original measurement.
+
+## Markdown guidance reruns (#810)
+
+The candidate is `54d1a40` plus the #810 working-tree implementation, identified by source manifest `466fd90a233aa300aa79b4630ddbd9c6f50db28c283a25c1d0b9acbe58326f3a`. The registry manifest and packed CLI digests also match across layouts. Later changes in this PR update assertions and retain evidence; they do not change the served implementation.
+
+| Run | Layout | Guidance/source retrieval | Production | Overall verdict |
+| --- | --- | --- | --- | --- |
+| [2026-10-11-vite-b5cd4f](runs/2026-10-11-vite-b5cd4f.json) | Vite | HTTP Markdown | passed | failed: interventions, decisions |
+| [2026-10-11-next-app-8132c2](runs/2026-10-11-next-app-8132c2.json) | Next root | HTTP Markdown | passed | failed: interventions, decisions |
+| [2026-10-11-next-src-def696](runs/2026-10-11-next-src-def696.json) | Next src | HTTP Markdown | passed | failed: interventions |
+
+Each run fetched the install, update, screen-building, support and Recipes exports through links in `/llms.txt`. All three fetched complete lesson bundles; Next root also fetched the Item recipe. None rendered documentation pages, decoded data links or extracted a JavaScript bundle. The Theme Studio browser requests in each request log belong to the harness exporting the input theme. Consumer-app browser checks follow the install guide.
+
+All three runs passed `check`, StyleX lint, the raw-paint scan and every external production assertion. The operator reviews retain separate problems: Next font cleanup and route-type regeneration (#811), the selected-row workaround (#813), a Chromium Unix socket path failure under the long exercise TMPDIR, and an ambiguity between the brief's token-only lengths and the documented media-condition exception. Vite also used an undocumented help probe and inspected CRM 01's raw registry source. Its nested pressed-hover selector needed a lint repair. The self-reports remain intact; reviews exclude product choices and documented alternatives from their counts.
+
+The production Markdown check fetched 21 documents with zero failures and verified source parity and reachable guidance anchors. An independent check matched all 21 projected copy-file occurrences against their destination paths and complete source bytes in the production artifacts. Installed-consumer `copy-bundles` checks passed in Vite, Next root and Next src. These checks establish the local candidate's export and consumer behavior. The full S9 gate remains unmet. The human exercise (#775), deployed domain and publication remain unverified.
 
 ## Reproduce
 
