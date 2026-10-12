@@ -64,6 +64,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: 'none',
     padding: 0,
+    width: '100%',
     '::placeholder': { color: color['--ult-color-text-subtle'] },
   },
   trigger: {

@@ -16,8 +16,7 @@ const lock = (layout: ConsumerLayout | 'elements') => ({ packages: Object.fromEn
 function report(exercise: 'bundles' | 'elements', layout: ConsumerLayout): ConsumerReport {
   const cases = exercise === 'elements' ? elementCases() : bundleCases(ENGINES, layout);
   const gaps = exercise === 'bundles' && layout === 'vite'
-    ? [...ENGINES.flatMap((engine) => ['dark', 'light'].map((mode) => ({ id: `vite/bundles/${engine}/narrow-touch-${mode}`, assertion: 'range-date-picker-fits', component: 'date-picker', issue: '#806' }))),
-      { id: 'vite/bundles/firefox/narrow-touch-dark', assertion: 'drawer-backdrop-dismiss', component: 'sidebar', issue: '#807' }]
+    ? [{ id: 'vite/bundles/firefox/narrow-touch-dark', assertion: 'drawer-backdrop-dismiss', component: 'sidebar', issue: '#807' }]
     : [];
   return {
     schemaVersion: 1, status: 'passed', layout, deliveryPath: 'css', exercise, engines: [...ENGINES], versions: { node: 'v22.23.3', npm: '10.9.9', chromium: '153', firefox: '155', webkit: '26.6' },
@@ -45,7 +44,6 @@ test('a complete passing run becomes a manifest of its versions, reports and eve
   assert.equal(manifest.fixtures.find((fixture) => fixture.exercise === 'elements')!.setup, null);
   const gaps = Object.values(KNOWN_GAPS).reduce((count, gaps) => count + Object.keys(gaps ?? {}).length, 0);
   assert.equal(manifest.knownGaps.length, gaps, 'every KNOWN_GAPS entry is listed, observed or not');
-  assert.equal(manifest.knownGaps.find((gap) => gap.assertion === 'range-date-picker-fits')!.observed.length, 6);
   assert.deepEqual(manifest.knownGaps.find((gap) => gap.assertion === 'drawer-backdrop-dismiss')!.observed, ['vite/bundles/firefox/narrow-touch-dark']);
   assert.deepEqual(manifest.knownGaps.find((gap) => gap.assertion === 'tabs-indicator')!.observed, []);
   assert.deepEqual(manifest.openGaps, OPEN_GAPS);
@@ -63,7 +61,7 @@ test('an incomplete or failing run publishes no manifest', () => {
 
 test('a manifest whose gaps or cells drift from the runner is rejected', () => {
   const manifest = evidenceManifest(full(), run);
-  const renamed: EvidenceManifest = { ...manifest, knownGaps: manifest.knownGaps.map((gap) => gap.assertion === 'range-date-picker-fits' ? { ...gap, issue: '#999' } : gap) };
+  const renamed: EvidenceManifest = { ...manifest, knownGaps: manifest.knownGaps.map((gap) => gap.assertion === 'drawer-backdrop-dismiss' ? { ...gap, issue: '#999' } : gap) };
   assert.match(evidenceProblems(renamed).join('\n'), /KNOWN_GAPS/);
   assert.match(evidenceProblems({ ...manifest, knownGaps: manifest.knownGaps.slice(1) }).join('\n'), /KNOWN_GAPS/);
   assert.match(evidenceProblems({ ...manifest, openGaps: manifest.openGaps.slice(1) }).join('\n'), /OPEN_GAPS/);

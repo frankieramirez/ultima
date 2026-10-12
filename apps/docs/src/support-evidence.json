@@ -215,26 +215,6 @@
     },
     {
       "bundle": "narrow-touch",
-      "assertion": "range-date-picker-fits",
-      "component": "date-picker",
-      "issue": "#806",
-      "engines": [
-        "chromium",
-        "firefox",
-        "webkit"
-      ],
-      "reason": "A range Date Picker cannot shrink below its two inputs' natural widths, so in a grid form it widens a 390px page.",
-      "observed": [
-        "vite/bundles/chromium/narrow-touch-dark",
-        "vite/bundles/chromium/narrow-touch-light",
-        "vite/bundles/firefox/narrow-touch-dark",
-        "vite/bundles/firefox/narrow-touch-light",
-        "vite/bundles/webkit/narrow-touch-dark",
-        "vite/bundles/webkit/narrow-touch-light"
-      ]
-    },
-    {
-      "bundle": "narrow-touch",
       "assertion": "drawer-backdrop-dismiss",
       "component": "sidebar",
       "issue": "#807",
