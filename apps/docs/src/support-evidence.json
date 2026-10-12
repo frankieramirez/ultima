@@ -241,7 +241,7 @@
       "engines": [
         "firefox"
       ],
-      "reason": "In Firefox touch emulation a tap on a modal Dialog's backdrop does not dismiss the Sidebar drawer; it needs a physical Android check.",
+      "reason": "Playwright's Firefox touch emulation fires a tap's click before Base UI clears its focus-out mark, so a tap on the backdrop leaves the Sidebar drawer open. On a physical Android phone, Firefox dismisses it.",
       "observed": [
         "vite/bundles/firefox/narrow-touch-dark",
         "vite/bundles/firefox/narrow-touch-light"
