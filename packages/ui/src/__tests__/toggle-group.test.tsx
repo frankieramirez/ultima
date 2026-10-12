@@ -1,7 +1,9 @@
 import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
+import { contrastRatio } from '@ultima/tokens/gate';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
-import { ToggleGroup, type ToggleGroupItemProps, type ToggleGroupRootProps } from '@ultima/ui';
+import { Card, ToggleGroup, type ToggleGroupItemProps, type ToggleGroupRootProps } from '@ultima/ui';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
@@ -15,6 +17,16 @@ const themes = [
   { name: 'dark', theme: darkTheme, scheme: colorScheme.dark },
   { name: 'light', theme: lightTheme, scheme: colorScheme.light },
 ];
+
+const surfaces = [
+  { name: 'page', wrap: (children: ReactNode) => children },
+  { name: 'Card', wrap: (children: ReactNode) => <Card.Root>{children}</Card.Root> },
+];
+
+function hex(rgb: string) {
+  const channels = rgb.match(/\d+/g)?.slice(0, 3) ?? [];
+  return `#${channels.map((channel) => Number(channel).toString(16).padStart(2, '0')).join('')}`;
+}
 
 type ViewProps = Omit<ToggleGroupRootProps<'list' | 'grid' | 'chart'>, 'aria-label'>;
 
@@ -202,6 +214,22 @@ for (const mode of themes) {
     expect(getComputedStyle(pressed).backgroundColor).not.toBe(getComputedStyle(resting).backgroundColor);
     expect(getComputedStyle(pressed).color).not.toBe(getComputedStyle(resting).color);
   });
+
+  for (const surface of surfaces) {
+    test(`the pressed item meets 3:1 against a resting one on the ${surface.name} in ${mode.name}`, async () => {
+      const screen = await render(
+        <div {...stylex.props(mode.theme, mode.scheme)}>{surface.wrap(<Views defaultValue={['grid']} />)}</div>,
+      );
+      const pressed = getComputedStyle(screen.getByRole('button', { name: 'Grid' }).element());
+      const unpressed = getComputedStyle(screen.getByRole('button', { name: 'List' }).element());
+      const ground = getComputedStyle(screen.getByRole('group', { name: 'Layout' }).element()).backgroundColor;
+      expect(pressed.borderTopStyle).toBe('solid');
+      expect(parseFloat(pressed.borderTopWidth)).toBeGreaterThan(0);
+      expect(unpressed.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+      expect(unpressed.borderTopColor).toBe('rgba(0, 0, 0, 0)');
+      expect(contrastRatio(hex(pressed.borderTopColor), hex(ground))).toBeGreaterThanOrEqual(3);
+    });
+  }
 
   test(`the item draws the focus ring in ${mode.name}`, async () => {
     const screen = await render(
