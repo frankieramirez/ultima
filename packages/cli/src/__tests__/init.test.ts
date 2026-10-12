@@ -589,6 +589,15 @@ describe('the recipes', () => {
     expect(content('app/globals.css')).toContain('@layer reset {');
   });
 
+  it('leaves the color scheme to the root, so a pinned data-theme holds on the preview', async () => {
+    for (const framework of ['vite', 'next']) {
+      const { operations } = await plan(['--framework', framework], 'npm');
+      const screens = operations.filter((operation) => operation.kind === 'write' && operation.path.endsWith('.tsx')) as { path: string; content: string }[];
+      expect(screens.map(({ path }) => path)).toContain(framework === 'vite' ? 'src/App.tsx' : 'app/page.tsx');
+      for (const { content } of screens) expect(content).not.toContain('colorScheme');
+    }
+  });
+
   it('generates the route types before the typecheck reads them', async () => {
     const { operations } = await plan(['--framework', 'next'], 'pnpm');
     const ids = operations.map(({ id }) => id);
