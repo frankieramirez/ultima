@@ -73,9 +73,8 @@ Sidebar and Select pass every RTL case in Chromium and Firefox; WebKit's first r
 
 ### Narrow touch known gaps
 
-Two narrow touch defects are filed issues and recorded as known gaps. Their assertions still run in every cell, and each break is reported under `knownGaps` with its issue rather than failing the cell:
+One narrow touch defect is a filed issue and recorded as a known gap. Its assertion still runs in every cell, and a break is reported under `knownGaps` with its issue rather than failing the cell:
 
-- **Range Date Picker overflow, [#806](https://github.com/frankieramirez/ultima/issues/806), all engines.** The range picker's two inputs keep their natural widths, giving `DatePicker.Control` a min-content of about 410 pixels. In a grid form like the Projects scene's own form stacks, that widens a 390-pixel page. `range-date-picker-fits` measures the page and the control with the picker in place. `page-overflow` and `reach-controls` set that one picker aside and stay fully asserted, so an overflow or an unreachable control from anything else still fails.
 - **Firefox backdrop dismissal, [#807](https://github.com/frankieramirez/ultima/issues/807), Firefox only.** In Firefox's touch emulation, tapping the backdrop of a modal Base UI Dialog does not dismiss it. `drawer-backdrop-dismiss` records this for the Sidebar drawer. The same tap dismisses a Popover in Firefox. Chromium and WebKit dismiss the drawer, and there the assertion fails the cell if it breaks. It needs a physical Android check before it is attributed to Ultima.
 
 A gap leaves this list when its issue closes and its assertion passes in every engine.

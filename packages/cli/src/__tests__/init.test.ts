@@ -598,6 +598,16 @@ describe('the recipes', () => {
     }
   });
 
+  it('writes a layout with no Google font and no generated route types, so the published app typechecks without .next', async () => {
+    for (const [layout, prefix] of [['root', 'app'], ['src', 'src/app']] as const) {
+      const { operations } = await plan(['--framework', 'next', '--layout', layout], 'npm');
+      const { content } = operations.find((operation) => operation.kind === 'write' && operation.path === `${prefix}/layout.tsx`) as { content: string };
+      expect(content).not.toContain('next/font');
+      expect(content).not.toContain('LayoutProps');
+      expect(content).toContain('<html lang="en">');
+    }
+  });
+
   it('generates the route types before the typecheck reads them', async () => {
     const { operations } = await plan(['--framework', 'next'], 'pnpm');
     const ids = operations.map(({ id }) => id);

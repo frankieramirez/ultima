@@ -39,7 +39,6 @@ export type KnownGap = { component: string; reason: string; issue?: string; engi
 export const KNOWN_GAPS: Partial<Record<Bundle, Partial<Record<string, KnownGap>>>> = {
   'direction-locale': RTL_EXCLUSIONS,
   'narrow-touch': {
-    'range-date-picker-fits': { component: 'date-picker', issue: '#806', reason: 'A range Date Picker cannot shrink below its two inputs\' natural widths, so in a grid form it widens a 390px page.' },
     'drawer-backdrop-dismiss': { component: 'sidebar', issue: '#807', engines: ['firefox'], reason: 'In Firefox touch emulation a tap on a modal Dialog\'s backdrop does not dismiss the Sidebar drawer; it needs a physical Android check.' },
   },
 };
@@ -984,16 +983,8 @@ async function narrowTouch({ page, check: record }: Cell) {
   const width = () => page.evaluate(() => document.documentElement.scrollWidth);
   const fits = async (locator: Locator) => { const rect = await box(locator); return rect.left >= 0 && rect.right <= 390; };
   await check('touch-context', { width: 390, touch: true }, () => page.evaluate(() => ({ width: innerWidth, touch: matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 })));
-  // #806 widens the page through the range Date Picker alone; set it aside so every other overflow and reach still fails.
   const range = page.getByRole('region', { name: 'Sprint picker', exact: true });
-  // One handle for both steps: once hidden, the role locator no longer finds the section to restore it.
-  const withoutRange = async <T>(action: () => Promise<T>) => {
-    const section = await range.elementHandle();
-    if (!section) throw new Error('the range Date Picker section is missing');
-    await section.evaluate((element: HTMLElement) => { element.style.display = 'none'; });
-    try { return await action(); } finally { await section.evaluate((element: HTMLElement) => { element.style.display = ''; }); await section.dispose(); }
-  };
-  await check('page-overflow', { scrollWidth: 390 }, () => withoutRange(async () => ({ scrollWidth: await width() })));
+  await check('page-overflow', { scrollWidth: 390 }, async () => ({ scrollWidth: await width() }));
   await check('range-date-picker-fits', { scrollWidth: 390, control: true }, async () => ({ scrollWidth: await width(), control: await fits(range.locator('[data-part="control"]')) }));
   const menu = page.getByRole('button', { name: 'Menu', exact: true });
   const drawer = page.getByRole('dialog', { name: 'Workspace', exact: true });
@@ -1064,7 +1055,7 @@ async function narrowTouch({ page, check: record }: Cell) {
     await settle(page);
     return { fits: calendarFits, picked, closed, typed: await date.read('Release value') };
   });
-  await check('reach-controls', [], () => withoutRange(() => page.evaluate(() => {
+  await check('reach-controls', [], () => page.evaluate(() => {
     const selector = 'a[href], button, input:not([type="hidden"]), select, textarea, [role="combobox"], [role="checkbox"], [role="tab"], [tabindex="0"]';
     const controls = [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => element.getClientRects().length > 0 && !element.closest('[aria-hidden="true"], [inert]'));
     return controls.flatMap((element) => {
@@ -1075,7 +1066,7 @@ async function narrowTouch({ page, check: record }: Cell) {
       const name = element.getAttribute('aria-label') ?? (element as HTMLInputElement).labels?.[0]?.textContent?.trim() ?? element.textContent?.trim() ?? element.tagName;
       return reachable ? [] : [`${name} at ${Math.round(rect.left)}-${Math.round(rect.right)}`];
     });
-  })));
+  }));
 }
 
 
