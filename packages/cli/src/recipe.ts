@@ -214,7 +214,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog } from '@/components/ui/dialog';
-import { colorScheme } from '@/lib/themes';
 import { color, font, space, text } from '@/lib/tokens.stylex';
 
 const styles = stylex.create({
@@ -260,7 +259,7 @@ const styles = stylex.create({
 export default function App() {
   const [confirmed, setConfirmed] = useState(false);
   return (
-    <main {...stylex.props(styles.page, colorScheme.system)}>
+    <main {...stylex.props(styles.page)}>
       <h1 {...stylex.props(styles.heading)}>Ultima is ready</h1>
       <p {...stylex.props(styles.lead)}>
         Button, Card and Dialog are installed under src/components/ui. Edit src/App.tsx to start building.
@@ -480,7 +479,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
 const nextPage = (root: string) => `import * as stylex from '@stylexjs/stylex';
 
-import { colorScheme } from '@/lib/themes';
 import { color, font, space, text } from '@/lib/tokens.stylex';
 
 import { SetupCheck } from './setup-check';
@@ -513,7 +511,7 @@ const styles = stylex.create({
 /** Ultima's starter screen, written by \`ultima-design init\`. The page renders on the server; setup-check.tsx is its client boundary. It is yours: edit it or replace it. */
 export default function Home() {
   return (
-    <main {...stylex.props(styles.page, colorScheme.system)}>
+    <main {...stylex.props(styles.page)}>
       <h1 {...stylex.props(styles.heading)}>Ultima is ready</h1>
       <p {...stylex.props(styles.lead)}>
         Button, Card and Dialog are installed under ${root}components/ui. Edit ${root}app/page.tsx to start building.
