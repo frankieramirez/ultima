@@ -73,9 +73,9 @@ Sidebar and Select pass every RTL case in Chromium and Firefox; WebKit's first r
 
 ### Narrow touch known gaps
 
-One narrow touch defect is a filed issue and recorded as a known gap. Its assertion still runs in every cell, and a break is reported under `knownGaps` with its issue rather than failing the cell:
+One narrow touch gap is a filed issue and recorded as a known gap, an artifact of Firefox's touch emulation. Its assertion still runs in every cell, and a break is reported under `knownGaps` with its issue rather than failing the cell:
 
-- **Firefox backdrop dismissal, [#807](https://github.com/frankieramirez/ultima/issues/807), Firefox only.** In Firefox's touch emulation, tapping the backdrop of a modal Base UI Dialog does not dismiss it. `drawer-backdrop-dismiss` records this for the Sidebar drawer. The same tap dismisses a Popover in Firefox. Chromium and WebKit dismiss the drawer, and there the assertion fails the cell if it breaks. It needs a physical Android check before it is attributed to Ultima.
+- **Firefox backdrop dismissal, [#807](https://github.com/frankieramirez/ultima/issues/807), Firefox emulation only.** In Playwright's Firefox touch emulation, tapping the Sidebar drawer's backdrop does not dismiss it, and `drawer-backdrop-dismiss` records the break. On a physical Android phone, Firefox dismisses the drawer: the maintainer opened the Projects preview, tapped Menu, then tapped the backdrop beside the drawer, on 2026-10-12. The device and browser versions were not recorded. The emulated tap dispatches `mousedown`, `mouseup` and `click` with no microtask checkpoint between them. A Firefox mouse click and every Chromium input have one. The `mousedown` moves focus out of the popup, and Base UI's `FloatingFocusManager` marks the press as inside the popup until a microtask clears the mark. The emulated `click` reaches `useDismiss` while the mark stands, so it is ignored. Preventing the `mousedown`'s focus change lets the same emulated tap dismiss the drawer. Chromium and WebKit dismiss the drawer, and there the assertion fails the cell if it breaks.
 
 A gap leaves this list when its issue closes and its assertion passes in every engine.
 

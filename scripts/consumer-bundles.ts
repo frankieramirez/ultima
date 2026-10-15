@@ -39,7 +39,7 @@ export type KnownGap = { component: string; reason: string; issue?: string; engi
 export const KNOWN_GAPS: Partial<Record<Bundle, Partial<Record<string, KnownGap>>>> = {
   'direction-locale': RTL_EXCLUSIONS,
   'narrow-touch': {
-    'drawer-backdrop-dismiss': { component: 'sidebar', issue: '#807', engines: ['firefox'], reason: 'In Firefox touch emulation a tap on a modal Dialog\'s backdrop does not dismiss the Sidebar drawer; it needs a physical Android check.' },
+    'drawer-backdrop-dismiss': { component: 'sidebar', issue: '#807', engines: ['firefox'], reason: 'Playwright\'s Firefox touch emulation fires a tap\'s click before Base UI clears its focus-out mark, so a tap on the backdrop leaves the Sidebar drawer open. On a physical Android phone, Firefox dismisses it.' },
   },
 };
 export const knownGap = (bundle: Bundle, assertion: string, engine: Engine): KnownGap | undefined => {
