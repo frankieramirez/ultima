@@ -32,8 +32,14 @@ const styles = stylex.create({
       ':is([data-pressed])': color['--ult-color-surface-raised'],
       ':is([data-pressed]):hover': color['--ult-color-surface-raised'],
     },
+    borderColor: {
+      default: 'transparent',
+      ':is([data-pressed])': color['--ult-color-accent'],
+      ':is([data-pressed]):hover': color['--ult-color-accent'],
+    },
     borderRadius: radius['--ult-radius-sm'],
-    borderStyle: 'none',
+    borderStyle: 'solid',
+    borderWidth: border.hairline,
     boxSizing: 'border-box',
     color: {
       default: color['--ult-color-text-muted'],
@@ -51,7 +57,7 @@ const styles = stylex.create({
     paddingBlock: space['--ult-space-3'],
     paddingInline: space['--ult-space-5'],
     transitionDuration: motion['--ult-motion-fast'],
-    transitionProperty: 'background-color, color',
+    transitionProperty: 'background-color, border-color, color',
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,

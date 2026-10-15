@@ -62,7 +62,7 @@ test('every known gap and open evidence gap appears with its issue', async () =>
     expect(item.textContent).toContain(gap.engines.length === support.matrix.engines.length ? 'all engines' : engineList(gap.engines));
     if (gap.issue) expect(item.querySelector('a')?.getAttribute('href')).toBe(issueUrl(gap.issue));
   }
-  expect(support.knownGaps.filter((gap) => gap.issue).map((gap) => gap.issue)).toEqual(expect.arrayContaining(['#806', '#807']));
+  expect(support.knownGaps.filter((gap) => gap.issue).map((gap) => gap.issue)).toEqual(expect.arrayContaining(['#807']));
   const open = screen.getByRole('list', { name: 'Open evidence gaps' }).element();
   expect(open.children).toHaveLength(support.openGaps.length);
   for (const gap of support.openGaps) expect(open.textContent).toContain(gap.title);
