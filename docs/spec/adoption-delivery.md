@@ -68,7 +68,7 @@ Keep one consumer runner and one matrix.
 
 ## First-screen exercise
 
-The question is whether an unfamiliar person or agent can reach a correctly themed first screen using only public guidance.
+The question is whether an unfamiliar agent can reach a correctly themed first screen using only public guidance.
 
 ### Inputs
 
@@ -80,7 +80,7 @@ The question is whether an unfamiliar person or agent can reach a correctly them
 ### Executors
 
 - **Agent run:** a fresh coding agent with no Ultima context, given only the brief and the documented entry command. Run all three layouts for each release candidate.
-- **Human run:** someone who has not worked on Ultima, on one layout, before the first public recommendation and after any change to S7's journey.
+- **Human run:** not planned. [#775](https://github.com/frankieramirez/ultima/issues/775) was closed without a run, so no gate depends on one.
 
 ### What is recorded
 
@@ -98,7 +98,7 @@ A run passes when it has no manual interventions outside printed hand steps, no 
 ## Gates
 
 - **Pull request:** each slice runs its own acceptance plus the affected installed-consumer cases under [Gates and cost](consumer-proof.md#gates-and-cost). `smoke-install` keeps its path filter.
-- **Adoption recommendation:** S1 to S8 merged, then on one source revision: the full 54-cell matrix, all four delivery paths, `smoke-install`, the Studio pairing and parity gates, `pnpm verify release`, and passing agent runs in all three layouts. The first public recommendation also needs a passing human run.
+- **Adoption recommendation:** S1 to S8 merged, then on one source revision: the full 54-cell matrix, all four delivery paths, `smoke-install`, the Studio pairing and parity gates, `pnpm verify release`, and passing agent runs in all three layouts.
 - **Public claims:** until S9 passes, docs and README describe what each slice delivered and make no plug-and-play or "first screen in minutes" claim. Supported combinations are only those that passed. After publication, the public-domain stranger path from [the launch effort](https://github.com/frankieramirez/ultima/issues/587) reruns one agent exercise against the public host. That rerun belongs to the launch work, not to this plan.
 
 ## Compatibility and migration
