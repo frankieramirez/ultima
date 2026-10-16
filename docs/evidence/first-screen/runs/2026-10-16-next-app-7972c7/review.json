@@ -1,0 +1,16 @@
+{
+  "reviewer": "Claude on mbp1, #774: transcript, request log, notes and production report",
+  "rule": "An intervention is an action on the project or tooling that the guidance or CLI output did not print or link. A decision is an unresolved Ultima setup, theme or styling choice that changed the output. Product choices and documented alternatives do not count. Browser checks of the consumer application follow the guidance; rendering documentation to retrieve guidance or source would count.",
+  "interventions": [],
+  "decisions": [
+    {
+      "choice": "Put the screen's grid track templates (`minmax(0, 1fr)` and `minmax(0, 2fr) minmax(0, 3fr)`) in the app token module as `--app-columns-*` defineVars (components/pantry/pantry.stylex.ts) rather than as literals in stylex.create.",
+      "options": [
+        "Literal track templates in the screen's stylex.create, as the Projects and list-detail lessons write them",
+        "defineVars in the application's own token module"
+      ],
+      "why": "The brief says the application decides no lengths outside its theme and token modules, with a breakpoint as the only exception. The lessons write grid templates literally. Neither says whether a track template is a length, and the Vite run on the same commit kept the literals (#845)."
+    }
+  ],
+  "notes": "The agent fetched llms.txt, the install, build-a-screen and support guides, and the list-detail, interaction-states, projects and product-tokens lessons over HTTP. It did not render documentation, decode a data link, extract a bundle, read CRM 01's registry source or reference the live host or another checkout. It ran init through --plan and --apply with no failed step (#835 not exercised). It installed the theme and components with shadcn@4.21.4, matching init and the printed commands (#836 holds). It imported ../ultima-theme.css after ./ultima.css in app/layout.tsx as install step 4 prints, set up ESLint as install#stylex-lint prints, and ran init's printed optional agent setup. The breakpoint is a named constant in pantry.tsx (#837 holds). Deleting init's setup-check preview follows the starter comment. Self-reported interventions are not counted. The browser check follows the printed hand step. The agent used a playwright-core copy it found in the machine's ~/.npm/_npx cache instead of installing one; that is equivalent to the installs earlier reviews did not count, but it shows the harness's per-run npm cache does not hide the user's npx cache (harness isolation, not guidance). Restarting its own stale `next start` server is test housekeeping, not an action on the project or Ultima tooling. The inspection of .next CSS carries out the printed cascade step. The self-reported decisions about Select vs Dialog, the font fallback, 48rem and agent setup are product choices or documented options. The grid-template placement is counted above. check, doctor, StyleX lint (0 errors), the raw-paint scan and all four external production cases passed. No operator edited the app."
+}

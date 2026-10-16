@@ -120,6 +120,49 @@ The gate is unmet on this revision: no agent run passes, WebKit did not execute 
 | [#837](https://github.com/frankieramirez/ultima/issues/837) The brief's token-only lengths conflict with the lesson's in-file breakpoint constants | Next src (and the #810 Vite and Next root runs) |
 | [#838](https://github.com/frankieramirez/ultima/issues/838) `/tokens` fence Copy button fails axe `target-size` at the narrow viewport | `pnpm verify release` |
 
+## Reruns on `074af87` on macOS (#774)
+
+The candidate is `074af87`, after the #834 to #838 fixes and #844's single pinned shadcn version. The machine is a MacBook Pro (mbp1) on macOS 27.0.1, because pc1 could not launch WebKit. All three run-start source manifests and the release report's manifest match `4f37c6d28a8f66e38838d0df0c39272e7ee60815eacab36eba042254e81bb685`. So do the registry manifest (`31d12620…`) and the packed CLI digest (`0b144aaa…`). The executor is `claude -p` on `claude-opus-5-5`.
+
+| Run | Layout | Interventions | Decisions | Check, lint, raw paint, production | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| [2026-10-16-vite-b1c28a](runs/2026-10-16-vite-b1c28a.json) | Vite | 0 | 0 | passed | **passed** |
+| [2026-10-16-next-app-7972c7](runs/2026-10-16-next-app-7972c7.json) | Next root | 0 | 1: grid track templates moved into an app `defineVars` module (#845) | passed | failed: decisions |
+| [2026-10-16-next-src-470362](runs/2026-10-16-next-src-470362.json) | Next src | 0 | 1: the lesson's `minBlockSize: '100dvh'` dropped as a length outside a token module (#845) | passed | failed: decisions |
+
+The Vite run is the first to pass S9: Next root and Next src still fail it, so S9 remains unmet. In every run, `init`, doctor, `check`, StyleX lint (0 errors), the raw-paint scan and all four external production cases passed. No run rendered documentation, decoded a data link, extracted a bundle, read CRM 01's registry source or referenced the live host or another checkout. All three built the stock list from the list-detail lesson (#834 holds). Each used the shadcn@4.21.4 that init, Studio and the guides now all print (#836 holds). Each kept its breakpoint as a named constant in the screen file (#837 holds). Next root's init applied with no failed step, so #835 was not exercised. No run hit the Chromium socket failure.
+
+Both decisions come from one gap. The brief allows no lengths outside the theme and token modules, with a breakpoint as the only exception. The lessons write other layout values as literals in `stylex.create`, such as `minmax(0, 1fr)` track templates and `100dvh`. Vite kept the lesson's literals; Next root moved its track templates into a token module; Next src deleted `100dvh`. The reviews count each undocumented choice that changed the output.
+
+The browser check follows the install guide's printed hand step, so the reviews do not count the playwright-core it needed. Next root used a copy from the machine's `~/.npm/_npx` cache instead of installing one. That shows the per-run npm cache does not hide the user's npx cache. It is a harness isolation note, not a guidance problem.
+
+### Adoption recommendation gate
+
+`pnpm verify release` on the same tree (report `20261016T174610-16279cea`, manifest `4f37c6d2…`, no source change) failed: 35 checks passed and 6 failed. Two environment settings were needed on this Mac; neither changes the tree:
+
+- `XUL_APP_FILE` points Playwright's Firefox at a copy of its `application.ini` with `Profile=PlaywrightFirefox`, saved in the bundle's `Contents/Resources/browser/`. macOS 27 reserves `~/Library/Application Support/Firefox` for the installed Firefox, so Playwright's ad hoc signed Firefox otherwise exits with "Could not find profile folder". HOME, `XRE_PROFILE_PATH` and `-profile` do not help. Playwright passes `-app` after its own arguments, so Firefox ignores it.
+- `TMPDIR=/private/tmp/…`, because macOS's default tmpdir is a symlink, and the verification tests' fixtures under it fail (#846).
+
+Results:
+
+- **54-cell matrix:** all 54 cells executed, the 18 WebKit and 18 Firefox cells included. `consumer-bundles-next-app`, `consumer-bundles-next-src` and `consumer-elements` passed. `consumer-bundles-vite` failed 6 of its 36 cells on assertions that depend on the platform (#847). Chromium and Firefox fail RTL `select-layout`: macOS's narrower Arabic font fails the option-text midpoint heuristic. WebKit fails RTL `navigation-keyboard`: macOS WebKit's Tab key skips links. The named gaps `tabs-indicator` and `date-picker-glyphs` stay explicit.
+- **Four delivery paths:** css, stylex-subtree and cli passed in Vite, Next root and Next src. The registry path failed in all three on `axe-open` and `axe-switched-open` in Chromium: axe reports the Cinder Dialog description's contrast as incomplete (#848).
+- **`smoke-install`:** `consumer-smoke` passed.
+- **Studio pairing and parity:** `palette`, `tokens-tests` and `docs-tests` passed.
+- **`production-scenarios`:** 43 of 44 cases passed. #838's narrow `target-size` cases now pass. `site-landing.without-field` at light/desktop failed axe `color-contrast` on `.xsgp5dn > .x1vroxvg`.
+- **`tooling-tests`:** one test still fails on macOS. It assumes Linux's `/proc` when it counts a check's leftover processes (#846).
+
+The gate is unmet on this revision: Next root and Next src fail on decisions (#845), and `pnpm verify release` fails on macOS (#846, #847, #848 and the landing contrast case).
+
+### Defects filed
+
+| Defect | Found in |
+| --- | --- |
+| [#845](https://github.com/frankieramirez/ultima/issues/845) The brief's token-only lengths leave lesson literals (grid track templates, `100dvh`) unsettled | Next root, Next src |
+| [#846](https://github.com/frankieramirez/ultima/issues/846) Verification tests fail on macOS: tmpdir is a symlink, and the leftover-process test assumes `/proc` | `pnpm verify release` |
+| [#847](https://github.com/frankieramirez/ultima/issues/847) consumer-bundles RTL `select-layout` and WebKit `navigation-keyboard` fail on macOS | `pnpm verify release` |
+| [#848](https://github.com/frankieramirez/ultima/issues/848) Registry consumer proofs fail axe on macOS: the Cinder Dialog description's contrast is incomplete | `pnpm verify release` |
+
 ## Reproduce
 
 ```bash
@@ -131,3 +174,12 @@ node --experimental-strip-types scripts/first-screen.ts clean <run-dir>
 ```
 
 Run one layout at a time. A run needs Claude Code signed in, network access to npm, and Chromium for Playwright.
+
+On macOS 27, `pnpm verify release` needs Playwright's Firefox pointed away from the reserved profile folder, and a TMPDIR that is not a symlink (#846):
+
+```bash
+FF=~/Library/Caches/ms-playwright/firefox-1543/firefox/Nightly.app/Contents/Resources
+awk '{print} /^Name=Firefox$/{print "Profile=PlaywrightFirefox"}' $FF/application.ini > $FF/browser/application.ini
+mkdir -p /private/tmp/ultima-gate-tmp
+TMPDIR=/private/tmp/ultima-gate-tmp XUL_APP_FILE=$FF/browser/application.ini pnpm verify release
+```
