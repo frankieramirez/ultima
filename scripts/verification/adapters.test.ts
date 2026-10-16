@@ -6,7 +6,7 @@
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { after, describe, test } from 'node:test';
@@ -21,7 +21,8 @@ import { architecture, freshness, nodeTest, palette, typecheck, vitest, type Vit
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '../..');
-const scratch = mkdtempSync(join(tmpdir(), 'ultima-adapters-'));
+// Resolved: macOS's tmpdir is a symlink, and Vitest names test files by their real path.
+const scratch = realpathSync(mkdtempSync(join(tmpdir(), 'ultima-adapters-')));
 after(() => rmSync(scratch, { recursive: true, force: true }));
 
 const VITEST = join(root, 'packages/tokens/node_modules/vitest/vitest.mjs');

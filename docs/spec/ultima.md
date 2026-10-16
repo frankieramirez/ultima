@@ -3106,6 +3106,32 @@ $ npx ultima-design diff sidebar
 
 `diff [item…]` prints a unified diff from the local file to the served file as it would be installed into this project: import specifiers rewritten to the consumer's aliases, `"use client"` dropped when `components.json` sets `rsc: false` and shadcn would drop it (only a directive with no semicolon, since shadcn matches the statement's text with the semicolon included), and the served stamp in place. With no arguments it covers every file that is not `current`. A named item that is `current` prints `<item>: current`, even when its text differs by formatting or comments, because those do not count. The diff is two-way. A three-way view needs the content the consumer installed, which nothing serves, so it waits on `update`. Exit codes match `status`: 0 when the output completes, 3 when it cannot be produced, and 2 when a named item is not one the registry serves or has installed.
 
+### Specimen
+
+Decided on [Decide whether the consumer app gets a live specimen of its installed items](https://github.com/frankieramirez/ultima/issues/854). Status: accepted for implementation after [#774](https://github.com/frankieramirez/ultima/issues/774) closes. Until then nothing below ships, and `init`'s preview, `/llms.txt`, Build a screen and the consumer skill are unchanged.
+
+**Why it exists.** The consumer skill asks an agent to check production rendering in both modes and with a popup open before it hands work back. The docs site shows every item live, but in Neutral and outside the product. `init`'s preview shows four items and never changes. An agent that wants to see the product's own theme on everything the product installed has to build that scene itself. `specimen` builds it on request.
+
+**The command.** `specimen` prints one React module to standard output. `specimen --write <path>` writes it to a path inside the project root instead and prints the mount step. Nothing writes or refreshes the file except the consumer running the command again. It is not a managed file: it carries no stamp, `status` does not list it, and `install` and `uninstall` never touch it. It is consumer source like `init`'s preview, under the [ADR 0005 amendment of 2026-10-16](../adr/0005-hosted-agent-guidance.md#amendment-2026-10-16-live-specimen). `--write` refuses an existing file and exits 2, unless `--force` is given. The command is offline: it reads the installed items through the consumer scope under **Package and engine** and the bundled catalogue, as `check` does.
+
+**What it renders.** One section per installed React item that `status` would list, sorted by catalogue order, each headed with the item's title and holding every docs demo of that item. The docs demos are the source, the same files the item's docs page renders, so the specimen and the docs never drift and there is no second specimen to maintain. The CLI build bundles them with the catalogue and rewrites their imports to the consumer's aliases, as `diff` rewrites a served file. A demo whose imports name an item that is not installed, or a package the consumer's `package.json` does not declare, is left out, and the module's header comment names it and the missing import. Items of other kinds (setup, tokens, `lib`, recipes, blocks and elements) are not rendered and the header lists them. The consumer-proof runner's scene stays its own fixture: it proves a fixed composition across the support matrix, while the specimen follows whatever this project installed.
+
+**Theme and portals.** The module renders under the theme the product applies to the document, with no boundary of its own, so a popup that Base UI portals to `<body>` reads the same theme as its trigger. Both modes come from the document: the agent emulates the colour-scheme preference, or toggles the product's `theme-mode` when it is installed. A product that themes only a subtree mounts the module inside that subtree's `ThemeScope`. The demos' portals then need its container, so in that case `specimen` emits each portalled part with `container={useThemeScopeContainer()}` when `theme-scope` is installed, and the header says so.
+
+**Mounting.** The command never edits a router, layout or entry file. The mount step it prints names the file the consumer edits and gates the route on an environment variable the consumer sets for local and preview builds, `VITE_ULTIMA_SPECIMEN` for Vite and `ULTIMA_SPECIMEN` for Next. An agent can then check a local production build with the specimen in it while the deployed build leaves it out. In Next the module starts with `'use client'` and the printed step adds a server `page.tsx` that renders it.
+
+**Exits.** 0 when the module was printed or written, 2 for an invalid invocation or an existing file without `--force`, and 3 under the consumer scope's own incomplete-run conditions. A left-out demo never changes the exit code.
+
+| Scenario | Expected |
+| --- | --- |
+| A Vite project with Button, Dialog and Select installed runs `specimen --write src/ultima-specimen.tsx` | One section per item with every docs demo, imports on the consumer's aliases, the gated mount step printed, `src/App.tsx` unchanged. |
+| The same command runs again | Exit 2 and nothing written; with `--force` the file is replaced. |
+| A Next `src` project runs `specimen --write src/app/specimen.tsx` | The module starts with `'use client'`; the printed step adds a gated server `page.tsx`; no route is created. |
+| A demo imports `@phosphor-icons/react` and the project does not declare it | That demo is left out and named in the header comment; the run exits 0. |
+| The production build is served with the environment variable set, in system dark and light | Every section paints the product's resolved tokens, an opened Dialog or Select reads the same theme as its trigger, and axe reports no violation with the popup closed and open. |
+| The production build is served without the variable | The specimen route is absent from the output. |
+| `status`, `install` and `uninstall` run after the file exists | None lists, rewrites or removes it. |
+
 ### Skill
 
 Decided on [What the consumer skill says and how it is versioned](https://github.com/frankieramirez/ultima/issues/475). The consumer skill is the one skill Ultima puts in a consumer's repository. It tells an agent when to fetch the hosted guidance and which CLI command to run at each step. It holds no convention itself.
