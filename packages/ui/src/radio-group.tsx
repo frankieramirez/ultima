@@ -3,7 +3,7 @@
 import { Radio } from '@base-ui/react/radio';
 import { RadioGroup as BaseRadioGroup } from '@base-ui/react/radio-group';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
@@ -17,16 +17,25 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
   },
+  // Checkbox's treatment: the sunken fill, a step on hover and press with the checked steps in their own keys, and a
+  // checked border that follows the fill unless the item is invalid.
   item: {
     alignItems: 'center',
     appearance: 'none',
     backgroundColor: {
-      default: 'transparent',
+      default: color['--ult-color-surface-sunken'],
+      ':hover:not([data-disabled])': color['--ult-color-surface-hover'],
+      ':active:not([data-disabled])': color['--ult-color-surface-active'],
       ':is([data-checked])': color['--ult-color-accent'],
+      ':is([data-checked]):hover:not([data-disabled])': color['--ult-color-accent-hover'],
+      ':is([data-checked]):active:not([data-disabled])': color['--ult-color-accent-active'],
     },
     borderColor: {
       default: color['--ult-color-border-strong'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger-border'],
+      ':is([data-checked]):not([aria-invalid="true"], [data-invalid])': color['--ult-color-accent'],
+      ':is([data-checked]):not([aria-invalid="true"], [data-invalid]):hover:not([data-disabled])': color['--ult-color-accent-hover'],
+      ':is([data-checked]):not([aria-invalid="true"], [data-invalid]):active:not([data-disabled])': color['--ult-color-accent-active'],
     },
     borderRadius: radius['--ult-radius-full'],
     borderStyle: 'solid',
@@ -36,12 +45,17 @@ const styles = stylex.create({
     display: 'inline-flex',
     flexShrink: 0,
     fontFamily: font['--ult-font-sans'],
+    // The dot is drawn in a `1em` box, so the item sets its own size rather than inheriting the page's.
+    fontSize: text['--ult-text-5'],
     height: space['--ult-space-6'],
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
     opacity: { default: 1, ':is([data-disabled])': 0.5 },
     padding: 0,
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'background-color, border-color',
+    transitionTimingFunction: easing.standard,
     width: space['--ult-space-6'],
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
@@ -67,7 +81,7 @@ function Dot() {
       height="1em"
       aria-hidden="true"
     >
-      <circle cx="12" cy="12" r="4" fill="currentColor" />
+      <circle cx="12" cy="12" r="5" fill="currentColor" />
     </svg>
   );
 }

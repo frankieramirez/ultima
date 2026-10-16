@@ -11,9 +11,12 @@ const travel = `calc(${space['--ult-space-10']} - ${space['--ult-space-7']} - 2 
 const styles = stylex.create({
   root: {
     appearance: 'none',
+    // The checked steps carry the checked condition in their own key, because StyleX ranks `:hover` above it.
     backgroundColor: {
       default: color['--ult-color-border-strong'],
       ':is([data-checked])': color['--ult-color-accent'],
+      ':is([data-checked]):hover:not([data-disabled])': color['--ult-color-accent-hover'],
+      ':is([data-checked]):active:not([data-disabled])': color['--ult-color-accent-active'],
     },
     border: 'none',
     borderRadius: radius['--ult-radius-full'],
