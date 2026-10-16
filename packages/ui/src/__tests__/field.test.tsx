@@ -4,7 +4,7 @@
  * 2. The name resolves: role textbox, named by Field.Label.
  * 3. The focus ring lands where the contract says: on none of Field's parts; the control brings its own.
  * 4. The primitive is still wired: Description and Error merge into aria-describedby; aria-invalid / data-invalid reach the control.
- * 5. Documented state drives its style: invalid paints the control's danger border; disabled + invalid keeps data-invalid.
+ * 5. Documented state drives its style: invalid paints the control's danger border; disabled + invalid keeps data-invalid; disabled dims Label and Description.
  * 6. Typecheck passes: className is rejected on every styled part.
  * 7. Behavior this component wires itself: none, because every interaction is the primitive's or a style on a data-* attribute.
  * 8. CSS the primitive reads: none, because Field has no clause-2 declarations.
@@ -110,6 +110,50 @@ test('disabled while invalid keeps data-invalid and the danger border', async ()
   expect(broken).toHaveAttribute('data-disabled');
   expect(getComputedStyle(broken).borderTopColor).not.toBe(getComputedStyle(valid).borderTopColor);
   await expect.element(screen.getByText('Still shown.')).toBeVisible();
+});
+
+test('a disabled field dims its label and description with the control', async () => {
+  const screen = await render(
+    <>
+      <Field.Root name="live">
+        <Field.Label>Live</Field.Label>
+        <Input />
+        <Field.Description>Live help.</Field.Description>
+      </Field.Root>
+      <Field.Root name="off" disabled>
+        <Field.Label>Off</Field.Label>
+        <Input />
+        <Field.Description>Off help.</Field.Description>
+      </Field.Root>
+    </>,
+  );
+  expect(getComputedStyle(screen.getByText('Live', { exact: true }).element()).opacity).toBe('1');
+  expect(getComputedStyle(screen.getByText('Live help.').element()).opacity).toBe('1');
+  expect(getComputedStyle(screen.getByText('Off', { exact: true }).element()).opacity).toBe('0.5');
+  expect(getComputedStyle(screen.getByText('Off help.').element()).opacity).toBe('0.5');
+});
+
+test('a label that wraps keeps its lines apart', async () => {
+  const screen = await render(
+    <Field.Root name="long">
+      <Field.Label>Where should we send invoices and payment receipts?</Field.Label>
+      <Input />
+    </Field.Root>,
+  );
+  const label = getComputedStyle(screen.getByText(/invoices/).element());
+  expect(Number.parseFloat(label.lineHeight)).toBeGreaterThan(Number.parseFloat(label.fontSize));
+});
+
+test('Item puts the control on the first line of a wrapping label', async () => {
+  const screen = await render(
+    <Field.Root name="terms">
+      <Field.Item data-testid="item">
+        <Input type="checkbox" />
+        <Field.Label>I agree to the terms of service and the data processing addendum</Field.Label>
+      </Field.Item>
+    </Field.Root>,
+  );
+  expect(getComputedStyle(screen.getByTestId('item').element()).alignItems).toBe('flex-start');
 });
 
 test('public prop types reject className', () => {
