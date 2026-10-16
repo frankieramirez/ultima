@@ -49,18 +49,15 @@ const styles = stylex.create({
 });
 
 // A disabled button still matches `:hover` and `:active`, so each pointer value is restated
-// inside `[data-disabled]` at its resting value: the dimmed button does not answer the pointer.
+// beside `[data-disabled]` at its resting value: the dimmed button does not answer the pointer.
 const solid = stylex.create({
   accent: {
     backgroundColor: {
       default: color['--ult-color-accent'],
       ':hover': color['--ult-color-accent-hover'],
       ':active': color['--ult-color-accent-active'],
-      ':is([data-disabled])': {
-        default: color['--ult-color-accent'],
-        ':hover': color['--ult-color-accent'],
-        ':active': color['--ult-color-accent'],
-      },
+      ':is([data-disabled]):hover': color['--ult-color-accent'],
+      ':is([data-disabled]):active': color['--ult-color-accent'],
     },
     borderColor: 'transparent',
     color: color['--ult-color-accent-contrast'],
@@ -70,11 +67,8 @@ const solid = stylex.create({
       default: color['--ult-color-danger'],
       ':hover': color['--ult-color-danger-hover'],
       ':active': color['--ult-color-danger-active'],
-      ':is([data-disabled])': {
-        default: color['--ult-color-danger'],
-        ':hover': color['--ult-color-danger'],
-        ':active': color['--ult-color-danger'],
-      },
+      ':is([data-disabled]):hover': color['--ult-color-danger'],
+      ':is([data-disabled]):active': color['--ult-color-danger'],
     },
     borderColor: 'transparent',
     color: color['--ult-color-danger-contrast'],
@@ -87,7 +81,8 @@ const outline = stylex.create({
       default: 'transparent',
       ':hover': color['--ult-color-surface-hover'],
       ':active': color['--ult-color-surface-active'],
-      ':is([data-disabled])': { default: 'transparent', ':hover': 'transparent', ':active': 'transparent' },
+      ':is([data-disabled]):hover': 'transparent',
+      ':is([data-disabled]):active': 'transparent',
     },
     borderColor: color['--ult-color-border'],
     color: color['--ult-color-text'],
@@ -96,7 +91,7 @@ const outline = stylex.create({
     backgroundColor: {
       default: 'transparent',
       ':hover': color['--ult-color-danger-subtle'],
-      ':is([data-disabled])': { default: 'transparent', ':hover': 'transparent' },
+      ':is([data-disabled]):hover': 'transparent',
     },
     borderColor: color['--ult-color-danger-border'],
     color: color['--ult-color-danger-text'],
@@ -109,20 +104,21 @@ const ghost = stylex.create({
       default: 'transparent',
       ':hover': color['--ult-color-surface-hover'],
       ':active': color['--ult-color-surface-active'],
-      ':is([data-disabled])': { default: 'transparent', ':hover': 'transparent', ':active': 'transparent' },
+      ':is([data-disabled]):hover': 'transparent',
+      ':is([data-disabled]):active': 'transparent',
     },
     borderColor: 'transparent',
     color: {
       default: color['--ult-color-text-muted'],
       ':hover': color['--ult-color-text'],
-      ':is([data-disabled])': { default: color['--ult-color-text-muted'], ':hover': color['--ult-color-text-muted'] },
+      ':is([data-disabled]):hover': color['--ult-color-text-muted'],
     },
   },
   danger: {
     backgroundColor: {
       default: 'transparent',
       ':hover': color['--ult-color-danger-subtle'],
-      ':is([data-disabled])': { default: 'transparent', ':hover': 'transparent' },
+      ':is([data-disabled]):hover': 'transparent',
     },
     borderColor: 'transparent',
     color: color['--ult-color-danger-text'],

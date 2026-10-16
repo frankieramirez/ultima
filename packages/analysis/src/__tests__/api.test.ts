@@ -36,18 +36,18 @@ describe('ULT-API-001', () => {
   test('rejects public className and a native style on a styled wrapper', () => {
     const report = run(mutate(BUTTON, [BUTTON_PROPS, 'type ButtonProps = ComponentProps<typeof BaseButton> & {']));
     assert.deepEqual(only(report, 'ULT-API-001'), [
-      { ruleId: 'ULT-API-001', file: BUTTON, line: 158, column: 17, symbol: 'Button', target: 'className' },
-      { ruleId: 'ULT-API-001', file: BUTTON, line: 158, column: 17, symbol: 'Button', target: 'style' },
+      { ruleId: 'ULT-API-001', file: BUTTON, line: 154, column: 17, symbol: 'Button', target: 'className' },
+      { ruleId: 'ULT-API-001', file: BUTTON, line: 154, column: 17, symbol: 'Button', target: 'style' },
     ]);
     assert.match(report.diagnostics.find((diagnostic) => diagnostic.target === 'style')?.message ?? '', /not the StyleX slot/);
   });
 
   test('rejects an index signature and any props, which defeat every other check', () => {
     assert.deepEqual(only(run(mutate(BUTTON, [BUTTON_PROPS, 'type ButtonProps = PartProps<ComponentProps<typeof BaseButton>> & { [prop: string]: unknown;'])), 'ULT-API-001'), [
-      { ruleId: 'ULT-API-001', file: BUTTON, line: 158, column: 17, symbol: 'Button', target: 'props' },
+      { ruleId: 'ULT-API-001', file: BUTTON, line: 154, column: 17, symbol: 'Button', target: 'props' },
     ]);
     assert.deepEqual(only(run(mutate(BUTTON, ['sizes[size], style)} />;\n}', 'sizes[size], style)} />;\n}\n'], ['style, ...props }: ButtonProps)', 'style, ...props }: any)'])), 'ULT-API-001'), [
-      { ruleId: 'ULT-API-001', file: BUTTON, line: 158, column: 17, symbol: 'Button', target: 'props' },
+      { ruleId: 'ULT-API-001', file: BUTTON, line: 154, column: 17, symbol: 'Button', target: 'props' },
     ]);
   });
 
@@ -60,7 +60,7 @@ describe('ULT-API-001', () => {
         "import type { PartProps, StyleProp } from '@ultima/ui/lib/component';",
       ]),
     );
-    assert.deepEqual(only(widened, 'ULT-API-001'), [{ ruleId: 'ULT-API-001', file: BUTTON, line: 158, column: 17, symbol: 'Button', target: 'style' }]);
+    assert.deepEqual(only(widened, 'ULT-API-001'), [{ ruleId: 'ULT-API-001', file: BUTTON, line: 154, column: 17, symbol: 'Button', target: 'style' }]);
   });
 
   test('checks render and ref by part category', () => {
@@ -90,21 +90,21 @@ describe('ULT-API-001', () => {
 describe('ULT-API-002', () => {
   test("rejects the caller's slot moved before the part's defaults", () => {
     const report = run(mutate(BUTTON, [BUTTON_RENDER, '<BaseButton {...props} {...stylex.props(style, styles.root, variants[variant][tone], sizes[size])} />']));
-    assert.deepEqual(located(report), [{ ruleId: 'ULT-API-002', file: BUTTON, line: 159, column: 50, symbol: 'Button', target: 'style' }]);
+    assert.deepEqual(located(report), [{ ruleId: 'ULT-API-002', file: BUTTON, line: 155, column: 50, symbol: 'Button', target: 'style' }]);
   });
 
   test('rejects a later spread or class assignment that discards the merged result', () => {
     const spread = run(mutate(BUTTON, [BUTTON_RENDER, '<BaseButton {...stylex.props(styles.root, variants[variant][tone], sizes[size], style)} {...props} />']));
-    assert.deepEqual(located(spread), [{ ruleId: 'ULT-API-002', file: BUTTON, line: 159, column: 98, symbol: 'Button', target: 'style' }]);
+    assert.deepEqual(located(spread), [{ ruleId: 'ULT-API-002', file: BUTTON, line: 155, column: 98, symbol: 'Button', target: 'style' }]);
     const className = run(mutate(BUTTON, [BUTTON_RENDER, `${BUTTON_RENDER.slice(0, -3)} className="later" />`]));
-    assert.deepEqual(located(className), [{ ruleId: 'ULT-API-002', file: BUTTON, line: 159, column: 109, symbol: 'Button', target: 'style' }]);
+    assert.deepEqual(located(className), [{ ruleId: 'ULT-API-002', file: BUTTON, line: 155, column: 109, symbol: 'Button', target: 'style' }]);
     const inProps = run(mutate(CARD, ['props: { ...props, ...stylex.props(styles.root, style) }', 'props: { ...stylex.props(styles.root, style), ...props }']));
     assert.deepEqual(only(inProps, 'ULT-API-002').map((entry) => entry.symbol), ['Root']);
   });
 
   test('rejects a slot destructured and dropped, or never destructured at all', () => {
     const dropped = run(mutate(BUTTON, [BUTTON_RENDER, '<BaseButton {...props} {...stylex.props(styles.root, variants[variant][tone], sizes[size])} />']));
-    assert.deepEqual(located(dropped), [{ ruleId: 'ULT-API-002', file: BUTTON, line: 158, column: 68, symbol: 'Button', target: 'style' }]);
+    assert.deepEqual(located(dropped), [{ ruleId: 'ULT-API-002', file: BUTTON, line: 154, column: 68, symbol: 'Button', target: 'style' }]);
     const whole = run({ [SEPARATOR]: fixture('api/undestructured.tsx') });
     assert.deepEqual(located(whole), [{ ruleId: 'ULT-API-002', file: SEPARATOR, line: 16, column: 20, symbol: 'Separator', target: 'style' }]);
   });
