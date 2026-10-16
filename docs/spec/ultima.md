@@ -2893,6 +2893,29 @@ The report states `match` only for a supported linked draft and outputs whose re
 | Network unavailable with pinned local CLI | Local discovery and checks run; hosted lookup remains unverified. |
 | Regeneration changes cascade, reduced motion, fonts or portal inheritance | Production assertions catch the regression using the existing installed-consumer fixture. |
 
+#### Record product patterns
+
+Decided on [Decide how a consumer records its own product patterns for the next agent](https://github.com/frankieramirez/ultima/issues/853). Ultima's guidance covers Ultima's components, blocks, recipes and lessons. It can never cover the compositions a product builds from them, so an agent working in that product records them where the next agent reads first: the product's own `DESIGN.md`.
+
+The record is a `## Patterns` section in the application root's `DESIGN.md`, outside any generated region. Exports do not seed it; the first agent to record a pattern adds the heading at the end of the document. Each entry is one list item naming the source path, what the pattern is for, and the Ultima items it composes, for example: `` - `src/components/pantry-row.tsx`: one inventory row with its stock status and edit action. Composes Card, Badge and Button. `` An entry names files and purposes only. Values stay in tokens and the theme, and conventions stay hosted.
+
+Read the section during discovery, before choosing what to author. A recorded pattern that fits comes before every step of Build a screen's ladder: reuse or extend it rather than composing a second version. When the recorded file no longer exists or no longer matches its entry, report the stale entry and fix it only in a task that changes that pattern.
+
+**What an agent may write.** Add an entry when the task creates a composition in the consumer's source that another screen can reuse: an exported component, a layout used on more than one route, or one the user names as shared. A one-off screen gets no entry. Change or remove an entry only in the task that changes, moves or deletes its file. Every other byte of the document stays intact, including other entries and the generated region; an entry is consumer prose, so regenerating the theme region preserves it. When the application has no `DESIGN.md`, do not create one to hold patterns: name the reusable files in the task report, and offer the document as the discovery workflow above says. Project instructions that name a different place for design notes take precedence.
+
+**Guidance ownership.** This subsection owns the record. Build a screen's ladder opens with the reuse step, which carries the consumer's rules to `/guides/build-a-screen.md`, and the `/llms.txt` Build a screen summary names the step first. `/llms.txt` gets no separate section: it sits at its 64 KiB limit, and the guide it links holds the full step. The pointer skill already reads local `DESIGN.md` before the first UI edit and gains no prose. Exporters, the CLI and `doctor --theme` are unchanged: the section sits outside the generated region they digest, and no tool writes it.
+
+**Required verification scenarios for implementation.** These are acceptance cases, not reports of checks run by this decision session.
+
+| Scenario | Required observation |
+| --- | --- |
+| A task builds an exported component the brief says other screens will use, and `DESIGN.md` exists | One entry under `## Patterns` names its path, purpose and composed items; no other byte of the document changes. |
+| A later task needs the same composition | The agent reads the entry and reuses or extends that file rather than writing a second version. |
+| A one-off screen | No entry is added. |
+| The application has no `DESIGN.md` | No document is created; the report names the reusable files. |
+| The theme region is regenerated after entries exist | The entries survive byte for byte and `doctor --theme` still matches. |
+| An entry names a file that was deleted | The agent reports the stale entry and leaves it unless the task changes that pattern. |
+
 ### The authoring skill
 
 A component-authoring skill exists, named `forge`, and it lives in this repository at `skills/forge/SKILL.md` rather than in mana.
