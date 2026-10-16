@@ -7,7 +7,7 @@ This directory holds the evidence for [Run the first-screen exercise with fresh 
 - [`brief.md`](brief.md): the fixed product brief. Larder, a pantry inventory screen, with the brand color `#A3237F`. Its accent hue (342) is at least 46 degrees from every preset's accent and action hue. The bound docs test checks that gap and the screen's required parts.
 - The candidate's docs build, registry, Theme Studio worker and packed CLI, served by [`scripts/first-screen.ts`](../../../scripts/first-screen.ts) at a loopback origin that stands in for the public host. Every `https://ultima.systems` in a served page, registry item and the CLI bundle reads as that origin. The exception is the generated DESIGN.md link: the theme item and the CLI's freshness check both digest that text, so it stays verbatim. Unmatched page paths get `index.html`, as Cloudflare Pages serves a build with no `404.html`. `/npm/` answers `ultima-design` with the candidate tarball and redirects every other package to npm, so `npx ultima-design@latest` resolves to the candidate.
 - The theme: the harness opens the served Theme Studio and starts from Neutral. It enters the brand as the Accent seed, generates the Accent palette, sets the accent fill to Hue, then copies Export theme's URL install command. The spec lists the Studio theme as an input. An agent without a browser cannot operate Studio, so the harness makes it and the prompt hands the agent the copied command.
-- The executor: Claude Code `claude -p` in `--safe-mode` with `--strict-mcp-config` and `--permission-mode auto`. It starts in a new empty directory under `~/.cache/ultima-first-screen/<run-id>/work`, outside every checkout. Safe mode loads no CLAUDE.md, memory, skill, plugin, hook or MCP server. Settings deny WebSearch, the live host and reads of the machine's other checkouts. Each run has its own npm cache and TMPDIR. Each prompt (`<run-id>/prompt.md`) is the brief plus the host, the documented `init` command for the layout and Studio's install command.
+- The executor: Claude Code `claude -p` in `--safe-mode` with `--strict-mcp-config` and `--permission-mode auto`. It starts in a new empty directory under `~/.cache/ultima-first-screen/<run-id>/work`, outside every checkout. Safe mode loads no CLAUDE.md, memory, skill, plugin, hook or MCP server. Settings deny WebSearch, the live host and reads of the machine's other checkouts. Each run has its own npm cache, and its own TMPDIR at `/tmp/ultima-fs-<suffix>`, short enough for Chromium's singleton socket. Each prompt (`<run-id>/prompt.md`) is the brief plus the host, the documented `init` command for the layout and Studio's install command.
 
 ## What each run records
 
@@ -83,6 +83,42 @@ Each run fetched the install, update, screen-building, support and Recipes expor
 All three runs passed `check`, StyleX lint, the raw-paint scan and every external production assertion. The operator reviews retain separate problems: Next font cleanup and route-type regeneration (#811), the selected-row workaround (#813), a Chromium Unix socket path failure under the long exercise TMPDIR, and an ambiguity between the brief's token-only lengths and the documented media-condition exception. Vite and Next src both inspected CRM 01's raw registry source. Vite also used an undocumented help probe, and its nested pressed-hover selector needed a lint repair. The self-reports remain intact; reviews exclude product choices and documented alternatives from their counts.
 
 The production Markdown check fetched 21 documents with zero failures and verified source parity and reachable guidance anchors. An independent check matched all 21 projected copy-file occurrences against their destination paths and complete source bytes in the production artifacts. Installed-consumer `copy-bundles` checks passed in Vite, Next root and Next src. These checks establish the local candidate's export and consumer behavior. The full S9 gate remains unmet. The deployed domain and publication remain unverified.
+
+## Reruns on `1eefbfa` (#774)
+
+The candidate is `1eefbfa`, after `8c8721f` and after the #806, #807, #811, #812 and #813 fixes. All three run-start source manifests and the release report's manifest match `1862afc2edd94398cbaf0aa72cfa5ca30e3c8c00fa3ecb1154ecdb9b89fe140f`. So do the registry manifest (`f1229628…`) and the packed CLI digest (`487cae1c…`). The executor is `claude -p` on `claude-opus-5-5`.
+
+| Run | Layout | Interventions | Decisions | Check, lint, raw paint, production | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| [2026-10-16-vite-0106c2](runs/2026-10-16-vite-0106c2.json) | Vite | 1: read CRM 01's raw registry source (#834) | 0 | passed | failed: interventions |
+| [2026-10-16-next-app-07d7af](runs/2026-10-16-next-app-07d7af.json) | Next root | 3: init retry and staging cleanup after ECONNRESET (#835), CRM 01 source (#834), Chromium TMPDIR workaround (harness, fixed here) | 0 | passed | failed: interventions |
+| [2026-10-16-next-src-b9f58c](runs/2026-10-16-next-src-b9f58c.json) | Next src | 2: pinned shadcn@4.21.4 to match init (#836), Chromium TMPDIR workaround (harness, fixed here) | 1: breakpoint in a token module (#837) | passed | failed: interventions, decisions |
+
+No layout passes, so S9 is still unmet. In every run, `init`, doctor, `check`, StyleX lint (0 errors), the raw-paint scan and all four external production cases passed. No run rendered documentation, decoded a data link, extracted a bundle or referenced the live host. The #811, #812 and #813 problems did not recur: init's Next layout loads no Geist and the agents made no selected-row workaround.
+
+The browser check follows the install guide's printed hand step, so installing playwright-core for it is not counted. Each Chromium TMPDIR workaround is counted. The harness had set TMPDIR under the run directory, which overflows Chromium's socket path; runs from this revision of the harness use a short `/tmp` directory instead. The Vite run's browser check did not hit the failure.
+
+### Adoption recommendation gate
+
+`pnpm verify release` on the same tree (report `20261016T143524-b5418ac6`) failed: 36 checks passed and 5 failed.
+
+- **54-cell matrix:** `consumer-bundles-vite` (36 cells), `consumer-bundles-next-app` (6), `consumer-bundles-next-src` (6) and `consumer-elements` (6). All 18 Chromium cells and all 18 Firefox cells passed. The 18 WebKit cells could not launch on this machine because Playwright's WebKit is missing host libraries. The runner reports those cells as not executed, so the checks are incomplete. The named gaps stay explicit in the Vite report: `tabs-indicator` and `date-picker-glyphs` in the direction-locale cells, and Firefox `drawer-backdrop-dismiss` (#807, emulation-only per #818). The Installed consumer proof workflow on `1eefbfa` ([run 38915259426](https://github.com/frankieramirez/ultima/actions/runs/38915259426)) ran every cell, WebKit included, and passed. That CI run is a different execution of the same commit, not this gate's run.
+- **Four delivery paths:** css, stylex-subtree, registry and cli passed in Vite, Next root and Next src.
+- **`smoke-install`:** `consumer-smoke` passed.
+- **Studio pairing and parity:** `palette`, `tokens-tests` and `docs-tests` passed.
+- **`production-scenarios`:** 42 of 44 cases passed. Both narrow `site-navigation.route-and-mode` cases fail axe `target-size` on the `/tokens` page's `brand-boundary.tsx` Copy button (#838). A second local `test:production` failed the same way, while CI's production job on `1eefbfa` passed.
+
+The gate is unmet on this revision: no agent run passes, WebKit did not execute locally, and #838 fails.
+
+### Defects filed
+
+| Defect | Found in |
+| --- | --- |
+| [#834](https://github.com/frankieramirez/ultima/issues/834) No selectable list-and-detail pattern in the guidance; agents read CRM 01's raw registry source | Vite, Next root (and Next src without the read) |
+| [#835](https://github.com/frankieramirez/ultima/issues/835) init on a new directory prints no retry or cleanup step after a failed install step | Next root |
+| [#836](https://github.com/frankieramirez/ultima/issues/836) Studio and the guides print unversioned shadcn while init pins shadcn@4.21.4 | Next src |
+| [#837](https://github.com/frankieramirez/ultima/issues/837) The brief's token-only lengths conflict with the lesson's in-file breakpoint constants | Next src (and the #810 Vite and Next root runs) |
+| [#838](https://github.com/frankieramirez/ultima/issues/838) `/tokens` fence Copy button fails axe `target-size` at the narrow viewport | `pnpm verify release` |
 
 ## Reproduce
 

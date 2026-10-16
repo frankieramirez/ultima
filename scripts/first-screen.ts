@@ -20,7 +20,7 @@ import { createReadStream, existsSync, readFileSync, realpathSync } from 'node:f
 import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { homedir } from 'node:os';
-import { extname, join, relative, resolve } from 'node:path';
+import { basename, extname, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { chromium } from 'playwright';
@@ -367,11 +367,14 @@ export async function measure(dir: string, env: NodeJS.ProcessEnv = process.env)
   return record;
 }
 
+/** The run's own TMPDIR. Chromium puts its singleton socket there, and a path under the run directory is too long for one. */
+const shortTmp = (runId: string) => join('/tmp', `ultima-fs-${runId.slice(runId.lastIndexOf('-') + 1)}`);
+
 async function exercise(layout: Layout, options: { root: string; model?: string; timeout: number }) {
   const runId = `${new Date().toISOString().slice(0, 10)}-${layout}-${randomBytes(3).toString('hex')}`;
   const dir = join(options.root, runId);
   const work = join(dir, 'work');
-  const tmp = join(dir, 'tmp');
+  const tmp = shortTmp(runId);
   for (const path of [work, tmp, join(dir, 'npm-cache'), join(dir, 'serve')]) await mkdir(path, { recursive: true });
   const source = hashSource(repository);
   const brief = await readFile(join(repository, BRIEF), 'utf8');
@@ -476,7 +479,7 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(repository, 'scripts
   } else if (command === 'clean' && rest[0]) {
     await rm(resolve(rest[0], 'work'), { recursive: true, force: true });
     await rm(resolve(rest[0], 'npm-cache'), { recursive: true, force: true });
-    await rm(resolve(rest[0], 'tmp'), { recursive: true, force: true });
+    await rm(shortTmp(basename(resolve(rest[0]))), { recursive: true, force: true });
   } else {
     console.error('usage: first-screen.ts serve [--port n] | studio | run --layout vite|next-app|next-src [--root dir] [--model name] [--timeout minutes] | measure <run-dir> | review <record.json> <review.json> | retain <run-dir> | clean <run-dir>');
     process.exit(2);

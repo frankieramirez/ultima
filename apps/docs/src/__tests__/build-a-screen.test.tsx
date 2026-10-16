@@ -7,6 +7,7 @@ import { render } from 'vitest-browser-react';
 
 import { productDraft } from '../build-a-screen';
 import InteractionStates from '../examples/complete-screen/interaction-states';
+import ListDetail from '../examples/complete-screen/list-detail';
 import StyleOverrides from '../examples/complete-screen/style-overrides';
 import { blocks } from '../generated/blocks';
 import { compositionExamples, recipeSources } from '../generated/recipes';
@@ -22,6 +23,7 @@ const LESSONS = [
   'Typography',
   'Component style overrides',
   'Interaction states',
+  'Selectable list and detail',
   'Product semantic tokens',
   'Adapt an existing block',
 ];
@@ -34,7 +36,7 @@ function section(title: string): Element[] {
   return nodes;
 }
 
-test('the guide publishes the six inventory lessons, each under its anchor with its derived install command', async () => {
+test('the guide publishes the seven inventory lessons, each under its anchor with its derived install command', async () => {
   const screen = await mount();
   await expect.element(screen.getByRole('heading', { name: 'Build a screen', level: 1 })).toBeVisible();
   expect(compositionExamples.map(({ title }) => title)).toEqual(LESSONS);
@@ -259,4 +261,31 @@ test('interaction states are each reached by real input', async () => {
   await expect.element(screen.getByRole('dialog')).not.toBeInTheDocument();
   await expect.element(status).toHaveTextContent('Revoked 1 pending invite.');
   await expect.element(review).toHaveFocus();
+});
+
+test('the list selection drives the detail pane from the keyboard, and the detail action updates the row', async () => {
+  const screen = await render(<ListDetail />);
+  const list = screen.getByRole('group', { name: 'Requests' });
+  const first = list.getByRole('button', { name: 'Invoice shows the wrong tax rate', exact: true });
+  const second = list.getByRole('button', { name: 'Add a second billing contact', exact: true });
+  await expect.element(first).toHaveAttribute('aria-pressed', 'true');
+  await expect.element(screen.getByRole('region', { name: 'Invoice shows the wrong tax rate' })).toBeVisible();
+  expect(first.element().getAttribute('aria-describedby')!.split(/\s+/).map((id) => document.getElementById(id)?.textContent)).toEqual(['Ada Park, 9:42', 'Open']);
+
+  first.element().focus();
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.element(second).toHaveFocus();
+  await userEvent.keyboard('{Enter}');
+  await expect.element(second).toHaveAttribute('aria-pressed', 'true');
+  await expect.element(first).toHaveAttribute('aria-pressed', 'false');
+  const detail = screen.getByRole('region', { name: 'Add a second billing contact' });
+  await expect.poll(() => detail.element().textContent).toContain('Please send copies of every invoice');
+
+  // Pressing the selected row again keeps it selected rather than emptying the detail.
+  await userEvent.keyboard('{Enter}');
+  await expect.element(second).toHaveAttribute('aria-pressed', 'true');
+
+  await userEvent.click(detail.getByRole('button', { name: 'Mark resolved' }));
+  await expect.element(detail.getByRole('button', { name: 'Mark resolved' })).toBeDisabled();
+  expect(document.getElementById(second.element().getAttribute('aria-describedby')!.split(/\s+/)[1]!)?.textContent).toBe('Resolved');
 });

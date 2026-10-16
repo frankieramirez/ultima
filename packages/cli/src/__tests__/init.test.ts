@@ -467,6 +467,44 @@ describe('init --apply', () => {
     expect(existsSync(join(h.parent, 'my-app'))).toBe(false);
   });
 
+  it('names the retry after a failed install step, and the retry publishes and removes the kept staging', async () => {
+    const h = harness();
+    const path = await planFile(h);
+    h.failing.add('setup');
+    const failed = io();
+    expect(await init(['--apply', path], failed.io, h.deps)).toBe(3);
+    const [kept] = stagingDirectories(h.parent).map((name) => join(h.parent, name));
+    expect(failed.err).toContain('stopped at add setup-test: exited 1');
+    expect(failed.err).toContain(`Retry    ultima init --apply ${path}\n         The plan can be re-applied as it is`);
+    expect(failed.err).toContain(`the next successful init of ${join(h.parent, 'my-app')} removes it`);
+    expect(JSON.parse(readFileSync(join(kept as string, 'logs/result.json'), 'utf8'))).toMatchObject({ status: 'incomplete', retry: `ultima init --apply ${path}` });
+
+    h.failing.delete('setup');
+    const retried = io();
+    expect(await init(['--apply', path, '--json'], retried.io, h.deps)).toBe(0);
+    expect(JSON.parse(retried.out)).toMatchObject({ status: 'completed', cleared: [kept] });
+    expect(stagingDirectories(h.parent)).toEqual([]);
+    expect(existsSync(join(h.parent, 'my-app/src/App.tsx'))).toBe(true);
+  });
+
+  it('names the terminal command as the retry when there is no plan file', async () => {
+    const h = harness();
+    h.failing.add('install');
+    const output = io(true, true);
+    expect(await init([join(h.parent, 'my-app'), '--framework', 'vite', '--registry', REGISTRY], output.io, h.deps)).toBe(3);
+    expect(output.err).toContain(`Retry    ultima init ${join(h.parent, 'my-app')} --framework vite --layout src --package-manager npm --registry ${REGISTRY}\n`);
+  });
+
+  it('says a plan can no longer apply once its destination exists', async () => {
+    const h = harness();
+    const path = await planFile(h);
+    h.during.set('build', () => put(h.parent, 'my-app/mine.txt', 'not yours'));
+    const output = io();
+    expect(await init(['--apply', path, '--json'], output.io, h.deps)).toBe(1);
+    expect(JSON.parse(output.out)).toMatchObject({ retry: null });
+    expect(output.err).toContain('exists now, so this plan can no longer apply');
+  });
+
   it('keeps an interrupted scaffold in staging, and the same plan then publishes the destination once', async () => {
     const h = harness();
     const path = await planFile(h);

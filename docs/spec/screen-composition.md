@@ -14,7 +14,7 @@ Link existing complete screens at `/blocks`: Dashboard 01, CRM 01, Settings 01 a
 
 ## Bounded example inventory
 
-Six lessons cover the question. The product-token lesson shares the Projects screen; the block lesson uses installed Settings 01. Typography retains its existing source. Add only the screen and two focused control examples, with their required local token/data files.
+Seven lessons cover the question. The product-token lesson shares the Projects screen; the block lesson uses installed Settings 01. Typography retains its existing source. Add only the screen, two focused control examples and the selectable list, with their required local token/data files. [#834](https://github.com/frankieramirez/ultima/issues/834) added the selectable list: first-screen runs fetched CRM 01's unlinked registry source to learn the pattern, so the guide now teaches it directly.
 
 | Lesson | Executable content | Canonical source owner | Required observations |
 | --- | --- | --- | --- |
@@ -22,6 +22,7 @@ Six lessons cover the question. The product-token lesson shares the Projects scr
 | Typography | Existing full prose mapping, including headings, lists, links, quotes, code and wide tables | `apps/docs/src/demos/code/typography.tsx`; narrative at `/components/code#typography`; descriptor `registry/metadata/recipe/typography.ts` | Semantic elements, token-based type, Code/Separator/Table/ScrollArea delegation and the existing recipe's documented states |
 | Component style overrides | A Button with a token-based size/spacing override and a compound Card with separate part styles | New `apps/docs/src/examples/complete-screen/style-overrides.tsx` | Overrides through each part's `style` prop, preserved focus ring, disabled behavior, readable text and both color modes |
 | Interaction states | Field/Input validation, disabled submit and success feedback; Dialog open/close and focus return | New `apps/docs/src/examples/complete-screen/interaction-states.tsx`, using the screen's deterministic state rules | Actual input and keyboard actions reach each state; errors associate with the field; feedback includes text; component state attributes drive styling |
+| Selectable list and detail | A single-select vertical ToggleGroup of rows whose selection drives a detail Card, with a detail action that changes the selected row | New `apps/docs/src/examples/complete-screen/list-detail.tsx` | The parent owns the rows and selected ID; arrow keys move between rows and `aria-pressed` marks the selection; pressing the selected row keeps it selected; the detail is a region named by the selected title; the panes stack at narrow widths |
 | Product semantic tokens | Projects under a passing non-stock Studio theme; one application-owned content-width token used by its layout | New `apps/docs/src/examples/complete-screen/screen.stylex.ts`; reuse the consumer-proof draft and its generated export | The layout reads `--app-size-content-max`; installed root, control and popup read exported values in both modes; status meanings survive brand changes |
 | Adapt an existing block | Install Settings 01, render its exported entry and change its labels/data while retaining its components and responsive behavior | `packages/blocks/src/settings-01/`; `registry/metadata/block/settings-01.ts`; existing `/blocks/settings-01` preview | Multi-file dependencies install; desktop navigation and mobile menu work; form, feedback and focus behavior remain usable after adaptation |
 
@@ -36,7 +37,7 @@ The exact breakpoint and content-width value belong to implementation and its re
 1. Adapt an existing block when its screen structure and behavior match the product. Install it and edit the consumer-owned files.
 2. Compose installed Ultima components for controls and painted containers. Choose the supported variant, tone and size before overriding a part's `style` slot. A compound root's style does not style its children automatically.
 3. Copy a recipe for the named composition it teaches. Install the listed component and engine dependencies, then own the copied source in the application.
-4. Write local StyleX for page arrangement, responsive rules, type and flow spacing. Prefer semantic tokens. A demonstrated application-only sizing need can live in the application's own token module.
+4. Write local StyleX for page arrangement, responsive rules, type and flow spacing. Prefer semantic tokens. A demonstrated application-only sizing need can live in the application's own token module. A breakpoint stays a named media-query constant in the file that uses it, under the [Principles](ultima.md#principles) exception for media conditions.
 
 The examples follow [the component/page-layout boundary](ultima.md#the-line-between-a-component-and-page-layout): controls retain their component behavior, surfaces use components, and plain layout elements arrange content. Preserve native scrollbars or use the appropriate ScrollArea/Table.Scroll composition. The guide's table has a caption naming its scroll region. It uses native document scrolling for the page.
 

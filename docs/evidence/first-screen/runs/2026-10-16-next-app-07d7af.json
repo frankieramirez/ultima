@@ -1,0 +1,301 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-16-next-app-07d7af",
+  "layout": "next-app",
+  "brief": {
+    "path": "docs/evidence/first-screen/brief.md",
+    "sha256": "2b0662013937b1f550246297fc2ff8e0689fd32c9e36ad15107e39347e17d986",
+    "brand": "#A3237F"
+  },
+  "source": {
+    "head": "1eefbfac2cb72161861cac07d4b054c4c0e53edc",
+    "manifest": "1862afc2edd94398cbaf0aa72cfa5ca30e3c8c00fa3ecb1154ecdb9b89fe140f",
+    "registryManifest": "f1229628064ba87672c11928ec2fbb6303e20d6d8685a3dc6ee28f0db0903328",
+    "cliTarball": {
+      "packed": "487cae1c5084e551d6d35b4dad04a531d60af55f7fdcc350f06c849678e7aa79",
+      "served": "f2c494de3844f7695c5e6d74027ef80bbe5409c48a204c4a3cf70565a90b6e8b",
+      "version": "0.1.0"
+    },
+    "draftDigest": "2362c2cc7e7337b2b7a84ccd656298ccb22efdcaa9bc0fa84517864a970afda8",
+    "draftFingerprint": "93e116"
+  },
+  "host": {
+    "origin": "http://127.0.0.1:37345",
+    "standsFor": "https://ultima.systems",
+    "npm": "http://127.0.0.1:37345/npm/"
+  },
+  "theme": {
+    "madeIn": "Theme Studio",
+    "command": "npx shadcn@latest add \"http://127.0.0.1:37345/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\""
+  },
+  "prompt": {
+    "sha256": "c9b6c7dc5da8f6cd2ff7dc8643be828629d2ecde7902512bd6ab1096e356cc49"
+  },
+  "agent": {
+    "harness": "claude-code",
+    "version": "2.1.301 (Claude Code)",
+    "flags": [
+      "-p",
+      "--safe-mode",
+      "--strict-mcp-config",
+      "--no-chrome",
+      "--permission-mode",
+      "auto",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--settings",
+      "settings: deny WebSearch, the live host, and other checkouts",
+      "--model",
+      "claude-opus-5-5"
+    ],
+    "cwd": "an empty directory under ~/.cache/ultima-first-screen, outside any checkout",
+    "startedAt": "2026-10-16T14:50:55.850Z",
+    "finishedAt": "2026-10-16T15:09:14.949Z",
+    "exit": 0,
+    "model": "claude-opus-5-5",
+    "session": "78b03060-4ece-4973-b2a9-eca7cf398ff4",
+    "turns": 62,
+    "costUsd": 3.220664,
+    "durationMs": 1098440,
+    "outcome": "success"
+  },
+  "transcript": {
+    "file": "2026-10-16-next-app-07d7af.stream.jsonl.gz",
+    "sha256": "5fd7e4518cf5f6389fd000ab599639b78ac60bfe11a4479b1e1dd880e9594ec2",
+    "events": 440,
+    "commands": [
+      "ls -la && curl -s http://127.0.0.1:37345/llms.txt | head -200",
+      "mkdir -p .scratch && curl -s http://127.0.0.1:37345/llms.txt > .scratch/llms.txt && cat .scratch/llms.txt",
+      "for p in install install/update build-a-screen support; do curl -s http://127.0.0.1:37345/guides/$p.md > .scratch/$(echo $p | tr / -).md; wc -c .scratch/$(echo $p | tr / -).md; done",
+      "cat .scratch/install.md",
+      "cat .scratch/build-a-screen.md .scratch/support.md",
+      "node --version && npm --version && npx ultima-design@latest init --help 2>&1 | head -60",
+      "npx ultima-design@latest init larder --framework next --plan --json > .scratch/ultima-init-plan.json; echo exit=$?; head -c 6000 .scratch/ultima-init-plan.json",
+      "node -e '\nconst p=require(\"./.scratch/ultima-init-plan.json\");\nfor (const o of p.operations){ console.log(\"==\",o.id,o.kind,o.path||\"\", o.command? (o.command.command+\" \"+o.command.args.join(\" \")):\"\");}\nconsole.log(Object.keys(p));\nfor (const k of Object.keys(p)) if(![\"operations\",\"payloads\",\"dependencies\",\"recipe\",\"request\",\"target\",\"inputs\",\"cli\"].includes(k)) console.log(k, JSON.stringify(p[k],null,1).slice(0,3000));\n'",
+      "npx ultima-design@latest init --apply .scratch/ultima-init-plan.json > .scratch/init-apply.log 2>&1; echo exit=$?; tail -80 .scratch/init-apply.log",
+      "cat .ultima-init-larder-anLNgc/logs/05-add-setup-next.log | tail -40; ls .ultima-init-larder-anLNgc .ultima-init-larder-anLNgc/logs",
+      "npx ultima-design@latest init --apply .scratch/ultima-init-plan.json > .scratch/init-apply2.log 2>&1; echo exit=$?; tail -80 .scratch/init-apply2.log",
+      "rm -rf .ultima-init-larder-anLNgc && cd larder && cat app/layout.tsx app/globals.css app/ultima.css components.json babel.config.js postcss.config.js package.json && ls lib components/ui",
+      "npx shadcn@latest add \"http://127.0.0.1:37345/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\" 2>&1 | tail -30; ls",
+      "cat DESIGN.md; cat ultima-theme.json | head -80; wc -l ultima-theme.css; grep -n \"accent\\|data-theme\\|@media\\|color-scheme\\|font-sans\" ultima-theme.css | head -60",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work && for p in projects interaction-states product-tokens; do curl -s http://127.0.0.1:37345/guides/lessons/$p.md > .scratch/lesson-$p.md; wc -c .scratch/lesson-$p.md; done; cat .scratch/lesson-projects.md",
+      "curl -s http://127.0.0.1:37345/r/crm-01.json > .scratch/crm-01.json && node -e '\nconst j=require(\"./.scratch/crm-01.json\"); console.log(j.registryDependencies, j.dependencies, j.docs);\nfor (const f of j.files) console.log(\"##\", f.path, f.target, f.content.length);\n' && curl -s http://127.0.0.1:37345/guides/recipes/item.md | head -150",
+      "node -e '\nconst j=require(\"./.scratch/crm-01.json\");\nfor (const f of j.files) if (/contact-list|crm-01.tsx/.test(f.path)) console.log(\"##\", f.path, \"\\n\", f.content);\n'",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work/larder && npx shadcn@latest add @ultima/field @ultima/input @ultima/select @ultima/toggle-group @ultima/badge @ultima/empty --yes 2>&1 | tail -25; ls components/ui lib; git status 2>&1 | head -2",
+      "npx shadcn@latest add @ultima/field @ultima/input @ultima/select @ultima/toggle-group @ultima/badge @ultima/empty --yes 2>&1 | grep -iv \"^\\s*<\\|^import\\|^$\" | head -40",
+      "curl -s http://127.0.0.1:37345/ultima.eslint.mjs -o ultima.eslint.mjs && cat ultima.eslint.mjs && npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 2>&1 | tail -5",
+      "npm pkg set scripts.lint=\"eslint .\" && git init -q && npm exec --no -- ultima install --harness claude 2>&1 | tail -20; cat app/page.tsx app/setup-check.tsx | head -60",
+      "cat .claude/skills/ultima-design/SKILL.md .claude/settings.json; grep -n \"export const\\|^  '--\\|^  [a-zA-Z]\" lib/tokens.stylex.ts | head -80",
+      "grep -n \"^export\" lib/tokens.stylex.ts; grep -n -A12 \"export const border\" lib/tokens.stylex.ts; npx ultima-design status 2>&1 | tail -30",
+      "grep -n \"export\\|Props\\b\\|function \" components/ui/input.tsx components/ui/field.tsx components/ui/select.tsx components/ui/toggle-group.tsx components/ui/badge.tsx components/ui/card.tsx | head -80; sed -n 1,40p components/ui/toggle-group.tsx",
+      "sed -n '/^const Field\\|^export/,$p' components/ui/field.tsx | head -30; grep -n \"^const Select\\|^  [A-Z][a-zA-Z]*,$\" components/ui/select.tsx | head -30; cat lib/component.ts | head -30",
+      "cat lib/visually-hidden.ts; grep -rn \"visually-hidden\" components/ui | head -3",
+      "python3 - <<'EOF'\np='components/pantry/pantry.tsx'\ns=open(p).read()\ns=s.replace(\"import { ToggleGroup } from '@/components/ui/toggle-group';\\nimport { type FormEvent, useId, useRef, useState } from 'react';\",\n\"import { ToggleGroup } from '@/components/ui/toggle-group';\\nimport { visuallyHidden } from '@/lib/visually-hidden';\\nimport { type FormEvent, type Ref, useId, useRef, useState } from 'react';\")\ns=s.replace(\"<span hidden> on hand</span>\",\"<span {...stylex.props(visuallyHidden)}> on hand</span>\")\ns=s.replace(\"ref: React.Ref<HTMLElement>\",\"ref: Ref<HTMLElement>\")\ns=s.replace(\"aria-describedby={`${id}-${item.id}-category ${id}-${item.id}-quantity ${id}-${item.id}-low`}\",\n\"aria-describedby={[`${id}-${item.id}-category`, `${id}-${item.id}-quantity`, item.quantity <= LOW_STOCK && `${id}-${item.id}-low`].filter(Boolean).join(' ')}\")\nopen(p,'w').write(s)\nEOF\nrm components/ui/empty.tsx app/setup-check.tsx",
+      "cat > app/page.tsx <<'EOF'\nimport Pantry from '@/components/pantry/pantry';\n\nexport default function Home() {\n  return <Pantry />;\n}\nEOF\ncat > app/layout.tsx <<'EOF'\nimport type { Metadata } from \"next\";\nimport \"./globals.css\";\nimport \"./ultima.css\";\nimport \"../ultima-theme.css\";\n\nexport const metadata: Metadata = {\n  title: \"Pantry · Larder\",\n  description: \"What is in stock at the pantry, and a place to log donations as they arrive.\",\n};\n\nexport default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {\n  return (\n    <html lang=\"en\">\n      <body>{children}</body>\n    </html>\n  );\n}\nEOF\nnpx tsc --noEmit && npm run lint 2>&1 | tail -20; npx ultima-design doctor 2>&1 | tail -30; npx ultima-design check 2>&1 | tail -30",
+      "npx --no-install eslint . 2>&1 | grep \"^/\" ; for f in app/page.tsx components/pantry/pantry.tsx components/pantry/screen.stylex.ts components/ui/badge.tsx lib/tokens.stylex.ts lib/themes.ts; do printf \"%s: \" $f; npx --no-install eslint --print-config $f | node -e 'let s=\"\";process.stdin.on(\"data\",d=>s+=d).on(\"end\",()=>{const c=JSON.parse(s);console.log(c.languageOptions?.parser, JSON.stringify(c.rules[\"@stylexjs/valid-styles\"]))})'; done",
+      "npm run build 2>&1 | tail -20; which chromium chromium-browser google-chrome google-chrome-stable firefox 2>/dev/null; ls ~/.cache/ms-playwright 2>/dev/null",
+      "ls .next/static/chunks/*.css 2>/dev/null || find .next/static -name \"*.css\"; for f in $(find .next/static -name \"*.css\"); do echo \"== $f $(wc -c <$f)\"; node -e '\nconst s=require(\"fs\").readFileSync(process.argv[1],\"utf8\");\nconst marks={reset:s.indexOf(\"@layer reset\"),stylexLayer:s.search(/@layer priority/),firstStylexClass:s.search(/\\.x[a-z0-9]{5,}/),themeRoot:s.indexOf(\"--ult-color-accent:#e968be\"),themeLight:s.indexOf(\"[data-theme=light]\"), theme2:s.indexOf(\"data-theme\")};\nconsole.log(marks, s.length)' $f; done",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work && mkdir -p .scratch/verify && cd .scratch/verify && npm init -y >/dev/null && npm i playwright-core@1.56 2>&1 | tail -2; node -e 'console.log(require(\"playwright-core/package.json\").version)'; cat node_modules/playwright-core/browsers.json | head -12",
+      "ls -d ~/.cache/ms-playwright/chromium-1243/*/ ; find ~/.cache/ms-playwright/chromium-1243 -maxdepth 2 -name chrome -type f; cd /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work/larder && (PORT=3123 nohup npm run start -- -p 3123 > ../.scratch/server.log 2>&1 &) ; sleep 4; curl -s -o /dev/null -w \"%{http_code}\\n\" http://localhost:3123/",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work && mkdir -p .scratch/shots && node .scratch/verify/verify.mjs http://localhost:3123/ .scratch/shots 2>&1 | tail -60",
+      "mkdir -p .scratch/t && ln -sfn \"$PWD/.scratch/t\" /tmp/lp 2>/dev/null; TMPDIR=/tmp/lp node .scratch/verify/verify.mjs http://localhost:3123/ .scratch/shots 2>&1 | grep -v \"^\\[pid\" | tail -60",
+      "python3 - <<'EOF'\np='.scratch/verify/verify.mjs'\ns=open(p).read()\ns=s.replace(\"\"\"  if (mode) await context.addInitScript((m) => document.documentElement.setAttribute('data-theme', m), mode);\n  const page = await context.newPage();\"\"\",\"\"\"  const page = await context.newPage();\"\"\")\ns=s.replace(\"\"\"  await page.goto(URL, { waitUntil: 'networkidle' });\n  return\"\"\",\"\"\"  await page.goto(URL, { waitUntil: 'networkidle' });\n  if (mode) await page.evaluate((m) => document.documentElement.setAttribute('data-theme', m), mode);\n  return\"\"\")\nopen(p,'w').write(s)\nEOF\nTMPDIR=/tmp/lp node .scratch/verify/verify.mjs http://localhost:3123/ .scratch/shots 2>&1 | grep -v \"^\\[pid\" | grep -v \"^PASS\"",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work/larder && grep -n -B2 -A12 \"^  header: {\" components/ui/card.tsx | head -20; python3 - <<'EOF'\np='components/pantry/pantry.tsx'\ns=open(p).read()\ns=s.replace(\"\"\"  detailHeader: {\n    alignItems: 'center',\n    display: 'flex',\n\"\"\",\"\"\"  detailHeader: {\n    alignItems: 'center',\n    display: 'flex',\n    flexDirection: 'row',\n\"\"\")\nopen(p,'w').write(s)\nEOF\ngrep -n -A5 \"detailHeader: {\" components/pantry/pantry.tsx",
+      "pkill -f \"next start -p 3123\"; sed -i \"s|  if (mode) await page.evaluate((m) => document.documentElement.setAttribute('data-theme', m), mode);|  if (mode) await page.evaluate((m) => document.documentElement.setAttribute('data-theme', m), mode);\\n  if (mode) await page.waitForTimeout(600);|\" ../.scratch/verify/verify.mjs && npm run build 2>&1 | grep -E \"Compiled|rror\" ; (nohup npm run start -- -p 3123 > ../.scratch/server.log 2>&1 &); sleep 4; cd .. && TMPDIR=/tmp/lp node .scratch/verify/verify.mjs http://localhost:3123/ .scratch/shots 2>&1 | grep -v \"^\\[pid\" | grep -v \"^PASS\"",
+      "pgrep -af \"next\" | grep -v pgrep | head; grep -c waitForTimeout /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work/.scratch/verify/verify.mjs",
+      "readlink /proc/2577673/cwd; ss -ltnp 2>/dev/null | grep 3123",
+      "kill 2577673; cd /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work && python3 - <<'EOF'\np='.scratch/verify/verify.mjs'\ns=open(p).read()\ns=s.replace(\"\"\"  if (mode) await page.evaluate((m) => document.documentElement.setAttribute('data-theme', m), mode);\n  return\"\"\",\"\"\"  if (mode) await page.evaluate((m) => document.documentElement.setAttribute('data-theme', m), mode);\n  if (mode) await page.waitForTimeout(600);\n  return\"\"\")\nopen(p,'w').write(s)\nEOF\ngrep -c waitForTimeout .scratch/verify/verify.mjs; cd larder && npm run build 2>&1 | grep -E \"Compiled|rror\"",
+      "npm run start -- -p 3123 > ../.scratch/server.log 2>&1",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work && until curl -s -o /dev/null http://localhost:3123/; do sleep 1; done; TMPDIR=/tmp/lp node .scratch/verify/verify.mjs http://localhost:3123/ .scratch/shots 2>&1 | grep -v \"^\\[pid\" | grep -v \"^PASS\"",
+      "cat > .scratch/verify/popup.mjs <<'EOF'\nimport { chromium } from 'playwright-core';\nconst browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome` });\nfor (const scheme of ['light', 'dark']) {\n  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, colorScheme: scheme });\n  await page.goto(process.argv[2], { waitUntil: 'networkidle' });\n  const trigger = page.getByRole('combobox', { name: 'Category' });\n  await trigger.scrollIntoViewIfNeeded();\n  await trigger.focus();\n  await page.keyboard.press('Enter');\n  await page.waitForTimeout(500);\n  await page.screenshot({ path: `${process.argv[3]}/popup-${scheme}.png` });\n  await page.close();\n}\nawait browser.close();\nEOF\nTMPDIR=/tmp/lp node .scratch/verify/popup.mjs http://localhost:3123/ .scratch/shots 2>&1 | grep -v \"^\\[pid\"",
+      "rm -f /tmp/lp; cd /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work/larder && npx ultima-design check --files components/pantry/pantry.tsx components/pantry/pantry-data.ts components/pantry/screen.stylex.ts app/page.tsx app/layout.tsx 2>&1 | tail -2; npx ultima-design check 2>&1 | tail -1; npx ultima-design doctor >/dev/null 2>&1; echo doctor=$?; npx ultima-design doctor --theme 2>&1 | grep -iE \"match|unlinked|incomplete|finding\" | head; npx --no-install eslint . 2>&1 | tail -2; npx tsc --noEmit && echo tsc=ok",
+      "pid=$(ss -ltnp 2>/dev/null | grep ':3123 ' | grep -o 'pid=[0-9]*' | cut -d= -f2); [ -n \"$pid\" ] && [ \"$(readlink /proc/$pid/cwd)\" = \"/home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work/larder\" ] && kill $pid; sleep 1; ss -ltn | grep -c ':3123 '",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-next-app-07d7af/work && node -e 'const j=require(\"./exercise-notes.json\");console.log(j.interventions.length,j.decisions.length)' && ls -a"
+    ],
+    "fetches": [],
+    "outsideReferences": []
+  },
+  "selfReport": {
+    "interventions": [
+      {
+        "step": "init --apply",
+        "action": "Re-ran `npx ultima-design@latest init --apply .scratch/ultima-init-plan.json` unchanged after the first apply stopped at `add setup-next` with npm ECONNRESET (exit 3), then deleted the kept staging directory `.ultima-init-larder-anLNgc`.",
+        "reason": "The failure was a transient network error fetching shadcn. The report said larder was not created and staging was kept, but it printed no retry or cleanup command for a new directory."
+      },
+      {
+        "step": "Replacing the init preview",
+        "action": "Deleted app/setup-check.tsx (init's preview client component) and components/ui/empty.tsx (installed with the other items but not used by the screen).",
+        "reason": "The page comment says the starter screen is mine to edit or replace. Nothing said to remove the preview's helper file or an unused installed component."
+      },
+      {
+        "step": "Reading a block for reference",
+        "action": "Fetched http://127.0.0.1:37345/r/crm-01.json and read its contact-list source to copy the vertical ToggleGroup selection pattern, without installing the block.",
+        "reason": "The guidance lists CRM 01 as an installable block. It does not link reading a block's source to borrow one pattern."
+      },
+      {
+        "step": "Rendered verification",
+        "action": "Installed playwright-core 1.56.1 in work/.scratch/verify (outside the app) and drove the locally cached Playwright Chromium against `next start`. Chromium aborted because its socket path was too long, so I pointed TMPDIR at a short /tmp symlink to work/.scratch/t and deleted the symlink afterwards.",
+        "reason": "The guidance asks for production checks in dark, light and system mode, including a control and an open popup, but prints no tool or command for doing them."
+      }
+    ],
+    "decisions": [
+      {
+        "choice": "Accept the documented font fallback instead of loading Figtree and IBM Plex Mono",
+        "options": [
+          "Load the faces with next/font/google",
+          "Self-host font files",
+          "Accept the theme's fallback stack (ui-sans-serif/system-ui, ui-monospace)"
+        ],
+        "why": "The theme exports font stacks but loads no files, and the guidance allows either loading faces or accepting the fallback. The run is restricted to the public host and no font files were supplied, so the screen renders in the system sans."
+      },
+      {
+        "choice": "Category is a portalled Select in an inline form, not a form inside a Dialog",
+        "options": [
+          "Portalled Select in an on-page form",
+          "Form opened in a Dialog",
+          "Both"
+        ],
+        "why": "The brief allows either. An always-visible form suits the intake-desk laptop, and Select alone covers keyboard open, Escape close and focus return through Base UI."
+      },
+      {
+        "choice": "Compose the stock list from a vertical ToggleGroup (CRM 01's list pattern) rather than install and adapt the CRM 01 block",
+        "options": [
+          "Install @ultima/crm-01 and adapt it",
+          "Compose ToggleGroup items",
+          "Table rows with a select button",
+          "Plain list of Buttons with a local selected style"
+        ],
+        "why": "CRM 01 carries a workspace sidebar, search, filters and activity tabs that the Pantry screen doesn't need. ToggleGroup gives pressed styling, roving focus and keyboard selection with no local state styling."
+      },
+      {
+        "choice": "Quantity uses Input type=\"number\" with inputMode numeric, validated in the submit handler",
+        "options": [
+          "Input type=number",
+          "Plain text Input with pattern",
+          "A custom stepper built from Buttons"
+        ],
+        "why": "The catalogue has no number field. Input keeps Field's label, invalid styling and error wiring."
+      },
+      {
+        "choice": "Install the agent skill for the claude harness",
+        "options": [
+          "claude",
+          "codex",
+          "cursor",
+          "copilot",
+          "skip agent setup"
+        ],
+        "why": "The init report printed `git init` then `ultima install --harness <claude|codex|cursor|copilot>`, and the brief names the installed skill as allowed guidance. claude matches the agent doing the work. It wrote .claude/skills/ultima-design/SKILL.md and .claude/settings.json."
+      }
+    ]
+  },
+  "styling": {
+    "check": {
+      "exit": 0,
+      "counts": {
+        "errors": 0,
+        "advisories": 0,
+        "incomplete": 0,
+        "suppressions": 0
+      }
+    },
+    "doctor": {
+      "exit": 0
+    },
+    "lint": {
+      "state": "configured",
+      "config": "eslint.config.mjs",
+      "errors": 0,
+      "warnings": 18,
+      "exit": 0
+    },
+    "rawPaint": {
+      "files": [
+        "app/globals.css",
+        "app/layout.tsx",
+        "app/page.tsx",
+        "app/ultima.css",
+        "components/pantry/pantry-data.ts",
+        "components/pantry/pantry.tsx"
+      ],
+      "findings": []
+    }
+  },
+  "production": {
+    "status": "passed",
+    "layout": "next-app",
+    "versions": {
+      "node": "v26.8.1",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "@stylexjs/stylex": "0.19.1",
+      "ultima-design": "0.1.0",
+      "next": "16.4.0",
+      "chromium": "153.0.8010.12"
+    },
+    "cases": [
+      {
+        "id": "system-dark",
+        "status": "passed",
+        "snapshot": "system-dark.values.json",
+        "failures": []
+      },
+      {
+        "id": "system-light",
+        "status": "passed",
+        "snapshot": "system-light.values.json",
+        "failures": []
+      },
+      {
+        "id": "explicit-dark",
+        "status": "passed",
+        "snapshot": "explicit-dark.values.json",
+        "failures": []
+      },
+      {
+        "id": "explicit-light",
+        "status": "passed",
+        "snapshot": "explicit-light.values.json",
+        "failures": []
+      }
+    ],
+    "errors": []
+  },
+  "verdict": {
+    "conditions": {
+      "completed": "passed",
+      "publicGuidanceOnly": "passed",
+      "interventions": "failed",
+      "decisions": "passed",
+      "check": "passed",
+      "lint": "passed",
+      "rawPaint": "passed",
+      "production": "passed"
+    },
+    "status": "failed"
+  },
+  "review": {
+    "reviewer": "Claude, cast #774: transcript, request log, notes and production report",
+    "rule": "An intervention is an action on the project or tooling that the guidance or CLI output did not print or link. A decision is an unresolved Ultima setup, theme or styling choice that changed the output. Product choices and documented alternatives do not count. Browser checks of the consumer application follow the guidance; rendering documentation to retrieve guidance or source would count.",
+    "interventions": [
+      {
+        "step": "init --apply",
+        "action": "Re-ran the unchanged `init --apply` after the first apply stopped at `add setup-next` (npm ECONNRESET, exit 3), then deleted the kept staging directory `.ultima-init-larder-anLNgc` by hand.",
+        "reason": "The failure report said the directory was not created and staging was kept, but printed no retry command and did not say whether the staging directory should be removed."
+      },
+      {
+        "step": "Choosing the stock-list pattern",
+        "action": "Downloaded the raw registry item /r/crm-01.json and read contact-list.tsx without installing the block, then reused its vertical ToggleGroup selectable-list pattern.",
+        "reason": "No guide or lesson shows a selectable list with a detail pane, and the guidance links CRM 01's page and install command but not its source."
+      },
+      {
+        "step": "Browser verification",
+        "action": "Installed playwright-core in work/.scratch/verify and drove the cached Playwright Chromium against `next start`. Chromium aborted with a socket path that was too long, so the agent pointed TMPDIR at a short /tmp symlink and removed it afterwards.",
+        "reason": "The harness's per-run TMPDIR is long enough to break Chromium's singleton socket. That is a harness defect, not something a consumer meets, but the workaround is an unprinted action."
+      }
+    ],
+    "decisions": [],
+    "notes": "No documentation rendering, data-link decoding or JavaScript-bundle extraction, and no reference to the live host or another checkout. init's Next layout no longer loads Geist (#811 holds); the agent added the theme import after ./ultima.css as the install guide prints and replaced the placeholder metadata, a product choice. Deleting init's setup-check preview follows the starter comment that permits replacing it, and removing an unused installed component is owned source; neither is counted. Running `init --help` before init is covered by the CLI's usage text. Lint, the theme import and agent setup follow the install guide. Check, doctor, lint (0 errors), the raw-paint scan and every external production assertion passed. The self-reported decisions are documented alternatives or product choices (font fallback, Select over Dialog, ToggleGroup composition over installing CRM 01, Input type=number, the claude harness) and are not counted. No operator edited the application."
+  }
+}

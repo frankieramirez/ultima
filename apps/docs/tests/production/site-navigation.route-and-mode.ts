@@ -148,5 +148,9 @@ export default productionScenario('site-navigation.route-and-mode', 'production'
   assert.equal(await reloaded.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed'), 'true', `${label} is still pressed after the reload`);
   assert.equal(await page.evaluate((key) => localStorage.getItem(key), colorMode.storageKey), other, 'the preference is the one stored key');
   await painted(page, other, `after reloading with ${label} stored`);
+  // The reload restores the scroll offset, and where that leaves each target depends on the machine's text
+  // metrics. A target parked under the sticky header's buttons reads to axe as partially obscured, since it
+  // discounts only fixed-position overlap, so the audit runs from the top, where the header covers nothing (#838).
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await axe(`${other} mode after the reload`);
 });
