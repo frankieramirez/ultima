@@ -5,11 +5,14 @@ const NEUTRAL: Record<string, string> = {
   'surface-hover': 'rows and items on hover',
   'surface-active': 'component chrome at rest, such as a scrollbar thumb',
   'surface-overlay': 'glass tiles and scrims; the one token with alpha',
+  field: 'text field fill',
   text: 'body text',
   'text-muted': 'secondary text',
   'text-subtle': 'labels, captions, placeholders',
   'text-inverse': 'text on inverted surfaces',
+  'text-disabled': 'ink for disabled controls',
   border: 'hairlines',
+  'border-hover': 'field and control edges on hover',
   'border-strong': 'input and control outlines',
   'border-focus': 'focus rings',
 };
@@ -19,6 +22,8 @@ const HUE: Record<string, string> = {
   hover: 'solid fill on hover',
   active: 'solid fill when pressed',
   subtle: 'tinted background for badges, callouts, chips',
+  'subtle-hover': 'tinted background on hover',
+  'subtle-active': 'tinted background when pressed',
   border: 'hairline in the hue, for a chip, callout, or panel edge',
   text: 'the hue as text on neutral or subtle surfaces',
   contrast: 'text on the solid fills',
@@ -33,6 +38,7 @@ const RADIUS: Record<string, string> = {
   sm: 'inline code, small insets',
   md: 'Button, Input, Select trigger, menu items',
   lg: 'Card, Dialog, popups',
+  xl: 'large panels and sheets',
   full: 'Badge and any pill',
 };
 
@@ -86,6 +92,7 @@ const FONT: Record<string, string> = {
 };
 
 const SHADOW: Record<string, string> = {
+  xs: 'fields and resting controls',
   sm: 'tooltips and small raised controls',
   md: 'menus, popovers, toasts',
   lg: 'dialogs and drawers',
@@ -109,7 +116,7 @@ const GROUPS: [RegExp, Record<string, string>][] = [
 ];
 
 function hueSuffix(role: string): string {
-  return role.includes('-') ? role.slice(role.lastIndexOf('-') + 1) : 'fill';
+  return role.includes('-') ? role.slice(role.indexOf('-') + 1) : 'fill';
 }
 
 export function describeToken(token: string): string | undefined {

@@ -41,9 +41,13 @@ function readToken(el: Element, token: string) {
   return getComputedStyle(el).getPropertyValue(token).trim();
 }
 
-/** StyleX compiles `#006644` to `#064`, so a short hex is widened back before comparing. */
+/** StyleX compiles `#006644` to `#064` and `#808080` to `gray`, so both are widened back before comparing. */
 function widen(value: string) {
-  return /^#[0-9a-f]{3,4}$/i.test(value) ? `#${[...value.slice(1)].map((digit) => digit + digit).join('')}` : value;
+  if (/^#[0-9a-f]{3,4}$/i.test(value)) return `#${[...value.slice(1)].map((digit) => digit + digit).join('')}`;
+  if (!/^[a-z]+$/i.test(value)) return value;
+  const context = document.createElement('canvas').getContext('2d')!;
+  context.fillStyle = value;
+  return context.fillStyle;
 }
 
 const THEMED = /^--ult-(color|radius)-/;
@@ -73,10 +77,10 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-test('site resolves Neutral with Ultima revision 1 mana and passes all 49 pairings in each mode', () => {
+test('site resolves Neutral with Ultima revision 1 mana and passes all 51 pairings in each mode', () => {
   const results = gate(site);
-  expect(results).toHaveLength(49);
-  expect(PAIRINGS).toHaveLength(49);
+  expect(results).toHaveLength(51);
+  expect(PAIRINGS).toHaveLength(51);
   for (const mode of MODES) {
     expect(results.filter((result) => !result[mode].pass).map((result) => `${result.foreground} on ${result.background}`)).toEqual([]);
   }
@@ -93,7 +97,7 @@ test('the committed site and Neutral themes match the recipe, colors and Tight c
     expect(computedTokens(siteTheme[mode])).toEqual(themedOf(site[mode]));
     expect(computedTokens(neutralTheme[mode])).toEqual(themedOf(neutral[mode]));
   }
-  expect(['xs', 'sm', 'md', 'lg'].map((step) => neutral.dark[`--ult-radius-${step}`])).toEqual(['1px', '2px', '4px', '6px']);
+  expect(['xs', 'sm', 'md', 'lg', 'xl'].map((step) => neutral.dark[`--ult-radius-${step}`])).toEqual(['2px', '4px', '6px', '8px', '12px']);
 });
 
 test('every catalogue portal part mounts into the demo boundary', () => {
@@ -121,7 +125,7 @@ for (const mode of MODES) {
     await expect.element(dialog).toBeVisible();
     expect(dialog.element().closest('[data-theme-boundary="neutral"]')).not.toBeNull();
     expect(readToken(dialog.element(), '--ult-color-highlight')).toBe(neutral[mode]['--ult-color-highlight']);
-    expect(readToken(dialog.element(), '--ult-radius-lg')).toBe('6px');
+    expect(readToken(dialog.element(), '--ult-radius-lg')).toBe('8px');
     await userEvent.keyboard('{Escape}');
   });
 }
