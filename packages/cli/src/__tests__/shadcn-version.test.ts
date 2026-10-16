@@ -19,6 +19,8 @@ const EXEMPT = [
   /^scripts\/catalogue\/model\.test\.ts$/,
   // A stand-in recipe proves init builds its commands from the recipe's version.
   /^packages\/cli\/src\/__tests__\/init\.test\.ts$/,
+  // This file, whose comment spells out the shapes it rejects.
+  /^packages\/cli\/src\/__tests__\/shadcn-version\.test\.ts$/,
 ];
 
 // `npx shadcn add`, `npx -y shadcn@latest add`, `pnpm dlx shadcn@x add`, `bunx shadcn add`, and `'shadcn@x'` as an argument.
