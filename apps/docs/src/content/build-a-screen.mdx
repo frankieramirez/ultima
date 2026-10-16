@@ -32,7 +32,7 @@ Work down this list and stop at the first step that fits.
 1. **Adapt an existing block** when its screen structure and behavior match your product. Install it and edit the files it gives you.
 2. **Compose installed components** for controls and painted containers. Choose the supported variant, tone and size before you override a part's `style` slot. A compound root's style does not reach its children.
 3. **Copy a [recipe](/recipes)** for the named composition it teaches. Install the components and engine packages it lists, then own the copied source.
-4. **Write local StyleX** for page arrangement, responsive rules, type and flow spacing. Prefer semantic tokens. A sizing need only your application has can live in your application's own token module.
+4. **Write local StyleX** for page arrangement, responsive rules, type and flow spacing. Prefer semantic tokens. A sizing need only your application has can live in your application's own token module. A breakpoint is the exception: declare its media query as a named constant in the file that uses it, such as `const DESKTOP = '@media (min-width: 48rem)'`, not in a token module. A `defineVars` value cannot appear in a media condition, and a `defineConsts` key compiles above every pseudo-class rule and loses StyleX's media-query ordering.
 
 Controls keep their component behavior, surfaces use components, and plain layout elements arrange the content. Keep the `style` prop and StyleX when you override. Keep accessible names, visible keyboard focus, contrast, component state selectors and reduced motion. Let component state drive interaction rather than writing a second set of ARIA attributes or key handlers. Keep native scrollbars, or use ScrollArea or `Table.Scroll` for a region that scrolls.
 

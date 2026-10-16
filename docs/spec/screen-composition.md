@@ -36,7 +36,7 @@ The exact breakpoint and content-width value belong to implementation and its re
 1. Adapt an existing block when its screen structure and behavior match the product. Install it and edit the consumer-owned files.
 2. Compose installed Ultima components for controls and painted containers. Choose the supported variant, tone and size before overriding a part's `style` slot. A compound root's style does not style its children automatically.
 3. Copy a recipe for the named composition it teaches. Install the listed component and engine dependencies, then own the copied source in the application.
-4. Write local StyleX for page arrangement, responsive rules, type and flow spacing. Prefer semantic tokens. A demonstrated application-only sizing need can live in the application's own token module.
+4. Write local StyleX for page arrangement, responsive rules, type and flow spacing. Prefer semantic tokens. A demonstrated application-only sizing need can live in the application's own token module. A breakpoint stays a named media-query constant in the file that uses it, under the [Principles](ultima.md#principles) exception for media conditions.
 
 The examples follow [the component/page-layout boundary](ultima.md#the-line-between-a-component-and-page-layout): controls retain their component behavior, surfaces use components, and plain layout elements arrange content. Preserve native scrollbars or use the appropriate ScrollArea/Table.Scroll composition. The guide's table has a caption naming its scroll region. It uses native document scrolling for the page.
 
