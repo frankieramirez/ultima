@@ -72,7 +72,7 @@ A copyable teaching example that explains how to compose a responsive consumer a
 
 ## Block
 
-A registry item that installs one working screen, built from catalogue components, as several files in its own folder under the consumer's components alias. The consumer renders it from their own route and owns it from then on. A block is not a component, so it has no barrel export, `style` slot or contract row, and it is not a **Recipe**, because it installs. It meets every contract of the components and recipes it uses, and it may carry the **Engine** of a recipe it follows. Dashboard 01 is the first.
+A registry item that installs one working screen, built from catalogue components, as several files in its own folder under the consumer's components alias. The consumer renders it from their own route and owns it from then on. A block is not a component, so it has no barrel export, `style` slot or contract row, and it is not a **Recipe**, because it installs. It meets every contract of the components and recipes it uses, and it may carry the **Engine** of a recipe it follows, or the allowed entries of the engine an item it composes carries, as Chart's. Dashboard 01 is the first.
 
 ## Catalogue number
 
