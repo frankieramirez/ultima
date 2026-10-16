@@ -15,6 +15,7 @@ export default function Variants() {
   return (
     <div {...stylex.props(styles.row)}>
       <Button variant="solid">Solid</Button>
+      <Button variant="soft">Soft</Button>
       <Button variant="outline">Outline</Button>
       <Button variant="ghost">Ghost</Button>
     </div>

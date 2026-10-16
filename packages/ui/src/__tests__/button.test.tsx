@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
+import { color } from '@ultima/tokens/tokens.stylex';
 import { createRef } from 'react';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test, vi } from 'vitest';
@@ -10,7 +11,7 @@ test('a button is named by its text', async () => {
   await expect.element(screen.getByRole('button', { name: 'Save changes' })).toBeVisible();
 });
 
-for (const variant of ['solid', 'outline', 'ghost'] as const) {
+for (const variant of ['solid', 'soft', 'outline', 'ghost'] as const) {
   for (const size of ['sm', 'md', 'lg'] as const) {
     for (const tone of ['accent', 'danger'] as const) {
       test(`${variant} / ${size} / ${tone} renders`, async () => {
@@ -38,17 +39,118 @@ test('keyboard focus draws the root outline', async () => {
   expect(getComputedStyle(button).outlineStyle).toBe('solid');
 });
 
-test('disabled prevents activation and its data attribute dims the root', async () => {
+const probe = stylex.create({
+  muted: { backgroundColor: color['--ult-color-surface-sunken'], color: color['--ult-color-text-disabled'] },
+  text: { color: color['--ult-color-text'] },
+  subtle: { backgroundColor: color['--ult-color-accent-subtle'] },
+});
+
+function rulesFor(element: Element, test: (rule: CSSStyleRule, media: string | null) => boolean): boolean {
+  const classes = [...element.classList].map((name) => `.${name}`);
+  const visit = (rules: CSSRuleList, media: string | null): boolean =>
+    [...rules].some((rule) => {
+      if (rule instanceof CSSMediaRule) return visit(rule.cssRules, rule.conditionText);
+      if (rule instanceof CSSLayerBlockRule) return visit(rule.cssRules, media);
+      return rule instanceof CSSStyleRule && classes.some((name) => rule.selectorText.includes(name)) && test(rule, media);
+    });
+  return [...document.styleSheets].some((sheet) => visit(sheet.cssRules, null));
+}
+
+test('disabled prevents activation and takes the muted fill and ink instead of fading', async () => {
   const onClick = vi.fn();
-  const screen = await render(<Button disabled onClick={onClick}>Disabled</Button>);
+  const screen = await render(
+    <>
+      <Button disabled onClick={onClick}>Disabled</Button>
+      <span data-testid="muted" {...stylex.props(probe.muted)}>muted</span>
+    </>,
+  );
   const button = screen.getByRole('button', { name: 'Disabled' }).element();
+  const muted = getComputedStyle(screen.getByTestId('muted').element());
   expect(button).toHaveAttribute('data-disabled');
   button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   expect(onClick).not.toHaveBeenCalled();
-  const disabledOpacity = parseFloat(getComputedStyle(button).opacity);
+  expect(getComputedStyle(button).opacity).toBe('1');
+  expect(getComputedStyle(button).backgroundColor).toBe(muted.backgroundColor);
+  expect(getComputedStyle(button).color).toBe(muted.color);
   button.removeAttribute('data-disabled');
-  expect(disabledOpacity).toBeLessThan(parseFloat(getComputedStyle(button).opacity));
   expect(getComputedStyle(button).cursor).toBe('pointer');
+});
+
+test('every variant takes the same muted look when disabled', async () => {
+  const screen = await render(
+    <>
+      {(['solid', 'soft', 'outline', 'ghost'] as const).map((variant) => (
+        <Button key={variant} variant={variant} disabled>{variant}</Button>
+      ))}
+    </>,
+  );
+  const inks = (['solid', 'soft', 'outline', 'ghost'] as const).map(
+    (variant) => getComputedStyle(screen.getByRole('button', { name: variant }).element()).color,
+  );
+  expect(new Set(inks).size).toBe(1);
+});
+
+test('a ghost button rests in full ink, not muted text', async () => {
+  const screen = await render(
+    <>
+      <Button variant="ghost">Ghost</Button>
+      <span data-testid="text" {...stylex.props(probe.text)}>text</span>
+    </>,
+  );
+  const ghost = getComputedStyle(screen.getByRole('button', { name: 'Ghost' }).element());
+  expect(ghost.color).toBe(getComputedStyle(screen.getByTestId('text').element()).color);
+});
+
+test('a soft button rests on its role\'s subtle fill', async () => {
+  const screen = await render(
+    <>
+      <Button variant="soft">Soft</Button>
+      <span data-testid="subtle" {...stylex.props(probe.subtle)}>subtle</span>
+    </>,
+  );
+  const soft = getComputedStyle(screen.getByRole('button', { name: 'Soft' }).element());
+  expect(soft.backgroundColor).toBe(getComputedStyle(screen.getByTestId('subtle').element()).backgroundColor);
+});
+
+test('a press moves the button down one hairline', async () => {
+  const screen = await render(<Button>Press</Button>);
+  const button = screen.getByRole('button', { name: 'Press' }).element();
+  expect(getComputedStyle(button).translate).toMatch(/^(none|0px)$/);
+  expect(rulesFor(button, (rule) => rule.selectorText.includes(':active') && rule.style.translate === '0px 1px')).toBe(true);
+});
+
+test('hover answers only on devices that hover', async () => {
+  const screen = await render(<Button>Hover</Button>);
+  const button = screen.getByRole('button', { name: 'Hover' }).element();
+  const hoverRules = (media: string | null) =>
+    rulesFor(button, (rule, condition) => condition === media && rule.selectorText.includes(':hover') && rule.style.backgroundColor !== '');
+  expect(hoverRules('(hover: hover)')).toBe(true);
+  expect(hoverRules(null)).toBe(false);
+});
+
+test('an outline button lifts on shadow-xs and sets it down when disabled', async () => {
+  const screen = await render(
+    <>
+      <Button variant="outline">Lifted</Button>
+      <Button variant="outline" disabled>Flat</Button>
+    </>,
+  );
+  expect(getComputedStyle(screen.getByRole('button', { name: 'Lifted' }).element()).boxShadow).not.toBe('none');
+  expect(getComputedStyle(screen.getByRole('button', { name: 'Flat' }).element()).boxShadow).toBe('none');
+});
+
+test('a button holding an icon gives up one space step on each side', async () => {
+  const icon = <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" />;
+  const screen = await render(
+    <>
+      <Button>Plain</Button>
+      <Button>{icon}With icon</Button>
+    </>,
+  );
+  const plain = getComputedStyle(screen.getByRole('button', { name: 'Plain' }).element());
+  const withIcon = getComputedStyle(screen.getByRole('button', { name: 'With icon' }).element());
+  expect(parseFloat(withIcon.paddingInlineStart)).toBe(parseFloat(plain.paddingInlineStart) - 4);
+  expect(withIcon.paddingInlineEnd).toBe(withIcon.paddingInlineStart);
 });
 
 const overrides = stylex.create({ icon: { aspectRatio: 1, paddingInline: 0 } });
@@ -67,8 +169,15 @@ test('the icon-only recipe is square at every size', async () => {
   }
 });
 
-test('caller padding overrides the size table', async () => {
-  const screen = await render(<><Button>Normal</Button><Button aria-label="Add" style={overrides.icon}>+</Button></>);
+test('caller padding overrides the size table, with or without an icon', async () => {
+  const screen = await render(
+    <>
+      <Button>Normal</Button>
+      <Button aria-label="Add" style={overrides.icon}>+</Button>
+      <Button aria-label="Upload" style={overrides.icon}><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" /></Button>
+    </>,
+  );
+  expect(getComputedStyle(screen.getByRole('button', { name: 'Upload' }).element()).paddingInlineStart).toBe('0px');
   const normal = getComputedStyle(screen.getByRole('button', { name: 'Normal' }).element());
   const icon = getComputedStyle(screen.getByRole('button', { name: 'Add' }).element());
   expect(icon.paddingInlineStart).toBe('0px');
@@ -113,6 +222,6 @@ test('rendered as a link, the label keeps no underline', async () => {
 test('public prop types expose only supported styling axes', () => {
   expectTypeOf<ButtonProps>().not.toHaveProperty('className');
   expectTypeOf<ButtonTone>().toEqualTypeOf<'accent' | 'danger'>();
-  expectTypeOf<ButtonVariant>().toEqualTypeOf<'solid' | 'outline' | 'ghost'>();
+  expectTypeOf<ButtonVariant>().toEqualTypeOf<'solid' | 'soft' | 'outline' | 'ghost'>();
   expectTypeOf<ButtonSize>().toEqualTypeOf<'sm' | 'md' | 'lg'>();
 });

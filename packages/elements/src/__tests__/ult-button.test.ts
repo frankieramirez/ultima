@@ -5,7 +5,7 @@ import tokensCss from '../../../tokens/dist/tokens.css?inline';
 import ultimaBundle from '../../dist/ultima.js?raw';
 import perElementBundle from '../../dist/ult-button.js?raw';
 
-const VARIANTS = ['solid', 'outline', 'ghost'] as const;
+const VARIANTS = ['solid', 'soft', 'outline', 'ghost'] as const;
 const SIZES = ['sm', 'md', 'lg'] as const;
 const TONES = ['accent', 'danger'] as const;
 
@@ -92,17 +92,17 @@ test('keyboard focus draws the root outline', async () => {
   expect(getComputedStyle(button).outlineStyle).toBe('solid');
 });
 
-test('disabled mirrors into data-disabled and dims the root', () => {
+test('disabled mirrors into data-disabled and takes the muted fill', () => {
   const host = mount({ disabled: '' }, 'Disabled');
   const button = inner(host);
   expect(button.disabled).toBe(true);
   expect(button).toHaveAttribute('data-disabled');
-  const disabledOpacity = parseFloat(getComputedStyle(button).opacity);
-  expect(disabledOpacity).toBeLessThan(1);
+  const disabledFill = getComputedStyle(button).backgroundColor;
+  expect(getComputedStyle(button).opacity).toBe('1');
   host.removeAttribute('disabled');
   expect(button.disabled).toBe(false);
   expect(button).not.toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(button).opacity)).toBeGreaterThan(disabledOpacity);
+  expect(getComputedStyle(button).backgroundColor).not.toBe(disabledFill);
   expect(getComputedStyle(button).cursor).toBe('pointer');
 });
 

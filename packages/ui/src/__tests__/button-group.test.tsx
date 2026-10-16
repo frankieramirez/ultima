@@ -93,7 +93,7 @@ test('a vertical group stacks its items', async () => {
   expect(getComputedStyle(group).flexDirection).toBe('column');
 });
 
-for (const variant of ['solid', 'outline', 'ghost'] as const) {
+for (const variant of ['solid', 'soft', 'outline', 'ghost'] as const) {
   for (const size of ['sm', 'md', 'lg'] as const) {
     for (const tone of ['accent', 'danger'] as const) {
       test(`${variant} / ${size} / ${tone} on Root renders`, async () => {
@@ -220,7 +220,7 @@ test('an item can take its own variant and tone, which win over the root', async
   expect(discard.backgroundColor).not.toBe(publish.backgroundColor);
 });
 
-test('a disabled item dims, stays in the tab order, and swallows activation', async () => {
+test('a disabled item goes muted, stays in the tab order, and swallows activation', async () => {
   const onClick = vi.fn();
   const screen = await render(
     <Actions>
@@ -231,8 +231,11 @@ test('a disabled item dims, stays in the tab order, and swallows activation', as
     </Actions>,
   );
   const copy = screen.getByRole('button', { name: 'Copy' }).element();
+  const cut = screen.getByRole('button', { name: 'Cut' }).element();
   expect(copy).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(copy).opacity)).toBeLessThan(1);
+  expect(getComputedStyle(copy).opacity).toBe('1');
+  expect(getComputedStyle(copy).backgroundColor).not.toBe(getComputedStyle(cut).backgroundColor);
+  expect(getComputedStyle(copy).color).not.toBe(getComputedStyle(cut).color);
   copy.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   expect(onClick).not.toHaveBeenCalled();
 });
@@ -287,7 +290,7 @@ test('the part types expose the axes, the style slot, and no className or item s
   expectTypeOf<ButtonGroupRootProps>().toHaveProperty('render');
   expectTypeOf<ButtonGroupItemProps>().toHaveProperty('render');
   expectTypeOf<ButtonGroupItemProps>().not.toHaveProperty('size');
-  expectTypeOf<ButtonGroupVariant>().toEqualTypeOf<'solid' | 'outline' | 'ghost'>();
+  expectTypeOf<ButtonGroupVariant>().toEqualTypeOf<'solid' | 'soft' | 'outline' | 'ghost'>();
   expectTypeOf<ButtonGroupSize>().toEqualTypeOf<'sm' | 'md' | 'lg'>();
   expectTypeOf<ButtonGroupTone>().toEqualTypeOf<'accent' | 'danger'>();
   expectTypeOf<ButtonGroupOrientation>().toEqualTypeOf<'horizontal' | 'vertical'>();

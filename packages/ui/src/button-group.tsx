@@ -3,9 +3,11 @@
 import { Button as BaseButton } from '@base-ui/react/button';
 import { useRender } from '@base-ui/react/use-render';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, easing, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import { createContext, use, type ComponentProps } from 'react';
+
+const HOVER = '@media (hover: hover)';
 
 const styles = stylex.create({
   root: {
@@ -32,12 +34,12 @@ const styles = stylex.create({
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
     textDecoration: 'none',
     touchAction: 'manipulation',
     transitionDuration: motion['--ult-motion-fast'],
-    transitionProperty: 'background-color, border-color, color',
+    transitionProperty: 'background-color, border-color, box-shadow, color, translate',
     transitionTimingFunction: easing.standard,
+    translate: { default: '0 0', ':active:not([data-disabled])': `0 ${border.hairline}` },
     userSelect: 'none',
     whiteSpace: 'nowrap',
     WebkitTapHighlightColor: 'transparent',
@@ -48,53 +50,103 @@ const styles = stylex.create({
   },
 });
 
-// A disabled button still matches `:hover` and `:active`, so each pointer value is restated
-// beside `[data-disabled]` at its resting value: the dimmed button does not answer the pointer.
+// Hover answers only on devices that hover, so a tapped item doesn't stay lit; press answers
+// everywhere and moves one step past hover. `:not([data-disabled])` keeps a disabled item
+// still, and a disabled item takes the muted fill and ink instead of fading.
 const solid = stylex.create({
   accent: {
     backgroundColor: {
       default: color['--ult-color-accent'],
-      ':hover': color['--ult-color-accent-hover'],
-      ':active': color['--ult-color-accent-active'],
-      ':is([data-disabled]):hover': color['--ult-color-accent'],
-      ':is([data-disabled]):active': color['--ult-color-accent'],
+      ':active:not([data-disabled])': color['--ult-color-accent-active'],
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
+      [HOVER]: {
+        ':hover:not([data-disabled])': color['--ult-color-accent-hover'],
+        ':active:not([data-disabled])': color['--ult-color-accent-active'],
+      },
     },
     borderColor: 'transparent',
-    color: color['--ult-color-accent-contrast'],
+    color: { default: color['--ult-color-accent-contrast'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
   },
   danger: {
     backgroundColor: {
       default: color['--ult-color-danger'],
-      ':hover': color['--ult-color-danger-hover'],
-      ':active': color['--ult-color-danger-active'],
-      ':is([data-disabled]):hover': color['--ult-color-danger'],
-      ':is([data-disabled]):active': color['--ult-color-danger'],
+      ':active:not([data-disabled])': color['--ult-color-danger-active'],
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
+      [HOVER]: {
+        ':hover:not([data-disabled])': color['--ult-color-danger-hover'],
+        ':active:not([data-disabled])': color['--ult-color-danger-active'],
+      },
     },
     borderColor: 'transparent',
-    color: color['--ult-color-danger-contrast'],
+    color: { default: color['--ult-color-danger-contrast'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
   },
 });
 
+const soft = stylex.create({
+  accent: {
+    backgroundColor: {
+      default: color['--ult-color-accent-subtle'],
+      ':active:not([data-disabled])': color['--ult-color-accent-subtle-active'],
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
+      [HOVER]: {
+        ':hover:not([data-disabled])': color['--ult-color-accent-subtle-hover'],
+        ':active:not([data-disabled])': color['--ult-color-accent-subtle-active'],
+      },
+    },
+    borderColor: 'transparent',
+    color: { default: color['--ult-color-accent-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
+  },
+  danger: {
+    backgroundColor: {
+      default: color['--ult-color-danger-subtle'],
+      ':active:not([data-disabled])': color['--ult-color-danger-subtle-active'],
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
+      [HOVER]: {
+        ':hover:not([data-disabled])': color['--ult-color-danger-subtle-hover'],
+        ':active:not([data-disabled])': color['--ult-color-danger-subtle-active'],
+      },
+    },
+    borderColor: 'transparent',
+    color: { default: color['--ult-color-danger-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
+  },
+});
+
+// The outline lifts on `shadow-xs` and sets it down on press. Its edge only decorates, since the
+// label identifies the button, so it stays on the quiet `border`.
 const outline = stylex.create({
   accent: {
     backgroundColor: {
       default: 'transparent',
-      ':hover': color['--ult-color-surface-hover'],
-      ':active': color['--ult-color-surface-active'],
-      ':is([data-disabled]):hover': 'transparent',
-      ':is([data-disabled]):active': 'transparent',
+      ':active:not([data-disabled])': color['--ult-color-surface-active'],
+      [HOVER]: {
+        ':hover:not([data-disabled])': color['--ult-color-surface-hover'],
+        ':active:not([data-disabled])': color['--ult-color-surface-active'],
+      },
     },
     borderColor: color['--ult-color-border'],
-    color: color['--ult-color-text'],
+    boxShadow: {
+      default: shadow['--ult-shadow-xs'],
+      ':active:not([data-disabled])': 'none',
+      ':is([data-disabled])': 'none',
+    },
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
   },
   danger: {
     backgroundColor: {
       default: 'transparent',
-      ':hover': color['--ult-color-danger-subtle'],
-      ':is([data-disabled]):hover': 'transparent',
+      ':active:not([data-disabled])': color['--ult-color-danger-subtle-hover'],
+      [HOVER]: {
+        ':hover:not([data-disabled])': color['--ult-color-danger-subtle'],
+        ':active:not([data-disabled])': color['--ult-color-danger-subtle-hover'],
+      },
     },
-    borderColor: color['--ult-color-danger-border'],
-    color: color['--ult-color-danger-text'],
+    borderColor: { default: color['--ult-color-danger-border'], ':is([data-disabled])': color['--ult-color-border'] },
+    boxShadow: {
+      default: shadow['--ult-shadow-xs'],
+      ':active:not([data-disabled])': 'none',
+      ':is([data-disabled])': 'none',
+    },
+    color: { default: color['--ult-color-danger-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
   },
 });
 
@@ -102,52 +154,55 @@ const ghost = stylex.create({
   accent: {
     backgroundColor: {
       default: 'transparent',
-      ':hover': color['--ult-color-surface-hover'],
-      ':active': color['--ult-color-surface-active'],
-      ':is([data-disabled]):hover': 'transparent',
-      ':is([data-disabled]):active': 'transparent',
+      ':active:not([data-disabled])': color['--ult-color-surface-active'],
+      [HOVER]: {
+        ':hover:not([data-disabled])': color['--ult-color-surface-hover'],
+        ':active:not([data-disabled])': color['--ult-color-surface-active'],
+      },
     },
     borderColor: 'transparent',
-    color: {
-      default: color['--ult-color-text-muted'],
-      ':hover': color['--ult-color-text'],
-      ':is([data-disabled]):hover': color['--ult-color-text-muted'],
-    },
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
   },
   danger: {
     backgroundColor: {
       default: 'transparent',
-      ':hover': color['--ult-color-danger-subtle'],
-      ':is([data-disabled]):hover': 'transparent',
+      ':active:not([data-disabled])': color['--ult-color-danger-subtle-hover'],
+      [HOVER]: {
+        ':hover:not([data-disabled])': color['--ult-color-danger-subtle'],
+        ':active:not([data-disabled])': color['--ult-color-danger-subtle-hover'],
+      },
     },
     borderColor: 'transparent',
-    color: color['--ult-color-danger-text'],
+    color: { default: color['--ult-color-danger-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
   },
 });
 
-const variants = { solid, outline, ghost };
+const variants = { solid, soft, outline, ghost };
 
+// A button that holds an icon gives up one space step on each side, so the icon doesn't sit
+// further from the edge than the label does. `paddingInline` stays one property, so the
+// icon-only recipe's `paddingInline: 0` in the style slot replaces it whole.
 const sizes = stylex.create({
   sm: {
     fontSize: text['--ult-text-3'],
     gap: space['--ult-space-3'],
     height: space['--ult-space-9'],
     paddingBlock: space['--ult-space-2'],
-    paddingInline: space['--ult-space-5'],
+    paddingInline: { default: space['--ult-space-5'], ':has(> svg)': space['--ult-space-4'] },
   },
   md: {
     fontSize: text['--ult-text-4'],
     gap: space['--ult-space-4'],
     height: space['--ult-space-10'],
     paddingBlock: space['--ult-space-4'],
-    paddingInline: space['--ult-space-6'],
+    paddingInline: { default: space['--ult-space-6'], ':has(> svg)': space['--ult-space-5'] },
   },
   lg: {
     fontSize: text['--ult-text-5'],
     gap: space['--ult-space-4'],
     height: space['--ult-space-11'],
     paddingBlock: space['--ult-space-5'],
-    paddingInline: space['--ult-space-7'],
+    paddingInline: { default: space['--ult-space-7'], ':has(> svg)': space['--ult-space-6'] },
   },
 });
 

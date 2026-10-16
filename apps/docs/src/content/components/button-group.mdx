@@ -36,7 +36,7 @@ Put the related actions in a `Root` and name the group. Every item is its own ta
 
 ## What you keep
 
-- **Button's whole column, not a subset.** `variant` (`solid`, `outline`, `ghost`), `size` (`sm`, `md`, `lg`), and `tone` (`accent`, `danger`) default to `solid` / `md` / `accent`, exactly as Button does.
+- **Button's whole column, not a subset.** `variant` (`solid`, `soft`, `outline`, `ghost`), `size` (`sm`, `md`, `lg`), and `tone` (`accent`, `danger`) default to `solid` / `md` / `accent`, exactly as Button does.
 - **Everything on `Item` is Base UI's Button.** `disabled`, `onClick`, `render`, and `ref` pass through; `render={<a />}` with `nativeButton={false}` turns an item into a link, as on Button.
 - **The join needs nothing from you.** It is `:not(:first-child)` on each item, so it holds however many items you render, and the focus ring survives it untouched because the ring is an `outline`.
 - **Not Toggle Group.** Nothing here presses and stays pressed — there is no `aria-pressed`, no value, and no roving tabindex. A set of controls that stay pressed is Toggle Group's job.
@@ -47,11 +47,11 @@ Only what Ultima adds or narrows. `Item` otherwise accepts the [Base UI Button](
 
 | Part | Prop | Type | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `Root` | `variant` | `'solid' \| 'outline' \| 'ghost'` | `'solid'` | Reaches every `Item`; an item's own `variant` wins. |
+| `Root` | `variant` | `'solid' \| 'soft' \| 'outline' \| 'ghost'` | `'solid'` | Reaches every `Item`; an item's own `variant` wins. |
 | `Root` | `tone` | `'accent' \| 'danger'` | `'accent'` | Reaches every `Item`; an item's own `tone` wins. |
 | `Root` | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | The group's one height. `Item` takes no `size`. |
 | `Root` | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | A positional prop, not an axis: sets the direction and the join together. |
-| `Item` | `variant` | `'solid' \| 'outline' \| 'ghost'` | the root's | Per-item override; the prop wins. |
+| `Item` | `variant` | `'solid' \| 'soft' \| 'outline' \| 'ghost'` | the root's | Per-item override; the prop wins. |
 | `Item` | `tone` | `'accent' \| 'danger'` | the root's | Per-item override; the prop wins. |
 | `Item` | `disabled` | `boolean` | `false` | Base UI's; dims the item and swallows activation. |
 | `Root`, `Item` | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
