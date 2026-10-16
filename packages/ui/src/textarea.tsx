@@ -6,51 +6,59 @@ import { border, color, easing, font, motion, radius, space, text } from '@ultim
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
+const HOVER = '@media (hover: hover)';
+const COARSE = '@media (pointer: coarse)';
+
+// Textarea is Input's field recipe on a multi-line box: the brightest fill, a 3:1 edge that
+// darkens on hover, and the focus outline laid over the edge. `:read-only` also matches a
+// disabled textarea, so one key gives both the sunken fill and the quiet edge.
 const styles = stylex.create({
   root: {
     appearance: 'none',
-    // A disabled field still matches `:hover`, so `:disabled:hover` restates the resting fill.
-    backgroundColor: {
-      default: color['--ult-color-surface-sunken'],
-      ':hover': color['--ult-color-surface-hover'],
-      ':disabled:hover': color['--ult-color-surface-sunken'],
-    },
+    backgroundColor: { default: color['--ult-color-field'], ':read-only': color['--ult-color-surface-sunken'] },
     borderColor: {
       default: color['--ult-color-border-strong'],
+      ':read-only': color['--ult-color-border'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
+      [HOVER]: {
+        ':hover:not(:read-only)': color['--ult-color-border-hover'],
+        ':is([aria-invalid="true"], [data-invalid]):hover': color['--ult-color-danger'],
+      },
     },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':disabled': color['--ult-color-text-disabled'] },
     fontFamily: font['--ult-font-sans'],
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
     minWidth: 0,
-    opacity: { default: 1, ':disabled': 0.5, ':is([data-disabled])': 0.5 },
+    outline: {
+      default: 'none',
+      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
+    },
+    outlineOffset: `-${border.hairline}`,
     resize: 'vertical',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, border-color',
     transitionTimingFunction: easing.standard,
     width: '100%',
     '::placeholder': { color: color['--ult-color-text-subtle'], opacity: 1 },
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
-    },
   },
 });
 
+// Field text is text step 4, and rises to step 5 under a coarse pointer so iOS doesn't zoom on focus.
 const sizes = stylex.create({
   sm: {
-    fontSize: text['--ult-text-4'],
+    fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     minHeight: space['--ult-space-9'],
     paddingBlock: space['--ult-space-2'],
     paddingInline: space['--ult-space-4'],
   },
   md: {
-    fontSize: text['--ult-text-5'],
+    fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     minHeight: space['--ult-space-10'],
     paddingBlock: space['--ult-space-3'],
     paddingInline: space['--ult-space-5'],

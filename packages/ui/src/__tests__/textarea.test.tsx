@@ -4,7 +4,7 @@
  * 2. The name resolves: role textbox, named by a consumer label, aria-label, or Field.Label.
  * 3. The focus ring lands where the contract says: on Root; nothing else to ring.
  * 4. The primitive is still wired: native textarea; Enter inserts a newline and does not submit.
- * 5. Documented state drives its style: aria-invalid and data-invalid recolor the border; disabled dims.
+ * 5. Documented state drives its style: aria-invalid and data-invalid recolor the border; disabled takes the muted fill and ink; hover darkens the edge.
  * 6. Typecheck passes: className is rejected, and the size union is sm | md | lg.
  * 7. Behavior this component wires itself: none, because every interaction is the primitive's or a style on a data-* attribute.
  * 8. CSS the primitive reads: none, because Textarea has no clause-2 declarations.
@@ -113,7 +113,7 @@ test('data-invalid recolors the border without aria-invalid', async () => {
   expect(getComputedStyle(invalid).borderTopColor).not.toBe(valid.borderTopColor);
 });
 
-test('disabled dims the textarea', async () => {
+test('disabled takes the muted fill and ink, not opacity', async () => {
   const screen = await render(
     <>
       <Textarea aria-label="Enabled" />
@@ -123,7 +123,22 @@ test('disabled dims the textarea', async () => {
   const enabled = screen.getByRole('textbox', { name: 'Enabled' }).element();
   const disabled = screen.getByRole('textbox', { name: 'Disabled' }).element();
   expect(disabled).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(disabled).opacity)).toBeLessThan(parseFloat(getComputedStyle(enabled).opacity));
+  expect(getComputedStyle(disabled).opacity).toBe('1');
+  expect(getComputedStyle(disabled).backgroundColor).not.toBe(getComputedStyle(enabled).backgroundColor);
+  expect(getComputedStyle(disabled).color).not.toBe(getComputedStyle(enabled).color);
+});
+
+test('hover darkens the edge, not the fill, and the focus outline lies over the edge', async () => {
+  const screen = await render(<Textarea aria-label="Live" />);
+  const live = screen.getByRole('textbox', { name: 'Live' }).element();
+  const resting = getComputedStyle(live);
+  const [edge, fill] = [resting.borderTopColor, resting.backgroundColor];
+  await userEvent.hover(live);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  expect(getComputedStyle(live).borderTopColor).not.toBe(edge);
+  expect(getComputedStyle(live).backgroundColor).toBe(fill);
+  await userEvent.tab();
+  expect(getComputedStyle(live).outlineOffset).toBe('-1px');
 });
 
 test('size sets min-height rather than height, and resize is vertical', async () => {

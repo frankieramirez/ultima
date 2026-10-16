@@ -27,7 +27,7 @@ const styles = stylex.create({
   },
   control: {
     alignItems: 'center',
-    backgroundColor: color['--ult-color-surface-sunken'],
+    backgroundColor: color['--ult-color-field'],
     borderColor: {
       default: color['--ult-color-border-strong'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
@@ -240,7 +240,7 @@ const styles = stylex.create({
     },
   },
   select: {
-    backgroundColor: color['--ult-color-surface-sunken'],
+    backgroundColor: color['--ult-color-field'],
     borderColor: color['--ult-color-border-strong'],
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',

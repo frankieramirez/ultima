@@ -79,7 +79,7 @@ test('data-invalid recolors the border without aria-invalid', async () => {
   expect(getComputedStyle(invalid).borderTopColor).not.toBe(valid.borderTopColor);
 });
 
-test('disabled dims the input', async () => {
+test('disabled takes the muted fill and ink, not opacity', async () => {
   const screen = await render(
     <>
       <Input aria-label="Enabled" />
@@ -89,7 +89,9 @@ test('disabled dims the input', async () => {
   const enabled = screen.getByRole('textbox', { name: 'Enabled' }).element();
   const disabled = screen.getByRole('textbox', { name: 'Disabled' }).element();
   expect(disabled).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(disabled).opacity)).toBeLessThan(parseFloat(getComputedStyle(enabled).opacity));
+  expect(getComputedStyle(disabled).opacity).toBe('1');
+  expect(getComputedStyle(disabled).backgroundColor).not.toBe(getComputedStyle(enabled).backgroundColor);
+  expect(getComputedStyle(disabled).color).not.toBe(getComputedStyle(enabled).color);
 });
 
 test('public prop types expose only supported styling axes', () => {
@@ -99,7 +101,7 @@ test('public prop types expose only supported styling axes', () => {
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
 
-test('the fill answers the pointer, and a disabled field keeps its resting fill', async () => {
+test('hover darkens the edge, not the fill, and a disabled field keeps its resting edge', async () => {
   const screen = await render(
     <>
       <Input aria-label="Live" />
@@ -108,15 +110,35 @@ test('the fill answers the pointer, and a disabled field keeps its resting fill'
   );
   const live = screen.getByRole('textbox', { name: 'Live' }).element();
   const off = screen.getByRole('textbox', { name: 'Off' }).element();
-  const liveResting = getComputedStyle(live).backgroundColor;
-  const offResting = getComputedStyle(off).backgroundColor;
+  const liveResting = getComputedStyle(live);
+  const [liveEdge, liveFill] = [liveResting.borderTopColor, liveResting.backgroundColor];
+  const offEdge = getComputedStyle(off).borderTopColor;
   await userEvent.hover(live);
   await settle();
-  expect(getComputedStyle(live).backgroundColor).not.toBe(liveResting);
+  expect(getComputedStyle(live).borderTopColor).not.toBe(liveEdge);
+  expect(getComputedStyle(live).backgroundColor).toBe(liveFill);
   await userEvent.hover(off);
   await settle();
   expect(off.matches(':hover')).toBe(true);
-  expect(getComputedStyle(off).backgroundColor).toBe(offResting);
+  expect(getComputedStyle(off).borderTopColor).toBe(offEdge);
+});
+
+test('the focus outline lies over the edge', async () => {
+  const screen = await render(<Input aria-label="Focus" />);
+  await userEvent.tab();
+  expect(getComputedStyle(screen.getByRole('textbox', { name: 'Focus' }).element()).outlineOffset).toBe('-1px');
+});
+
+test('field text is 14px at every size below lg', async () => {
+  const screen = await render(
+    <>
+      <Input aria-label="Small" size="sm" />
+      <Input aria-label="Medium" />
+    </>,
+  );
+  for (const name of ['Small', 'Medium']) {
+    expect(getComputedStyle(screen.getByRole('textbox', { name }).element()).fontSize).toBe('14px');
+  }
 });
 
 test('the placeholder is drawn at full opacity', async () => {
