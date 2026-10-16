@@ -7,45 +7,54 @@ import { border, color, easing, font, motion, radius, space, text } from '@ultim
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
-// The box sits on the sunken fill like a field and steps on hover and press. StyleX ranks `:hover` above a data
-// attribute, so the checked steps carry the checked condition in their own key, and `:not([data-disabled])` keeps a
-// dimmed box from answering the pointer. The checked border follows the fill unless the box is invalid.
+const HOVER = '@media (hover: hover)';
+
+// The box is a small field: the field fill, a 3:1 edge that darkens on hover, and the accent fill
+// once checked, stepping on hover and press. Each key names its whole state, so no two match at
+// once and none depends on StyleX's ranking. Disabled is the muted fill, edge and ink, with no
+// opacity; an invalid box keeps its danger edge through every state.
 const styles = stylex.create({
   root: {
     alignItems: 'center',
     appearance: 'none',
     backgroundColor: {
-      default: color['--ult-color-surface-sunken'],
-      ':hover:not([data-disabled])': color['--ult-color-surface-hover'],
-      ':active:not([data-disabled])': color['--ult-color-surface-active'],
-      ':is([data-checked], [data-indeterminate])': color['--ult-color-accent'],
-      ':is([data-checked], [data-indeterminate]):hover:not([data-disabled])': color['--ult-color-accent-hover'],
+      default: color['--ult-color-field'],
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
+      ':is([data-checked], [data-indeterminate]):not([data-disabled], :active)': color['--ult-color-accent'],
       ':is([data-checked], [data-indeterminate]):active:not([data-disabled])': color['--ult-color-accent-active'],
+      [HOVER]: {
+        ':is([data-checked], [data-indeterminate]):hover:not([data-disabled], :active)': color['--ult-color-accent-hover'],
+      },
     },
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger-border'],
-      ':is([data-checked], [data-indeterminate]):not([aria-invalid="true"], [data-invalid])': color['--ult-color-accent'],
-      ':is([data-checked], [data-indeterminate]):not([aria-invalid="true"], [data-invalid]):hover:not([data-disabled])':
-        color['--ult-color-accent-hover'],
-      ':is([data-checked], [data-indeterminate]):not([aria-invalid="true"], [data-invalid]):active:not([data-disabled])':
+      ':is([data-disabled]):not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
+      ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
+      ':is([data-checked], [data-indeterminate]):not([aria-invalid="true"], [data-invalid], [data-disabled], :active)':
+        color['--ult-color-accent'],
+      ':is([data-checked], [data-indeterminate]):active:not([aria-invalid="true"], [data-invalid], [data-disabled])':
         color['--ult-color-accent-active'],
+      [HOVER]: {
+        ':hover:not([data-checked], [data-indeterminate], [aria-invalid="true"], [data-invalid], [data-disabled])':
+          color['--ult-color-border-hover'],
+        ':is([data-checked], [data-indeterminate]):hover:not([aria-invalid="true"], [data-invalid], [data-disabled], :active)':
+          color['--ult-color-accent-hover'],
+      },
     },
     borderRadius: radius['--ult-radius-sm'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
-    color: color['--ult-color-accent-contrast'],
+    color: { default: color['--ult-color-accent-contrast'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     display: 'inline-flex',
     flexShrink: 0,
     fontFamily: font['--ult-font-sans'],
-    // The glyphs are `1em`, so the box sets its own size rather than inheriting the page's.
-    fontSize: text['--ult-text-5'],
+    // The glyphs are `1em`, so the box sets their 12px size rather than inheriting the page's.
+    fontSize: text['--ult-text-2'],
     height: space['--ult-space-6'],
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
     padding: 0,
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, border-color',
@@ -86,14 +95,14 @@ function Check() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={3}
       strokeLinecap="round"
       strokeLinejoin="round"
       width="1em"
       height="1em"
       aria-hidden="true"
     >
-      <path d="m5 12 4 4L19 6" />
+      <path d="m4 12 5 5L20 6" />
     </svg>
   );
 }
@@ -105,14 +114,14 @@ function Dash() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={3}
       strokeLinecap="round"
       strokeLinejoin="round"
       width="1em"
       height="1em"
       aria-hidden="true"
     >
-      <path d="M5 12h14" />
+      <path d="M4 12h16" />
     </svg>
   );
 }
