@@ -19,7 +19,7 @@ export default productionScenario('site-landing.without-field', 'production', as
   const heading = page.getByRole('heading', { level: 1, name: 'A system for building interfaces.' });
   await heading.waitFor();
   await hero.getByText('accessible React components', { exact: false }).waitFor();
-  await hero.locator('pre').filter({ hasText: 'npx shadcn add' }).waitFor();
+  await hero.locator('pre').filter({ hasText: 'npx shadcn@4.21.4 add' }).waitFor();
   await hero.getByRole('button', { name: 'Copy the Vite install commands' }).waitFor();
   await assertFits(page, heading, `/ at ${variant.viewport} width without the field`);
   await axe('landing without the field');

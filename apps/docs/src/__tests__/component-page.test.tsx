@@ -64,11 +64,11 @@ test('Button opens on a running head, its title, the source facts and the instal
 
   const managers = screen.getByRole('tablist', { name: 'Package manager' });
   await expect.element(managers.getByRole('tab', { name: 'npx' })).toHaveAttribute('aria-selected', 'true');
-  await expect.element(screen.getByText('npx shadcn add @ultima/button', { exact: true })).toBeVisible();
+  await expect.element(screen.getByText('npx shadcn@4.21.4 add @ultima/button', { exact: true })).toBeVisible();
   await userEvent.click(managers.getByRole('tab', { name: 'pnpm' }));
-  await expect.element(screen.getByText('pnpm dlx shadcn add @ultima/button', { exact: true })).toBeVisible();
+  await expect.element(screen.getByText('pnpm dlx shadcn@4.21.4 add @ultima/button', { exact: true })).toBeVisible();
   await userEvent.click(managers.getByRole('tab', { name: 'bun' }));
-  await expect.element(screen.getByText('bunx shadcn add @ultima/button', { exact: true })).toBeVisible();
+  await expect.element(screen.getByText('bunx shadcn@4.21.4 add @ultima/button', { exact: true })).toBeVisible();
 });
 
 test('the sections are numbered, the examples are plates, and the rail lists the sections', async () => {

@@ -74,8 +74,8 @@ export async function markdownGuidance(files: Files, catalogue: Catalogue, compo
         if (typeof id !== 'string') throw new Error('LessonInstall requires a literal id');
         return command(lesson(id).install);
       }
-      case 'ProductThemeInstall': return `${command(`npx shadcn add "${theme.url}"`)}\n[Open this draft in Theme Studio](${ORIGIN}/theme-studio${fragment.fragment})`;
-      case 'UltimaPresetInstall': return command(`npx shadcn add "${preset.url}"`);
+      case 'ProductThemeInstall': return `${command(`npx shadcn@4.21.4 add "${theme.url}"`)}\n[Open this draft in Theme Studio](${ORIGIN}/theme-studio${fragment.fragment})`;
+      case 'UltimaPresetInstall': return command(`npx shadcn@4.21.4 add "${preset.url}"`);
       case 'CompleteScreens': return catalogue.blocks.map((block) => `- [${block.title}](${ORIGIN}/blocks/${block.id}): ${block.description}`).join('\n');
       case 'SettingsPreview': return '[Settings 01 preview](https://ultima.systems/blocks/settings-01)';
       case 'WhereNext': return [...PAGES.keys(), '/recipes', '/components', '/tokens', '/theme-studio', '/cli', '/blocks'].map((route) => `- [${route.slice(1)}](${ORIGIN}${PAGES.has(route) || route === '/recipes' ? guidePath(route) : route})`).join('\n');

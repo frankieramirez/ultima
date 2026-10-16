@@ -15,7 +15,7 @@ A free-text action palette: an input that filters a list of actions, built on Ba
 ## Install
 
 ```bash
-npx shadcn add @ultima/command
+npx shadcn@4.21.4 add @ultima/command
 ```
 
 ## The anchored arrangement
@@ -43,7 +43,7 @@ A command dialog is the inline arrangement lifted into a modal surface: the ⌘K
 Component dependencies: `dialog`, `command`, `scroll-area`, `button`.
 
 ```bash
-npx shadcn add @ultima/dialog @ultima/command @ultima/scroll-area @ultima/button
+npx shadcn@4.21.4 add @ultima/dialog @ultima/command @ultima/scroll-area @ultima/button
 ```
 
 `Dialog` owns the surface whole. `Dialog.Trigger render={<Button />}` opens it, and `Dialog.Viewport` top-anchors through its `style` slot — `placeItems: 'start center'` plus top padding — where a plain dialog centres. `Dialog.Title` renders clip-hidden because a Title is always rendered, and `Dialog.Close` renders as a Button that stays hidden until focused, keeping a close in the Tab loop without painting one on the palette.

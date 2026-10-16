@@ -18,7 +18,7 @@ function LiveElement({ html }: { html: string }) {
 export function WebComponent({ item }: { item: string }) {
   const element = elementFor(item);
   const install = [
-    `npx shadcn add @ultima/${element.tag}`,
+    `npx shadcn@4.21.4 add @ultima/${element.tag}`,
     '',
     `<script type="module" src="https://ultima.systems/elements/${element.tag}.js"></script>`,
   ].join('\n');

@@ -7,6 +7,7 @@ import { type Diagnostic, SPEC } from './diagnostic.ts';
 import { type ManagedState, managedSkills } from './install.ts';
 import { type ConsumerScope, consumerScope } from './scope.ts';
 import { type Scheme, contentHash, readStamp } from './stamp.ts';
+import { SHADCN_ADD } from './shadcn.ts';
 
 export type State = 'current' | 'edited' | 'behind' | 'diverged' | 'unstamped' | 'retired';
 
@@ -210,7 +211,7 @@ function incomplete(ruleId: string, file: string, message: string, repair: strin
 }
 
 const CLOSING: Partial<Record<Row['state'], (items: string[]) => string>> = {
-  behind: (items) => `npx shadcn add ${items.map((item) => `@ultima/${item}`).join(' ')} --overwrite`,
+  behind: (items) => `${SHADCN_ADD} ${items.map((item) => `@ultima/${item}`).join(' ')} --overwrite`,
   diverged: (items) => `npx ultima-design diff ${items.join(' ')}  (reinstalling discards your edits)`,
   retired: (items) => `the registry no longer serves ${items.join(', ')}; those files are yours alone now`,
   'unknown-scheme': (items) =>

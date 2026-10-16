@@ -418,7 +418,7 @@ function ExportDialog({
   const gated = failures.length > 0 && (shippedFailure || !acknowledged);
   const [installUrl, setInstallUrl] = useState<{ draft: string; url: string | null; reason: 'too-long' | 'encoding-failed' | null } | null>(null);
   const currentInstall = installUrl?.draft === acknowledgementKey ? installUrl : null;
-  const installCommand = !gated && currentInstall?.url ? `npx shadcn@latest add "${currentInstall.url}"` : null;
+  const installCommand = !gated && currentInstall?.url ? `npx shadcn@4.21.4 add "${currentInstall.url}"` : null;
   useEffect(() => {
     if (!open || gated) return;
     let cancelled = false;
@@ -518,7 +518,7 @@ function ExportDialog({
                     </> : gated ? <Button disabled style={[docsStyles.square, styles.touch, styles.action]}>Copy install command</Button> : currentInstall?.reason ? <>
                       <p {...stylex.props(styles.note, styles.exportCopy)}>{currentInstall.reason === 'too-long' ? 'This theme is too large for an install URL.' : 'An install URL could not be created.'} Download the registry file, then run this command.</p>
                       <Button onClick={registryDownload} style={[docsStyles.square, styles.touch, styles.action]}><DownloadSimpleIcon aria-hidden /> Download registry file</Button>
-                      <Fence code="npx shadcn add ./ultima-theme.registry.json" lang="shell" />
+                      <Fence code="npx shadcn@4.21.4 add ./ultima-theme.registry.json" lang="shell" />
                     </> : <p role="status" {...stylex.props(styles.note, styles.exportCopy)}>Creating install command…</p>}
                   </section>
                   <section {...stylex.props(styles.stack)}>

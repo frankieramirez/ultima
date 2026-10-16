@@ -78,7 +78,7 @@ test('a bash fence colors the command', async () => {
         <span data-testid="accent" {...stylex.props(styles.accent)}>
           accent
         </span>
-        <HighlightedCode code="npx shadcn add @ultima/button" lang="bash" />
+        <HighlightedCode code="npx shadcn@4.21.4 add @ultima/button" lang="bash" />
       </div>
     );
   }
@@ -211,7 +211,7 @@ test('a labelled fence shows its label and numbers its lines outside the copied 
 });
 
 test('a numbered block scrolls a long line instead of wrapping it', async () => {
-  const line = `npx shadcn add ${'https://ultima.systems/r/setup-vite.json '.repeat(6)}`;
+  const line = `npx shadcn@4.21.4 add ${'https://ultima.systems/r/setup-vite.json '.repeat(6)}`;
   function Long({ components }: { components?: MDXComponents }) {
     const Pre = components!.pre as ComponentType<ComponentProps<'pre'>>;
     return (
@@ -235,7 +235,7 @@ test('an unlabelled fence stays a plain block with no numbers', async () => {
     const Pre = components!.pre as ComponentType<ComponentProps<'pre'>>;
     return (
       <Pre>
-        <code className="language-bash">npx shadcn add @ultima/button</code>
+        <code className="language-bash">npx shadcn@4.21.4 add @ultima/button</code>
       </Pre>
     );
   }

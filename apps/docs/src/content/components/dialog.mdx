@@ -17,7 +17,7 @@ A modal surface built on Base UI's Dialog, with a backdrop, managed focus, and a
 ## Install
 
 ```bash
-npx shadcn add @ultima/dialog
+npx shadcn@4.21.4 add @ultima/dialog
 ```
 
 ## Basic
@@ -49,7 +49,7 @@ A sheet is a Dialog anchored to an edge of the viewport instead of centred in it
 Component dependencies: `dialog` and `button`.
 
 ```bash
-npx shadcn add @ultima/dialog @ultima/button
+npx shadcn@4.21.4 add @ultima/dialog @ultima/button
 ```
 
 `Dialog.Viewport` zeroes its padding and swaps `placeItems: center` for the edge. `Dialog.Popup` drops its radius and its measure cap, keeps a hairline on the side facing the page, and slides in from its edge over `--ult-motion-base` in place of the shared `scale(0.98)`. The four edges are physical rather than logical, because CSS has no logical transform.

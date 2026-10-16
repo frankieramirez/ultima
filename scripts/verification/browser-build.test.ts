@@ -122,7 +122,7 @@ describe('build and smoke logs', () => {
     'smoke-install: packed ultima-design-0.1.0.tgz',
     'smoke-install: the catalogue is 52 components',
     '── vite: scaffolding',
-    `── vite: npx shadcn add ${URL}/r/setup-vite.json`,
+    `── vite: npx shadcn@4.21.4 add ${URL}/r/setup-vite.json`,
     'smoke-install: 60 installed files carry their item stamp',
     '── vite: npm run build',
     '── next: scaffolding',
@@ -146,7 +146,7 @@ describe('build and smoke logs', () => {
     assert.equal(passed.url, URL);
     assert.equal(passed.work, '/tmp/run/ultima-smoke.abc');
     assert.equal(judge({ ...passed, process: null }, passed.expected ?? []).status, 'passed');
-    assert.ok(passed.executed.includes('smoke:step:vite: npx shadcn add $HOST/r/setup-vite.json'), 'step IDs do not carry the run-owned port');
+    assert.ok(passed.executed.includes('smoke:step:vite: npx shadcn@4.21.4 add $HOST/r/setup-vite.json'), 'step IDs do not carry the run-owned port');
 
     const cut = SMOKE_PASS.split('\n').slice(0, 11).join('\n');
     const early = smoke(`${cut}\n`, 0, TARGETS);

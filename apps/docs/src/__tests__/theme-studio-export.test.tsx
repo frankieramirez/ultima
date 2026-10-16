@@ -82,7 +82,7 @@ test('export separates installation from files and font details', async () => {
   const dialog = screen.getByRole('dialog');
   await expect.element(dialog.getByRole('heading', { name: 'Export theme' })).toBeVisible();
   await expect.element(dialog.getByRole('button', { name: 'Copy install command', exact: true })).toBeVisible();
-  expect(dialog.element().textContent).toContain('npx shadcn@latest add');
+  expect(dialog.element().textContent).toContain('npx shadcn@4.21.4 add');
   expect(dialog.element().textContent).toContain('/r/theme.json?theme=');
   await expect.element(dialog.getByText(/after the application.*StyleX output/i)).toBeVisible();
   await expect.element(dialog.getByText(/data-theme/)).toBeVisible();
@@ -135,7 +135,7 @@ test('the copied install URL serves the complete edited draft, including overrid
   await userEvent.click(copy);
   await expect.poll(() => writeText.mock.calls.length).toBe(1);
   const command = writeText.mock.calls[0]![0];
-  const url = new URL(/^npx shadcn@latest add "(.+)"$/.exec(command)![1]!);
+  const url = new URL(/^npx shadcn@4.21.4 add "(.+)"$/.exec(command)![1]!);
   expect(url.origin).toBe(window.location.origin);
   expect(url.pathname).toBe('/r/theme.json');
   expect(url.hash).toBe('');
@@ -163,7 +163,7 @@ test.each(['encoding unavailable', 'URL too long', 'decoded draft too large'])('
   const dialog = screen.getByRole('dialog', { name: 'Export theme' });
   const download = dialog.getByRole('button', { name: 'Download registry file', exact: true });
   await expect.element(download).toBeVisible();
-  expect(dialog.element().textContent).toContain('npx shadcn add ./ultima-theme.registry.json');
+  expect(dialog.element().textContent).toContain('npx shadcn@4.21.4 add ./ultima-theme.registry.json');
   await userEvent.click(download);
   expect(await downloads.take('ultima-theme.registry.json')).toBe(toRegistryItem(draft));
 });

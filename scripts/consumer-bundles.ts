@@ -9,6 +9,7 @@ import { lifecycle } from './consumer-elements.ts';
 import { browserErrors, hydrationProblems, hydrationState, type BrowserLog, type HydrationState } from './consumer-next.ts';
 import { BUNDLE_ITEMS, MATRIX_BUNDLES, bundleCases, elementCases, type Bundle, type ConsumerLayout, type ConsumerReport, type Engine } from './consumer-report.ts';
 import { consumerValues, sceneProbes } from './consumer-values.ts';
+import { SHADCN } from '../packages/cli/src/shadcn.ts';
 
 /** Every assertion a bundle cell executes, in order; a cell passes only when each one ran and held. */
 export const BUNDLE_ASSERTIONS = {
@@ -325,7 +326,7 @@ export const bundleFiles = (fault?: string): Record<string, string> => ({
 
 /** Adds the probe items, the layered reset and the probes beneath the Projects scene in the Vite fixture. */
 export async function bundleScene(app: string, execute: Run, fault?: string): Promise<void> {
-  await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', ...BUNDLE_ITEMS.map((id) => `@ultima/${id}`), '--yes']);
+  await execute(app, 'npx', ['-y', SHADCN, 'add', ...BUNDLE_ITEMS.map((id) => `@ultima/${id}`), '--yes']);
   await writeFile(join(app, 'src/index.css'), `${RESET}${await readFile(join(app, 'src/index.css'), 'utf8')}`);
   for (const [name, content] of Object.entries(bundleFiles(fault))) await writeFile(join(app, 'src', name), content);
 }

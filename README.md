@@ -28,15 +28,15 @@ Choose a theme in [Theme Studio](https://ultima.systems/theme-studio), then foll
 Vite:
 
 ```bash
-npx shadcn add https://ultima.systems/r/setup-vite.json
-npx shadcn add @ultima/button
+npx shadcn@4.21.4 add https://ultima.systems/r/setup-vite.json
+npx shadcn@4.21.4 add @ultima/button
 ```
 
 Next.js App Router:
 
 ```bash
-npx shadcn add https://ultima.systems/r/setup-next.json
-npx shadcn add @ultima/button
+npx shadcn@4.21.4 add https://ultima.systems/r/setup-next.json
+npx shadcn@4.21.4 add @ultima/button
 ```
 
 The setup item writes `components.json` and the StyleX compiler config, and never overwrites a file your scaffold already owns. Installing Button pulls in the tokens and the shared component helpers. The steps you still do by hand are on the [install page](https://ultima.systems/install).

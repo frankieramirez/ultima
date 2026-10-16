@@ -20,7 +20,7 @@ const block = (id: string, title: string, number: string, built: string[], descr
   title,
   description,
   number,
-  install: `npx shadcn add @ultima/${id}`,
+  install: `npx shadcn@4.21.4 add @ultima/${id}`,
   installDocs: '',
   files: [],
   builtFrom: built.map((item) => ({ id: item, title: item, number: '000', kind: 'component' as const })),

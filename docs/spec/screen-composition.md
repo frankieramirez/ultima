@@ -75,13 +75,13 @@ Add compact **Recipes** and **Build a screen** sections to `/llms.txt` from the 
 For Typography the command remains:
 
 ```sh
-npx shadcn add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area
+npx shadcn@4.21.4 add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area
 ```
 
 For the block path:
 
 ```sh
-npx shadcn add @ultima/settings-01
+npx shadcn@4.21.4 add @ultima/settings-01
 ```
 
 The default block entry import is `import { Settings01 } from '@/components/settings-01/settings-01'`; resolve its destination from the configured components alias and its exported symbol from the descriptor. Derive commands for every recipe from its dependencies; a reader following Chart, Data Table or React Hook Form must also see the relevant npm engine install.

@@ -300,7 +300,7 @@ describe('status', () => {
         `dialog    src/components/ui/dialog.tsx   behind    ${OLD}`,
         `sidebar   src/components/ui/sidebar.tsx  diverged  ${OLD}`,
         '',
-        'behind    npx shadcn add @ultima/dialog --overwrite',
+        'behind    npx shadcn@4.21.4 add @ultima/dialog --overwrite',
         'diverged  npx ultima-design diff sidebar  (reinstalling discards your edits)',
         '',
       ].join('\n'),

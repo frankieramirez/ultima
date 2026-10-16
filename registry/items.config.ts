@@ -99,7 +99,7 @@ export const items: Record<string, RegistryItemDescription> = {
   "code": {
     "title": "Code",
     "description": "Monospaced code, inline in a sentence or as a block.",
-    "docs": "import { Code } from '@/components/ui/code';\n\n<Code>npx shadcn add @ultima/button</Code>\n<Code variant=\"block\">{source}</Code>"
+    "docs": "import { Code } from '@/components/ui/code';\n\n<Code>npx shadcn@4.21.4 add @ultima/button</Code>\n<Code variant=\"block\">{source}</Code>"
   },
   "collapsible": {
     "title": "Collapsible",
@@ -353,7 +353,7 @@ export const items: Record<string, RegistryItemDescription> = {
   "ult-code": {
     "title": "Code element",
     "description": "Ultima Code as a custom element, vendored for a host that cannot run React.",
-    "docs": "<script type=\"module\" src=\"./ult-code.js\"></script>\n\n<ult-code>npx shadcn add @ultima/button</ult-code>\n<ult-code variant=\"block\">pnpm install\npnpm dev</ult-code>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nAxes are attributes carrying the React prop values verbatim: variant.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+    "docs": "<script type=\"module\" src=\"./ult-code.js\"></script>\n\n<ult-code>npx shadcn@4.21.4 add @ultima/button</ult-code>\n<ult-code variant=\"block\">pnpm install\npnpm dev</ult-code>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nAxes are attributes carrying the React prop values verbatim: variant.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
     "registryDependencies": [
       "https://ultima.systems/r/tokens-css.json"
     ]

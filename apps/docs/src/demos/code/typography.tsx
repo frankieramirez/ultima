@@ -99,7 +99,7 @@ export default function TypographyRecipe() {
       </blockquote>
       <h3 {...stylex.props(styles.h3)}>Code blocks</h3>
       <Code variant="block">
-        {'npx shadcn add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area'}
+        {'npx shadcn@4.21.4 add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area'}
       </Code>
       <Separator style={styles.rule} />
       <h3 {...stylex.props(styles.h3)}>Tables</h3>

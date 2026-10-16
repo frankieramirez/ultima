@@ -8,7 +8,7 @@ export default function InCard() {
         <Card.Description>Copy source into a registry-first project.</Card.Description>
       </Card.Header>
       <Card.Body>
-        <Code variant="block">npx shadcn add @ultima/button</Code>
+        <Code variant="block">npx shadcn@4.21.4 add @ultima/button</Code>
       </Card.Body>
     </Card.Root>
   );

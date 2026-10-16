@@ -122,7 +122,7 @@ function Plate({ entry, preset }: { entry: ComponentEntry; preset: Preset }) {
       <Separator />
       <div {...stylex.props(styles.notes)}>
         <p {...stylex.props(styles.description)}>{entry.description}</p>
-        <LandingCommand commands={[`npx shadcn add @ultima/${entry.item}`]} label={`Copy the ${entry.name} install command`} />
+        <LandingCommand commands={[`npx shadcn@4.21.4 add @ultima/${entry.item}`]} label={`Copy the ${entry.name} install command`} />
         <TextLink
           variant="muted"
           render={<Link to="/components/$name" params={{ name: entry.item }} />}

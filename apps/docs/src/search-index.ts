@@ -26,7 +26,7 @@ export type SearchSources = {
 
 const SITE_SOURCES: SearchSources = { components, elements, blocks, pages };
 
-const install = (id: string) => `npx shadcn add @ultima/${id}`;
+const install = (id: string) => `npx shadcn@4.21.4 add @ultima/${id}`;
 
 export const groupLabel = (entry: ComponentEntry) => GROUPS.find(({ id }) => id === entry.group)?.label ?? entry.group;
 

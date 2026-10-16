@@ -112,8 +112,8 @@ describe('ultima doctor', () => {
       severity: 'blocking',
       file: '.',
     });
-    expect(report.diagnostics[0]?.repair).toContain('npx shadcn add https://ultima.systems/r/setup-vite.json');
-    expect(report.diagnostics[0]?.repair).toContain('npx shadcn add https://ultima.systems/r/setup-next.json');
+    expect(report.diagnostics[0]?.repair).toContain('npx shadcn@4.21.4 add https://ultima.systems/r/setup-vite.json');
+    expect(report.diagnostics[0]?.repair).toContain('npx shadcn@4.21.4 add https://ultima.systems/r/setup-next.json');
     expect(code).toBe(1);
   });
 
@@ -307,7 +307,7 @@ describe('the Vite hand steps', () => {
     rmSync(join(root, 'ultima.vite.ts'));
     const { diagnostic } = await onlyFinding(root, '--target', 'vite');
     expect(diagnostic).toMatchObject({ ruleId: 'ULT-SETUP-012', file: 'ultima.vite.ts' });
-    expect(diagnostic.repair).toBe('Run `npx shadcn add https://ultima.systems/r/setup-vite.json`; it installs ultima.vite.ts.');
+    expect(diagnostic.repair).toBe('Run `npx shadcn@4.21.4 add https://ultima.systems/r/setup-vite.json`; it installs ultima.vite.ts.');
   });
 
   it('finds ultimaStylex() after another plugin, at the plugins array', async () => {

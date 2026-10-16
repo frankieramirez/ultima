@@ -30,6 +30,7 @@ import { lintProof, lintScene } from './consumer-lint.ts';
 import { externalProof } from './consumer-external.ts';
 import { BUNDLE_FAULTS, bundleProof, bundleScene } from './consumer-bundles.ts';
 import { elementScene } from './consumer-elements.ts';
+import { SHADCN } from '../packages/cli/src/shadcn.ts';
 
 export function proofDraft(): ThemeDraft {
   const draft = sharedProofDraft();
@@ -187,7 +188,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     report.source.cliTarballDigest = digest(await readFile(tarball));
     const app = join(work, options.layout);
     await scaffold(isNext ? (src ? 'next-src' : 'next-root') : 'vite', app, execute, { eslint: options.exercise === 'lint' });
-    const setup = await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', `${registry.url}/r/${setupItem}.json`, '--yes']);
+    const setup = await execute(app, 'npx', ['-y', SHADCN, 'add', `${registry.url}/r/${setupItem}.json`, '--yes']);
     const configPath = join(app, isNext ? 'postcss.config.js' : 'vite.config.ts');
     if (isNext) await setupNext(app, src, setup);
     else {
@@ -206,9 +207,9 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
     const components = JSON.parse(await readFile(componentsPath, 'utf8'));
     components.registries['@ultima'] = `${registry.url}/r/{name}.json`;
     await writeFile(componentsPath, `${JSON.stringify(components, null, 2)}\n`);
-    await execute(app, 'npx', ['-y', 'shadcn@latest', ...SCENE_INSTALL.split(' ').slice(2), '--yes']);
+    await execute(app, 'npx', ['-y', SHADCN, ...SCENE_INSTALL.split(' ').slice(2), '--yes']);
     if (options.exercise === 'theme-mode') {
-      await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/badge', '@ultima/popover', '@ultima/theme-mode', '--yes']);
+      await execute(app, 'npx', ['-y', SHADCN, 'add', '@ultima/badge', '@ultima/popover', '@ultima/theme-mode', '--yes']);
       report.installedItems.push('badge', 'popover', 'theme-mode');
       const installedMode = join(app, src || !isNext ? 'src/components/ui/theme-mode.tsx' : 'components/ui/theme-mode.tsx');
       const registeredMode = JSON.parse(await readFile(join(work, 'registry/r/theme-mode.json'), 'utf8'));
@@ -221,7 +222,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       const response = await themeRegistry(new Request(publicUrl.url));
       assert.equal(response.status, 200, 'documented theme command must resolve');
       await writeFile(join(work, 'registry/r/theme.json'), await response.text());
-      await writeFile(join(output, 'documented-command.txt'), `npx shadcn add "${publicUrl.url}"\n`);
+      await writeFile(join(output, 'documented-command.txt'), `npx shadcn@4.21.4 add "${publicUrl.url}"\n`);
       const url = new URL(publicUrl.url);
       themeUrl = `${registry.url}${url.pathname}${url.search}`;
     }
@@ -276,7 +277,7 @@ export async function consumerProof(options: ProofOptions): Promise<ConsumerRepo
       await writeFile(join(fixtureOutput, 'ultima-theme.json'), installed);
       if (options.deliveryPath === 'cli' || documented) report.cliReports = await cliProof(app, fixtureOutput, options.layout, execute);
       if (documented) {
-        await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', '@ultima/tokens-css', '--yes']);
+        await execute(app, 'npx', ['-y', SHADCN, 'add', '@ultima/tokens-css', '--yes']);
         const lib = isNext && !src ? 'lib' : 'src/lib';
         const tokenFiles = [`${lib}/palette.ts`, `${lib}/themes.ts`, `${lib}/tokens-json.ts`, `${lib}/tokens.stylex.ts`, 'ultima-tokens.css'];
         const owned = [...tokenFiles, 'ultima-theme.css', 'ultima-theme.json', 'DESIGN.md'];

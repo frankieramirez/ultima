@@ -9,6 +9,7 @@ import { toStylex } from '../packages/tokens/src/theme/export.ts';
 import type { ThemeDraft } from '../packages/tokens/src/theme/draft.ts';
 import { repository, type Run } from './consumer-helpers.ts';
 import { LINT_CASES, type ConsumerLayout, type ConsumerReport } from './consumer-report.ts';
+import { SHADCN } from '../packages/cli/src/shadcn.ts';
 
 /** The hosted fragment, served at https://ultima.systems/ultima.eslint.mjs and downloaded from the loopback registry here. */
 export const LINT_FRAGMENT = 'apps/docs/public/ultima.eslint.mjs';
@@ -193,7 +194,7 @@ export async function lintScene(app: string, layout: ConsumerLayout, registry: {
   const paths = lintPaths(layout);
   const manifest = JSON.parse(await readFile(join(registry.folder, 'r/registry.json'), 'utf8')) as { items: { name: string; type: string }[] };
   const items = manifest.items.filter((item) => item.type === 'registry:ui' || item.type === 'registry:block').map((item) => item.name).sort();
-  await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', ...items.map((id) => `@ultima/${id}`), '--yes', '--overwrite']);
+  await execute(app, 'npx', ['-y', SHADCN, 'add', ...items.map((id) => `@ultima/${id}`), '--yes', '--overwrite']);
   await writeFile(join(dirname(app), 'deny-network.cjs'), PRELOAD);
   const before = layout === 'vite' ? await noEslint(app, layout, output) : undefined;
   // The docs host serves apps/docs/public; the loopback registry stands in for it.

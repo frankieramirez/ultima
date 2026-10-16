@@ -49,7 +49,7 @@ test('the section names the tag, both install paths, the attributes, and upgrade
   const section = screen.getByRole('heading', { level: 2, name: 'Web component' }).element().parentElement!;
   expect(section.textContent).toContain('<ult-button>');
   const fences = [...section.querySelectorAll('pre')].map((pre) => pre.textContent ?? '');
-  expect(fences.some((text) => text.includes('npx shadcn add @ultima/ult-button'))).toBe(true);
+  expect(fences.some((text) => text.includes('npx shadcn@4.21.4 add @ultima/ult-button'))).toBe(true);
   expect(fences.some((text) => text.includes('/elements/ult-button.js'))).toBe(true);
   const rows = [...section.querySelectorAll('tbody tr')].filter((row) => row.textContent?.includes('ult-button'));
   expect(rows.length).toBe(4);
