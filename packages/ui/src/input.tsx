@@ -9,11 +9,11 @@ import type { ComponentProps } from 'react';
 const styles = stylex.create({
   root: {
     appearance: 'none',
-    // A disabled field still matches `:hover`, so the hover fill is restated at rest inside it.
+    // A disabled field still matches `:hover`, so `:disabled:hover` restates the resting fill.
     backgroundColor: {
       default: color['--ult-color-surface-sunken'],
       ':hover': color['--ult-color-surface-hover'],
-      ':disabled': { default: color['--ult-color-surface-sunken'], ':hover': color['--ult-color-surface-sunken'] },
+      ':disabled:hover': color['--ult-color-surface-sunken'],
     },
     borderColor: {
       default: color['--ult-color-border-strong'],

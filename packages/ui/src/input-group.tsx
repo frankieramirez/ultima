@@ -10,11 +10,11 @@ import type { ComponentProps } from 'react';
 const styles = stylex.create({
   root: {
     alignItems: 'center',
-    // A disabled group still matches `:hover`, so the hover fill is restated at rest inside it.
+    // A disabled group still matches `:hover`, so `:has(:disabled):hover` restates the resting fill.
     backgroundColor: {
       default: color['--ult-color-surface-sunken'],
       ':hover': color['--ult-color-surface-hover'],
-      ':has(:disabled)': { default: color['--ult-color-surface-sunken'], ':hover': color['--ult-color-surface-sunken'] },
+      ':has(:disabled):hover': color['--ult-color-surface-sunken'],
     },
     borderColor: {
       default: color['--ult-color-border-strong'],
