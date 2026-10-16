@@ -13,7 +13,7 @@ Build one complete screen, the **Pantry** screen, as the application's home rout
 - **Responsive.** At phone width the list and the detail stack in one column; at laptop width they sit side by side. Nothing scrolls sideways at any width.
 - **Log a donation.** A labelled form that adds an item to the list or adds to an existing one. It has a required **Item name** field, a **Quantity** field, and a **Category** chosen from a fixed set (Canned goods, Dry goods, Produce, Toiletries). Submitting without a name shows an error that names the problem, next to the field. A successful submission updates the list.
 - **Category control and dialog.** Choose the category with a portalled select, or open the form in a dialog. Either way, the control opens from the keyboard, closes on Escape and returns focus to what opened it.
-- **Brand theme.** The screen uses the brand theme in both dark and light mode. The application decides no colors, lengths or shadows of its own outside its theme and token modules. A breakpoint is the exception: a media query is a named module constant in the file that uses it, as the guidance shows, not a token.
+- **Brand theme.** The screen uses the brand theme in both dark and light mode. The application decides no colors, lengths or shadows of its own outside its theme and token modules. A breakpoint is the exception: a media query is a named module constant in the file that uses it, as the guidance shows, not a token. Arrangement values are not lengths the application decides: grid track templates such as `minmax(0, 1fr)`, percentages and viewport units such as `100dvh` stay literal in local StyleX, as the guidance writes them.
 
 ## Done means
 

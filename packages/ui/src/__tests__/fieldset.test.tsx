@@ -66,6 +66,21 @@ test('Root resets the UA fieldset chrome', async () => {
   expect(styles.marginTop).toBe('0px');
 });
 
+test('a disabled fieldset dims its legend', async () => {
+  const screen = await render(
+    <>
+      <Fieldset.Root>
+        <Fieldset.Legend>Live</Fieldset.Legend>
+      </Fieldset.Root>
+      <Fieldset.Root disabled>
+        <Fieldset.Legend>Off</Fieldset.Legend>
+      </Fieldset.Root>
+    </>,
+  );
+  expect(getComputedStyle(screen.getByText('Live').element()).opacity).toBe('1');
+  expect(getComputedStyle(screen.getByText('Off').element()).opacity).toBe('0.5');
+});
+
 test('public prop types reject className', () => {
   expectTypeOf<FieldsetRootProps>().not.toHaveProperty('className');
   expectTypeOf<FieldsetLegendProps>().not.toHaveProperty('className');
