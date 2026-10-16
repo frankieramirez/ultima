@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-16-vite-0106c2",
+  "layout": "vite",
+  "brief": {
+    "path": "docs/evidence/first-screen/brief.md",
+    "sha256": "2b0662013937b1f550246297fc2ff8e0689fd32c9e36ad15107e39347e17d986",
+    "brand": "#A3237F"
+  },
+  "source": {
+    "head": "1eefbfac2cb72161861cac07d4b054c4c0e53edc",
+    "manifest": "1862afc2edd94398cbaf0aa72cfa5ca30e3c8c00fa3ecb1154ecdb9b89fe140f",
+    "registryManifest": "f1229628064ba87672c11928ec2fbb6303e20d6d8685a3dc6ee28f0db0903328",
+    "cliTarball": {
+      "packed": "487cae1c5084e551d6d35b4dad04a531d60af55f7fdcc350f06c849678e7aa79",
+      "served": "2028b9cce29e066b6595b1a76899da7001911898903bc795654da27800251220",
+      "version": "0.1.0"
+    },
+    "draftDigest": "2362c2cc7e7337b2b7a84ccd656298ccb22efdcaa9bc0fa84517864a970afda8",
+    "draftFingerprint": "93e116"
+  },
+  "host": {
+    "origin": "http://127.0.0.1:43923",
+    "standsFor": "https://ultima.systems",
+    "npm": "http://127.0.0.1:43923/npm/"
+  },
+  "theme": {
+    "madeIn": "Theme Studio",
+    "command": "npx shadcn@latest add \"http://127.0.0.1:43923/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\""
+  },
+  "prompt": {
+    "sha256": "721d14e82c25a814e6358f42fbfe6cd506dc6b8b480006ce6a4ef099242c0aaa"
+  },
+  "agent": {
+    "harness": "claude-code",
+    "version": "2.1.301 (Claude Code)",
+    "flags": [
+      "-p",
+      "--safe-mode",
+      "--strict-mcp-config",
+      "--no-chrome",
+      "--permission-mode",
+      "auto",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--settings",
+      "settings: deny WebSearch, the live host, and other checkouts",
+      "--model",
+      "claude-opus-5-5"
+    ],
+    "cwd": "an empty directory under ~/.cache/ultima-first-screen, outside any checkout",
+    "startedAt": "2026-10-16T14:35:18.131Z",
+    "finishedAt": "2026-10-16T14:50:28.802Z",
+    "exit": 0,
+    "model": "claude-opus-5-5",
+    "session": "ebe430e9-3e45-4996-aaf0-119698b70b21",
+    "turns": 51,
+    "costUsd": 2.6873762000000005,
+    "durationMs": 910038,
+    "outcome": "success"
+  },
+  "transcript": {
+    "file": "2026-10-16-vite-0106c2.stream.jsonl.gz",
+    "sha256": "a150a59b7251a51b4e187feb57aaa29673ef10a81e99137ac298564b99705824",
+    "events": 357,
+    "commands": [
+      "ls -la && curl -s http://127.0.0.1:43923/llms.txt | head -200",
+      "cat /home/f/.claude/projects/-home-f--cache-ultima-first-screen-2026-10-16-vite-0106c2-work/ebe430e9-3e45-4996-aaf0-119698b70b21/tool-results/b1t735p2c.txt",
+      "mkdir -p .scratch && for g in install install/update build-a-screen support recipes; do curl -s http://127.0.0.1:43923/guides/$g.md -o .scratch/$(echo $g | tr / _).md; done; wc -c .scratch/*.md",
+      "cat .scratch/install.md",
+      "cat .scratch/build-a-screen.md .scratch/recipes.md",
+      "cat .scratch/support.md .scratch/install_update.md",
+      "curl -s http://127.0.0.1:43923/guides/lessons/projects.md -o .scratch/projects.md && curl -s http://127.0.0.1:43923/guides/lessons/product-tokens.md -o .scratch/product-tokens.md && curl -s http://127.0.0.1:43923/guides/lessons/interaction-states.md -o .scratch/interaction-states.md && wc -c .scratch/*.md && cat .scratch/projects.md",
+      "npx ultima-design@latest init larder --framework vite --plan --json > .scratch/ultima-init-plan.json; echo \"exit $?\"; head -c 6000 .scratch/ultima-init-plan.json",
+      "python3 -I -c \"\nimport json,sys\np=json.load(open(sys.argv[1]))\nprint(p.keys())\nfor o in p['operations']:\n    print(o['id'], o['kind'], o.get('path',''), (o.get('command') or {}).get('args',''))\nfor k in p:\n    if k not in ('operations','payloads','dependencies','inputs','request','target','recipe','cli','kind','schemaVersion'):\n        print(k, json.dumps(p[k],indent=1)[:3000])\n\" .scratch/ultima-init-plan.json",
+      "npx ultima-design@latest init --apply .scratch/ultima-init-plan.json 2>&1 | tail -80",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/larder && npx shadcn@latest add \"http://127.0.0.1:43923/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\" 2>&1 | tail -30; ls",
+      "cat DESIGN.md; head -60 ultima-theme.css; grep -c . ultima-theme.css; cat src/main.tsx src/index.css src/App.tsx vite.config.ts components.json",
+      "sed -i \"s#^import './index.css'#import './index.css'\\nimport '../ultima-theme.css'#\" src/main.tsx && cat src/main.tsx && git init -q && npm exec --no -- ultima install --harness claude 2>&1 | tail -30",
+      "cat .claude/skills/ultima-design/SKILL.md .claude/settings.json; for c in select field input dialog empty badge card; do echo \"== $c\"; curl -s -o /dev/null -w \"%{http_code} %{content_type}\\n\" http://127.0.0.1:43923/components/$c.md; done",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work && curl -s http://127.0.0.1:43923/llms.txt -o .scratch/llms.txt; wc -lc .scratch/llms.txt; grep -n \"^#\" .scratch/llms.txt | head -80",
+      "sed -n 204,232p .scratch/llms.txt; sed -n 336,378p .scratch/llms.txt; sed -n 434,448p .scratch/llms.txt; sed -n 563,577p .scratch/llms.txt",
+      "sed -n 705,734p .scratch/llms.txt; sed -n 776,804p .scratch/llms.txt; sed -n 892,906p .scratch/llms.txt; sed -n 992,1379p .scratch/llms.txt | grep -n \"^#\" ",
+      "sed -n 490,519p .scratch/llms.txt; sed -n 1006,1034p .scratch/llms.txt; sed -n 1186,1204p .scratch/llms.txt; sed -n 1330,1379p .scratch/llms.txt",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/larder && npm exec --no -- ultima status 2>&1 | tail -30; curl -s http://127.0.0.1:43923/ultima.eslint.mjs -o ultima.eslint.mjs && cat ultima.eslint.mjs && npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 2>&1 | tail -3",
+      "cat > eslint.config.mjs <<'EOF'\nimport tseslint from 'typescript-eslint';\nimport { ultimaStylex } from './ultima.eslint.mjs';\n\nexport default [\n  { ignores: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/out/**', '**/coverage/**'] },\n  {\n    files: ultimaStylex.files,\n    languageOptions: {\n      parser: tseslint.parser,\n      parserOptions: { ecmaFeatures: { jsx: true } },\n    },\n  },\n  ultimaStylex,\n];\nEOF\nnpm pkg set scripts.lint=\"oxlint && eslint .\" && npm pkg get scripts && npx shadcn@latest add @ultima/field @ultima/input @ultima/select @ultima/badge @ultima/toggle-group @ultima/empty --yes 2>&1 | tail -20",
+      "ls src/components/ui src/lib && cat src/components/ui/select.tsx | head -150 && cat src/components/ui/toggle-group.tsx",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work && mkdir -p .scratch/crm && curl -s http://127.0.0.1:43923/r/crm-01.json -o .scratch/crm/crm-01.json && python3 -I -c \"\nimport json,sys\nd=json.load(open(sys.argv[1]))\nfor f in d['files']:\n    print('=====',f['path'])\n    if 'contact-list' in f['path'] or f['path'].endswith('crm-01.tsx'): print(f['content'])\n\" .scratch/crm/crm-01.json | head -400",
+      "python3 -I -c \"\nimport json,sys\nd=json.load(open(sys.argv[1]))\nfor f in d['files']:\n    if 'contact-list' in f['path']:\n        c=f['content']; i=c.find('type ContactListProps'); print(c[i:])\n\" .scratch/crm/crm-01.json",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/larder && grep -nE \"^(function|export|const [A-Z]|type )|match|Error\" src/components/ui/field.tsx src/components/ui/input.tsx src/components/ui/card.tsx src/components/ui/badge.tsx src/components/ui/empty.tsx | head -80; sed -n '/^function/,$p' src/components/ui/select.tsx | head -80",
+      "mkdir -p /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/larder/src/components/pantry && cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/larder/src/components/pantry && cat > pantry-data.ts <<'EOF'\nexport const categories = ['Canned goods', 'Dry goods', 'Produce', 'Toiletries'] as const;\n\nexport type Category = (typeof categories)[number];\n\nexport type PantryItem = {\n  id: string;\n  name: string;\n  category: Category;\n  quantity: number;\n  /** ISO calendar date, `YYYY-MM-DD`. */\n  lastRestocked: string;\n};\n\n/** At or below this many on hand, an item reads as running low. */\nexport const lowStockAt = 5;\n\nexport const sampleItems: PantryItem[] = [\n  { id: 'black-beans', name: 'Black beans', category: 'Canned goods', quantity: 42, lastRestocked: '2026-10-14' },\n  { id: 'tomato-soup', name: 'Tomato soup', category: 'Canned goods', quantity: 4, lastRestocked: '2026-09-30' },\n  { id: 'brown-rice', name: 'Brown rice, 2 lb', category: 'Dry goods', quantity: 18, lastRestocked: '2026-10-11' },\n  { id: 'rolled-oats', name: 'Rolled oats', category: 'Dry goods', quantity: 9, lastRestocked: '2026-10-08' },\n  { id: 'apples', name: 'Apples', category: 'Produce', quantity: 3, lastRestocked: '2026-10-15' },\n  { id: 'carrots', name: 'Carrots', category: 'Produce', quantity: 25, lastRestocked: '2026-10-15' },\n  { id: 'toothpaste', name: 'Toothpaste', category: 'Toiletries', quantity: 12, lastRestocked: '2026-10-02' },\n  { id: 'bar-soap', name: 'Bar soap', category: 'Toiletries', quantity: 30, lastRestocked: '2026-09-26' },\n];\nEOF\ncat > screen.stylex.ts <<'EOF'\nimport * as stylex from '@stylexjs/stylex';\n\nexport const screen = stylex.defineVars({\n  /** The widest the Pantry screen grows on a large display. */\n  '--app-size-content-max': '72rem',\n});\nEOF\ncat > ../../App.tsx <<'EOF'\nimport Pantry from '@/components/pantry/pantry';\n\nexport default function App() {\n  return <Pantry />;\n}\nEOF",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/larder && cat src/lib/visually-hidden.ts",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/larder/src/components/pantry && python3 -I - pantry.tsx <<'EOF'\nimport sys\np=sys.argv[1]; s=open(p).read()\ns=s.replace(\"\"\"              <span id={`${id}-${item.id}-quantity`} {...stylex.props(styles.rowQuantity)}>\n                {item.quantity}\n                <span hidden> on hand</span>\n              </span>\"\"\",\"\"\"              <span id={`${id}-${item.id}-quantity`} {...stylex.props(styles.rowQuantity)}>\n                {item.quantity}\n                <span {...stylex.props(styles.rowUnit)}>on hand</span>\n              </span>\"\"\")\ns=s.replace(\"\"\"  rowQuantity: {\n    color: color['--ult-color-text'],\n    flexShrink: 0,\n    fontSize: text['--ult-text-5'],\n    fontVariantNumeric: 'tabular-nums',\n    fontWeight: font['--ult-font-weight-semibold'],\n  },\"\"\",\"\"\"  rowQuantity: {\n    color: color['--ult-color-text'],\n    display: 'grid',\n    flexShrink: 0,\n    fontSize: text['--ult-text-5'],\n    fontVariantNumeric: 'tabular-nums',\n    fontWeight: font['--ult-font-weight-semibold'],\n    justifyItems: 'end',\n  },\n  rowUnit: {\n    color: color['--ult-color-text-subtle'],\n    fontSize: text['--ult-text-2'],\n    fontWeight: font['--ult-font-weight-regular'],\n  },\"\"\")\na=s.index(\"function ItemDetail({ item }: { item: PantryItem | undefined }) {\\n  if (!item) {\")\nb=s.index(\"  return (\\n    <Card.Root render={<section\", a)\ns=s[:a]+\"function ItemDetail({ item }: { item: PantryItem }) {\\n\"+s[b:]\ns=s.replace(\"import { Empty } from '@/components/ui/empty';\\n\",\"\")\ns=s.replace(\"  const selected = items.find((item) => item.id === selectedId) ?? items[0];\",\"  const selected = items.find((item) => item.id === selectedId) ?? items[0]!;\")\ns=s.replace(\"selectedId={selected?.id}\",\"selectedId={selected.id}\")\ns=s.replace(\"\"\"  selectedId: string | undefined;\n  onSelect\"\"\",\"\"\"  selectedId: string;\n  onSelect\"\"\")\ns=s.replace(\"value={selectedId ? [selectedId] : []}\",\"value={[selectedId]}\")\ns=s.replace(\"\"\"        <Card.Description>\n          {items.length} items. Choose one to see its details.\n        </Card.Description>\"\"\",\"\"\"        <Card.Description>{items.length} items. Choose one to see its details.</Card.Description>\"\"\")\nopen(p,'w').write(s)\nEOF\ngrep -n \"Empty\\|selected\" pantry.tsx | head; cd ../../.. && npx ultima-design check --files src/App.tsx src/components/pantry/pantry.tsx src/components/pantry/pantry-data.ts src/components/pantry/screen.stylex.ts; echo \"exit $?\"",
+      "npx ultima-design doctor; echo \"doctor exit $?\"; npx ultima-design doctor --theme; echo \"doctor --theme exit $?\"; npx ultima-design check; echo \"check exit $?\"",
+      "for f in src/components/pantry/pantry.tsx src/components/ui/select.tsx src/lib/tokens.stylex.ts src/components/pantry/screen.stylex.ts; do echo \"$f: $(npx --no-install eslint --print-config $f | python3 -I -c \"import json,sys;c=json.load(sys.stdin);print(c['rules'].get('@stylexjs/valid-styles'), c['languageOptions'].get('parser'))\")\"; done; npm run lint; echo \"lint exit $?\"; npm run build 2>&1 | tail -15; echo \"build exit $?\"",
+      "f=$(ls dist/assets/*.css); grep -o \"@layer [a-z0-9_.,-]*\\|Ultima theme studio\\|--ult-color-accent:[^;]*\\|prefers-color-scheme: light\\|data-theme=\\\"light\\\"\" $f | head -30; grep -bo \"Ultima theme studio\\|@layer priority\" $f | head; which chromium chromium-browser google-chrome 2>/dev/null; ls ~/.cache/ms-playwright 2>/dev/null; npm ls playwright 2>/dev/null | head -3",
+      "f=$(ls dist/assets/*.css); python3 -I -c \"\nimport sys,re\ns=open(sys.argv[1]).read()\ni=s.find('--ult-color-accent: #e8e8e8'); print(repr(s[max(0,i-400):i+60]))\nprint('---'); print(repr(s[:300]))\nj=s.find('Ultima theme studio'); print(j)\n\" $f; ls ../../../ 2>/dev/null | head",
+      "f=$(ls dist/assets/*.css); python3 -I -c \"\nimport sys,re\ns=open(sys.argv[1]).read()\ni=s.find('--ult-color-accent: #e8e8e8')\n# find enclosing context: last '@layer' and last '}' before\nk=s.rfind('@layer',0,i); print('last @layer before at',k, repr(s[k:k+80]))\nk2=s.rfind(':root',0,i); print(repr(s[k2-200:k2+40]))\nt=s.find('--ult-color-accent:#e968be'); print('theme accent at',t, repr(s[t-300:t]))\n\" $f",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/.scratch && mkdir -p tools && cd tools && npm init -y >/dev/null && npm i playwright-core@1 2>&1 | tail -2; cd ../../larder && (npx vite preview --port 4173 --strictPort > ../.scratch/preview.log 2>&1 &) ; sleep 0; echo started",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/.scratch/tools && cat ../preview.log; node verify.mjs http://localhost:4173/ 2>&1 | tail -60",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/larder && f=$(ls dist/assets/*.css); grep -o \"lightningcss-[a-z]*[^;]\\{0,60\\}\" $f | sort | uniq -c | head -20; grep -c \"light-dark\" $f src/components/ui/button.tsx ../larder/ultima-theme.css src/lib/tokens.stylex.ts; grep -n \"light-dark\\|color-scheme\\|colorScheme\" ultima-theme.css src/lib/tokens.stylex.ts src/components/ui/button.tsx | head -20",
+      "sed -n 1,60p src/components/ui/button.tsx",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/.scratch/tools && cat > debug-select.mjs <<'EOF'\nimport { chromium } from 'playwright-core';\nconst browser = await chromium.launch({ executablePath: '/usr/bin/chromium' });\nconst p = await (await browser.newContext()).newPage();\nawait p.goto(process.argv[2]);\nconst trigger = p.getByRole('combobox', { name: 'Category' });\nawait trigger.focus();\nconst state = () => p.evaluate(() => ({\n  active: document.activeElement?.textContent?.slice(0, 30),\n  role: document.activeElement?.getAttribute('role'),\n  highlighted: [...document.querySelectorAll('[data-highlighted]')].map((e) => e.textContent),\n  open: !!document.querySelector('[role=\"listbox\"]'),\n}));\nfor (const key of ['Enter', 'ArrowDown', 'ArrowDown', 'ArrowDown', 'Enter']) {\n  await p.keyboard.press(key);\n  await p.waitForTimeout(150);\n  console.log(key, JSON.stringify(await state()), await trigger.innerText());\n}\nawait browser.close();\nEOF\nnode debug-select.mjs http://localhost:4173/",
+      "python3 -I - verify.mjs <<'EOF'\nimport sys\np=sys.argv[1]; s=open(p).read()\ns=s.replace(\"\"\"  await p.goto(url);\n  if (mode.attr) await p.evaluate((a) => document.documentElement.setAttribute('data-theme', a), mode.attr);\"\"\",\"\"\"  if (mode.attr) await p.addInitScript((a) => document.documentElement.setAttribute('data-theme', a), mode.attr);\n  await p.goto(url);\"\"\")\ns=s.replace(\"\"\"  await p.keyboard.press('ArrowDown');\n  await p.keyboard.press('ArrowDown');\n  await p.keyboard.press('ArrowDown');\n  await p.keyboard.press('Enter');\"\"\",\"\"\"  for (const key of ['ArrowDown', 'ArrowDown', 'ArrowDown', 'Enter']) {\n    await p.waitForTimeout(150);\n    await p.keyboard.press(key);\n  }\"\"\")\nopen(p,'w').write(s)\nEOF\nnode verify.mjs http://localhost:4173/ 2>&1 | grep -v \"no horizontal\\|stacked\\|side by side\"",
+      "python3 -I - verify.mjs <<'EOF'\nimport sys\np=sys.argv[1]; s=open(p).read()\ns=s.replace(\"\"\"  if (mode.attr) await p.addInitScript((a) => document.documentElement.setAttribute('data-theme', a), mode.attr);\n  await p.goto(url);\"\"\",\"\"\"  await p.goto(url);\n  if (mode.attr) await p.evaluate((a) => document.documentElement.setAttribute('data-theme', a), mode.attr);\n  await p.waitForTimeout(500);\"\"\")\nopen(p,'w').write(s)\nEOF\nnode verify.mjs http://localhost:4173/ 2>&1 | grep -E \"FAIL|theme|errors\"; echo \"exit ${PIPESTATUS[0]}\"",
+      "pkill -f \"vite preview --port 4173\" ; cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work && cat > exercise-notes.json <<'EOF'\n{\n  \"interventions\": [\n    {\n      \"step\": \"Production rendering check\",\n      \"action\": \"Installed playwright-core into ./.scratch/tools (outside ./larder), drove the system /usr/bin/chromium against `vite preview` on port 4173, and wrote ./.scratch/tools/verify.mjs to read computed --ult-* values, color-scheme, a Button and the open Select popup in explicit dark, explicit light and system (dark, light, no-preference) modes, plus reduced motion, widths 320-1440px, and the form, list and select keyboard behaviour.\",\n      \"reason\": \"The guidance requires inspecting computed values and keyboard behaviour in a production build but prints no tool or command for doing it; init states that no browser check ran.\"\n    },\n    {\n      \"step\": \"Production rendering check\",\n      \"action\": \"Adjusted the harness twice: set data-theme after load and waited 500ms before reading the Button, and paused 150ms between Select key presses.\",\n      \"reason\": \"The first run read Button's background mid-way through its background-color transition (--ult-motion-fast), and pressed keys before the popup had settled. Both were harness timing problems; the app's computed values and keyboard selection were correct once the harness waited.\"\n    },\n    {\n      \"step\": \"Choosing the stock-list pattern\",\n      \"action\": \"Fetched http://127.0.0.1:43923/r/crm-01.json and read its contact-list.tsx source without installing the block, then reused its vertical ToggleGroup selectable-list pattern.\",\n      \"reason\": \"The guidance links the CRM 01 block page but does not link the raw registry JSON. Reading it was the quickest way to see how Ultima builds a selectable list/detail without using a native button.\"\n    },\n    {\n      \"step\": \"Serving the production build\",\n      \"action\": \"Ran `npx vite preview --port 4173 --strictPort` in the background rather than the printed `npm run preview`.\",\n      \"reason\": \"Pinned the port so the scripted browser check had a stable URL.\"\n    }\n  ],\n  \"decisions\": [\n    {\n      \"choice\": \"Accept the documented font fallback rather than loading Figtree and IBM Plex Mono\",\n      \"options\": [\"Load the named faces in the app (self-hosted files or a font service)\", \"Accept the theme's documented fallback stack\"],\n      \"why\": \"The theme exports font stacks but loads no faces, and the guidance permits either option. Loading faces would mean adding third-party font files or an external request the brief does not ask for. Text renders in the first installed face of the stack (system UI where Figtree is absent).\"\n    },\n    {\n      \"choice\": \"Choose the category with a portalled Select inline in the form, with no Dialog\",\n      \"options\": [\"Portalled Select in an inline form\", \"Form inside a Dialog\", \"Both\"],\n      \"why\": \"The brief accepts either. An inline form keeps donation intake one step at the desk and on a phone, and the Select's Base UI portal to <body> still gets the root CSS theme (verified in all modes).\"\n    },\n    {\n      \"choice\": \"Build the selectable stock list as a vertical ToggleGroup with single selection\",\n      \"options\": [\"Vertical ToggleGroup (CRM 01 pattern)\", \"Table with a per-row Button\", \"List of ghost Buttons with aria-pressed\"],\n      \"why\": \"It gives roving arrow-key focus and a pressed state styled with the brand accent border without adding a native control or a second set of ARIA and key handlers, and it matches the shipped CRM 01 block.\"\n    },\n    {\n      \"choice\": \"Quantity uses Input with type=number, inputMode=numeric, min=1 and step=1, plus its own whole-number validation\",\n      \"options\": [\"Input type=number\", \"Input type=text with inputMode=numeric\", \"A stepper composed from Buttons\"],\n      \"why\": \"The catalogue has no number field. Input type=number brings native spin and numeric keyboards on phones, and Field still owns the invalid styling and the error message.\"\n    },\n    {\n      \"choice\": \"Low stock is shown with Badge tone=warning; category is plain muted text, not an accent Badge\",\n      \"options\": [\"warning tone\", \"danger tone\", \"accent or neutral Badge for category\"],\n      \"why\": \"The brief keeps the berry accent out of status meaning. Running low is a caution, not a failure, so warning fits. Category is not a status, so it stays plain text.\"\n    },\n    {\n      \"choice\": \"Ran the optional agent-setup step (git init in ./larder, then `ultima install --harness claude`)\",\n      \"options\": [\"Skip the optional step\", \"Install the skill and hook for claude\"],\n      \"why\": \"The brief counts the installed skill as allowed guidance, and the CLI printed this as the way to get it. It adds .git, .claude/skills/ultima-design/SKILL.md and .claude/settings.json (a post-edit hook) to ./larder.\"\n    }\n  ]\n}\nEOF\npython3 -I -c \"import json;json.load(open('exercise-notes.json'));print('valid')\"",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work && ls; pgrep -af \"vite preview\" | grep -v pgrep; test -f exercise-notes.json && python3 -I -c \"import json;json.load(open('exercise-notes.json'));print('valid')\"",
+      "cd /home/f/.cache/ultima-first-screen/2026-10-16-vite-0106c2/work/larder && python3 -I -c \"import json;json.load(open('../exercise-notes.json'));print('notes: valid JSON')\"; npx --no-install ultima-design doctor >/dev/null; echo \"doctor $?\"; npx --no-install ultima-design doctor --theme >/dev/null; echo \"doctor --theme $?\"; npx --no-install ultima-design check | tail -1; echo \"check ${PIPESTATUS[0]}\"; npm run lint 2>&1 | grep \"problems\"; echo \"lint ${PIPESTATUS[0]}\"; npm run build >/dev/null 2>&1; echo \"build $?\""
+    ],
+    "fetches": [],
+    "outsideReferences": []
+  },
+  "selfReport": {
+    "interventions": [
+      {
+        "step": "Production rendering check",
+        "action": "Installed playwright-core into ./.scratch/tools (outside ./larder), drove the system /usr/bin/chromium against `vite preview` on port 4173, and wrote ./.scratch/tools/verify.mjs to read computed --ult-* values, color-scheme, a Button and the open Select popup in explicit dark, explicit light and system (dark, light, no-preference) modes, plus reduced motion, widths 320-1440px, and the form, list and select keyboard behaviour.",
+        "reason": "The guidance requires inspecting computed values and keyboard behaviour in a production build but prints no tool or command for doing it; init states that no browser check ran."
+      },
+      {
+        "step": "Production rendering check",
+        "action": "Adjusted the harness twice: set data-theme after load and waited 500ms before reading the Button, and paused 150ms between Select key presses.",
+        "reason": "The first run read Button's background mid-way through its background-color transition (--ult-motion-fast), and pressed keys before the popup had settled. Both were harness timing problems; the app's computed values and keyboard selection were correct once the harness waited."
+      },
+      {
+        "step": "Choosing the stock-list pattern",
+        "action": "Fetched http://127.0.0.1:43923/r/crm-01.json and read its contact-list.tsx source without installing the block, then reused its vertical ToggleGroup selectable-list pattern.",
+        "reason": "The guidance links the CRM 01 block page but does not link the raw registry JSON. Reading it was the quickest way to see how Ultima builds a selectable list/detail without using a native button."
+      },
+      {
+        "step": "Serving the production build",
+        "action": "Ran `npx vite preview --port 4173 --strictPort` in the background rather than the printed `npm run preview`.",
+        "reason": "Pinned the port so the scripted browser check had a stable URL."
+      }
+    ],
+    "decisions": [
+      {
+        "choice": "Accept the documented font fallback rather than loading Figtree and IBM Plex Mono",
+        "options": [
+          "Load the named faces in the app (self-hosted files or a font service)",
+          "Accept the theme's documented fallback stack"
+        ],
+        "why": "The theme exports font stacks but loads no faces, and the guidance permits either option. Loading faces would mean adding third-party font files or an external request the brief does not ask for. Text renders in the first installed face of the stack (system UI where Figtree is absent)."
+      },
+      {
+        "choice": "Choose the category with a portalled Select inline in the form, with no Dialog",
+        "options": [
+          "Portalled Select in an inline form",
+          "Form inside a Dialog",
+          "Both"
+        ],
+        "why": "The brief accepts either. An inline form keeps donation intake one step at the desk and on a phone, and the Select's Base UI portal to <body> still gets the root CSS theme (verified in all modes)."
+      },
+      {
+        "choice": "Build the selectable stock list as a vertical ToggleGroup with single selection",
+        "options": [
+          "Vertical ToggleGroup (CRM 01 pattern)",
+          "Table with a per-row Button",
+          "List of ghost Buttons with aria-pressed"
+        ],
+        "why": "It gives roving arrow-key focus and a pressed state styled with the brand accent border without adding a native control or a second set of ARIA and key handlers, and it matches the shipped CRM 01 block."
+      },
+      {
+        "choice": "Quantity uses Input with type=number, inputMode=numeric, min=1 and step=1, plus its own whole-number validation",
+        "options": [
+          "Input type=number",
+          "Input type=text with inputMode=numeric",
+          "A stepper composed from Buttons"
+        ],
+        "why": "The catalogue has no number field. Input type=number brings native spin and numeric keyboards on phones, and Field still owns the invalid styling and the error message."
+      },
+      {
+        "choice": "Low stock is shown with Badge tone=warning; category is plain muted text, not an accent Badge",
+        "options": [
+          "warning tone",
+          "danger tone",
+          "accent or neutral Badge for category"
+        ],
+        "why": "The brief keeps the berry accent out of status meaning. Running low is a caution, not a failure, so warning fits. Category is not a status, so it stays plain text."
+      },
+      {
+        "choice": "Ran the optional agent-setup step (git init in ./larder, then `ultima install --harness claude`)",
+        "options": [
+          "Skip the optional step",
+          "Install the skill and hook for claude"
+        ],
+        "why": "The brief counts the installed skill as allowed guidance, and the CLI printed this as the way to get it. It adds .git, .claude/skills/ultima-design/SKILL.md and .claude/settings.json (a post-edit hook) to ./larder."
+      }
+    ]
+  },
+  "styling": {
+    "check": {
+      "exit": 0,
+      "counts": {
+        "errors": 0,
+        "advisories": 0,
+        "incomplete": 0,
+        "suppressions": 0
+      }
+    },
+    "doctor": {
+      "exit": 0
+    },
+    "lint": {
+      "state": "configured",
+      "config": "eslint.config.mjs",
+      "errors": 0,
+      "warnings": 18,
+      "exit": 0
+    },
+    "rawPaint": {
+      "files": [
+        "src/App.tsx",
+        "src/components/pantry/pantry-data.ts",
+        "src/components/pantry/pantry.tsx",
+        "src/index.css",
+        "src/main.tsx"
+      ],
+      "findings": []
+    }
+  },
+  "production": {
+    "status": "passed",
+    "layout": "vite",
+    "versions": {
+      "node": "v26.8.1",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "@stylexjs/stylex": "0.19.1",
+      "ultima-design": "0.1.0",
+      "vite": "8.3.4",
+      "chromium": "153.0.8010.12"
+    },
+    "cases": [
+      {
+        "id": "system-dark",
+        "status": "passed",
+        "snapshot": "system-dark.values.json",
+        "failures": []
+      },
+      {
+        "id": "system-light",
+        "status": "passed",
+        "snapshot": "system-light.values.json",
+        "failures": []
+      },
+      {
+        "id": "explicit-dark",
+        "status": "passed",
+        "snapshot": "explicit-dark.values.json",
+        "failures": []
+      },
+      {
+        "id": "explicit-light",
+        "status": "passed",
+        "snapshot": "explicit-light.values.json",
+        "failures": []
+      }
+    ],
+    "errors": []
+  },
+  "verdict": {
+    "conditions": {
+      "completed": "passed",
+      "publicGuidanceOnly": "passed",
+      "interventions": "failed",
+      "decisions": "passed",
+      "check": "passed",
+      "lint": "passed",
+      "rawPaint": "passed",
+      "production": "passed"
+    },
+    "status": "failed"
+  },
+  "review": {
+    "reviewer": "Claude, cast #774: transcript, request log, notes and production report",
+    "rule": "An intervention is an action on the project or tooling that the guidance or CLI output did not print or link. A decision is an unresolved Ultima setup, theme or styling choice that changed the output. Product choices and documented alternatives do not count. Browser checks of the consumer application follow the guidance; rendering documentation to retrieve guidance or source would count.",
+    "interventions": [
+      {
+        "step": "Choosing the stock-list pattern",
+        "action": "Downloaded the raw registry item /r/crm-01.json with curl and read contact-list.tsx without installing the block, then reused its vertical ToggleGroup selectable-list pattern.",
+        "reason": "No guide or lesson shows a selectable list with a detail pane, and the guidance links CRM 01's page and install command but not its source. The agent retrieved unlinked source to settle the pattern."
+      }
+    ],
+    "decisions": [],
+    "notes": "No documentation rendering, data-link decoding or JavaScript-bundle extraction, and no reference to the live host or another checkout. The agent fetched llms.txt, the five generated guides and the projects, product-tokens and interaction-states lesson bundles. It probed guessed /components/<name>.md URLs before reading llms.txt in full; those probes changed nothing. The theme import, lint fragment, tested ESLint versions and the oxlint-then-eslint script all follow the install guide. The browser check follows the printed hand step: the agent installed playwright-core in a scratch directory outside the app, drove the system Chromium against `vite preview` on a pinned port and fixed timing in its own script; it needed no TMPDIR or browser workaround, so the review does not count it. Check, doctor, lint (0 errors), the raw-paint scan and every external production assertion passed. The self-reported decisions are documented alternatives or product choices (font fallback, Select over Dialog, Input type=number, warning tone for low stock, the optional agent setup) and are not counted. The ToggleGroup choice follows from the counted CRM 01 intervention. No operator edited the application."
+  }
+}
