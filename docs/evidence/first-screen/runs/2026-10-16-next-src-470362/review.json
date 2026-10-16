@@ -1,0 +1,17 @@
+{
+  "reviewer": "Claude on mbp1, #774: transcript, request log, notes and production report",
+  "rule": "An intervention is an action on the project or tooling that the guidance or CLI output did not print or link. A decision is an unresolved Ultima setup, theme or styling choice that changed the output. Product choices and documented alternatives do not count. Browser checks of the consumer application follow the guidance; rendering documentation to retrieve guidance or source would count.",
+  "interventions": [],
+  "decisions": [
+    {
+      "choice": "Deleted `minBlockSize: '100dvh'` from the screen root after writing it from the lesson, calling it a stray length literal, so the main element no longer fills the viewport height.",
+      "options": [
+        "Keep the lesson's literal `minBlockSize: '100dvh'` in the screen's stylex.create",
+        "Move the length into the application's token module",
+        "Drop it"
+      ],
+      "why": "The brief says the application decides no lengths outside its theme and token modules, with a breakpoint as the only exception. The Projects lesson writes '100dvh' as a literal in the screen file. The guidance does not say which wins for a viewport length, the same gap as the Next root grid templates (#845)."
+    }
+  ],
+  "notes": "The agent fetched llms.txt, the install, update, build-a-screen and support guides, and the list-detail, interaction-states, product-tokens and projects lessons over HTTP. It did not render documentation, decode a data link, extract a bundle, read CRM 01's registry source or reference the live host or another checkout. Its first `init` without --plan stopped with the CLI's printed instruction to use --plan --json then --apply, which it followed; not counted. It used shadcn@4.21.4 for the theme and components, matching the Studio command, init and the guides (#836 holds); the `--yes` on `shadcn add` copies init's own printed invocations and is not counted. It imported ../../ultima-theme.css after ./ultima.css in src/app/layout.tsx as install step 4 prints, set up ESLint by the documented project-without-ESLint path, and ran init's printed optional agent setup. The breakpoint is a named constant in pantry.tsx and the content max width is in screen.stylex.ts (#837 holds). Deleting init's setup-check preview follows the starter comment; the metadata title and description are product copy. The browser check follows the printed hand step; installing playwright-core for it is not counted, and it did not hit the Chromium socket failure. Inspecting .next CSS carries out the printed cascade step. The self-reported decisions (font fallback, Select over Dialog, the documented lint path, agent setup, number Input, Badge tones) are documented options or product choices. The 100dvh removal is counted above. check, doctor, StyleX lint (0 errors), the raw-paint scan and all four external production cases passed. No operator edited the app."
+}
