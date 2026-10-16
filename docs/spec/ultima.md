@@ -128,31 +128,33 @@ There is no display family. Mana's `--pixel` (Pixelify Sans) stays mana's brand,
 
 ### Radius
 
-Five values, in `px` so corners do not grow with the font size.
+Six values, in `px` so corners do not grow with the font size.
 
 Amended on [Decide the default radius scale and respace the Shape presets](https://github.com/frankieramirez/ultima/issues/644). Status: the Shape presets are implemented (draft document v3, [#665](https://github.com/frankieramirez/ultima/issues/665)), and the `site` and Neutral theme boundaries show the new scale ([#666](https://github.com/frankieramirez/ultima/issues/666)). The base tokens still ship the previous values, 2/4/10/12, until this lands with the Neutral base-token rollout under Consumer default theme. Both changes reach consumers in one release, with one piece of update guidance. A consumer who wants the previous corners selects the Ultima preset, whose `soft` shape keeps them.
 
 | Token | Value | Used by |
 | --- | --- | --- |
-| `--ult-radius-xs` | 1px | swatches, bars, indicator dots |
-| `--ult-radius-sm` | 2px | inline code, small insets |
-| `--ult-radius-md` | 4px | Button, Input, Select trigger, menu items |
-| `--ult-radius-lg` | 6px | Card, Dialog, popups |
+| `--ult-radius-xs` | 2px | swatches, bars, indicator dots |
+| `--ult-radius-sm` | 4px | inline code, small insets |
+| `--ult-radius-md` | 6px | Button, Input, Select trigger, menu items |
+| `--ult-radius-lg` | 8px | Card, Dialog, popups |
+| `--ult-radius-xl` | 12px | large panels and sheets |
 | `--ult-radius-full` | 9999px | Badge and any pill |
 
-This is the Tight scale, and the Studio's `default` Shape. Nested corners rely on one relationship: `lg` minus `md` equals the 2px `space-1` inset a popup gives its items, so a Select item sits concentric inside its popup. Tight keeps it (6 − 2 = 4), and a segmented Tabs trigger (`sm`) becomes concentric inside its `md` list. No component computes a value from a radius step.
+This is the Studio's `default` Shape in draft document v4, amended by the design foundations redesign: 2/4/6/8 replaces the Tight 1/2/4/6, and every shape gains `xl`. Version-3 drafts keep Tight and have no `xl`. Nested corners rely on one relationship: `lg` minus `md` equals the 2px `space-1` inset a popup gives its items, so a Select item sits concentric inside its popup (8 − 6 = 2), and a segmented Tabs trigger (`sm`) sits concentric inside its `md` list. No component computes a value from a radius step.
 
 ### Shadow
 
-Three steps. On a near-black ground a shadow does almost nothing, so elevation in dark comes from surface steps and a border; shadows earn their keep on the overlays (Dialog, Dropdown Menu, Select, Tooltip). Geometry is identical in both modes and only the alpha changes, which is why `shadow` is themeable rather than constant.
+Four steps. On a near-black ground a shadow does almost nothing, so elevation in dark comes from surface steps and a border; shadows earn their keep on the overlays (Dialog, Dropdown Menu, Select, Tooltip). Geometry is identical in both modes and only the alpha changes, which is why `shadow` is themeable rather than constant.
 
 | Token | Dark | Light |
 | --- | --- | --- |
+| `--ult-shadow-xs` | `0 1px 2px rgba(0,0,0,.30)` | `0 1px 2px rgba(0,0,0,.05)` |
 | `--ult-shadow-sm` | `0 1px 2px rgba(0,0,0,.30), 0 1px 3px rgba(0,0,0,.40)` | `0 1px 2px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.10)` |
 | `--ult-shadow-md` | `0 4px 8px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.45)` | `0 4px 8px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.12)` |
 | `--ult-shadow-lg` | `0 12px 24px rgba(0,0,0,.40), 0 24px 48px rgba(0,0,0,.50)` | `0 12px 24px rgba(0,0,0,.12), 0 24px 48px rgba(0,0,0,.18)` |
 
-An overlay sets a border and a shadow together, never a shadow alone.
+An overlay sets a border and a shadow together, never a shadow alone. `xs` is one layer, added with draft document v4, and scales with Elevation like the others.
 
 ### Filter
 
@@ -256,7 +258,7 @@ Decided on [Decide the consumer default theme and separation from Ultima brandin
 
 ### Fresh installs and brand boundaries
 
-A fresh consumer gets **Neutral**, a complete usable theme with achromatic surfaces, text, borders and interactive colors. Installation does not require a theme-selection step. Neutral retains the current non-color defaults, including font stacks, spacing, shadows and reduced-motion behavior. Its shape is the Tight radius scale under Radius, amended on [#644](https://github.com/frankieramirez/ultima/issues/644). It loads no fonts. The palette generator produces its values; neither component source nor generated files receive hand-authored color patches.
+A fresh consumer gets **Neutral**, a complete usable theme with achromatic surfaces, text, borders and interactive colors. Installation does not require a theme-selection step. Neutral retains the current non-color defaults, including font stacks, spacing, shadows and reduced-motion behavior. Its shape is the `default` radius scale under Radius, amended on [#644](https://github.com/frankieramirez/ultima/issues/644) and again with draft document v4. It loads no fonts. The palette generator produces its values; neither component source nor generated files receive hand-authored color patches.
 
 The existing complete appearance remains available as **Ultima**, an explicit opt-in preset preserving the current indigo accent, cyan action/highlight and non-color defaults, including the 2/4/10/12 radius as the `soft` shape. Its current brand pins belong to that preset. Neutral disables those pins and uses zero chroma for mithril, arcane and mana; status scales retain their current seeds. Recipe lightness adjustments needed for contrast belong in the generator and must preserve the compatibility rules below.
 
@@ -272,13 +274,13 @@ Ultima's docs and Studio editor chrome explicitly apply their own theme, [`site`
 
 Decided on [Decide the docs site's chrome theme](https://github.com/frankieramirez/ultima/issues/642). Status: implemented on [#666](https://github.com/frankieramirez/ultima/issues/666). `apps/docs/src/site-theme-draft.ts` defines the drafts, `pnpm --filter @ultima/docs themes:generate` writes their color themes to `apps/docs/src/site-themes.ts`, and `apps/docs/src/__tests__/site-theme.test.tsx` gates them and fails on a stale copy.
 
-The docs chrome wears **`site`**: Neutral's surfaces, text, borders, accent and status, with Ultima's mana on action and highlight. Its definition is a draft, Neutral's current preset revision (revision 2, with its `ink` accent) with the mana seed of Ultima preset revision 1, resolved by recipe 2. Taking the seed rather than the resolved values keeps the contrast tokens on Neutral's neutral steps and needs no brand pin. The draft's generated dark and light values are the only source of `site` values; none are hand-written.
+The docs chrome wears **`site`**: Neutral's surfaces, text, borders, accent and status, with Ultima's mana on action and highlight. Its definition is a draft, Neutral's current preset revision (revision 3, with its `ink` accent) with the mana seed of Ultima preset revision 1, resolved by recipe 2. Taking the seed rather than the resolved values keeps the contrast tokens on Neutral's neutral steps and needs no brand pin. The draft's generated dark and light values are the only source of `site` values; none are hand-written.
 
 `site` is docs-only. The docs app owns the definition and applies its generated dark and light themes on `<html>` through the site's existing color-mode control, in place of `darkTheme` and `lightTheme`. The themes cover the color group per mode and the shape group, so the chrome and every Neutral boundary show the Tight radius scale while the base tokens and installed consumers keep 2/4/10/12 until the Neutral base-token rollout. The other groups stay on the base tokens. It is not a preset: it stays out of the Studio picker and `THEME_PRESETS`, `tokens.css`, `tokens.json`, the registry and element defaults. A consumer reaches mana by selecting Ultima or building a custom draft, never by inheriting the docs' theme.
 
 `site` follows Neutral's accent by reference. When Neutral's accent changes, as [Decide Neutral's accent shade](https://github.com/frankieramirez/ultima/issues/643) may change it, `site` changes with it and is re-gated. Where the redesign's frames paint a value that differs from the generated one, such as the slightly tinted light text `#181a24` against Neutral's `#1b1b1b`, the generated value wins.
 
-`site` passes all 49 declared pairings in each mode at full precision, the bar a shipped preset meets, with no acknowledgment available. The docs test suite resolves the draft and runs the same `gate()` in both modes, and fails when the generated themes are stale against the recipe. With today's Neutral accent every pairing passes; the lowest mana pairing is `highlight-contrast` on `highlight` at 4.57 in light.
+`site` passes all 51 declared pairings in each mode at full precision, the bar a shipped preset meets, with no acknowledgment available. The docs test suite resolves the draft and runs the same `gate()` in both modes, and fails when the generated themes are stale against the recipe. With today's Neutral accent every pairing passes; the lowest mana pairing is `highlight-contrast` on `highlight` at 4.57 in light.
 
 Inside the chrome, every surface that shows components as a consumer gets them applies an explicit theme boundary that is also its portal container. Component demos, block previews and anatomy views apply Neutral. A Studio preview pane applies the active draft. The Studio header, rail, toolbar, footer and dialogs are chrome and wear `site` in the site's current mode. The boundary is `ThemeBoundary` in `apps/docs/src/theme-boundary.tsx`, used by `Demo` and `catalogue-preview`. It applies Neutral unless a surface names another preset, as the landing plate does when it previews Ultima. A demo's source never names that container: under `apps/docs/src/demos/`, `@ultima/ui` resolves to `apps/docs/src/demo-ui.tsx`, which defaults every `Portal` part to the nearest boundary. Sidebar's mobile menu has no `Portal` part, so the same module defaults `Sidebar.Panel`'s `container` instead.
 
@@ -518,21 +520,24 @@ The series tokens have one value per mode rather than a scale: `oklch(L, .16, H)
 
 ### Semantic color tokens
 
-The full `color` group in v0. Every token resolves to one step in both modes except the contrast tokens, which pick a neutral step per mode.
+The full `color` group in v0. Every token resolves to one step in both modes except the contrast tokens, which pick a neutral step per mode, and `surface-raised` and `field`, which sit on mithril2 in dark and mithril1 in light.
 
 | Token | Step | Role |
 | --- | --- | --- |
 | `--ult-color-surface` | mithril1 | page and app background |
-| `--ult-color-surface-raised` | mithril2 | cards, panels, popovers |
+| `--ult-color-surface-raised` | mithril2 dark, mithril1 light | cards, panels, popovers; in light they float on their shadow |
 | `--ult-color-surface-sunken` | mithril3 | wells, inputs, code blocks |
 | `--ult-color-surface-hover` | mithril4 | rows and items on hover |
 | `--ult-color-surface-active` | mithril5 | component chrome at rest, such as a scrollbar thumb |
-| `--ult-color-surface-overlay` | mithril2 at alpha `b3` dark, `cc` light | glass tiles and scrims; the one token with alpha |
+| `--ult-color-surface-overlay` | `surface-raised` at alpha `b3` dark, `cc` light | glass tiles and scrims; the one token with alpha |
+| `--ult-color-field` | mithril2 dark, mithril1 light | text field fill |
 | `--ult-color-text` | mithril12 | body text |
 | `--ult-color-text-muted` | mithril11 | secondary text |
 | `--ult-color-text-subtle` | mithril10 | labels, captions, placeholders |
 | `--ult-color-text-inverse` | mithril1 | text on inverted surfaces |
+| `--ult-color-text-disabled` | mithril9 | ink for disabled controls |
 | `--ult-color-border` | mithril6 | hairlines |
+| `--ult-color-border-hover` | mithril9 | field, checkbox, radio and switch edges on hover |
 | `--ult-color-border-strong` | mithril8 | input and control outlines |
 | `--ult-color-border-focus` | arcane9 | focus rings |
 
@@ -544,11 +549,15 @@ For each hue role `accent` (arcane), `highlight` (mana), `success` (verdant), `w
 | `--ult-color-<role>-hover` | step 10 | solid fill on hover |
 | `--ult-color-<role>-active` | step 11 | solid fill when pressed |
 | `--ult-color-<role>-subtle` | step 3 | tinted background for badges, callouts, chips |
+| `--ult-color-<role>-subtle-hover` | step 4 | the tinted background on hover |
+| `--ult-color-<role>-subtle-active` | step 5 | the tinted background when pressed |
 | `--ult-color-<role>-border` | step 7 | hairline in the hue, for a chip, callout, or panel edge |
 | `--ult-color-<role>-text` | step 12 | the hue as text on neutral or subtle surfaces |
 | `--ult-color-<role>-contrast` | mithril1, except `warning-contrast` is mithril12 in light | text on the solid fills |
 
 `highlight` is the cyan role: links, token names, the top strength in the report. `border-focus` is arcane9 so a focus ring matches the accent in both modes.
+
+`field`, `text-disabled`, `border-hover` and the `<role>-subtle-hover` and `-subtle-active` steps were added with draft document v4, which also moved light `surface-raised` to mithril1; version-3 drafts resolve without them. Under an Ink accent, accent's subtle steps read mithril 3, 4 and 5.
 
 `<role>-border` was added on Mana report adoption (ULT-13), where the first real consumer needed a hairline in the accent hue and the set had no token for one. It is a decorative hairline and is not gated, the same as `--ult-color-border`; a control outline that must be seen uses `border-strong`.
 
@@ -574,7 +583,7 @@ WCAG 2.2 AA is the hard gate, checked by the generator in both modes for every p
 | `text`, `text-muted`, `text-subtle` on `surface`, `surface-raised`, `surface-sunken`, `surface-hover` | 4.5:1 |
 | `<role>-text` on `surface`, `surface-raised`, `<role>-subtle` | 4.5:1 |
 | `<role>-contrast` on `<role>`, `<role>-hover`, `<role>-active` | 4.5:1 |
-| `border-strong`, `border-focus` on `surface`, `surface-raised` | 3:1 |
+| `border-strong`, `border-focus`, `border-hover` on `surface`, `surface-raised` | 3:1 |
 | `series-1` to `series-6` on `surface`, `surface-raised` | 3:1 |
 
 Lowest measured ratios today: `text-subtle` on `surface-hover` 4.78 dark and 4.94 light; `highlight-contrast` on `highlight` 4.58 light; `danger-contrast` on `danger` 4.60 light; `border-strong` on `surface-raised` 3.04 dark. A solid fill against `surface` is not gated; amber in light mode sits at 2:1 and is acceptable because the fill always carries text.
