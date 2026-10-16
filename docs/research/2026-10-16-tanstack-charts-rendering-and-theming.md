@@ -141,6 +141,34 @@ The clean StyleX route is the scene layer with an Ultima-owned renderer.
 - **License.** MIT for both packages and the repo.
 - **Stability.** From 1.0, removing an API, renaming an option, or changing a default requires a major release, and deprecations last for the whole major. React Native stays experimental. 1.0.0 shipped 2026-10-03 and 1.1.0 on 2026-10-09, after 34 releases in the 0.x line. The packaged docs carry a header saying they "follow unreleased `main`". The four pages I compared match the `v1.1.0` tag exactly.
 
+### 6. Which entries are free of DOM (added for the import allowlist)
+
+Added on [How the checker, registry build and import policy carry the chart engine](https://github.com/frankieramirez/ultima/issues/832). I walked the relative-import graph of each entry's `import` target in the 1.1.0 tarball and searched every file for `document`, `window`, `createElement`, `getComputedStyle`, `matchMedia`, `ResizeObserver`, `requestAnimationFrame`, `getContext`, `HTMLElement`, and `addEventListener`.
+
+| Entry | Files | External imports | DOM hits |
+| --- | --- | --- | --- |
+| `/scene` | 14 | none | none |
+| `/runtime` | 15 | none | none |
+| `/types` | 1 | none | none |
+| `/bar` | 8 | `d3-scale`, `d3-shape` | none |
+| `/line` | 4 | none | none |
+| `/area` | 5 | `d3-shape` | none |
+| `/dot` | 7 | none | none |
+| `/rule` | 4 | none | none |
+| `/rect` | 5 | none | none |
+| `/text` | 4 | none | none |
+| `/tick` | 5 | none | none |
+| `/band` | 6 | none | none |
+| `/stack` | 1 | none | none |
+| `/transform/stack` | 9 | `d3-shape` | none |
+| `/scales/band`, `/scales/linear`, `/scales/point`, `/scales/ordinal` | 2 to 3 | none | none |
+| `/legend` | 10 | none | `createElement` (`interactive-legend.js`) |
+| `/tooltip` | 4 | none | `document`, `ResizeObserver`, `addEventListener`, `createElement`, `requestAnimationFrame` |
+| `/universal` | 90 | `d3-array`, `d3-scale`, `d3-shape` | `window` (`universal.js`) |
+| root | 107 | `d3-array`, `d3-scale`, `d3-shape` | `createElement`, `getComputedStyle`, `getContext` (`dom-text.js`), `window`, `matchMedia`, and more |
+
+The walk confirms that the search finds DOM where it exists: `/legend`, `/tooltip`, `/universal` and the root all report hits. The first eighteen entries are the starting allowlist. The other subpaths in the export map, about a hundred, were not walked and stay denied until a review walks them.
+
 ## Sources
 
 - `npm pack @tanstack/charts@1.1.0 @tanstack/react-charts@1.1.0`, extracted and read, never executed. Everything below under `core/package/` and `react/package/` is from those tarballs.
