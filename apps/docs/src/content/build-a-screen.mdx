@@ -12,6 +12,7 @@ import {
 } from '../build-a-screen';
 import { Demo } from '../demo';
 import Typography from '../demos/code/typography';
+import ListDetail from '../examples/complete-screen/list-detail';
 import StyleOverrides from '../examples/complete-screen/style-overrides';
 import { Callout } from '../foundation';
 
@@ -89,6 +90,14 @@ Each state here is reached by real input. Type an address without `@` and submit
 <Demo component={InteractionStatesPreview} source={lessonSource('interaction-states')} title="States" />
 
 <LessonInstall id="interaction-states" />
+
+## Selectable list and detail
+
+A list whose selection drives a detail pane is a vertical ToggleGroup with single selection. The parent owns the rows and the selected ID. The group's `value` is `[selectedId]`, and `onValueChange` sets the new ID, cancelling the change that would leave no row selected. Each row is a `ToggleGroup.Item` named by its title through `aria-labelledby`, so the arrow keys move between rows and `aria-pressed` marks the selection without ARIA of your own. The detail is a Card rendered as a `section` labelled by the selected title. Mark resolved changes the row in the parent's state, so the list and the detail update together. The panes stack at narrow widths and sit side by side when there is room.
+
+<Demo component={ListDetail} source={lessonSource('list-detail')} title="List and detail" />
+
+<LessonInstall id="list-detail" />
 
 ## Product semantic tokens
 

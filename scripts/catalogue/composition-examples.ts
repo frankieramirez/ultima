@@ -49,6 +49,17 @@ export default [
     scenarios: ['screen-composition.copy-bundles'],
   },
   {
+    id: 'list-detail',
+    title: 'Selectable list and detail',
+    route: '/build-a-screen',
+    anchor: 'selectable-list-and-detail',
+    files: [
+      { source: 'apps/docs/src/examples/complete-screen/list-detail.tsx', destination: 'components/examples/list-detail.tsx' },
+    ],
+    feature: 'screen-composition',
+    scenarios: ['screen-composition.copy-bundles'],
+  },
+  {
     id: 'product-tokens',
     title: 'Product semantic tokens',
     route: '/build-a-screen',
