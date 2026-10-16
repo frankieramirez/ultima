@@ -6,7 +6,7 @@
  * group, gives them a bounded graceful shutdown and then kills what remains. Nothing is ever found or
  * killed by port or process name.
  */
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { closeSync, openSync, readFileSync, readdirSync } from 'node:fs';
 
@@ -65,8 +65,12 @@ const groupAlive = (pgid: number) => {
   }
 };
 
-/** Live processes whose environment carries this token. Only Linux exposes it; elsewhere the group is the bound. */
+/**
+ * Live processes whose environment carries this token, read from `/proc` on Linux and from `ps -E` on macOS,
+ * which shows the environment of the user's own processes. Elsewhere the group is the bound.
+ */
 export function ownedBy(token: string): number[] {
+  if (process.platform === 'darwin') return psOwned(token);
   if (process.platform !== 'linux') return [];
   const marker = Buffer.from(`${OWNER_VARIABLE}=${token}\0`);
   const owned: number[] = [];
@@ -84,6 +88,22 @@ export function ownedBy(token: string): number[] {
       const environ = readFileSync(`/proc/${pid}/environ`);
       if (environ.includes(marker) && !zombie(pid)) owned.push(pid);
     } catch {}
+  }
+  return owned.sort((a, b) => a - b);
+}
+
+/** macOS: `ps` prints each process's state and its command line followed by its environment. */
+function psOwned(token: string): number[] {
+  const result = spawnSync('ps', ['-AEww', '-o', 'pid=,stat=,command='], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  if (result.status !== 0) return [];
+  const marker = `${OWNER_VARIABLE}=${token}`;
+  const owned: number[] = [];
+  for (const line of result.stdout.split('\n')) {
+    const match = /^\s*(\d+)\s+(\S+)\s+(.*)$/.exec(line);
+    if (!match) continue;
+    const pid = Number(match[1]);
+    if (pid === process.pid || (match[2] as string).startsWith('Z')) continue;
+    if ((match[3] as string).split(/\s+/).includes(marker)) owned.push(pid);
   }
   return owned.sort((a, b) => a - b);
 }
