@@ -196,7 +196,25 @@ export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultD
     io.out('Cancelled. Nothing was written.\n');
     return 3;
   }
-  return apply(planned, false, io, deps);
+  return apply(planned, false, io, deps, retryArgs(request));
+}
+
+/** The command a terminal run repeats to plan and apply the same request again. */
+function retryArgs(request: InitRequest): string[] {
+  return [
+    'ultima',
+    'init',
+    request.destination,
+    '--framework',
+    request.framework,
+    '--layout',
+    request.layout,
+    '--package-manager',
+    request.packageManager,
+    ...(request.harnesses ?? []).flatMap((harness) => ['--harness', harness]),
+    ...(request.registry === DEFAULT_REGISTRY ? [] : ['--registry', request.registry]),
+    ...(request.cliTarball === null ? [] : ['--cli-tarball', request.cliTarball]),
+  ];
 }
 
 /** An existing application: detection settles the framework, layout and manager, and the flags may only confirm them. */
@@ -424,7 +442,7 @@ async function applyFile(path: string, json: boolean, io: InitIO, deps: InitDeps
     );
     return report(io, fail(1, `${path} is stale: ${changed.join(', ') || 'its inputs'} changed since it was planned; nothing was written. Plan again`));
   }
-  return apply(fresh, json, io, deps);
+  return apply(fresh, json, io, deps, ['ultima', 'init', '--apply', path]);
 }
 
 function validRequest(request: unknown): request is InitRequest {
@@ -460,6 +478,10 @@ type Result = {
   agents: AgentResult;
   manualSteps: ManualStep[];
   outcomes: Outcomes;
+  /** On a stop: the command that tries again, or null when the plan can no longer apply. */
+  retry?: string | null;
+  /** On success: the staging directories of earlier stopped runs for this destination, now removed. */
+  cleared?: string[];
   error?: string;
 };
 
@@ -506,7 +528,7 @@ export function stepLines(steps: ManualStep[]): string[] {
   ]);
 }
 
-async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps): Promise<number> {
+async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps, retry: string[]): Promise<number> {
   const progress = json ? io.err : io.out;
   const { destination, name } = plan.target;
   if (exists(destination)) return report(io, fail(1, `${destination} already exists; nothing was written`));
@@ -541,9 +563,19 @@ async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps): Pro
     result.error = `${plan.operations[index]?.id ?? 'publish'}: ${message}`;
     result.outcomes = outcomes(result.status, result.checks, result.agents, result.manualSteps);
     if (index < result.operations.length) (result.operations[index] as Result['operations'][number]).status = 'failed';
+    const taken = exists(destination);
+    result.retry = taken ? null : commandLine({ command: retry[0] as string, args: retry.slice(1) });
     writeFileSync(join(logs, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);
     if (json) io.out(`${JSON.stringify(result, null, 2)}\n`);
-    io.err(`ultima init: stopped at ${result.error}\n${destination} was not created. Staging and logs are kept at ${staging}\n`);
+    const next = taken
+      ? `Retry    ${destination} exists now, so this plan can no longer apply. Move it aside, or plan another directory`
+      : code === 3
+        ? `Retry    ${result.retry}\n         The plan can be re-applied as it is; the retry stages afresh and stops before writing if an input changed`
+        : `Retry    ${result.retry}\n         The plan can be re-applied as it is, but a failed ${plan.operations[index]?.kind === 'check' ? 'check' : 'verification'} usually fails again; read the log first`;
+    io.err(
+      `ultima init: stopped at ${result.error}\n${destination} was not created. Staging and logs are kept at ${staging}\n${next}\n` +
+        `Staging  kept for its logs; the next successful init of ${destination} removes it, so nothing needs deleting by hand\n`,
+    );
     return code;
   };
 
@@ -598,6 +630,7 @@ async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps): Pro
   const claimFailure = claimDestination(destination);
   if (claimFailure) return stop(plan.operations.length, 1, `${destination} appeared during apply (${claimFailure}); it was left untouched`);
   for (const entry of readdirSync(app)) renameSync(join(app, entry), join(destination, entry));
+  result.cleared = clearStopped(destination, name, staging);
   const kept = join(destination, 'node_modules/.ultima-init', runId);
   result.status = 'completed';
   result.outcomes = outcomes(result.status, result.checks, result.agents, result.manualSteps);
@@ -610,6 +643,28 @@ async function apply(plan: Plan, json: boolean, io: InitIO, deps: InitDeps): Pro
   rmSync(staging, { recursive: true, force: true });
   io.out(json ? `${JSON.stringify(result, null, 2)}\n` : printResult(plan, result));
   return 0;
+}
+
+/**
+ * Removes the staging an earlier run kept when it stopped for this destination. Only a directory whose `result.json`
+ * records that stop is removed, so a run still in progress, or one interrupted before it could report, is left alone.
+ */
+function clearStopped(destination: string, name: string, current: string): string[] {
+  const parent = dirname(destination);
+  return readdirSync(parent)
+    .filter((entry) => entry.startsWith(`.ultima-init-${name}-`))
+    .map((entry) => join(parent, entry))
+    .filter((path) => {
+      if (path === current) return false;
+      try {
+        const recorded = JSON.parse(readFileSync(join(path, 'logs/result.json'), 'utf8'));
+        if (recorded?.command !== 'init' || recorded.destination !== destination || recorded.staging !== path || recorded.status === 'completed') return false;
+      } catch {
+        return false;
+      }
+      rmSync(path, { recursive: true, force: true });
+      return true;
+    });
 }
 
 function scaffoldProblem(app: string, name: string, expected: Record<string, string>): string | null {
@@ -711,7 +766,7 @@ function isFile(path: string): boolean {
   }
 }
 
-export function commandLine({ command, args }: Command): string {
+export function commandLine({ command, args }: Pick<Command, 'command' | 'args'>): string {
   return [command, ...args].map((part) => (/^[\w@./:{}=+-]+$/.test(part) ? part : `'${part.replaceAll("'", "'\\''")}'`)).join(' ');
 }
 
@@ -771,6 +826,7 @@ function printResult(plan: Plan, result: Result): string {
     '',
     `Versions   ${Object.entries(result.versions).map(([name, version]) => `${name} ${version}`).join(', ')}`,
     `Logs       ${result.logs}`,
+    ...(result.cleared && result.cleared.length > 0 ? [`Cleared    ${result.cleared.join(', ')}, kept by earlier stopped runs`] : []),
     `Recovery   init wrote nothing outside ${result.destination}; delete it to undo this run.`,
     '',
     `The preview is mounted on / from ${plan.preview.file}.`,
