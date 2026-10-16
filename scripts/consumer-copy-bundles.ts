@@ -164,6 +164,31 @@ export const EXERCISES: Record<string, Exercise> = {
       await until(async () => await focusedName(page) === 'Review pending invites', 'focus returns to the trigger');
     },
   },
+  'list-detail': {
+    bundle: 'list-detail',
+    viewport: NARROW,
+    run: async (page) => {
+      const list = page.getByRole('group', { name: 'Requests' });
+      const first = list.getByRole('button', { name: 'Invoice shows the wrong tax rate', exact: true });
+      const third = list.getByRole('button', { name: 'Export stops at 10,000 rows', exact: true });
+      await until(async () => await first.getAttribute('aria-pressed') === 'true', 'the first row starts selected');
+      await page.getByRole('region', { name: 'Invoice shows the wrong tax rate' }).waitFor();
+      await noOverflow(page);
+      await first.focus();
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('ArrowDown');
+      await until(async () => await third.evaluate((element) => element === document.activeElement), 'the arrow keys move to the third row');
+      await page.keyboard.press('Enter');
+      await until(async () => await third.getAttribute('aria-pressed') === 'true' && await first.getAttribute('aria-pressed') === 'false', 'Enter moves the selection');
+      const detail = page.getByRole('region', { name: 'Export stops at 10,000 rows' });
+      await detail.getByText('The CSV export of the orders table ends at row 10,000 without an error.').waitFor();
+      await third.click();
+      assert.equal(await third.getAttribute('aria-pressed'), 'true', 'pressing the selected row keeps it selected');
+      await detail.getByRole('button', { name: 'Mark resolved' }).click();
+      await until(async () => await detail.getByRole('button', { name: 'Mark resolved' }).isDisabled(), 'resolving disables the action');
+      await until(async () => await list.getByText('Resolved', { exact: true }).count() === 2, 'the list shows the resolved row');
+    },
+  },
   typography: {
     bundle: 'typography',
     viewport: DESKTOP,
