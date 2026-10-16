@@ -41,16 +41,23 @@ export function externalLayout(manifest: { dependencies?: Record<string, string>
 /** axe-core's own `region` exemptions, from its rule definition. */
 const AXE_REGIONS = 'dialog, [role=dialog], [role=alertdialog], svg';
 const OWNED_POPUP = 'data-ultima-owned-popup';
+const FOCUS_GUARD = '[data-base-ui-focus-guard][aria-hidden="true"]';
 
 /**
  * axe over the whole page. Its best-practice `region` rule exempts dialogs but not a listbox or menu, though both
  * are popups that belong to the control that opened them: the external-mode decision on #809 exempts a listbox or
  * menu popup the same way when an expanded control names it with `aria-controls` or `aria-owns`. Anything else
  * outside a landmark still fails `region`.
+ *
+ * Base UI keeps focus in an open popup with empty, `aria-hidden` focus guards that take focus only to send it back
+ * inside. axe reports them under `aria-hidden-focus` as incomplete when its `isModalOpen` heuristic sees a modal, and
+ * as a violation when the control that opened the popup sits on one of its sample points, so the verdict followed the
+ * application's layout (#858). Those guards move to `reviewed`, which the run records; any other `aria-hidden` focus
+ * target still fails.
  */
-export async function externalAxe(page: Page): Promise<{ violations: { id: string; nodes: { target: unknown[] }[] }[] }> {
+export async function externalAxe(page: Page): Promise<{ violations: { id: string; nodes: { target: unknown[] }[] }[]; reviewed?: { id: string; target: unknown[] }[] }> {
   await page.addScriptTag({ path: axePath });
-  return page.evaluate(async ({ regions, marker }) => {
+  return page.evaluate(async ({ regions, marker, guard }) => {
     const owned = [...document.querySelectorAll('[aria-expanded="true"]')]
       .flatMap((control) => `${control.getAttribute('aria-controls') ?? ''} ${control.getAttribute('aria-owns') ?? ''}`.split(/\s+/))
       .map((id) => (id ? document.getElementById(id) : null))
@@ -58,8 +65,20 @@ export async function externalAxe(page: Page): Promise<{ violations: { id: strin
     for (const popup of owned) popup.setAttribute(marker, '');
     const axe = (window as unknown as { axe: { configure: (spec: unknown) => void; run: () => Promise<{ violations: { id: string; nodes: { target: unknown[] }[] }[] }> } }).axe;
     axe.configure({ checks: [{ id: 'region', options: { regionMatcher: `${regions}, [${marker}]` } }] });
-    try { return await axe.run(); } finally { for (const popup of owned) popup.removeAttribute(marker); }
-  }, { regions: AXE_REGIONS, marker: OWNED_POPUP });
+    let result;
+    try { result = await axe.run(); } finally { for (const popup of owned) popup.removeAttribute(marker); }
+    const isGuard = ({ target }: { target: unknown[] }) => {
+      const element = target.length === 1 && typeof target[0] === 'string' ? document.querySelector(target[0]) : null;
+      return !!element && element.matches(guard) && element.childElementCount === 0 && !element.textContent?.trim();
+    };
+    const reviewed: { id: string; target: unknown[] }[] = [];
+    const violations = result.violations.flatMap((violation) => {
+      if (violation.id !== 'aria-hidden-focus') return [violation];
+      const nodes = violation.nodes.filter((node) => (isGuard(node) ? (reviewed.push({ id: violation.id, target: node.target }), false) : true));
+      return nodes.length ? [{ ...violation, nodes }] : [];
+    });
+    return { ...result, violations, reviewed };
+  }, { regions: AXE_REGIONS, marker: OWNED_POPUP, guard: FOCUS_GUARD });
 }
 
 function tokenProblems(element: Locator, table: TokenTable, mode: 'dark' | 'light'): Promise<string[]> {

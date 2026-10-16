@@ -833,6 +833,15 @@ const near = (a: number, b: number) => Math.abs(a - b) <= 2;
 /** A geometry fact, or the measurements that broke it, so a failure carries its evidence. */
 const holds = (ok: boolean, evidence: Record<string, unknown>) => ok || evidence;
 const focusedName = (page: Page) => page.evaluate(() => document.activeElement?.textContent?.trim() ?? null);
+/** The key that moves focus to the next link: macOS WebKit, like Safari, skips links on Tab unless Option is held. */
+const linkTab = (page: Page) => (process.platform === 'darwin' && page.context().browser()?.browserType().name() === 'webkit' ? 'Alt+Tab' : 'Tab');
+/** The rendered glyphs of an element's text, which a grid cell or block can be wider than. */
+const glyphs = (locator: Locator) => locator.evaluate((element) => {
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  const rect = range.getBoundingClientRect();
+  return { left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
+});
 
 async function directionLocale({ page, check }: Cell) {
   const nav = page.getByRole('navigation', { name: 'مساحة العمل', exact: true });
@@ -876,7 +885,7 @@ async function directionLocale({ page, check }: Cell) {
   });
   await check('navigation-keyboard', { focused: 'النشاط', heading: 'النشاط', current: 'page' }, async () => {
     await link('المشاريع').focus();
-    await page.keyboard.press('Tab');
+    await page.keyboard.press(linkTab(page));
     const focused = await focusedName(page);
     await page.keyboard.press('Enter');
     await settle(page);
@@ -911,12 +920,14 @@ async function directionLocale({ page, check }: Cell) {
     await listbox.waitFor();
     await settle(page);
     const option = page.getByRole('option', { name: 'الشمال', exact: true });
-    const text = await box(option.getByText('الشمال', { exact: true }));
+    const label = option.getByText('الشمال', { exact: true });
+    const text = await box(label);
+    const glyph = await glyphs(label);
     const row = await box(option);
     const direction = await listbox.evaluate((element) => getComputedStyle(element).direction);
     await page.keyboard.press('Escape');
     await listbox.waitFor({ state: 'hidden' });
-    return { iconAtInlineEnd: holds(icon.right <= value.left, { icon, value }), popupDirection: direction, textAtInlineStart: holds(text.right > row.left + row.width / 2, { text, row }), alignedWithValue: holds(near(text.right, value.right), { text, value }) };
+    return { iconAtInlineEnd: holds(icon.right <= value.left, { icon, value }), popupDirection: direction, textAtInlineStart: holds(near(glyph.right, text.right) && text.left - row.left < row.right - text.right, { glyph, text, row }), alignedWithValue: holds(near(text.right, value.right), { text, value }) };
   });
   await check('select-keyboard', { value: 'الشرق', focused: true }, async () => {
     await page.mouse.move(0, 0);

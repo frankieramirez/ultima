@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { type Diagnostic, exitCode } from '../diagnostic.ts';
+import { run } from '../run.ts';
 
 function finding(severity: Diagnostic['severity']): Diagnostic {
   return {
@@ -37,4 +38,16 @@ describe('the exit table', () => {
   it('exits 2 for an invalid invocation', () => {
     expect(exitCode({ usage: 'unknown flag --bogus' })).toBe(2);
   });
+});
+
+describe('the help flag', () => {
+  it.each([['--help'], ['-h'], ['init', '--help'], ['init', '.', '-h'], ['doctor', '--help'], ['check', '--files', 'a.tsx', '--help']])(
+    'prints the usage on stdout and exits 0 for %s',
+    async (...args) => {
+      const { code, stdout, stderr } = await run(args);
+      expect(code).toBe(0);
+      expect(stderr).toBe('');
+      expect(stdout).toMatch(args[0] === 'init' ? /^usage: ultima init / : /^usage: ultima </);
+    },
+  );
 });

@@ -57,3 +57,15 @@ Future design exports delimit their generated content and identify its source. A
 The registry build generates `/guides/install.md`, `/guides/install/update.md`, `/guides/build-a-screen.md`, `/guides/support.md`, `/guides/recipes.md`, `/guides/lessons/<id>.md` and `/guides/recipes/<id>.md`. Authored MDX owns the prose. Setup descriptors own the manual steps, shared framework data owns the install commands, the composition projection owns copied paths, imports and dependencies, and the support manifest owns version and evidence claims. Required dynamic content must have a Markdown projection; an unknown component or missing bundle fails generation. Browser routes keep their current behavior.
 
 These URLs join the hosted guidance contract. The production docs build checks their HTTP responses, discoverability, internal guidance links and source parity. The exports are build output and have no independently authored copy. Consumer installation and root-document ownership retain their existing boundaries.
+
+## Amendment (2026-10-16): product pattern records
+
+Decided on [Decide how a consumer records its own product patterns for the next agent](https://github.com/frankieramirez/ultima/issues/853). Ultima's hosted guidance cannot describe the compositions a product builds from Ultima, and an agent with no record of them copies the nearest file or reads raw registry source. A consumer agent records reusable compositions as one-line entries under `## Patterns` in the product's existing `DESIGN.md`, outside its generated region, as [Record product patterns](../spec/ultima.md#record-product-patterns) specifies.
+
+This is consumer prose written by the consumer's agent, not a managed or installed file. No CLI command, export or registry item writes it, and an agent never creates `DESIGN.md` to hold it. Entries name files and purposes; conventions stay hosted and values stay in tokens, so the record adds no second copy of anything Ultima owns. The CLI's root-document prohibition and `init`'s preservation rules are unchanged.
+
+## Amendment (2026-10-16): live specimen
+
+Decided on [Decide whether the consumer app gets a live specimen of its installed items](https://github.com/frankieramirez/ultima/issues/854), accepted for implementation after [#774](https://github.com/frankieramirez/ultima/issues/774) closes. An `ultima-design specimen` command prints, or with `--write <path>` writes, one React module that renders every docs demo of each installed React item under the product's own theme, as [Specimen](../spec/ultima.md#specimen) specifies.
+
+The module is consumer source written on request, like `init`'s preview. It is not a managed file: it carries no stamp, nothing refreshes it, and `install`, `uninstall` and `status` ignore it. The command edits no router or entry file and writes over nothing without `--force`. Its content is rendered examples generated from the docs demos, not conventions, so guidance stays hosted. The managed set stays the consumer skill and the hook entries, and `init`'s preview is unchanged.

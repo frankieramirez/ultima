@@ -28,6 +28,8 @@ npx ultima-design@latest init my-next-app --framework next --layout src
 npx ultima-design@latest init .
 ```
 
+`npx ultima-design@latest init --help` prints every option.
+
 **A new directory.** `init` runs the framework's own scaffold in a private staging directory. It installs the setup item with Button, Card and Dialog, wires the compiler and resets, and puts a small preview on the home route. The directory appears only after the setup checks and the production build pass.
 
 **An existing application.** `init` detects the framework, layout and package manager, then plans only what is missing. Your pages, providers, root documents and theme files stay as they are. The preview goes on its own route in Next.js; in Vite, the report tells you where to mount it.

@@ -9,7 +9,7 @@ import { ToggleGroup } from '@ultima/ui/toggle-group';
 import { useId, useState } from 'react';
 
 /** Where the list and the detail sit side by side instead of stacked. */
-const SPLIT = '@media (min-width: 48rem)';
+const DESKTOP = '@media (min-width: 48rem)';
 
 type Status = 'open' | 'waiting' | 'resolved';
 
@@ -42,7 +42,7 @@ const styles = stylex.create({
     display: 'grid',
     fontFamily: font['--ult-font-sans'],
     gap: space['--ult-space-6'],
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [SPLIT]: 'minmax(0, 2fr) minmax(0, 3fr)' },
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [DESKTOP]: 'minmax(0, 2fr) minmax(0, 3fr)' },
   },
   list: {
     alignItems: 'stretch',

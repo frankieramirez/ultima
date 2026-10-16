@@ -53,9 +53,14 @@ function repository(files: Record<string, string> = { 'README.md': '# Fixture\n'
   return directory;
 }
 
+/** A live process that is not a zombie: Linux reads its state from `/proc`, other platforms from `ps`. */
 const alive = (pid: number) => {
   try {
     process.kill(pid, 0);
+    if (process.platform !== 'linux') {
+      const state = spawnSync('ps', ['-o', 'stat=', '-p', String(pid)], { encoding: 'utf8' }).stdout.trim();
+      return state !== '' && !state.startsWith('Z');
+    }
     const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
     return !stat.slice(stat.lastIndexOf(')') + 2).startsWith('Z');
   } catch {
