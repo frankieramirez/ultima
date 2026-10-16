@@ -80,7 +80,7 @@ A three-digit display ordinal, such as Button 008, derived from an item's alphab
 
 ## Engine
 
-A headless dependency that supplies a model rather than an interaction: TanStack Table's row model, React Hook Form's form state, and whatever Calendar and Chart turn out to need. An engine renders no DOM and no styles, and supplies no roles, ARIA, keyboard handling, or focus management, which is the whole difference between it and a primitive. It belongs to the consumer, never to a component's registry item, so a composition that needs one is a recipe. A **Block** that follows such a recipe carries its engine as the block's own dependency. An engine a composition only may use is the same: Field is complete without a form library, and the library is a recipe over it.
+A headless dependency that supplies a model rather than an interaction: TanStack Table's row model, React Hook Form's form state, and the scene layer of TanStack Charts. An engine renders no DOM and no styles, and supplies no roles, ARIA, keyboard handling, or focus management, which is the whole difference between it and a primitive. The test applies to the entry the code imports, so a package that renders DOM elsewhere can still supply an engine through a headless subpath. It belongs to the consumer, never to a component's registry item, so a composition that needs one is a recipe. The one exception is an item whose whole identity is the engine's output, as a chart's is: it may carry that engine as its own dependency. A **Block** that follows such a recipe carries its engine as the block's own dependency. An engine a composition only may use is the same: Field is complete without a form library, and the library is a recipe over it.
 
 ## Primitive layer
 
