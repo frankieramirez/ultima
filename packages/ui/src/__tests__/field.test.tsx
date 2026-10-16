@@ -4,7 +4,7 @@
  * 2. The name resolves: role textbox, named by Field.Label.
  * 3. The focus ring lands where the contract says: on none of Field's parts; the control brings its own.
  * 4. The primitive is still wired: Description and Error merge into aria-describedby; aria-invalid / data-invalid reach the control.
- * 5. Documented state drives its style: invalid paints the control's danger border; disabled + invalid keeps data-invalid; disabled dims Label and Description.
+ * 5. Documented state drives its style: invalid paints the control's danger border; disabled + invalid keeps data-invalid; disabled dims Label and leaves Description readable.
  * 6. Typecheck passes: className is rejected on every styled part.
  * 7. Behavior this component wires itself: none, because every interaction is the primitive's or a style on a data-* attribute.
  * 8. CSS the primitive reads: none, because Field has no clause-2 declarations.
@@ -112,7 +112,7 @@ test('disabled while invalid keeps data-invalid and the danger border', async ()
   await expect.element(screen.getByText('Still shown.')).toBeVisible();
 });
 
-test('a disabled field dims its label and description with the control', async () => {
+test('a disabled field dims its label with the control and keeps its description readable', async () => {
   const screen = await render(
     <>
       <Field.Root name="live">
@@ -130,7 +130,7 @@ test('a disabled field dims its label and description with the control', async (
   expect(getComputedStyle(screen.getByText('Live', { exact: true }).element()).opacity).toBe('1');
   expect(getComputedStyle(screen.getByText('Live help.').element()).opacity).toBe('1');
   expect(getComputedStyle(screen.getByText('Off', { exact: true }).element()).opacity).toBe('0.5');
-  expect(getComputedStyle(screen.getByText('Off help.').element()).opacity).toBe('0.5');
+  expect(getComputedStyle(screen.getByText('Off help.').element()).opacity).toBe('1');
 });
 
 test('a label that wraps keeps its lines apart', async () => {
