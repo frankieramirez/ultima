@@ -242,6 +242,31 @@ test('modal-only axe checks require visible exhaustive focus wraps and never res
   }
 });
 
+test('modal text axe cannot place over the page resolves only with a measured contrast on the dialog surface', () => {
+  const variables = Object.fromEntries(Object.keys(resolveDraft(stockDraft()).light).map((key) => [key, { expected: 'paint', actual: 'paint' }]));
+  const paint = Object.fromEntries(['root', 'control', 'status', 'portal'].map((part) => [part, { backgroundColor: 'paint', color: 'text' }]));
+  const rule = { id: 'color-contrast', nodes: [{ target: ['#description'], any: [{ id: 'color-contrast', data: { messageKey: 'elmPartiallyObscuring', expectedContrastRatio: '4.5:1' } }], none: [], all: [] }] };
+  const review = { target: ['#description'], color: 'rgb(82, 82, 82)', background: 'rgb(249, 249, 249)', contained: true, ratio: 7.42, expected: 4.5 };
+  const fixture = {
+    assertions: BROWSER_ASSERTIONS.map((name) => ({ name, expected: true, actual: true, status: 'passed' })),
+    axe: Object.fromEntries(['closed', 'open', 'switched-open', 'switched-closed'].map((state) => [state, { violations: [], incomplete: state.includes('open') ? [structuredClone(rule)] : [], passes: [{ id: 'synthetic-rule' }], contrastReview: [structuredClone(review)] }])),
+    modeSnapshots: ['dark', 'light', 'dark'].map((mode) => ({ mode, colorScheme: mode, controlColorScheme: mode, portal: { inContainer: true, documentSurface: 'stock', subtreeSurface: 'draft', colorScheme: mode }, extraction: { expected: { height: '40px', radius: '4px', display: 'inline-flex' }, actual: { height: '40px', radius: '4px', display: 'inline-flex' } }, expected: paint, actual: paint, variables, controlVariables: variables, portalVariables: variables, failures: [] })), failures: [],
+  };
+  assert.deepEqual(browserEvidenceProblems(fixture, true), []);
+  for (const fault of ['closed-state', 'missing-review', 'other-target', 'low-ratio', 'uncontained', 'lowered-bar', 'other-cause', 'mixed-node'] as const) {
+    const changed = structuredClone(fixture), axe = changed.axe.open!;
+    if (fault === 'closed-state') changed.axe.closed!.incomplete = [structuredClone(rule)];
+    if (fault === 'missing-review') delete (axe as { contrastReview?: unknown }).contrastReview;
+    if (fault === 'other-target') axe.contrastReview[0]!.target = ['#title'];
+    if (fault === 'low-ratio') axe.contrastReview[0]!.ratio = 4.49;
+    if (fault === 'uncontained') axe.contrastReview[0]!.contained = false;
+    if (fault === 'lowered-bar') axe.contrastReview[0]!.expected = 3;
+    if (fault === 'other-cause') axe.incomplete[0]!.nodes[0]!.any[0]!.data.messageKey = 'bgImage';
+    if (fault === 'mixed-node') axe.incomplete[0]!.nodes.push({ target: ['#other'], any: [{ id: 'color-contrast', data: { messageKey: 'bgImage', expectedContrastRatio: '4.5:1' } }], none: [], all: [] });
+    assert.ok(browserEvidenceProblems(changed, true).length, fault);
+  }
+});
+
 test('every delivery path has its own coverage; registry reuses the scaffold for every shipped preset', () => {
   for (const layout of CONSUMER_LAYOUTS) for (const path of DELIVERY_PATHS) {
     const cases = consumerCases(layout, path);
