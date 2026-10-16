@@ -121,7 +121,7 @@ export const defaultDeps: InitDeps = {
   },
 };
 
-const USAGE =
+export const INIT_USAGE =
   'usage: ultima init <directory> --framework vite|next [--layout root|src] [--package-manager npm|pnpm] [--harness <name>]... [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init <existing-app> [--framework vite|next] [--package-manager npm|pnpm] [--harness <name>]... [--plan [--json]] [--registry <url>] [--cli-tarball <path>]\n       ultima init --apply <plan.json> [--json]\n       ultima init [<existing-app>] --rollback <run-id>';
 
 export async function init(argv: string[], io: InitIO, deps: InitDeps = defaultDeps): Promise<number> {
@@ -252,7 +252,7 @@ export function validHarnesses(value: unknown): boolean {
 }
 
 function usage(io: InitIO, message: string): number {
-  io.err(`ultima: ${message}\n${USAGE}\n`);
+  io.err(`ultima: ${message}\n${INIT_USAGE}\n`);
   return 2;
 }
 
