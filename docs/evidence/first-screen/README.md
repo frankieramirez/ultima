@@ -164,6 +164,42 @@ The gate is unmet on this revision: Next root and Next src fail on decisions (#8
 | [#848](https://github.com/frankieramirez/ultima/issues/848) Registry consumer proofs fail axe on macOS: the Cinder Dialog description's contrast is incomplete | `pnpm verify release` |
 | [#849](https://github.com/frankieramirez/ultima/issues/849) `site-landing.without-field` fails axe `color-contrast` intermittently | `pnpm verify release` |
 
+## Reruns on `ec6c1b4` on macOS (#774)
+
+The candidate is `ec6c1b4`, which carries #851: the brief and Build a screen step 4 now keep arrangement values literal (#845). Only the #850 evidence separates it from #851's tree. The machine and executor are the same as the `074af87` reruns. All three run-start source manifests and the release report's manifest match `91c0ec1d…`. So do the registry manifest (`a79a8a09…`) and the packed CLI digest (`0be80eee…`). A Vite run started on `d3a9844`, #851's branch head, was stopped partway when #851 merged, and is not evidence.
+
+| Run | Layout | Interventions | Decisions | Check, lint, raw paint, production | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| [2026-10-16-vite-71bebd](runs/2026-10-16-vite-71bebd.json) | Vite | 0 | 0 | passed | **passed** |
+| [2026-10-16-next-app-32d74a](runs/2026-10-16-next-app-32d74a.json) | Next root | 1: `init --help` probe (#857) | 0 | production failed: `axe-open` (#858) | failed: interventions, production |
+| [2026-10-16-next-src-b6cb18](runs/2026-10-16-next-src-b6cb18.json) | Next src | 1: `init --help` probe (#857) | 0 | passed | failed: interventions |
+
+Vite passes again, and Next root and Next src still fail, so S9 remains unmet. #845 holds in all three runs. Each keeps `minBlockSize: '100dvh'` and its `minmax(0, …)` track templates literal, keeps the breakpoint as a named constant in the screen file, and puts only `--app-size-content-max` in its token module. No run rendered documentation, decoded a data link, extracted a bundle, read CRM 01's registry source or referenced the live host or another checkout.
+
+Both Next agents ran `npx ultima-design@latest init --help` before `--plan`. The CLI rejects the flag (`Unknown option '--help'`) and then prints its usage. No guidance prints a help command, so the reviews count the probe, as the #810 Vite review did (#857).
+
+Next root's app fails `axe-open` in all four external cases. axe reports `aria-hidden-focus` on Base UI's four focus-guard spans around the open Select. In every other run, axe reports the same spans as an incomplete, and the runner's focus-cycle review resolves it. axe's `isModalOpen` heuristic needs a fixed element of at least 75% of the viewport at five sample points. Base UI's Select backdrop leaves the trigger exposed, and this app's Category trigger sits on the bottom-right sample point at 1280×800. So axe concludes no modal is open. Two re-measures of a copy of the app failed the same way. The failure comes from layout and the runner, not from the agent's choices (#858).
+
+### Adoption recommendation gate
+
+`pnpm verify release` on the same tree (report `20261016T193624-6cdd0770`, manifest `91c0ec1d…`, no source change), with the macOS settings under Reproduce, failed: 36 checks passed and 5 failed.
+
+- **54-cell matrix:** all 54 cells executed, 18 each in Chromium, Firefox and WebKit. `consumer-bundles-next-app`, `consumer-bundles-next-src` and `consumer-elements` passed. `consumer-bundles-vite` failed the same 6 of 36 cells as on `074af87` (#847). The named gaps `tabs-indicator` and `date-picker-glyphs` stay explicit.
+- **Four delivery paths:** css, stylex-subtree and cli passed in all three layouts. The registry path failed in all three on `axe-open` and `axe-switched-open` in the Cinder cases (#848).
+- **`smoke-install`:** `consumer-smoke` passed.
+- **Studio pairing and parity:** `palette`, `tokens-tests` and `docs-tests` passed.
+- **`production-scenarios`:** all 44 cases passed. #849 did not recur, which fits an intermittent failure.
+- **`tooling-tests`:** the leftover-process test that assumes `/proc` failed again (#846).
+
+The gate is unmet on this revision: Next root and Next src fail on interventions (#857), and Next root also fails production (#858). `pnpm verify release` fails on macOS (#846, #847, #848).
+
+### Defects filed
+
+| Defect | Found in |
+| --- | --- |
+| [#857](https://github.com/frankieramirez/ultima/issues/857) `ultima-design` rejects `--help`, so agents probing for usage count as an intervention | Next root, Next src |
+| [#858](https://github.com/frankieramirez/ultima/issues/858) External `axe-open` fails when the Select trigger sits on one of axe's modal sample points | Next root |
+
 ## Reproduce
 
 ```bash

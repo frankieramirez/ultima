@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-16-next-app-32d74a",
+  "layout": "next-app",
+  "brief": {
+    "path": "docs/evidence/first-screen/brief.md",
+    "sha256": "2cd7e4621eb2fb7c28083867553cc45a4ae8c4e735b1ea4c9ff5305afd45c657",
+    "brand": "#A3237F"
+  },
+  "source": {
+    "head": "ec6c1b4009c2ae3eaaeaa1d031d17d683dbe98af",
+    "manifest": "91c0ec1d763191359200b50babddb1ca7302bad3fc91dd52770b64fe353a07ad",
+    "registryManifest": "a79a8a094130fe04adf1ba7558bd02c4971ab719dbc84e76c4d18f6d52d3fc40",
+    "cliTarball": {
+      "packed": "0be80eee4c9fd673f419af337bb825f3963a8ececf3286f6d1b7ada8ca859a1d",
+      "served": "8df18e51f86628d8da5ddb65a4183a486a8370e9ece9ec65e1357f51b742216d",
+      "version": "0.1.0"
+    },
+    "draftDigest": "2362c2cc7e7337b2b7a84ccd656298ccb22efdcaa9bc0fa84517864a970afda8",
+    "draftFingerprint": "93e116"
+  },
+  "host": {
+    "origin": "http://127.0.0.1:59937",
+    "standsFor": "https://ultima.systems",
+    "npm": "http://127.0.0.1:59937/npm/"
+  },
+  "theme": {
+    "madeIn": "Theme Studio",
+    "command": "npx shadcn@4.21.4 add \"http://127.0.0.1:59937/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\""
+  },
+  "prompt": {
+    "sha256": "ee9661eeb46fc5f24276da3e00582786fa34da5fa702c9bf1abcf6831d9bb04e"
+  },
+  "agent": {
+    "harness": "claude-code",
+    "version": "2.1.300 (Claude Code)",
+    "flags": [
+      "-p",
+      "--safe-mode",
+      "--strict-mcp-config",
+      "--no-chrome",
+      "--permission-mode",
+      "auto",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--settings",
+      "settings: deny WebSearch, the live host, and other checkouts",
+      "--model",
+      "claude-opus-5-5"
+    ],
+    "cwd": "an empty directory under ~/.cache/ultima-first-screen, outside any checkout",
+    "startedAt": "2026-10-16T19:18:51.678Z",
+    "finishedAt": "2026-10-16T19:26:38.701Z",
+    "exit": 0,
+    "model": "claude-opus-5-5",
+    "session": "bf9a6dc2-d400-4adb-b522-48abf63d8a11",
+    "turns": 40,
+    "costUsd": 1.9001912,
+    "durationMs": 465666,
+    "outcome": "success"
+  },
+  "transcript": {
+    "file": "2026-10-16-next-app-32d74a.stream.jsonl.gz",
+    "sha256": "6e1f0081ecdb5c32cda33a7d1ad51e34539a0fa5aa623bc22f270e6d6374af03",
+    "events": 192,
+    "commands": [
+      "ls -la && curl -s http://127.0.0.1:59937/llms.txt | head -200",
+      "cat /Users/f/.claude/projects/-Users-f--cache-ultima-first-screen-2026-10-16-next-app-32d74a-work/bf9a6dc2-d400-4adb-b522-48abf63d8a11/tool-results/bniu4p45i.txt",
+      "mkdir -p .scratch && curl -s http://127.0.0.1:59937/llms.txt > .scratch/llms.txt && wc -l .scratch/llms.txt && sed -n 200,400p .scratch/llms.txt",
+      "grep -n \"^##\\|^###\\|^####\" .scratch/llms.txt | sed -n 1,400p",
+      "sed -n 1227,1365p .scratch/llms.txt",
+      "for g in install install/update build-a-screen support recipes; do f=.scratch/guide-$(echo $g | tr / -).md; curl -s http://127.0.0.1:59937/guides/$g.md > $f; wc -c $f; done",
+      "cat .scratch/guide-install.md",
+      "cat .scratch/guide-build-a-screen.md",
+      "npx ultima-design@latest init --help 2>&1 | head -60",
+      "npx ultima-design@latest init larder --framework next --plan --json > .scratch/ultima-init-plan.json; echo exit=$?; head -c 6000 .scratch/ultima-init-plan.json",
+      "python3 -I -c \"\nimport json,sys\np=json.load(open(sys.argv[1]))\nfor o in p['operations']:\n    print(o['id'], o['kind'], o.get('path',''), (o.get('command') or {}).get('args','') if o['kind']=='run' and o['id']!='scaffold' else '')\nprint([k for k in p.keys()])\nfor k in p:\n    if k not in ('operations','payloads','dependencies','inputs','target','request','recipe','cli','kind','schemaVersion'):\n        print(k, json.dumps(p[k])[:1500])\n\" .scratch/ultima-init-plan.json",
+      "npx ultima-design@latest init --apply .scratch/ultima-init-plan.json > .scratch/init-apply.log 2>&1; echo exit=$?; tail -80 .scratch/init-apply.log",
+      "cd /Users/f/.cache/ultima-first-screen/2026-10-16-next-app-32d74a/work/larder && npx shadcn@4.21.4 add \"http://127.0.0.1:59937/r/theme.json?theme=eJyNlM1u2zAQhO9-igUvvlCF5d_Yt7aA0RwMBDXa-4ZaSYQpUiApIW6Qdy8oh5Icu0WO_JazGs2SfJ0AsJask0azHSx4WFsSsqbfPZ13VBhlLNvB6wQAgFXSl1aqHgCwsqGwe7PmkTj0jUV_aTPr6NulyNAK1HQrXyzn9-Xpl9l2s1iutst0lT7M17PVVb8KNd4xM1t-xkxLNkPtb_Xp-l9urvRUPZO9VW-2nxHbRuo7ztP_aifveubPtSks1uV5mI1D7dgO2HQvC2-JphwamQSaOLIy5-DOzlOVNJJDgnWtKLkQDtMjFYbg1-OUww9SLXkpkMNXK1FxGHqwmLvRpvvW47cDPCl6gYPR5vLFUHM1CuJw3Aec_KSiUWg5HEgrw-G70c4odBz6vbHxMzo6yj_09NLN4Z06gSrEw5w34hT3KsJM6iLwjHJslI8Vb1GcPpT67DLSTvoQXBc2cyXW9LEJI0Vtn35HKnO1NC1ZKzNywwQytKewijNWsii74zUMThlxGini9cpROYrmx7MdFwbjYxrtj9nY_Jj3v9DB3pQrmzxXdCTKXO-f1ZYcDbeDySyEpKnxFlVM2lIr44PR90MhSPu9VOGh6E725G3yF8AvMuI\" 2>&1 | tail -20; ls; head -40 DESIGN.md 2>/dev/null",
+      "sed -n 40,200p DESIGN.md; cat app/layout.tsx app/globals.css app/page.tsx app/ultima.css components.json babel.config.js postcss.config.js next.config.ts package.json",
+      "cd /Users/f/.cache/ultima-first-screen/2026-10-16-next-app-32d74a/work && for l in projects list-detail interaction-states product-tokens; do curl -s http://127.0.0.1:59937/guides/lessons/$l.md > .scratch/lesson-$l.md; wc -c .scratch/lesson-$l.md; done; cat .scratch/lesson-list-detail.md",
+      "cat .scratch/lesson-product-tokens.md",
+      "cd /Users/f/.cache/ultima-first-screen/2026-10-16-next-app-32d74a/work/larder && npx shadcn@4.21.4 add @ultima/badge @ultima/toggle-group @ultima/field @ultima/input @ultima/select --yes 2>&1 | tail -20 && curl -s -o ultima.eslint.mjs http://127.0.0.1:59937/ultima.eslint.mjs && cat ultima.eslint.mjs && npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 2>&1 | tail -3",
+      "ls components/ui lib && cat components/ui/field.tsx | head -80 && grep -n \"export\\|container\" components/ui/select.tsx | head -40 && cat lib/tokens.stylex.ts | head -30",
+      "cat > app/layout.tsx <<'EOF'\nimport type { Metadata } from \"next\";\nimport \"./globals.css\";\nimport \"./ultima.css\";\nimport \"../ultima-theme.css\";\n\nexport const metadata: Metadata = {\n  title: \"Larder\",\n  description: \"Pantry stock and donation intake\",\n};\n\nexport default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {\n  return (\n    <html lang=\"en\">\n      <body>{children}</body>\n    </html>\n  );\n}\nEOF\ncat > eslint.config.mjs <<'EOF'\nimport tseslint from 'typescript-eslint';\nimport { ultimaStylex } from './ultima.eslint.mjs';\n\nexport default [\n  { ignores: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/out/**', '**/coverage/**'] },\n  {\n    files: ultimaStylex.files,\n    languageOptions: {\n      parser: tseslint.parser,\n      parserOptions: { ecmaFeatures: { jsx: true } },\n    },\n  },\n  ultimaStylex,\n];\nEOF\nnode -e '\nconst fs=require(\"fs\");const p=JSON.parse(fs.readFileSync(\"package.json\"));\np.scripts.lint=\"eslint .\";fs.writeFileSync(\"package.json\",JSON.stringify(p,null,2)+\"\\n\");'\nrm app/setup-check.tsx; grep -n \"\" package.json | sed -n 5,12p",
+      "grep -n \"function\\|type .*Props\\|tones\\b\\|neutral\\|accent\" components/ui/input.tsx components/ui/badge.tsx | head -40; grep -n \"^const .* = stylex.create\\|^  [a-z]*: {\" components/ui/badge.tsx | head",
+      "sed -n 1,80p components/ui/toggle-group.tsx && sed -n 1,60p components/ui/card.tsx | grep -n \"title\\|Title\\|h3\\|render\" ",
+      "mkdir -p components/pantry && cat > components/pantry/screen.stylex.ts <<'EOF'\nimport * as stylex from '@stylexjs/stylex';\n\nexport const screen = stylex.defineVars({\n  /** The widest the Pantry screen grows before it centres in the window. */\n  '--app-size-content-max': '72rem',\n});\nEOF\ncat > components/pantry/pantry-data.ts <<'EOF'\nexport const categories = ['Canned goods', 'Dry goods', 'Produce', 'Toiletries'] as const;\n\nexport type Category = (typeof categories)[number];\n\nexport type PantryItem = {\n  id: string;\n  name: string;\n  category: Category;\n  quantity: number;\n  /** ISO calendar date, YYYY-MM-DD. */\n  lastRestocked: string;\n};\n\n/** At or below this many on hand, an item is flagged as running low. */\nexport const LOW_STOCK = 5;\n\nexport const sampleItems: PantryItem[] = [\n  { id: 'black-beans', name: 'Black beans', category: 'Canned goods', quantity: 24, lastRestocked: '2026-10-14' },\n  { id: 'tomato-soup', name: 'Tomato soup', category: 'Canned goods', quantity: 4, lastRestocked: '2026-10-02' },\n  { id: 'brown-rice', name: 'Brown rice, 1 kg', category: 'Dry goods', quantity: 18, lastRestocked: '2026-10-12' },\n  { id: 'rolled-oats', name: 'Rolled oats', category: 'Dry goods', quantity: 9, lastRestocked: '2026-10-09' },\n  { id: 'apples', name: 'Apples', category: 'Produce', quantity: 32, lastRestocked: '2026-10-15' },\n  { id: 'carrots', name: 'Carrots, 1 kg bag', category: 'Produce', quantity: 3, lastRestocked: '2026-10-11' },\n  { id: 'toothpaste', name: 'Toothpaste', category: 'Toiletries', quantity: 12, lastRestocked: '2026-09-28' },\n  { id: 'bar-soap', name: 'Bar soap', category: 'Toiletries', quantity: 2, lastRestocked: '2026-09-21' },\n];\nEOF\ncat > app/page.tsx <<'EOF'\nimport Pantry from '@/components/pantry/pantry';\n\nexport default function Home() {\n  return <Pantry />;\n}\nEOF",
+      "sed -i '' 's| aria-live=\"polite\" />}>| />}>|' components/pantry/pantry.tsx && npx tsc --noEmit; echo tsc=$?; npm run lint 2>&1 | tail -30; echo lint=$?; npx ultima-design doctor 2>&1 | tail -30; echo doctor=$?; npx ultima-design check 2>&1 | tail -30; echo check=$?",
+      "python3 -I - components/pantry/pantry.tsx <<'EOF'\nimport sys\np=sys.argv[1]; s=open(p).read()\nold='''        <Card.Description render={<div />}>\n          <span {...stylex.props(styles.badges)}>\n            <Badge>{item.category}</Badge>\n            {low ? <Badge tone=\"warning\">Running low</Badge> : <Badge tone=\"success\">In stock</Badge>}\n          </span>\n        </Card.Description>'''\nnew='''        <div {...stylex.props(styles.badges)}>\n          <Badge>{item.category}</Badge>\n          {low ? <Badge tone=\"warning\">Running low</Badge> : <Badge tone=\"success\">In stock</Badge>}\n        </div>'''\nassert old in s; s=s.replace(old,new)\nold2=\"onReset={() => { reset(); setAnnouncement(''); }}\"\nassert old2 in s\ns=s.replace(\"  function submit(event\",\"  function clear() {\\n    reset();\\n    setAnnouncement('');\\n  }\\n\\n  function submit(event\",1).replace(old2,\"onReset={clear}\")\nopen(p,'w').write(s)\nEOF\nnpx tsc --noEmit; echo tsc=$?; for f in app/page.tsx components/pantry/pantry.tsx components/pantry/screen.stylex.ts components/ui/badge.tsx lib/tokens.stylex.ts lib/themes.ts; do printf \"%s: \" $f; npx --no-install eslint --print-config $f | node -e 'let s=\"\";process.stdin.on(\"data\",d=>s+=d).on(\"end\",()=>{const c=JSON.parse(s);console.log(c.languageOptions?.parser, JSON.stringify(c.rules?.[\"@stylexjs/valid-styles\"]))})'; done",
+      "npm run lint 2>&1 | grep -E \"error|pantry|problems\"; npx ultima-design check 2>&1 | tail -2; npx ultima-design check --files components/pantry/pantry.tsx components/pantry/screen.stylex.ts components/pantry/pantry-data.ts app/page.tsx app/layout.tsx 2>&1 | tail -2; npm run build 2>&1 | tail -20",
+      "ls \"/Applications/Google Chrome.app\" 2>/dev/null | head -1; ls ~/Library/Caches/ms-playwright 2>/dev/null; which chromium google-chrome 2>/dev/null; ls /Users/f/.cache/ultima-first-screen/2026-10-16-next-app-32d74a/",
+      "cd /Users/f/.cache/ultima-first-screen/2026-10-16-next-app-32d74a/work/.scratch && mkdir -p browser && cd browser && npm init -y >/dev/null && npm i playwright-core@1 2>&1 | tail -1; cd ../../larder && (PORT=3123 npm run start > ../.scratch/start.log 2>&1 &) ; sleep 4; curl -s -o /dev/null -w \"%{http_code}\\n\" http://localhost:3123/",
+      "mkdir -p /Users/f/.cache/ultima-first-screen/2026-10-16-next-app-32d74a/work/.scratch/scripts && cat > /Users/f/.cache/ultima-first-screen/2026-10-16-next-app-32d74a/work/.scratch/scripts/verify.mjs <<'EOF'\nimport { createRequire } from 'node:module';\nconst require = createRequire(process.argv[2] + '/');\nconst { chromium } = require('playwright-core');\nconst out = process.argv[3];\nconst browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });\nconst log = (...a) => console.log(...a);\nconst vars = ['--ult-color-accent', '--ult-color-surface', '--ult-color-text', '--ult-color-border-focus'];\nasync function computed(page, sel) {\n  return page.evaluate(([sel, vars]) => {\n    const el = document.querySelector(sel); if (!el) return null;\n    const cs = getComputedStyle(el);\n    return { colorScheme: cs.colorScheme, bg: cs.backgroundColor, color: cs.color, ...Object.fromEntries(vars.map(v => [v, cs.getPropertyValue(v).trim()])) };\n  }, [sel, vars]);\n}\nfor (const [mode, scheme] of [['dark', 'dark'], ['light', 'light'], ['system-light', 'light'], ['system-none', 'no-preference']]) {\n  for (const width of [375, 1280]) {\n    const ctx = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: scheme });\n    const page = await ctx.newPage();\n    const errors = []; page.on('pageerror', e => errors.push(String(e))); page.on('console', m => m.type() === 'error' && errors.push(m.text()));\n    await page.goto('http://localhost:3123/');\n    if (mode === 'dark' || mode === 'light') await page.evaluate(m => document.documentElement.dataset.theme = m, mode);\n    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);\n    const cols = await page.evaluate(() => { const s = [...document.querySelectorAll('section')]; return s.map(e => Math.round(e.getBoundingClientRect().left)); });\n    log(`\\n[${mode} @${width}] overflowX=${overflow} sectionLefts=${cols} errors=${errors.length ? errors : 'none'}`);\n    log(' root', JSON.stringify(await computed(page, 'html')));\n    log(' button', JSON.stringify(await computed(page, 'button[type=submit]')));\n    // open the select from the keyboard\n    const trigger = page.getByRole('combobox', { name: 'Category' });\n    await trigger.focus();\n    await page.keyboard.press('Enter');\n    await page.waitForSelector('[role=listbox]', { state: 'visible' });\n    log(' popup', JSON.stringify(await computed(page, '[role=listbox]')), 'inBody', await page.evaluate(() => document.querySelector('[role=listbox]').closest('main') === null));\n    if (width === 1280) await page.screenshot({ path: `${out}/${mode}-${width}-select.png` });\n    await page.keyboard.press('Escape');\n    await page.waitForSelector('[role=listbox]', { state: 'hidden' });\n    log(' focus after Escape on trigger:', await trigger.evaluate(el => el === document.activeElement));\n    await page.screenshot({ path: `${out}/${mode}-${width}.png`, fullPage: true });\n    await ctx.close();\n  }\n}\n// Behaviour\nconst ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });\nconst page = await ctx.newPage();\nawait page.goto('http://localhost:3123/');\nawait page.getByRole('button', { name: 'Log donation' }).click();\nconst err = page.getByText('Enter an item name.');\nlog('\\nempty submit error visible:', await err.isVisible());\nconst name = page.getByRole('textbox', { name: 'Item name' });\nlog('name aria-invalid:', await name.getAttribute('aria-invalid'), 'describedby has error:', await page.evaluate(() => { const i = document.activeElement; const ids = (i.getAttribute('aria-describedby')||'').split(' '); return ids.map(id => document.getElementById(id)?.textContent); }), 'focused name:', await name.evaluate(e => e === document.activeElement));\nawait page.screenshot({ path: `${out}/error.png`, fullPage: true });\nawait name.fill('Peanut butter');\nawait page.getByRole('spinbutton', { name: 'Quantity' }).fill('6');\nconst trig = page.getByRole('combobox', { name: 'Category' });\nawait trig.focus(); await page.keyboard.press('ArrowDown');\nawait page.getByRole('option', { name: 'Dry goods' }).click();\nawait page.getByRole('button', { name: 'Log donation' }).click();\nlog('status:', await page.getByRole('status').textContent());\nlog('detail title:', await page.locator('section h2').nth(1).textContent());\nlog('list has Peanut butter:', await page.getByRole('button', { name: 'Peanut butter' }).count());\n// add to existing\nawait name.fill('black beans');\nawait page.getByRole('spinbutton', { name: 'Quantity' }).fill('5');\nawait page.getByRole('button', { name: 'Log donation' }).click();\nlog('status:', await page.getByRole('status').textContent());\n// select via keyboard\nawait page.getByRole('button', { name: 'Apples' }).click();\nlog('detail after click:', await page.locator('section h2').nth(1).textContent(), await page.locator('dl').textContent());\nawait page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter');\nlog('detail after keyboard:', await page.locator('section h2').nth(1).textContent());\nawait page.screenshot({ path: `${out}/after.png`, fullPage: true });\nawait browser.close();\nEOF\ncd /Users/f/.cache/ultima-first-screen/2026-10-16-next-app-32d74a/work/.scratch && mkdir -p shots && node scripts/verify.mjs \"$PWD/browser\" \"$PWD/shots\"",
+      "cat > scripts/select.mjs <<'EOF'\nimport { createRequire } from 'node:module';\nconst require = createRequire(process.argv[2] + '/');\nconst { chromium } = require('playwright-core');\nconst browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });\nfor (const scheme of ['light', 'dark']) {\n  const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, colorScheme: scheme });\n  await page.goto('http://localhost:3123/');\n  await page.getByRole('combobox', { name: 'Category' }).focus();\n  await page.keyboard.press('Enter');\n  await page.waitForTimeout(800);\n  await page.screenshot({ path: `${process.argv[3]}/select-${scheme}.png` });\n  console.log(scheme, await page.evaluate(() => { const p = document.querySelector('[role=listbox]').parentElement; const cs = getComputedStyle(p); return [cs.backgroundColor, cs.boxShadow.slice(0, 40), cs.opacity]; }));\n}\nawait browser.close();\nEOF\nnode scripts/select.mjs \"$PWD/browser\" \"$PWD/shots\"",
+      "cd /Users/f/.cache/ultima-first-screen/2026-10-16-next-app-32d74a/work/larder && curl -s http://localhost:3123/ | grep -o '<link rel=\"stylesheet\"[^>]*>' ; for f in .next/static/chunks/*.css; do echo \"$f: $(grep -c 'ult-color-accent:#e968be\\|--ult-color-accent: #e968be' $f) theme, $(grep -o '@layer priority[0-9]*' $f | head -1)\"; done 2>/dev/null; pkill -f \"next start\" ; pkill -f \"next-server\"; true",
+      "f=.next/static/chunks/3lcugsip0p6eu.css; node -e 'const s=require(\"fs\").readFileSync(process.argv[1],\"utf8\");console.log(\"reset\",s.indexOf(\"@layer reset\"),\"stylex\",s.indexOf(\"@layer priority\"),\"theme\",s.indexOf(\"#e968be\"),\"len\",s.length)' $f",
+      "cd /Users/f/.cache/ultima-first-screen/2026-10-16-next-app-32d74a/work && python3 -I -c \"import json;json.load(open('exercise-notes.json'));print('ok')\""
+    ],
+    "fetches": [],
+    "outsideReferences": []
+  },
+  "selfReport": {
+    "interventions": [
+      {
+        "step": "Replace the init preview with the Pantry screen",
+        "action": "Deleted app/setup-check.tsx, the client preview init wrote, after replacing app/page.tsx with a route that renders components/pantry/pantry.tsx.",
+        "reason": "init's page comment says to edit or replace app/page.tsx but says nothing about its setup-check.tsx companion. Once the home route no longer imported it, it was dead code."
+      },
+      {
+        "step": "Verify the production build in a browser",
+        "action": "Installed playwright-core in ./.scratch/browser and drove the local Google Chrome against `next start`. Checked computed --ult-* values and color-scheme on the root, a Button and the open Select popup in data-theme dark, data-theme light, system light and system no-preference, at 375px and 1280px. Also checked horizontal overflow, the empty-name error, both kinds of successful submission, list selection by mouse and keyboard, and that Escape returns focus to the Select trigger. Then inspected the order of the production CSS chunk.",
+        "reason": "The guidance asks for this rendered check in a production build but names no tool to do it with."
+      }
+    ],
+    "decisions": [
+      {
+        "choice": "Skipped agent setup: no git init and no `ultima install --harness`.",
+        "options": [
+          "git init, then `npm exec --no -- ultima install --harness claude`",
+          "Leave agent setup out, as init's report marks it optional"
+        ],
+        "why": "init leaves this optional and never creates a repository. The hosted /llms.txt and guides were read directly, so the pointer skill would have added files without adding guidance."
+      },
+      {
+        "choice": "Did not load the Figtree and IBM Plex Mono faces the theme's font stacks name, so the stacks fall back to system-ui and the platform monospace.",
+        "options": [
+          "Load the faces with next/font/google",
+          "Self-host the font files",
+          "Accept the documented fallback in the stack"
+        ],
+        "why": "The export loads no fonts and the guidance allows the fallback. Loading the faces would pull in a third-party font host this run is not meant to use."
+      },
+      {
+        "choice": "Chose the category with a portalled Ultima Select inside an inline form, rather than putting the form in a Dialog.",
+        "options": [
+          "Portalled Select (Base UI Select.Portal to body)",
+          "Form inside an Ultima Dialog"
+        ],
+        "why": "The brief allows either. Intake volunteers log donations all the time, so an inline form saves a step, and a Select portalled to body still gets the root CSS theme."
+      },
+      {
+        "choice": "Gave category Badges the neutral tone, the low-stock Badge the warning tone and the in-stock Badge the success tone. The brand accent appears only through components (solid Button, focus ring, pressed list row) and the small 'Larder' wordmark, which uses --ult-color-accent-text.",
+        "options": [
+          "Accent tone for category badges",
+          "Neutral tone for category badges, with status tones only for stock level"
+        ],
+        "why": "The brief keeps the accent out of status meaning. Categories are not a status, so neutral keeps accent and the status colours each meaning one thing."
+      },
+      {
+        "choice": "Quantity uses the Ultima Input with type=\"number\", min 1, step 1 and inputMode numeric, and is validated in the form's submit handler.",
+        "options": [
+          "Input type=\"number\"",
+          "Input type=\"text\" with inputMode numeric and parsing"
+        ],
+        "why": "The catalogue has no number-field component. A native number input gives phones a numeric keypad and the browser's own step controls, while Field still carries the error."
+      }
+    ]
+  },
+  "styling": {
+    "check": {
+      "exit": 0,
+      "counts": {
+        "errors": 0,
+        "advisories": 0,
+        "incomplete": 0,
+        "suppressions": 0
+      }
+    },
+    "doctor": {
+      "exit": 0
+    },
+    "lint": {
+      "state": "configured",
+      "config": "eslint.config.mjs",
+      "errors": 0,
+      "warnings": 18,
+      "exit": 0
+    },
+    "rawPaint": {
+      "files": [
+        "app/globals.css",
+        "app/layout.tsx",
+        "app/page.tsx",
+        "app/ultima.css",
+        "components/pantry/pantry-data.ts",
+        "components/pantry/pantry.tsx"
+      ],
+      "findings": []
+    }
+  },
+  "production": {
+    "status": "failed",
+    "layout": "next-app",
+    "versions": {
+      "node": "v22.23.2",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "@stylexjs/stylex": "0.19.1",
+      "ultima-design": "0.1.0",
+      "next": "16.4.0",
+      "chromium": "153.0.8010.12"
+    },
+    "cases": [
+      {
+        "id": "system-dark",
+        "status": "failed",
+        "snapshot": "system-dark.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"aria-hidden-focus\"]"
+        ]
+      },
+      {
+        "id": "system-light",
+        "status": "failed",
+        "snapshot": "system-light.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"aria-hidden-focus\"]"
+        ]
+      },
+      {
+        "id": "explicit-dark",
+        "status": "failed",
+        "snapshot": "explicit-dark.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"aria-hidden-focus\"]"
+        ]
+      },
+      {
+        "id": "explicit-light",
+        "status": "failed",
+        "snapshot": "explicit-light.values.json",
+        "failures": [
+          "axe-open: expected [], got [\"aria-hidden-focus\"]"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "verdict": {
+    "conditions": {
+      "completed": "passed",
+      "publicGuidanceOnly": "passed",
+      "interventions": "failed",
+      "decisions": "passed",
+      "check": "passed",
+      "lint": "passed",
+      "rawPaint": "passed",
+      "production": "failed"
+    },
+    "status": "failed"
+  },
+  "review": {
+    "reviewer": "Claude on mbp1, #774: transcript, request log, notes and production report",
+    "rule": "An intervention is an action on the project or tooling that the guidance or CLI output did not print or link. A decision is an unresolved Ultima setup, theme or styling choice that changed the output. Product choices and documented alternatives do not count. Browser checks of the consumer application follow the guidance; rendering documentation to retrieve guidance or source would count.",
+    "interventions": [
+      {
+        "step": "Before init",
+        "action": "Ran `npx ultima-design@latest init --help`. The CLI rejected it (`Unknown option '--help'`) and printed its usage.",
+        "reason": "No guidance prints a help command, and the CLI does not accept one. The #810 Vite review counted the same probe."
+      }
+    ],
+    "decisions": [],
+    "notes": "The agent fetched llms.txt, the install, update, build-a-screen, support and Recipes guides, and the projects, list-detail, interaction-states and product-tokens lessons over HTTP. It did not render documentation, decode a data link, extract a bundle, read CRM 01's registry source or reference the live host or another checkout. It ran init through --plan and --apply, installed the theme and components with the printed shadcn@4.21.4, imported the theme where the install guide prints, and set up ESLint by the documented project-without-ESLint path. Under the arrangement rule from #845, the app keeps `minBlockSize: '100dvh'` and its `minmax(0, …)` track templates literal in local StyleX, the breakpoint as a named constant in the screen file, and only `--app-size-content-max` in screen.stylex.ts (#845 holds). The browser check follows the printed hand step, so its playwright-core install, scripts and server port are not counted. Reading the built CSS carries out the printed cascade step. The self-reported decisions (font fallback, Select over Dialog, Badge tones, number Input, the optional agent setup) are documented options or product choices. Deleting init's setup-check preview after replacing page.tsx follows the starter comment. check, doctor, StyleX lint (0 errors) and the raw-paint scan passed. All four external production cases failed `axe-open` with `aria-hidden-focus` on Base UI's four focus-guard spans around the open Select. That is not an agent choice: Base UI's Select backdrop cuts out the trigger, this app's Category trigger lands on axe's bottom-right modal sample point at 1280x800, so axe's isModalOpen heuristic misses the backdrop and reports the guards as violations instead of the incompletes the runner reviews. Two re-measures of a copy gave the same result. No operator edited the app."
+  }
+}
