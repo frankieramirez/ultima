@@ -208,7 +208,7 @@ function Plain({ name, disabled = false, defaultOpen = false }: { name: string; 
   );
 }
 
-test('the trigger answers the pointer, and a disabled trigger keeps its resting fill', async () => {
+test('hover darkens the trigger edge, not the fill, and a disabled trigger keeps its resting edge', async () => {
   const screen = await render(
     <>
       <Plain name="Live" />
@@ -217,18 +217,47 @@ test('the trigger answers the pointer, and a disabled trigger keeps its resting 
   );
   const live = screen.getByRole('combobox', { name: 'Live' }).element();
   const off = screen.getByRole('combobox', { name: 'Off' }).element();
-  const liveResting = getComputedStyle(live).backgroundColor;
-  const offResting = getComputedStyle(off).backgroundColor;
+  const [liveEdge, liveFill] = [getComputedStyle(live).borderTopColor, getComputedStyle(live).backgroundColor];
+  const offEdge = getComputedStyle(off).borderTopColor;
   await userEvent.hover(live);
   await settle();
-  expect(getComputedStyle(live).backgroundColor).not.toBe(liveResting);
+  expect(getComputedStyle(live).borderTopColor).not.toBe(liveEdge);
+  expect(getComputedStyle(live).backgroundColor).toBe(liveFill);
   await userEvent.hover(off);
   await settle();
   expect(off.matches(':hover')).toBe(true);
-  expect(getComputedStyle(off).backgroundColor).toBe(offResting);
+  expect(getComputedStyle(off).borderTopColor).toBe(offEdge);
 });
 
-test('an open trigger holds the hover fill, and its popup is never narrower than the trigger', async () => {
+test('a disabled trigger takes the muted fill and ink, not opacity', async () => {
+  const screen = await render(
+    <>
+      <Plain name="Live" />
+      <Plain name="Off" disabled />
+    </>,
+  );
+  const live = getComputedStyle(screen.getByRole('combobox', { name: 'Live' }).element());
+  const off = getComputedStyle(screen.getByRole('combobox', { name: 'Off' }).element());
+  expect(off.opacity).toBe('1');
+  expect(off.backgroundColor).not.toBe(live.backgroundColor);
+  expect(off.color).not.toBe(live.color);
+});
+
+test('the focus outline lies over the trigger edge', async () => {
+  const screen = await render(<Plain name="Focus" />);
+  await userEvent.tab();
+  expect(getComputedStyle(screen.getByRole('combobox', { name: 'Focus' }).element()).outlineOffset).toBe('-1px');
+});
+
+test('items are 32px rows with the small radius', async () => {
+  const screen = await render(<Plain name="Rows" defaultOpen />);
+  const item = screen.getByTestId('Rows item').element();
+  await expect.element(item).toBeVisible();
+  expect(item.getBoundingClientRect().height).toBeGreaterThanOrEqual(32);
+  expect(getComputedStyle(item).borderTopLeftRadius).toBe('4px');
+});
+
+test('an open trigger holds the hover edge, and its popup is never narrower than the trigger', async () => {
   const screen = await render(
     <>
       <Plain name="Closed" />
@@ -240,7 +269,7 @@ test('an open trigger holds the hover fill, and its popup is never narrower than
   await expect.element(screen.getByTestId('Open popup')).toBeVisible();
   await settle();
   expect(open.matches(':hover')).toBe(false);
-  expect(getComputedStyle(open).backgroundColor).not.toBe(getComputedStyle(closed).backgroundColor);
+  expect(getComputedStyle(open).borderTopColor).not.toBe(getComputedStyle(closed).borderTopColor);
   const popup = screen.getByTestId('Open popup').element();
   // --anchor-width is rounded to a whole pixel, so allow one.
   expect(popup.getBoundingClientRect().width).toBeGreaterThanOrEqual(open.getBoundingClientRect().width - 1);

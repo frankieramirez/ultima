@@ -7,6 +7,9 @@ import { border, color, easing, font, motion, radius, space, text } from '@ultim
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
+const HOVER = '@media (hover: hover)';
+const COARSE = '@media (pointer: coarse)';
+
 const chevronRoom = `calc(${space['--ult-space-5']} + 1em + ${space['--ult-space-4']})`;
 
 const styles = stylex.create({
@@ -20,37 +23,40 @@ const styles = stylex.create({
     margin: 0,
     position: 'relative',
   },
-  // A disabled select still matches `:hover`, so `:disabled:hover` restates the resting fill.
+  // Input's field recipe. A `<select>` always matches `:read-only`, so the muted state keys on
+  // `:disabled` alone.
   select: {
     appearance: 'none',
-    backgroundColor: {
-      default: color['--ult-color-surface-sunken'],
-      ':hover': color['--ult-color-surface-hover'],
-      ':disabled:hover': color['--ult-color-surface-sunken'],
-    },
+    backgroundColor: { default: color['--ult-color-field'], ':disabled': color['--ult-color-surface-sunken'] },
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger-border'],
+      ':disabled': color['--ult-color-border'],
+      ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
+      [HOVER]: {
+        ':hover:not(:disabled)': color['--ult-color-border-hover'],
+        ':is([aria-invalid="true"], [data-invalid]):hover': color['--ult-color-danger'],
+      },
     },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':disabled': color['--ult-color-text-disabled'] },
     fontFamily: font['--ult-font-sans'],
     inlineSize: '100%',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
     minWidth: 0,
-    opacity: { default: 1, ':disabled': 0.5, ':is([data-disabled])': 0.5 },
+    outline: {
+      default: 'none',
+      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
+    },
+    outlineOffset: `-${border.hairline}`,
     paddingInlineEnd: chevronRoom,
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, border-color',
     transitionTimingFunction: easing.standard,
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
-    },
   },
   chevron: {
     color: color['--ult-color-text-subtle'],
@@ -62,14 +68,15 @@ const styles = stylex.create({
   },
 });
 
+// Field text is text step 4, and rises to step 5 under a coarse pointer so iOS doesn't zoom on focus.
 const sizes = stylex.create({
   sm: {
-    fontSize: text['--ult-text-4'],
+    fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     height: space['--ult-space-9'],
     paddingInlineStart: space['--ult-space-4'],
   },
   md: {
-    fontSize: text['--ult-text-5'],
+    fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     height: space['--ult-space-10'],
     paddingInlineStart: space['--ult-space-5'],
   },

@@ -6,6 +6,9 @@ import { border, color, easing, font, motion, radius, shadow, space, text, z } f
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
+const HOVER = '@media (hover: hover)';
+const COARSE = '@media (pointer: coarse)';
+
 const styles = stylex.create({
   label: {
     color: color['--ult-color-text'],
@@ -13,26 +16,31 @@ const styles = stylex.create({
     fontSize: text['--ult-text-4'],
     fontWeight: font['--ult-font-weight-medium'],
   },
-  // The trigger hovers like Input and holds the hover fill while its popup is open. A disabled trigger still
-  // matches `:hover`, so `:is([data-disabled]):hover` restates the resting fill.
+  // The trigger wears Input's field recipe: the field fill, a 3:1 edge that darkens on hover and
+  // holds that edge while its popup is open, the focus outline laid over the edge, and a muted
+  // fill and ink when disabled or read-only, with no opacity.
   trigger: {
     alignItems: 'center',
     appearance: 'none',
     backgroundColor: {
-      default: color['--ult-color-surface-sunken'],
-      ':hover': color['--ult-color-surface-hover'],
-      ':is([data-popup-open])': color['--ult-color-surface-hover'],
-      ':is([data-disabled]):hover': color['--ult-color-surface-sunken'],
+      default: color['--ult-color-field'],
+      ':is([data-disabled], [data-readonly])': color['--ult-color-surface-sunken'],
     },
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':is([aria-invalid="true"])': color['--ult-color-danger-border'],
+      ':is([data-popup-open])': color['--ult-color-border-hover'],
+      ':is([data-disabled], [data-readonly])': color['--ult-color-border'],
+      ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
+      [HOVER]: {
+        ':hover:not([data-disabled], [data-readonly])': color['--ult-color-border-hover'],
+        ':is([aria-invalid="true"], [data-invalid]):hover': color['--ult-color-danger'],
+      },
     },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     display: 'inline-flex',
     fontFamily: font['--ult-font-sans'],
     gap: space['--ult-space-4'],
@@ -40,18 +48,19 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
     minWidth: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
+    outline: {
+      default: 'none',
+      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
+    },
+    outlineOffset: `-${border.hairline}`,
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, border-color',
     transitionTimingFunction: easing.standard,
     userSelect: 'none',
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
-    },
   },
   value: {
-    color: { default: color['--ult-color-text'], ':is([data-placeholder])': color['--ult-color-text-subtle'] },
+    color: { default: 'inherit', ':is([data-placeholder])': color['--ult-color-text-subtle'] },
     flexGrow: 1,
     overflow: 'hidden',
     textAlign: 'start',
@@ -103,12 +112,13 @@ const styles = stylex.create({
     },
     zIndex: z.popup,
   },
+  // Items are 32px rows with the small radius, so the popup's 8px corner nests around them.
   item: {
     alignItems: 'center',
     backgroundColor: { ':is([data-highlighted])': color['--ult-color-surface-hover'] },
-    borderRadius: radius['--ult-radius-md'],
+    borderRadius: radius['--ult-radius-sm'],
     boxSizing: 'border-box',
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     cursor: 'default',
     display: 'grid',
     fontFamily: font['--ult-font-sans'],
@@ -119,7 +129,7 @@ const styles = stylex.create({
     },
     gap: space['--ult-space-4'],
     gridTemplateColumns: `${space['--ult-space-6']} 1fr`,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
+    minHeight: space['--ult-space-9'],
     outline: 'none',
     paddingBlock: space['--ult-space-2'],
     paddingInline: space['--ult-space-4'],
@@ -171,14 +181,15 @@ const styles = stylex.create({
   },
 });
 
+// Field text is text step 4, and rises to step 5 under a coarse pointer so iOS doesn't zoom on focus.
 const sizes = stylex.create({
   sm: {
-    fontSize: text['--ult-text-4'],
+    fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     height: space['--ult-space-9'],
     paddingInline: space['--ult-space-4'],
   },
   md: {
-    fontSize: text['--ult-text-5'],
+    fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     height: space['--ult-space-10'],
     paddingInline: space['--ult-space-5'],
   },
