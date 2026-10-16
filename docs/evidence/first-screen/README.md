@@ -1,6 +1,6 @@
 # First-screen exercise
 
-This directory holds the evidence for [Run the first-screen exercise with fresh agents in three layouts](https://github.com/frankieramirez/ultima/issues/774), slice S9 of the [adoption delivery plan](../../spec/adoption-delivery.md#first-screen-exercise). It covers the agent run only. The human run, publication and the live-domain stranger path are out of scope.
+This directory holds the evidence for [Run the first-screen exercise with fresh agents in three layouts](https://github.com/frankieramirez/ultima/issues/774), slice S9 of the [adoption delivery plan](../../spec/adoption-delivery.md#first-screen-exercise). It covers the agent run only. The human run was dropped when [#775](https://github.com/frankieramirez/ultima/issues/775) closed as not planned. Publication and the live-domain stranger path are out of scope.
 
 ## Inputs
 
@@ -82,7 +82,7 @@ Each run fetched the install, update, screen-building, support and Recipes expor
 
 All three runs passed `check`, StyleX lint, the raw-paint scan and every external production assertion. The operator reviews retain separate problems: Next font cleanup and route-type regeneration (#811), the selected-row workaround (#813), a Chromium Unix socket path failure under the long exercise TMPDIR, and an ambiguity between the brief's token-only lengths and the documented media-condition exception. Vite and Next src both inspected CRM 01's raw registry source. Vite also used an undocumented help probe, and its nested pressed-hover selector needed a lint repair. The self-reports remain intact; reviews exclude product choices and documented alternatives from their counts.
 
-The production Markdown check fetched 21 documents with zero failures and verified source parity and reachable guidance anchors. An independent check matched all 21 projected copy-file occurrences against their destination paths and complete source bytes in the production artifacts. Installed-consumer `copy-bundles` checks passed in Vite, Next root and Next src. These checks establish the local candidate's export and consumer behavior. The full S9 gate remains unmet. The human exercise (#775), deployed domain and publication remain unverified.
+The production Markdown check fetched 21 documents with zero failures and verified source parity and reachable guidance anchors. An independent check matched all 21 projected copy-file occurrences against their destination paths and complete source bytes in the production artifacts. Installed-consumer `copy-bundles` checks passed in Vite, Next root and Next src. These checks establish the local candidate's export and consumer behavior. The full S9 gate remains unmet. The deployed domain and publication remain unverified.
 
 ## Reproduce
 
