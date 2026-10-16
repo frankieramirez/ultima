@@ -168,12 +168,12 @@ test('toRegistryItem is a universal item carrying the stylesheet, draft, and des
   expect(item.files[2]?.content).toBe(toDesignMd(draft));
 });
 
-test('npx shadcn add installs the registry item without components.json', () => {
+test('npx shadcn@4.21.4 add installs the registry item without components.json', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ultima-theme-'));
   const draft = stockDraft();
   try {
     writeFileSync(join(dir, 'ultima-theme.registry.json'), toRegistryItem(draft));
-    execFileSync('npx', ['--yes', 'shadcn@latest', 'add', './ultima-theme.registry.json', '--overwrite'], {
+    execFileSync('npx', ['--yes', 'shadcn@4.21.4', 'add', './ultima-theme.registry.json', '--overwrite'], {
       cwd: dir,
       encoding: 'utf8',
       timeout: 60_000,

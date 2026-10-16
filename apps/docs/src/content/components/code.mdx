@@ -20,7 +20,7 @@ Monospaced code, inline in a sentence or as a wrapping block.
 ## Install
 
 ```bash
-npx shadcn add @ultima/code
+npx shadcn@4.21.4 add @ultima/code
 ```
 
 ## Inline
@@ -58,7 +58,7 @@ Typography is the prose mapping, a recipe rather than a component: there is no `
 Component dependencies: `code`, `separator`, `table`, `scroll-area`.
 
 ```bash
-npx shadcn add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area
+npx shadcn@4.21.4 add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area
 ```
 
 `code` and `pre` delegate to `Code`, inline and `block`; syntax highlighting is your own pipeline. `hr` delegates to `Separator`, because a hairline is paint that page layout cannot write. `table`, `th`, and `td` delegate to `Table` inside a `ScrollArea`, because a GFM table has no caption to name a `Table.Scroll` region from. The documented state is the element set itself, rendered end to end in the demo.

@@ -313,7 +313,7 @@ Decided on [Decide a complete theme adoption path for people and agents](https:/
 
 A fresh project can use Neutral immediately. Before changing a project with an existing brand, a person or agent records its accent and action roles, status colors, font stacks and loaded faces, spacing and shape choices, and dark and light behavior. Preserve those choices in a custom Studio draft. Neutral is a temporary baseline when the project has not chosen its own theme. Selecting Ultima, Grove, or Cinder requires an explicit project choice. A changed accent does not change the meaning of success, warning, or danger.
 
-Use Theme Studio to select a complete preset or edit a custom draft. Check the declared pairings in both modes and acknowledge any failing user-owned draft before export. Keep `ultima-theme.json` as the editable source. Copy the URL install command from Export theme and run it in the consumer. For a theme that exceeds the URL limits, download `ultima-theme.registry.json` with its CSS and draft, then run `npx shadcn add ./ultima-theme.registry.json`. The item writes `ultima-theme.css` and `ultima-theme.json` at the project root. Re-export and reinstall when the draft changes; the installer's overwrite prompt protects local edits, and reinstall replaces generated files as a unit. Review the diff before accepting it.
+Use Theme Studio to select a complete preset or edit a custom draft. Check the declared pairings in both modes and acknowledge any failing user-owned draft before export. Keep `ultima-theme.json` as the editable source. Copy the URL install command from Export theme and run it in the consumer. For a theme that exceeds the URL limits, download `ultima-theme.registry.json` with its CSS and draft, then run `npx shadcn@4.21.4 add ./ultima-theme.registry.json`. The item writes `ultima-theme.css` and `ultima-theme.json` at the project root. Re-export and reinstall when the draft changes; the installer's overwrite prompt protects local edits, and reinstall replaces generated files as a unit. Review the diff before accepting it.
 
 ### Apply to Vite and Next.js
 
@@ -1973,11 +1973,12 @@ npx ultima-design@latest init .                          # an existing applicati
 The registry path below stays available for every project `init` does not automate. `npx shadcn init` is not supported and never will be while its preflight requires Tailwind on disk. The registry entry is:
 
 ```bash
-npx shadcn add https://ultima.systems/r/setup-vite.json   # or setup-next.json
-npx shadcn add @ultima/button
+npx shadcn@4.21.4 add https://ultima.systems/r/setup-vite.json   # or setup-next.json
+npx shadcn@4.21.4 add @ultima/button
 ```
 
 The setup items are universal `registry:item`s, so the first command installs into a project with no `components.json` and no framework detection, and the second resolves through the namespace the first one wrote.
+
 
 ### Setup items
 
@@ -2127,7 +2128,7 @@ Settled on [the proof-bar ticket](https://github.com/frankieramirez/ultima/issue
 
 ### What the front door says
 
-Settled on [#160](https://github.com/frankieramirez/ultima/issues/160) and [the agent-surface ticket](https://github.com/frankieramirez/ultima/issues/187). The README's own contract above is a front door that carries what ships, so it says nothing about elements until the first one lands; then it gains one bullet under What ships naming the served bundle and the registry item, and a Zag.js line under Stack. `/llms.txt` gains a generated Elements section once the first element item ships — same build step, same never-hand-edited rule — one compact block per element giving the tag, both acquisition paths (`npx shadcn add @ultima/ult-<item>` and the served file under `/elements/`, with `ultima.js` for the set), and its axes as attributes carrying the React prop values verbatim, behind a lead-in that states the grammar once and points at the fixture page. The guide's opening paragraph stops saying "a design system for React" and names the two render targets; the React entries are untouched. Each element item's `docs` field speaks markup, not imports: a script-tag load line, one minimal usage line, the tokens pairing, the attribute grammar in one line, and the vendored caveat that reinstall overwrites and edits are forfeit. Forge stays React-only — every convention it encodes is React-shaped, and elements are authored by hand against this section with the parity gate as the check; whether any skill learns element authoring is deferred until the report set ships elements to pattern-match against.
+Settled on [#160](https://github.com/frankieramirez/ultima/issues/160) and [the agent-surface ticket](https://github.com/frankieramirez/ultima/issues/187). The README's own contract above is a front door that carries what ships, so it says nothing about elements until the first one lands; then it gains one bullet under What ships naming the served bundle and the registry item, and a Zag.js line under Stack. `/llms.txt` gains a generated Elements section once the first element item ships — same build step, same never-hand-edited rule — one compact block per element giving the tag, both acquisition paths (`npx shadcn@4.21.4 add @ultima/ult-<item>` and the served file under `/elements/`, with `ultima.js` for the set), and its axes as attributes carrying the React prop values verbatim, behind a lead-in that states the grammar once and points at the fixture page. The guide's opening paragraph stops saying "a design system for React" and names the two render targets; the React entries are untouched. Each element item's `docs` field speaks markup, not imports: a script-tag load line, one minimal usage line, the tokens pairing, the attribute grammar in one line, and the vendored caveat that reinstall overwrites and edits are forfeit. Forge stays React-only — every convention it encodes is React-shaped, and elements are authored by hand against this section with the parity gate as the check; whether any skill learns element authoring is deferred until the report set ships elements to pattern-match against.
 
 Carried from the map as out of scope: wrapping the React catalogue as custom elements; hosting third-party web components inside Ultima React apps; parity beyond the report set and any Tailwind or Radix reintroduction; an npm package for the element catalogue, ADR 0003's deferral holding since no consumer has asked; and versioned registry history, which takes the same latest-channel contract as the React catalogue rather than a scheme of its own.
 
@@ -2141,7 +2142,7 @@ Decided on [Decide what a Block is in the catalogue](https://github.com/frankier
 
 ### Placement in the consumer
 
-The item's type is `registry:block`. Every file in it is `registry:component` with the target `@components/<id>/<file>.tsx`, so `npx shadcn add @ultima/dashboard-01` writes one folder, `@/components/dashboard-01/`, in Vite and Next.js alike. The entry file, `<id>.tsx`, exports the block's root component, `Dashboard01`, which takes no props. The consumer renders it from a route of their own.
+The item's type is `registry:block`. Every file in it is `registry:component` with the target `@components/<id>/<file>.tsx`, so `npx shadcn@4.21.4 add @ultima/dashboard-01` writes one folder, `@/components/dashboard-01/`, in Vite and Next.js alike. The entry file, `<id>.tsx`, exports the block's root component, `Dashboard01`, which takes no props. The consumer renders it from a route of their own.
 
 There is no `registry:page`. shadcn's own blocks target `app/<route>/page.tsx`, which only Next.js understands, and they write flat files such as `app-sidebar.tsx` that would collide between two blocks. One folder per block avoids both problems and never overwrites a route file the consumer owns. Because the folder installs as a unit, the block's relative imports between its own files survive shadcn's import rewrite, and its `@ultima/ui/<name>` imports are rewritten to the consumer's `ui` alias like any component's.
 
@@ -2165,7 +2166,7 @@ The chart's accessibility contract comes along unchanged. Under the recipe the r
 
 ### Identity and numbering
 
-A block's id is kebab-case with a two-digit family suffix, `dashboard-01`, following shadcn's naming. Its title is "Dashboard 01" and its install command is `npx shadcn add @ultima/dashboard-01`. Blocks carry no `release`: Blocks is its own section, ordered by number, and the release sets stay the components' track.
+A block's id is kebab-case with a two-digit family suffix, `dashboard-01`, following shadcn's naming. Its title is "Dashboard 01" and its install command is `npx shadcn@4.21.4 add @ultima/dashboard-01`. Blocks carry no `release`: Blocks is its own section, ordered by number, and the release sets stay the components' track.
 
 **The catalogue number is a display ordinal, derived and never stored.** The generator numbers each kind separately, in alphabetical order of id, padded to three digits. The frames already number components this way: Avatar 005, Button 008, Card 011, Date Picker 019, Input 027, Meter 031, Sidebar 042, Stat 046, Table 048 and Tabs 049 each match their alphabetical position among the 54 React items. The number shifts when an item is added and is never used as an identity; the id is the identity. A stored number would stay put, but someone would have to allocate it, and two branches adding a component would both take the same one. Blocks number the same way, so CRM 01 is 001 and Dashboard 01 is 002, and a frame showing otherwise is redrawn. The Components directory, block Anatomy, global search and the docs menu all show this number. In the menu, the desktop panel and the mobile drawer alike, it leads each component and block entry in the muted mono face, so the entries read `001 Accordion` through `054 Tooltip` and `001 CRM 01`. It is `aria-hidden` there, and the link's accessible name stays the plain name. A foundation page has no number and shows its name alone, flush with its section heading. A foundation name and a numbered entry's number start at the same edge, so names line up within a section and not across them.
 
@@ -2582,7 +2583,7 @@ Decided on [Decide what global search indexes and offers](https://github.com/fra
 - A block shows its name, number, description and Built from, the lazy `inert` thumbnail iframe the `/blocks` index uses, and its install command with a copy button.
 - An element shows its tag, its tag family, and its `example` markup. It renders nothing live.
 
-**Ctrl ↵, or ⌘ ↵ on a Mac, copies the highlighted item's install command**, `npx shadcn add @ultima/<id>`, for a component or a block. The palette stays open, and a polite live region announces the copy. The footer shows the hint only while the highlighted row has a command. Elements install through the `/elements/ultima.js` bundle and pages install nothing, so neither has a copy action. Plain ↵ opens the row.
+**Ctrl ↵, or ⌘ ↵ on a Mac, copies the highlighted item's install command**, `npx shadcn@4.21.4 add @ultima/<id>`, for a component or a block. The palette stays open, and a polite live region announces the copy. The footer shows the hint only while the highlighted row has a command. Elements install through the `/elements/ultima.js` bundle and pages install nothing, so neither has a copy action. Plain ↵ opens the row.
 
 **Below the `WIDE` breakpoint the palette fills the screen.** A Cancel button replaces Esc, and the preview pane and the copy shortcut are absent. Sources, grouping, ranking and Recent are unchanged.
 
@@ -3060,7 +3061,7 @@ select    src/components/ui/select.tsx   edited     3f9c2ab04e1d
 sidebar   src/components/ui/sidebar.tsx  diverged   1a2b3c4d5e6f
 lib       src/lib/component.ts           unstamped  -
 
-behind    npx shadcn add @ultima/dialog --overwrite
+behind    npx shadcn@4.21.4 add @ultima/dialog --overwrite
 diverged  npx ultima-design diff sidebar  (reinstalling discards your edits)
 ```
 
@@ -3099,7 +3100,7 @@ Decided on [What the consumer skill says and how it is versioned](https://github
 1. **When it applies.** The description triggers on UI work in a repository whose `components.json` has an `@ultima` registry: adding or editing a component, styling, theming, or replacing a native control.
 2. **Read first.** Fetch `/llms.txt` from the host that `registries["@ultima"]` names, normally `https://ultima.systems/llms.txt`, before the first UI edit of a task.
 3. **Learn what is installed.** Run `npx ultima-design status` before adding an item or editing an installed one.
-4. **Reach for the kit.** Before writing a native control or importing `@base-ui/react`, add the item with `npx shadcn add @ultima/<item>`. This line points at `ULT-APP-CONTROL-001` and `ULT-APP-PRIMITIVE-001`.
+4. **Reach for the kit.** Before writing a native control or importing `@base-ui/react`, add the item with `npx shadcn@4.21.4 add @ultima/<item>`. This line points at `ULT-APP-CONTROL-001` and `ULT-APP-PRIMITIVE-001`.
 5. **Paint from tokens.** A color, shadow, radius, border width, or type value reads a semantic token, and a new need becomes a token override. This line points at `ULT-APP-PAINT-001` and `ULT-APP-PALETTE-001`.
 6. **Check after edits.** Run `npx ultima-design check --files <changed files>` after editing, and `check` without `--files` before handing work back. Run `doctor` when styles do not apply at all.
 7. **Reading results.** Exits 0, 1, 2 and 3 as the output contract under [Package and engine](#package-and-engine) defines them: 1 means fix the findings, 2 means fix the command, 3 means fix the project, and that a finding's repair and link are the next thing to read.

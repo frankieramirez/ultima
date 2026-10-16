@@ -24,7 +24,7 @@ export default productionScenario('site-discovery.discovery-surface', 'productio
   assert.equal(await updateLink.getAttribute('href'), '/install/update');
   await updateLink.click();
   await page.getByRole('heading', { name: 'Update the base theme', level: 1 }).waitFor();
-  await page.waitForFunction(() => document.querySelector('main pre code')?.textContent?.startsWith('npx shadcn add'));
+  await page.waitForFunction(() => document.querySelector('main pre code')?.textContent?.startsWith('npx shadcn@4.21.4 add'));
   const publicUrl = new URL((await page.locator('main pre code').first().textContent())!.match(/"([^"]+)"/)![1]!);
   assert.equal(publicUrl.origin, siteDiscovery.origin);
   const response = await page.request.get(`${new URL(page.url()).origin}${publicUrl.pathname}${publicUrl.search}`);

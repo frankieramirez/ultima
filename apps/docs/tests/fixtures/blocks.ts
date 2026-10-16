@@ -5,7 +5,7 @@
  */
 export const blocksFixture = {
   version: 1,
-  open: { id: 'sign-in-01', title: 'Sign-in 01', install: 'npx shadcn add @ultima/sign-in-01' },
+  open: { id: 'sign-in-01', title: 'Sign-in 01', install: 'npx shadcn@4.21.4 add @ultima/sign-in-01' },
   copyLabel: 'Copy install command',
   desktop: { width: 1200, height: 760 },
   narrow: { width: 390, height: 844 },

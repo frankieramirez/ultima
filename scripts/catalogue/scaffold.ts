@@ -513,7 +513,7 @@ function reactPage(id: string, descriptor: Record<string, unknown>, brief: React
     '## Install',
     '',
     '```bash',
-    `npx shadcn add @ultima/${id}`,
+    `npx shadcn@4.21.4 add @ultima/${id}`,
     '```',
     '',
     '## Usage',

@@ -20,7 +20,7 @@ export const recipes = [
       "embla-carousel-react"
     ],
     "devDependencies": [],
-    "install": "npx shadcn add @ultima/aspect-ratio @ultima/button",
+    "install": "npx shadcn@4.21.4 add @ultima/aspect-ratio @ultima/button",
     "engines": "npm install @stylexjs/stylex embla-carousel-react",
     "sources": [
       "apps/docs/src/demos/aspect-ratio/carousel.tsx"
@@ -47,7 +47,7 @@ export const recipes = [
       "@types/d3-format",
       "@types/d3-scale"
     ],
-    "install": "npx shadcn add @ultima/table",
+    "install": "npx shadcn@4.21.4 add @ultima/table",
     "engines": "npm install @stylexjs/stylex d3-array d3-format d3-scale\nnpm install -D @types/d3-array @types/d3-format @types/d3-scale",
     "sources": [
       "apps/docs/src/demos/table/chart.tsx"
@@ -70,7 +70,7 @@ export const recipes = [
       "@stylexjs/stylex"
     ],
     "devDependencies": [],
-    "install": "npx shadcn add @ultima/button @ultima/command @ultima/dialog @ultima/scroll-area",
+    "install": "npx shadcn@4.21.4 add @ultima/button @ultima/command @ultima/dialog @ultima/scroll-area",
     "engines": "npm install @stylexjs/stylex",
     "sources": [
       "apps/docs/src/demos/command/command-dialog.tsx"
@@ -97,7 +97,7 @@ export const recipes = [
       "@tanstack/react-table"
     ],
     "devDependencies": [],
-    "install": "npx shadcn add @ultima/button @ultima/checkbox @ultima/dropdown-menu @ultima/input @ultima/pagination @ultima/select @ultima/table",
+    "install": "npx shadcn@4.21.4 add @ultima/button @ultima/checkbox @ultima/dropdown-menu @ultima/input @ultima/pagination @ultima/select @ultima/table",
     "engines": "npm install @stylexjs/stylex @tanstack/react-table",
     "sources": [
       "apps/docs/src/demos/table/data-table-sorting.tsx",
@@ -122,7 +122,7 @@ export const recipes = [
       "@stylexjs/stylex"
     ],
     "devDependencies": [],
-    "install": "npx shadcn add @ultima/avatar @ultima/button @ultima/card",
+    "install": "npx shadcn@4.21.4 add @ultima/avatar @ultima/button @ultima/card",
     "engines": "npm install @stylexjs/stylex",
     "sources": [
       "apps/docs/src/demos/card/item.tsx"
@@ -142,7 +142,7 @@ export const recipes = [
       "@stylexjs/stylex"
     ],
     "devDependencies": [],
-    "install": "npx shadcn add @ultima/code",
+    "install": "npx shadcn@4.21.4 add @ultima/code",
     "engines": "npm install @stylexjs/stylex",
     "sources": [
       "apps/docs/src/demos/code/kbd.tsx"
@@ -166,7 +166,7 @@ export const recipes = [
       "react-hook-form"
     ],
     "devDependencies": [],
-    "install": "npx shadcn add @ultima/button @ultima/field @ultima/input",
+    "install": "npx shadcn@4.21.4 add @ultima/button @ultima/field @ultima/input",
     "engines": "npm install @base-ui/react @stylexjs/stylex react-hook-form",
     "sources": [
       "apps/docs/src/demos/field/react-hook-form.tsx"
@@ -187,7 +187,7 @@ export const recipes = [
       "@stylexjs/stylex"
     ],
     "devDependencies": [],
-    "install": "npx shadcn add @ultima/button @ultima/dialog",
+    "install": "npx shadcn@4.21.4 add @ultima/button @ultima/dialog",
     "engines": "npm install @stylexjs/stylex",
     "sources": [
       "apps/docs/src/demos/dialog/sheet.tsx"
@@ -210,7 +210,7 @@ export const recipes = [
       "@stylexjs/stylex"
     ],
     "devDependencies": [],
-    "install": "npx shadcn add @ultima/code @ultima/scroll-area @ultima/separator @ultima/table",
+    "install": "npx shadcn@4.21.4 add @ultima/code @ultima/scroll-area @ultima/separator @ultima/table",
     "engines": "npm install @stylexjs/stylex",
     "sources": [
       "apps/docs/src/demos/code/typography.tsx"
@@ -285,7 +285,7 @@ export const recipeSources: Record<string, CopyBundle> = {
       {
         "source": "apps/docs/src/demos/code/typography.tsx",
         "path": "examples/demos/code/typography.tsx",
-        "content": "'use client';\n\nimport * as stylex from '@stylexjs/stylex';\nimport { border, color, font, space, text } from '@/lib/tokens.stylex';\nimport { Code } from '@/components/ui/code';\nimport { ScrollArea } from '@/components/ui/scroll-area';\nimport { Separator } from '@/components/ui/separator';\nimport { Table } from '@/components/ui/table';\n\nconst styles = stylex.create({\n  h1: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-8'],\n    fontWeight: font['--ult-font-weight-medium'],\n    letterSpacing: font['--ult-font-tracking-tight'],\n    lineHeight: font['--ult-font-leading-tight'],\n    marginBlock: 0,\n    marginBottom: space['--ult-space-5'],\n  },\n  h2: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-6'],\n    fontWeight: font['--ult-font-weight-medium'],\n    letterSpacing: font['--ult-font-tracking-tight'],\n    lineHeight: font['--ult-font-leading-tight'],\n    marginBottom: space['--ult-space-4'],\n    marginTop: space['--ult-space-7'],\n  },\n  h3: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-5'],\n    fontWeight: font['--ult-font-weight-semibold'],\n    lineHeight: font['--ult-font-leading-snug'],\n    marginBottom: space['--ult-space-3'],\n    marginTop: space['--ult-space-6'],\n  },\n  p: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-4'],\n    lineHeight: font['--ult-font-leading-normal'],\n    marginBlock: space['--ult-space-4'],\n  },\n  list: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-4'],\n    lineHeight: font['--ult-font-leading-normal'],\n    marginBlock: space['--ult-space-4'],\n    paddingInlineStart: space['--ult-space-6'],\n  },\n  li: {\n    marginBlock: space['--ult-space-2'],\n  },\n  a: {\n    color: color['--ult-color-highlight-text'],\n    textDecoration: 'underline',\n    textUnderlineOffset: space['--ult-space-2'],\n    ':focus-visible': {\n      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,\n      outlineOffset: border.focusOffset,\n    },\n  },\n  blockquote: {\n    borderInlineStartColor: color['--ult-color-border'],\n    borderInlineStartStyle: 'solid',\n    borderInlineStartWidth: space['--ult-space-1'],\n    color: color['--ult-color-text-muted'],\n    fontSize: text['--ult-text-4'],\n    marginBlock: space['--ult-space-5'],\n    marginInline: 0,\n    paddingInlineStart: space['--ult-space-5'],\n  },\n  rule: {\n    marginBlock: space['--ult-space-6'],\n  },\n  scroll: {\n    marginBlock: space['--ult-space-5'],\n  },\n});\n\nexport default function TypographyRecipe() {\n  return (\n    <article>\n      <h1 {...stylex.props(styles.h1)}>The prose mapping</h1>\n      <p {...stylex.props(styles.p)}>\n        Long-form text maps each element to a token style or an Ultima component. Inline code like{' '}\n        <Code>pnpm test</Code> and links like <a href=\"#typography\" {...stylex.props(styles.a)}>the\n        component catalogue</a> keep the surrounding rhythm.\n      </p>\n      <h2 {...stylex.props(styles.h2)}>Headings and lists</h2>\n      <p {...stylex.props(styles.p)}>Headings step down the type scale; lists share the body size.</p>\n      <ul {...stylex.props(styles.list)}>\n        <li {...stylex.props(styles.li)}>Tokens for every raw value</li>\n        <li {...stylex.props(styles.li)}>One styling engine</li>\n      </ul>\n      <ol {...stylex.props(styles.list)}>\n        <li {...stylex.props(styles.li)}>Install the dependencies</li>\n        <li {...stylex.props(styles.li)}>Copy the mapping</li>\n      </ol>\n      <h3 {...stylex.props(styles.h3)}>Quoted text</h3>\n      <blockquote {...stylex.props(styles.blockquote)}>\n        A literal in component code is a bug, not a shortcut.\n      </blockquote>\n      <h3 {...stylex.props(styles.h3)}>Code blocks</h3>\n      <Code variant=\"block\">\n        {'npx shadcn add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area'}\n      </Code>\n      <Separator style={styles.rule} />\n      <h3 {...stylex.props(styles.h3)}>Tables</h3>\n      <ScrollArea.Root style={styles.scroll}>\n        <ScrollArea.Viewport>\n          <ScrollArea.Content>\n            <Table.Root>\n              <Table.Head>\n                <Table.Row>\n                  <Table.HeadCell>Element</Table.HeadCell>\n                  <Table.HeadCell>Maps to</Table.HeadCell>\n                </Table.Row>\n              </Table.Head>\n              <Table.Body>\n                <Table.Row>\n                  <Table.Cell>code, pre</Table.Cell>\n                  <Table.Cell>Code, inline and block</Table.Cell>\n                </Table.Row>\n                <Table.Row>\n                  <Table.Cell>hr</Table.Cell>\n                  <Table.Cell>Separator</Table.Cell>\n                </Table.Row>\n                <Table.Row>\n                  <Table.Cell>table, th, td</Table.Cell>\n                  <Table.Cell>Table inside ScrollArea</Table.Cell>\n                </Table.Row>\n              </Table.Body>\n            </Table.Root>\n          </ScrollArea.Content>\n        </ScrollArea.Viewport>\n        <ScrollArea.Scrollbar orientation=\"horizontal\">\n          <ScrollArea.Thumb />\n        </ScrollArea.Scrollbar>\n      </ScrollArea.Root>\n    </article>\n  );\n}\n"
+        "content": "'use client';\n\nimport * as stylex from '@stylexjs/stylex';\nimport { border, color, font, space, text } from '@/lib/tokens.stylex';\nimport { Code } from '@/components/ui/code';\nimport { ScrollArea } from '@/components/ui/scroll-area';\nimport { Separator } from '@/components/ui/separator';\nimport { Table } from '@/components/ui/table';\n\nconst styles = stylex.create({\n  h1: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-8'],\n    fontWeight: font['--ult-font-weight-medium'],\n    letterSpacing: font['--ult-font-tracking-tight'],\n    lineHeight: font['--ult-font-leading-tight'],\n    marginBlock: 0,\n    marginBottom: space['--ult-space-5'],\n  },\n  h2: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-6'],\n    fontWeight: font['--ult-font-weight-medium'],\n    letterSpacing: font['--ult-font-tracking-tight'],\n    lineHeight: font['--ult-font-leading-tight'],\n    marginBottom: space['--ult-space-4'],\n    marginTop: space['--ult-space-7'],\n  },\n  h3: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-5'],\n    fontWeight: font['--ult-font-weight-semibold'],\n    lineHeight: font['--ult-font-leading-snug'],\n    marginBottom: space['--ult-space-3'],\n    marginTop: space['--ult-space-6'],\n  },\n  p: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-4'],\n    lineHeight: font['--ult-font-leading-normal'],\n    marginBlock: space['--ult-space-4'],\n  },\n  list: {\n    color: color['--ult-color-text'],\n    fontSize: text['--ult-text-4'],\n    lineHeight: font['--ult-font-leading-normal'],\n    marginBlock: space['--ult-space-4'],\n    paddingInlineStart: space['--ult-space-6'],\n  },\n  li: {\n    marginBlock: space['--ult-space-2'],\n  },\n  a: {\n    color: color['--ult-color-highlight-text'],\n    textDecoration: 'underline',\n    textUnderlineOffset: space['--ult-space-2'],\n    ':focus-visible': {\n      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,\n      outlineOffset: border.focusOffset,\n    },\n  },\n  blockquote: {\n    borderInlineStartColor: color['--ult-color-border'],\n    borderInlineStartStyle: 'solid',\n    borderInlineStartWidth: space['--ult-space-1'],\n    color: color['--ult-color-text-muted'],\n    fontSize: text['--ult-text-4'],\n    marginBlock: space['--ult-space-5'],\n    marginInline: 0,\n    paddingInlineStart: space['--ult-space-5'],\n  },\n  rule: {\n    marginBlock: space['--ult-space-6'],\n  },\n  scroll: {\n    marginBlock: space['--ult-space-5'],\n  },\n});\n\nexport default function TypographyRecipe() {\n  return (\n    <article>\n      <h1 {...stylex.props(styles.h1)}>The prose mapping</h1>\n      <p {...stylex.props(styles.p)}>\n        Long-form text maps each element to a token style or an Ultima component. Inline code like{' '}\n        <Code>pnpm test</Code> and links like <a href=\"#typography\" {...stylex.props(styles.a)}>the\n        component catalogue</a> keep the surrounding rhythm.\n      </p>\n      <h2 {...stylex.props(styles.h2)}>Headings and lists</h2>\n      <p {...stylex.props(styles.p)}>Headings step down the type scale; lists share the body size.</p>\n      <ul {...stylex.props(styles.list)}>\n        <li {...stylex.props(styles.li)}>Tokens for every raw value</li>\n        <li {...stylex.props(styles.li)}>One styling engine</li>\n      </ul>\n      <ol {...stylex.props(styles.list)}>\n        <li {...stylex.props(styles.li)}>Install the dependencies</li>\n        <li {...stylex.props(styles.li)}>Copy the mapping</li>\n      </ol>\n      <h3 {...stylex.props(styles.h3)}>Quoted text</h3>\n      <blockquote {...stylex.props(styles.blockquote)}>\n        A literal in component code is a bug, not a shortcut.\n      </blockquote>\n      <h3 {...stylex.props(styles.h3)}>Code blocks</h3>\n      <Code variant=\"block\">\n        {'npx shadcn@4.21.4 add @ultima/code @ultima/separator @ultima/table @ultima/scroll-area'}\n      </Code>\n      <Separator style={styles.rule} />\n      <h3 {...stylex.props(styles.h3)}>Tables</h3>\n      <ScrollArea.Root style={styles.scroll}>\n        <ScrollArea.Viewport>\n          <ScrollArea.Content>\n            <Table.Root>\n              <Table.Head>\n                <Table.Row>\n                  <Table.HeadCell>Element</Table.HeadCell>\n                  <Table.HeadCell>Maps to</Table.HeadCell>\n                </Table.Row>\n              </Table.Head>\n              <Table.Body>\n                <Table.Row>\n                  <Table.Cell>code, pre</Table.Cell>\n                  <Table.Cell>Code, inline and block</Table.Cell>\n                </Table.Row>\n                <Table.Row>\n                  <Table.Cell>hr</Table.Cell>\n                  <Table.Cell>Separator</Table.Cell>\n                </Table.Row>\n                <Table.Row>\n                  <Table.Cell>table, th, td</Table.Cell>\n                  <Table.Cell>Table inside ScrollArea</Table.Cell>\n                </Table.Row>\n              </Table.Body>\n            </Table.Root>\n          </ScrollArea.Content>\n        </ScrollArea.Viewport>\n        <ScrollArea.Scrollbar orientation=\"horizontal\">\n          <ScrollArea.Thumb />\n        </ScrollArea.Scrollbar>\n      </ScrollArea.Root>\n    </article>\n  );\n}\n"
       }
     ],
     "items": [
@@ -600,7 +600,7 @@ export const compositionExamples = [
     "scenarios": [
       "screen-composition.copy-bundles"
     ],
-    "install": "npx shadcn add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table"
+    "install": "npx shadcn@4.21.4 add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table"
   },
   {
     "id": "typography",
@@ -618,7 +618,7 @@ export const compositionExamples = [
     "scenarios": [
       "screen-composition.copy-bundles"
     ],
-    "install": "npx shadcn add @ultima/code @ultima/scroll-area @ultima/separator @ultima/table"
+    "install": "npx shadcn@4.21.4 add @ultima/code @ultima/scroll-area @ultima/separator @ultima/table"
   },
   {
     "id": "style-overrides",
@@ -635,7 +635,7 @@ export const compositionExamples = [
     "scenarios": [
       "screen-composition.copy-bundles"
     ],
-    "install": "npx shadcn add @ultima/button @ultima/card"
+    "install": "npx shadcn@4.21.4 add @ultima/button @ultima/card"
   },
   {
     "id": "interaction-states",
@@ -652,7 +652,7 @@ export const compositionExamples = [
     "scenarios": [
       "screen-composition.copy-bundles"
     ],
-    "install": "npx shadcn add @ultima/button @ultima/dialog @ultima/field @ultima/input"
+    "install": "npx shadcn@4.21.4 add @ultima/button @ultima/dialog @ultima/field @ultima/input"
   },
   {
     "id": "list-detail",
@@ -669,7 +669,7 @@ export const compositionExamples = [
     "scenarios": [
       "screen-composition.copy-bundles"
     ],
-    "install": "npx shadcn add @ultima/badge @ultima/button @ultima/card @ultima/toggle-group"
+    "install": "npx shadcn@4.21.4 add @ultima/badge @ultima/button @ultima/card @ultima/toggle-group"
   },
   {
     "id": "product-tokens",
@@ -694,7 +694,7 @@ export const compositionExamples = [
     "scenarios": [
       "screen-composition.copy-bundles"
     ],
-    "install": "npx shadcn add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table"
+    "install": "npx shadcn@4.21.4 add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table"
   },
   {
     "id": "settings-01-adaptation",
@@ -707,6 +707,6 @@ export const compositionExamples = [
     "scenarios": [
       "screen-composition.copy-bundles"
     ],
-    "install": "npx shadcn add @ultima/settings-01"
+    "install": "npx shadcn@4.21.4 add @ultima/settings-01"
   }
 ];

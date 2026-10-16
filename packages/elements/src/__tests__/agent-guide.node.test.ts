@@ -34,7 +34,7 @@ test('emits an Elements section once an element item exists', () => {
   const output = guide([element('ult-button')]);
   expect(output).toContain('## Elements');
   expect(output).toContain('`<ult-button>`');
-  expect(output).toContain('npx shadcn add @ultima/ult-button');
+  expect(output).toContain('npx shadcn@4.21.4 add @ultima/ult-button');
   expect(output).toContain('/elements/ult-button.js');
   expect(output).toContain('/elements/ultima.js');
   expect(output).toContain('/elements-gallery.html');
@@ -138,12 +138,12 @@ test('lists the components under one heading per group, in the order given', () 
     '### Feedback',
     '#### Alert',
   ]);
-  expect(components).toContain('npx shadcn add @ultima/input');
+  expect(components).toContain('npx shadcn@4.21.4 add @ultima/input');
 });
 
 test('emits a Build a screen section from the published lessons, with a block lesson by its entry import', () => {
-  const lesson = { id: 'screen', title: 'Screen lesson', route: '/build-a-screen', anchor: 'screen-lesson', files: [{ source: 'a.tsx', destination: 'components/screen/a.tsx' }], install: 'npx shadcn add @ultima/button' };
-  const block = { id: 'adapt', title: 'Block lesson', block: 'settings-01', route: '/build-a-screen', anchor: 'block-lesson', files: [], install: 'npx shadcn add @ultima/settings-01' };
+  const lesson = { id: 'screen', title: 'Screen lesson', route: '/build-a-screen', anchor: 'screen-lesson', files: [{ source: 'a.tsx', destination: 'components/screen/a.tsx' }], install: 'npx shadcn@4.21.4 add @ultima/button' };
+  const block = { id: 'adapt', title: 'Block lesson', block: 'settings-01', route: '/build-a-screen', anchor: 'block-lesson', files: [], install: 'npx shadcn@4.21.4 add @ultima/settings-01' };
   const output = agentGuide({
     specPath: join(root, 'docs/spec/ultima.md'),
     tokensJsonPath: join(root, 'packages/tokens/dist/tokens.json'),
@@ -155,9 +155,9 @@ test('emits a Build a screen section from the published lessons, with a block le
   const section = output.split('\n## Build a screen\n')[1]!.split('\n## ')[0]!;
   expect(section).toContain('https://ultima.systems/build-a-screen#screen-lesson');
   expect(section).toContain('https://ultima.systems/guides/lessons/screen.md');
-  expect(section).toContain('Files: components/screen/a.tsx. Install: `npx shadcn add @ultima/button`');
+  expect(section).toContain('Files: components/screen/a.tsx. Install: `npx shadcn@4.21.4 add @ultima/button`');
   expect(section).toContain("`import { Settings01 } from '@/components/settings-01/settings-01'`");
-  expect(section).toContain('Install: `npx shadcn add @ultima/settings-01`');
+  expect(section).toContain('Install: `npx shadcn@4.21.4 add @ultima/settings-01`');
   expect(section).not.toContain('Unpublished lesson');
 });
 

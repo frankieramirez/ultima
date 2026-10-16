@@ -21,7 +21,7 @@ import { TextLink } from '../text-link';
 import { useResolvedScheme } from '../theme';
 
 const HEADING_FONT = 'Space Grotesk, Figtree, ui-sans-serif, system-ui, sans-serif';
-const ASIDE_WIDTH_FITTING_SETUP_COMMAND = '32.5rem';
+const ASIDE_WIDTH_FITTING_SETUP_COMMAND = '36rem';
 
 const DEFAULT_SETUP = INSTALL_TARGETS[0];
 

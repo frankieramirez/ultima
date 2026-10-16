@@ -67,6 +67,6 @@ describe('the consumer skill', () => {
   });
 
   it('allows an item inside @ultima/<item> and a link target', () => {
-    expect(lint('Add it with `npx shadcn add @ultima/button` ([reference](https://ultima.systems/tokens#add)).\n')).toEqual([]);
+    expect(lint('Add it with `npx shadcn@4.21.4 add @ultima/button` ([reference](https://ultima.systems/tokens#add)).\n')).toEqual([]);
   });
 });

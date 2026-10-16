@@ -106,12 +106,12 @@ test('the plate follows the index and wears the previewed preset', async () => {
   const screen = await mount('/');
   const plate = screen.getByRole('region', { name: 'Dialog plate' });
   await expect.element(plate).toBeVisible();
-  expect(plate.getByText('npx shadcn add @ultima/dialog').element()).toBeInTheDocument();
+  expect(plate.getByText('npx shadcn@4.21.4 add @ultima/dialog').element()).toBeInTheDocument();
 
   await userEvent.hover(screen.getByRole('link', { name: /Tooltip/ }).element());
   const tooltip = screen.getByRole('region', { name: 'Tooltip plate' });
   await expect.element(tooltip).toBeVisible();
-  expect(tooltip.getByText('npx shadcn add @ultima/tooltip').element()).toBeInTheDocument();
+  expect(tooltip.getByText('npx shadcn@4.21.4 add @ultima/tooltip').element()).toBeInTheDocument();
 
   const stage = () => tooltip.element().querySelector<HTMLElement>('[data-preset]')!;
   const boundaryAccent = () => getComputedStyle(stage().querySelector('[data-theme-boundary]')!).getPropertyValue('--ult-color-accent').trim();

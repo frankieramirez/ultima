@@ -25,6 +25,7 @@ import { CONSUMER_RULES } from '../../packages/analysis/src/consumer.ts';
 import { themeProofProblems, themeSnapshot } from '../consumer-theme.ts';
 import type { ThemeRow } from '../../packages/cli/src/doctor-theme.ts';
 import { setupItems } from '../../registry/items.config.ts';
+import { SHADCN } from '../../packages/cli/src/shadcn.ts';
 
 test('installed theme receipt requires complete linked CSS/document proof and retains tree contents', async () => {
   const row: Omit<ThemeRow, 'artifact'> = { family: 'theme', boundary: 'src/main.tsx', state: 'match', paths: { artifact: 'ultima-theme.css', draft: 'ultima-theme.json', imports: [] }, source: null, differences: [], reason: 'fixture', repair: 'fixture', coverage: { contentMatches: true, modes: ['dark', 'light'], groups: [], scopes: [], rendering: 'not-evaluated' } };
@@ -116,7 +117,7 @@ test('the non-stock consumer draft passes the two-mode Studio pairing gate', () 
 });
 
 test('the installed scene is the projected Projects bundle, installed by its derived command', () => {
-  assert.equal(SCENE_INSTALL, 'npx shadcn add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table');
+  assert.equal(SCENE_INSTALL, 'npx shadcn@4.21.4 add @ultima/button @ultima/card @ultima/dialog @ultima/empty @ultima/field @ultima/input @ultima/select @ultima/sidebar @ultima/table');
   assert.deepEqual(SCENE_ITEMS, ['button', 'card', 'dialog', 'empty', 'field', 'input', 'select', 'sidebar', 'table']);
   const files = sceneFiles();
   assert.deepEqual(files.map(({ path }) => path), ['components/projects/projects.tsx', 'components/projects/projects-data.ts', 'components/projects/screen.stylex.ts']);
@@ -264,7 +265,7 @@ test('theme delivery requires an actual shadcn command and verifies both files a
       calls++;
       assert.equal(cwd, work);
       assert.equal(command, 'npx');
-      assert.deepEqual(args, ['-y', 'shadcn@latest', 'add', 'http://127.0.0.1:4321/r/proof-theme.json', '--yes', '--overwrite']);
+      assert.deepEqual(args, ['-y', SHADCN, 'add', 'http://127.0.0.1:4321/r/proof-theme.json', '--yes', '--overwrite']);
       assert.equal(await readFile(join(work, 'r/proof-theme.json'), 'utf8'), toRegistryItem(draft));
       await writeFile(join(work, 'ultima-theme.json'), serializeDraft(draft));
       await writeFile(join(work, 'ultima-theme.css'), toCss(draft));

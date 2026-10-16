@@ -74,7 +74,7 @@ export function ProductThemeInstall() {
   useEffect(() => {
     let active = true;
     void Promise.all([createRegistryUrl(productDraft, 'https://ultima.systems'), encodeFragment(productDraft)]).then(([registry, fragment]) => {
-      if (active && !registry.tooLong) setLinks({ command: `npx shadcn add "${registry.url}"`, studio: `/theme-studio${fragment.fragment}` });
+      if (active && !registry.tooLong) setLinks({ command: `npx shadcn@4.21.4 add "${registry.url}"`, studio: `/theme-studio${fragment.fragment}` });
     });
     return () => {
       active = false;

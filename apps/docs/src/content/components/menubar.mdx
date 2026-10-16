@@ -9,11 +9,11 @@ A persistent bar of menu titles, in page flow rather than floating. Base UI ship
 ## Install
 
 ```bash
-npx shadcn add @ultima/menubar
+npx shadcn@4.21.4 add @ultima/menubar
 ```
 
 ```bash
-npx shadcn add @ultima/dropdown-menu
+npx shadcn@4.21.4 add @ultima/dropdown-menu
 ```
 
 **The second command is not optional.** A bar's contents must be Ultima's Dropdown Menu or the menus have no paint: `menubar` ships the bar and nothing else, and it declares no registry dependency because the menus are yours, not the item's. This is unlike a wrapper trigger's `render={<Button />}`, where your own element is genuinely permitted and the example only degrades.

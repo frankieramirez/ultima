@@ -7,6 +7,7 @@ import { compositionExamples, recipeSources, recipes } from '../apps/docs/src/ge
 import { repository, serveRegistry, type Run } from './consumer-helpers.ts';
 import { browserErrors, serveNext, type BrowserLog } from './consumer-next.ts';
 import { ADAPTED_BLOCK, COPY_CASES, type ConsumerLayout, type ConsumerReport } from './consumer-report.ts';
+import { SHADCN } from '../packages/cli/src/shadcn.ts';
 
 /**
  * Every copy bundle the Build a screen inventory and the Recipes index expose, by entry source: the
@@ -401,7 +402,7 @@ export default function CopyBundles() {
 
 /** Installs every bundle's items and engines, writes the exact copied bytes, adapts Settings 01 and mounts the gallery. */
 export async function copyBundleScene(app: string, layout: ConsumerLayout, execute: Run, fault?: string): Promise<void> {
-  await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', ...COPY_ITEMS.map((id) => `@ultima/${id}`), '--yes']);
+  await execute(app, 'npx', ['-y', SHADCN, 'add', ...COPY_ITEMS.map((id) => `@ultima/${id}`), '--yes']);
   await execute(app, 'npm', ['install', ...COPY_ENGINES]);
   if (COPY_TYPES.length) await execute(app, 'npm', ['install', '-D', ...COPY_TYPES]);
   const root = sourceRoot(app, layout);

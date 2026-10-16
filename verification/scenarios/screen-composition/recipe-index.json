@@ -20,7 +20,7 @@
     },
     {
       "action": "Read each card's Install dependencies block.",
-      "expect": "It is the derived npx shadcn add command, then any npm engine install and its -D type packages; no card installs @ultima/<recipe>."
+      "expect": "It is the derived npx shadcn@4.21.4 add command, then any npm engine install and its -D type packages; no card installs @ultima/<recipe>."
     }
   ],
   "targets": [

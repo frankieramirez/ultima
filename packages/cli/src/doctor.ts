@@ -9,6 +9,7 @@ import { setupItems } from '../../../registry/items.config.ts';
 import { type Diagnostic, SPEC, type Unsupported } from './diagnostic.ts';
 import type { HandStep } from './hand-steps.ts';
 import { type SupportedRanges, checkStep, jsonPosition, themeModeWithoutRootTheme } from './setup.ts';
+import { SHADCN_ADD } from './shadcn.ts';
 
 export type Target = 'vite' | 'next';
 
@@ -23,8 +24,8 @@ function stepLink(step: HandStep): string {
 }
 
 const SETUP_COMMAND: Record<Target, string> = {
-  vite: 'npx shadcn add https://ultima.systems/r/setup-vite.json',
-  next: 'npx shadcn add https://ultima.systems/r/setup-next.json',
+  vite: `${SHADCN_ADD} https://ultima.systems/r/setup-vite.json`,
+  next: `${SHADCN_ADD} https://ultima.systems/r/setup-next.json`,
 };
 
 const REGISTRY = /^https?:\/\/.+\/r\/\{name\}\.json$/;

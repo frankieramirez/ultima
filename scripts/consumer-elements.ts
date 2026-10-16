@@ -6,6 +6,7 @@ import type { ElementDescriptor } from '../registry/metadata/schema.ts';
 import { computedColors, settle, type Cell } from './consumer-bundles.ts';
 import type { Run } from './consumer-helpers.ts';
 import { ELEMENT_ITEMS } from './consumer-report.ts';
+import { SHADCN } from '../packages/cli/src/shadcn.ts';
 
 let descriptors: Promise<ElementDescriptor[]> | undefined;
 export const elementDescriptors = () => descriptors ??= Promise.all(ELEMENT_ITEMS.map(async (id) => (await import(`../registry/metadata/element/${id}.ts`) as { default: ElementDescriptor }).default));
@@ -26,7 +27,7 @@ const TABS_WITH_DISABLED_MIDDLE = `<ult-tabs id="proof-tabs" value="overview">
 
 export async function elementScene(app: string, registry: string, execute: Run): Promise<void> {
   const items = await elementDescriptors();
-  await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', ...items.map((item) => `${registry}/r/${item.id}.json`), '--yes']);
+  await execute(app, 'npx', ['-y', SHADCN, 'add', ...items.map((item) => `${registry}/r/${item.id}.json`), '--yes']);
   await execute(app, 'npm', ['install']);
   const examples = items.filter((item) => item.id !== 'ult-tabs').map((item) => `<section aria-label="${item.title}">\n${item.example}\n</section>`);
   await writeFile(join(app, 'index.html'), `<!doctype html>

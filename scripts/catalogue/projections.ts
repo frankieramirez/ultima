@@ -168,7 +168,7 @@ function blocksProjection(catalogue: Catalogue): string {
       title: entry.title,
       description: entry.description,
       number: entry.number,
-      install: `npx shadcn add @ultima/${entry.id}`,
+      install: `npx shadcn@4.21.4 add @ultima/${entry.id}`,
       installDocs: entry.installDocs,
       files: entry.files,
       builtFrom: entry.builtFrom.map((used) => {

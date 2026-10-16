@@ -65,7 +65,7 @@ test('install links to update guidance with a working frozen Ultima preset comma
   await install.unmount();
   const screen = await mount('/install/update');
   await expect.element(screen.getByRole('heading', { name: 'Update the base theme', level: 1 })).toBeVisible();
-  await expect.poll(() => document.querySelector('main pre code')?.textContent).toMatch(/^npx shadcn add "https:\/\/ultima.systems\/r\/theme.json\?theme=/);
+  await expect.poll(() => document.querySelector('main pre code')?.textContent).toMatch(/^npx shadcn@4.21.4 add "https:\/\/ultima.systems\/r\/theme.json\?theme=/);
   const command = document.querySelector('main pre code')?.textContent ?? '';
   const publicUrl = new URL(command.match(/"([^"]+)"/)![1]!);
   const item = await (await fetch(`${publicUrl.pathname}${publicUrl.search}`)).json();
@@ -93,7 +93,7 @@ test('Commands is one tab list with a fence per target, Vite first', async () =>
 
   const panel = screen.getByRole('tabpanel');
   expect(panel.element().querySelector('pre')?.textContent).toContain('/r/setup-vite.json');
-  expect(panel.element().textContent).toContain('npx shadcn add @ultima/button');
+  expect(panel.element().textContent).toContain('npx shadcn@4.21.4 add @ultima/button');
 
   await userEvent.click(next);
   await expect.element(next).toHaveAttribute('aria-selected', 'true');

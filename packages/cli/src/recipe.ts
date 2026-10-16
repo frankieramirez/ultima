@@ -2,6 +2,7 @@
 // A recipe is data. Each subprocess `init` runs is built from these fields as structured arguments, never a shell string,
 // and every version is exact: the release tests this combination and no other.
 import { createHash } from 'node:crypto';
+import { SHADCN_VERSION } from './shadcn.ts';
 
 export type Manager = 'npm' | 'pnpm';
 export const MANAGERS: Manager[] = ['npm', 'pnpm'];
@@ -326,7 +327,7 @@ export const VITE: Recipe = {
   layout: 'src',
   title: 'Vite React TypeScript, src layout',
   scaffold: { package: 'create-vite', version: '9.2.1', args: ['--template', 'react-ts', '--no-interactive', '--no-immediate'] },
-  shadcn: { package: 'shadcn', version: '4.21.4' },
+  shadcn: { package: 'shadcn', version: SHADCN_VERSION },
   // create-vite, vite, @vitejs/plugin-react and oxlint take ^20.19.0 || >=22.12.0, and the CLI >=22.
   node: '22.12.0',
   setupItem: 'setup-vite',
@@ -657,7 +658,7 @@ function nextRecipe(layout: Layout): Recipe {
         aliasFiles: [{ path: 'package.json', before: NEXT_PNPM_PACKAGE, after: pinned(NEXT_PNPM_PACKAGE, NEXT_DEPENDENCIES, NEXT_DEV_DEPENDENCIES) }],
       },
     },
-    shadcn: { package: 'shadcn', version: '4.21.4' },
+    shadcn: { package: 'shadcn', version: SHADCN_VERSION },
     // create-next-app and next take >=20.9.0, shadcn >=20.18.1, and the CLI >=22.
     node: '22.0.0',
     setupItem: 'setup-next',

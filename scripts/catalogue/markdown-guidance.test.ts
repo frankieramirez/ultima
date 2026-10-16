@@ -14,8 +14,8 @@ const composition = compositionProjection(files, catalogue);
 test('an HTTP reader gets install steps and every file of the Projects screen', async () => {
   const guides = await markdownGuidance(files, catalogue, composition);
   const install = guides.get('install.md')!;
-  assert.match(install, /npx shadcn add https:\/\/ultima.systems\/r\/setup-vite.json/);
-  assert.match(install, /npx shadcn add https:\/\/ultima.systems\/r\/setup-next.json/);
+  assert.match(install, /npx shadcn@4.21.4 add https:\/\/ultima.systems\/r\/setup-vite.json/);
+  assert.match(install, /npx shadcn@4.21.4 add https:\/\/ultima.systems\/r\/setup-next.json/);
   assert.match(install, /ultimaStylex\(\)/);
   assert.match(install, /ultima.eslint.mjs/);
   assert.match(install, /data-theme="dark"/);

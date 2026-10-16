@@ -11,7 +11,7 @@ export const isSceneFault = (value: unknown): value is SceneFault => SCENE_FAULT
 const projects = compositionExamples.find((example) => example.id === 'projects')!;
 export const SCENE_BUNDLE = recipeSources[projects.files[0]!.source]!;
 export const SCENE_INSTALL = projects.install;
-assert.match(SCENE_INSTALL, /^npx shadcn add (@ultima\/[a-z0-9-]+ ?)+$/, 'the Projects scene must derive its install command');
+assert.match(SCENE_INSTALL, /^npx shadcn@4.21.4 add (@ultima\/[a-z0-9-]+ ?)+$/, 'the Projects scene must derive its install command');
 export const SCENE_ITEMS = SCENE_INSTALL.split(' ').slice(3).map((name) => name.slice('@ultima/'.length));
 const entry = SCENE_BUNDLE.files.find((file) => file.source === SCENE_BUNDLE.entry)!;
 

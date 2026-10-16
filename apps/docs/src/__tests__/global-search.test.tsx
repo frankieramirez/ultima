@@ -63,7 +63,7 @@ test('"button" at 1440 lists Components, Blocks using Button and Elements, with 
   const pane = dialog.getByRole('complementary', { name: 'Button preview' });
   await expect.element(pane).toBeVisible();
   expect(pane.element().querySelector('[data-component-preview] [data-theme-boundary="neutral"] button')).not.toBeNull();
-  await expect.element(pane.getByText('npx shadcn add @ultima/button')).toBeVisible();
+  await expect.element(pane.getByText('npx shadcn@4.21.4 add @ultima/button')).toBeVisible();
   await expect.element(dialog.getByText('Copy install', { exact: false })).toBeVisible();
 
   await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}');
@@ -90,12 +90,12 @@ test('Ctrl Enter copies the install command, keeps the palette open and announce
   expect(region.textContent).toBe('');
 
   await userEvent.keyboard('{Control>}{Enter}{/Control}');
-  expect(write).toHaveBeenCalledWith('npx shadcn add @ultima/button');
-  await expect.poll(() => region.textContent).toBe('Copied npx shadcn add @ultima/button');
+  expect(write).toHaveBeenCalledWith('npx shadcn@4.21.4 add @ultima/button');
+  await expect.poll(() => region.textContent).toBe('Copied npx shadcn@4.21.4 add @ultima/button');
   await expect.element(dialog).toBeVisible();
 
   await userEvent.keyboard('{Control>}{Enter}{/Control}');
-  await expect.poll(() => region.textContent).toBe('Copied npx shadcn add @ultima/button⁠');
+  await expect.poll(() => region.textContent).toBe('Copied npx shadcn@4.21.4 add @ultima/button⁠');
 
   await userEvent.fill(dialog.getByRole('combobox'), 'install');
   await expect.element(dialog.getByRole('option', { name: 'Install' })).toBeVisible();

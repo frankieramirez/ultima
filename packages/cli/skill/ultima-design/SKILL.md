@@ -33,7 +33,7 @@ npx ultima-design status
 
 ## 5. Reach for the kit
 
-Before writing a native control or importing `@base-ui/react`, add the item that provides it with `npx shadcn add @ultima/<item>`; `check` enforces this as `ULT-APP-CONTROL-001` and `ULT-APP-PRIMITIVE-001` ([catalogue](https://ultima.systems/components)).
+Before writing a native control or importing `@base-ui/react`, add the item that provides it with `npx shadcn@4.21.4 add @ultima/<item>`; `check` enforces this as `ULT-APP-CONTROL-001` and `ULT-APP-PRIMITIVE-001` ([catalogue](https://ultima.systems/components)).
 
 ## 6. Paint from the design system
 

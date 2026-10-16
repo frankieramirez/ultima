@@ -257,7 +257,7 @@ export const elements: readonly ElementEntry[] = [
         ]
       }
     ],
-    "example": "<p>Run <ult-code>npx shadcn add @ultima/button</ult-code> to install.</p>\n<ult-code variant=\"block\">pnpm install\npnpm dev</ult-code>"
+    "example": "<p>Run <ult-code>npx shadcn@4.21.4 add @ultima/button</ult-code> to install.</p>\n<ult-code variant=\"block\">pnpm install\npnpm dev</ult-code>"
   },
   {
     "item": "tooltip",

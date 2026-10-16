@@ -32,6 +32,8 @@ while [ $# -gt 0 ]; do
 done
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# The shadcn version the docs print and init pins, read from its one source.
+SHADCN="shadcn@$(sed -n "s/^export const SHADCN_VERSION = '\(.*\)';$/\1/p" "$ROOT/packages/cli/src/shadcn.ts")"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/ultima-smoke.XXXXXX")"
 SERVER_PID=""
 TARGET=""
@@ -131,7 +133,7 @@ add_catalogue() {
   for name in $CATALOGUE; do
     specifiers+=("@ultima/$name")
   done
-  (cd "$app" && npx -y shadcn@latest add "${specifiers[@]}" --yes)
+  (cd "$app" && npx -y "$SHADCN" add "${specifiers[@]}" --yes)
   for name in $CATALOGUE; do
     if [ ! -f "$root/components/ui/$name.tsx" ]; then
       echo "smoke-install: $name did not arrive; the catalogue install is incomplete" >&2
@@ -202,7 +204,7 @@ writeFileSync(
 
 setup_add() {
   local app="$1" item="$2"
-  (cd "$app" && npx -y shadcn@latest add "$HOST/r/$item.json" --yes) 2>&1 | tee "$WORK/$item.log"
+  (cd "$app" && npx -y "$SHADCN" add "$HOST/r/$item.json" --yes) 2>&1 | tee "$WORK/$item.log"
 }
 
 assert_docs_printed() {
@@ -436,7 +438,7 @@ vite_target() {
   step "vite: scaffolding"
   node "$ROOT/scripts/consumer-helpers.ts" scaffold vite "$app"
 
-  step "vite: npx shadcn add $HOST/r/setup-vite.json"
+  step "vite: npx shadcn@4.21.4 add $HOST/r/setup-vite.json"
   setup_add "$app" setup-vite
   assert_docs_printed setup-vite \
     '"paths": { "@/*": ["./src/*"] }' \
@@ -455,7 +457,7 @@ vite_target() {
 import { ultimaStylex } from './ultima.vite.ts'"
   layer_reset "$app/src/index.css"
 
-  step "vite: npx shadcn add the catalogue"
+  step "vite: npx shadcn@4.21.4 add the catalogue"
   add_catalogue "$app" "$app/src"
   assert_stamped "$app/src"
   write_catalogue_module "$app/src/App.tsx" App
@@ -499,7 +501,7 @@ next_layout() {
   step "next: scaffolding"
   node "$ROOT/scripts/consumer-helpers.ts" scaffold "next-$layout" "$app"
 
-  step "next: npx shadcn add $HOST/r/setup-next.json"
+  step "next: npx shadcn@4.21.4 add $HOST/r/setup-next.json"
   setup_add "$app" setup-next
   assert_docs_printed setup-next \
     "Import './ultima.css' from app/layout.tsx." \
@@ -516,7 +518,7 @@ next_layout() {
 import "./ultima.css";'
   layer_reset "$source/app/globals.css"
 
-  step "next: npx shadcn add the catalogue"
+  step "next: npx shadcn@4.21.4 add the catalogue"
   add_catalogue "$app" "$source"
   assert_stamped "$source"
 
@@ -555,7 +557,7 @@ sidebar_target() {
   step "sidebar: scaffolding"
   node "$ROOT/scripts/consumer-helpers.ts" scaffold vite "$app"
 
-  step "sidebar: npx shadcn add $HOST/r/setup-vite.json"
+  step "sidebar: npx shadcn@4.21.4 add $HOST/r/setup-vite.json"
   setup_add "$app" setup-vite
   point_namespace_at_host "$app/components.json"
   add_paths_alias "$app/tsconfig.json"
@@ -567,8 +569,8 @@ sidebar_target() {
 import { ultimaStylex } from './ultima.vite.ts'"
   layer_reset "$app/src/index.css"
 
-  step "sidebar: npx shadcn add @ultima/sidebar"
-  (cd "$app" && npx -y shadcn@latest add @ultima/sidebar --yes)
+  step "sidebar: npx shadcn@4.21.4 add @ultima/sidebar"
+  (cd "$app" && npx -y "$SHADCN" add @ultima/sidebar --yes)
 
   step "sidebar: dialog, the tokens, and the shared lib arrive with it"
   assert_installed "$app" \
@@ -622,8 +624,8 @@ block_vite() {
 import { ultimaStylex } from './ultima.vite.ts'"
   layer_reset "$app/src/index.css"
 
-  step "$block vite: npx shadcn add @ultima/$block"
-  (cd "$app" && npx -y shadcn@latest add "@ultima/$block" --yes)
+  step "$block vite: npx shadcn@4.21.4 add @ultima/$block"
+  (cd "$app" && npx -y "$SHADCN" add "@ultima/$block" --yes)
   assert_block_installed "$app" "$app/src" "$block"
   write_block_route "$app/src/App.tsx" App "$app/src" "$block"
 
@@ -648,8 +650,8 @@ block_next() {
 import "./ultima.css";'
   layer_reset "$app/app/globals.css"
 
-  step "$block next: npx shadcn add @ultima/$block"
-  (cd "$app" && npx -y shadcn@latest add "@ultima/$block" --yes)
+  step "$block next: npx shadcn@4.21.4 add @ultima/$block"
+  (cd "$app" && npx -y "$SHADCN" add "@ultima/$block" --yes)
   assert_block_installed "$app" "$app" "$block"
   write_block_route "$app/app/page.tsx" Page "$app" "$block"
 
@@ -670,8 +672,8 @@ element_target() {
   step "element: scaffolding"
   node "$ROOT/scripts/consumer-helpers.ts" scaffold vanilla "$app"
 
-  step "element: npx shadcn add $HOST/r/ult-button.json"
-  (cd "$app" && npx -y shadcn@latest add "$HOST/r/ult-button.json" --yes)
+  step "element: npx shadcn@4.21.4 add $HOST/r/ult-button.json"
+  (cd "$app" && npx -y "$SHADCN" add "$HOST/r/ult-button.json" --yes)
 
   step "element: the vendored file and tokens-css arrive"
   local path
@@ -688,7 +690,7 @@ element_target() {
 
   step "element: a reinstall overwrites the vendored file"
   echo "/* a local edit a reinstall must erase */" >>"$app/ult-button.js"
-  (cd "$app" && npx -y shadcn@latest add "$HOST/r/ult-button.json" --yes --overwrite)
+  (cd "$app" && npx -y "$SHADCN" add "$HOST/r/ult-button.json" --yes --overwrite)
   if [ ! -f "$app/ult-button.js" ] || grep -qF "a local edit a reinstall must erase" "$app/ult-button.js"; then
     echo "smoke-install: the reinstall did not overwrite ult-button.js" >&2
     exit 1

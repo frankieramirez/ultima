@@ -22,7 +22,7 @@ export type CompositionProjection = CompositionExample & { install: string };
 
 const installCommand = (items: string[]) => {
   const installable = items.filter((id) => !['tokens', 'lib'].includes(id));
-  return { items: installable, install: `npx shadcn add ${installable.map((id) => `@ultima/${id}`).join(' ')}` };
+  return { items: installable, install: `npx shadcn@4.21.4 add ${installable.map((id) => `@ultima/${id}`).join(' ')}` };
 };
 export type RecipeProjection = {
   id: string;

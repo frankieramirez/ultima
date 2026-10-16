@@ -12,5 +12,5 @@ export function UltimaPresetInstall() {
     });
     return () => { active = false; };
   }, []);
-  return url ? <Fence code={`npx shadcn add "${url}"`} lang="shell" title="Terminal" /> : <p>Preparing the Ultima preset command. You can also export the Ultima preset from <a href="/theme-studio">Theme Studio</a>.</p>;
+  return url ? <Fence code={`npx shadcn@4.21.4 add "${url}"`} lang="shell" title="Terminal" /> : <p>Preparing the Ultima preset command. You can also export the Ultima preset from <a href="/theme-studio">Theme Studio</a>.</p>;
 }

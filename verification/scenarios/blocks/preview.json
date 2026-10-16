@@ -77,7 +77,7 @@
     },
     {
       "action": "Press Copy install command.",
-      "expect": "The clipboard holds exactly npx shadcn add @ultima/sign-in-01."
+      "expect": "The clipboard holds exactly npx shadcn@4.21.4 add @ultima/sign-in-01."
     },
     {
       "action": "Press Narrow.",

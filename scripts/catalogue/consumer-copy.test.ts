@@ -104,7 +104,7 @@ describe('composition inventory and generated recipes', () => {
     assert.equal(projection.examples.length, 1);
     assert.equal(projection.recipes.length, catalogue.recipes.length);
     assert.equal(projection.recipes[0]!.url, '/components/button#sorting');
-    assert.equal(projection.recipes[0]!.install, 'npx shadcn add @ultima/button @ultima/sidebar');
+    assert.equal(projection.recipes[0]!.install, 'npx shadcn@4.21.4 add @ultima/button @ultima/sidebar');
     assert.equal(projection.recipes[0]!.engines, 'npm install @tanstack/react-table d3-format');
     const first = planOutputs(files, testPolicy);
     assert.deepEqual(first.diagnostics, []);
@@ -133,7 +133,7 @@ describe('composition inventory and generated recipes', () => {
     const projection = compositionProjection(files, catalogue);
     assert.deepEqual(projection.diagnostics, []);
     assert.deepEqual(projection.sources[entry]!.items, ['button', 'sidebar', 'tokens']);
-    assert.equal(projection.examples[0]!.install, 'npx shadcn add @ultima/button @ultima/sidebar');
+    assert.equal(projection.examples[0]!.install, 'npx shadcn@4.21.4 add @ultima/button @ultima/sidebar');
     for (const partial of [{ ...unpublished, route: '/components/button' }, { ...unpublished, anchor: 'sorting' }]) {
       values[COMPOSITION_INVENTORY] = `export default ${JSON.stringify([partial])} satisfies CompositionExample[];`;
       assert.ok(compositionProjection(files, catalogue).diagnostics.length > 0, JSON.stringify(partial));
@@ -148,7 +148,7 @@ describe('composition inventory and generated recipes', () => {
     values[COMPOSITION_INVENTORY] = `export default ${JSON.stringify([{ ...plain, id: 'adapt', block, files: [] }])} satisfies CompositionExample[];`;
     const projection = compositionProjection(files, catalogue);
     assert.deepEqual(projection.diagnostics, []);
-    assert.equal(projection.examples[0]!.install, `npx shadcn add @ultima/${block}`);
+    assert.equal(projection.examples[0]!.install, `npx shadcn@4.21.4 add @ultima/${block}`);
     values[COMPOSITION_INVENTORY] = `export default ${JSON.stringify([{ ...plain, files: [] }])} satisfies CompositionExample[];`;
     assert.ok(compositionProjection(files, catalogue).diagnostics.some(({ message }) => message.endsWith('title and source bundle are required')));
   });

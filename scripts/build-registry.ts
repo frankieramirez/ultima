@@ -26,6 +26,7 @@ import { agentGuide, type GuideBlock, type GuideComponent } from './build-agent-
 import { ordinal } from './catalogue/browser.ts';
 import { diskFiles } from './catalogue/files.ts';
 import { compositionProjection } from './catalogue/compositions.ts';
+import { SHADCN } from '../packages/cli/src/shadcn.ts';
 import { formatDiagnostics, loadCatalogue } from './catalogue/model.ts';
 import { registryUrl } from './catalogue/projections.ts';
 import { type StagedSource, registryPlan, stagedSources, stagedSpecifier } from './catalogue/staging.ts';
@@ -45,7 +46,6 @@ const ELEMENTS_SRC = join(root, 'packages/elements/src');
 const ELEMENTS_PUBLIC = join(PUBLIC_DIR, 'elements');
 
 const HOMEPAGE = 'https://ultima.systems';
-const SHADCN = 'shadcn@4.21.0';
 
 type RegistryFile = { path: string; type: string; target?: string };
 
@@ -203,7 +203,7 @@ function stampOf(file: string): string {
 
 function handStepDocs(handSteps: SetupDescriptor['handSteps']): string {
   const steps = handSteps.map(({ prose }, index) => `${index + 1}. ${prose}`);
-  return ['Steps you still do by hand:', ...steps, '', 'Then: npx shadcn add @ultima/button'].join('\n');
+  return ['Steps you still do by hand:', ...steps, '', 'Then: npx shadcn@4.21.4 add @ultima/button'].join('\n');
 }
 
 function setupItem(name: string): RegistryItem {

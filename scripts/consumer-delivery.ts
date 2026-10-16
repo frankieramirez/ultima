@@ -8,12 +8,13 @@ import type { Run } from './consumer-helpers.ts';
 import type { ConsumerLayout, DeliveryPath } from './consumer-report.ts';
 import { CONSUMER_RULES } from '../packages/analysis/src/consumer.ts';
 import { setupItems } from '../registry/items.config.ts';
+import { SHADCN } from '../packages/cli/src/shadcn.ts';
 
 export async function installTheme(app: string, registryFolder: string, url: string, draft: ThemeDraft, layout: ConsumerLayout, path: DeliveryPath, execute: Run, directCss = false): Promise<string> {
   const item = toRegistryItem(draft);
   if (!directCss) {
     await writeFile(join(registryFolder, 'r/proof-theme.json'), item);
-    await execute(app, 'npx', ['-y', 'shadcn@latest', 'add', `${url}/r/proof-theme.json`, '--yes', '--overwrite']);
+    await execute(app, 'npx', ['-y', SHADCN, 'add', `${url}/r/proof-theme.json`, '--yes', '--overwrite']);
   } else {
     await writeFile(join(app, 'ultima-theme.json'), serializeDraft(draft));
     await writeFile(join(app, 'ultima-theme.css'), toCss(draft));

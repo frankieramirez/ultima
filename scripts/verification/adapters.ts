@@ -30,6 +30,7 @@ import { BUILD_MANIFEST, BUILD_ROOT, productionAdapter } from '../../apps/docs/s
 import { diskFiles } from '../catalogue/files.ts';
 import { ENGINES, consumerCell, consumerReportProblems, consumerReproduction, type ConsumerLayout, type ConsumerReport, type DeliveryPath } from '../consumer-report.ts';
 import { hydrationProblems, type HydrationEvidence } from '../consumer-next.ts';
+import { SHADCN } from '../../packages/cli/src/shadcn.ts';
 import { loadCatalogue } from '../catalogue/model.ts';
 import { CI_OBLIGATIONS, type CheckId } from './checks.ts';
 import type { ProcessResult } from './process.ts';
@@ -464,7 +465,7 @@ const docsBuildAdapter: Adapter = {
 };
 
 /** Packages the smoke script fetches at their latest version, whose resolved versions a run records. */
-const SMOKE_TOOLS = ['shadcn', 'create-vite', 'create-next-app'];
+const SMOKE_TOOLS = ['create-vite', 'create-next-app'];
 
 /** The consumer projects the smoke script scaffolds under its work directory. */
 const SMOKE_APPS = ['vite-app', 'next-app', 'next-src-app', 'sidebar-app', 'element-app'];
@@ -502,7 +503,7 @@ const smokeAdapter: Adapter = {
           const tmp = context.env.TMPDIR ? realpathSync(context.env.TMPDIR) : null;
           const owned = work !== null && tmp !== null && existsSync(work) && !relative(tmp, realpathSync(work)).startsWith('..') && !isAbsolute(relative(tmp, realpathSync(work)));
           const installed = owned ? retainSmoke(work as string, context, artifacts) : {};
-          writeFileSync(toolsPath, `${JSON.stringify({ schemaVersion: 1, url, work, tmpdir: tmp, tools, installed, pinned: { 'shadcn (registry build)': 'shadcn@4.21.0' } }, null, 2)}\n`);
+          writeFileSync(toolsPath, `${JSON.stringify({ schemaVersion: 1, url, work, tmpdir: tmp, tools, installed, pinned: { 'shadcn (registry build and installs)': SHADCN } }, null, 2)}\n`);
           artifacts.push(toolsPath);
           if (url) notes.push(`served the snapshot's build at ${url}`);
           if (Object.values(tools).some((value) => value === null)) notes.push('a tool version could not be resolved; the network may be unavailable');
