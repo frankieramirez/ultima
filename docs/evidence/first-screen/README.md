@@ -149,10 +149,10 @@ Results:
 - **Four delivery paths:** css, stylex-subtree and cli passed in Vite, Next root and Next src. The registry path failed in all three on `axe-open` and `axe-switched-open` in Chromium: axe reports the Cinder Dialog description's contrast as incomplete (#848).
 - **`smoke-install`:** `consumer-smoke` passed.
 - **Studio pairing and parity:** `palette`, `tokens-tests` and `docs-tests` passed.
-- **`production-scenarios`:** 43 of 44 cases passed. #838's narrow `target-size` cases now pass. `site-landing.without-field` at light/desktop failed axe `color-contrast` on `.xsgp5dn > .x1vroxvg`.
+- **`production-scenarios`:** 43 of 44 cases passed. #838's narrow `target-size` cases now pass. `site-landing.without-field` at light/desktop failed axe `color-contrast` on `.xsgp5dn > .x1vroxvg`. A standalone `test:production` on the same commit passed all 44 cases right afterwards, so the failure is intermittent (#849).
 - **`tooling-tests`:** one test still fails on macOS. It assumes Linux's `/proc` when it counts a check's leftover processes (#846).
 
-The gate is unmet on this revision: Next root and Next src fail on decisions (#845), and `pnpm verify release` fails on macOS (#846, #847, #848 and the landing contrast case).
+The gate is unmet on this revision: Next root and Next src fail on decisions (#845), and `pnpm verify release` fails on macOS (#846, #847, #848, #849).
 
 ### Defects filed
 
@@ -162,6 +162,7 @@ The gate is unmet on this revision: Next root and Next src fail on decisions (#8
 | [#846](https://github.com/frankieramirez/ultima/issues/846) Verification tests fail on macOS: tmpdir is a symlink, and the leftover-process test assumes `/proc` | `pnpm verify release` |
 | [#847](https://github.com/frankieramirez/ultima/issues/847) consumer-bundles RTL `select-layout` and WebKit `navigation-keyboard` fail on macOS | `pnpm verify release` |
 | [#848](https://github.com/frankieramirez/ultima/issues/848) Registry consumer proofs fail axe on macOS: the Cinder Dialog description's contrast is incomplete | `pnpm verify release` |
+| [#849](https://github.com/frankieramirez/ultima/issues/849) `site-landing.without-field` fails axe `color-contrast` intermittently | `pnpm verify release` |
 
 ## Reproduce
 
