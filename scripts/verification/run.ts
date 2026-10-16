@@ -404,7 +404,8 @@ export async function executeRun(options: RunOptions): Promise<Report> {
   for (const path of [directory, paths.artifacts, paths.logs]) mkdirSync(path, { recursive: true });
   // Outside any checkout: a test's scratch repository under the run directory would sit inside the
   // caller's Git work tree and pnpm workspace, and Git and pnpm would find them.
-  const tmp = mkdtempSync(join(tmpdir(), `ultima-verify-${runId}-`));
+  // Resolved, so a child's TMPDIR names no symlink: macOS's /var/folders is one, and tools report the real path.
+  const tmp = realpathSync(mkdtempSync(join(tmpdir(), `ultima-verify-${runId}-`)));
   const deadlineAt = started + options.overallDeadlineSeconds * 1000;
   const cancellation = () => (options.signal?.aborted ? (options.signal.reason as Cancellation) : null);
 

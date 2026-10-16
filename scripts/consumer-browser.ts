@@ -17,11 +17,29 @@ export const BROWSER_ASSERTIONS = [
 type Assertion = { name: string; expected: unknown; actual: unknown; status: 'passed' | 'failed'; error?: string };
 type FocusItem = { role: string; name: string };
 type FocusStep = { key: string; inside: boolean; accessible: boolean; position: number; item: FocusItem | null };
-type AxeReport = { violations: { id: string; nodes: unknown[] }[]; incomplete: unknown[]; passes: unknown[]; focusCycle?: { relatedNodes: number; inventory: FocusItem[]; steps: FocusStep[] } };
+type ContrastReview = { target: unknown; color: string; background: string; contained: boolean; ratio: number; expected: number };
+type AxeReport = { violations: { id: string; nodes: unknown[] }[]; incomplete: unknown[]; passes: unknown[]; focusCycle?: { relatedNodes: number; inventory: FocusItem[]; steps: FocusStep[] }; contrastReview?: ContrastReview[] };
+type AxeNode = { target?: unknown; any?: { id?: string; data?: { messageKey?: string; expectedContrastRatio?: string } }[] };
 export type BrowserEvidence = { assertions: Assertion[]; axe: Record<string, AxeReport>; modeSnapshots: unknown[]; failures: string[] };
 const TOKEN_KEYS = Object.keys(resolveDraft(stockDraft()).light);
 
-function modalFocusNodes(axe: AxeReport): number | null {
+/**
+ * Axe reports text in an open modal as incomplete when its lines sit over different page elements behind the modal's
+ * opaque surface (`elmPartiallyObscuring`), a geometry accident of the inert page rather than a contrast finding. Such a
+ * node counts as reviewed only when the proof measured it against an opaque surface inside the dialog that contains it,
+ * at or above the ratio axe expected.
+ */
+const obscuredByPage = (node: AxeNode) => node?.any?.length === 1 && node.any[0]?.id === 'color-contrast' && node.any[0].data?.messageKey === 'elmPartiallyObscuring';
+function contrastReviewed(rule: { id?: string; nodes?: AxeNode[] }, axe: AxeReport, state: string): boolean {
+  if (rule?.id !== 'color-contrast' || !['open', 'switched-open'].includes(state) || !Array.isArray(rule.nodes) || !rule.nodes.length) return false;
+  return rule.nodes.every((node) => {
+    const review = obscuredByPage(node) && axe.contrastReview?.find((entry) => JSON.stringify(entry?.target) === JSON.stringify(node.target));
+    return !!review && review.contained === true && review.expected >= 3 && review.ratio >= review.expected && review.expected === Number.parseFloat(node.any![0]!.data!.expectedContrastRatio ?? '');
+  });
+}
+
+function modalFocusNodes(report: AxeReport, state: string): number | null {
+  const axe = { ...report, incomplete: report.incomplete.filter((rule) => !contrastReviewed(rule as { id?: string; nodes?: AxeNode[] }, report, state)) };
   let count = 0;
   const selector = (value: unknown): boolean => typeof value === 'string' ? value.length > 0 : Array.isArray(value) && value.length > 0 && value.every(selector);
   for (const rule of axe.incomplete as { id: string; nodes: { any: unknown[]; none: unknown[]; all: { id: string; relatedNodes: unknown[] }[] }[] }[]) {
@@ -40,7 +58,7 @@ function modalFocusNodes(axe: AxeReport): number | null {
 
 function axeProblems(axe: AxeReport, state: string): string[] {
   const problems = axe.violations.map((violation) => violation?.id ?? 'invalid axe violation');
-  const count = modalFocusNodes(axe);
+  const count = modalFocusNodes(axe, state);
   const cycle = axe.focusCycle;
   const size = cycle?.inventory?.length ?? 0;
   const reviewed = ['open', 'switched-open'].includes(state) && cycle?.relatedNodes === count && size > 0 && cycle.inventory.every((item) => typeof item?.role === 'string' && typeof item?.name === 'string') && Array.isArray(cycle.steps) && cycle.steps.length === 2 * (size + 1) && cycle.steps.every((step, index) => {
@@ -150,7 +168,27 @@ export async function browserConditions(page: Page, tables: ResolvedDraft, mode:
     await page.addScriptTag({ path: axePath });
     const result = await page.evaluate(async () => (window as unknown as { axe: { run: () => Promise<AxeReport> } }).axe.run());
     evidence.axe[state] = result;
-    const count = modalFocusNodes(result);
+    const obscured = (result.incomplete as { id?: string; nodes?: AxeNode[] }[]).flatMap((rule) => rule?.id === 'color-contrast' && Array.isArray(rule.nodes) ? rule.nodes.filter(obscuredByPage) : []);
+    if (obscured.length && ['open', 'switched-open'].includes(state)) {
+      result.contrastReview = await dialog.evaluate((element, nodes) => {
+        const canvas = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!;
+        const rgba = (value: string) => { canvas.clearRect(0, 0, 1, 1); canvas.fillStyle = '#000'; canvas.fillStyle = value; canvas.fillRect(0, 0, 1, 1); return [...canvas.getImageData(0, 0, 1, 1).data]; };
+        const luminance = ([r, g, b]: number[]) => [r!, g!, b!].map((channel) => { const c = channel / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i]!, 0);
+        return nodes.map(({ target, expected }) => {
+          const node = typeof target === 'string' ? document.querySelector(target) : null;
+          let surface: Element | null = node;
+          while (surface && surface !== element.parentElement && getComputedStyle(surface).backgroundColor.match(/^rgba\(.*,\s*0\)$|transparent/)) surface = surface.parentElement;
+          const box = node?.getBoundingClientRect(), area = surface?.getBoundingClientRect();
+          const color = node ? getComputedStyle(node).color : '', background = surface ? getComputedStyle(surface).backgroundColor : '';
+          const [fg, bg] = [rgba(color), rgba(background)];
+          const opaque = fg[3] === 255 && bg[3] === 255 && !!surface && element.contains(surface) && [...(function* () { for (let at = node; at && at !== element.parentElement; at = at.parentElement) yield at; })()].every((at) => getComputedStyle(at).opacity === '1');
+          const contained = !!box && !!area && opaque && box.left >= area.left && box.right <= area.right && box.top >= area.top && box.bottom <= area.bottom;
+          const [light, dark] = [luminance(fg), luminance(bg)].sort((a, b) => b - a);
+          return { target: [target], color, background, contained, ratio: Math.round(((light! + 0.05) / (dark! + 0.05)) * 100) / 100, expected };
+        });
+      }, obscured.map((node) => ({ target: Array.isArray(node.target) && node.target.length === 1 ? node.target[0] : null, expected: Number.parseFloat(node.any![0]!.data!.expectedContrastRatio ?? '') })));
+    }
+    const count = modalFocusNodes(result, state);
     if (count !== null && count > 0) {
       const focusState = async (edge?: 'first' | 'last') => dialog.evaluate((element, edge) => {
         const accessible = (node: Element) => !node.closest('[aria-hidden="true"], [inert]') && getComputedStyle(node).visibility === 'visible' && getComputedStyle(node).display !== 'none' && node.getClientRects().length > 0;
