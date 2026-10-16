@@ -135,10 +135,18 @@ test('a horizontal join squares the touching corners and drops the leading borde
     expect(style.getPropertyValue('border-start-start-radius')).toBe('0px');
     expect(style.getPropertyValue('border-end-start-radius')).toBe('0px');
     expect(style.getPropertyValue('border-inline-start-width')).toBe('0px');
-    expect(style.getPropertyValue('border-start-end-radius')).not.toBe('0px');
-    expect(style.getPropertyValue('border-end-end-radius')).not.toBe('0px');
     expect(style.getPropertyValue('border-inline-end-width')).not.toBe('0px');
   }
+
+  // Every item before the last touches the next one on its end side, so those corners square too.
+  for (const element of [first, second]) {
+    const style = getComputedStyle(element);
+    expect(style.getPropertyValue('border-start-end-radius')).toBe('0px');
+    expect(style.getPropertyValue('border-end-end-radius')).toBe('0px');
+  }
+  const thirdStyle = getComputedStyle(third);
+  expect(thirdStyle.getPropertyValue('border-start-end-radius')).not.toBe('0px');
+  expect(thirdStyle.getPropertyValue('border-end-end-radius')).not.toBe('0px');
 });
 
 test('a vertical join squares the touching corners and drops the leading border', async () => {
@@ -153,8 +161,12 @@ test('a vertical join squares the touching corners and drops the leading border'
   expect(secondStyle.getPropertyValue('border-block-start-width')).toBe('0px');
   expect(secondStyle.getPropertyValue('border-start-start-radius')).toBe('0px');
   expect(secondStyle.getPropertyValue('border-start-end-radius')).toBe('0px');
-  expect(secondStyle.getPropertyValue('border-end-start-radius')).not.toBe('0px');
-  expect(secondStyle.getPropertyValue('border-end-end-radius')).not.toBe('0px');
+  expect(secondStyle.getPropertyValue('border-end-start-radius')).toBe('0px');
+  expect(secondStyle.getPropertyValue('border-end-end-radius')).toBe('0px');
+
+  const lastStyle = getComputedStyle(screen.getByRole('button', { name: 'Paste' }).element());
+  expect(lastStyle.getPropertyValue('border-end-start-radius')).not.toBe('0px');
+  expect(lastStyle.getPropertyValue('border-end-end-radius')).not.toBe('0px');
 });
 
 test('every item is its own tab stop, and Space and Enter activate the focused one', async () => {

@@ -55,7 +55,7 @@ An icon before the label needs nothing but the icon: the button's name still com
 
 <Demo component={LeadingIcon} source={leadingIconSource} />
 
-There is no `IconButton` and no `iconOnly` prop. An icon-only button is a recipe: `aria-label` for the name, the glyph as the only child, and a `style` override setting `paddingInline` to the size's block padding, so the glyph sits in even padding instead of the wider padding a label needs.
+There is no `IconButton` and no `iconOnly` prop. An icon-only button is a recipe: `aria-label` for the name, the glyph as the only child, and a `style` override setting `aspectRatio: 1` and `paddingInline: 0`, so the button is exactly as wide as it is tall at every size and the glyph sits centered in it.
 
 <Demo component={IconOnly} source={iconOnlySource} />
 

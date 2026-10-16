@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex';
-import { space } from '@ultima/tokens/tokens.stylex';
 import { createRef } from 'react';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test, vi } from 'vitest';
@@ -52,14 +51,49 @@ test('disabled prevents activation and its data attribute dims the root', async 
   expect(getComputedStyle(button).cursor).toBe('pointer');
 });
 
-const overrides = stylex.create({ icon: { paddingInline: space['--ult-space-4'] } });
+const overrides = stylex.create({ icon: { aspectRatio: 1, paddingInline: 0 } });
+
+test('the icon-only recipe is square at every size', async () => {
+  const screen = await render(
+    <>
+      {(['sm', 'md', 'lg'] as const).map((size) => (
+        <Button key={size} size={size} aria-label={`Add ${size}`} style={overrides.icon}>+</Button>
+      ))}
+    </>,
+  );
+  for (const size of ['sm', 'md', 'lg'] as const) {
+    const rect = screen.getByRole('button', { name: `Add ${size}` }).element().getBoundingClientRect();
+    expect(rect.width).toBeCloseTo(rect.height, 0);
+  }
+});
 
 test('caller padding overrides the size table', async () => {
   const screen = await render(<><Button>Normal</Button><Button aria-label="Add" style={overrides.icon}>+</Button></>);
   const normal = getComputedStyle(screen.getByRole('button', { name: 'Normal' }).element());
   const icon = getComputedStyle(screen.getByRole('button', { name: 'Add' }).element());
-  expect(icon.paddingInlineStart).toBe(icon.paddingBlockStart);
+  expect(icon.paddingInlineStart).toBe('0px');
   expect(icon.paddingInlineStart).not.toBe(normal.paddingInlineStart);
+});
+
+test('a disabled button keeps its resting fill under the pointer', async () => {
+  const screen = await render(<><Button>Live</Button><Button disabled>Off</Button></>);
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+  const live = screen.getByRole('button', { name: 'Live' }).element();
+  const off = screen.getByRole('button', { name: 'Off' }).element();
+  const liveResting = getComputedStyle(live).backgroundColor;
+  const offResting = getComputedStyle(off).backgroundColor;
+  await userEvent.hover(live);
+  await settle();
+  expect(getComputedStyle(live).backgroundColor).not.toBe(liveResting);
+  await userEvent.hover(off);
+  await settle();
+  expect(off.matches(':hover')).toBe(true);
+  expect(getComputedStyle(off).backgroundColor).toBe(offResting);
+});
+
+test('a long label stays on one line', async () => {
+  const screen = await render(<div style={{ width: 40 }}><Button>Save all changes now</Button></div>);
+  expect(getComputedStyle(screen.getByRole('button').element()).whiteSpace).toBe('nowrap');
 });
 
 test('render and ref reach the underlying element', async () => {
