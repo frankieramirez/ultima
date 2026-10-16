@@ -3,17 +3,22 @@
 import { Input as BaseInput } from '@base-ui/react/input';
 import { useRender } from '@base-ui/react/use-render';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
 const styles = stylex.create({
   root: {
     alignItems: 'center',
-    backgroundColor: color['--ult-color-surface-sunken'],
+    // A disabled group still matches `:hover`, so the hover fill is restated at rest inside it.
+    backgroundColor: {
+      default: color['--ult-color-surface-sunken'],
+      ':hover': color['--ult-color-surface-hover'],
+      ':has(:disabled)': { default: color['--ult-color-surface-sunken'], ':hover': color['--ult-color-surface-sunken'] },
+    },
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':has(:is([aria-invalid="true"], [data-invalid]))': color['--ult-color-danger-border'],
+      ':has(:is([aria-invalid="true"], [data-invalid]))': color['--ult-color-danger'],
     },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',
@@ -25,7 +30,11 @@ const styles = stylex.create({
     gap: space['--ult-space-3'],
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
+    minWidth: 0,
     opacity: { default: 1, ':has(:disabled)': 0.5 },
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'background-color, border-color',
+    transitionTimingFunction: easing.standard,
     width: '100%',
     ':focus-within': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
@@ -47,7 +56,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: 'none',
     padding: 0,
-    '::placeholder': { color: color['--ult-color-text-subtle'] },
+    '::placeholder': { color: color['--ult-color-text-subtle'], opacity: 1 },
   },
   addon: {
     alignItems: 'center',

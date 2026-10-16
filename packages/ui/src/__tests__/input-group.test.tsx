@@ -221,3 +221,23 @@ test('public prop types expose size on Root, align on Addon, and no className', 
   expectTypeOf<InputGroupInputProps>().not.toHaveProperty('className');
   expectTypeOf<InputGroupAddonProps>().not.toHaveProperty('className');
 });
+
+test('the box answers the pointer, and a group around a disabled input keeps its resting fill', async () => {
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+  const screen = await render(
+    <>
+      <InputGroup.Root data-testid="live"><InputGroup.Input aria-label="Live" /></InputGroup.Root>
+      <InputGroup.Root data-testid="off"><InputGroup.Input aria-label="Off" disabled /></InputGroup.Root>
+    </>,
+  );
+  const live = screen.getByTestId('live').element();
+  const off = screen.getByTestId('off').element();
+  const liveResting = getComputedStyle(live).backgroundColor;
+  const offResting = getComputedStyle(off).backgroundColor;
+  await userEvent.hover(live);
+  await settle();
+  expect(getComputedStyle(live).backgroundColor).not.toBe(liveResting);
+  await userEvent.hover(off);
+  await settle();
+  expect(getComputedStyle(off).backgroundColor).toBe(offResting);
+});

@@ -96,3 +96,31 @@ test('public prop types expose only supported styling axes', () => {
   expectTypeOf<InputProps>().not.toHaveProperty('className');
   expectTypeOf<InputSize>().toEqualTypeOf<'sm' | 'md' | 'lg'>();
 });
+
+const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+
+test('the fill answers the pointer, and a disabled field keeps its resting fill', async () => {
+  const screen = await render(
+    <>
+      <Input aria-label="Live" />
+      <Input aria-label="Off" disabled />
+    </>,
+  );
+  const live = screen.getByRole('textbox', { name: 'Live' }).element();
+  const off = screen.getByRole('textbox', { name: 'Off' }).element();
+  const liveResting = getComputedStyle(live).backgroundColor;
+  const offResting = getComputedStyle(off).backgroundColor;
+  await userEvent.hover(live);
+  await settle();
+  expect(getComputedStyle(live).backgroundColor).not.toBe(liveResting);
+  await userEvent.hover(off);
+  await settle();
+  expect(off.matches(':hover')).toBe(true);
+  expect(getComputedStyle(off).backgroundColor).toBe(offResting);
+});
+
+test('the placeholder is drawn at full opacity', async () => {
+  const screen = await render(<Input aria-label="Email" placeholder="you@example.com" />);
+  const input = screen.getByRole('textbox', { name: 'Email' }).element();
+  expect(getComputedStyle(input, '::placeholder').opacity).toBe('1');
+});
