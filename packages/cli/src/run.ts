@@ -8,7 +8,7 @@ import { diff } from './diff.ts';
 import { type Target, doctor } from './doctor.ts';
 import { doctorTheme, printTheme } from './doctor-theme.ts';
 import { hook } from './hook.ts';
-import { type InitIO, init } from './init.ts';
+import { INIT_USAGE, type InitIO, init } from './init.ts';
 import { HARNESSES, type Harness, install, printPlan, uninstall } from './install.ts';
 import { doctorLint, printLint } from './lint.ts';
 import { printStatus, status } from './status.ts';
@@ -27,6 +27,8 @@ const FLAGS: Record<string, string[]> = {
 export async function run(argv: string[], stdin = '', io?: InitIO): Promise<{ code: number; stdout: string; stderr: string }> {
   // `hook` is hidden from usage and never fails: a harness hook must leave the agent where no hook would.
   if (argv[0] === 'hook') return { code: 0, stdout: hookInvocation(argv.slice(1), stdin), stderr: '' };
+  // An agent probing for usage reads it and moves on: `--help` and `-h` print it and exit 0 anywhere on the line.
+  if (argv.some((arg) => arg === '--help' || arg === '-h')) return { code: 0, stdout: `${argv[0] === 'init' ? INIT_USAGE : USAGE}\n`, stderr: '' };
   if (argv[0] === 'init') {
     let stdout = '';
     let stderr = '';
