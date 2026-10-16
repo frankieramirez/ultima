@@ -3,7 +3,7 @@
 import { Field as BaseField } from '@base-ui/react/field';
 import { useRender } from '@base-ui/react/use-render';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
@@ -20,9 +20,14 @@ const styles = stylex.create({
     margin: 0,
     position: 'relative',
   },
+  // A disabled select still matches `:hover`, so `:disabled:hover` restates the resting fill.
   select: {
     appearance: 'none',
-    backgroundColor: color['--ult-color-surface-sunken'],
+    backgroundColor: {
+      default: color['--ult-color-surface-sunken'],
+      ':hover': color['--ult-color-surface-hover'],
+      ':disabled:hover': color['--ult-color-surface-sunken'],
+    },
     borderColor: {
       default: color['--ult-color-border-strong'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger-border'],
@@ -36,8 +41,12 @@ const styles = stylex.create({
     inlineSize: '100%',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
+    minWidth: 0,
     opacity: { default: 1, ':disabled': 0.5, ':is([data-disabled])': 0.5 },
     paddingInlineEnd: chevronRoom,
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'background-color, border-color',
+    transitionTimingFunction: easing.standard,
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,

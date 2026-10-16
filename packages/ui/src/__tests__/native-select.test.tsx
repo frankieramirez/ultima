@@ -263,6 +263,28 @@ test('render and ref reach the root', async () => {
   expect(root).toHaveAttribute('data-custom', 'root');
 });
 
+const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+
+test('the fill answers the pointer, and a disabled select keeps its resting fill', async () => {
+  const screen = await render(
+    <>
+      <FruitSelect aria-label="Live" />
+      <FruitSelect aria-label="Off" disabled />
+    </>,
+  );
+  const live = screen.getByRole('combobox', { name: 'Live' }).element();
+  const off = screen.getByRole('combobox', { name: 'Off' }).element();
+  const liveResting = getComputedStyle(live).backgroundColor;
+  const offResting = getComputedStyle(off).backgroundColor;
+  await userEvent.hover(live);
+  await settle();
+  expect(getComputedStyle(live).backgroundColor).not.toBe(liveResting);
+  await userEvent.hover(off);
+  await settle();
+  expect(off.matches(':hover')).toBe(true);
+  expect(getComputedStyle(off).backgroundColor).toBe(offResting);
+});
+
 test('public prop types expose the style slot and the size axis on Select only', () => {
   expectTypeOf<NativeSelectRootProps>().not.toHaveProperty('className');
   expectTypeOf<NativeSelectSelectProps>().not.toHaveProperty('className');

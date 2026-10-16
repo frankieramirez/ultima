@@ -183,6 +183,75 @@ test('placeholder, highlight, selected, and invalid change computed styles witho
   expect(getComputedStyle(invalid).borderColor).not.toBe(getComputedStyle(empty).borderColor);
 });
 
+const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+
+function Plain({ name, disabled = false, defaultOpen = false }: { name: string; disabled?: boolean; defaultOpen?: boolean }) {
+  return (
+    <Select.Root items={[{ value: 'oak', label: 'Oak' }]} disabled={disabled} defaultOpen={defaultOpen}>
+      <Select.Trigger aria-label={name}>
+        <Select.Value placeholder="Pick a material from the crafting list" />
+        <Select.Icon />
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Positioner>
+          <Select.Popup data-testid={`${name} popup`}>
+            <Select.List>
+              <Select.Item value="oak" data-testid={`${name} item`}>
+                <Select.ItemIndicator />
+                <Select.ItemText>Oak</Select.ItemText>
+              </Select.Item>
+            </Select.List>
+          </Select.Popup>
+        </Select.Positioner>
+      </Select.Portal>
+    </Select.Root>
+  );
+}
+
+test('the trigger answers the pointer, and a disabled trigger keeps its resting fill', async () => {
+  const screen = await render(
+    <>
+      <Plain name="Live" />
+      <Plain name="Off" disabled />
+    </>,
+  );
+  const live = screen.getByRole('combobox', { name: 'Live' }).element();
+  const off = screen.getByRole('combobox', { name: 'Off' }).element();
+  const liveResting = getComputedStyle(live).backgroundColor;
+  const offResting = getComputedStyle(off).backgroundColor;
+  await userEvent.hover(live);
+  await settle();
+  expect(getComputedStyle(live).backgroundColor).not.toBe(liveResting);
+  await userEvent.hover(off);
+  await settle();
+  expect(off.matches(':hover')).toBe(true);
+  expect(getComputedStyle(off).backgroundColor).toBe(offResting);
+});
+
+test('an open trigger holds the hover fill, and its popup is never narrower than the trigger', async () => {
+  const screen = await render(
+    <>
+      <Plain name="Closed" />
+      <Plain name="Open" defaultOpen />
+    </>,
+  );
+  const closed = screen.getByRole('combobox', { name: 'Closed' }).element();
+  const open = screen.getByRole('combobox', { name: 'Open' }).element();
+  await expect.element(screen.getByTestId('Open popup')).toBeVisible();
+  await settle();
+  expect(open.matches(':hover')).toBe(false);
+  expect(getComputedStyle(open).backgroundColor).not.toBe(getComputedStyle(closed).backgroundColor);
+  const popup = screen.getByTestId('Open popup').element();
+  // --anchor-width is rounded to a whole pixel, so allow one.
+  expect(popup.getBoundingClientRect().width).toBeGreaterThanOrEqual(open.getBoundingClientRect().width - 1);
+});
+
+test('items set their own leading rather than inheriting the page', async () => {
+  const screen = await render(<Plain name="Leading" defaultOpen />);
+  await expect.element(screen.getByTestId('Leading item')).toBeVisible();
+  expect(getComputedStyle(screen.getByTestId('Leading item').element()).lineHeight).not.toBe('normal');
+});
+
 test('public prop types expose size on Trigger only and no className on styled parts', () => {
   expectTypeOf<SelectSize>().toEqualTypeOf<'sm' | 'md' | 'lg'>();
   expectTypeOf<SelectTriggerProps>().toHaveProperty('size');

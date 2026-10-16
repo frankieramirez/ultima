@@ -13,10 +13,17 @@ const styles = stylex.create({
     fontSize: text['--ult-text-4'],
     fontWeight: font['--ult-font-weight-medium'],
   },
+  // The trigger hovers like Input and holds the hover fill while its popup is open. A disabled trigger still
+  // matches `:hover`, so `:is([data-disabled]):hover` restates the resting fill.
   trigger: {
     alignItems: 'center',
     appearance: 'none',
-    backgroundColor: color['--ult-color-surface-sunken'],
+    backgroundColor: {
+      default: color['--ult-color-surface-sunken'],
+      ':hover': color['--ult-color-surface-hover'],
+      ':is([data-popup-open])': color['--ult-color-surface-hover'],
+      ':is([data-disabled]):hover': color['--ult-color-surface-sunken'],
+    },
     borderColor: {
       default: color['--ult-color-border-strong'],
       ':is([aria-invalid="true"])': color['--ult-color-danger-border'],
@@ -32,7 +39,12 @@ const styles = stylex.create({
     justifyContent: 'space-between',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
+    minWidth: 0,
     opacity: { default: 1, ':is([data-disabled])': 0.5 },
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'background-color, border-color',
+    transitionTimingFunction: easing.standard,
+    userSelect: 'none',
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
@@ -65,6 +77,9 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-sans'],
+    lineHeight: font['--ult-font-leading-normal'],
+    // Never narrower than the trigger it opens from.
+    minWidth: 'var(--anchor-width)',
     opacity: {
       default: 1,
       ':is([data-starting-style])': 0,
@@ -72,7 +87,7 @@ const styles = stylex.create({
     },
     outline: 'none',
     overflow: 'hidden',
-    padding: space['--ult-space-1'],
+    padding: space['--ult-space-2'],
     position: 'relative',
     transform: {
       default: 'none',
@@ -108,6 +123,7 @@ const styles = stylex.create({
     outline: 'none',
     paddingBlock: space['--ult-space-2'],
     paddingInline: space['--ult-space-4'],
+    userSelect: 'none',
   },
   itemText: {
     gridColumn: 2,
