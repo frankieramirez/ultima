@@ -257,6 +257,38 @@ test('items are 32px rows with the small radius', async () => {
   expect(getComputedStyle(item).borderTopLeftRadius).toBe('4px');
 });
 
+test('the check sits at the trailing edge, and a label without an icon starts at the item padding', async () => {
+  const screen = await render(
+    <Select.Root items={[{ value: 'oak', label: 'Oak' }, { value: 'pine', label: 'Pine' }]} defaultValue="oak" defaultOpen>
+      <Select.Trigger aria-label="Wood">
+        <Select.Value />
+        <Select.Icon />
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Positioner>
+          <Select.Popup>
+            <Select.List>
+              {['oak', 'pine'].map((value) => (
+                <Select.Item key={value} value={value} data-testid={`${value} item`}>
+                  <Select.ItemIndicator data-testid={`${value} check`} />
+                  <Select.ItemText data-testid={`${value} text`}>{value}</Select.ItemText>
+                </Select.Item>
+              ))}
+            </Select.List>
+          </Select.Popup>
+        </Select.Positioner>
+      </Select.Portal>
+    </Select.Root>,
+  );
+  await expect.element(screen.getByTestId('oak check')).toBeVisible();
+  const box = (id: string) => screen.getByTestId(id).element().getBoundingClientRect();
+  expect(box('oak check').left).toBeGreaterThanOrEqual(box('oak text').right);
+  for (const value of ['oak', 'pine']) {
+    const padding = Number.parseFloat(getComputedStyle(screen.getByTestId(`${value} item`).element()).paddingLeft);
+    expect(box(`${value} text`).left - box(`${value} item`).left).toBeCloseTo(padding, 0);
+  }
+});
+
 test('an open trigger holds the hover edge, and its popup is never narrower than the trigger', async () => {
   const screen = await render(
     <>

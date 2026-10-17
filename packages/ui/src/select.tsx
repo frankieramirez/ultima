@@ -114,7 +114,9 @@ const styles = stylex.create({
     },
     zIndex: z.popup,
   },
-  // Items are 32px rows with the small radius, so the popup's 8px corner nests around them.
+  // Items are 32px rows with the small radius, so the popup's 8px corner nests around them. The
+  // check sits at the trailing edge, leaving the leading edge to an icon the item carries itself, so
+  // a label without one starts at the item's padding.
   item: {
     alignItems: 'center',
     backgroundColor: { ':is([data-highlighted])': color['--ult-color-surface-hover'] },
@@ -122,7 +124,7 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     cursor: 'default',
-    display: 'grid',
+    display: 'flex',
     fontFamily: font['--ult-font-sans'],
     fontSize: text['--ult-text-4'],
     fontWeight: {
@@ -130,7 +132,6 @@ const styles = stylex.create({
       ':is([data-selected])': font['--ult-font-weight-medium'],
     },
     gap: space['--ult-space-4'],
-    gridTemplateColumns: `${space['--ult-space-6']} 1fr`,
     minHeight: space['--ult-space-9'],
     outline: 'none',
     paddingBlock: space['--ult-space-2'],
@@ -138,13 +139,18 @@ const styles = stylex.create({
     userSelect: 'none',
   },
   itemText: {
-    gridColumn: 2,
+    alignItems: 'center',
+    display: 'flex',
+    flexGrow: 1,
+    gap: space['--ult-space-3'],
+    minWidth: 0,
   },
+  /** `order` puts the check last whichever side of the text it is written on. */
   itemIndicator: {
     display: 'flex',
     flexShrink: 0,
-    gridColumn: 1,
     height: '1em',
+    order: 1,
     width: '1em',
   },
   separator: {
