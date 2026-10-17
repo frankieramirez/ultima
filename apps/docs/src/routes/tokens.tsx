@@ -41,7 +41,7 @@ const styles = stylex.create({
     gap: space['--ult-space-4'],
     gridTemplateColumns: {
       default: 'repeat(3, minmax(0, 1fr))',
-      [breakpoints.DESKTOP]: 'repeat(6, minmax(0, 1fr))',
+      [breakpoints.WIDE]: 'repeat(6, minmax(0, 1fr))',
     },
     listStyle: 'none',
     margin: 0,
@@ -82,11 +82,11 @@ const styles = stylex.create({
     display: 'grid',
     gridTemplateAreas: {
       default: '"swatch name name copy" "swatch dark light copy"',
-      [breakpoints.DESKTOP]: '"swatch name dark light copy"',
+      [breakpoints.WIDE]: '"swatch name dark light copy"',
     },
     gridTemplateColumns: {
       default: 'auto minmax(0, 1fr) minmax(0, 1fr) auto',
-      [breakpoints.DESKTOP]: 'auto minmax(0, 1fr) 6rem 6rem auto',
+      [breakpoints.WIDE]: 'auto minmax(0, 1fr) 6rem 6rem auto',
     },
     paddingBlock: space['--ult-space-4'],
     rowGap: space['--ult-space-2'],
@@ -97,11 +97,11 @@ const styles = stylex.create({
     display: 'grid',
     gridTemplateAreas: {
       default: '"name name copy" "specimen value px"',
-      [breakpoints.DESKTOP]: '"name specimen value px copy"',
+      [breakpoints.WIDE]: '"name specimen value px copy"',
     },
     gridTemplateColumns: {
       default: 'minmax(0, 1fr) auto auto',
-      [breakpoints.DESKTOP]: '15rem minmax(0, 1fr) 6rem 3rem auto',
+      [breakpoints.WIDE]: '15rem minmax(0, 1fr) 6rem 3rem auto',
     },
     paddingBlock: space['--ult-space-4'],
     rowGap: space['--ult-space-3'],

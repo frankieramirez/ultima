@@ -27,7 +27,7 @@ const styles = stylex.create({
     gap: space['--ult-space-11'],
   },
   list: {
-    columnCount: { default: 1, [breakpoints.WIDE]: 2, [breakpoints.DESKTOP]: 3 },
+    columnCount: { default: 1, [breakpoints.DESKTOP]: 2, [breakpoints.WIDE]: 3 },
     columnGap: space['--ult-space-9'],
     flexGrow: 1,
     listStyle: 'none',
@@ -36,7 +36,7 @@ const styles = stylex.create({
     padding: 0,
   },
   row: { breakInside: 'avoid' },
-  folded: { display: { default: 'none', [breakpoints.WIDE]: 'block' } },
+  folded: { display: { default: 'none', [breakpoints.DESKTOP]: 'block' } },
   link: {
     alignItems: 'center',
     display: 'flex',
@@ -55,7 +55,7 @@ const styles = stylex.create({
     fontSize: text['--ult-text-6'],
     fontWeight: font['--ult-font-weight-medium'],
   },
-  more: { display: { default: 'flex', [breakpoints.WIDE]: 'none' }, inlineSize: '100%' },
+  more: { display: { default: 'flex', [breakpoints.DESKTOP]: 'none' }, inlineSize: '100%' },
   plate: {
     display: { default: 'none', [breakpoints.INDEX]: 'flex' },
     flexDirection: 'column',

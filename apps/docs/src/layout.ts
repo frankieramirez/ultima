@@ -5,9 +5,9 @@ import { breakpoints } from './breakpoints.stylex';
 
 export const layoutStyles = stylex.create({
   gutter: {
-    paddingInline: { default: space['--ult-space-6'], [breakpoints.WIDE]: space['--ult-space-9'] },
+    paddingInline: { default: space['--ult-space-6'], [breakpoints.DESKTOP]: space['--ult-space-9'] },
   },
   gutterWide: {
-    paddingInline: { default: space['--ult-space-6'], [breakpoints.WIDE]: space['--ult-space-12'] },
+    paddingInline: { default: space['--ult-space-6'], [breakpoints.DESKTOP]: space['--ult-space-12'] },
   },
 });

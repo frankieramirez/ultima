@@ -132,7 +132,7 @@ test('opening an element goes to its web-component section and lands in Recent',
   await expect.element(reopened.dialog.getByRole('option', { name: /Button element/ })).toBeVisible();
 });
 
-test('below WIDE the palette fills the screen, Cancel replaces Esc, and there is no pane or shortcut', async () => {
+test('below DESKTOP the palette fills the screen, Cancel replaces Esc, and there is no pane or shortcut', async () => {
   await page.viewport(390, 844);
   const write = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
   const { screen } = await mount();

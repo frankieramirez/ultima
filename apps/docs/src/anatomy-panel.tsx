@@ -15,9 +15,9 @@ const styles = stylex.create({
     display: 'flex',
     isolation: 'isolate',
     justifyContent: 'center',
-    minBlockSize: { default: '7.5rem', [breakpoints.WIDE]: '11.25rem' },
+    minBlockSize: { default: '7.5rem', [breakpoints.DESKTOP]: '11.25rem' },
     overflowX: 'auto',
-    padding: { default: space['--ult-space-6'], [breakpoints.WIDE]: space['--ult-space-9'] },
+    padding: { default: space['--ult-space-6'], [breakpoints.DESKTOP]: space['--ult-space-9'] },
   },
   stageInner: { minInlineSize: 'fit-content' },
   reach: (height: number) => ({ minBlockSize: `${height}px` }),
@@ -26,7 +26,7 @@ const styles = stylex.create({
     flexDirection: 'column',
     gap: space['--ult-space-5'],
     paddingBlock: space['--ult-space-5'],
-    paddingInline: { default: space['--ult-space-5'], [breakpoints.WIDE]: space['--ult-space-6'] },
+    paddingInline: { default: space['--ult-space-5'], [breakpoints.DESKTOP]: space['--ult-space-6'] },
   },
   toggle: {
     alignItems: 'center',
@@ -77,7 +77,7 @@ function measure(stage: HTMLElement, item: string, settling: boolean): Measured 
   return { size: { width: origin.width, height: origin.height }, parts: [...parts] };
 }
 
-/** A legend row: the number its label shows below `WIDE`, its name, and whether the preview shows it. */
+/** A legend row: the number its label shows below `DESKTOP`, its name, and whether the preview shows it. */
 export type LegendEntry = { key: string; number: string; name: ReactNode; shown: boolean; tabbable: boolean };
 
 export function AnatomyControls({

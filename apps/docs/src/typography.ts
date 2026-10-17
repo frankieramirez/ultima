@@ -9,7 +9,7 @@ export const headings = stylex.create({
     color: color['--ult-color-text'],
     fontSize: {
       default: text['--ult-text-10'],
-      [breakpoints.WIDE]: text['--ult-text-12'],
+      [breakpoints.DESKTOP]: text['--ult-text-12'],
     },
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: font['--ult-font-tracking-tight'],

@@ -21,7 +21,7 @@ const styles = stylex.create({
   number: {
     color: color['--ult-color-text-subtle'],
     fontFamily: 'Space Grotesk, Figtree, ui-sans-serif, system-ui, sans-serif',
-    fontSize: { default: text['--ult-text-11'], [breakpoints.WIDE]: '5.5rem' },
+    fontSize: { default: text['--ult-text-11'], [breakpoints.DESKTOP]: '5.5rem' },
     letterSpacing: font['--ult-font-tracking-tightest'],
     lineHeight: 0.85,
   },
@@ -33,7 +33,7 @@ const styles = stylex.create({
     paddingBlockEnd: space['--ult-space-2'],
   },
   title: {
-    fontSize: { default: text['--ult-text-9'], [breakpoints.WIDE]: '2.5rem' },
+    fontSize: { default: text['--ult-text-9'], [breakpoints.DESKTOP]: '2.5rem' },
     letterSpacing: font['--ult-font-tracking-tighter'],
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
@@ -49,11 +49,11 @@ const styles = stylex.create({
   source: { color: color['--ult-color-text-subtle'], fontSize: text['--ult-text-4'], margin: 0 },
   tradeoff: {
     display: 'grid',
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.WIDE]: 'minmax(0, 1fr) auto minmax(0, 1fr)' },
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.DESKTOP]: 'minmax(0, 1fr) auto minmax(0, 1fr)' },
     marginBlock: space['--ult-space-8'],
   },
-  narrowOnly: { display: { default: 'block', [breakpoints.WIDE]: 'none' } },
-  wideOnly: { display: { default: 'none', [breakpoints.WIDE]: 'block' } },
+  narrowOnly: { display: { default: 'block', [breakpoints.DESKTOP]: 'none' } },
+  wideOnly: { display: { default: 'none', [breakpoints.DESKTOP]: 'block' } },
   side: {
     display: 'flex',
     flexDirection: 'column',
@@ -85,7 +85,7 @@ const styles = stylex.create({
     display: 'grid',
     gridTemplateColumns: {
       default: 'auto minmax(0, 1fr) auto',
-      [breakpoints.WIDE]: 'auto 12.5rem minmax(0, 1fr) auto auto',
+      [breakpoints.DESKTOP]: 'auto 12.5rem minmax(0, 1fr) auto auto',
     },
     paddingBlock: space['--ult-space-5'],
     position: 'relative',
@@ -102,18 +102,18 @@ const styles = stylex.create({
   },
   entrySummary: {
     color: color['--ult-color-text-muted'],
-    display: { default: 'none', [breakpoints.WIDE]: 'block' },
+    display: { default: 'none', [breakpoints.DESKTOP]: 'block' },
     fontSize: text['--ult-text-4'],
     minInlineSize: 0,
   },
   entryRecord: { fontFamily: font['--ult-font-mono'], fontSize: text['--ult-text-1'], textTransform: 'uppercase' },
   entryArrow: {
     color: color['--ult-color-text-subtle'],
-    display: { default: 'none', [breakpoints.WIDE]: 'block' },
+    display: { default: 'none', [breakpoints.DESKTOP]: 'block' },
     fontSize: text['--ult-text-4'],
   },
   recordsTitle: {
-    fontSize: { default: text['--ult-text-9'], [breakpoints.WIDE]: text['--ult-text-10'] },
+    fontSize: { default: text['--ult-text-9'], [breakpoints.DESKTOP]: text['--ult-text-10'] },
     letterSpacing: font['--ult-font-tracking-tighter'],
     lineHeight: font['--ult-font-leading-none'],
     marginBlockStart: '5.5rem',

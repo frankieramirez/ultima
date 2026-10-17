@@ -32,9 +32,9 @@ import type { NavLink } from './navigation';
 import { emptyGroups, groupLabel, matchTier, TAG_OR_DESCRIPTION, recordRecent, searchGroups, type SearchGroup, type SearchResult } from './search-index';
 import { useTheme } from './theme';
 
-/** `breakpoints.WIDE` and `breakpoints.DESKTOP`, for the parts that are absent below them rather than restyled. */
-const WIDE_QUERY = '(min-width: 48rem)';
-const DESKTOP_QUERY = '(min-width: 64rem)';
+/** `breakpoints.DESKTOP` and `breakpoints.WIDE`, for the parts that are absent below them rather than restyled. */
+const DESKTOP_QUERY = '(min-width: 48rem)';
+const WIDE_QUERY = '(min-width: 64rem)';
 
 const WORD_JOINER = '⁠';
 
@@ -44,25 +44,25 @@ const listHeight = 'min(55dvh, 24rem)';
 const styles = stylex.create({
   trigger: {
     borderRadius: 0,
-    justifyContent: { default: 'center', [breakpoints.DESKTOP]: 'space-between' },
-    height: { default: space['--ult-space-10'], [breakpoints.DESKTOP]: space['--ult-space-9'] },
-    inlineSize: { default: space['--ult-space-10'], [breakpoints.DESKTOP]: '16.25rem' },
+    justifyContent: { default: 'center', [breakpoints.WIDE]: 'space-between' },
+    height: { default: space['--ult-space-10'], [breakpoints.WIDE]: space['--ult-space-9'] },
+    inlineSize: { default: space['--ult-space-10'], [breakpoints.WIDE]: '16.25rem' },
     fontSize: text['--ult-text-4'],
     color: color['--ult-color-text-muted'],
-    paddingInline: { default: space['--ult-space-2'], [breakpoints.DESKTOP]: space['--ult-space-5'] },
+    paddingInline: { default: space['--ult-space-2'], [breakpoints.WIDE]: space['--ult-space-5'] },
     flexShrink: 0,
   },
   searchIcon: { inlineSize: space['--ult-space-7'], blockSize: space['--ult-space-7'], flexShrink: 0 },
-  label: { display: { default: 'none', [breakpoints.DESKTOP]: 'inline' } },
+  label: { display: { default: 'none', [breakpoints.WIDE]: 'inline' } },
   shortcut: {
-    display: { default: 'none', [breakpoints.DESKTOP]: 'inline' },
+    display: { default: 'none', [breakpoints.WIDE]: 'inline' },
     fontFamily: font['--ult-font-mono'],
     fontSize: text['--ult-text-1'],
   },
   viewport: {
-    padding: { default: 0, [breakpoints.WIDE]: space['--ult-space-6'] },
-    placeItems: { default: 'stretch', [breakpoints.WIDE]: 'start center' },
-    paddingBlockStart: { default: 0, [breakpoints.WIDE]: '15vh' },
+    padding: { default: 0, [breakpoints.DESKTOP]: space['--ult-space-6'] },
+    placeItems: { default: 'stretch', [breakpoints.DESKTOP]: 'start center' },
+    paddingBlockStart: { default: 0, [breakpoints.DESKTOP]: '15vh' },
   },
   popup: {
     display: 'flex',
@@ -72,7 +72,7 @@ const styles = stylex.create({
     width: '100%',
     maxWidth: '40rem',
   },
-  results: { maxWidth: { default: '40rem', [breakpoints.DESKTOP]: '55rem' } },
+  results: { maxWidth: { default: '40rem', [breakpoints.WIDE]: '55rem' } },
   fullscreen: { blockSize: '100dvh', borderRadius: 0, borderWidth: 0, maxWidth: 'none' },
   inputGroup: {
     backgroundColor: 'transparent',
@@ -85,11 +85,11 @@ const styles = stylex.create({
     paddingInlineStart: space['--ult-space-6'],
     paddingInlineEnd: space['--ult-space-4'],
   },
-  close: { marginInlineStart: 'auto', fontFamily: { default: font['--ult-font-sans'], [breakpoints.WIDE]: font['--ult-font-mono'] } },
+  close: { marginInlineStart: 'auto', fontFamily: { default: font['--ult-font-sans'], [breakpoints.DESKTOP]: font['--ult-font-mono'] } },
   body: { display: 'flex', flexGrow: 1, minBlockSize: 0 },
-  fixedResultsBody: { blockSize: { default: 'auto', [breakpoints.WIDE]: listHeight } },
+  fixedResultsBody: { blockSize: { default: 'auto', [breakpoints.DESKTOP]: listHeight } },
   scroll: { flexGrow: 1, minInlineSize: 0 },
-  scrollViewport: { blockSize: '100%', maxBlockSize: { default: 'none', [breakpoints.WIDE]: listHeight } },
+  scrollViewport: { blockSize: '100%', maxBlockSize: { default: 'none', [breakpoints.DESKTOP]: listHeight } },
   list: { padding: space['--ult-space-4'] },
   groupLabel: {
     fontFamily: font['--ult-font-mono'],
@@ -332,8 +332,8 @@ export function SiteSearch({ style }: { style?: StyleXStyles }) {
   const [query, setQuery] = useState('');
   const [highlighted, setHighlighted] = useState<SearchResult>();
   const [announcement, setAnnouncement] = useState('');
-  const wide = useMedia(WIDE_QUERY);
   const desktop = useMedia(DESKTOP_QUERY);
+  const wide = useMedia(WIDE_QUERY);
   const navigate = useNavigate();
   const { setPreference } = useTheme();
   // Keyed on `open` so Recent is read again each time the palette opens.
@@ -366,7 +366,7 @@ export function SiteSearch({ style }: { style?: StyleXStyles }) {
     else if (result.kind === 'block') void navigate({ to: '/blocks/$id', params: { id: result.id } });
     else void navigate({ to: result.id as NavLink['to'] });
   };
-  const command = wide ? install(highlighted) : undefined;
+  const command = desktop ? install(highlighted) : undefined;
   const copy = async (text: string) => {
     let result = `Copied ${text}`;
     try {
@@ -394,7 +394,7 @@ export function SiteSearch({ style }: { style?: StyleXStyles }) {
       <Dialog.Portal>
         <Dialog.Backdrop forceRender />
         <Dialog.Viewport style={styles.viewport}>
-          <Dialog.Popup style={[styles.popup, searching && styles.results, !wide && styles.fullscreen]}>
+          <Dialog.Popup style={[styles.popup, searching && styles.results, !desktop && styles.fullscreen]}>
             <Dialog.Title style={visuallyHidden}>Search Ultima</Dialog.Title>
             <Command.Root
               open
@@ -416,7 +416,7 @@ export function SiteSearch({ style }: { style?: StyleXStyles }) {
                   onKeyDown={onInputKeyDown}
                 />
                 <Dialog.Close render={<Button variant="ghost" size="sm" style={[docsStyles.square, styles.close]} />}>
-                  {wide ? 'Esc' : 'Cancel'}
+                  {desktop ? 'Esc' : 'Cancel'}
                 </Dialog.Close>
               </Command.InputGroup>
               <Separator />
@@ -462,7 +462,7 @@ export function SiteSearch({ style }: { style?: StyleXStyles }) {
                     <ScrollArea.Thumb />
                   </ScrollArea.Scrollbar>
                 </ScrollArea.Root>
-                {desktop && searching && previewable(highlighted) && (
+                {wide && searching && previewable(highlighted) && (
                   <>
                     <Separator orientation="vertical" />
                     <PreviewPane result={highlighted} />
@@ -470,7 +470,7 @@ export function SiteSearch({ style }: { style?: StyleXStyles }) {
                 )}
               </div>
             </Command.Root>
-            {wide && (
+            {desktop && (
               <>
                 <Separator />
                 <div {...stylex.props(styles.footer)}>
