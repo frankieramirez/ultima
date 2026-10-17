@@ -6,6 +6,28 @@ import type { ArchitectureException } from './src/exceptions.ts';
 
 export default [
   {
+    id: 'color-field-area-thumb-light-ring',
+    rule: 'ULT-VISUAL-001',
+    path: 'packages/ui/src/color-field.tsx',
+    symbol: 'styles.areaThumb',
+    target: 'borderWidth',
+    expression: 'border.focus',
+    count: 1,
+    reason: "The light half of the thumb's two-tone ring, so the thumb reads on any colour under it.",
+    authority: 'docs/spec/design-foundations.md#outlines-and-borders',
+  },
+  {
+    id: 'color-field-area-thumb-dark-ring',
+    rule: 'ULT-VISUAL-001',
+    path: 'packages/ui/src/color-field.tsx',
+    symbol: 'styles.areaThumb',
+    target: 'outline',
+    expression: "`${border.hairline} solid ${color['--ult-color-border-strong']}`",
+    count: 1,
+    reason: "The dark half of the thumb's two-tone ring, drawn outside the light half.",
+    authority: 'docs/spec/design-foundations.md#outlines-and-borders',
+  },
+  {
     id: 'drawer-backdrop-swiping-cancels-transition',
     rule: 'ULT-TOKEN-001',
     path: 'packages/ui/src/drawer.tsx',
