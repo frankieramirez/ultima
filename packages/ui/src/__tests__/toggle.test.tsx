@@ -1,9 +1,11 @@
 import { colorScheme, darkTheme, lightTheme } from '@ultima/tokens';
 import * as stylex from '@stylexjs/stylex';
-import { Toggle, type ToggleProps, type ToggleSize, type ToggleVariant } from '@ultima/ui';
+import { Button, Toggle, type ToggleProps, type ToggleSize, type ToggleVariant } from '@ultima/ui';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
+import { hoversOnlyWhereHover } from './hover';
+import { resolved } from './overlay';
 
 const themes = [
   { name: 'dark', theme: darkTheme, scheme: colorScheme.dark },
@@ -139,4 +141,66 @@ test('the props carry no value and take no type argument', () => {
   void noValue;
   // @ts-expect-error `Toggle` takes no type argument; the generic was dropped with `value`
   <Toggle<string> />;
+});
+
+test('a toggle restates Button: the same height, padding and lift at every size', async () => {
+  const screen = await render(
+    <>
+      {(['sm', 'md', 'lg'] as const).map((size) => (
+        <span key={size}>
+          <Toggle size={size}>{`Toggle ${size}`}</Toggle>
+          <Button variant="outline" size={size}>{`Button ${size}`}</Button>
+        </span>
+      ))}
+    </>,
+  );
+  for (const size of ['sm', 'md', 'lg'] as const) {
+    const toggle = getComputedStyle(screen.getByRole('button', { name: `Toggle ${size}` }).element());
+    const button = getComputedStyle(screen.getByRole('button', { name: `Button ${size}` }).element());
+    expect(toggle.height).toBe(button.height);
+    expect(toggle.paddingInlineStart).toBe(button.paddingInlineStart);
+    expect(toggle.boxShadow).toBe(button.boxShadow);
+  }
+});
+
+test('a toggle holding an icon gives up one space step on each side', async () => {
+  const icon = <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" />;
+  const screen = await render(
+    <>
+      <Toggle>Plain</Toggle>
+      <Toggle aria-label="With icon">{icon}</Toggle>
+    </>,
+  );
+  const plain = getComputedStyle(screen.getByRole('button', { name: 'Plain' }).element());
+  const withIcon = getComputedStyle(screen.getByRole('button', { name: 'With icon' }).element());
+  expect(parseFloat(withIcon.paddingInlineStart)).toBe(parseFloat(plain.paddingInlineStart) - 4);
+});
+
+test('a disabled toggle takes the muted fill and ink instead of fading, pressed or not', async () => {
+  const screen = await render(
+    <>
+      <Toggle disabled>Off</Toggle>
+      <Toggle disabled defaultPressed>Pinned off</Toggle>
+    </>,
+  );
+  for (const name of ['Off', 'Pinned off']) {
+    const style = getComputedStyle(screen.getByRole('button', { name }).element());
+    expect(style.opacity).toBe('1');
+    expect(style.backgroundColor).toBe(resolved('background-color', 'var(--ult-color-surface-sunken)'));
+    expect(style.color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+    expect(style.boxShadow).toBe('none');
+  }
+});
+
+test('a pressed outline toggle sets its lift down, and hover answers only where the device hovers', async () => {
+  const screen = await render(
+    <>
+      <Toggle>Resting</Toggle>
+      <Toggle defaultPressed>Pressed</Toggle>
+    </>,
+  );
+  const resting = screen.getByRole('button', { name: 'Resting' }).element();
+  expect(getComputedStyle(resting).boxShadow).not.toBe('none');
+  expect(getComputedStyle(screen.getByRole('button', { name: 'Pressed' }).element()).boxShadow).toBe('none');
+  expect(hoversOnlyWhereHover(resting)).toBe(true);
 });

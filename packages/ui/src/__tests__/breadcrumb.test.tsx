@@ -10,6 +10,8 @@ import {
   type BreadcrumbRootProps,
   type BreadcrumbSeparatorProps,
 } from '@ultima/ui';
+import { hoversOnlyWhereHover } from './hover';
+import { resolved } from './overlay';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
@@ -239,4 +241,12 @@ test('public prop types expose the style slot, render, and no axis', () => {
   expectTypeOf<BreadcrumbSeparatorProps>().toHaveProperty('render');
   expectTypeOf<BreadcrumbSeparatorProps>().toHaveProperty('style');
   expectTypeOf<BreadcrumbLinkProps>().toHaveProperty('active').toEqualTypeOf<boolean | undefined>();
+});
+
+test('the trail is set at 14px with space step 4 between crumbs, and hovers only where the device hovers', async () => {
+  const screen = await render(<Trail />);
+  const list = getComputedStyle(screen.getByTestId('list').element());
+  expect(list.fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
+  expect(list.columnGap).toBe(resolved('column-gap', 'var(--ult-space-4)'));
+  expect(hoversOnlyWhereHover(screen.getByRole('link', { name: 'Home' }).element())).toBe(true);
 });

@@ -36,7 +36,7 @@ Installing Sidebar installs Dialog with it. `Sidebar.Root` composes `Dialog.Root
 
 ## The current page
 
-`Sidebar.Link` takes `active`, and Base UI emits `aria-current="page"` and `data-active` when it is true. The current row differs from a resting one by fill, by weight, and by an inline-start bar, so it never depends on hue alone.
+`Sidebar.Link` takes `active`, and Base UI emits `aria-current="page"` and `data-active` when it is true. The current row differs from a resting one by its accent fill, its ink and its medium weight, so it never depends on hue alone.
 
 The style reads `aria-current` as well as `data-active`, which means a router link that sets the attribute itself, as TanStack Router's does, is styled with no `active` prop at all.
 

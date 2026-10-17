@@ -876,16 +876,21 @@ async function directionLocale({ page, check }: Cell) {
     await closeCalendar();
     return counts;
   });
-  await check('navigation-layout', { panelAtInlineStart: true, mainAfterPanel: true, panelBorder: 'left', activeMark: 'right' }, async () => {
+  await check('navigation-layout', { panelAtInlineStart: true, mainAfterPanel: true, panelBorder: 'left', activeRow: 'filled' }, async () => {
     const panel = await box(nav);
     const main = await box(page.locator('main'));
-    const side = (locator: Locator, part: 'border' | 'mark') => locator.evaluate((element, part) => {
+    const side = (locator: Locator) => locator.evaluate((element) => {
       const css = getComputedStyle(element);
-      const [left, right] = [css.borderLeftWidth !== '0px' && (part === 'border' || css.borderLeftColor !== 'rgba(0, 0, 0, 0)'), css.borderRightWidth !== '0px' && (part === 'border' || css.borderRightColor !== 'rgba(0, 0, 0, 0)')];
+      const [left, right] = [css.borderLeftWidth !== '0px', css.borderRightWidth !== '0px'];
       return left && !right ? 'left' : right && !left ? 'right' : `${css.borderLeftWidth} ${css.borderRightWidth}`;
-    }, part);
+    });
+    // The current row is marked by its fill, with no side bar to mirror.
+    const row = (locator: Locator) => locator.evaluate((element) => {
+      const css = getComputedStyle(element);
+      return css.backgroundColor !== 'rgba(0, 0, 0, 0)' && css.borderLeftWidth === '0px' && css.borderRightWidth === '0px' ? 'filled' : `${css.backgroundColor} ${css.borderLeftWidth} ${css.borderRightWidth}`;
+    });
     const viewport = await page.evaluate(() => document.documentElement.clientWidth);
-    return { panelAtInlineStart: holds(near(panel.right, viewport), { panel, viewport }), mainAfterPanel: holds(main.right <= panel.left + 1, { main, panel }), panelBorder: await side(nav, 'border'), activeMark: await side(link('المشاريع'), 'mark') };
+    return { panelAtInlineStart: holds(near(panel.right, viewport), { panel, viewport }), mainAfterPanel: holds(main.right <= panel.left + 1, { main, panel }), panelBorder: await side(nav), activeRow: await row(link('المشاريع')) };
   });
   await check('navigation-keyboard', { focused: 'النشاط', heading: 'النشاط', current: 'page' }, async () => {
     await link('المشاريع').focus();

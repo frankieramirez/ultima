@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
+import { hoversOnlyWhereHover } from './hover';
+import { resolved } from './overlay';
 
 const styles = stylex.create({
   grid: { display: 'grid' },
@@ -147,4 +149,30 @@ test('the root type drops the deprecated props', () => {
 test('the panel type exposes the style slot and no className', () => {
   expectTypeOf<AccordionPanelProps>().not.toHaveProperty('className');
   expectTypeOf<AccordionPanelProps>().toHaveProperty('style');
+});
+
+test('the trigger sets its own rhythm and hovers only where the device hovers', async () => {
+  const screen = await render(<Sample />);
+  const trigger = screen.getByRole('button', { name: 'Details' }).element();
+  const style = getComputedStyle(trigger);
+  expect(style.paddingTop).toBe(resolved('padding-top', 'var(--ult-space-5)'));
+  const leading = parseFloat(style.getPropertyValue('--ult-font-leading-normal'));
+  expect(parseFloat(style.lineHeight)).toBeCloseTo(leading * parseFloat(style.fontSize), 1);
+  expect(hoversOnlyWhereHover(trigger)).toBe(true);
+});
+
+test('a disabled trigger takes the disabled ink instead of fading', async () => {
+  const screen = await render(
+    <Accordion.Root>
+      <Accordion.Item value="a" disabled>
+        <Accordion.Header>
+          <Accordion.Trigger>Locked</Accordion.Trigger>
+        </Accordion.Header>
+        <Accordion.Panel>Body</Accordion.Panel>
+      </Accordion.Item>
+    </Accordion.Root>,
+  );
+  const style = getComputedStyle(screen.getByRole('button', { name: 'Locked' }).element());
+  expect(style.opacity).toBe('1');
+  expect(style.color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
 });

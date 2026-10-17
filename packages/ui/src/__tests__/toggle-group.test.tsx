@@ -8,6 +8,8 @@ import { useState } from 'react';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
+import { hoversOnlyWhereHover } from './hover';
+import { resolved } from './overlay';
 
 const styles = stylex.create({
   wide: { paddingInline: space['--ult-space-12'] },
@@ -270,12 +272,25 @@ test('hovering the pressed item leaves the selection where it is', async () => {
   expect(getComputedStyle(pressed).backgroundColor).not.toBe(hovered);
 });
 
-test('a disabled group dims its items and drops the pointer cursor', async () => {
+test('a disabled group takes the disabled ink instead of fading, and drops the pointer cursor', async () => {
   const screen = await render(<Views disabled />);
   const list = screen.getByRole('button', { name: 'List' }).element();
   expect(list).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(list).opacity)).toBeLessThan(1);
+  expect(getComputedStyle(list).opacity).toBe('1');
+  expect(getComputedStyle(list).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
   expect(getComputedStyle(list).cursor).toBe('default');
+});
+
+test('a group of plain items is 32px tall with control text, and the pressed item lifts', async () => {
+  const screen = await render(<Views defaultValue={['grid']} />);
+  const group = screen.getByRole('group', { name: 'Layout' }).element();
+  const pressed = getComputedStyle(screen.getByRole('button', { name: 'Grid' }).element());
+  const resting = screen.getByRole('button', { name: 'List' }).element();
+  expect(group.getBoundingClientRect().height).toBeCloseTo(32, 0);
+  expect(getComputedStyle(resting).fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
+  expect(pressed.boxShadow).toBe(resolved('box-shadow', 'var(--ult-shadow-xs)'));
+  expect(getComputedStyle(resting).boxShadow).toBe('none');
+  expect(hoversOnlyWhereHover(resting)).toBe(true);
 });
 
 test('the style slot wins over the item style it overrides', async () => {
