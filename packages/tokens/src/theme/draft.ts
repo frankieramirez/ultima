@@ -12,7 +12,7 @@ import {
   type ScaleSeeds,
 } from './recipe.ts';
 
-export const THEME_DRAFT_VERSION = 3;
+export const THEME_DRAFT_VERSION = 4;
 
 export const THEME_PRESETS = [
   { id: 'neutral', label: 'Neutral', description: 'Achromatic · balanced' },
@@ -22,7 +22,7 @@ export const THEME_PRESETS = [
 ] as const;
 
 export type ThemePresetId = (typeof THEME_PRESETS)[number]['id'];
-export type ThemePresetRevision = 1 | 2;
+export type ThemePresetRevision = 1 | 2 | 3;
 export type ThemePresetOrigin = { id: ThemePresetId; revision: ThemePresetRevision };
 
 export type GuidedGroup = 'color' | 'typography' | 'density' | 'shape' | 'elevation' | 'motion';
@@ -36,7 +36,7 @@ export type AccentFill = 'hue' | 'ink';
 export type TokenTable = Record<string, string>;
 
 export type ThemeDraft = {
-  version: 1 | 2 | typeof THEME_DRAFT_VERSION;
+  version: 1 | 2 | 3 | typeof THEME_DRAFT_VERSION;
   preset?: ThemePresetOrigin | null;
   accentFill?: AccentFill;
   recipeVersion: number;
@@ -79,9 +79,17 @@ const TRACKING: Record<MeasurePreset, Record<string, string>> = {
   loose: { tightest: '-0.03em', tighter: '-0.02em', tight: '-0.01em', normal: '0.01em', wide: '0.1em', wider: '0.18em' },
 };
 
-type RadiusTable = Partial<Record<ShapePreset, Record<'xs' | 'sm' | 'md' | 'lg', number>>>;
+type RadiusTable = Partial<Record<ShapePreset, Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number>>>>;
 
 const RADIUS: RadiusTable = {
+  sharp: { xs: 0, sm: 0, md: 0, lg: 0, xl: 0 },
+  default: { xs: 2, sm: 4, md: 6, lg: 8, xl: 12 },
+  soft: { xs: 2, sm: 4, md: 10, lg: 12, xl: 16 },
+  round: { xs: 6, sm: 10, md: 16, lg: 24, xl: 32 },
+};
+
+/** Version 3 drafts keep the four-shape table without `xl`, and `default` at 1/2/4/6. */
+const RADIUS_V3: RadiusTable = {
   sharp: { xs: 0, sm: 0, md: 0, lg: 0 },
   default: { xs: 1, sm: 2, md: 4, lg: 6 },
   soft: { xs: 2, sm: 4, md: 10, lg: 12 },
@@ -95,7 +103,7 @@ const RADIUS_V1_V2: RadiusTable = {
 };
 
 function radiusTable(version: ThemeDraft['version']): RadiusTable {
-  return version === THEME_DRAFT_VERSION ? RADIUS : RADIUS_V1_V2;
+  return version === THEME_DRAFT_VERSION ? RADIUS : version === 3 ? RADIUS_V3 : RADIUS_V1_V2;
 }
 
 export function shapePresets(version: ThemeDraft['version']): ShapePreset[] {
@@ -113,6 +121,9 @@ const SHADOW_LAYERS: Record<ColorMode, Record<'sm' | 'md' | 'lg', [number, numbe
   dark: { sm: [0.3, 0.4], md: [0.35, 0.45], lg: [0.4, 0.5] },
   light: { sm: [0.06, 0.1], md: [0.08, 0.12], lg: [0.12, 0.18] },
 };
+
+/** `xs` is one layer, and only version 4 drafts carry it. */
+const SHADOW_XS: Record<ColorMode, number> = { dark: 0.3, light: 0.05 };
 
 const SHADOW_GEOMETRY: Record<'sm' | 'md' | 'lg', [string, string]> = {
   sm: ['0 1px 2px', '0 1px 3px'],
@@ -155,8 +166,9 @@ function formatAlpha(value: number): string {
   return fixed.startsWith('0.') ? fixed.slice(1) : fixed;
 }
 
-function shadowValue(mode: ColorMode, strength: number, size: 'sm' | 'md' | 'lg'): string {
+function shadowValue(mode: ColorMode, strength: number, size: 'xs' | 'sm' | 'md' | 'lg'): string {
   if (strength === 0) return 'none';
+  if (size === 'xs') return `0 1px 2px rgba(0,0,0,${formatAlpha(SHADOW_XS[mode] * strength)})`;
   const [a, b] = SHADOW_LAYERS[mode][size];
   const [first, second] = SHADOW_GEOMETRY[size];
   return `${first} rgba(0,0,0,${formatAlpha(a * strength)}), ${second} rgba(0,0,0,${formatAlpha(b * strength)})`;
@@ -166,23 +178,33 @@ function snapMs(ms: number): string {
   return `${Math.round(ms / 10) * 10}ms`;
 }
 
+/**
+ * Version 4 adds the field fill, the hover edge, disabled ink and the subtle hover and
+ * pressed steps, and lifts light `surface-raised` to step 1 so raised surfaces float on
+ * their shadow. Earlier versions resolve without them, exactly as they were saved.
+ */
 function colorTable(
   scales: ReturnType<typeof generateScales>,
   mode: ColorMode,
   ink: Record<ColorMode, InkStates> | null,
+  version: ThemeDraft['version'],
 ): TokenTable {
   const m = (scale: ScaleName, n: number) => step(scales, scale, mode, n);
+  const v4 = version === THEME_DRAFT_VERSION;
   const table: TokenTable = {
     '--ult-color-surface': m('mithril', 1),
-    '--ult-color-surface-raised': m('mithril', 2),
+    '--ult-color-surface-raised': m('mithril', v4 && mode === 'light' ? 1 : 2),
     '--ult-color-surface-sunken': m('mithril', 3),
     '--ult-color-surface-hover': m('mithril', 4),
     '--ult-color-surface-active': m('mithril', 5),
+    ...(v4 ? { '--ult-color-field': m('mithril', mode === 'light' ? 1 : 2) } : {}),
     '--ult-color-text': m('mithril', 12),
     '--ult-color-text-muted': m('mithril', 11),
     '--ult-color-text-subtle': m('mithril', 10),
     '--ult-color-text-inverse': m('mithril', 1),
+    ...(v4 ? { '--ult-color-text-disabled': m('mithril', 9) } : {}),
     '--ult-color-border': m('mithril', 6),
+    ...(v4 ? { '--ult-color-border-hover': m('mithril', 9) } : {}),
     '--ult-color-border-strong': m('mithril', 8),
     '--ult-color-border-focus': m('arcane', 9),
     '--ult-color-action': m('mana', 9),
@@ -195,6 +217,10 @@ function colorTable(
     table[`--ult-color-${role}-hover`] = m(scale, 10);
     table[`--ult-color-${role}-active`] = m(scale, 11);
     table[`--ult-color-${role}-subtle`] = m(scale, 3);
+    if (v4) {
+      table[`--ult-color-${role}-subtle-hover`] = m(scale, 4);
+      table[`--ult-color-${role}-subtle-active`] = m(scale, 5);
+    }
     table[`--ult-color-${role}-border`] = m(scale, 7);
     table[`--ult-color-${role}-text`] = m(scale, 12);
   }
@@ -204,6 +230,10 @@ function colorTable(
     table['--ult-color-accent-hover'] = ink[mode].hover;
     table['--ult-color-accent-active'] = ink[mode].active;
     table['--ult-color-accent-subtle'] = m('mithril', 3);
+    if (v4) {
+      table['--ult-color-accent-subtle-hover'] = m('mithril', 4);
+      table['--ult-color-accent-subtle-active'] = m('mithril', 5);
+    }
     table['--ult-color-accent-border'] = m('mithril', 7);
     table['--ult-color-accent-text'] = m('mithril', 12);
   }
@@ -257,7 +287,8 @@ function nonColorTable(draft: ThemeDraft, mode: ColorMode): TokenTable {
   }
   table['--ult-radius-full'] = '9999px';
 
-  for (const size of ['sm', 'md', 'lg'] as const) {
+  const shadows = draft.version === THEME_DRAFT_VERSION ? (['xs', 'sm', 'md', 'lg'] as const) : (['sm', 'md', 'lg'] as const);
+  for (const size of shadows) {
     table[`--ult-shadow-${size}`] = shadowValue(mode, draft.elevation, size);
   }
 
@@ -320,11 +351,15 @@ function legacyStockDraft(): ThemeDraft {
   };
 }
 
-/** A preset id gives its current revision 2; `{ id, revision: 1 }` gives the version-2 definition. */
+/**
+ * A preset id gives its current revision 3; `{ id, revision }` gives an earlier one. Each
+ * revision belongs to one document version: revision 1 is the version-2 definition, revision 2
+ * the version-3 one, and revision 3 is revision 2's definition on the version-4 token tables.
+ */
 export function presetDraft(preset: ThemePresetId | ThemePresetOrigin): ThemeDraft {
-  const { id, revision }: ThemePresetOrigin = typeof preset === 'string' ? { id: preset, revision: 2 } : preset;
+  const { id, revision }: ThemePresetOrigin = typeof preset === 'string' ? { id: preset, revision: 3 } : preset;
   const draft = legacyStockDraft();
-  draft.version = revision === 1 ? 2 : THEME_DRAFT_VERSION;
+  draft.version = revision === 1 ? 2 : revision === 2 ? 3 : THEME_DRAFT_VERSION;
   draft.recipeVersion = 2;
   draft.preset = { id, revision };
   if (id === 'neutral') {
@@ -347,26 +382,31 @@ export function presetDraft(preset: ThemePresetId | ThemePresetOrigin): ThemeDra
     draft.elevation = grove ? 0.5 : 1.5;
     draft.motion = grove ? 1.5 : 0.6;
   }
-  if (revision === 2) {
+  if (revision !== 1) {
     draft.shape = REVISION_2_SHAPES[id];
     draft.accentFill = id === 'neutral' ? 'ink' : 'hue';
   }
   return draft;
 }
 
-export function stockDraft(): ThemeDraft {
-  const draft = presetDraft('neutral');
+/** The base theme: Neutral on the base recipe. A version-3 base draft resets to its own version. */
+function baseDraft(revision: 2 | 3): ThemeDraft {
+  const draft = presetDraft({ id: 'neutral', revision });
   draft.recipeVersion = BASE_RECIPE_VERSION;
   return draft;
 }
 
-export function presetRevision(version: 2 | typeof THEME_DRAFT_VERSION): ThemePresetRevision {
-  return version === 2 ? 1 : 2;
+export function stockDraft(): ThemeDraft {
+  return baseDraft(3);
+}
+
+export function presetRevision(version: 2 | 3 | typeof THEME_DRAFT_VERSION): ThemePresetRevision {
+  return version === 2 ? 1 : version === 3 ? 2 : 3;
 }
 
 export function resetDraft(draft: ThemeDraft): ThemeDraft {
   if (draft.version === 1) return legacyStockDraft();
-  if (draft.recipeVersion === BASE_RECIPE_VERSION) return stockDraft();
+  if (draft.recipeVersion === BASE_RECIPE_VERSION) return baseDraft(draft.version === 3 ? 2 : 3);
   return presetDraft(draft.preset ?? { id: 'neutral', revision: presetRevision(draft.version) });
 }
 
@@ -384,7 +424,7 @@ export function isPresetEdited(draft: ThemeDraft): boolean {
 function derivedTables(draft: ThemeDraft): ResolvedDraft {
   const scales = generateScales(draft.color, draft.recipeVersion, draft.preset?.id === 'ultima');
   const ink = draft.accentFill === 'ink' ? generateInkStates(draft.color.mithril) : null;
-  const derive = (mode: ColorMode): TokenTable => ({ ...colorTable(scales, mode, ink), ...nonColorTable(draft, mode) });
+  const derive = (mode: ColorMode): TokenTable => ({ ...colorTable(scales, mode, ink, draft.version), ...nonColorTable(draft, mode) });
   return { dark: derive('dark'), light: derive('light') };
 }
 

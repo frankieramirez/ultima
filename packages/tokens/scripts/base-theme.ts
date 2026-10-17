@@ -15,7 +15,10 @@ export function baseTokenSources(): Map<string, string> {
   const valueSource = (name: string, mode: 'dark' | 'light'): string => {
     const value = resolved[mode][name];
     if (typeof value !== 'string') throw new Error(`Missing ${name} in ${mode}.`);
-    if (name === '--ult-color-surface-overlay') return `\`\${mithril.${mode}2}${value.slice(-2)}\``;
+    if (name === '--ult-color-surface-overlay') {
+      const raised = valueSource('--ult-color-surface-raised', mode);
+      return `\`\${${raised}}${value.slice(-2)}\``;
+    }
     const role = name.replace('--ult-color-', '').split('-')[0];
     const scale = name === '--ult-color-border-focus' ? 'arcane'
       : name.endsWith('-contrast') || role === 'accent' ? 'mithril'

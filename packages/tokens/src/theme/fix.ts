@@ -44,6 +44,7 @@ export function closestPassingValue(draft: ThemeDraft, pairing: Pairing, mode: C
     pairing,
     ...PAIRINGS.filter(
       (other) =>
+        other.foreground in before && other.background in before &&
         !samePairing(other, pairing) &&
         (other.foreground === target || other.background === target || ratio(before, other) >= other.minimum),
     ),

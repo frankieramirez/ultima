@@ -58,12 +58,12 @@ export function parseProvenance(source: string): ProvenanceResult {
     && !['draftDigest', 'draftVersion', 'recipeVersion', 'preset'].some((key) => key in p)) {
     return { status: 'linked', provenance: p as ThemeProvenance };
   }
-  if (p.sourceKind === 'studio-draft' && [1, 2, 3].includes(p.draftVersion as number)
+  if (p.sourceKind === 'studio-draft' && [1, 2, 3, 4].includes(p.draftVersion as number)
     && (p.draftVersion === 1 ? p.recipeVersion === 1 : p.draftVersion === 2 ? p.recipeVersion === 2 : [2, 3].includes(p.recipeVersion as number))
     && typeof p.draftDigest === 'string' && DIGEST.test(p.draftDigest) && !('resolvedDigest' in p)) {
     const preset = p.preset as ThemePresetOrigin | null;
     if (preset === null || (typeof preset === 'object' && !Array.isArray(preset) && p.draftVersion !== 1
-      && THEME_PRESETS.some(({ id }) => id === preset.id) && preset.revision === presetRevision(p.draftVersion as 2 | 3))) {
+      && THEME_PRESETS.some(({ id }) => id === preset.id) && preset.revision === presetRevision(p.draftVersion as 2 | 3 | 4))) {
       return { status: 'linked', provenance: p as ThemeProvenance };
     }
   }
