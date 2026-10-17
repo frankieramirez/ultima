@@ -16,6 +16,7 @@ A principle earns a line here only if it already settled a decision on the map, 
 - **The consumer owns what they install.** Registry-first (ADR 0003): Ultima hands over source and gives up control of it. Shared guidance stays hosted; an explicitly installed `DESIGN.md` describes the consumer's theme and becomes theirs to maintain. Installed skills hold workflow pointers to hosted conventions; the CLI or the external skill installer owns their updates. The CLI also manages project hooks (ADR 0005, amended).
 - **Tokens are the only source of raw values.** A literal in component code is a bug, not a shortcut. A new need becomes a new token. The one qualification, decided on Sidebar's responsive state model (ULT-54): a media condition is not a value a declaration reads, and a custom property cannot appear in one, so a breakpoint lives as a named module constant in the file that uses it rather than as a token. Ultima names two, and a file copies the ones it uses under the same names: `DESKTOP`, `@media (min-width: 48rem)`, where Sidebar and the blocks switch to their desktop layout, and `WIDE`, `@media (min-width: 64rem)`, for a second step.
 - **Semantic names are stable, values are not.** A consumer re-skins at the semantic layer and nothing renames underneath them (ADR 0004).
+- **Visual values are chosen by role, with a reason.** Elevation, borders, radius, opacity, blur, color and spacing follow [Design foundations](https://ultima.systems/guides/foundations.md).
 - **Contrast is a build gate, not advice.** WCAG 2.2 AA passes or the palette does not ship. APCA is reported beside the pairings and never fails a build.
 - **Ultima is the default kit for our StyleX React projects.** Core application components and common compositions belong on the roadmap, including the ones we otherwise reach for shadcn/ui to provide. This is a product scope commitment; public positioning can stay focused on Ultima.
 - **The docs site is the first complete application.** It uses production Ultima components for every reusable UI pattern, including navigation and responsive controls. A missing reusable component is added to Ultima and consumed from the workspace. Page layout, prose typography, and branding may use site-specific StyleX, within the line drawn on Where the line falls between an Ultima component and docs-local page layout (ULT-56): a docs file may arrange and set type and flow spacing, and may neither build a control from plain elements nor paint a surface.
@@ -145,7 +146,7 @@ This is the Studio's `default` Shape in draft document v4, amended by the design
 
 ### Shadow
 
-Four steps. On a near-black ground a shadow does almost nothing, so elevation in dark comes from surface steps and a border; shadows earn their keep on the overlays (Dialog, Dropdown Menu, Select, Tooltip). Geometry is identical in both modes and only the alpha changes, which is why `shadow` is themeable rather than constant.
+Four steps, one per level of the elevation ladder in [Design foundations](design-foundations.md#elevation): `xs` lifts the outline Button, `sm` sets an object such as Card or Tooltip on the page, `md` floats an anchored popup, and `lg` raises a modal. On a near-black ground a shadow does almost nothing, so elevation in dark comes from surface steps and a border, and in light, where `surface-raised` is the page color, the shadow carries it. Geometry is identical in both modes and only the alpha changes, which is why `shadow` is themeable rather than constant.
 
 | Token | Dark | Light |
 | --- | --- | --- |
@@ -154,7 +155,7 @@ Four steps. On a near-black ground a shadow does almost nothing, so elevation in
 | `--ult-shadow-md` | `0 4px 8px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.45)` | `0 4px 8px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.12)` |
 | `--ult-shadow-lg` | `0 12px 24px rgba(0,0,0,.40), 0 24px 48px rgba(0,0,0,.50)` | `0 12px 24px rgba(0,0,0,.12), 0 24px 48px rgba(0,0,0,.18)` |
 
-An overlay sets a border and a shadow together, never a shadow alone. `xs` is one layer, added with draft document v4, and scales with Elevation like the others.
+A surface sets a border and a shadow together, never a shadow alone. `xs` is one layer, added with draft document v4, and scales with Elevation like the others.
 
 ### Filter
 

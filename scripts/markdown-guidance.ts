@@ -151,6 +151,7 @@ export async function markdownGuidance(files: Files, catalogue: Catalogue, compo
     return render(root).trim() + '\n';
   };
   for (const [route, source] of PAGES) output.set(guidePath(route).slice('/guides/'.length), markdown(required(files, `apps/docs/src/content/${source}.mdx`)));
+  output.set('foundations.md', required(files, 'docs/spec/design-foundations.md'));
   for (const example of composition.examples) {
     const bundle = example.files[0] && composition.sources[example.files[0].source];
     if (!bundle && !example.block) throw new Error(`missing copy bundle: ${example.id}`);
