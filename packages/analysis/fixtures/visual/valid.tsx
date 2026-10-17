@@ -28,10 +28,15 @@ const styles = stylex.create({
     borderInlineStartStyle: 'solid',
     borderInlineStartWidth: { default: 0, ':is([data-active], [aria-current="page"])': border.focus },
   },
+  field: {
+    backgroundColor: { default: color['--ult-color-surface'], ':disabled': color['--ult-color-surface-sunken'] },
+    color: { default: color['--ult-color-text'], ':disabled': color['--ult-color-text-disabled'] },
+    opacity: { default: 1, ':disabled': 1 },
+  },
 });
 
 function Separator({ style, ...rest }: import('@ultima/ui/lib/component').PlainProps<'hr'>) {
-  return <hr {...rest} {...stylex.props(styles.surface, styles.scrim, styles.control, styles.link, style)} />;
+  return <hr {...rest} {...stylex.props(styles.surface, styles.scrim, styles.control, styles.link, styles.field, style)} />;
 }
 
 export { Separator };

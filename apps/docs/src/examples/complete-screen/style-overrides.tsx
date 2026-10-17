@@ -7,7 +7,7 @@ import { Card } from '@ultima/ui/card';
 
 /**
  * Each override sets layout, size or a semantic role through the part's own `style` prop. None touches
- * focus, disabled opacity or cursor, so the component keeps its focus ring and disabled behavior.
+ * focus, the disabled colors or cursor, so the component keeps its focus ring and disabled behavior.
  */
 const styles = stylex.create({
   card: {

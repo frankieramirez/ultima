@@ -7,6 +7,7 @@ import { fixture, located, run, source } from './support.ts';
 
 const SEPARATOR = 'packages/ui/src/separator.tsx';
 const CARD = 'packages/ui/src/card.tsx';
+const SWITCH = 'packages/ui/src/switch.tsx';
 const visual = (line: number, column: number, symbol: string, target: string, selector?: string) => ({
   ruleId: 'ULT-VISUAL-001',
   file: SEPARATOR,
@@ -28,14 +29,27 @@ describe('ULT-VISUAL-001', () => {
       visual(22, 13, 'styles.loading', 'filter'),
       visual(27, 18, 'styles.control', 'borderWidth'),
       visual(32, 18, 'styles.heavy', 'borderWidth'),
+      visual(36, 52, 'styles.dimmed', 'opacity', ':is([data-disabled])'),
+      visual(39, 14, 'styles.disabled', 'opacity'),
     ]);
     const [shadow] = report.diagnostics;
     assert.equal(shadow?.severity, 'blocking');
     assert.equal(shadow?.link, 'docs/spec/design-foundations.md#elevation');
   });
 
-  test('accepts a bordered shadow, the scrim blur, focus outlines, and the current-item indicator', () => {
+  test('accepts a bordered shadow, the scrim blur, focus outlines, the current-item indicator, and disabled colors', () => {
     assert.deepEqual(located(run({ [SEPARATOR]: fixture('visual/valid.tsx') }), SEPARATOR), []);
+  });
+
+  test("rejects Switch's disabled track once it dims with opacity", () => {
+    const text = source(SWITCH);
+    const mutated = text.replace(/(\n  root: \{\n)/, "$1    opacity: { default: 1, ':is([data-disabled])': 0.5 },\n");
+    assert.notEqual(mutated, text);
+    const findings = located(run({ [SWITCH]: mutated }), SWITCH);
+    assert.deepEqual(
+      findings.map(({ ruleId, symbol, target, selector }) => ({ ruleId, symbol, target, selector })),
+      [{ ruleId: 'ULT-VISUAL-001', symbol: 'styles.root', target: 'opacity', selector: ':is([data-disabled])' }],
+    );
   });
 
   test("rejects Card's shadow once its border color is gone", () => {
