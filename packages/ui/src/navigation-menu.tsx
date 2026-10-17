@@ -6,6 +6,18 @@ import { border, color, easing, font, motion, radius, shadow, space, text, z } f
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
+const HOVER = '@media (hover: hover)';
+// Base UI marks the anchored Popup with its side, and nothing in the List carries one.
+const IN_POPUP = ':is([data-side] *)';
+const IN_POPUP_HOVER = ':is([data-side] *):hover';
+
+const UP = ':is([data-side="bottom"])';
+const DOWN = ':is([data-side="top"])';
+// The `dir` attribute rather than `:dir()`, which the CSS pipeline lowers to language matching.
+const RIGHTWARD = ':is([data-side="left"], [data-side="inline-start"]:not([dir="rtl"] *), [data-side="inline-end"]:is([dir="rtl"] *))';
+const LEFTWARD = ':is([data-side="right"], [data-side="inline-end"]:not([dir="rtl"] *), [data-side="inline-start"]:is([dir="rtl"] *))';
+const ARROW_OFFSET = `calc(-0.5 * ${space['--ult-space-4']})`;
+
 const styles = stylex.create({
   /**
    * `display: flex` is load-bearing for a state rather than for appearance. Base UI gates
@@ -25,13 +37,13 @@ const styles = stylex.create({
     appearance: 'none',
     backgroundColor: {
       default: 'transparent',
-      ':hover': color['--ult-color-surface-hover'],
+      [HOVER]: { ':hover': color['--ult-color-surface-hover'] },
       ':is([data-popup-open])': color['--ult-color-surface-hover'],
     },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'none',
     boxSizing: 'border-box',
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     cursor: 'default',
     display: 'inline-flex',
     fontFamily: font['--ult-font-sans'],
@@ -40,9 +52,9 @@ const styles = stylex.create({
     gap: space['--ult-space-2'],
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
-    paddingBlock: space['--ult-space-2'],
-    paddingInline: space['--ult-space-4'],
+    // Button's `sm` height and padding, so a trigger lines up with a ghost Button beside it.
+    minHeight: space['--ult-space-9'],
+    paddingInline: space['--ult-space-5'],
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
@@ -123,35 +135,48 @@ const styles = stylex.create({
     position: 'relative',
     width: '100%',
   },
+  /**
+   * A square turned 45deg, half outside the popup's edge on the side that faces the anchor.
+   * Base UI places only the cross axis; the side offset and the two outward hairlines are set
+   * here, so the arrow continues the popup's border and covers it where they meet.
+   */
   arrow: {
+    backgroundColor: color['--ult-color-surface-raised'],
+    borderBottomColor: { default: 'transparent', [DOWN]: color['--ult-color-border'], [LEFTWARD]: color['--ult-color-border'] },
+    borderLeftColor: { default: 'transparent', [UP]: color['--ult-color-border'], [LEFTWARD]: color['--ult-color-border'] },
+    borderRightColor: { default: 'transparent', [DOWN]: color['--ult-color-border'], [RIGHTWARD]: color['--ult-color-border'] },
+    borderTopColor: { default: 'transparent', [UP]: color['--ult-color-border'], [RIGHTWARD]: color['--ult-color-border'] },
+    borderStyle: 'solid',
+    borderWidth: border.hairline,
+    bottom: { default: null, [DOWN]: ARROW_OFFSET },
+    boxSizing: 'border-box',
     height: space['--ult-space-4'],
+    left: { default: null, [LEFTWARD]: ARROW_OFFSET },
+    right: { default: null, [RIGHTWARD]: ARROW_OFFSET },
+    top: { default: null, [UP]: ARROW_OFFSET },
+    transform: 'rotate(45deg)',
     width: space['--ult-space-4'],
-    '::before': {
-      backgroundColor: color['--ult-color-surface-raised'],
-      borderColor: color['--ult-color-border'],
-      borderStyle: 'solid',
-      borderWidth: border.hairline,
-      content: '""',
-      display: 'block',
-      height: space['--ult-space-4'],
-      transform: 'rotate(45deg)',
-      width: space['--ult-space-4'],
-    },
   },
+  // In the popup a link is a menu row: 32px, the small radius nested in the content's 4px inset,
+  // and the hover ground every popup item takes. A link set straight in the List keeps the plain
+  // colour-only treatment, since a bar of links reads by its underline and colour, not by pills.
   link: {
-    borderRadius: radius['--ult-radius-md'],
+    alignItems: 'center',
+    backgroundColor: { default: 'transparent', [HOVER]: { [IN_POPUP_HOVER]: color['--ult-color-surface-hover'] } },
+    borderRadius: radius['--ult-radius-sm'],
     boxSizing: 'border-box',
     color: {
       default: color['--ult-color-text-muted'],
-      ':hover': color['--ult-color-text'],
+      [HOVER]: { ':hover': color['--ult-color-text'] },
       ':is([data-active], [aria-current="page"])': color['--ult-color-text'],
     },
-    display: 'block',
+    display: { default: 'block', [IN_POPUP]: 'flex' },
     fontSize: text['--ult-text-4'],
-    fontWeight: font["--ult-font-weight-regular"],
+    fontWeight: font['--ult-font-weight-regular'],
     lineHeight: font['--ult-font-leading-normal'],
+    minHeight: { default: null, [IN_POPUP]: space['--ult-space-9'] },
     paddingBlock: space['--ult-space-2'],
-    paddingInline: space['--ult-space-3'],
+    paddingInline: { default: space['--ult-space-3'], [IN_POPUP]: space['--ult-space-4'] },
     textDecoration: 'none',
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,

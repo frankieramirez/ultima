@@ -29,6 +29,7 @@ import {
 import source from '../navigation-menu?raw';
 
 import { themeDocument, themes, violations } from './axe';
+import { expectArrowOnEdge, resolved } from './menu-arrow';
 
 function Menu({
   orientation = 'horizontal',
@@ -284,6 +285,30 @@ test('documented state drives the style on the trigger, the link, and the conten
   expect(enterFromRight).toEqual(['translateX(50%)']);
   expect(slide('data-ending-style', 'data-activation-direction="left"')).toEqual(enterFromRight);
   expect(slide('data-ending-style', 'data-activation-direction="right"')).toEqual(enterFromLeft);
+});
+
+test('the trigger is a 32px control and a link is a 32px menu row that takes the hover ground', async () => {
+  const screen = await render(<Menu />);
+  const height = resolved('height', 'var(--ult-space-9)');
+  expect(`${screen.getByTestId('products').element().getBoundingClientRect().height}px`).toBe(height);
+
+  await screen.getByTestId('products').click();
+  await expect.element(page.getByTestId('popup')).toBeVisible();
+  const link = page.getByRole('link', { name: 'Components' });
+  expect(`${link.element().getBoundingClientRect().height}px`).toBe(height);
+  expect(getComputedStyle(link.element()).borderTopLeftRadius).toBe(resolved('border-top-left-radius', 'var(--ult-radius-sm)'));
+  const resting = getComputedStyle(link.element()).backgroundColor;
+  await link.hover();
+  await expect.poll(() => getComputedStyle(link.element()).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-surface-hover)'));
+  expect(resting).not.toBe(resolved('background-color', 'var(--ult-color-surface-hover)'));
+});
+
+test('the arrow straddles the edge facing the trigger', async () => {
+  const screen = await render(<Menu />);
+  await screen.getByTestId('products').click();
+  const popup = page.getByTestId('popup').element();
+  await expect.poll(() => getComputedStyle(popup).opacity).toBe('1');
+  expectArrowOnEdge(page.getByTestId('arrow').element(), popup, 'up');
 });
 
 test('the parts carry the CSS the primitive reads for the size morph', async () => {

@@ -21,6 +21,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
+import { resolved } from './menu-arrow';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
@@ -247,6 +248,50 @@ test('the list scrolls and the popup tracks the anchor width', async () => {
   expect(popup.scrollHeight).toBe(popup.clientHeight);
 
   expect(Math.round(popup.getBoundingClientRect().width)).toBe(Math.round(group.getBoundingClientRect().width));
+});
+
+test('items are 32px rows with the small radius in the popup\'s 4px inset, and the check trails', async () => {
+  await render(<SchoolCombobox name="Filled" defaultValue="Illusion" defaultOpen />);
+  const popup = document.querySelector('[data-testid="Filled-popup"]')!;
+  const list = document.querySelector('[data-testid="Filled-list"]')!;
+  await expect.poll(() => document.querySelector('[role="option"][data-selected]')).not.toBeNull();
+  const inset = resolved('padding-top', 'var(--ult-space-2)');
+  expect(getComputedStyle(popup).paddingLeft).toBe(inset);
+  expect(getComputedStyle(list).paddingTop).toBe(inset);
+
+  const selected = document.querySelector('[role="option"][data-selected]')!;
+  const row = selected.getBoundingClientRect();
+  expect(`${row.height}px`).toBe(resolved('height', 'var(--ult-space-9)'));
+  expect(getComputedStyle(selected).borderTopLeftRadius).toBe(resolved('border-top-left-radius', 'var(--ult-radius-sm)'));
+  // The label starts at the row's own padding, and the check sits that same step in from the far edge.
+  const step = parseFloat(resolved('padding-top', 'var(--ult-space-4)'));
+  expect(getComputedStyle(selected).paddingLeft).toBe(`${step}px`);
+  const check = selected.querySelector('svg')!.parentElement!.getBoundingClientRect();
+  expect(Math.abs(row.right - check.right - step)).toBeLessThan(1);
+});
+
+test('the input group is Input Group\'s field: a hover edge, an inset ring, and the disabled ink instead of dimming', async () => {
+  const screen = await render(
+    <>
+      <SchoolCombobox name="School" />
+      <Combobox.Root items={SCHOOLS} disabled>
+        <Combobox.InputGroup data-testid="off-group">
+          <Combobox.Input aria-label="Off" />
+        </Combobox.InputGroup>
+      </Combobox.Root>
+    </>,
+  );
+  const group = screen.getByTestId('School-group');
+  expect(getComputedStyle(group.element()).fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
+  await group.hover();
+  await expect.poll(() => getComputedStyle(group.element()).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
+  await userEvent.tab();
+  // Inset by the hairline, so the ring replaces the edge rather than haloing it.
+  expect(parseFloat(getComputedStyle(group.element()).outlineOffset)).toBeLessThan(0);
+
+  const off = screen.getByTestId('off-group').element();
+  expect(getComputedStyle(off).opacity).toBe('1');
+  expect(getComputedStyle(off).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
 });
 
 test('public prop types expose size on InputGroup only and no className on styled parts', () => {

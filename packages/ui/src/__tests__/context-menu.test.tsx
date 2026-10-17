@@ -9,6 +9,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
+import { resolved } from './menu-arrow';
 
 function MenuFixture({ onActivate = () => {} }: { onActivate?: () => void }) {
   return <ContextMenu.Root>
@@ -104,7 +105,7 @@ test('arrows move the highlight, typeahead matches, Enter activates, and Escape 
   await expect.element(page.getByRole('menu', { name: 'Row actions' })).not.toBeInTheDocument();
 });
 
-test('documented state drives the paint: selection glyphs, disabled dimming, and an open submenu', async () => {
+test('documented state drives the paint: selection glyphs, the disabled ink, and an open submenu', async () => {
   await render(<MenuFixture />);
   await openAt();
   const checkbox = page.getByRole('menuitemcheckbox', { name: 'Pinned' });
@@ -121,7 +122,7 @@ test('documented state drives the paint: selection glyphs, disabled dimming, and
   await expect.element(page.getByTestId('dot')).not.toBeInTheDocument();
   const disabled = page.getByRole('menuitem', { name: 'Delete' }).element();
   expect(disabled).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(disabled).opacity)).toBeLessThan(parseFloat(getComputedStyle(checkbox.element()).opacity));
+  expect(getComputedStyle(disabled).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
   expect(getComputedStyle(page.getByRole('menuitem', { name: 'Help' }).element()).textDecorationLine).toBe('none');
 
   const more = page.getByRole('menuitem', { name: 'More' });
@@ -163,6 +164,8 @@ test('an item paints exactly as a Dropdown Menu item does', async () => {
     'alignItems',
     'gap',
     'borderRadius',
+    'display',
+    'minHeight',
     'paddingBlockStart',
     'paddingInlineStart',
     'fontSize',

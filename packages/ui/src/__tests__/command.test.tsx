@@ -19,6 +19,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
+import { resolved } from './menu-arrow';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
@@ -238,6 +239,70 @@ test('an inline root renders the list in place, with no popup', async () => {
   await expect.poll(() => activated).toBe('New file');
   // The inline arrangement is an action palette, so activation leaves the query alone.
   expect(input.value).toBe('new');
+});
+
+test('items are 32px rows with the small radius in the popup\'s 4px inset, an icon sharing the label\'s row', async () => {
+  await render(
+    <Command.Root items={[{ label: 'File', items: ['New file'] }]} defaultOpen>
+      <Command.InputGroup>
+        <Command.Input aria-label="Actions" />
+      </Command.InputGroup>
+      <Command.Portal>
+        <Command.Positioner>
+          <Command.Popup data-testid="popup">
+            <Command.List data-testid="list">
+              {(group: { label: string; items: string[] }) => (
+                <Command.Group key={group.label} items={group.items}>
+                  <Command.GroupLabel data-testid="group-label">{group.label}</Command.GroupLabel>
+                  <Command.Collection>
+                    {(action: string) => (
+                      <Command.Item key={action} value={action} data-testid="item">
+                        <svg data-testid="icon" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /></svg>
+                        <span data-testid="label">{action}</span>
+                      </Command.Item>
+                    )}
+                  </Command.Collection>
+                </Command.Group>
+              )}
+            </Command.List>
+          </Command.Popup>
+        </Command.Positioner>
+      </Command.Portal>
+    </Command.Root>,
+  );
+  await expect.poll(() => document.querySelector('[data-testid="item"]')).not.toBeNull();
+  const inset = resolved('padding-top', 'var(--ult-space-2)');
+  expect(getComputedStyle(document.querySelector('[data-testid="popup"]')!).paddingLeft).toBe(inset);
+  expect(getComputedStyle(document.querySelector('[data-testid="list"]')!).paddingTop).toBe(inset);
+
+  const item = document.querySelector('[data-testid="item"]')!;
+  expect(`${item.getBoundingClientRect().height}px`).toBe(resolved('height', 'var(--ult-space-9)'));
+  expect(getComputedStyle(item).borderTopLeftRadius).toBe(resolved('border-top-left-radius', 'var(--ult-radius-sm)'));
+  const icon = document.querySelector('[data-testid="icon"]')!.getBoundingClientRect();
+  const label = document.querySelector('[data-testid="label"]')!.getBoundingClientRect();
+  expect(icon.right).toBeLessThan(label.left);
+  expect(Math.abs(icon.top + icon.height / 2 - label.top - label.height / 2)).toBeLessThan(1);
+  expect(getComputedStyle(document.querySelector('[data-testid="group-label"]')!).textTransform).toBe('uppercase');
+});
+
+test('the input group is Input Group\'s field, with the disabled ink instead of dimming', async () => {
+  const screen = await render(
+    <>
+      <CommandFixture name="Command" />
+      <Command.Root items={ACTIONS} disabled>
+        <Command.InputGroup data-testid="off-group">
+          <Command.Input aria-label="Off" />
+        </Command.InputGroup>
+      </Command.Root>
+    </>,
+  );
+  const group = screen.getByTestId('Command-group');
+  expect(getComputedStyle(group.element()).fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
+  await group.hover();
+  await expect.poll(() => getComputedStyle(group.element()).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
+  const off = screen.getByTestId('off-group').element();
+  expect(getComputedStyle(off).opacity).toBe('1');
+  expect(getComputedStyle(off).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
 });
 
 test('the list scrolls and the popup tracks the anchor width', async () => {
