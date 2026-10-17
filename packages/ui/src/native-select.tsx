@@ -46,12 +46,14 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
     minWidth: 0,
+    /** Chromium fades a disabled `<select>` itself; the muted fill and ink stand in for that. */
+    opacity: 1,
     outline: {
       default: 'none',
       ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
       ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
     },
-    outlineOffset: `-${border.hairline}`,
+    outlineOffset: `calc(-1 * ${border.hairline})`,
     paddingInlineEnd: chevronRoom,
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, border-color',

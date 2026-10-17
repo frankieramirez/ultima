@@ -97,11 +97,28 @@ function declares(element: Element, property: string): string[] {
     .map((rule) => rule.style.getPropertyValue(property));
 }
 
+/** Splits a selector list on its top-level commas, leaving those inside `:not()` or `:is()` alone. */
+function selectorList(selectorText: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let index = 0; index < selectorText.length; index += 1) {
+    const char = selectorText[index];
+    if (char === '(') depth += 1;
+    else if (char === ')') depth -= 1;
+    else if (char === ',' && depth === 0) {
+      parts.push(selectorText.slice(start, index));
+      start = index + 1;
+    }
+  }
+  return [...parts, selectorText.slice(start)];
+}
+
 function declaresWhen(element: Element, property: string, ...attributes: string[]): string[] {
   const guard = attributes.map((attribute) => `[${attribute}]`).join('');
   const withoutGuard = (selector: string) => selector.replace(guard, '').trim();
   const guardedSelectorMatches = (rule: CSSStyleRule) =>
-    rule.selectorText.includes(guard) && rule.selectorText.split(',').some((part) => element.matches(withoutGuard(part)));
+    rule.selectorText.includes(guard) && selectorList(rule.selectorText).some((part) => element.matches(withoutGuard(part)));
   return styleRules()
     .filter((rule) => guardedSelectorMatches(rule) && rule.style.getPropertyValue(property) !== '')
     .map((rule) => rule.style.getPropertyValue(property));
