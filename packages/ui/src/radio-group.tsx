@@ -37,12 +37,9 @@ const styles = stylex.create({
       default: color['--ult-color-border-strong'],
       ':is([data-disabled]):not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
-      ':is([data-checked]):not([aria-invalid="true"], [data-invalid], [data-disabled], :active)': color['--ult-color-accent'],
-      ':is([data-checked]):active:not([aria-invalid="true"], [data-invalid], [data-disabled])': color['--ult-color-accent-active'],
+      ':is([data-checked]):not([aria-invalid="true"], [data-invalid], [data-disabled])': 'transparent',
       [HOVER]: {
         ':hover:not([data-checked], [aria-invalid="true"], [data-invalid], [data-disabled])': color['--ult-color-border-hover'],
-        ':is([data-checked]):hover:not([aria-invalid="true"], [data-invalid], [data-disabled], :active)':
-          color['--ult-color-accent-hover'],
       },
     },
     borderRadius: radius['--ult-radius-full'],

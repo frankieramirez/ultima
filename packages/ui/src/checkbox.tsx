@@ -10,9 +10,10 @@ import type { ComponentProps } from 'react';
 const HOVER = '@media (hover: hover)';
 
 // The box is a small field: the field fill, a 3:1 edge that darkens on hover, and the accent fill
-// once checked, stepping on hover and press. Each key names its whole state, so no two match at
-// once and none depends on StyleX's ranking. Disabled is the muted fill, edge and ink, with no
-// opacity; an invalid box keeps its danger edge through every state.
+// once checked, stepping on hover and press, with a transparent edge the fill shows through. Each
+// key names its whole state, so no two match at once and none depends on StyleX's ranking.
+// Disabled is the muted fill, edge and ink, with no opacity; an invalid box keeps its danger edge
+// through every state.
 const styles = stylex.create({
   root: {
     alignItems: 'center',
@@ -30,15 +31,10 @@ const styles = stylex.create({
       default: color['--ult-color-border-strong'],
       ':is([data-disabled]):not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
-      ':is([data-checked], [data-indeterminate]):not([aria-invalid="true"], [data-invalid], [data-disabled], :active)':
-        color['--ult-color-accent'],
-      ':is([data-checked], [data-indeterminate]):active:not([aria-invalid="true"], [data-invalid], [data-disabled])':
-        color['--ult-color-accent-active'],
+      ':is([data-checked], [data-indeterminate]):not([aria-invalid="true"], [data-invalid], [data-disabled])': 'transparent',
       [HOVER]: {
         ':hover:not([data-checked], [data-indeterminate], [aria-invalid="true"], [data-invalid], [data-disabled])':
           color['--ult-color-border-hover'],
-        ':is([data-checked], [data-indeterminate]):hover:not([aria-invalid="true"], [data-invalid], [data-disabled], :active)':
-          color['--ult-color-accent-hover'],
       },
     },
     borderRadius: radius['--ult-radius-sm'],
