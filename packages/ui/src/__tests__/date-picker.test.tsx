@@ -1,4 +1,4 @@
-import { today, getLocalTimeZone } from '@internationalized/date';
+import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date';
 import {
   DatePicker,
   type DatePickerControlProps,
@@ -10,6 +10,7 @@ import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 
 import { themeDocument, themes, violations } from './axe';
+import { resolved } from './overlay';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
@@ -240,3 +241,54 @@ for (const mode of themes) {
     expect(await violations(screen.getByTestId('Release date-content').element())).toEqual([]);
   });
 }
+
+test('the control wears the field recipe: a hover edge, the ring over the edge, and muted disabled', async () => {
+  const screen = await render(
+    <>
+      <Sample label="Live" />
+      <Sample label="Off" disabled />
+    </>,
+  );
+  const live = screen.getByTestId('Live-control').element();
+  const off = screen.getByTestId('Off-control').element();
+
+  expect(getComputedStyle(live).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-field)'));
+  await userEvent.hover(live);
+  await expect.poll(() => getComputedStyle(live).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
+  expect(getComputedStyle(live).outlineOffset).toBe(resolved('outline-offset', 'calc(-1 * 1px)'));
+
+  expect(getComputedStyle(off).opacity).toBe('1');
+  expect(getComputedStyle(off).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-surface-sunken)'));
+  expect(getComputedStyle(off).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+  await userEvent.hover(off);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  expect(getComputedStyle(off).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border)'));
+});
+
+test('field text is 14px below lg, and the trigger glyph sits on a 24px ground', async () => {
+  const screen = await render(<Sample />);
+  const control = screen.getByTestId('Release date-control').element();
+  expect(getComputedStyle(control).fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
+  const trigger = screen.getByRole('button').element();
+  expect(getComputedStyle(trigger).height).toBe(resolved('height', 'var(--ult-space-8)'));
+  expect(getComputedStyle(trigger).color).toBe(resolved('color', 'var(--ult-color-text-subtle)'));
+});
+
+test('the content enters with the shared fade and scale, and its range days meet in one band', async () => {
+  const screen = await render(
+    <Sample
+      defaultOpen
+      selectionMode="range"
+      defaultFocusedValue={new CalendarDate(2026, 10, 1)}
+      defaultValue={[new CalendarDate(2026, 10, 5), new CalendarDate(2026, 10, 8)]}
+    />,
+  );
+  const content = screen.getByTestId('Release date-content').element();
+  await expect.poll(() => content.hasAttribute('hidden')).toBe(false);
+  expect(getComputedStyle(content).animationName).not.toBe('none');
+  expect(getComputedStyle(content).animationDuration).toBe(resolved('transition-duration', 'var(--ult-motion-fast)'));
+
+  const middle = cellTriggers('[data-value="2026-10-06"]')[0]!;
+  expect(getComputedStyle(middle).borderTopLeftRadius).toBe('0px');
+  expect(getComputedStyle(middle).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-accent-subtle)'));
+});

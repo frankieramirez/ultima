@@ -11,6 +11,8 @@ import { expect, expectTypeOf, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
+import { resolved } from './overlay';
+
 import { themeDocument, themes, violations } from './axe';
 
 function Tree({
@@ -126,23 +128,41 @@ test('aria-invalid recolors the hex input border', async () => {
   expect(invalid.borderTopColor).not.toBe(valid.borderTopColor);
 });
 
-test('disabled dims the swatch and the input', async () => {
+test('disabled mutes the input and quiets the swatch edge, with no fade', async () => {
   const screen = await render(
     <>
       <Tree hexName="Enabled" swatchName="Enabled swatch" />
       <Tree disabled hexName="Disabled" swatchName="Disabled swatch" />
     </>,
   );
-  const enabledSwatch = screen.getByRole('button', { name: 'Enabled swatch' }).element();
   const disabledSwatch = screen.getByRole('button', { name: 'Disabled swatch' }).element();
   const enabledInput = screen.getByRole('textbox', { name: 'Enabled' }).element();
   const disabledInput = screen.getByRole('textbox', { name: 'Disabled' }).element();
-  expect(parseFloat(getComputedStyle(disabledSwatch).opacity)).toBeLessThan(
-    parseFloat(getComputedStyle(enabledSwatch).opacity),
-  );
-  expect(parseFloat(getComputedStyle(disabledInput).opacity)).toBeLessThan(
-    parseFloat(getComputedStyle(enabledInput).opacity),
-  );
+  expect(getComputedStyle(disabledSwatch).opacity).toBe('1');
+  expect(getComputedStyle(disabledSwatch).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border)'));
+  expect(getComputedStyle(disabledInput).opacity).toBe('1');
+  expect(getComputedStyle(disabledInput).backgroundColor).not.toBe(getComputedStyle(enabledInput).backgroundColor);
+  expect(getComputedStyle(disabledInput).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+});
+
+test('the input wears the field recipe: 14px text, a hover edge, and the ring over the edge', async () => {
+  const screen = await render(<Tree />);
+  const input = screen.getByRole('textbox', { name: 'Hex' }).element();
+  const swatch = screen.getByRole('button', { name: 'Pick color' }).element();
+  expect(getComputedStyle(input).fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
+  expect(getComputedStyle(input).outlineOffset).toBe(resolved('outline-offset', 'calc(-1 * 1px)'));
+  await userEvent.hover(input);
+  await expect.poll(() => getComputedStyle(input).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
+  await userEvent.hover(swatch);
+  await expect.poll(() => getComputedStyle(swatch).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
+});
+
+test('the picker channels are compact fields on the control corner', async () => {
+  const screen = await render(<Tree defaultOpen />);
+  const red = screen.getByRole('spinbutton', { name: 'Red' }).element();
+  expect(getComputedStyle(red).borderTopLeftRadius).toBe(resolved('border-top-left-radius', 'var(--ult-radius-md)'));
+  expect(getComputedStyle(red).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-field)'));
+  expect(getComputedStyle(red).fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
 });
 
 test('typing a valid hex commits the value, and invalid text is invalid inside a Field', async () => {

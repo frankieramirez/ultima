@@ -9,6 +9,8 @@ import {
   type InputOTPSize,
 } from '@ultima/ui';
 
+import { resolved } from './overlay';
+
 const LENGTH = 4;
 
 function slots(length = LENGTH) {
@@ -164,7 +166,7 @@ test('onValueComplete fires when the value completes', async () => {
   expect(completed).toBe('12');
 });
 
-test('disabled dims the slots', async () => {
+test('disabled takes the muted fill and ink, not opacity', async () => {
   const screen = await render(
     <>
       <label htmlFor="enabled-code">Enabled</label>
@@ -180,9 +182,24 @@ test('disabled dims the slots', async () => {
   const enabled = screen.getByRole('textbox', { name: 'Enabled' }).element();
   const disabled = screen.getByRole('textbox', { name: 'Disabled' }).element();
   expect(disabled).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(disabled).opacity)).toBeLessThan(
-    parseFloat(getComputedStyle(enabled).opacity),
+  expect(getComputedStyle(disabled).opacity).toBe('1');
+  expect(getComputedStyle(disabled).backgroundColor).not.toBe(getComputedStyle(enabled).backgroundColor);
+  expect(getComputedStyle(disabled).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+});
+
+test('a slot darkens its edge on hover, and its focus outline lies over the edge', async () => {
+  const screen = await render(
+    <>
+      <label htmlFor="hover-code">Code</label>
+      <InputOTP.Root id="hover-code" length={1}>
+        <InputOTP.Input />
+      </InputOTP.Root>
+    </>,
   );
+  const slot = screen.getByRole('textbox', { name: 'Code' }).element();
+  expect(getComputedStyle(slot).outlineOffset).toBe(resolved('outline-offset', 'calc(-1 * 1px)'));
+  await userEvent.hover(slot);
+  await expect.poll(() => getComputedStyle(slot).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
 });
 
 test('an invalid Field recolors the slot border', async () => {

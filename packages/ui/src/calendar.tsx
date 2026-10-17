@@ -15,6 +15,19 @@ import { border, color, easing, font, motion, radius, space, text } from '@ultim
 import type { PlainProps, StyleProp } from '@ultima/ui/lib/component';
 import { createContext, use, useId, type ReactNode } from 'react';
 
+const HOVER = '@media (hover: hover)';
+const COARSE = '@media (pointer: coarse)';
+
+// The grid's day states, as selector keys. `ENDS` carries the accent fill: the single selection or
+// either end of a range. `BAND` is a day between the ends, including a range previewed under the
+// pointer. A day squares its leading corners when the band continues before it (`OPEN_START`), and
+// its trailing corners when it continues after (`OPEN_END`), and a week's first and last days keep
+// their outer pair where the band wraps.
+const ENDS = ':is([data-selected], [data-range-start], [data-range-end])';
+const BAND = ':is([data-in-range], [data-in-hover-range]):not([data-selected], [data-range-start], [data-range-end])';
+const OPEN_START = ':is([data-in-range]:not([data-range-start]), [data-in-hover-range]:not([data-hover-range-start])):not(td:first-child > *)';
+const OPEN_END = ':is([data-in-range]:not([data-range-end]), [data-in-hover-range]:not([data-hover-range-end])):not(td:last-child > *)';
+
 const styles = stylex.create({
   root: {
     backgroundColor: color['--ult-color-surface-raised'],
@@ -48,39 +61,45 @@ const styles = stylex.create({
     gap: space['--ult-space-2'],
     justifyContent: 'space-between',
     margin: 0,
-    marginBlockEnd: space['--ult-space-3'],
+    marginBlockEnd: space['--ult-space-4'],
   },
   trigger: {
     alignItems: 'center',
     appearance: 'none',
-    backgroundColor: { default: 'transparent', ':hover:not([data-disabled])': color['--ult-color-surface-hover'] },
+    backgroundColor: {
+      default: 'transparent',
+      [HOVER]: { ':hover:not(:disabled, [data-disabled])': color['--ult-color-surface-hover'] },
+    },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'none',
     borderWidth: 0,
     boxSizing: 'border-box',
-    color: color['--ult-color-text'],
-    cursor: { default: 'pointer', ':is([data-disabled])': 'default' },
-    display: 'inline-flex',
+    color: { default: color['--ult-color-text'], ':is(:disabled, [data-disabled])': color['--ult-color-text-disabled'] },
+    cursor: { default: 'pointer', ':is(:disabled, [data-disabled])': 'default' },
+    display: { default: 'inline-flex', ':is([hidden])': 'none' },
     flexShrink: 0,
     fontFamily: 'inherit',
     fontSize: 'inherit',
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
     padding: 0,
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'background-color, color',
+    transitionTimingFunction: easing.standard,
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
     },
   },
   navTrigger: {
-    blockSize: space['--ult-space-8'],
-    inlineSize: space['--ult-space-8'],
+    blockSize: space['--ult-space-9'],
+    fontSize: text['--ult-text-5'],
+    inlineSize: space['--ult-space-9'],
   },
   viewTrigger: {
-    paddingBlock: space['--ult-space-2'],
-    paddingInline: space['--ult-space-3'],
+    blockSize: space['--ult-space-9'],
+    paddingInline: space['--ult-space-4'],
   },
   rangeText: {
     color: color['--ult-color-text'],
@@ -109,53 +128,65 @@ const styles = stylex.create({
     textAlign: 'center',
   },
   dayTable: {
-    inlineSize: `calc(7 * (${space['--ult-space-9']} + 2 * ${space['--ult-space-1']}))`,
+    inlineSize: `calc(7 * ${space['--ult-space-9']})`,
     maxInlineSize: '100%',
     tableLayout: 'fixed',
   },
+  // No inline padding, so the days of a range meet and their fill reads as one band.
   tableCell: {
     margin: 0,
-    padding: space['--ult-space-1'],
+    paddingBlock: space['--ult-space-1'],
+    paddingInline: 0,
     textAlign: 'center',
   },
+  // A day is a 32px square on a 6px corner. Inside a range, a day squares the corners that face its
+  // neighbours: the start keeps its leading pair, the end its trailing pair. The selected ends take
+  // the accent fill and the days between take the subtle one, which also previews a range under the
+  // pointer. Hover moves one step on whichever ground the day stands on, on devices that hover.
+  // Today is ringed with the 3:1 edge. A disabled or unavailable day takes the disabled ink, never a fade.
   cellTrigger: {
     alignItems: 'center',
     appearance: 'none',
     backgroundColor: {
       default: 'transparent',
-      ':is([data-in-range]):not([data-range-start]):not([data-range-end]):not([data-selected])':
-        color['--ult-color-accent-subtle'],
-      ':is([data-selected])': color['--ult-color-accent'],
-      ':is([data-range-start])': color['--ult-color-accent'],
-      ':is([data-range-end])': color['--ult-color-accent'],
-      ':hover:not([data-selected]):not([data-range-start]):not([data-range-end]):not([data-in-range]):not([data-disabled]):not([data-unavailable])':
-        color['--ult-color-surface-hover'],
+      [BAND]: color['--ult-color-accent-subtle'],
+      [ENDS]: color['--ult-color-accent'],
+      [HOVER]: {
+        ':hover:not([data-disabled], [data-in-range], [data-in-hover-range], [data-selected], [data-range-start], [data-range-end])':
+          color['--ult-color-surface-hover'],
+        ':is([data-in-range], [data-in-hover-range]):hover:not([data-disabled], [data-selected], [data-range-start], [data-range-end])':
+          color['--ult-color-accent-subtle-hover'],
+        ':is([data-selected], [data-range-start], [data-range-end]):hover:not([data-disabled])': color['--ult-color-accent-hover'],
+      },
     },
     blockSize: space['--ult-space-9'],
-    borderRadius: radius['--ult-radius-md'],
+    borderEndEndRadius: { default: radius['--ult-radius-md'], [OPEN_END]: 0 },
+    borderEndStartRadius: { default: radius['--ult-radius-md'], [OPEN_START]: 0 },
+    borderStartEndRadius: { default: radius['--ult-radius-md'], [OPEN_END]: 0 },
+    borderStartStartRadius: { default: radius['--ult-radius-md'], [OPEN_START]: 0 },
     borderStyle: 'none',
     borderWidth: 0,
+    boxShadow: {
+      default: null,
+      ':is([data-today]):not([data-in-range], [data-in-hover-range], [data-selected], [data-range-start], [data-range-end])':
+        `inset 0 0 0 ${border.hairline} ${color['--ult-color-border-strong']}`,
+    },
     boxSizing: 'border-box',
     color: {
       default: color['--ult-color-text'],
-      ':is([data-outside-range])': color['--ult-color-text-subtle'],
-      ':is([data-in-range]):not([data-range-start]):not([data-range-end]):not([data-selected])':
-        color['--ult-color-accent-text'],
-      ':is([data-today]):not([data-selected]):not([data-range-start]):not([data-range-end])':
-        color['--ult-color-accent-text'],
-      ':is([data-selected])': color['--ult-color-accent-contrast'],
-      ':is([data-range-start])': color['--ult-color-accent-contrast'],
-      ':is([data-range-end])': color['--ult-color-accent-contrast'],
+      ':is([data-outside-range]):not([data-disabled], [data-in-range], [data-in-hover-range], [data-selected], [data-range-start], [data-range-end])':
+        color['--ult-color-text-subtle'],
+      ':is([data-disabled]):not([data-in-range], [data-in-hover-range], [data-selected], [data-range-start], [data-range-end])':
+        color['--ult-color-text-disabled'],
+      [BAND]: color['--ult-color-accent-text'],
+      [ENDS]: color['--ult-color-accent-contrast'],
     },
-    cursor: {
-      default: 'pointer',
-      ':is([data-disabled])': 'default',
-      ':is([data-unavailable])': 'default',
-    },
+    cursor: { default: 'pointer', ':is([data-disabled])': 'default' },
     display: 'inline-flex',
     flexShrink: 0,
     fontFamily: font['--ult-font-sans'],
     fontSize: text['--ult-text-4'],
+    fontVariantNumeric: 'tabular-nums',
     fontWeight: {
       default: font['--ult-font-weight-regular'],
       ':is([data-today])': font['--ult-font-weight-semibold'],
@@ -164,42 +195,48 @@ const styles = stylex.create({
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: {
-      default: 1,
-      ':is([data-disabled])': 0.5,
-      ':is([data-unavailable])': 0.5,
-    },
     padding: 0,
+    position: 'relative',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, color',
     transitionTimingFunction: easing.standard,
+    zIndex: { default: null, ':focus-visible': 1 },
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
     },
   },
+  // Input's field recipe at a compact 32px, keeping the native menu and its arrow.
   select: {
-    backgroundColor: color['--ult-color-surface-sunken'],
-    borderColor: color['--ult-color-border-strong'],
+    backgroundColor: { default: color['--ult-color-field'], ':disabled': color['--ult-color-surface-sunken'] },
+    blockSize: space['--ult-space-9'],
+    borderColor: {
+      default: color['--ult-color-border-strong'],
+      ':disabled': color['--ult-color-border'],
+      [HOVER]: { ':hover:not(:disabled)': color['--ult-color-border-hover'] },
+    },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
-    color: color['--ult-color-text'],
-    cursor: { default: 'pointer', ':is([data-disabled])': 'default' },
+    color: { default: color['--ult-color-text'], ':disabled': color['--ult-color-text-disabled'] },
+    cursor: { default: 'pointer', ':disabled': 'default' },
     fontFamily: font['--ult-font-sans'],
-    fontSize: text['--ult-text-3'],
+    fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
-    paddingBlock: space['--ult-space-1'],
-    paddingInline: space['--ult-space-2'],
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
+    outline: {
+      default: 'none',
+      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
+    outlineOffset: `calc(-1 * ${border.hairline})`,
+    paddingInline: space['--ult-space-3'],
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'border-color',
+    transitionTimingFunction: easing.standard,
   },
 });
+
 
 type CalendarApi = DatePickerApi<PropTypes>;
 
