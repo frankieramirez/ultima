@@ -13,6 +13,7 @@ const CONVENTIONS = [
   'Tokens in component code',
   "What a component may assume about the consumer's CSS",
   'Focus ring',
+  'Icons from your own set',
 ];
 
 const UI_ALIAS = '@/components/ui';

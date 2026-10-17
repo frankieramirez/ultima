@@ -90,31 +90,31 @@ export const blocks: readonly BlockEntry[] = [
       {
         "id": "input-group",
         "title": "Input Group",
-        "number": "028",
+        "number": "029",
         "kind": "component"
       },
       {
         "id": "separator",
         "title": "Separator",
-        "number": "041",
+        "number": "042",
         "kind": "component"
       },
       {
         "id": "sidebar",
         "title": "Sidebar",
-        "number": "042",
+        "number": "043",
         "kind": "component"
       },
       {
         "id": "tabs",
         "title": "Tabs",
-        "number": "049",
+        "number": "050",
         "kind": "component"
       },
       {
         "id": "toggle-group",
         "title": "Toggle Group",
-        "number": "055",
+        "number": "056",
         "kind": "component"
       },
       {
@@ -189,49 +189,49 @@ export const blocks: readonly BlockEntry[] = [
       {
         "id": "input-group",
         "title": "Input Group",
-        "number": "028",
+        "number": "029",
         "kind": "component"
       },
       {
         "id": "meter",
         "title": "Meter",
-        "number": "031",
+        "number": "032",
         "kind": "component"
       },
       {
         "id": "select",
         "title": "Select",
-        "number": "040",
+        "number": "041",
         "kind": "component"
       },
       {
         "id": "separator",
         "title": "Separator",
-        "number": "041",
+        "number": "042",
         "kind": "component"
       },
       {
         "id": "sidebar",
         "title": "Sidebar",
-        "number": "042",
+        "number": "043",
         "kind": "component"
       },
       {
         "id": "stat",
         "title": "Stat",
-        "number": "046",
+        "number": "047",
         "kind": "component"
       },
       {
         "id": "table",
         "title": "Table",
-        "number": "048",
+        "number": "049",
         "kind": "component"
       },
       {
         "id": "toggle-group",
         "title": "Toggle Group",
-        "number": "055",
+        "number": "056",
         "kind": "component"
       },
       {
@@ -290,37 +290,37 @@ export const blocks: readonly BlockEntry[] = [
       {
         "id": "native-select",
         "title": "Native Select",
-        "number": "032",
+        "number": "033",
         "kind": "component"
       },
       {
         "id": "radio-group",
         "title": "Radio Group",
-        "number": "037",
+        "number": "038",
         "kind": "component"
       },
       {
         "id": "separator",
         "title": "Separator",
-        "number": "041",
+        "number": "042",
         "kind": "component"
       },
       {
         "id": "sidebar",
         "title": "Sidebar",
-        "number": "042",
+        "number": "043",
         "kind": "component"
       },
       {
         "id": "switch",
         "title": "Switch",
-        "number": "047",
+        "number": "048",
         "kind": "component"
       },
       {
         "id": "toast",
         "title": "Toast",
-        "number": "053",
+        "number": "054",
         "kind": "component"
       }
     ],
@@ -367,13 +367,13 @@ export const blocks: readonly BlockEntry[] = [
       {
         "id": "input",
         "title": "Input",
-        "number": "027",
+        "number": "028",
         "kind": "component"
       },
       {
         "id": "separator",
         "title": "Separator",
-        "number": "041",
+        "number": "042",
         "kind": "component"
       }
     ],

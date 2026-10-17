@@ -22,7 +22,7 @@ npx shadcn@4.21.4 add @ultima/alert
 
 ## Icon
 
-`Icon` is the caller's glyph, omitted when unused, and `aria-hidden`. Ultima ships no icon dependency, and any set works. This demo uses [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency. An icon-only Alert fails the visible-text rule.
+`Icon` is the caller's glyph, omitted when unused, and `aria-hidden`. Ultima ships no icon dependency, and any set works: put the set's icon in an [Icon](/components/icon) inside it, which sizes it to the slot. This demo uses [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency. An icon-only Alert fails the visible-text rule.
 
 `Alert.Title` renders an `h3` by default; use `render` when the page hierarchy needs another heading level.
 

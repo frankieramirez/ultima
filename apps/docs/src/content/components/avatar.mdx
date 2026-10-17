@@ -20,12 +20,12 @@ npx shadcn@4.21.4 add @ultima/avatar
 
 `Fallback` comes before `Image` in DOM order. Both sit absolutely over the same box, so the loaded image paints on top, and the not-yet-loaded image is hidden with `visibility` — never `display`, which is what keeps a kept-mounted lazy image loading at all. The stacking CSS ships unconditionally, so flipping `keepMounted` cannot break the component.
 
-`Fallback` is a layout slot you fill: initials, a glyph, anything. Ultima ships no default content in it and no `name` prop to derive initials from. A caller who wants a person icon renders one into the same slot — Ultima ships no icon dependency, and any set works:
+`Fallback` is a layout slot you fill: initials, a glyph, anything. Ultima ships no default content in it and no `name` prop to derive initials from. A caller who wants a person icon renders one into the same slot — Ultima ships no icon dependency, and any set works in an [Icon](/components/icon), which sizes it and hides it from assistive technology:
 
 ```tsx
 <Avatar.Root>
   <Avatar.Fallback>
-    <UserIcon aria-hidden />
+    <Icon><UserIcon /></Icon>
   </Avatar.Fallback>
 </Avatar.Root>
 ```

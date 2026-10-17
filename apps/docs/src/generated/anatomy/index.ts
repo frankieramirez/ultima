@@ -307,6 +307,10 @@ export {
   HoverCard,
 } from './hover-card';
 export {
+  Icon,
+  type IconProps,
+} from './icon';
+export {
   Input,
   type InputProps,
   type InputSize,

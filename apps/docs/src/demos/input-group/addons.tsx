@@ -1,7 +1,7 @@
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
-import { Button, InputGroup } from '@ultima/ui';
+import { Button, Icon, InputGroup } from '@ultima/ui';
 
 const styles = stylex.create({
   stack: {
@@ -16,7 +16,7 @@ export default function Addons() {
     <div {...stylex.props(styles.stack)}>
       <InputGroup.Root>
         <InputGroup.Addon>
-          <MagnifyingGlassIcon />
+          <Icon><MagnifyingGlassIcon /></Icon>
         </InputGroup.Addon>
         <InputGroup.Input aria-label="Search components" placeholder="Search components" />
         <InputGroup.Addon align="end">⌘K</InputGroup.Addon>

@@ -44,14 +44,14 @@ test('the directory sections the catalogue by group, alphabetical within each, n
     '§ 03 Data display 9',
     '§ 04 Navigation 5',
     '§ 05 Feedback 5',
-    '§ 06 Layout 6',
+    '§ 06 Layout 7',
   ]);
   for (const { id, label } of GROUPS) {
     const section = main.getByRole('region', { name: `${label} ${componentsInGroup(id).length}` });
     expect(entries(section.element())).toEqual(componentsInGroup(id).map((entry) => `/components/${entry.item}`));
   }
   await expect.element(main.getByRole('link', { name: '008 Button', exact: true })).toBeVisible();
-  await expect.element(main.getByRole('link', { name: '048 Table', exact: true })).toBeVisible();
+  await expect.element(main.getByRole('link', { name: '049 Table', exact: true })).toBeVisible();
   await expect
     .element(main.getByRole('status'))
     .toHaveTextContent(`${components.length} components · A–Z`);

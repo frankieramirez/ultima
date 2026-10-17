@@ -1,6 +1,6 @@
 import { StarIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
-import { Toggle } from '@ultima/ui';
+import { Icon, Toggle } from '@ultima/ui';
 
 const styles = stylex.create({
   iconOnly: {
@@ -12,7 +12,7 @@ const styles = stylex.create({
 export default function IconOnlyToggle() {
   return (
     <Toggle aria-label="Favorite" style={styles.iconOnly}>
-      <StarIcon />
+      <Icon><StarIcon /></Icon>
     </Toggle>
   );
 }

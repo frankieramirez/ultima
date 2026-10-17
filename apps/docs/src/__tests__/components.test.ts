@@ -25,7 +25,7 @@ test('the six groups hold the counts the Components directory frame shows', () =
     'Data display': 9,
     Navigation: 5,
     Feedback: 5,
-    Layout: 6,
+    Layout: 7,
   });
 });
 
@@ -36,12 +36,12 @@ test('catalogue numbers follow id order, padded to three digits', () => {
     Button: '008',
     Card: '011',
     'Date Picker': '019',
-    Input: '027',
-    Meter: '031',
-    Sidebar: '042',
-    Stat: '046',
-    Table: '048',
-    Tabs: '049',
+    Input: '028',
+    Meter: '032',
+    Sidebar: '043',
+    Stat: '047',
+    Table: '049',
+    Tabs: '050',
   });
 });
 

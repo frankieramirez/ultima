@@ -49,13 +49,13 @@ Unavailable actions stay visible in a muted fill and ink, the same for every var
 
 ## With an icon
 
-Ultima ships no icon dependency, and any set works. These demos use [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency.
+Ultima ships no icon dependency, and any set works. Wrap each icon in an [Icon](/components/icon), which sizes it to the label whatever size the set defaults to. These demos use [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency.
 
 An icon before the label needs nothing but the icon: the button's name still comes from its text. A button holding an icon gives up one space step of inline padding, so the icon doesn't sit further from the edge than a label would.
 
 <Demo component={LeadingIcon} source={leadingIconSource} />
 
-There is no `IconButton` and no `iconOnly` prop. An icon-only button is a recipe: `aria-label` for the name, the glyph as the only child, and a `style` override setting `aspectRatio: 1` and `paddingInline: 0`, so the button is exactly as wide as it is tall at every size and the glyph sits centered in it.
+There is no `IconButton` and no `iconOnly` prop. An icon-only button is a recipe: `aria-label` for the name, the `Icon` as the only child, and a `style` override setting `aspectRatio: 1` and `paddingInline: 0`, so the button is exactly as wide as it is tall at every size and the glyph sits centered in it.
 
 <Demo component={IconOnly} source={iconOnlySource} />
 

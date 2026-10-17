@@ -1,7 +1,7 @@
 import { XIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
-import { Button, Dialog } from '@ultima/ui';
+import { Button, Dialog, Icon } from '@ultima/ui';
 
 const styles = stylex.create({
   close: {
@@ -29,7 +29,7 @@ export default function IconCloseDialog() {
               <Dialog.Close
                 render={<Button aria-label="Close dialog" variant="ghost" style={styles.close} />}
               >
-                <XIcon />
+                <Icon><XIcon /></Icon>
               </Dialog.Close>
             </header>
             <Dialog.Description>Change the details shown to other party members.</Dialog.Description>

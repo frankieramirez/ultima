@@ -1,6 +1,6 @@
 import { PlusIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
-import { Button } from '@ultima/ui';
+import { Button, Icon } from '@ultima/ui';
 
 const styles = stylex.create({
   iconOnly: {
@@ -12,7 +12,7 @@ const styles = stylex.create({
 export default function IconOnly() {
   return (
     <Button aria-label="Add item" style={styles.iconOnly}>
-      <PlusIcon />
+      <Icon><PlusIcon /></Icon>
     </Button>
   );
 }

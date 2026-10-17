@@ -1,7 +1,7 @@
 import { ArchiveIcon, LinkSimpleIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { text } from '@ultima/tokens/tokens.stylex';
-import { ContextMenu, DropdownMenu } from '@ultima/ui';
+import { ContextMenu, DropdownMenu, Icon } from '@ultima/ui';
 import { useRef } from 'react';
 
 const styles = stylex.create({
@@ -43,16 +43,16 @@ export default function ContextMenuAnatomy() {
           >
             <ContextMenu.Popup aria-label="Quarterly report" finalFocus={false}>
               <ContextMenu.Item>
-                <PencilSimpleIcon />
+                <Icon><PencilSimpleIcon /></Icon>
                 Rename
               </ContextMenu.Item>
               <ContextMenu.LinkItem href="https://base-ui.com/react/components/context-menu">
-                <LinkSimpleIcon />
+                <Icon><LinkSimpleIcon /></Icon>
                 Base UI docs
               </ContextMenu.LinkItem>
               <ContextMenu.Separator />
               <ContextMenu.Item>
-                <ArchiveIcon />
+                <Icon><ArchiveIcon /></Icon>
                 Archive
               </ContextMenu.Item>
             </ContextMenu.Popup>

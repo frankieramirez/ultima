@@ -1,0 +1,56 @@
+import { Demo } from '../../demo';
+import Basic from '../../demos/icon/basic';
+import basicSource from '../../demos/icon/basic?raw';
+import AnySet from '../../demos/icon/any-set';
+import anySetSource from '../../demos/icon/any-set?raw';
+import Named from '../../demos/icon/named';
+import namedSource from '../../demos/icon/named?raw';
+
+# Icon
+
+Sizes an icon from any set to the text around it. Ultima ships no icon set: you bring your own, and `Icon` makes it fit. It puts its props on the set's own `<svg>` and sizes it to `1em`, so a Button's icon matches its label at `sm`, `md` and `lg` whatever size the set defaults to. One function, no axes.
+
+## Install
+
+```bash
+npx shadcn@4.21.4 add @ultima/icon
+```
+
+## Usage
+
+Wrap each icon in `Icon`. The icon is the element `Icon` renders, so there is no extra wrapper and a Button still sees an icon as its direct child. These demos use [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency; Lucide, Tabler, Heroicons, Radix Icons and your own SVGs work the same way.
+
+<Demo component={Basic} source={basicSource} />
+
+## Any set
+
+Sets disagree about size. Lucide and Tabler draw a 24px box, Heroicons sets no size at all and can collapse to nothing in a flex row, and Radix Icons stays 15px at every size. A class's width and height beat the attributes a set writes on its `<svg>`, so every one of them comes out at `1em`. The weight stays the set's: to match Ultima's own 1.5 stroke, pass the set's own `strokeWidth={1.5}`.
+
+<Demo component={AnySet} source={anySetSource} />
+
+## Icon fonts
+
+`render={<DownloadIcon />}` works the same as a child. For an icon font, render your font's element and put the ligature inside: `<Icon render={<span className="material-symbols-outlined" />}>home</Icon>`. A Button trims its padding for that too, because `Icon` marks what it renders with `data-ult-icon`.
+
+## Size and meaning
+
+`Icon` follows the font size of whatever holds it. To make one larger, set `fontSize` through the `style` slot. Color comes from the text too, for any set that draws in `currentColor`.
+
+An icon is decorative by default. Give it an `aria-label` when it means something on its own, such as a status beside a file name, and it becomes an image with that name.
+
+<Demo component={Named} source={namedSource} />
+
+## Props
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | One element child is the icon `Icon` renders. Any other children render inside the default `span`. |
+| `aria-label` | `string` | — | Makes the icon `role="img"` with this name instead of `aria-hidden`. `aria-labelledby` does the same. |
+| `style` | `StyleXStyles` | — | The style slot, merged last. Set `fontSize` here for a larger icon. There is no `className`. |
+| `render` | `ReactElement \| function` | — | The element to render, the same as passing it as the only child. |
+
+## Accessibility
+
+- **Name.** Decorative by default: `aria-hidden="true"`, because an icon beside text or inside a named control adds nothing to the name. A Button that holds only an icon takes its name from its own `aria-label`. With `aria-label` or `aria-labelledby`, `Icon` renders `role="img"` and drops `aria-hidden`.
+- **Focus and keyboard.** None. `Icon` takes no focus and renders no focus ring.
+- **Color.** An icon never carries meaning by color alone. A status icon pairs its hue with its name and with words nearby.
