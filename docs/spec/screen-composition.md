@@ -2,7 +2,7 @@
 
 Decided on [Decide the complete-screen composition guide and recipe discovery](https://github.com/frankieramirez/ultima/issues/728), part of [Map: Make Ultima a plug-and-play StyleX design system](https://github.com/frankieramirez/ultima/issues/725).
 
-Status: accepted for implementation. This outline specifies future guidance and checks. The public routes, new example sources and verification registrations named below are proposed. This decision has produced no rendered consumer evidence.
+Status: implemented on [#761](https://github.com/frankieramirez/ultima/issues/761), [#762](https://github.com/frankieramirez/ultima/issues/762), [#763](https://github.com/frankieramirez/ultima/issues/763) and [#764](https://github.com/frankieramirez/ultima/issues/764), with the selectable list lesson added on [#834](https://github.com/frankieramirez/ultima/issues/834). The `/build-a-screen` and `/recipes` routes, the example sources under `apps/docs/src/examples/complete-screen/`, the guide inventory and the `screen-composition` feature with its `recipe-index` and `copy-bundles` scenarios exist. The `consumer-copy-*` checks compile and exercise every copy bundle in installed Vite, Next root and Next `src` projects.
 
 ## Public reading path
 

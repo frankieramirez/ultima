@@ -2,7 +2,7 @@
 
 Decision: [Decide the browser and integration support promise](https://github.com/frankieramirez/ultima/issues/618), under [Production and portfolio readiness](https://github.com/frankieramirez/ultima/issues/613).
 
-Status: accepted plan, pending implementation and evidence. This document does not certify current browser support. The React and element Vitest configurations currently select Chromium. The existing consumer smoke builds applications; it does not establish rendered cross-engine behavior or hydration. Publish the support promise only after the gates below pass.
+Status: implemented. The 54-cell matrix runs on [#770](https://github.com/frankieramirez/ultima/issues/770) to [#772](https://github.com/frankieramirez/ultima/issues/772) and passed in Chromium, Firefox and WebKit on `3a6fa37` ([evidence](../evidence/first-screen/README.md)), and `/support` publishes the evidence manifest ([#773](https://github.com/frankieramirez/ultima/issues/773)). The supported combinations are only those that passed. The gaps listed below remain open.
 
 ## Support matrix
 
