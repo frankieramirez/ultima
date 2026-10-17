@@ -5,6 +5,7 @@ import * as stylex from '@stylexjs/stylex';
 import { border, color, easing, font, motion, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import { Popover, type PopoverPopupProps, type PopoverPortalProps, type PopoverPositionerProps } from '@ultima/ui/popover';
+import { Slider } from '@ultima/ui/slider';
 import {
   createContext,
   use,
@@ -126,21 +127,19 @@ const styles = stylex.create({
     transform: 'translate(-50%, -50%)',
     width: space['--ult-space-6'],
   },
-  hue: {
-    appearance: 'none',
-    accentColor: color['--ult-color-surface-raised'],
-    borderRadius: radius['--ult-radius-full'],
-    boxSizing: 'border-box',
-    display: 'block',
-    height: space['--ult-space-3'],
-    margin: 0,
-    width: '100%',
+  // The hue is Slider's control, so its thumb is Slider's: the paper inside the 3:1 edge at 16px, a
+  // hover edge one step darker, the ring 2px outside it, and the disabled colours. The thumb is taller
+  // than the strip, so its edge always crosses the popup surface the gate checks it against, whatever
+  // hue sits under its middle. Only the track changes: it paints the hue circle, a 6px strip so the
+  // hues read, with the area's quiet edge so its light hues don't run into the popup.
+  hueTrack: {
     backgroundImage:
       'linear-gradient(to right, hsl(0 100% 50%), hsl(60 100% 50%), hsl(120 100% 50%), hsl(180 100% 50%), hsl(240 100% 50%), hsl(300 100% 50%), hsl(360 100% 50%))',
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
-    },
+    borderColor: color['--ult-color-border'],
+    borderStyle: 'solid',
+    borderWidth: border.fine,
+    boxSizing: 'border-box',
+    height: space['--ult-space-3'],
   },
   channels: {
     display: 'flex',
@@ -455,17 +454,20 @@ function Picker({ style, ...props }: ColorFieldPickerProps) {
       >
         <span aria-hidden="true" {...stylex.props(styles.areaThumb, paints.thumb(hsv.s * 100, (1 - hsv.v) * 100))} />
       </div>
-      <input
-        aria-label="Hue"
+      <Slider.Root
         disabled={disabled}
         max={360}
         min={0}
         step={1}
-        type="range"
         value={Math.round(hue)}
-        onChange={(event) => commitHsv({ h: Number(event.currentTarget.value), s: hsv.s, v: hsv.v })}
-        {...stylex.props(styles.hue)}
-      />
+        onValueChange={(next) => commitHsv({ h: next as number, s: hsv.s, v: hsv.v })}
+      >
+        <Slider.Control>
+          <Slider.Track style={styles.hueTrack}>
+            <Slider.Thumb aria-label="Hue" />
+          </Slider.Track>
+        </Slider.Control>
+      </Slider.Root>
       <div {...stylex.props(styles.channels)}>
         <label {...stylex.props(styles.channelRow)}>
           <span {...stylex.props(styles.label)}>HEX</span>

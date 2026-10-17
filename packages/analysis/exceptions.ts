@@ -77,7 +77,7 @@ export default [
     id: 'color-field-hue-track',
     rule: 'ULT-TOKEN-001',
     path: 'packages/ui/src/color-field.tsx',
-    symbol: 'styles.hue',
+    symbol: 'styles.hueTrack',
     target: 'backgroundImage',
     count: 1,
     reason: "The hue slider's track depicts the hue circle itself, which no semantic token can.",
