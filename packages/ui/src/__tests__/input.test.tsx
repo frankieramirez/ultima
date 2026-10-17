@@ -146,3 +146,31 @@ test('the placeholder is drawn at full opacity', async () => {
   const input = screen.getByRole('textbox', { name: 'Email' }).element();
   expect(getComputedStyle(input, '::placeholder').opacity).toBe('1');
 });
+
+test('an invalid field keeps its danger edge while disabled or read-only', async () => {
+  const screen = await render(
+    <>
+      <Input aria-label="Invalid" aria-invalid="true" />
+      <Input aria-label="Invalid off" aria-invalid="true" disabled />
+      <Input aria-label="Invalid read-only" aria-invalid="true" readOnly />
+    </>,
+  );
+  const edge = (name: string) => getComputedStyle(screen.getByRole('textbox', { name }).element()).borderTopColor;
+  expect(edge('Invalid off')).toBe(edge('Invalid'));
+  expect(edge('Invalid read-only')).toBe(edge('Invalid'));
+});
+
+test('an invalid field draws its focus outline in danger', async () => {
+  const screen = await render(
+    <>
+      <Input aria-label="Plain" />
+      <Input aria-label="Invalid" aria-invalid="true" />
+    </>,
+  );
+  await userEvent.tab();
+  const plain = getComputedStyle(screen.getByRole('textbox', { name: 'Plain' }).element()).outlineColor;
+  await userEvent.tab();
+  const invalid = screen.getByRole('textbox', { name: 'Invalid' }).element();
+  expect(getComputedStyle(invalid).outlineColor).not.toBe(plain);
+  expect(getComputedStyle(invalid).outlineColor).toBe(getComputedStyle(invalid).borderTopColor);
+});

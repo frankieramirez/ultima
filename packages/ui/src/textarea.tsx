@@ -18,11 +18,10 @@ const styles = stylex.create({
     backgroundColor: { default: color['--ult-color-field'], ':read-only': color['--ult-color-surface-sunken'] },
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':read-only': color['--ult-color-border'],
+      ':read-only:not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
       [HOVER]: {
-        ':hover:not(:read-only)': color['--ult-color-border-hover'],
-        ':is([aria-invalid="true"], [data-invalid]):hover': color['--ult-color-danger'],
+        ':hover:not(:read-only, [aria-invalid="true"], [data-invalid])': color['--ult-color-border-hover'],
       },
     },
     borderRadius: radius['--ult-radius-md'],
@@ -36,7 +35,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: {
       default: 'none',
-      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
       ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
     },
     outlineOffset: `-${border.hairline}`,

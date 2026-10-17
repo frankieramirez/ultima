@@ -11,19 +11,19 @@ const COARSE = '@media (pointer: coarse)';
 
 // A field is the brightest surface and its edge meets 3:1 against the page. Hover darkens the
 // edge one step on devices that hover. `:read-only` also matches a disabled input, so one key
-// gives both the sunken fill and the quiet edge, and an invalid field keeps its danger edge
-// through either. Focus lays the outline over the edge, so it reads as the field's own border.
+// gives both the sunken fill and the quiet edge. Each edge and outline key names its whole state,
+// so an invalid field keeps its danger edge through hover, focus, read-only and disabled. Focus
+// lays the outline over the edge, so it reads as the field's own border.
 const styles = stylex.create({
   root: {
     appearance: 'none',
     backgroundColor: { default: color['--ult-color-field'], ':read-only': color['--ult-color-surface-sunken'] },
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':read-only': color['--ult-color-border'],
+      ':read-only:not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
       [HOVER]: {
-        ':hover:not(:read-only)': color['--ult-color-border-hover'],
-        ':is([aria-invalid="true"], [data-invalid]):hover': color['--ult-color-danger'],
+        ':hover:not(:read-only, [aria-invalid="true"], [data-invalid])': color['--ult-color-border-hover'],
       },
     },
     borderRadius: radius['--ult-radius-md'],
@@ -37,7 +37,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: {
       default: 'none',
-      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
       ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
     },
     outlineOffset: `-${border.hairline}`,
