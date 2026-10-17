@@ -215,6 +215,90 @@ test('the saturation-brightness area is the surface a pointer drag reads', async
   expect(getComputedStyle(area).userSelect).toBe('none');
 });
 
+/** The hue slider's parts, from its named range input: Base UI nests the input inside the thumb. */
+function hueParts() {
+  const input = page.getByRole('slider', { name: 'Hue' }).element() as HTMLInputElement;
+  const thumb = input.parentElement as HTMLElement;
+  const track = thumb.parentElement as HTMLElement;
+  const control = track.parentElement as HTMLElement;
+  return { input, thumb, track, control };
+}
+
+test("the hue thumb is Slider's: 16px of paper inside the 3:1 edge, resting at shadow-sm, whose edge darkens on hover", async () => {
+  await render(<Tree defaultOpen />);
+  await expect.element(page.getByRole('slider', { name: 'Hue' })).toBeInTheDocument();
+  const { thumb } = hueParts();
+  const style = getComputedStyle(thumb);
+  expect(thumb.getBoundingClientRect().width).toBe(16);
+  expect(thumb.getBoundingClientRect().height).toBe(16);
+  expect(style.borderTopLeftRadius).toBe(resolved('border-top-left-radius', 'var(--ult-radius-full)'));
+  expect(style.backgroundColor).toBe(resolved('background-color', 'var(--ult-color-field)'));
+  expect(style.borderTopStyle).toBe('solid');
+  expect(style.borderTopWidth).toBe('1px');
+  expect(style.borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-strong)'));
+  expect(style.boxShadow).toBe(resolved('box-shadow', 'var(--ult-shadow-sm)'));
+  await userEvent.hover(thumb);
+  await expect.poll(() => getComputedStyle(thumb).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
+});
+
+test('the hue thumb stands taller than the strip, so its edge always crosses the popup surface', async () => {
+  await render(<Tree defaultOpen />);
+  await expect.element(page.getByRole('slider', { name: 'Hue' })).toBeInTheDocument();
+  const { thumb, track } = hueParts();
+  const thumbBox = thumb.getBoundingClientRect();
+  const trackBox = track.getBoundingClientRect();
+  expect(trackBox.height).toBe(6);
+  expect(thumbBox.top).toBeLessThan(trackBox.top);
+  expect(thumbBox.bottom).toBeGreaterThan(trackBox.bottom);
+  expect(getComputedStyle(track).backgroundImage).toContain('linear-gradient');
+  expect(getComputedStyle(track).borderTopStyle).toBe('solid');
+  expect(getComputedStyle(track).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border)'));
+});
+
+test('keyboard focus rings the hue thumb 2px outside its edge, inside the control, and the strip shows none', async () => {
+  await render(<Tree defaultOpen />);
+  await expect.element(page.getByRole('slider', { name: 'Hue' })).toBeInTheDocument();
+  const { input, thumb, track, control } = hueParts();
+  expect(getComputedStyle(thumb).outlineStyle).toBe('none');
+
+  (page.getByRole('slider', { name: 'Saturation and brightness' }).element() as HTMLElement).focus();
+  await userEvent.tab();
+  expect(document.activeElement).toBe(input);
+
+  const ring = getComputedStyle(thumb);
+  expect(ring.outlineStyle).toBe('solid');
+  expect(ring.outlineWidth).toBe('2px');
+  expect(ring.outlineOffset).toBe('2px');
+  expect(ring.outlineColor).toBe(resolved('outline-color', 'var(--ult-color-border-focus)'));
+  // The ring's outer edge is the thumb plus the gap and the ring on each side, and the control holds it.
+  const reach = parseFloat(ring.outlineOffset) + parseFloat(ring.outlineWidth);
+  expect(thumb.getBoundingClientRect().height + 2 * reach).toBeLessThanOrEqual(control.getBoundingClientRect().height);
+  for (const part of [track, control]) expect(getComputedStyle(part).outlineStyle).toBe('none');
+});
+
+test('arrows on the hue slider turn the hue and commit the color', async () => {
+  const screen = await render(<Tree defaultOpen defaultValue="#ff0000" />);
+  await expect.element(page.getByRole('slider', { name: 'Hue' })).toBeInTheDocument();
+  (page.getByRole('slider', { name: 'Saturation and brightness' }).element() as HTMLElement).focus();
+  await userEvent.tab();
+  await userEvent.keyboard('{ArrowRight}');
+  expect(page.getByRole('slider', { name: 'Hue' }).element()).toHaveAttribute('aria-valuenow', '1');
+  expect((screen.getByRole('textbox', { name: 'Hex' }).element() as HTMLInputElement).value).toBe('#ff0400');
+});
+
+test('a disabled hue thumb takes the disabled colours and drops its shadow, and the strip keeps its hues', async () => {
+  await render(<Tree defaultOpen disabled />);
+  await expect.element(page.getByRole('slider', { name: 'Hue' })).toBeInTheDocument();
+  const { input, thumb, track } = hueParts();
+  expect(input).toBeDisabled();
+  const style = getComputedStyle(thumb);
+  expect(style.opacity).toBe('1');
+  expect(style.backgroundColor).toBe(resolved('background-color', 'var(--ult-color-surface-sunken)'));
+  expect(style.borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border)'));
+  expect(style.boxShadow).toBe('none');
+  expect(getComputedStyle(track).backgroundImage).toContain('linear-gradient');
+});
+
 test('the file imports Popover, sets no keepMounted, and imports no Input item', () => {
   const imports = [...source.matchAll(/from '([^']+)'/g)].map(([, specifier]) => specifier);
   expect(imports).toContain('@ultima/ui/popover');
