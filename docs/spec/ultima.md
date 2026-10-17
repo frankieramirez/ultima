@@ -2059,11 +2059,11 @@ A change to any step of a scheme is a new scheme (`c2`), never a silent redefini
 - **In the file.** One comment line, `// @ultima/<item> <revision> <scheme>:<hash>` (or `/* … */` in CSS and in the element bundles), written by the registry build. It is the file's last line; blank lines after it are ignored. shadcn 4.21 returns each transformed file as ts-morph's `getText()`, which drops a file's leading comments, so a stamp on the first line, or behind a directive that `transformRsc` removes, never reaches the consumer. Trailing trivia before the end of the file survives every transform. It records what the consumer received. shadcn writes no other record, so this line is the only baseline a consumer has, and it lasts until the consumer deletes it. A consumer may; the file becomes unstamped and nothing else breaks.
 - **In the served JSON.** Each item's entry in `/r/registry.json` and its `/r/<name>.json` carry `meta.ultima`: `{ "revision": "<revision>", "files": { "<file name>": "<scheme>:<hash>" } }`. `meta` is the only free field shadcn's schema offers, and shadcn discards it at install, which is why the file needs its own line. The catalogue entry lets `status` compare everything with one request.
 
-No lockfile, because the consumer installs with shadcn and the Ultima CLI never sees an install happen: a lockfile it wrote after the fact would only restate the stamps. It becomes worth having when the CLI installs or updates items itself, which is `update`'s question.
+No lockfile, because the consumer installs with shadcn and the Ultima CLI never sees an install happen: a lockfile it wrote after the fact would only restate the stamps. `update`, which does write items, needs none either: the stamps name the base it merges against, under [Update](#update).
 
 **The format version.** `/r/registry.json` carries `meta.ultima.format`, an integer that starts at `1` and rises when the shape of the stamp, `meta.ultima`, or the catalogue changes in a way an older CLI would misread. A new hash scheme is not a format change, because a CLI already reports a scheme it does not know. shadcn's registry schema defines no top-level `meta`, but it tolerates the key, and `shadcn build` copies `registry.json` through verbatim when the registry uses no `include`; the registry build fails if the key does not reach the served catalogue.
 
-**One implementation.** `packages/cli/src/stamp.ts` holds the canonicaliser, the hasher, the stamp line, and the format version. The registry build and the element build import it, and `status` and `diff` will too, so no two places compute a hash two ways.
+**One implementation.** `packages/cli/src/stamp.ts` holds the canonicaliser, the hasher, the stamp line, and the format version. The registry build and the element build import it, and `status`, `diff` and `update` do too, so no two places compute a hash two ways.
 
 **States.** For each installed file, compare three hashes: *installed* from the stamp, *local* computed from the file as it now is, *served* from the catalogue. The first row that matches wins.
 
@@ -2076,11 +2076,11 @@ No lockfile, because the consumer installs with shadcn and the Ultima CLI never 
 | `unstamped` | no stamp, local differs from served | Installed, and who changed what cannot be told |
 | `retired` | the stamp names an item the catalogue no longer serves | The file is the consumer's alone now |
 
-**An update is available** when the file is `behind` or `diverged`. Only `behind` gets a reinstall command. Being behind is never a failure: the consumer owns the file, and the registry moving does not make their copy wrong. Nothing in this policy overwrites a file; `shadcn add --overwrite` remains the only way an item is replaced.
+**An update is available** when the file is `behind` or `diverged`. Only `behind` gets a reinstall command. Being behind is never a failure: the consumer owns the file, and the registry moving does not make their copy wrong. Nothing in this policy overwrites a file. An item is replaced only by `shadcn add --overwrite` or by applying a plan of `update`'s, under [Update](#update).
 
 **Elements and the tokens stylesheet join the same scheme.** The element build's existing stamp, `/* @ultima/elements <sha> */`, becomes the item stamp above with a `b1` hash: per element file for the element's item, and `@ultima/elements` for the combined `ultima.js`. The served `/tokens.css` carries the `tokens-css` stamp, which is the same file. An edited element or stylesheet is reported as `edited` like anything else; ADR 0009 already says edits to a vendored artifact are forfeit on upgrade, and `status` says so beside it. The setup items are outside the scheme: `components.json` is JSON and takes no comment, and the setup files exist to be edited. Whether they landed is `doctor`'s question.
 
-**What stays open.** A three-way view of a `diverged` file needs the content the consumer installed, and nothing serves it: the repository is private and `apps/docs/public/` is rebuilt on every deploy. The stamp's revision names that content; retrieving it is `update`'s problem, and `update` is not a first-release deliverable.
+**The installed content.** A three-way view of a `diverged` file needs the content the consumer installed. `apps/docs/public/` is rebuilt on every deploy and serves none of it, but the repository is public, and the stamp's revision names the source the registry was built from. [Update](#update) rebuilds that source and accepts it only when its hash matches the stamp. `b1` files have no such base, because their bytes are build output.
 
 **Proof.** The smoke install stamps nothing by hand and asserts two things after each framework's install: every installed Ultima file carries a stamp in its expected position, and `status` reports every item `current`. A Vite install that loses the stamp to `transformRsc` fails there first.
 
@@ -3005,8 +3005,8 @@ Decided on [Where the CLI lives in the workspace and what it consumes from the c
 
 | Exit | Meaning |
 | --- | --- |
-| 0 | The run completed. For `doctor` and `check`, no blocking finding; advisories may accompany it. For `status` and `diff`, the report was produced, whatever it contains. |
-| 1 | `doctor` or `check` established at least one blocking finding. `status` and `diff` never exit 1. |
+| 0 | The run completed. For `doctor` and `check`, no blocking finding; advisories may accompany it. For `status`, `diff` and `update`, the report, plan, apply or rollback was produced, whatever it contains. |
+| 1 | `doctor` or `check` established at least one blocking finding. `status`, `diff` and `update` never exit 1. |
 | 2 | Invalid invocation: a different command line would fix it. An unknown command or flag, a malformed argument, an item name `diff` does not know, a `--cwd` without a `package.json`, or two detected targets without `--target`. Nothing runs. |
 | 3 | Incomplete run: the command was well formed, but the project or the network kept it from a complete answer. A missing or unparseable `components.json` or tsconfig, no `@ultima` registry, `ULT-ANALYSIS-001` against a blocking rule, a package that does not resolve, a catalogue that cannot be fetched, or a registry outside the CLI's format range. |
 
@@ -3118,7 +3118,108 @@ $ npx ultima-design diff sidebar
 …
 ```
 
-`diff [item…]` prints a unified diff from the local file to the served file as it would be installed into this project: import specifiers rewritten to the consumer's aliases, `"use client"` dropped when `components.json` sets `rsc: false` and shadcn would drop it (only a directive with no semicolon, since shadcn matches the statement's text with the semicolon included), and the served stamp in place. With no arguments it covers every file that is not `current`. A named item that is `current` prints `<item>: current`, even when its text differs by formatting or comments, because those do not count. The diff is two-way. A three-way view needs the content the consumer installed, which nothing serves, so it waits on `update`. Exit codes match `status`: 0 when the output completes, 3 when it cannot be produced, and 2 when a named item is not one the registry serves or has installed.
+`diff [item…]` prints a unified diff from the local file to the served file as it would be installed into this project: import specifiers rewritten to the consumer's aliases, `"use client"` dropped when `components.json` sets `rsc: false` and shadcn would drop it (only a directive with no semicolon, since shadcn matches the statement's text with the semicolon included), and the served stamp in place. With no arguments it covers every file that is not `current`. A named item that is `current` prints `<item>: current`, even when its text differs by formatting or comments, because those do not count. The diff is two-way. `diff --upstream [item…]` prints the registry's own change instead, from the installed base to the served file, using the base [Update](#update) retrieves, and prints `<item>: no installed base` with the reason when there is none. Exit codes match `status`: 0 when the output completes, 3 when it cannot be produced, and 2 when a named item is not one the registry serves or has installed.
+
+### Update
+
+Charted on [Map: The consumer CLI's update command](https://github.com/frankieramirez/ultima/issues/890). Decided on [Where can update get the exact content a consumer installed?](https://github.com/frankieramirez/ultima/issues/891), [Which files does update cover?](https://github.com/frankieramirez/ultima/issues/892), [Does update merge or overwrite a file the consumer edited?](https://github.com/frankieramirez/ultima/issues/893), [Does update need a lockfile, or are the in-file stamps enough?](https://github.com/frankieramirez/ultima/issues/894), [How does update treat the base theme change and frozen presets?](https://github.com/frankieramirez/ultima/issues/895) and [How does update write, get review and roll back?](https://github.com/frankieramirez/ultima/issues/896). Status: specified, not built.
+
+`update` brings installed Ultima files up to what the registry serves and keeps the consumer's edits wherever a three-way merge can. It is the only Ultima command that rewrites an installed item. It writes only a plan the consumer has seen, and it journals every write so the run can be rolled back. ADR 0003's amendment of 2026-10-17 records why this leaves registry-first distribution in place.
+
+```text
+$ npx ultima-design update
+Registry  https://ultima.systems/r  revision 3f9c2ab04e1d
+
+item      file                           state      action
+dialog    src/components/ui/dialog.tsx   behind     replace
+sidebar   src/components/ui/sidebar.tsx  diverged   merge
+select    src/components/ui/select.tsx   diverged   conflict  2 hunks
+tokens    src/lib/tokens.stylex.ts       behind     hold      base theme changes to neutral-tight
+lib       src/lib/component.ts           unstamped  report    no installed base
+skill     .claude/skills/ultima-design   stale      refresh
+
+hold      npx ultima-design update --accept-base-theme  (https://ultima.systems/install/update)
+conflict  npx ultima-design update --write-conflicts  or  --replace select
+apply     npx ultima-design update --yes
+```
+
+**Plan first.** `update [item…]` builds a plan, prints it, and writes nothing. With no item it covers every installed file. `--yes` applies the plan it has just printed. `--plan --json` prints the plan with its `planHash`, and `--apply <plan.json>` applies exactly that plan. It refuses with exit 3 when an input file's hash, the served revision or a base no longer matches what the plan recorded. A coding agent plans, shows the person the plan, and applies it only when they say so. Neither `--yes` nor `--apply` implies `--write-conflicts`, `--replace` or `--accept-base-theme`, so each one stays a separate decision.
+
+**What it covers.**
+
+| Files | What `update` does | What the consumer does instead |
+| --- | --- | --- |
+| `c1` items: components, the shared lib, `tokens`, blocks | Replaces a `behind` file and merges a `diverged` one | Nothing |
+| `b1` items: element bundles, `tokens-css` | Replaces a `behind` file. A `diverged` file is reported, because its base is build output that git does not hold and a minified bundle cannot be merged | `--replace <item>`. ADR 0009 already forfeits edits to a vendored artifact |
+| The managed skill and hook entries | Refreshes what `install` would rewrite, under the rules in [Install](#install) | An edited skill is reported, and `install --force` replaces it |
+| `unstamped` files | Reported, because no installed base can be found | `--replace <item>`, or `diff` and a hand merge |
+| `retired` files | Reported | Nothing. The file is the consumer's alone |
+| Setup items and `components.json` | Nothing | `doctor` reports whether setup landed |
+| Studio theme files (`ultima-theme.css`, `ultima-theme.stylex.ts`, `ultima-theme.json`, `DESIGN.md`) | Nothing | Regenerate in [Theme Studio](theme-studio.md) |
+| The copied lint fragment, `ultima.eslint.mjs` | Nothing. It is consumer-owned and carries no stamp | Compare it with the hosted fragment. `doctor` reports lint under [StyleX lint in consumer projects](consumer-lint.md) |
+| A link to the live `/tokens.css` | Nothing. There is no file to update | Follow `/install/update` |
+
+**What it does per state.**
+
+| State | Default action | Why |
+| --- | --- | --- |
+| `current`, `edited` | `none`, and the row is left out unless the item was named | The registry has not moved past what the file holds |
+| `behind` | `replace`: write the served file as it would be installed | Local equals installed by its content hash, so only formatting and comments differ, and the plan's diff shows them |
+| `diverged`, `c1`, base verified | `merge`, or `conflict` when a hunk changed on both sides differently | The consumer's edits are the reason the registry is copy-source |
+| `diverged`, no base | `report`, with the reason | A merge without a verified base could drop an edit silently |
+| `unstamped`, `retired` | `report` | As in the coverage table |
+
+The merge is line based. Its three inputs are the installed base, the local file and the served file, each rendered as installed into this project. A hunk changed on one side takes that side. A hunk changed the same way on both sides is taken once. Every other hunk is a conflict. A merged file is written with the served stamp, so the next `status` reports it `edited`: the consumer's changes now sit on the content the registry serves, which is the right base for the next update.
+
+Two flags change the default, each per run:
+
+- `--write-conflicts` writes a conflicting file with diff3 markers: `<<<<<<< local`, `||||||| @ultima/<item> <installed revision>`, `=======` and `>>>>>>> @ultima/<item> <served revision>`. The file then fails to compile until someone resolves it, which is why markers are never written by default. A run should leave a project that still builds unless the consumer asks otherwise.
+- `--replace <item>`, repeatable, takes the registry's file for every file of the item that is not `current`, whatever its state, apart from `retired`. The local edits survive only in the run's journal.
+
+**The installed base.** For a `diverged` `c1` file, the base is the item's authored source at the stamp's revision. It is fetched from the public repository the catalogue names, rebuilt with the registry build's rules (the `@ultima/*` import rewrite, and the base-theme marker for `tokens`), and rendered as installed. It is accepted only when its `c1` hash equals the stamp's hash. `docs/research/2026-10-17-update-baseline-source.md` holds the evidence: every stamped file reproduced at three revisions. The fetch is one unauthenticated `raw.githubusercontent.com` request per `diverged` file, cached for the run. The catalogue names the source with two keys the registry build adds:
+
+- `/r/registry.json` carries `meta.ultima.source`, `{ "repository": "https://github.com/frankieramirez/ultima", "raw": "https://raw.githubusercontent.com/frankieramirez/ultima/{revision}/{path}" }`.
+- Each item's `meta.ultima` carries `sources`, `{ "<file name>": "<repository path>" }`.
+
+Both keys are additive, so an older CLI does not misread them and the format stays `1`. A catalogue served before them gets the CLI's built-in address and the authored layout, and the hash decides whether that guess was right. A registry that names no source, such as a fork or a staging host built without one, gives no base. A network failure, a missing file, a `local` revision or a hash that does not match turns that one file into `report` with the reason. It never produces a merge against the wrong base, and it never makes the run incomplete. Rendering as installed drops a file's leading comments, as shadcn does. `diff` shares that renderer, which gains the step.
+
+**No lockfile.** The stamp names the item, the revision and the content hash. With the base retrievable by revision and verified by hash, a lockfile would only restate the stamps, and it would fall out of step with them whenever a file is copied, moved or edited. The registry comes from `components.json`. What a run did is in its journal, a recovery record that is ignored by git and never read to decide a file's state.
+
+**The base theme.** `update` never changes a consumer's theme without the consumer choosing to. A `tokens` or `tokens-css` file is planned as `hold`, whatever its state, when the item's served `meta.ultima.baseTheme` differs from the base the file holds. The file's base is its `@ultima-base` marker, else `neutral-tight` for the pre-marker Neutral hashes `status` already recognises, else the legacy Ultima base. The hold's closing lines name what changes, link `/install/update`, and print the frozen Ultima preset's install command, which keeps the previous look. `--accept-base-theme` turns the hold into the action the file's state gives. `update` never installs the preset, never writes a Studio theme file, never regenerates an export and never edits where a theme is imported. Theme Studio's frozen preset revisions stay as [Theme Studio](theme-studio.md) defines them. A later base, with a new marker, follows the same rule. Components read semantic token names and carry no theme values, so they update without a hold.
+
+**How it writes.** `update` writes the files itself and does not call shadcn. `shadcn add --overwrite` would discard every edit, can prompt, adds npm dependencies, and pulls `tokens` in behind a component. Each file is rendered as `diff` renders it, then written atomically through a temporary file in its own directory. An item whose served files need a registry item or an npm package the project lacks is held, and the plan prints the command that adds it: `npx shadcn@4.21.4 add @ultima/<item>`, or the detected package manager's add command. A rerun after that picks it up. `update` never edits `package.json`. When a planned file has uncommitted changes in git, the plan says so. It does not refuse, because the journal keeps the original.
+
+**Journal and rollback.** Before an apply writes, it saves the original bytes and mode of every file it may write under `.ultima-update/<run-id>/` at the project root. It then journals each write with the hashes it found and left. The directory carries its own `.gitignore`, so the consumer's is never edited. The format and the rules are `init`'s, under [Consumer project bootstrap](consumer-setup.md), and `packages/cli/src/journal.ts` serves both, with the recovery directory as its parameter. A write that fails stops the run, records it, exits 3, and names the rollback command. `update --rollback` undoes the latest run, and `--rollback <run-id>` undoes a named one. Either restores only the files that still hold the bytes the run left, and lists the others, which someone has changed since.
+
+**After an apply.** The output lists what was written, conflicted, held and reported. It ends with `npx ultima-design check --files <written files>` and the project's typecheck. `update` does not run them: the build is the consumer's. `status` gains one closing line, `npx ultima-design update`, whenever a file is `behind` or `diverged`. It keeps the reinstall command for `behind` files.
+
+**The managed files and the CLI itself.** `update` plans the managed skill as `refresh` when `status` would call it `stale` and its content matches its stamp. It writes exactly what `install` writes. It plans an edited skill as `report`. Hook definitions do not change between CLI releases, so `update` rewrites the marked entries only when `install` would. `update` never upgrades the CLI. The CLI is the consumer's devDependency, so upgrading it is the package manager's command, which `/install/update` names. A registry outside the CLI's format range still makes the run incomplete and prints the upgrade command, as under [Package and engine](#package-and-engine). Refreshing everything is two steps: upgrade the pinned CLI, then `update --yes`.
+
+**Who runs it.** A person, or their agent at the person's request. No hook runs it, no `postinstall` runs it, and nothing runs it on a schedule. The consumer skill gains one step after **Learn what is installed**: when the user asks to update Ultima, run `npx ultima-design update --plan --json`, show the plan, and apply it with `--apply` only on the user's word.
+
+**JSON.** The plan is one object:
+
+```json
+{
+  "kind": "ultima-update-plan",
+  "schemaVersion": 1,
+  "registry": "https://ultima.systems/r",
+  "revision": "3f9c2ab04e1d",
+  "planHash": "sha256:…",
+  "files": [{ "item": "select", "file": "src/components/ui/select.tsx", "state": "diverged", "action": "conflict", "reason": null, "installed": { "revision": "1a2b3c4d5e6f", "hash": "c1:…" }, "local": "c1:…", "served": "c1:…", "base": "verified", "hunks": 2, "requires": [] }],
+  "managed": [{ "file": ".claude/skills/ultima-design/SKILL.md", "state": "stale", "action": "refresh" }],
+  "notices": [],
+  "commands": [{ "for": "conflict", "command": "npx ultima-design update --write-conflicts" }]
+}
+```
+
+`action` is one of `none`, `replace`, `merge`, `conflict`, `hold`, `report` and `refresh`. `base` is `verified`, `unavailable` with a `reason`, or `null` when the action needs none. `notices` is `status`'s list. An apply prints `{ "kind": "ultima-update-run", "schemaVersion": 1, "runId", "planHash", "written", "conflicts", "held", "reported", "next" }`, and a rollback prints `{ "kind": "ultima-update-rollback", "schemaVersion": 1, "runId", "restored", "left" }`.
+
+**Exits.** By the table under [Package and engine](#package-and-engine). 0 when the plan, the apply or the rollback completes, held, conflicted and reported files included, since each is a decision left to the consumer and not a failure. `update` never exits 1. 2 for an invalid invocation: an item the registry neither serves nor has installed, `--replace` naming an item that is not installed, `--apply` with a file that is not a plan, or `--apply` combined with item names or `--replace`. 3 for the conditions `status` names, a stale plan, a write that failed, or `--rollback` with no run to undo.
+
+**The docs page.** `/install/update` becomes the update page. It opens with the loop: `status`, `update`, review the plan, `update --yes`, `check`, and `--rollback` if needed. It then names the two refresh steps for the CLI and the skill. Its base-theme sections stay as they are. The build ticket writes that section with the command, and the agent guide's install pointer links it.
+
+**Proof.** The build ticket's consumer fixture installs items from a registry staged at one revision, edits some, and stages a second revision. It then asserts each action: a `behind` file replaced, a clean merge, a conflict left unwritten and then written with `--write-conflicts`, a `b1` and an `unstamped` file reported, a base-theme hold, a held item that needs a dependency, a stale plan refused, and a rollback that restores the original bytes and leaves a file changed since. Base retrieval runs against a loopback raw host. One networked test rebuilds the four `c1` hashes `packages/cli/src/base-theme.ts` pins from the public repository at `e2f9db14`.
 
 ### Specimen
 
@@ -3156,7 +3257,7 @@ Decided on [What the consumer skill says and how it is versioned](https://github
 
 **External installation (2026-09-26 amendment).** Consumers may install the skill with `npx skills add frankieramirez/ultima --skill ultima-design` or through the `ultima` Claude marketplace as `ultima-design@ultima`. Public access begins when the repository becomes public. These routes distribute the unstamped source and install neither the CLI dependency nor project hooks. Consumers install the CLI separately to run checks. The external installer owns updates and removal; CLI `install` preserves an unstamped skill, and CLI `status` does not treat it as managed. Choose one skill installation route per project. Hosted conventions remain unchanged; the separate opt-in `DESIGN.md` artifact is covered above.
 
-**Refreshing a CLI-managed skill.** A consumer refreshes the skill by upgrading the pinned CLI and running `npx ultima-design install`. `status` reports a skill stamped by another CLI version as `stale`, under [Status](#status). Nothing refreshes it silently, because a hook that rewrote files would edit the consumer's tree mid-task.
+**Refreshing a CLI-managed skill.** A consumer refreshes the skill by upgrading the pinned CLI and running `npx ultima-design install`, or `npx ultima-design update --yes`, which refreshes it under the same rule. `status` reports a skill stamped by another CLI version as `stale`, under [Status](#status). Nothing refreshes it silently, because a hook that rewrote files would edit the consumer's tree mid-task.
 
 **What it says.** In this order:
 
