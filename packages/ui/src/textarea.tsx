@@ -10,7 +10,7 @@ const HOVER = '@media (hover: hover)';
 const COARSE = '@media (pointer: coarse)';
 
 // Textarea is Input's field recipe on a multi-line box: the brightest fill, a 3:1 edge that
-// darkens on hover, and the focus outline laid over the edge. `:read-only` also matches a
+// darkens on hover, and the focus outline outside the edge. `:read-only` also matches a
 // disabled textarea, so one key gives both the sunken fill and the quiet edge.
 const styles = stylex.create({
   root: {
@@ -38,7 +38,7 @@ const styles = stylex.create({
       ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
       ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
     },
-    outlineOffset: `calc(-1 * ${border.hairline})`,
+    outlineOffset: border.focusOffset,
     resize: 'vertical',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, border-color',

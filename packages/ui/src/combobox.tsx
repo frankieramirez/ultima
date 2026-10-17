@@ -59,7 +59,7 @@ const styles = stylex.create({
       ':focus-within:not(:is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])))': `${border.focus} solid ${color['--ult-color-border-focus']}`,
       ':is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])):focus-within': `${border.focus} solid ${color['--ult-color-danger']}`,
     },
-    outlineOffset: `calc(-1 * ${border.hairline})`,
+    outlineOffset: border.focusOffset,
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, border-color',
     transitionTimingFunction: easing.standard,
