@@ -37,6 +37,7 @@ export const PAIRINGS: Pairing[] = [
   ...['surface', 'surface-raised'].flatMap((background) => [
     pairing('border-strong', background, 3),
     pairing('border-focus', background, 3),
+    pairing('border-hover', background, 3),
   ]),
   ...HUE_ROLES.flatMap((role) => [
     ...['surface', 'surface-raised', `${role}-subtle`].map((background) =>
@@ -56,8 +57,10 @@ function modeResult(table: TokenTable, pairing: Pairing): PairingModeResult {
   return { ratio, pass: ratio >= pairing.minimum };
 }
 
+/** A draft is gated on the pairings its version resolves: a version-3 draft has no `border-hover`. */
 export function gate(tables: ResolvedDraft): PairingResult[] {
-  return PAIRINGS.map((pairing) => ({
+  const resolves = (pairing: Pairing) => pairing.foreground in tables.dark && pairing.background in tables.dark;
+  return PAIRINGS.filter(resolves).map((pairing) => ({
     ...pairing,
     dark: modeResult(tables.dark, pairing),
     light: modeResult(tables.light, pairing),
