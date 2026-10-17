@@ -32,7 +32,7 @@ const styles = stylex.create({
   headCell: {
     borderBlockEndColor: color['--ult-color-border'],
     borderBlockEndStyle: 'solid',
-    borderBlockEndWidth: border.hairline,
+    borderBlockEndWidth: border.fine,
     color: color['--ult-color-text-subtle'],
     fontSize: text['--ult-text-2'],
     fontWeight: font['--ult-font-weight-medium'],
@@ -45,7 +45,7 @@ const styles = stylex.create({
   cell: {
     borderBlockEndColor: color['--ult-color-border'],
     borderBlockEndStyle: 'solid',
-    borderBlockEndWidth: border.hairline,
+    borderBlockEndWidth: border.fine,
     paddingBlock: space['--ult-space-3'],
     paddingInline: space['--ult-space-4'],
   },

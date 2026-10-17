@@ -339,6 +339,7 @@ export const easing = stylex.defineConsts({
 
 export const border = stylex.defineConsts({
   hairline: '1px',
+  fine: '0.5px',
   focus: '2px',
   focusOffset: '2px',
 });
