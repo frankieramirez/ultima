@@ -84,10 +84,11 @@ test('every variant takes the same muted look when disabled', async () => {
       ))}
     </>,
   );
-  const inks = (['solid', 'soft', 'outline', 'ghost'] as const).map(
-    (variant) => getComputedStyle(screen.getByRole('button', { name: variant }).element()).color,
-  );
-  expect(new Set(inks).size).toBe(1);
+  const looks = (['solid', 'soft', 'outline', 'ghost'] as const).map((variant) => {
+    const style = getComputedStyle(screen.getByRole('button', { name: variant }).element());
+    return `${style.backgroundColor} ${style.color}`;
+  });
+  expect(new Set(looks).size).toBe(1);
 });
 
 test('a ghost button rests in full ink, not muted text', async () => {

@@ -102,6 +102,7 @@ const outline = stylex.create({
   accent: {
     backgroundColor: {
       default: 'transparent',
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
       ':active:not([data-disabled])': color['--ult-color-surface-active'],
       [HOVER]: {
         ':hover:not([data-disabled])': color['--ult-color-surface-hover'],
@@ -119,6 +120,7 @@ const outline = stylex.create({
   danger: {
     backgroundColor: {
       default: 'transparent',
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
       ':active:not([data-disabled])': color['--ult-color-danger-subtle-hover'],
       [HOVER]: {
         ':hover:not([data-disabled])': color['--ult-color-danger-subtle'],
@@ -139,6 +141,7 @@ const ghost = stylex.create({
   accent: {
     backgroundColor: {
       default: 'transparent',
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
       ':active:not([data-disabled])': color['--ult-color-surface-active'],
       [HOVER]: {
         ':hover:not([data-disabled])': color['--ult-color-surface-hover'],
@@ -151,6 +154,7 @@ const ghost = stylex.create({
   danger: {
     backgroundColor: {
       default: 'transparent',
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
       ':active:not([data-disabled])': color['--ult-color-danger-subtle-hover'],
       [HOVER]: {
         ':hover:not([data-disabled])': color['--ult-color-danger-subtle'],
