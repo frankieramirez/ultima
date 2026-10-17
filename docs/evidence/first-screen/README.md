@@ -1,6 +1,6 @@
 # First-screen exercise
 
-This directory holds the evidence for [Run the first-screen exercise with fresh agents in three layouts](https://github.com/frankieramirez/ultima/issues/774), slice S9 of the [adoption delivery plan](../../spec/adoption-delivery.md#first-screen-exercise). It covers the agent run only. The human run was dropped when [#775](https://github.com/frankieramirez/ultima/issues/775) closed as not planned. Publication and the live-domain stranger path are out of scope.
+This directory holds the evidence for [Run the first-screen exercise with fresh agents in three layouts](https://github.com/frankieramirez/ultima/issues/774), slice S9 of the [adoption delivery plan](../../spec/adoption-delivery.md#first-screen-exercise). It covers the agent run only. The human run was dropped when [#775](https://github.com/frankieramirez/ultima/issues/775) closed as not planned. The live-domain stranger path that followed publication is under [Stranger path on the public host](#stranger-path-on-the-public-host).
 
 ## Inputs
 
@@ -226,6 +226,18 @@ Three earlier runs on `25dc6bf` also passed with 0 interventions and 0 decisions
 - **`tooling-tests`:** 505 cases passed. #846 is fixed.
 
 S9 is met on `3a6fa37`: all three layouts pass with 0 interventions and 0 decisions, and `pnpm verify release` passes on the same revision with every cell executed.
+
+## Stranger path on the public host
+
+After [`ultima-design` 0.2.0](https://www.npmjs.com/package/ultima-design/v/0.2.0) was published with `init`, one Vite run used `--live`: the agent worked from the deployed `https://ultima.systems` and the CLI npm serves, with nothing served or packed from a checkout. This is the rerun the [public-claims gate](../../spec/adoption-delivery.md#gates) asks for.
+
+| Run | Layout | Interventions | Decisions | Check, lint, raw paint, production | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| [2026-10-17-vite-live-4711e8](runs/2026-10-17-vite-live-4711e8.json) | Vite | 0 | 0 | passed | **passed** |
+
+The runner was `183c8e72`, and the installed sources carry its merge stamp `5c82f5bcd619`. npm served 0.2.0 with packed digest `629a32d0…` (npm shasum `48b2566d…`), and the live `/r/registry.json` hashed to `41369b0a…`. The agent took 44 turns and 5 minutes 19 seconds. It fetched only `https://ultima.systems` and its own preview server, and it referenced no other checkout.
+
+The review did not count three self-reported interventions. Redirecting `init larder --plan --json` into a scratch file captures the printed plan for the printed review-then-apply step. The browser check follows the printed hand step. The `npm --prefix` preview restart runs init's printed `npm run preview` from the project. The six self-reported decisions are documented options or product choices. Lint passed with 0 errors and 20 `@stylexjs/no-unused` warnings. The review notes two things for the guidance: the agent skipped the `status` step that Build a screen prints, and it found the built CSS orders the unlayered theme before StyleX's layered rules, which "after the extracted StyleX rules" does not describe.
 
 ## Reproduce
 
