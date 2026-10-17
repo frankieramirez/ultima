@@ -93,16 +93,21 @@ test('a vertical group stacks its items', async () => {
   expect(getComputedStyle(group).flexDirection).toBe('column');
 });
 
-for (const variant of ['solid', 'soft', 'outline', 'ghost'] as const) {
-  for (const size of ['sm', 'md', 'lg'] as const) {
-    for (const tone of ['accent', 'danger'] as const) {
-      test(`${variant} / ${size} / ${tone} on Root renders`, async () => {
-        const screen = await render(<Actions variant={variant} size={size} tone={tone} />);
-        await expect.element(screen.getByRole('button', { name: 'Copy' })).toBeVisible();
-      });
-    }
-  }
-}
+test('every variant by size by tone cell on Root renders', async () => {
+  const cells = (['solid', 'soft', 'outline', 'ghost'] as const).flatMap((variant) =>
+    (['sm', 'md', 'lg'] as const).flatMap((size) => (['accent', 'danger'] as const).map((tone) => ({ variant, size, tone }))),
+  );
+  const screen = await render(
+    <>
+      {cells.map(({ variant, size, tone }) => (
+        <Actions key={`${variant} ${size} ${tone}`} variant={variant} size={size} tone={tone} />
+      ))}
+    </>,
+  );
+  const copies = screen.getByRole('button', { name: 'Copy' });
+  expect(copies.elements()).toHaveLength(cells.length);
+  for (const index of cells.keys()) await expect.element(copies.nth(index)).toBeVisible();
+});
 
 test('omitted axes match solid / md / accent', async () => {
   const screen = await render(

@@ -555,7 +555,7 @@ describe('the release plan', () => {
     }
   });
 
-  test('`pnpm test` decomposes into the package suites it runs', () => {
+  test("CI's test commands together run every package suite `pnpm test` runs", () => {
     const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { scripts: Record<string, string> };
     assert.match(manifest.scripts.test as string, /scripts\/catalogue\/\*\.test\.ts scripts\/verification\/\*\.test\.ts && pnpm -r test/);
     const tested: string[] = [];
@@ -569,9 +569,9 @@ describe('the release plan', () => {
         }
       }
     }
-    const composed = CI_OBLIGATIONS.find((entry) => entry.command === 'pnpm test')?.checks ?? [];
+    const composed = CI_OBLIGATIONS.filter((entry) => entry.workflow === 'ci.yml').flatMap((entry) => entry.checks ?? []);
     assert.deepEqual(
-      composed.map((id) => CHECKS.find((entry) => entry.id === id)?.package).filter(Boolean).sort(),
+      [...new Set(composed.map((id) => CHECKS.find((entry) => entry.id === id)?.package).filter(Boolean))].sort(),
       tested.sort(),
     );
     assert.ok(composed.includes('tooling-tests'));

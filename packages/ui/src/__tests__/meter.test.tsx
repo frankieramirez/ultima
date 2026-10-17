@@ -1,6 +1,7 @@
 import { Meter as BaseMeter } from '@base-ui/react/meter';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
+import { Fragment } from 'react';
 import { render } from 'vitest-browser-react';
 import {
   Meter,
@@ -42,22 +43,24 @@ const valueOf = (meter: Element) =>
 const fillColor = (meter: Element) => getComputedStyle(fillOf(meter)).backgroundColor;
 const valueColor = (meter: Element) => getComputedStyle(valueOf(meter)).color;
 
-for (const tone of tones) {
-  test(`root tone ${tone} renders`, async () => {
-    const screen = await render(<Sample name={`root ${tone}`} root={tone} />);
-    await expect.element(screen.getByRole('meter', { name: `root ${tone}` })).toBeVisible();
-  });
-
-  test(`indicator tone ${tone} renders`, async () => {
-    const screen = await render(<Sample name={`indicator ${tone}`} indicator={tone} />);
-    await expect.element(screen.getByRole('meter', { name: `indicator ${tone}` })).toBeVisible();
-  });
-
-  test(`value tone ${tone} renders`, async () => {
-    const screen = await render(<Sample name={`value ${tone}`} value={tone} />);
-    await expect.element(screen.getByRole('meter', { name: `value ${tone}` })).toBeVisible();
-  });
-}
+test('every tone renders on Root, Indicator and Value', async () => {
+  const screen = await render(
+    <>
+      {tones.map((tone) => (
+        <Fragment key={tone}>
+          <Sample name={`root ${tone}`} root={tone} />
+          <Sample name={`indicator ${tone}`} indicator={tone} />
+          <Sample name={`value ${tone}`} value={tone} />
+        </Fragment>
+      ))}
+    </>,
+  );
+  for (const tone of tones) {
+    for (const part of ['root', 'indicator', 'value']) {
+      await expect.element(screen.getByRole('meter', { name: `${part} ${tone}` })).toBeVisible();
+    }
+  }
+});
 
 test('omitted tones match neutral', async () => {
   const screen = await render(

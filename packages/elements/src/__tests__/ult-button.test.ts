@@ -41,18 +41,15 @@ afterEach(() => {
   document.documentElement.removeAttribute('data-theme');
 });
 
-for (const variant of VARIANTS) {
-  for (const size of SIZES) {
-    for (const tone of TONES) {
-      test(`${variant} / ${size} / ${tone} mounts through the parser`, async () => {
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = `<ult-button variant="${variant}" size="${size}" tone="${tone}">Action</ult-button>`;
-        document.body.appendChild(wrapper);
-        await expect.element(inner(wrapper.querySelector('ult-button') as Element)).toBeVisible();
-      });
-    }
-  }
-}
+test('every variant by size by tone cell mounts through the parser', async () => {
+  const cells = VARIANTS.flatMap((variant) => SIZES.flatMap((size) => TONES.map((tone) => ({ variant, size, tone }))));
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = cells.map(({ variant, size, tone }) => `<ult-button variant="${variant}" size="${size}" tone="${tone}">Action</ult-button>`).join('');
+  document.body.appendChild(wrapper);
+  const hosts = [...wrapper.querySelectorAll('ult-button')];
+  expect(hosts).toHaveLength(cells.length);
+  for (const host of hosts) await expect.element(inner(host)).toBeVisible();
+});
 
 test('omitted axes match solid / md / accent', () => {
   const implicit = inner(mount({}, 'Default'));

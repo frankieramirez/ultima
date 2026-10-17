@@ -1,6 +1,7 @@
 import { Progress as BaseProgress } from '@base-ui/react/progress';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
+import { Fragment } from 'react';
 import { render } from 'vitest-browser-react';
 import {
   Progress,
@@ -61,22 +62,24 @@ const valueOf = (progress: Element) =>
 const fillColor = (progress: Element) => getComputedStyle(fillOf(progress)).backgroundColor;
 const valueColor = (progress: Element) => getComputedStyle(valueOf(progress)).color;
 
-for (const tone of tones) {
-  test(`root tone ${tone} renders`, async () => {
-    const screen = await render(<Sample name={`root ${tone}`} root={tone} />);
-    await expect.element(screen.getByRole('progressbar', { name: `root ${tone}` })).toBeVisible();
-  });
-
-  test(`indicator tone ${tone} renders`, async () => {
-    const screen = await render(<Sample name={`indicator ${tone}`} indicator={tone} />);
-    await expect.element(screen.getByRole('progressbar', { name: `indicator ${tone}` })).toBeVisible();
-  });
-
-  test(`value tone ${tone} renders`, async () => {
-    const screen = await render(<Sample name={`value ${tone}`} valueTone={tone} />);
-    await expect.element(screen.getByRole('progressbar', { name: `value ${tone}` })).toBeVisible();
-  });
-}
+test('every tone renders on Root, Indicator and Value', async () => {
+  const screen = await render(
+    <>
+      {tones.map((tone) => (
+        <Fragment key={tone}>
+          <Sample name={`root ${tone}`} root={tone} />
+          <Sample name={`indicator ${tone}`} indicator={tone} />
+          <Sample name={`value ${tone}`} valueTone={tone} />
+        </Fragment>
+      ))}
+    </>,
+  );
+  for (const tone of tones) {
+    for (const part of ['root', 'indicator', 'value']) {
+      await expect.element(screen.getByRole('progressbar', { name: `${part} ${tone}` })).toBeVisible();
+    }
+  }
+});
 
 test('omitted tones match neutral', async () => {
   const screen = await render(
