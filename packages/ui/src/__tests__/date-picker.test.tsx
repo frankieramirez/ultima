@@ -245,7 +245,7 @@ for (const mode of themes) {
   });
 }
 
-test('the control wears the field recipe: a hover edge, the ring over the edge, and muted disabled', async () => {
+test('the control wears the field recipe: a hover edge, the ring outside the edge, and muted disabled', async () => {
   const screen = await render(
     <>
       <Sample label="Live" />
@@ -258,7 +258,7 @@ test('the control wears the field recipe: a hover edge, the ring over the edge, 
   expect(getComputedStyle(live).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-field)'));
   await userEvent.hover(live);
   await expect.poll(() => getComputedStyle(live).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
-  expect(getComputedStyle(live).outlineOffset).toBe(resolved('outline-offset', 'calc(-1 * 1px)'));
+  expect(getComputedStyle(live).outlineOffset).toBe('2px');
 
   expect(getComputedStyle(off).opacity).toBe('1');
   expect(getComputedStyle(off).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-surface-sunken)'));

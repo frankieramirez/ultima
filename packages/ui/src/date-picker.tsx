@@ -43,7 +43,7 @@ const styles = stylex.create({
     margin: 0,
   },
   // Input Group's field recipe, restated as Combobox restates it. Focus lands on the input, so the
-  // ring is `:focus-within`, laid over the edge. Its own `:read-only` would match the div, so the keys
+  // ring is `:focus-within`, outside the edge. Its own `:read-only` would match the div, so the keys
   // ask whether the input inside is read-only, which a disabled input also is. Invalid is read on the
   // control itself as well as inside it, since the machine marks both.
   control: {
@@ -77,7 +77,7 @@ const styles = stylex.create({
       ':focus-within:not(:is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])))': `${border.focus} solid ${color['--ult-color-border-focus']}`,
       ':is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])):focus-within': `${border.focus} solid ${color['--ult-color-danger']}`,
     },
-    outlineOffset: `calc(-1 * ${border.hairline})`,
+    outlineOffset: border.focusOffset,
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, border-color',
     transitionTimingFunction: easing.standard,
@@ -218,6 +218,15 @@ const styles = stylex.create({
     paddingBlockEnd: space['--ult-space-3'],
     textAlign: 'center',
   },
+  // Seven 32px days, stretched to the full width when the header is wider so the grid lines up
+  // under it, and squeezed only when the container itself is narrower. A percentage width would
+  // instead grow the calendar to its container.
+  dayTable: {
+    inlineSize: `calc(7 * ${space['--ult-space-9']})`,
+    maxInlineSize: '100%',
+    minInlineSize: '100%',
+    tableLayout: 'fixed',
+  },
   // No inline padding, so the days of a range meet and their fill reads as one band.
   tableCell: {
     margin: 0,
@@ -225,7 +234,7 @@ const styles = stylex.create({
     paddingInline: 0,
     textAlign: 'center',
   },
-  // A day is a 32px square on a 6px corner. Inside a range, a day squares the corners that face its
+  // A day is 32px tall on a 6px corner and as wide as its column. Inside a range, a day squares the corners that face its
   // neighbours: the start keeps its leading pair, the end its trailing pair. The selected ends take
   // the accent fill and the days between take the subtle one, which also previews a range under the
   // pointer. Hover moves one step on whichever ground the day stands on, on devices that hover.
@@ -277,7 +286,7 @@ const styles = stylex.create({
       default: font['--ult-font-weight-regular'],
       ':is([data-today])': font['--ult-font-weight-semibold'],
     },
-    inlineSize: space['--ult-space-9'],
+    inlineSize: '100%',
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
@@ -315,7 +324,7 @@ const styles = stylex.create({
       default: 'none',
       ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
-    outlineOffset: `calc(-1 * ${border.hairline})`,
+    outlineOffset: border.focusOffset,
     paddingInline: space['--ult-space-3'],
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'border-color',
@@ -605,7 +614,7 @@ function Table({ view = 'day', columns, style, children, ...props }: DatePickerT
         api.getTableProps({ view, columns, id: props.id }),
         { 'aria-labelledby': labelledBy },
         props,
-        stylex.props(styles.table, style),
+        stylex.props(styles.table, view === 'day' && styles.dayTable, style),
       )}
     >
       {children ?? (

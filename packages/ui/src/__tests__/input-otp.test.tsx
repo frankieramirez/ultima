@@ -187,7 +187,7 @@ test('disabled takes the muted fill and ink, not opacity', async () => {
   expect(getComputedStyle(disabled).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
 });
 
-test('a slot darkens its edge on hover, and its focus outline lies over the edge', async () => {
+test('a slot darkens its edge on hover, and its focus outline sits outside the edge', async () => {
   const screen = await render(
     <>
       <label htmlFor="hover-code">Code</label>
@@ -197,7 +197,7 @@ test('a slot darkens its edge on hover, and its focus outline lies over the edge
     </>,
   );
   const slot = screen.getByRole('textbox', { name: 'Code' }).element();
-  expect(getComputedStyle(slot).outlineOffset).toBe(resolved('outline-offset', 'calc(-1 * 1px)'));
+  expect(getComputedStyle(slot).outlineOffset).toBe('2px');
   await userEvent.hover(slot);
   await expect.poll(() => getComputedStyle(slot).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
 });

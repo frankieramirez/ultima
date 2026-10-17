@@ -145,12 +145,12 @@ test('disabled mutes the input and quiets the swatch edge, with no fade', async 
   expect(getComputedStyle(disabledInput).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
 });
 
-test('the input wears the field recipe: 14px text, a hover edge, and the ring over the edge', async () => {
+test('the input wears the field recipe: 14px text, a hover edge, and the ring outside the edge', async () => {
   const screen = await render(<Tree />);
   const input = screen.getByRole('textbox', { name: 'Hex' }).element();
   const swatch = screen.getByRole('button', { name: 'Pick color' }).element();
   expect(getComputedStyle(input).fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
-  expect(getComputedStyle(input).outlineOffset).toBe(resolved('outline-offset', 'calc(-1 * 1px)'));
+  expect(getComputedStyle(input).outlineOffset).toBe('2px');
   await userEvent.hover(input);
   await expect.poll(() => getComputedStyle(input).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
   await userEvent.hover(swatch);

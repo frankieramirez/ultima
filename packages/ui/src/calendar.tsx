@@ -127,9 +127,13 @@ const styles = stylex.create({
     paddingBlockEnd: space['--ult-space-3'],
     textAlign: 'center',
   },
+  // Seven 32px days, stretched to the full width when the header is wider so the grid lines up
+  // under it, and squeezed only when the container itself is narrower. A percentage width would
+  // instead grow the calendar to its container.
   dayTable: {
     inlineSize: `calc(7 * ${space['--ult-space-9']})`,
     maxInlineSize: '100%',
+    minInlineSize: '100%',
     tableLayout: 'fixed',
   },
   // No inline padding, so the days of a range meet and their fill reads as one band.
@@ -139,7 +143,7 @@ const styles = stylex.create({
     paddingInline: 0,
     textAlign: 'center',
   },
-  // A day is a 32px square on a 6px corner. Inside a range, a day squares the corners that face its
+  // A day is 32px tall on a 6px corner and as wide as its column. Inside a range, a day squares the corners that face its
   // neighbours: the start keeps its leading pair, the end its trailing pair. The selected ends take
   // the accent fill and the days between take the subtle one, which also previews a range under the
   // pointer. Hover moves one step on whichever ground the day stands on, on devices that hover.
@@ -191,7 +195,7 @@ const styles = stylex.create({
       default: font['--ult-font-weight-regular'],
       ':is([data-today])': font['--ult-font-weight-semibold'],
     },
-    inlineSize: `min(${space['--ult-space-9']}, 100%)`,
+    inlineSize: '100%',
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
@@ -229,7 +233,7 @@ const styles = stylex.create({
       default: 'none',
       ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
-    outlineOffset: `calc(-1 * ${border.hairline})`,
+    outlineOffset: border.focusOffset,
     paddingInline: space['--ult-space-3'],
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'border-color',

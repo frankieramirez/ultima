@@ -20,7 +20,7 @@ const styles = stylex.create({
     margin: 0,
   },
   // Input's field recipe on each slot: the field fill, the 3:1 edge that darkens on hover, the
-  // outline laid over the edge (in danger on an invalid slot), and the sunken fill, quiet edge and
+  // outline outside the edge (in danger on an invalid slot), and the sunken fill, quiet edge and
   // disabled ink in place of a fade. Each key names its whole state.
   input: {
     appearance: 'none',
@@ -46,7 +46,7 @@ const styles = stylex.create({
       ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
       ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
     },
-    outlineOffset: `calc(-1 * ${border.hairline})`,
+    outlineOffset: border.focusOffset,
     padding: 0,
     textAlign: 'center',
     transitionDuration: motion['--ult-motion-fast'],
