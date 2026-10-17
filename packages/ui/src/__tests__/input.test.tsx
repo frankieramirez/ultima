@@ -123,10 +123,10 @@ test('hover darkens the edge, not the fill, and a disabled field keeps its resti
   expect(getComputedStyle(off).borderTopColor).toBe(offEdge);
 });
 
-test('the focus outline lies over the edge', async () => {
+test('the focus outline sits outside the edge with a gap', async () => {
   const screen = await render(<Input aria-label="Focus" />);
   await userEvent.tab();
-  expect(getComputedStyle(screen.getByRole('textbox', { name: 'Focus' }).element()).outlineOffset).toBe('-1px');
+  expect(getComputedStyle(screen.getByRole('textbox', { name: 'Focus' }).element()).outlineOffset).toBe('2px');
 });
 
 test('field text is 14px at every size below lg', async () => {

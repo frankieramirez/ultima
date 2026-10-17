@@ -243,10 +243,10 @@ test('a disabled trigger takes the muted fill and ink, not opacity', async () =>
   expect(off.color).not.toBe(live.color);
 });
 
-test('the focus outline lies over the trigger edge', async () => {
+test('the focus outline sits outside the trigger edge with a gap', async () => {
   const screen = await render(<Plain name="Focus" />);
   await userEvent.tab();
-  expect(getComputedStyle(screen.getByRole('combobox', { name: 'Focus' }).element()).outlineOffset).toBe('-1px');
+  expect(getComputedStyle(screen.getByRole('combobox', { name: 'Focus' }).element()).outlineOffset).toBe('2px');
 });
 
 test('items are 32px rows with the small radius', async () => {
