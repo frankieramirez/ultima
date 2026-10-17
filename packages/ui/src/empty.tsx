@@ -11,7 +11,7 @@ const styles = stylex.create({
     borderColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-xl'],
     borderStyle: 'dashed',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     boxSizing: 'border-box',
     color: color['--ult-color-text-muted'],
     display: 'flex',

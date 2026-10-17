@@ -89,7 +89,7 @@ const styles = stylex.create({
     borderStyle: 'solid',
     borderTopLeftRadius: { default: radius['--ult-radius-xl'], [UP_OR_LEFT]: 0 },
     borderTopRightRadius: { default: radius['--ult-radius-xl'], [UP_OR_RIGHT]: 0 },
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     boxShadow: shadow['--ult-shadow-lg'],
     boxSizing: 'border-box',
     color: color['--ult-color-text'],

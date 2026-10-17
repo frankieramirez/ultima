@@ -13,7 +13,7 @@ const styles = stylex.create({
     borderBlockEndStyle: 'none',
     borderBlockStartColor: color['--ult-color-border'],
     borderBlockStartStyle: 'solid',
-    borderBlockStartWidth: border.hairline,
+    borderBlockStartWidth: border.fine,
     borderInlineEndStyle: 'none',
     borderInlineStartStyle: 'none',
     boxSizing: 'border-box',
@@ -29,7 +29,7 @@ const styles = stylex.create({
     borderInlineEndStyle: 'none',
     borderInlineStartColor: color['--ult-color-border'],
     borderInlineStartStyle: 'solid',
-    borderInlineStartWidth: border.hairline,
+    borderInlineStartWidth: border.fine,
     inlineSize: 0,
   },
 });

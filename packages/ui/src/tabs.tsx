@@ -74,7 +74,7 @@ const lists = stylex.create({
   underline: {
     borderBlockEndColor: color['--ult-color-border'],
     borderBlockEndStyle: 'solid',
-    borderBlockEndWidth: border.hairline,
+    borderBlockEndWidth: border.fine,
     gap: space['--ult-space-4'],
   },
   segmented: {
@@ -105,7 +105,7 @@ const indicators = stylex.create({
     backgroundColor: color['--ult-color-accent'],
     height: border.focus,
     // Lies over the list's hairline rather than above it.
-    insetBlockEnd: `calc(var(--active-tab-bottom) - ${border.hairline})`,
+    insetBlockEnd: `calc(var(--active-tab-bottom) - ${border.fine})`,
     insetInlineStart: 'var(--active-tab-left)',
     width: 'var(--active-tab-width)',
   },
@@ -114,7 +114,7 @@ const indicators = stylex.create({
     borderColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-sm'],
     borderStyle: 'solid',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     boxShadow: shadow['--ult-shadow-xs'],
     boxSizing: 'border-box',
     height: 'var(--active-tab-height)',

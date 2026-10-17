@@ -22,7 +22,7 @@ const variants = stylex.create({
     borderColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     fontSize: text['--ult-text-4'],
     lineHeight: font['--ult-font-leading-normal'],
     overflowWrap: 'anywhere',
