@@ -4,7 +4,7 @@
  * 2. The name resolves: role checkbox, named by a wrapping label, aria-label, or Field.Label. A group is named by Fieldset.Legend.
  * 3. The focus ring lands where the contract says: on Root; Indicator renders none.
  * 4. The primitive is still wired: Space toggles; wrapping label activation works (nativeButton stays false). Enter submits a form rather than toggling, matching a native checkbox.
- * 5. Documented state drives its style: data-checked and data-indeterminate fill the box; data-disabled dims; invalid recolors the border.
+ * 5. Documented state drives its style: data-checked and data-indeterminate fill the box; data-disabled takes the muted fill and edge; invalid recolors the border; hover darkens the edge.
  * 6. Typecheck passes: className is rejected on every styled part, and there is no size axis.
  * 7. Behavior this component wires itself: none, because every interaction is the primitive's or a style on a data-* attribute.
  * 8. CSS the primitive reads: Indicator is display none while data-unchecked (the exit-transition window).
@@ -199,7 +199,7 @@ test('data-invalid recolors the border without aria-invalid', async () => {
   expect(getComputedStyle(invalid).borderTopColor).not.toBe(valid.borderTopColor);
 });
 
-test('disabled dims the checkbox', async () => {
+test('disabled takes the muted fill and edge, not opacity', async () => {
   const screen = await render(
     <>
       <Box label="Enabled" />
@@ -209,7 +209,46 @@ test('disabled dims the checkbox', async () => {
   const enabled = screen.getByRole('checkbox', { name: 'Enabled' }).element();
   const disabled = screen.getByRole('checkbox', { name: 'Disabled' }).element();
   expect(disabled).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(disabled).opacity)).toBeLessThan(parseFloat(getComputedStyle(enabled).opacity));
+  expect(getComputedStyle(disabled).opacity).toBe('1');
+  expect(getComputedStyle(disabled).backgroundColor).not.toBe(getComputedStyle(enabled).backgroundColor);
+  expect(getComputedStyle(disabled).borderTopColor).not.toBe(getComputedStyle(enabled).borderTopColor);
+});
+
+const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+
+test('hover darkens the edge of an unchecked box and steps the fill of a checked one', async () => {
+  const screen = await render(
+    <>
+      <Box label="Off" />
+      <Box label="On" defaultChecked />
+      <Box label="Locked" disabled />
+    </>,
+  );
+  const off = screen.getByRole('checkbox', { name: 'Off' }).element();
+  const on = screen.getByRole('checkbox', { name: 'On' }).element();
+  const locked = screen.getByRole('checkbox', { name: 'Locked' }).element();
+  const [offEdge, offFill] = [getComputedStyle(off).borderTopColor, getComputedStyle(off).backgroundColor];
+  const onFill = getComputedStyle(on).backgroundColor;
+  const lockedEdge = getComputedStyle(locked).borderTopColor;
+  await userEvent.hover(off);
+  await settle();
+  expect(getComputedStyle(off).borderTopColor).not.toBe(offEdge);
+  expect(getComputedStyle(off).backgroundColor).toBe(offFill);
+  await userEvent.hover(on);
+  await settle();
+  expect(getComputedStyle(on).backgroundColor).not.toBe(onFill);
+  await userEvent.hover(locked);
+  await settle();
+  expect(getComputedStyle(locked).borderTopColor).toBe(lockedEdge);
+});
+
+test('the box is 16px with a 12px glyph and the small radius', async () => {
+  const screen = await render(<Box label="On" defaultChecked />);
+  const box = screen.getByRole('checkbox', { name: 'On' }).element();
+  expect(box.getBoundingClientRect().width).toBe(16);
+  expect(getComputedStyle(box).borderTopLeftRadius).toBe('4px');
+  const glyph = screen.getByTestId('On-indicator').element().querySelector('svg');
+  expect(glyph?.getBoundingClientRect().width).toBe(12);
 });
 
 test('a kept-mounted unchecked indicator is display none', async () => {

@@ -72,6 +72,34 @@ test('data-checked moves the thumb and repaints the track', async () => {
   expect(parseFloat(onThumb)).toBeGreaterThan(0);
 });
 
+test('the track is 36 by 20 and the 16px thumb travels its own width', async () => {
+  const screen = await render(
+    <Switch.Root aria-label="On" defaultChecked><Switch.Thumb data-testid="thumb" /></Switch.Root>,
+  );
+  const track = screen.getByRole('switch', { name: 'On' }).element().getBoundingClientRect();
+  expect([track.width, track.height]).toEqual([36, 20]);
+  const thumb = screen.getByTestId('thumb').element();
+  expect(thumb.getBoundingClientRect().width).toBe(16);
+  expect(getComputedStyle(thumb).translate).toBe('16px');
+});
+
+test('disabled takes the muted track, not opacity, and hover darkens an unchecked track', async () => {
+  const screen = await render(
+    <>
+      <Switch.Root aria-label="Off"><Switch.Thumb /></Switch.Root>
+      <Switch.Root aria-label="Locked" disabled><Switch.Thumb /></Switch.Root>
+    </>,
+  );
+  const off = screen.getByRole('switch', { name: 'Off' }).element();
+  const locked = screen.getByRole('switch', { name: 'Locked' }).element();
+  expect(getComputedStyle(locked).opacity).toBe('1');
+  expect(getComputedStyle(locked).backgroundColor).not.toBe(getComputedStyle(off).backgroundColor);
+  const track = getComputedStyle(off).backgroundColor;
+  await userEvent.hover(off);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  expect(getComputedStyle(off).backgroundColor).not.toBe(track);
+});
+
 test('public prop types expose only supported styling axes', () => {
   expectTypeOf<SwitchRootProps>().not.toHaveProperty('className');
   expectTypeOf<SwitchThumbProps>().not.toHaveProperty('className');

@@ -4,7 +4,7 @@
  * 2. The name resolves: role radiogroup named by Fieldset.Legend or aria-label on Root; each Item by a wrapping label or Field.Label.
  * 3. The focus ring lands where the contract says: on Item; Indicator and Root render none.
  * 4. The primitive is still wired: arrows move and select, looping; Home and End off; Space selects.
- * 5. Documented state drives its style: data-checked fills the item; data-disabled dims; invalid recolors the border.
+ * 5. Documented state drives its style: data-checked fills the item; data-disabled takes the muted fill and edge; invalid recolors the border; hover darkens the edge.
  * 6. Typecheck passes: className is rejected on every styled part, and there is no size axis.
  * 7. Behavior this component wires itself: none, because every interaction is the primitive's or a style on a data-* attribute.
  * 8. CSS the primitive reads: Indicator is display none while data-unchecked (the exit-transition window).
@@ -154,7 +154,9 @@ test('the default glyph is the filled-circle dot', async () => {
   const indicator = screen.getByTestId('pro-indicator').element();
   const circle = indicator.querySelector('circle');
   expect(circle).not.toBeNull();
-  expect(circle).toHaveAttribute('fill', 'currentColor');
+  // The dot is filled in the indicator's ink and carries no stroke.
+  expect(getComputedStyle(circle!).fill).toBe(getComputedStyle(indicator).color);
+  expect(getComputedStyle(circle!).stroke).toBe('none');
 });
 
 test('children replace the default glyph', async () => {
@@ -203,7 +205,7 @@ test('data-invalid recolors the item border without aria-invalid', async () => {
   expect(getComputedStyle(invalid).borderTopColor).not.toBe(valid.borderTopColor);
 });
 
-test('disabled dims the item', async () => {
+test('disabled takes the muted fill and edge, not opacity', async () => {
   const screen = await render(
     <RadioGroup.Root aria-label="Plan">
       <RadioGroup.Item value="ok" aria-label="Enabled">
@@ -217,7 +219,33 @@ test('disabled dims the item', async () => {
   const enabled = screen.getByRole('radio', { name: 'Enabled' }).element();
   const disabled = screen.getByRole('radio', { name: 'Disabled' }).element();
   expect(disabled).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(disabled).opacity)).toBeLessThan(parseFloat(getComputedStyle(enabled).opacity));
+  expect(getComputedStyle(disabled).opacity).toBe('1');
+  expect(getComputedStyle(disabled).backgroundColor).not.toBe(getComputedStyle(enabled).backgroundColor);
+  expect(getComputedStyle(disabled).borderTopColor).not.toBe(getComputedStyle(enabled).borderTopColor);
+});
+
+const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+
+test('hover darkens the edge of an unchecked item, and a checked item is filled with a 6px dot', async () => {
+  const screen = await render(
+    <RadioGroup.Root aria-label="Plan" defaultValue="on">
+      <RadioGroup.Item value="off" aria-label="Off">
+        <RadioGroup.Indicator />
+      </RadioGroup.Item>
+      <RadioGroup.Item value="on" aria-label="On">
+        <RadioGroup.Indicator data-testid="dot" />
+      </RadioGroup.Item>
+    </RadioGroup.Root>,
+  );
+  const off = screen.getByRole('radio', { name: 'Off' }).element();
+  const on = screen.getByRole('radio', { name: 'On' }).element();
+  expect(getComputedStyle(on).backgroundColor).not.toBe(getComputedStyle(off).backgroundColor);
+  const circle = screen.getByTestId('dot').element().querySelector('circle');
+  expect(circle?.getBoundingClientRect().width).toBeCloseTo(6, 1);
+  const edge = getComputedStyle(off).borderTopColor;
+  await userEvent.hover(off);
+  await settle();
+  expect(getComputedStyle(off).borderTopColor).not.toBe(edge);
 });
 
 test('a kept-mounted unchecked indicator is display none', async () => {

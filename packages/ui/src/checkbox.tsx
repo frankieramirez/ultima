@@ -3,36 +3,58 @@
 import { Checkbox as BaseCheckbox } from '@base-ui/react/checkbox';
 import { CheckboxGroup } from '@base-ui/react/checkbox-group';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
+const HOVER = '@media (hover: hover)';
+
+// The box is a small field: the field fill, a 3:1 edge that darkens on hover, and the accent fill
+// once checked, stepping on hover and press, with a transparent edge the fill shows through. Each
+// key names its whole state, so no two match at once and none depends on StyleX's ranking.
+// Disabled is the muted fill, edge and ink, with no opacity; an invalid box keeps its danger edge
+// through every state.
 const styles = stylex.create({
   root: {
     alignItems: 'center',
     appearance: 'none',
     backgroundColor: {
-      default: 'transparent',
-      ':is([data-checked], [data-indeterminate])': color['--ult-color-accent'],
+      default: color['--ult-color-field'],
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
+      ':is([data-checked], [data-indeterminate]):not([data-disabled], :active)': color['--ult-color-accent'],
+      ':is([data-checked], [data-indeterminate]):active:not([data-disabled])': color['--ult-color-accent-active'],
+      [HOVER]: {
+        ':is([data-checked], [data-indeterminate]):hover:not([data-disabled], :active)': color['--ult-color-accent-hover'],
+      },
     },
     borderColor: {
       default: color['--ult-color-border-strong'],
+      ':is([data-disabled]):not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
+      ':is([data-checked], [data-indeterminate]):not([aria-invalid="true"], [data-invalid], [data-disabled])': 'transparent',
+      [HOVER]: {
+        ':hover:not([data-checked], [data-indeterminate], [aria-invalid="true"], [data-invalid], [data-disabled])':
+          color['--ult-color-border-hover'],
+      },
     },
     borderRadius: radius['--ult-radius-sm'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
-    color: color['--ult-color-accent-contrast'],
+    color: { default: color['--ult-color-accent-contrast'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     display: 'inline-flex',
     flexShrink: 0,
     fontFamily: font['--ult-font-sans'],
+    // The glyphs are `1em`, so the box sets their 12px size rather than inheriting the page's.
+    fontSize: text['--ult-text-2'],
     height: space['--ult-space-6'],
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
     padding: 0,
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'background-color, border-color',
+    transitionTimingFunction: easing.standard,
     width: space['--ult-space-6'],
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
@@ -69,14 +91,14 @@ function Check() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.5}
+      strokeWidth={3}
       strokeLinecap="round"
       strokeLinejoin="round"
       width="1em"
       height="1em"
       aria-hidden="true"
     >
-      <path d="m5 12 4 4L19 6" />
+      <path d="m4 12 5 5L20 6" />
     </svg>
   );
 }
@@ -88,14 +110,14 @@ function Dash() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.5}
+      strokeWidth={3}
       strokeLinecap="round"
       strokeLinejoin="round"
       width="1em"
       height="1em"
       aria-hidden="true"
     >
-      <path d="M5 12h14" />
+      <path d="M4 12h16" />
     </svg>
   );
 }

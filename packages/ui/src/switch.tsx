@@ -6,27 +6,40 @@ import { border, color, easing, motion, radius, space } from '@ultima/tokens/tok
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
-const travel = `calc(${space['--ult-space-10']} - ${space['--ult-space-7']} - 2 * ${space['--ult-space-1']})`;
+const HOVER = '@media (hover: hover)';
 
+// A 16px thumb with 2px of inset on every side: the track is 36 by 20 and the thumb travels its own width.
+const width = `calc(2 * ${space['--ult-space-6']} + 2 * ${space['--ult-space-1']})`;
+const height = `calc(${space['--ult-space-6']} + 2 * ${space['--ult-space-1']})`;
+
+// The unchecked track is the 3:1 edge colour and darkens on hover like a field's edge; checked is the
+// accent fill, stepping on hover and press. Each key names its whole state, and disabled is the
+// muted track with no opacity, so the thumb's position still reads.
 const styles = stylex.create({
   root: {
     appearance: 'none',
     backgroundColor: {
       default: color['--ult-color-border-strong'],
-      ':is([data-checked])': color['--ult-color-accent'],
+      ':is([data-disabled])': color['--ult-color-border'],
+      ':is([data-checked]):not([data-disabled], :active)': color['--ult-color-accent'],
+      ':is([data-checked]):active:not([data-disabled])': color['--ult-color-accent-active'],
+      [HOVER]: {
+        ':hover:not([data-checked], [data-disabled])': color['--ult-color-border-hover'],
+        ':is([data-checked]):hover:not([data-disabled], :active)': color['--ult-color-accent-hover'],
+      },
     },
     border: 'none',
     borderRadius: radius['--ult-radius-full'],
     boxSizing: 'border-box',
     display: 'inline-flex',
-    height: space['--ult-space-8'],
+    flexShrink: 0,
+    height,
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
     padding: space['--ult-space-1'],
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color',
     transitionTimingFunction: easing.standard,
-    width: space['--ult-space-10'],
+    width,
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
@@ -34,18 +47,18 @@ const styles = stylex.create({
   },
   thumb: {
     backgroundColor: color['--ult-color-surface'],
-    /** A `<span>` loses its fill under forced colors; the hairline keeps the thumb visible. */
-    borderColor: color['--ult-color-border'],
+    /** A `<span>` loses its fill under forced colors; a transparent border is drawn there and nowhere else. */
+    borderColor: 'transparent',
     borderRadius: radius['--ult-radius-full'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
-    height: space['--ult-space-7'],
-    translate: { default: 0, ':is([data-checked])': travel },
+    height: space['--ult-space-6'],
+    translate: { default: 0, ':is([data-checked])': space['--ult-space-6'] },
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'translate',
     transitionTimingFunction: easing.standard,
-    width: space['--ult-space-7'],
+    width: space['--ult-space-6'],
   },
 });
 

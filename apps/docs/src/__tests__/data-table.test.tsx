@@ -11,7 +11,7 @@ import DataTableSorting from '../demos/table/data-table-sorting';
 const WORD_JOINER = '⁠';
 
 // Checkbox's dash glyph, which is the visible half of `aria-checked="mixed"`.
-const DASH = 'M5 12h14';
+const DASH = 'M4 12h16';
 
 // The docs site mounts under StrictMode, whose second effect pass is what a naive
 // first-render guard on the status region would leak an announcement through.
