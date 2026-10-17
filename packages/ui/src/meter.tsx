@@ -13,19 +13,20 @@ const styles = stylex.create({
     display: 'flex',
     flexDirection: 'column',
     fontFamily: font['--ult-font-sans'],
-    gap: space['--ult-space-2'],
+    gap: space['--ult-space-3'],
     margin: 0,
   },
   label: {
-    color: color['--ult-color-text-subtle'],
-    fontSize: text['--ult-text-2'],
-    letterSpacing: font['--ult-font-tracking-wide'],
-    textTransform: 'uppercase',
+    color: color['--ult-color-text'],
+    fontSize: text['--ult-text-4'],
+    fontWeight: font['--ult-font-weight-medium'],
+    lineHeight: font['--ult-font-leading-none'],
+    margin: 0,
   },
   track: {
-    backgroundColor: color['--ult-color-surface-sunken'],
+    backgroundColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-full'],
-    height: space['--ult-space-2'],
+    height: space['--ult-space-4'],
     overflow: 'hidden',
   },
   /** Base UI sets the indicator's own `width` and `height` inline, from `value`. */
@@ -34,12 +35,14 @@ const styles = stylex.create({
   },
   value: {
     fontSize: text['--ult-text-4'],
-    fontWeight: font['--ult-font-weight-medium'],
+    fontVariantNumeric: 'tabular-nums',
+    lineHeight: font['--ult-font-leading-none'],
+    margin: 0,
   },
 });
 
 const indicatorTones = stylex.create({
-  neutral: { backgroundColor: color['--ult-color-border-strong'] },
+  neutral: { backgroundColor: color['--ult-color-accent'] },
   highlight: { backgroundColor: color['--ult-color-highlight'] },
   success: { backgroundColor: color['--ult-color-success'] },
   warning: { backgroundColor: color['--ult-color-warning'] },
@@ -47,7 +50,7 @@ const indicatorTones = stylex.create({
 });
 
 const valueTones = stylex.create({
-  neutral: { color: color['--ult-color-text'] },
+  neutral: { color: color['--ult-color-text-muted'] },
   highlight: { color: color['--ult-color-highlight-text'] },
   success: { color: color['--ult-color-success-text'] },
   warning: { color: color['--ult-color-warning-text'] },

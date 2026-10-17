@@ -2,7 +2,7 @@
 
 import { ScrollArea as BaseScrollArea } from '@base-ui/react/scroll-area';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, motion, radius, space } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, motion, radius, space } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
@@ -35,6 +35,7 @@ const styles = stylex.create({
     inlineSize: { default: null, ':is([data-orientation="vertical"])': '100%' },
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color',
+    transitionTimingFunction: easing.standard,
   },
 });
 

@@ -158,6 +158,13 @@ test('the thumb darkens while a pointer is over the area', async () => {
   await expect.poll(() => getComputedStyle(thumb).backgroundColor !== resting).toBe(true);
 });
 
+test('the thumb eases its colour change on the system curve', async () => {
+  const screen = await render(<Sample />);
+  const thumb = (await waitForPart(screen, 'thumb')) as HTMLElement;
+  expect(getComputedStyle(thumb).transitionProperty).toBe('background-color');
+  expect(getComputedStyle(thumb).transitionTimingFunction).toBe('cubic-bezier(0.2, 0, 0, 1)');
+});
+
 test('the thumb darkens while the area scrolls', async () => {
   const screen = await render(<Sample />);
   const thumb = (await waitForPart(screen, 'thumb')) as HTMLElement;

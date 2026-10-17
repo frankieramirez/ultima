@@ -26,7 +26,7 @@ Every `Handle` needs a name, and the type enforces it: `Resizable.Handle` requir
 
 ## Vertical
 
-`orientation` is a pass-through prop, not an axis — it flips the layout axis, the bar's hairline, the grip's rotation, and which arrows resize.
+`orientation` is a pass-through prop, not an axis — it flips the layout axis, the line, the grip's rotation, and which arrows resize.
 
 <Demo component={Vertical} source={verticalSource} />
 
@@ -61,7 +61,7 @@ Everything is the machine's; see [Zag's splitter](https://zagjs.com/components/r
 | `Handle` | `aria-label` \| `aria-labelledby` | `string` | required | One is required by the type. |
 | Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
 
-`Root` is `display: flex` keyed to `orientation`, `Handle` is the hairline with a `::before` stretching the hit area, and `HandleIndicator` is the grip, always `aria-hidden`. `Panel` ships no paint — the machine writes its `flex-grow`, `overflow: hidden`, and drag-time `pointer-events` inline.
+`Root` is `display: flex` keyed to `orientation`, `Handle` is a fine line that darkens on hover and while dragging, with a `::before` stretching the hit area, and `HandleIndicator` is the grip on a small raised knob, always `aria-hidden`. `Panel` ships no paint — the machine writes its `flex-grow`, `overflow: hidden`, and drag-time `pointer-events` inline.
 
 ## Accessibility
 

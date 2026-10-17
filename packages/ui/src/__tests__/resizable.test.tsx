@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex';
+import { color } from '@ultima/tokens/tokens.stylex';
 import { expect, expectTypeOf, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
@@ -15,7 +16,9 @@ import { themeDocument, themes, violations } from './axe';
 
 const styles = stylex.create({
   bounds: { blockSize: '400px', inlineSize: '640px' },
-  override: { backgroundColor: 'transparent' },
+  override: { borderColor: 'transparent' },
+  quiet: { backgroundColor: color['--ult-color-border'] },
+  hover: { backgroundColor: color['--ult-color-border-hover'] },
 });
 
 function SplitFixture({ orientation = 'horizontal' }: { orientation?: ResizableOrientation }) {
@@ -152,14 +155,20 @@ test('orientation drives the layout axis and flips the bar', async () => {
   expect(root).toHaveAttribute('data-orientation', 'vertical');
   expect(getComputedStyle(root).flexDirection).toBe('column');
   expect(handle).toHaveAttribute('aria-orientation', 'vertical');
-  expect(getComputedStyle(handle).blockSize).toBe('1px');
+  expect(handle.getBoundingClientRect().height).toBeGreaterThan(0);
+  expect(handle.getBoundingClientRect().height).toBeLessThanOrEqual(1);
+  expect(getComputedStyle(handle).borderBlockStartStyle).toBe('solid');
   expect(getComputedStyle(handle).inlineSize).toBe('640px');
 });
 
-test('the handle paints a hairline and stretches its hit area past it', async () => {
+test('the handle draws a fine border on a zero-width box and stretches its hit area past it', async () => {
   await render(<SplitFixture />);
   const handle = page.getByRole('separator', { name: 'Resize navigation' }).element();
-  expect(getComputedStyle(handle).inlineSize).toBe('1px');
+  const box = handle.getBoundingClientRect();
+  expect(box.width).toBeGreaterThan(0);
+  expect(box.width).toBeLessThanOrEqual(1);
+  expect(getComputedStyle(handle).borderInlineStartStyle).toBe('solid');
+  expect(getComputedStyle(handle).backgroundColor).toBe('rgba(0, 0, 0, 0)');
   expect(getComputedStyle(handle).blockSize).toBe('400px');
 
   const stretch = getComputedStyle(handle, '::before');
@@ -182,7 +191,58 @@ test('the style slot merges on top of the paint', async () => {
     </div>,
   );
   const handle = page.getByTestId('handle').element();
-  expect(getComputedStyle(handle).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(getComputedStyle(handle).borderInlineStartColor).toBe('rgba(0, 0, 0, 0)');
+});
+
+const settled = async (element: Element) => {
+  await Promise.all(element.getAnimations().map((animation) => animation.finished));
+};
+
+test('the line darkens under a hovering pointer and while dragging', async () => {
+  const screen = await render(
+    <>
+      <SplitFixture />
+      <span data-testid="quiet" {...stylex.props(styles.quiet)} />
+      <span data-testid="hover" {...stylex.props(styles.hover)} />
+    </>,
+  );
+  const quiet = getComputedStyle(screen.getByTestId('quiet').element()).backgroundColor;
+  const darker = getComputedStyle(screen.getByTestId('hover').element()).backgroundColor;
+  expect(quiet).not.toBe(darker);
+  const handle = page.getByRole('separator', { name: 'Resize navigation' }).element();
+  expect(getComputedStyle(handle).borderInlineStartColor).toBe(quiet);
+
+  await userEvent.hover(handle);
+  await settled(handle);
+  expect(getComputedStyle(handle).borderInlineStartColor).toBe(darker);
+
+  await userEvent.unhover(handle);
+  const box = handle.getBoundingClientRect();
+  handle.dispatchEvent(
+    new PointerEvent('pointerdown', {
+      bubbles: true,
+      button: 0,
+      clientX: box.left,
+      clientY: box.top + box.height / 2,
+      isPrimary: true,
+      pointerId: 1,
+      pointerType: 'mouse',
+    }),
+  );
+  await expect.poll(() => handle.hasAttribute('data-dragging')).toBe(true);
+  await settled(handle);
+  expect(getComputedStyle(handle).borderInlineStartColor).toBe(darker);
+});
+
+test('the indicator is a raised knob with an edge', async () => {
+  await render(<SplitFixture />);
+  const handle = page.getByRole('separator', { name: 'Resize navigation' }).element();
+  const knob = getComputedStyle(handle.firstElementChild as HTMLElement);
+  expect(knob.borderTopStyle).toBe('solid');
+  expect(knob.borderTopWidth).toBe('1px');
+  expect(knob.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+  expect(knob.width).toBe('12px');
+  expect(knob.height).toBe('16px');
 });
 
 test('the handle type demands a name and the parts take no className', () => {
