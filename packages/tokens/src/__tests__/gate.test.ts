@@ -4,8 +4,8 @@ import { resolveDraft, stockDraft } from '../theme/draft.ts';
 import { contrastRatio } from '../theme/recipe.ts';
 import { gate, PAIRINGS } from '../theme/gate.ts';
 
-test('the pairing manifest is 49 pairs including the action checks', () => {
-  expect(PAIRINGS).toHaveLength(49);
+test('the pairing manifest is 51 pairs including the action checks', () => {
+  expect(PAIRINGS).toHaveLength(51);
   const action = PAIRINGS.filter(
     (pairing) =>
       pairing.foreground === '--ult-color-action-contrast' &&
@@ -19,7 +19,7 @@ test('the pairing manifest is 49 pairs including the action checks', () => {
 test('gate reports per-pairing pass/fail in both modes at full precision', () => {
   const tables = resolveDraft(stockDraft());
   const results = gate(tables);
-  expect(results).toHaveLength(49);
+  expect(results).toHaveLength(51);
   for (const result of results) {
     expect(result.dark.ratio).toBe(
       contrastRatio(tables.dark[result.foreground] ?? '', tables.dark[result.background] ?? ''),

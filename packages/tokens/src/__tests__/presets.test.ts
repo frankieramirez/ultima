@@ -28,9 +28,9 @@ function memoryStorage(): StorageLike {
 test('a fresh Neutral theme is versioned, achromatic and passes both modes', () => {
   expect(drafts.presetDraft).toBeTypeOf('function');
   const draft = drafts.presetDraft('neutral');
-  expect(draft.version).toBe(3);
+  expect(draft.version).toBe(4);
   expect(draft.recipeVersion).toBe(2);
-  expect(draft.preset).toEqual({ id: 'neutral', revision: 2 });
+  expect(draft.preset).toEqual({ id: 'neutral', revision: 3 });
   expect(draft.accentFill).toBe('ink');
   const resolved = drafts.resolveDraft(draft);
   for (const mode of ['dark', 'light'] as const) {
@@ -38,7 +38,7 @@ test('a fresh Neutral theme is versioned, achromatic and passes both modes', () 
       expect(resolved[mode][token]).toMatch(/^#([0-9a-f]{2})\1\1$/);
     }
   }
-  expect(gate(resolved)).toHaveLength(49);
+  expect(gate(resolved)).toHaveLength(51);
   expect(gate(resolved).every((pair) => pair.dark.pass && pair.light.pass)).toBe(true);
 });
 
@@ -83,7 +83,7 @@ test('edited preset documents and share links reopen exact values and reset to t
   expect(parseDraft(JSON.stringify(unsupported))).toMatchObject({ ok: false, reason: 'unknown-version' });
 });
 
-test('Neutral revision 2 resolves its Ink accent table in both modes', () => {
+test('Neutral revision 3 resolves its Ink accent table in both modes', () => {
   const resolved = drafts.resolveDraft(drafts.presetDraft('neutral'));
   const expected = {
     accent: ['#e8e8e8', '#1b1b1b'],
@@ -103,22 +103,24 @@ test('Neutral revision 2 resolves its Ink accent table in both modes', () => {
   expect(resolved.light['--ult-color-border-focus']).toBe(revision1.light['--ult-color-border-focus']);
 });
 
-test('every revision-2 preset is a version-3 draft on the four-shape table and passes all 49 pairings', () => {
+test('every revision-3 preset is a version-4 draft on the five-step shape table and passes all 51 pairings', () => {
   const shapes = { neutral: 'default', ultima: 'soft', grove: 'round', cinder: 'sharp' } as const;
-  const radii = { neutral: '1px 2px 4px 6px', ultima: '2px 4px 10px 12px', grove: '6px 10px 16px 24px', cinder: '0px 0px 0px 0px' };
+  const radii = { neutral: '2px 4px 6px 8px 12px', ultima: '2px 4px 10px 12px 16px', grove: '6px 10px 16px 24px 32px', cinder: '0px 0px 0px 0px 0px' };
+  expect(drafts.shapePresets(4)).toEqual(['sharp', 'default', 'soft', 'round']);
   expect(drafts.shapePresets(3)).toEqual(['sharp', 'default', 'soft', 'round']);
   for (const { id } of drafts.THEME_PRESETS) {
     const draft = drafts.presetDraft(id);
-    expect(draft).toMatchObject({ version: 3, preset: { id, revision: 2 }, shape: shapes[id], accentFill: id === 'neutral' ? 'ink' : 'hue' });
+    expect(draft).toMatchObject({ version: 4, preset: { id, revision: 3 }, shape: shapes[id], accentFill: id === 'neutral' ? 'ink' : 'hue' });
+    expect(drafts.presetDraft({ id, revision: 2 })).toEqual({ ...draft, version: 3, preset: { id, revision: 2 } });
     const revision1 = drafts.presetDraft({ id, revision: 1 });
     expect(revision1).toMatchObject({ version: 2, preset: { id, revision: 1 } });
     expect(revision1).not.toHaveProperty('accentFill');
     const { shape: _shape, accentFill: _fill, preset: _preset, version: _version, ...fields } = draft;
     expect(revision1).toMatchObject(fields);
     const resolved = drafts.resolveDraft(draft);
-    expect(['xs', 'sm', 'md', 'lg'].map((size) => resolved.dark[`--ult-radius-${size}`]).join(' ')).toBe(radii[id]);
+    expect(['xs', 'sm', 'md', 'lg', 'xl'].map((size) => resolved.dark[`--ult-radius-${size}`]).join(' ')).toBe(radii[id]);
     const results = gate(resolved);
-    expect(results).toHaveLength(49);
+    expect(results).toHaveLength(51);
     expect(results.every((row) => row.dark.pass && row.light.pass), id).toBe(true);
     expect(parseDraft(serializeDraft(draft))).toEqual({ ok: true, draft });
   }
@@ -164,7 +166,7 @@ test('version-2 preset drafts resolve every token unchanged after open, autosave
   }
 });
 
-test('selecting a preset from a version-2 draft is one undoable entry to version 3', () => {
+test('selecting a preset from a version-2 draft is one undoable entry to version 4', () => {
   const saved = drafts.presetDraft({ id: 'grove', revision: 1 });
   saved.overrides.dark['--ult-color-accent'] = '#224466';
   saved.locks.shape = true;
@@ -172,7 +174,7 @@ test('selecting a preset from a version-2 draft is one undoable entry to version
   const selected = commit(createHistory(saved), drafts.presetDraft('cinder'));
   expect(selected.past).toHaveLength(1);
   expect(selected.committed).toEqual(drafts.presetDraft('cinder'));
-  expect(selected.committed).toMatchObject({ version: 3, preset: { id: 'cinder', revision: 2 } });
+  expect(selected.committed).toMatchObject({ version: 4, preset: { id: 'cinder', revision: 3 } });
   expect(serializeDraft(undo(selected).committed)).toBe(before);
 });
 
@@ -188,13 +190,13 @@ test('version-2 drafts keep the frozen three-shape table and refuse version-3 fi
   if (!ignored.ok) throw new Error(ignored.message);
   expect(ignored.draft).not.toHaveProperty('accentFill');
   expect(drafts.resolveDraft(ignored.draft)).toEqual(drafts.resolveDraft(v2));
-  const v3 = drafts.presetDraft('neutral');
+  const v3 = drafts.presetDraft({ id: 'neutral', revision: 2 });
   expect(parseDraft(JSON.stringify({ ...v3, preset: { id: 'neutral', revision: 1 } }))).toMatchObject({ ok: false, reason: 'unknown-version' });
   expect(parseDraft(JSON.stringify({ ...v2, preset: { id: 'neutral', revision: 2 } }))).toMatchObject({ ok: false, reason: 'unknown-version' });
   const { accentFill: _fill, ...missing } = v3;
   expect(parseDraft(JSON.stringify(missing))).toMatchObject({ ok: false, reason: 'malformed' });
   expect(parseDraft(JSON.stringify({ ...v3, accentFill: 'tint' }))).toMatchObject({ ok: false, reason: 'malformed' });
-  expect(parseDraft(JSON.stringify({ ...v3, version: 4 }))).toMatchObject({ ok: false, reason: 'unknown-version' });
+  expect(parseDraft(JSON.stringify({ ...v3, version: 5 }))).toMatchObject({ ok: false, reason: 'unknown-version' });
 });
 
 test('a custom draft resets to the Neutral revision of its own document version', () => {

@@ -36,7 +36,7 @@ const variants = stylex.create({
   outline: {
     backgroundColor: {
       default: 'transparent',
-      ':hover': color['--ult-color-surface-raised'],
+      ':hover': color['--ult-color-surface-hover'],
       ':is([data-pressed])': color['--ult-color-accent-subtle'],
       ':is([data-pressed]):hover': color['--ult-color-accent-subtle'],
     },
@@ -54,7 +54,7 @@ const variants = stylex.create({
   ghost: {
     backgroundColor: {
       default: 'transparent',
-      ':hover': color['--ult-color-surface-raised'],
+      ':hover': color['--ult-color-surface-hover'],
       ':is([data-pressed])': color['--ult-color-accent-subtle'],
       ':is([data-pressed]):hover': color['--ult-color-accent-subtle'],
     },

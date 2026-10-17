@@ -375,7 +375,7 @@ function ColorControls({
     }));
   };
 
-  const inkable = draft.version === THEME_DRAFT_VERSION;
+  const inkable = draft.version >= 3;
 
   return (
     <div {...stylex.props(styles.stack)}>
