@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "project": "/home/f/.cache/ultima-first-screen/2026-10-17-vite-live-4711e8/work/larder",
+  "layout": "vite",
+  "command": [
+    "/home/f/Projects/private/ultima/.claude/worktrees/ultima-live/scripts/first-screen.ts",
+    "run",
+    "--layout",
+    "vite",
+    "--live"
+  ],
+  "source": {
+    "head": "183c8e72be71e44e5ba0c2e2bd78907aaffbc8a1",
+    "manifest": "da8952d30f7d141988bee8ebc2177939a45295d4ac08c475f3c0abf5183a26a8",
+    "draftDigest": "501a385a935547d2e94b9a0f9140e4bbde1564284a3f1ccfe95e4229bc6ac4bd",
+    "draftFingerprint": "ec18cb",
+    "recipeVersion": 2
+  },
+  "versions": {
+    "node": "v26.8.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "@stylexjs/stylex": "0.19.1",
+    "ultima-design": "0.2.0",
+    "vite": "8.3.4",
+    "chromium": "153.0.8010.12"
+  },
+  "expected": [
+    "system-dark",
+    "system-light",
+    "explicit-dark",
+    "explicit-light"
+  ],
+  "executed": [
+    "system-dark",
+    "system-light",
+    "explicit-dark",
+    "explicit-light"
+  ],
+  "cases": [
+    {
+      "id": "system-dark",
+      "status": "passed",
+      "snapshot": "system-dark.values.json",
+      "failures": []
+    },
+    {
+      "id": "system-light",
+      "status": "passed",
+      "snapshot": "system-light.values.json",
+      "failures": []
+    },
+    {
+      "id": "explicit-dark",
+      "status": "passed",
+      "snapshot": "explicit-dark.values.json",
+      "failures": []
+    },
+    {
+      "id": "explicit-light",
+      "status": "passed",
+      "snapshot": "explicit-light.values.json",
+      "failures": []
+    }
+  ],
+  "errors": []
+}
