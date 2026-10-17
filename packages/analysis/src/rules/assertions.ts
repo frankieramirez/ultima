@@ -21,6 +21,7 @@ const PAINT =
   /^(color|fill|stroke|background|backgroundImage|border|border(Block|Inline)(Start|End)?|border(Top|Right|Bottom|Left)|outline|boxShadow|textShadow|columnRule|textDecoration)$|Color$/;
 
 const COLOR_FUNCTION = /\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(([^()]*)\)/gi;
+const URL_REFERENCE = /\burl\((?:"[^"]*"|'[^']*'|[^()"'])*\)/gi;
 const HEX = /(^|[^\w&#-])#([0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{3,4})(?![\w-])/gi;
 
 const MODIFIERS = new Set(['not', 'resolves', 'rejects']);
@@ -38,7 +39,9 @@ function transparent(args: string): boolean {
 }
 
 /** The fixed colors a string names, apart from the fully transparent one. */
-export function fixedColors(text: string): string[] {
+export function fixedColors(input: string): string[] {
+  // A `url(#id)` paint server names an element, not a color.
+  const text = input.replace(URL_REFERENCE, ' ');
   const found: string[] = [];
   for (const match of text.matchAll(COLOR_FUNCTION)) {
     if (!transparent(match[2] ?? '')) found.push(match[0]);
@@ -284,8 +287,31 @@ export function checkAssertions(context: Context): void {
     return only?.kind === 'fixed' && rest.length === 0 ? only.text : undefined;
   }
 
-  /** Whether an expression is a `getComputedStyle()` result, directly or through a local constant or helper. */
-  function computedStyle(expression: ts.Expression, frame: Frame): boolean {
+  /** The values a `let` or `var` binding can hold: its initializer and every plain assignment in its scope. */
+  function assigned(identifier: ts.Identifier): ts.Expression[] {
+    for (let scope: ts.Node | undefined = identifier.parent; scope; scope = scope.parent) {
+      if (!(ts.isBlock(scope) || ts.isSourceFile(scope) || ts.isModuleBlock(scope) || ts.isCaseClause(scope) || ts.isDefaultClause(scope))) continue;
+      const declaration = scope.statements
+        .filter(ts.isVariableStatement)
+        .flatMap((statement) => statement.declarationList.declarations)
+        .find((entry) => ts.isIdentifier(entry.name) && entry.name.text === identifier.text);
+      if (!declaration) continue;
+      const out = declaration.initializer ? [declaration.initializer] : [];
+      const visit = (node: ts.Node) => {
+        if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(node.left) && node.left.text === identifier.text) out.push(node.right);
+        ts.forEachChild(node, visit);
+      };
+      visit(scope);
+      return out;
+    }
+    return [];
+  }
+
+  /**
+   * Whether an expression is a `getComputedStyle()` result, directly or through a local constant or helper.
+   * `maybe` is a `let` or `var` binding that holds one at some point, so what it holds at the assertion is unestablished.
+   */
+  function computedStyle(expression: ts.Expression, frame: Frame): boolean | 'maybe' {
     if (frame.depth > DEPTH) return false;
     const node = unwrap(expression);
     if (ts.isCallExpression(node)) {
@@ -296,17 +322,40 @@ export function checkAssertions(context: Context): void {
         const resolved = resolveIdentifier(callee, frame);
         if (resolved.kind === 'function') {
           const body = returned(resolved, node, frame);
-          return body !== undefined && body.expressions.some((returnedExpression) => computedStyle(returnedExpression, body.frame));
+          return body !== undefined && body.expressions.some((returnedExpression) => computedStyle(returnedExpression, body.frame) === true);
         }
       }
       return false;
     }
     if (ts.isIdentifier(node)) {
+      if (declarationOf(node, node.text)?.kind === 'mutable') {
+        // Each hop counts toward the depth limit, so `style = style` ends instead of looping.
+        const next = { ...frame, depth: frame.depth + 1 };
+        return assigned(node).some((value) => computedStyle(value, next) === true) ? 'maybe' : false;
+      }
       const resolved = resolveIdentifier(node, frame);
-      return resolved.kind === 'expression' && computedStyle(resolved.expression, resolved.frame);
+      return resolved.kind === 'expression' && computedStyle(resolved.expression, resolved.frame) === true;
     }
     return false;
   }
+
+  const mutable = (holder: ts.Expression, property: string): Read => ({
+    kind: 'unknown',
+    reason: `${holder.getText()} is declared with let or var, so whether its ${property} is the computed style at the assertion is unestablished`,
+  });
+
+  /** The computed property a binding destructured from a `getComputedStyle()` result reads. */
+  const destructured = (pattern: ts.BindingName, name: string): Read | undefined => {
+    if (ts.isObjectBindingPattern(pattern)) {
+      for (const element of pattern.elements) {
+        if (!ts.isIdentifier(element.name) || element.name.text !== name) continue;
+        const key = element.propertyName ?? element.name;
+        if (element.dotDotDotToken || !(ts.isIdentifier(key) || ts.isStringLiteralLike(key))) break;
+        return PAINT.test(key.text) ? { kind: 'paint', property: key.text } : undefined;
+      }
+    }
+    return { kind: 'unknown', reason: `${name} is destructured from a computed style in a form the checker cannot split` };
+  };
 
   /** The computed paint property an asserted value reads, when it reads one. */
   function paintRead(expression: ts.Expression, frame: Frame): Read | undefined {
@@ -323,13 +372,17 @@ export function checkAssertions(context: Context): void {
       return undefined;
     }
     if (ts.isPropertyAccessExpression(node)) {
-      if (!computedStyle(node.expression, frame)) return undefined;
-      return PAINT.test(node.name.text) ? { kind: 'paint', property: node.name.text } : undefined;
+      const style = computedStyle(node.expression, frame);
+      if (!style || !PAINT.test(node.name.text)) return undefined;
+      return style === true ? { kind: 'paint', property: node.name.text } : mutable(node.expression, node.name.text);
     }
     if (ts.isElementAccessExpression(node)) {
-      if (!computedStyle(node.expression, frame)) return undefined;
+      const style = computedStyle(node.expression, frame);
+      if (!style) return undefined;
       const key = keyText(node.argumentExpression, frame);
-      if (key !== undefined) return PAINT.test(key) ? { kind: 'paint', property: key } : undefined;
+      if (key !== undefined && !PAINT.test(key)) return undefined;
+      if (style === 'maybe') return mutable(node.expression, key ?? node.argumentExpression.getText());
+      if (key !== undefined) return { kind: 'paint', property: key };
       const argument = unwrap(node.argumentExpression);
       const tail = ts.isTemplateExpression(argument) ? (argument.templateSpans.at(-1)?.literal.text ?? '') : undefined;
       if (tail !== undefined && /Color$/.test(tail)) return { kind: 'paint', property: argument.getText() };
@@ -339,12 +392,14 @@ export function checkAssertions(context: Context): void {
       const callee = unwrap(node.expression);
       if (ts.isPropertyAccessExpression(callee)) {
         if (TEXT_METHODS.has(callee.name.text)) return paintRead(callee.expression, frame);
-        if (callee.name.text === 'getPropertyValue' && computedStyle(callee.expression, frame)) {
+        const style = callee.name.text === 'getPropertyValue' ? computedStyle(callee.expression, frame) : false;
+        if (style) {
           const [argument] = node.arguments;
           const key = argument && keyText(argument, frame);
           if (key === undefined) return { kind: 'unknown', reason: `getPropertyValue reads ${argument?.getText() ?? 'nothing'}, which the checker cannot resolve` };
           // A custom property is a token's own value, not a part's computed paint.
-          return !key.startsWith('--') && PAINT.test(camel(key)) ? { kind: 'paint', property: key } : undefined;
+          if (key.startsWith('--') || !PAINT.test(camel(key))) return undefined;
+          return style === true ? { kind: 'paint', property: key } : mutable(callee.expression, key);
         }
         return undefined;
       }
@@ -362,6 +417,15 @@ export function checkAssertions(context: Context): void {
       return undefined;
     }
     if (ts.isIdentifier(node)) {
+      const found = declarationOf(node, node.text);
+      if (found?.kind === 'mutable') {
+        const next = { ...frame, depth: frame.depth + 1 };
+        const held = assigned(node).some((value) => computedStyle(value, next) === true || paintRead(value, next) !== undefined);
+        return held ? { kind: 'unknown', reason: `${node.text} is declared with let or var, so the computed value it holds at the assertion is unestablished` } : undefined;
+      }
+      if (found?.kind === 'const' && found.destructured && found.initializer && computedStyle(found.initializer, frame) === true) {
+        return destructured(found.declaration.name, node.text);
+      }
       const resolved = resolveIdentifier(node, frame);
       return resolved.kind === 'expression' ? paintRead(resolved.expression, resolved.frame) : undefined;
     }

@@ -26,4 +26,14 @@ test('compares computed values, never a palette literal', () => {
   expect(['#3021', '#3019']).toEqual(['#3021', '#3019']);
   // A non-paint property.
   expect(getComputedStyle(button).outlineStyle).toBe('none');
+  // An SVG paint server reference names an element, not a color.
+  expect(getComputedStyle(button).fill).toBe('url("#fade")');
+  // A let-held or destructured computed style compared on a non-paint property, or with a computed value.
+  let computed = getComputedStyle(button);
+  expect(computed.visibility).toBe('hidden');
+  computed = getComputedStyle(document.documentElement);
+  expect(computed.color).not.toBe(before);
+  const { display, color } = getComputedStyle(button);
+  expect(display).toBe('block');
+  expect(color).toBe(tokenValue('color', 'var(--ult-color-text)'));
 });

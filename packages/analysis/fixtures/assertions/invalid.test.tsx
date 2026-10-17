@@ -18,4 +18,7 @@ test('pins palette values', async () => {
   await expect.poll(() => getComputedStyle(button).backgroundColor).toBe(PALETTE.surface);
   expect(style.getPropertyValue('border-top-color')).toBe('oklch(0.62 0.19 259)');
   expect(style.color).toBe(ACCENT_HEX);
+  const { backgroundColor, borderTopColor: edge } = getComputedStyle(button);
+  expect(backgroundColor).toBe('#151515');
+  expect(edge).toBe(ACCENT);
 });

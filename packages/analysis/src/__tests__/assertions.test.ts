@@ -31,6 +31,8 @@ const pinned = (file: string) => [
   at(file, 18, 74, 'pins palette values', 'backgroundColor'),
   at(file, 19, 59, 'pins palette values', 'border-top-color'),
   at(file, 20, 28, 'pins palette values', 'color'),
+  at(file, 22, 32, 'pins palette values', 'backgroundColor'),
+  at(file, 23, 21, 'pins palette values', 'borderTopColor'),
 ];
 
 describe('ULT-TEST-001', () => {
@@ -71,11 +73,17 @@ describe('ULT-TEST-001', () => {
       at(PROBE, 4, 58, 'expectPaint', 'backgroundColor', 'ULT-ANALYSIS-001'),
       at(PROBE, 11, 51, 'values the checker cannot follow', 'color', 'ULT-ANALYSIS-001'),
       at(PROBE, 14, 74, 'values the checker cannot follow', undefined, 'ULT-ANALYSIS-001'),
+      at(PROBE, 17, 28, 'values the checker cannot follow', undefined, 'ULT-ANALYSIS-001'),
+      at(PROBE, 20, 21, 'values the checker cannot follow', undefined, 'ULT-ANALYSIS-001'),
+      at(PROBE, 22, 24, 'values the checker cannot follow', undefined, 'ULT-ANALYSIS-001'),
     ]);
     assert.ok(report.diagnostics.every((diagnostic) => diagnostic.severity === 'incomplete'));
     assert.equal(report.status, 'incomplete');
     assert.match(report.diagnostics[0]?.message ?? '', /expected is a parameter/);
     assert.match(report.diagnostics[1]?.message ?? '', /resting is declared with let or var/);
+    assert.match(report.diagnostics[3]?.message ?? '', /style is declared with let or var, so whether its color is the computed style/);
+    assert.match(report.diagnostics[4]?.message ?? '', /fill is declared with let or var/);
+    assert.match(report.diagnostics[5]?.message ?? '', /rest is destructured from a computed style/);
   });
 
   test('follows a constant a sibling test file exports into every assertion that compares with it', () => {
@@ -121,5 +129,7 @@ describe('ULT-TEST-001', () => {
     assert.deepEqual(fixedColors('#0000'), []);
     assert.deepEqual(fixedColors('none'), []);
     assert.deepEqual(fixedColors('issue&#35;12 and #fade-in'), []);
+    assert.deepEqual(fixedColors('url("#fade")'), []);
+    assert.deepEqual(fixedColors("url(#abc) #3366ff"), ['#3366ff']);
   });
 });
