@@ -37,6 +37,7 @@ describe('the repository', () => {
       'ULT-REGISTRY-001',
       'ULT-SOURCE-001',
       'ULT-STYLE-001',
+      'ULT-TEST-001',
       'ULT-TOKEN-001',
       'ULT-VISUAL-001',
     ]);
@@ -44,7 +45,7 @@ describe('the repository', () => {
     for (const rule of report.rules.filter((entry) => entry.status === 'pending')) {
       assert.ok(report.unsupported.some((entry) => entry.step === rule.id), `${rule.id} is listed as unsupported`);
     }
-    assert.equal(Object.keys(RULES).length, 14);
+    assert.equal(Object.keys(RULES).length, 15);
   });
 
   test('classifies every source file, with no unclassified production source', () => {

@@ -65,6 +65,11 @@ export const RULES = {
     scope: 'React and element component declarations, and block files',
     link: `${INFRA}#visual-rules`,
   },
+  'ULT-TEST-001': {
+    status: 'blocking',
+    scope: 'Computed paint assertions in component behavior tests',
+    link: `${INFRA}#component-color-assertions`,
+  },
   'ULT-EXCEPTION-001': {
     status: 'blocking',
     scope: 'Checker configuration',

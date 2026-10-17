@@ -294,6 +294,8 @@ export function workspaceScope(files: Files): Scope {
       package: `${directory}/`,
       tests: `${directory}/src/__tests__/`,
     })),
+    // The token package's tests assert the generator's exact output, which is their contract.
+    componentTests: ['packages/ui', 'packages/elements', 'packages/blocks'].map((directory) => `${directory}/src/__tests__/`),
     unclaimed,
     anchors(document) {
       if (!anchorCache.has(document)) {

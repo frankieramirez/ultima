@@ -12,3 +12,8 @@ and no other.
 `app/` holds consumer code for `ultima check`. The CLI's tests install the whole catalogue into a smoke
 project, copy these files under `src/fixtures/`, and assert what the consumer rules report for each one,
 and that `check --files <file>` returns exactly what the full run returns for that file.
+
+`assertions/` holds component tests for `ULT-TEST-001`. The tests mount each one under a component test
+directory: `invalid.test.tsx` pins palette values in place and through constants, `palette-values.ts` is the
+sibling helper it imports from, `valid.test.tsx` holds the comparisons that pass, and `unresolved.test.tsx`
+holds values the rule reports as incomplete analysis.

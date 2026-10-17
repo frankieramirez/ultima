@@ -4,6 +4,7 @@ import { applyExceptions } from './exceptions.ts';
 import './mdx.ts';
 import { ruleStatuses } from './rules.ts';
 import { checkApi } from './rules/api.ts';
+import { checkAssertions } from './rules/assertions.ts';
 import { createContext } from './rules/context.ts';
 import { checkDocs } from './rules/docs.ts';
 import { checkImports } from './rules/imports.ts';
@@ -29,6 +30,7 @@ export function check(scope: Scope): Report {
   checkApi(context, scope.inventory.filter(({ kind }) => kind === 'react-component').map(({ path }) => path));
   checkRegistry(context);
   checkDocs(context);
+  checkAssertions(context);
 
   const { diagnostics, excepted } = applyExceptions(scope, [...scope.problems, ...context.diagnostics]);
   const unique = new Map<string, Diagnostic>();
@@ -56,6 +58,14 @@ export function check(scope: Scope): Report {
         step: 'MDX page JSX',
         reason: 'Parsed with locations kept, and read for imports, scaffold markers, stylesheets, inline styles, and the docs control and surface rules. StyleX tables in its ESM are read; the API and token rules do not cover it.',
       },
+      ...(scope.componentTests
+        ? [
+            {
+              step: 'ULT-TEST-001 values',
+              reason: `Reads expect() assertions in ${scope.componentTests.join(', ')}. A value imported from outside those directories, or returned by a function the rule does not follow into, counts as computed when the test runs. Token-output tests and docs scenario bindings are outside its scope.`,
+            },
+          ]
+        : []),
       ...scope.excluded.map(({ path, reason }) => ({ step: `Excluded: ${path}`, reason: `${reason}; a structural scope, never read.` })),
     ],
     counts,

@@ -47,6 +47,7 @@ Rule IDs are stable strings. Their wording may improve without changing the ID. 
 | `ULT-REGISTRY-001` | Authored source and registry metadata | Detect missing or stale item metadata, missing staged dependencies, and source/item shape mismatches before the registry build. Reuse the builder's source inventory and dependency logic. |
 | `ULT-SOURCE-001` | Component source layout | Enforce one source file per component, the React client directive, module-scope StyleX tables, and test placement under the package's `src/__tests__/`. Reject incomplete scaffold markers. Respect element file conventions and documented helper modules. |
 | `ULT-VISUAL-001` | React and element component declarations, and block files | Enforce the rules in [Design foundations](design-foundations.md) that one StyleX namespace shows. See [Visual rules](#visual-rules). |
+| `ULT-TEST-001` | Computed paint assertions in component behavior tests | Reject a component test that compares a computed color with a fixed CSS color literal, written in place or through a local constant. See [Component color assertions](#component-color-assertions). |
 | `ULT-EXCEPTION-001` | Checker configuration | Reject malformed, broad, stale, duplicate or unmatched exception entries and invalid authority links. |
 | `ULT-ANALYSIS-001` | Expressions relevant to a blocking rule | Report constructs the checker cannot resolve; do not interpret an unresolved spread, computed property or dependency as a successful check. |
 
@@ -190,6 +191,23 @@ Extract reusable pure inventory/dependency checks from the registry builder as n
 | `opacity` under a disabled condition (`:disabled`, `data-disabled`, `aria-disabled`) or in a namespace named for disabled | It is anything but `1` | [Disabled is a color, not opacity](design-foundations.md#opacity) |
 
 A value that draws nothing (`none`, `0`, `transparent`) passes everywhere, except that the opacity that changes nothing is `1`. A value the evaluator cannot resolve is `ULT-TOKEN-001`'s to report. A rule that needs the rendered result, such as contrast or which part a shadow lands on, belongs to the browser suites.
+
+### Component color assertions
+
+`ULT-TEST-001` enforces the component test half of [no test asserts a color value](ultima.md#what-a-build-ticket-proves). It is the pilot promotion of [Mana's agent correction contract](https://github.com/frankieramirez/mana/blob/main/docs/plans/agent-correction-contract.md#ultima-reject-fixed-palette-literals-in-component-style-assertions), delivered on [frankieramirez/mana#97](https://github.com/frankieramirez/mana/issues/97), and is recorded in [the readiness ledger](../agents/readiness.md).
+
+Its scope is the test files under `packages/ui/src/__tests__/`, `packages/elements/src/__tests__/` and `packages/blocks/src/__tests__/`, which the workspace scope names as `componentTests`. Token tests under `packages/tokens/src/__tests__/` assert the generator's exact emitted values, which is their contract, and docs scenario bindings compare with the served `/tokens.json`. Both stay outside it.
+
+The rule reads each `expect()` matcher, with `.not`, `.resolves`, `.rejects`, `expect.poll` and `expect.soft`. It rejects the matcher when both hold:
+
+- The asserted value reads a computed paint property: a property of a `getComputedStyle()` result named `color`, `fill`, `stroke`, `background`, `backgroundImage`, `boxShadow`, `textShadow`, `textDecoration`, `columnRule`, a border or outline shorthand, or anything ending in `Color`, or `getPropertyValue()` of the same property in kebab case. The read may go through a local constant or a local helper.
+- The expected value resolves to text naming a fixed color in hex or functional notation. Resolution follows `const` aliases, object and array members, template literals and concatenation, local helpers with their arguments bound, and constants exported by another file in the component test directories.
+
+These pass by the same evaluation: a value computed when the test runs, such as the property read before a documented state change or the installed token read through a probe (`tokenValue` in `packages/ui/src/__tests__/token-value.ts`); paint that draws nothing (alpha 0, which is how `transparent` computes); a custom property's own value; and hex text that is never compared with a computed paint property, such as an input's value.
+
+What it cannot follow it reports as `ULT-ANALYSIS-001`: a relevant comparison whose expected value is a parameter, a `let` or `var` binding or a destructured value, and a fixed color compared with a computed style read through a key it cannot resolve. A function's result, and a value imported from outside the component test directories, count as computed when the test runs; the report lists this under unsupported analysis, so a helper that returns a palette literal is a review question. Named colors such as `red` are not recognized, because a computed style never serializes one.
+
+When the rule landed its scope held 54 test files with 288 matcher arguments compared with a computed paint property: 255 computed at run time, 17 transparent and 16 non-color keywords such as `none`. None was a fixed color and none was unresolved.
 
 ### Exceptions
 
