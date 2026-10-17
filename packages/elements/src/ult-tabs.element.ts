@@ -54,7 +54,7 @@ const lists = stylex.create({
   underline: {
     borderBlockEndColor: color['--ult-color-border'],
     borderBlockEndStyle: 'solid',
-    borderBlockEndWidth: border.hairline,
+    borderBlockEndWidth: border.fine,
     gap: space['--ult-space-6'],
   },
   segmented: {

@@ -189,12 +189,13 @@ Compile-time constants, not in the CSS export.
 | Constant | Value |
 | --- | --- |
 | `border.hairline` | 1px |
+| `border.fine` | 0.5px |
 | `border.focus` | 2px |
 | `border.focusOffset` | 2px |
 | `z.popup` | 50 |
 | `z.toast` | 60 |
 
-One border width across the system. A line that reads too heavy is fixed by dropping a palette step (6 rather than 7), not by thinning the border: `0.5px` is one device pixel on a 2x display and either a washed-out anti-aliased line or nothing at all on a 1x one, and making it resolution-conditional would force border widths into the CSS export for two values no consumer reads.
+Two border widths, chosen by purpose under [Borders](design-foundations.md#borders). `fine` draws every edge that only decorates: Card, Alert, Empty, the Code block, Badge, Table rules, Separator, Accordion and Tabs rules, Sidebar's edge, Menubar, the Calendar and Color Field area frames, Combobox chips, and every popup, dialog, drawer and toast surface with its arrow and separators. `hairline` draws every edge a person uses to find or operate a control (fields, Checkbox, Radio, Switch, Slider's thumb, Toggle, the outline Button and Button Group) and the marks drawn with a border, Spinner's ring and Input OTP's dash. Settled on the design foundations thread (2026-10-17). Browsers round a border width to whole device pixels with a minimum of one, so `0.5px` is one crisp device pixel at a ratio of 2 and an ordinary 1px line at a ratio of 1, measured in Chromium; the earlier reading that it renders washed out or not at all was wrong. A line that reads too heavy is still fixed by dropping a palette step, never by a third width, and the widths stay compile-time constants out of the CSS export.
 
 Base UI portals its popups to the end of `<body>`, but a consumer with its own stacking contexts still needs Ultima's overlays to declare something, which is what `z.popup` is for. `z.toast` sits above it, so a toast can appear over an open dialog. Toast is not an overlay and does not read `z.popup`. No other layer is tokenised. The intra-stack `z-index` arithmetic among toast roots stays in `toast.tsx`, not a third token: a consumer does not re-skin toast physics at the semantic layer. It counts down from `z.toast`, `calc(z.toast - var(--toast-index))`, which only orders the roots inside the viewport's own stacking context; the StyleX lint takes a `zIndex` that is a number or a `.stylex` import, not a string built around a module constant.
 

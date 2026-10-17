@@ -13,7 +13,7 @@ const styles = stylex.create({
     borderColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     display: 'flex',
     gap: space['--ult-space-1'],
     // The bar's own box is the cutout of the backdrop a modal menu renders, so a
