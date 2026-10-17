@@ -66,7 +66,24 @@ export type Cell = {
 
 export type CellStatus = 'passed' | 'failed' | 'timed_out' | 'cancelled' | 'not_run';
 
-export type AxeRecord = { state: string; url: string; violations: { id: string; impact: string | null; nodes: string[] }[] };
+/** What axe measured for a `color-contrast` node, so a failure can be read without the page that raised it. */
+export type ContrastData = {
+  fgColor: string;
+  bgColor: string;
+  contrastRatio: number;
+  expectedContrastRatio: string;
+  fontSize: string;
+  fontWeight: string;
+  messageKey: string | null;
+};
+export type AxeNode = { target: string; data?: ContrastData };
+export type AxeRecord = { state: string; url: string; violations: { id: string; impact: string | null; nodes: AxeNode[] }[] };
+
+/** One node for a failure message: its target, and for a contrast node its colors and measured ratio. */
+export function describeNode(node: AxeNode): string {
+  const data = node.data;
+  return data ? `${node.target}: ${data.fgColor} on ${data.bgColor} is ${data.contrastRatio}:1, needs ${data.expectedContrastRatio}` : node.target;
+}
 
 export type CellResult = {
   caseId: string;
@@ -458,13 +475,28 @@ async function runCell(browser: Browser, cell: Cell, record: CellResult, options
     const axe = async (state: string) => {
       await live.addScriptTag({ content: options.axeSource });
       const found = await live.evaluate(async (tags) => {
-        const runner = (window as unknown as { axe: { run(context: Document, options: object): Promise<{ violations: { id: string; impact: string | null; nodes: { target: unknown[] }[] }[] }> } }).axe;
+        type Check = { id: string; data?: unknown };
+        type Found = { id: string; impact: string | null; nodes: { target: unknown[]; any: Check[]; all: Check[]; none: Check[] }[] };
+        const runner = (window as unknown as { axe: { run(context: Document, options: object): Promise<{ violations: Found[] }> } }).axe;
         const results = await runner.run(document, { runOnly: { type: 'tag', values: tags }, rules: { 'color-contrast': { enabled: true } } });
-        return results.violations.map((violation) => ({ id: violation.id, impact: violation.impact, nodes: violation.nodes.map((node) => node.target.join(' ')) }));
+        const contrast = (checks: Check[]) => {
+          const data = checks.find((check) => check.id === 'color-contrast')?.data as Record<string, unknown> | undefined;
+          if (!data || typeof data.contrastRatio !== 'number') return undefined;
+          const { fgColor, bgColor, contrastRatio, expectedContrastRatio, fontSize, fontWeight, messageKey } = data;
+          return { fgColor, bgColor, contrastRatio, expectedContrastRatio, fontSize, fontWeight, messageKey: messageKey ?? null } as ContrastData;
+        };
+        return results.violations.map((violation) => ({
+          id: violation.id,
+          impact: violation.impact,
+          nodes: violation.nodes.map((node) => {
+            const data = contrast([...node.any, ...node.all, ...node.none]);
+            return data ? { target: node.target.join(' '), data } : { target: node.target.join(' ') };
+          }),
+        }));
       }, AXE_TAGS);
       record.axe.push({ state, url: live.url(), violations: found });
       if (found.length > 0) {
-        throw new AssertionError({ message: `axe found ${found.length} violation(s) in the ${state} state: ${found.map((v) => `${v.id} (${v.nodes.join(', ')})`).join('; ')}` });
+        throw new AssertionError({ message: `axe found ${found.length} violation(s) in the ${state} state: ${found.map((v) => `${v.id} (${v.nodes.map(describeNode).join(', ')})`).join('; ')}` });
       }
     };
 
