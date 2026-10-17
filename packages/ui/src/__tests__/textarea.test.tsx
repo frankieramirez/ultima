@@ -128,7 +128,7 @@ test('disabled takes the muted fill and ink, not opacity', async () => {
   expect(getComputedStyle(disabled).color).not.toBe(getComputedStyle(enabled).color);
 });
 
-test('hover darkens the edge, not the fill, and the focus outline lies over the edge', async () => {
+test('hover darkens the edge, not the fill, and the focus outline sits outside the edge', async () => {
   const screen = await render(<Textarea aria-label="Live" />);
   const live = screen.getByRole('textbox', { name: 'Live' }).element();
   const resting = getComputedStyle(live);
@@ -138,7 +138,7 @@ test('hover darkens the edge, not the fill, and the focus outline lies over the 
   expect(getComputedStyle(live).borderTopColor).not.toBe(edge);
   expect(getComputedStyle(live).backgroundColor).toBe(fill);
   await userEvent.tab();
-  expect(getComputedStyle(live).outlineOffset).toBe('-1px');
+  expect(getComputedStyle(live).outlineOffset).toBe('2px');
 });
 
 test('size sets min-height rather than height, and resize is vertical', async () => {

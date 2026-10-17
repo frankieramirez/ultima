@@ -97,7 +97,7 @@ A border answers one of four questions, and the question picks the token:
 - An outline survives Windows forced-colors mode, where `box-shadow` focus rings disappear.
 - An outline sits outside the box with an offset, so it can't be mistaken for the control's own edge on a button.
 
-The focus outline is 2px `--ult-color-border-focus`, in one of two placements. On buttons and selection controls it sits 2px outside the control. On fields it lies over the field's own edge, so the field looks as if its border has turned the focus color. An invalid field focuses in danger. Items in menus and lists show focus with the `surface-hover` highlight instead of a ring, because the highlight moves with the arrow keys. A popup that Base UI focuses only as a fallback container sets `outline: none`, since the popup itself is the visible signal.
+The focus outline is 2px `--ult-color-border-focus`, and it sits 2px outside the control on buttons, selection controls and fields alike. The gap keeps the ring apart from the control's own edge, so focus reads as a separate mark rather than a recoloured border, and one placement everywhere means a person learns it once. An invalid field focuses in danger. Items in menus and lists show focus with the `surface-hover` highlight instead of a ring, because the highlight moves with the arrow keys. A popup that Base UI focuses only as a fallback container sets `outline: none`, since the popup itself is the visible signal.
 
 Never use an outline for decoration, and never draw focus with `box-shadow`. shadcn's translucent 3px ring measures about 1.5:1 and disappears in forced colors, which is why Ultima doesn't use one.
 

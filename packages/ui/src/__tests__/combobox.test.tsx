@@ -286,8 +286,8 @@ test('the input group is Input Group\'s field: a hover edge, an inset ring, and 
   await group.hover();
   await expect.poll(() => getComputedStyle(group.element()).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
   await userEvent.tab();
-  // Inset by the hairline, so the ring replaces the edge rather than haloing it.
-  expect(parseFloat(getComputedStyle(group.element()).outlineOffset)).toBeLessThan(0);
+  // Outside the edge with a gap, as on every other control.
+  expect(parseFloat(getComputedStyle(group.element()).outlineOffset)).toBeGreaterThan(0);
 
   const off = screen.getByTestId('off-group').element();
   expect(getComputedStyle(off).opacity).toBe('1');

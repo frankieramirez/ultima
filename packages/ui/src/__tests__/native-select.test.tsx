@@ -288,10 +288,10 @@ test('hover darkens the edge, not the fill, and a disabled select keeps its rest
   expect(getComputedStyle(off).borderTopColor).toBe(offEdge);
 });
 
-test('the focus outline lies over the edge', async () => {
+test('the focus outline sits outside the edge with a gap', async () => {
   const screen = await render(<FruitSelect aria-label="Focus" />);
   await userEvent.tab();
-  expect(getComputedStyle(screen.getByRole('combobox', { name: 'Focus' }).element()).outlineOffset).toBe('-1px');
+  expect(getComputedStyle(screen.getByRole('combobox', { name: 'Focus' }).element()).outlineOffset).toBe('2px');
 });
 
 test('public prop types expose the style slot and the size axis on Select only', () => {
