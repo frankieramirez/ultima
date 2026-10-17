@@ -418,7 +418,8 @@ describe('executing the DAG', () => {
 
   test('the overall deadline stops what runs and leaves the rest not run', async () => {
     const pids = join(scratch, `overall-${Date.now()}.json`);
-    const report = await runIn(repository(), planOf(['catalogue-freshness', 'typecheck']), { 'catalogue-freshness': controlled('hang', () => [pids]), typecheck: passing('t') }, { overallDeadlineSeconds: 1 });
+    const report = await runIn(repository(), planOf(['catalogue-freshness', 'typecheck']), { 'catalogue-freshness': controlled('hang', () => [pids]), typecheck: passing('t') }, { overallDeadlineSeconds: 5 });
+    assert.equal(report.preparation.status, 'passed', 'capture and preparation finish inside the deadline, so the hanging check starts');
     assert.equal(stateOf(report, 'catalogue-freshness')?.status, 'timed_out');
     assert.equal(stateOf(report, 'typecheck')?.status, 'not_run');
     assert.match(stateOf(report, 'typecheck')?.reason ?? '', /overall deadline expired before it started/);
