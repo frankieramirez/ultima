@@ -21,4 +21,5 @@ test('pins palette values', async () => {
   const { backgroundColor, borderTopColor: edge } = getComputedStyle(button);
   expect(backgroundColor).toBe('#151515');
   expect(edge).toBe(ACCENT);
+  expect(style.backgroundColor).toBe('color(display-p3 1 0 0)');
 });

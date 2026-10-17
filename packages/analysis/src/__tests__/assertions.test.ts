@@ -33,6 +33,7 @@ const pinned = (file: string) => [
   at(file, 20, 28, 'pins palette values', 'color'),
   at(file, 22, 32, 'pins palette values', 'backgroundColor'),
   at(file, 23, 21, 'pins palette values', 'borderTopColor'),
+  at(file, 24, 38, 'pins palette values', 'backgroundColor'),
 ];
 
 describe('ULT-TEST-001', () => {
@@ -126,6 +127,11 @@ describe('ULT-TEST-001', () => {
     assert.deepEqual(fixedColors('oklch(0.6 0.1 200 / 0.5)'), ['oklch(0.6 0.1 200 / 0.5)']);
     assert.deepEqual(fixedColors('rgba(0, 0, 0, 0)'), []);
     assert.deepEqual(fixedColors('rgb(0 0 0 / 0)'), []);
+    assert.deepEqual(fixedColors('color(display-p3 1 0.5 0)'), ['color(display-p3 1 0.5 0)']);
+    assert.deepEqual(fixedColors('color(display-p3 1 0 0)'), ['color(display-p3 1 0 0)']);
+    assert.deepEqual(fixedColors('color(display-p3 1 0 0 / 0)'), []);
+    assert.deepEqual(fixedColors('hsla(0, 0%, 0%, 0)'), []);
+    assert.deepEqual(fixedColors('rgba(1, 2, 3, 0.5)'), ['rgba(1, 2, 3, 0.5)']);
     assert.deepEqual(fixedColors('#0000'), []);
     assert.deepEqual(fixedColors('none'), []);
     assert.deepEqual(fixedColors('issue&#35;12 and #fade-in'), []);

@@ -31,10 +31,13 @@ const TEST_CALLS = new Set(['test', 'it', 'describe']);
 const DEPTH = 24;
 
 /** A color that paints nothing: `rgba(0, 0, 0, 0)` is what `transparent` computes to, never a palette value. */
-function transparent(args: string): boolean {
+function transparent(name: string, args: string): boolean {
   const slash = args.split('/');
-  const parts = (slash[0] ?? '').split(/[\s,]+/).filter(Boolean);
-  const alpha = slash.length > 1 ? slash[1]?.trim() : parts.length === 4 ? parts[3] : undefined;
+  // Every modern form, `color(display-p3 1 0 0)` among them, puts alpha after a slash. Only the legacy
+  // comma forms of rgb() and hsl() carry it as a fourth component.
+  const legacy = /^(rgba?|hsla?)$/i.test(name) && (slash[0] ?? '').includes(',');
+  const parts = (slash[0] ?? '').split(',').map((part) => part.trim());
+  const alpha = slash.length > 1 ? slash[1]?.trim() : legacy && parts.length === 4 ? parts[3] : undefined;
   return alpha !== undefined && Number.parseFloat(alpha) === 0;
 }
 
@@ -44,7 +47,7 @@ export function fixedColors(input: string): string[] {
   const text = input.replace(URL_REFERENCE, ' ');
   const found: string[] = [];
   for (const match of text.matchAll(COLOR_FUNCTION)) {
-    if (!transparent(match[2] ?? '')) found.push(match[0]);
+    if (!transparent(match[1] ?? '', match[2] ?? '')) found.push(match[0]);
   }
   for (const match of text.matchAll(HEX)) {
     const digits = match[2] ?? '';
