@@ -1,0 +1,5 @@
+
+> ultima-monorepo@ typecheck /tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-cancel/source
+> node --experimental-strip-types scripts/catalogue/preflight.ts "tsc -p tsconfig.json && pnpm -r typecheck"
+
+ ELIFECYCLE  Command failed.

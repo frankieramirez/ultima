@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "check": "registry-build",
+  "scope": "whole",
+  "planned": {
+    "argv": [
+      "pnpm",
+      "registry:build"
+    ],
+    "cwd": "."
+  },
+  "executed": {
+    "argv": [
+      "pnpm",
+      "registry:build"
+    ],
+    "cwd": "source",
+    "status": "exited",
+    "exitCode": 0,
+    "signal": null
+  },
+  "configuration": [
+    {
+      "path": "package.json",
+      "sha256": "73890277f3bb9855d40c544f4ec4f95020cfac2248814fbd5d5c1aadd0bb2cca"
+    },
+    {
+      "path": "scripts/build-registry.ts",
+      "sha256": "6341d0d29c90a88018ee416657139673e492ed8be0c7edc979b05c9b236ffd18"
+    },
+    {
+      "path": "packages/tokens/scripts/build-tokens.ts",
+      "sha256": "fec231abf0454fd60ac6e77ad6b4331844d9565defaa2829881ddcb630d8b79e"
+    },
+    {
+      "path": "packages/elements/scripts/build.ts",
+      "sha256": "20945eeeb79691d3ccc5077625ffcb8f63ad814c71f154cd5a0d95011f62f073"
+    },
+    {
+      "path": "packages/elements/scripts/bundle.ts",
+      "sha256": "5ae295aed4cf7ca4904713c0cd9307257d6baf81d76f370dcfe854b48b9dd61d"
+    }
+  ],
+  "obligations": [
+    "ci.yml: pnpm registry:build"
+  ],
+  "discovered": [],
+  "report": null,
+  "notes": [],
+  "verdict": "passed",
+  "reason": null
+}

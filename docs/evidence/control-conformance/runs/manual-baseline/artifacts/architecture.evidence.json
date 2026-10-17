@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "check": "architecture",
+  "scope": "global",
+  "planned": {
+    "argv": [
+      "pnpm",
+      "check:architecture"
+    ],
+    "cwd": "."
+  },
+  "executed": {
+    "argv": [
+      "pnpm",
+      "check:architecture",
+      "--format",
+      "json"
+    ],
+    "cwd": "source",
+    "status": "exited",
+    "exitCode": 0,
+    "signal": null
+  },
+  "configuration": [
+    {
+      "path": "package.json",
+      "sha256": "73890277f3bb9855d40c544f4ec4f95020cfac2248814fbd5d5c1aadd0bb2cca"
+    },
+    {
+      "path": "scripts/check-architecture.ts",
+      "sha256": "5eee7df16a60fd8bc1c716cc51c1ccea44b77b4e82a6db79f587c2817112ed59"
+    }
+  ],
+  "obligations": [
+    "ci.yml: pnpm check:architecture"
+  ],
+  "discovered": [],
+  "report": "artifacts/architecture.json",
+  "notes": [],
+  "verdict": "passed",
+  "reason": "14 rule(s) over 1036 file(s), 53 excepted"
+}

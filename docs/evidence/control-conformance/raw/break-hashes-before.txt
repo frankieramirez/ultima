@@ -1,0 +1,2 @@
+e8944e69b26e044ca36716c865457ba1dfd204187721822aaaf8c079a138367a  verification/breaks/dialog.keyboard-dismissal.patch
+1709c5b9d10562e8216dfc6e1f859c397f6c25a162ad5d05f086890243aafcab  packages/ui/src/dialog.tsx

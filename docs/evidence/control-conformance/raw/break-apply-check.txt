@@ -1,0 +1,3 @@
+Checking patch packages/ui/src/dialog.tsx...
+Hunk #1 succeeded at 95 (offset 4 lines).
+check=0

@@ -1,0 +1,14 @@
+{
+  "contract": "control/0",
+  "mode": "report",
+  "file": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/lies/no-digest.json",
+  "valid": false,
+  "findings": [
+    {
+      "rule": "report.source",
+      "severity": "error",
+      "path": null,
+      "message": "source.identity.manifest.digest must record the hash of the checked bytes"
+    }
+  ]
+}

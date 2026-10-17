@@ -1,0 +1,10 @@
+verify: capturing the checkout into /tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-source-change/source
+verify: preparing dependencies: pnpm install --frozen-lockfile --prefer-offline --config.confirmModulesPurge=false
+verify: architecture started
+verify: catalogue-freshness started
+verify: catalogue-freshness passed
+verify: typecheck started
+verify: architecture passed
+verify: registry-build started
+verify: registry-build passed
+verify: typecheck passed

@@ -1,0 +1,14 @@
+2026-10-17T22:21:26Z
+43fd8346b0fc5589b95ba24006ff51e2acdd8ed7
+43fd8346b0fc5589b95ba24006ff51e2acdd8ed7 Design pass: give Color Field's hue slider Slider's thumb (#910) 2026-10-17T17:40:38-04:00
+v22.22.0
+10.33.0
+Python 3.13.16
+git version 2.43.0
+Linux 6.18.44-fc-v139
+4
+chromium
+chromium-1194
+chromium_headless_shell-1194
+ffmpeg-1011
+5f39fa5c11210e15aefe108f8d214a6cb588032e30de9fa31376b69d8852a812  pnpm-lock.yaml

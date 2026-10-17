@@ -1,0 +1,69 @@
+{
+  "contract": "control/0",
+  "mode": "dynamic",
+  "root": "/tmp/tmp.j5OEzcKFyD/break-incomplete",
+  "static": {
+    "conformant": true,
+    "findings": []
+  },
+  "worktree": "/tmp/conform-r938s13f/tree",
+  "feature": "f",
+  "probes": [
+    {
+      "probe": "list",
+      "status": "passed",
+      "detail": "every feature record is listed",
+      "argv": "python3 cli.py list --json",
+      "exit": 0,
+      "ms": 46
+    },
+    {
+      "probe": "describe",
+      "status": "passed",
+      "detail": "describe feature --json exits 0 with JSON",
+      "argv": "python3 cli.py describe feature f --json",
+      "exit": 0,
+      "ms": 37
+    },
+    {
+      "probe": "unknown",
+      "status": "passed",
+      "detail": "an unknown feature is a usage error",
+      "argv": "python3 cli.py feature conform-missing-feature --json",
+      "exit": 2,
+      "ms": 35
+    },
+    {
+      "probe": "baseline",
+      "status": "passed",
+      "detail": "feature f passes at HEAD",
+      "argv": "python3 cli.py feature f --json",
+      "exit": 0,
+      "ms": 25
+    },
+    {
+      "probe": "break",
+      "status": "failed",
+      "detail": "expected exit [1], got 3",
+      "argv": "python3 cli.py feature f --json",
+      "exit": 3,
+      "ms": 38
+    },
+    {
+      "probe": "restore",
+      "status": "passed",
+      "detail": "reverting the break patch passes again",
+      "argv": "python3 cli.py feature f --json",
+      "exit": 0,
+      "ms": 30
+    },
+    {
+      "probe": "parallel",
+      "status": "passed",
+      "detail": "two concurrent runs both pass with distinct run ids",
+      "argv": "python3 cli.py feature f --json",
+      "exit": 0,
+      "ms": 24
+    }
+  ]
+}

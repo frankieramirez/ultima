@@ -1,0 +1,34 @@
+{
+  "contract": "control/0",
+  "mode": "dynamic",
+  "root": "/home/user/wt/ultima-102",
+  "static": {
+    "conformant": true,
+    "findings": [
+      {
+        "rule": "feature.source-roots",
+        "severity": "warn",
+        "path": "verification/features/dialog.json",
+        "message": "sourceRoots is empty, so changed-file selection and refresh cannot see this feature's code unless the CLI derives it"
+      },
+      {
+        "rule": "feature.source-roots",
+        "severity": "warn",
+        "path": "verification/features/motion.json",
+        "message": "sourceRoots is empty, so changed-file selection and refresh cannot see this feature's code unless the CLI derives it"
+      }
+    ]
+  },
+  "worktree": "/tmp/conform-0x22py2k/tree",
+  "feature": "dialog",
+  "probes": [
+    {
+      "probe": "prepare",
+      "status": "blocked",
+      "detail": "Prepare: exited 1",
+      "argv": "pnpm install --frozen-lockfile --offline",
+      "exit": 1,
+      "ms": 1213
+    }
+  ]
+}

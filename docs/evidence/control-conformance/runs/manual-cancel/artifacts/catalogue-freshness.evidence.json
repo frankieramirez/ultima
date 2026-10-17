@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "check": "catalogue-freshness",
+  "scope": "global",
+  "planned": {
+    "argv": [
+      "pnpm",
+      "catalogue:check"
+    ],
+    "cwd": "."
+  },
+  "executed": {
+    "argv": [
+      "pnpm",
+      "catalogue:check",
+      "--json"
+    ],
+    "cwd": "source",
+    "status": "exited",
+    "exitCode": 0,
+    "signal": null
+  },
+  "configuration": [
+    {
+      "path": "package.json",
+      "sha256": "73890277f3bb9855d40c544f4ec4f95020cfac2248814fbd5d5c1aadd0bb2cca"
+    },
+    {
+      "path": "scripts/catalogue/generate.ts",
+      "sha256": "c253eb6cd0b3240cf76ebfb4510e07c5ac3df762f29af7ba6ff6207fa850990a"
+    },
+    {
+      "path": "scripts/catalogue/optimizer-policy.ts",
+      "sha256": "436e918a2c323ae4eb2ebd5abdcd81138d3d1b8d9c63a0de72239329eddb3867"
+    }
+  ],
+  "obligations": [
+    "ci.yml: pnpm catalogue:check"
+  ],
+  "discovered": [],
+  "report": "artifacts/catalogue-freshness.json",
+  "notes": [],
+  "verdict": "passed",
+  "reason": "66 generated file(s) fresh; the feature map is valid"
+}

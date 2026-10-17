@@ -1,0 +1,278 @@
+
+> ultima-monorepo@ catalogue:check /tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-break/source
+> node --experimental-strip-types scripts/catalogue/generate.ts check --json
+
+{
+  "schemaVersion": 1,
+  "command": "catalogue:check",
+  "status": "fresh",
+  "outputs": [
+    {
+      "path": "apps/docs/src/generated/anatomy-tabs.ts",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/accordion.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/alert-dialog.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/alert.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/aspect-ratio.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/avatar.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/badge.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/breadcrumb.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/button-group.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/button.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/calendar.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/card.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/checkbox.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/code.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/collapsible.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/color-field.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/combobox.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/command.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/context-menu.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/date-picker.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/dialog.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/drawer.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/dropdown-menu.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/empty.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/field.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/fieldset.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/hover-card.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/index.ts",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/input-group.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/input-otp.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/input.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/menubar.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/meter.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/native-select.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/navigation-menu.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/pagination.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/popover.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/progress.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/radio-group.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/resizable.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/scroll-area.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/select.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/separator.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/sidebar.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/skeleton.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/slider.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/spinner.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/stat.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/switch.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/table.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/tabs.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/textarea.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/theme-mode.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/theme-scope.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/toast.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/toggle-group.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/toggle.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/anatomy/tooltip.tsx",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/blocks.ts",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/catalogue.ts",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/component-pages.ts",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/elements.ts",
+      "state": "fresh"
+    },
+    {
+      "path": "apps/docs/src/generated/recipes.ts",
+      "state": "fresh"
+    },
+    {
+      "path": "packages/ui/src/index.ts",
+      "state": "fresh"
+    },
+    {
+      "path": "registry/items.config.ts",
+      "state": "fresh"
+    },
+    {
+      "path": "scripts/generated/browser-dependencies.ts",
+      "state": "fresh"
+    }
+  ],
+  "stale": [],
+  "catalogue": [],
+  "featureMap": []
+}

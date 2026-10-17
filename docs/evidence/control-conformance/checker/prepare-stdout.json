@@ -1,0 +1,21 @@
+{
+  "contract": "control/0",
+  "mode": "dynamic",
+  "root": "/tmp/tmp.j5OEzcKFyD/prepare-stdout",
+  "static": {
+    "conformant": true,
+    "findings": []
+  },
+  "worktree": "/tmp/conform-hxdj7j5b/tree",
+  "feature": "f",
+  "probes": [
+    {
+      "probe": "prepare",
+      "status": "blocked",
+      "detail": "Prepare: exited 1",
+      "argv": "python3 prepare.py",
+      "exit": 1,
+      "ms": 18
+    }
+  ]
+}

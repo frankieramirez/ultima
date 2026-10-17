@@ -1,0 +1,23 @@
+Scope: all 8 workspace projects
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +343
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 343, reused 177, downloaded 0, added 0
+Progress: resolved 343, reused 343, downloaded 0, added 262
+Progress: resolved 343, reused 343, downloaded 0, added 343, done
+
+devDependencies:
++ @mdx-js/mdx 3.1.1
++ @types/node 26.5.0
++ playwright 1.63.0
++ typescript 5.9.3
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: esbuild@0.28.2.                                     │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 6.2s using pnpm v10.33.0

@@ -1,0 +1,70 @@
+{
+  "contract": "control/0",
+  "mode": "static",
+  "root": "/home/user/wt/ultima-102",
+  "control": {
+    "agentFile": "AGENTS.md",
+    "skill": ".agents/skills/testing-ultima-docs/SKILL.md",
+    "keys": {
+      "Command": "node --experimental-strip-types scripts/verify.ts",
+      "Prepare": "pnpm install --frozen-lockfile --offline",
+      "Features": "verification/features",
+      "Scenarios": "verification/scenarios",
+      "Bindings": "packages, apps",
+      "Breaks": "verification/breaks"
+    }
+  },
+  "counts": {
+    "features": 11,
+    "scenarios": 14,
+    "bindings": 17,
+    "breaks": 1
+  },
+  "features": [
+    "blocks",
+    "catalogue",
+    "dialog",
+    "elements",
+    "first-screen",
+    "motion",
+    "screen-composition",
+    "site-discovery",
+    "site-landing",
+    "site-navigation",
+    "theme-studio"
+  ],
+  "scenarios": {
+    "blocks.preview": "blocks",
+    "catalogue.filter-and-demo": "catalogue",
+    "dialog.keyboard-dismissal": "dialog",
+    "elements.fixture-interactions": "elements",
+    "first-screen.agent-runs": "first-screen",
+    "motion.reduced-loop": "motion",
+    "screen-composition.copy-bundles": "screen-composition",
+    "screen-composition.recipe-index": "screen-composition",
+    "site-discovery.discovery-surface": "site-discovery",
+    "site-landing.dot-field": "site-landing",
+    "site-landing.without-field": "site-landing",
+    "site-navigation.route-and-mode": "site-navigation",
+    "theme-studio.draft-history": "theme-studio",
+    "theme-studio.pane-boundaries": "theme-studio"
+  },
+  "breaks": [
+    "dialog.keyboard-dismissal"
+  ],
+  "conformant": true,
+  "findings": [
+    {
+      "rule": "feature.source-roots",
+      "severity": "warn",
+      "path": "verification/features/dialog.json",
+      "message": "sourceRoots is empty, so changed-file selection and refresh cannot see this feature's code unless the CLI derives it"
+    },
+    {
+      "rule": "feature.source-roots",
+      "severity": "warn",
+      "path": "verification/features/motion.json",
+      "message": "sourceRoots is empty, so changed-file selection and refresh cannot see this feature's code unless the CLI derives it"
+    }
+  ]
+}

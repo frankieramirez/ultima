@@ -1,0 +1,190 @@
+
+> ultima-monorepo@ check:architecture /tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-source-change/source
+> node --experimental-strip-types scripts/check-architecture.ts --format json
+
+{
+  "schemaVersion": 1,
+  "command": "check:architecture",
+  "status": "clean",
+  "scopes": [
+    {
+      "kind": "block",
+      "files": 23
+    },
+    {
+      "kind": "content",
+      "files": 63
+    },
+    {
+      "kind": "declarations",
+      "files": 4
+    },
+    {
+      "kind": "demo",
+      "files": 177
+    },
+    {
+      "kind": "docs",
+      "files": 93
+    },
+    {
+      "kind": "element",
+      "files": 9
+    },
+    {
+      "kind": "fixture",
+      "files": 51
+    },
+    {
+      "kind": "generated",
+      "files": 66
+    },
+    {
+      "kind": "metadata",
+      "files": 87
+    },
+    {
+      "kind": "react-component",
+      "files": 56
+    },
+    {
+      "kind": "react-helper",
+      "files": 2
+    },
+    {
+      "kind": "setup-template",
+      "files": 3
+    },
+    {
+      "kind": "test",
+      "files": 225
+    },
+    {
+      "kind": "token-source",
+      "files": 17
+    },
+    {
+      "kind": "tooling",
+      "files": 160
+    }
+  ],
+  "rules": [
+    {
+      "id": "ULT-TOKEN-001",
+      "status": "blocking",
+      "scope": "React and element component declarations, and block files",
+      "link": "docs/spec/agent-infrastructure.md#values-and-runtime-styles"
+    },
+    {
+      "id": "ULT-STYLE-001",
+      "status": "blocking",
+      "scope": "Production components, block files and docs styling",
+      "link": "docs/spec/agent-infrastructure.md#rule-catalogue"
+    },
+    {
+      "id": "ULT-PRIMITIVE-001",
+      "status": "blocking",
+      "scope": "Production React and element components",
+      "link": "docs/spec/agent-infrastructure.md#target-and-api-distinctions"
+    },
+    {
+      "id": "ULT-API-001",
+      "status": "blocking",
+      "scope": "Public React wrappers and styled parts",
+      "link": "docs/spec/agent-infrastructure.md#target-and-api-distinctions"
+    },
+    {
+      "id": "ULT-API-002",
+      "status": "blocking",
+      "scope": "Code consuming the caller's StyleX slot",
+      "link": "docs/spec/agent-infrastructure.md#target-and-api-distinctions"
+    },
+    {
+      "id": "ULT-DOCS-001",
+      "status": "blocking",
+      "scope": "Docs application layout and chrome, and block files",
+      "link": "docs/spec/agent-infrastructure.md#docs-controls-and-surfaces"
+    },
+    {
+      "id": "ULT-DOCS-002",
+      "status": "blocking",
+      "scope": "Docs application layout and chrome, including executable page JSX, and block files",
+      "link": "docs/spec/agent-infrastructure.md#docs-controls-and-surfaces"
+    },
+    {
+      "id": "ULT-DOCS-REVIEW-001",
+      "status": "advisory",
+      "scope": "Ambiguous handler-driven widgets in docs chrome (advisory)",
+      "link": "docs/spec/agent-infrastructure.md#docs-controls-and-surfaces"
+    },
+    {
+      "id": "ULT-IMPORT-001",
+      "status": "blocking",
+      "scope": "Production workspace imports and re-exports",
+      "link": "docs/spec/agent-infrastructure.md#import-and-registry-boundaries"
+    },
+    {
+      "id": "ULT-REGISTRY-001",
+      "status": "blocking",
+      "scope": "Authored source and registry metadata",
+      "link": "docs/spec/agent-infrastructure.md#import-and-registry-boundaries"
+    },
+    {
+      "id": "ULT-SOURCE-001",
+      "status": "blocking",
+      "scope": "Component source layout",
+      "link": "docs/spec/agent-infrastructure.md#authority-and-source-scopes"
+    },
+    {
+      "id": "ULT-VISUAL-001",
+      "status": "blocking",
+      "scope": "React and element component declarations, and block files",
+      "link": "docs/spec/agent-infrastructure.md#visual-rules"
+    },
+    {
+      "id": "ULT-EXCEPTION-001",
+      "status": "blocking",
+      "scope": "Checker configuration",
+      "link": "docs/spec/agent-infrastructure.md#exceptions"
+    },
+    {
+      "id": "ULT-ANALYSIS-001",
+      "status": "blocking",
+      "scope": "Expressions relevant to a blocking rule",
+      "link": "docs/spec/agent-infrastructure.md#rule-catalogue"
+    }
+  ],
+  "unsupported": [
+    {
+      "step": "MDX page JSX",
+      "reason": "Parsed with locations kept, and read for imports, scaffold markers, stylesheets, inline styles, and the docs control and surface rules. StyleX tables in its ESM are read; the API and token rules do not cover it."
+    },
+    {
+      "step": "Excluded: **/node_modules",
+      "reason": "vendored dependencies; a structural scope, never read."
+    },
+    {
+      "step": "Excluded: **/dist",
+      "reason": "build output; a structural scope, never read."
+    },
+    {
+      "step": "Excluded: registry/ultima",
+      "reason": "registry build output; a structural scope, never read."
+    },
+    {
+      "step": "Excluded: apps/docs/public",
+      "reason": "static assets and the generated element bundles; a structural scope, never read."
+    },
+    {
+      "step": "Excluded: .*",
+      "reason": "Git, CI and agent configuration; a structural scope, never read."
+    }
+  ],
+  "counts": {
+    "blocking": 0,
+    "advisory": 0,
+    "incomplete": 0,
+    "excepted": 53
+  },
+  "diagnostics": []
+}

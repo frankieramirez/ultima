@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "check": "typecheck",
+  "scope": "global",
+  "planned": {
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "cwd": "."
+  },
+  "executed": {
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "cwd": "source",
+    "status": "cancelled",
+    "exitCode": 0,
+    "signal": null
+  },
+  "configuration": [
+    {
+      "path": "package.json",
+      "sha256": "73890277f3bb9855d40c544f4ec4f95020cfac2248814fbd5d5c1aadd0bb2cca"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "sha256": "af261372097773546d4000a74b771c8c09c4114ca5e9dd715c95018b44e1fbe3"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "653a3bb699ce4edde592d9022667ef6d20bf7d5e8a534405190083431f2fa763"
+    },
+    {
+      "path": "tsconfig.base.json",
+      "sha256": "e4c184f9163e32954a8478064f137f3e4d89370a77ef79ea8a4117432777a144"
+    },
+    {
+      "path": "packages/analysis/package.json",
+      "sha256": "c00bba1795ceb60346a9c26820bd50d0ff1738cc7d02f2163c29b90f8df13cb7"
+    },
+    {
+      "path": "packages/analysis/tsconfig.json",
+      "sha256": "565b6302c5a61f2bb9c546e913cc188252986ae3aaf111efd99dee2fc9a73afa"
+    },
+    {
+      "path": "packages/blocks/package.json",
+      "sha256": "dd6d667164eed04f84bd5f9d20f4719ef541974dc1990a642c589960c4bb74f6"
+    },
+    {
+      "path": "packages/blocks/tsconfig.json",
+      "sha256": "3c16d6c8f54117e05ab41252d9da2531de332f4ad762b65ee932e3acd3fbed50"
+    },
+    {
+      "path": "packages/cli/package.json",
+      "sha256": "ac3592ed1890c5c63c3a90a4953915a7dc28007b05ef338724ab95a415cba3c1"
+    },
+    {
+      "path": "packages/cli/tsconfig.json",
+      "sha256": "9eb1423caca7d681f0ca3d287763e5c33758bec0d0711a02d45e943edf83b90b"
+    },
+    {
+      "path": "packages/elements/package.json",
+      "sha256": "52dea7df5e0c2f010c87906ca260dc4ba5e4b6d467edb1736193c0805249b2e7"
+    },
+    {
+      "path": "packages/elements/tsconfig.json",
+      "sha256": "f6b8280edd91dcd77c0c3ab34eb81e2a9cae0b3459f4b8a71ea21a9d92d220a7"
+    },
+    {
+      "path": "packages/tokens/package.json",
+      "sha256": "b327c0c46bb90024504a6d6a2b64793da6034fcd0a936dd9b6ea24d4be57ff27"
+    },
+    {
+      "path": "packages/tokens/tsconfig.json",
+      "sha256": "0d5b7cc0d269406092ff202e3a1d5834646b45a29b4bf5f3f783e2fed0006aea"
+    },
+    {
+      "path": "packages/ui/package.json",
+      "sha256": "2fe40fa93f110062c642cd51a320d64a87217cf1b81e75b8fe16d2002457f88a"
+    },
+    {
+      "path": "packages/ui/tsconfig.json",
+      "sha256": "3c16d6c8f54117e05ab41252d9da2531de332f4ad762b65ee932e3acd3fbed50"
+    },
+    {
+      "path": "apps/docs/package.json",
+      "sha256": "023fffac9acf90336dc049c45223ec1093ccc6e34f05e2e535e59d9043e03f4a"
+    },
+    {
+      "path": "apps/docs/tsconfig.json",
+      "sha256": "6c207836dedb6e80362f65a11aff7d2fe979f2ff09c9f449442f38b8755ce9e5"
+    }
+  ],
+  "obligations": [
+    "ci.yml: pnpm typecheck"
+  ],
+  "discovered": [],
+  "report": null,
+  "notes": [],
+  "verdict": "incomplete",
+  "reason": "the command cancelled"
+}

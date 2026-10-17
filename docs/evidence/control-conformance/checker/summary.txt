@@ -1,0 +1,6 @@
+prepare-stdout checker-exit=3 | prepare=blocked (Prepare: exited 1)
+  reason lost: ERR_STORE_MISSING is absent from the probe
+break-incomplete checker-exit=1 | list=passed (every feature record is listed); describe=passed (describe feature --json exits 0 with JSON); unknown=passed (an unknown feature is a usage error); baseline=passed (feature f passes at HEAD); break=failed (expected exit [1], got 3); restore=passed (reverting the break patch passes again); parallel=passed (two concurrent runs both pass with distinct run ids)
+retention | worktree /tmp/conform-r938s13f/tree | keys ['contract', 'feature', 'mode', 'probes', 'root', 'static', 'worktree'] | runId recorded: False
+  worktree and its .scratch reports are gone
+report-no-head checker-exit=0 valid=True

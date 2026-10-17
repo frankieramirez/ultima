@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "command": "describe",
+  "status": "discovered",
+  "type": "feature",
+  "feature": {
+    "id": "dialog",
+    "title": "Dialog",
+    "summary": "A modal overlay that takes focus, keeps Tab inside, and closes back to its trigger.",
+    "record": "verification/features/dialog.json",
+    "contract": "docs/spec/ultima.md#accessibility-contract",
+    "aliases": [
+      "modal",
+      "overlay",
+      "popup"
+    ],
+    "ownership": {
+      "items": [
+        {
+          "id": "dialog",
+          "kind": "react",
+          "paths": [
+            "packages/ui/src/dialog.tsx",
+            "apps/docs/src/content/components/dialog.mdx",
+            "packages/ui/src/__tests__/dialog.test.tsx",
+            "apps/docs/src/demos/dialog"
+          ],
+          "route": "/components/dialog"
+        }
+      ],
+      "sourceRoots": [],
+      "extraDependencies": []
+    },
+    "scenarios": [
+      {
+        "id": "dialog.keyboard-dismissal",
+        "title": "Keyboard opens, contains and dismisses a dialog",
+        "targets": [
+          "ui-vitest",
+          "production"
+        ]
+      }
+    ],
+    "supporting": [],
+    "scope": {
+      "command": {
+        "argv": [
+          "pnpm",
+          "verify",
+          "feature",
+          "dialog"
+        ],
+        "display": "pnpm verify feature dialog",
+        "status": "available",
+        "note": "an isolated run: every registered case of the feature, production included, its supporting suites, and the architecture, type, build and install checks the plan selects"
+      },
+      "note": "Runs every registered scenario case of this feature plus its item proof-bar, supporting suites and build/install checks."
+    }
+  },
+  "sourceManifest": {
+    "algorithm": "sha256",
+    "digest": "54080dce824f2ff9585b0b02f52a5dd9366e1d948d6f02c8baae2ea3fbb606b9",
+    "files": 877
+  }
+}

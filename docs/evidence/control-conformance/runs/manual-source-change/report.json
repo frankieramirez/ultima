@@ -1,0 +1,2559 @@
+{
+  "schemaVersion": 1,
+  "contract": "control/0",
+  "kind": "verification-run",
+  "runId": "20261017T224946-b4c20285",
+  "command": "feature",
+  "selectors": [
+    "first-screen"
+  ],
+  "status": "incomplete",
+  "exit": 3,
+  "summary": "incomplete (exit 3): the checkout changed during the run, so results describe the captured snapshot only. Checks: 4 passed, 1 unavailable, 36 skipped.",
+  "scope": {
+    "requested": "feature first-screen",
+    "effective": "scoped",
+    "note": "A local scoped result for `feature first-screen` only; it says nothing about paths outside that scope."
+  },
+  "directory": {
+    "run": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-source-change",
+    "source": "source",
+    "artifacts": "artifacts",
+    "logs": "logs",
+    "report": "report.json",
+    "sourceRetained": false
+  },
+  "source": {
+    "capture": {
+      "status": "captured",
+      "attempts": 1,
+      "durationMs": 2382.2817209999994,
+      "reason": null
+    },
+    "identity": {
+      "head": "43fd8346b0fc5589b95ba24006ff51e2acdd8ed7",
+      "index": {
+        "algorithm": "sha256",
+        "digest": "0c5bba6e3de26bee923de1dac66d0d5726c0d9acf0df754ec3e70fc150c2d2ea",
+        "entries": 3033
+      },
+      "status": [],
+      "submodules": [],
+      "manifest": {
+        "version": 1,
+        "algorithm": "sha256",
+        "digest": "1b573d37c247307d7976e446f30887e162c9022233361499c340413fe7eb8d79",
+        "files": 3033,
+        "bytes": 67168147
+      },
+      "exclusions": [
+        {
+          "pattern": ".git/",
+          "reason": "Git internals; HEAD and the index are recorded as their own identities"
+        },
+        {
+          "pattern": "**/node_modules/",
+          "reason": "dependencies, prepared from the lockfile inside the run"
+        },
+        {
+          "pattern": ".scratch/",
+          "reason": "verification runs and their evidence"
+        },
+        {
+          "pattern": "paths Git ignores",
+          "reason": "the rules in .gitignore, .git/info/exclude and core.excludesFile; .gitignore is itself in the manifest"
+        }
+      ],
+      "requiredIgnoredInputs": []
+    },
+    "completion": {
+      "status": "changed",
+      "digest": "ef81ae2ea4f0122d6ecc3dd675c016fbd05889d900ceee0846564bd7a4a5f400",
+      "reason": "the checkout no longer matches the captured bytes; results describe the captured snapshot only"
+    },
+    "sourceChanged": true
+  },
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v22.22.0",
+    "pnpm": "10.33.0",
+    "git": "git version 2.43.0",
+    "host": "vm",
+    "pid": 6421
+  },
+  "timestamps": {
+    "started": "2026-10-17T22:49:47.805Z",
+    "finished": "2026-10-17T22:54:53.428Z"
+  },
+  "durationMs": 306878.104871,
+  "deadline": {
+    "overallSeconds": 5400,
+    "source": "default"
+  },
+  "cancellation": null,
+  "preparation": {
+    "status": "passed",
+    "reason": "installed from the snapshot lockfile into the run",
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile",
+      "--prefer-offline",
+      "--config.confirmModulesPurge=false"
+    ],
+    "cwd": "source",
+    "lockfile": "5f39fa5c11210e15aefe108f8d214a6cb588032e30de9fa31376b69d8852a812",
+    "durationMs": 4776.4120710000025,
+    "exitCode": 0,
+    "log": "logs/preparation.log"
+  },
+  "prerequisites": [
+    {
+      "need": "network",
+      "status": "not_probed",
+      "detail": "no runnable selected check needs it"
+    },
+    {
+      "need": "loopback-port",
+      "status": "not_probed",
+      "detail": "no runnable selected check needs it"
+    },
+    {
+      "need": "chromium",
+      "status": "missing",
+      "detail": "the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome"
+    },
+    {
+      "need": "python3",
+      "status": "not_probed",
+      "detail": "no runnable selected check needs it"
+    }
+  ],
+  "checks": [
+    {
+      "id": "architecture",
+      "title": "Architecture and metadata",
+      "status": "passed",
+      "failure": null,
+      "reason": "executed 14 expected test(s) or case(s)",
+      "selection": {
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "check:architecture"
+      ],
+      "cwd": ".",
+      "prerequisites": [],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 300,
+      "expected": [
+        "rule:ULT-ANALYSIS-001",
+        "rule:ULT-API-001",
+        "rule:ULT-API-002",
+        "rule:ULT-DOCS-001",
+        "rule:ULT-DOCS-002",
+        "rule:ULT-EXCEPTION-001",
+        "rule:ULT-IMPORT-001",
+        "rule:ULT-PRIMITIVE-001",
+        "rule:ULT-REGISTRY-001",
+        "rule:ULT-SOURCE-001",
+        "rule:ULT-STYLE-001",
+        "rule:ULT-TOKEN-001",
+        "rule:ULT-VISUAL-001"
+      ],
+      "executed": [
+        "rule:ULT-ANALYSIS-001",
+        "rule:ULT-API-001",
+        "rule:ULT-API-002",
+        "rule:ULT-DOCS-001",
+        "rule:ULT-DOCS-002",
+        "rule:ULT-DOCS-REVIEW-001",
+        "rule:ULT-EXCEPTION-001",
+        "rule:ULT-IMPORT-001",
+        "rule:ULT-PRIMITIVE-001",
+        "rule:ULT-REGISTRY-001",
+        "rule:ULT-SOURCE-001",
+        "rule:ULT-STYLE-001",
+        "rule:ULT-TOKEN-001",
+        "rule:ULT-VISUAL-001"
+      ],
+      "skipped": [],
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-17T22:49:59.639Z",
+      "durationMs": 27005.071409999997,
+      "processes": [
+        {
+          "argv": [
+            "pnpm",
+            "check:architecture",
+            "--format",
+            "json"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-source-change/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 12748,
+          "status": "exited",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 26994.934678
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/architecture.log",
+        "artifacts/architecture.evidence.json",
+        "artifacts/architecture.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "catalogue-freshness",
+      "title": "Catalogue freshness and the feature map",
+      "status": "passed",
+      "failure": null,
+      "reason": "executed 67 expected test(s) or case(s)",
+      "selection": {
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "catalogue:check"
+      ],
+      "cwd": ".",
+      "prerequisites": [],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 120,
+      "expected": [],
+      "executed": [
+        "feature-map",
+        "generated:apps/docs/src/generated/anatomy-tabs.ts",
+        "generated:apps/docs/src/generated/anatomy/accordion.tsx",
+        "generated:apps/docs/src/generated/anatomy/alert-dialog.tsx",
+        "generated:apps/docs/src/generated/anatomy/alert.tsx",
+        "generated:apps/docs/src/generated/anatomy/aspect-ratio.tsx",
+        "generated:apps/docs/src/generated/anatomy/avatar.tsx",
+        "generated:apps/docs/src/generated/anatomy/badge.tsx",
+        "generated:apps/docs/src/generated/anatomy/breadcrumb.tsx",
+        "generated:apps/docs/src/generated/anatomy/button-group.tsx",
+        "generated:apps/docs/src/generated/anatomy/button.tsx",
+        "generated:apps/docs/src/generated/anatomy/calendar.tsx",
+        "generated:apps/docs/src/generated/anatomy/card.tsx",
+        "generated:apps/docs/src/generated/anatomy/checkbox.tsx",
+        "generated:apps/docs/src/generated/anatomy/code.tsx",
+        "generated:apps/docs/src/generated/anatomy/collapsible.tsx",
+        "generated:apps/docs/src/generated/anatomy/color-field.tsx",
+        "generated:apps/docs/src/generated/anatomy/combobox.tsx",
+        "generated:apps/docs/src/generated/anatomy/command.tsx",
+        "generated:apps/docs/src/generated/anatomy/context-menu.tsx",
+        "generated:apps/docs/src/generated/anatomy/date-picker.tsx",
+        "generated:apps/docs/src/generated/anatomy/dialog.tsx",
+        "generated:apps/docs/src/generated/anatomy/drawer.tsx",
+        "generated:apps/docs/src/generated/anatomy/dropdown-menu.tsx",
+        "generated:apps/docs/src/generated/anatomy/empty.tsx",
+        "generated:apps/docs/src/generated/anatomy/field.tsx",
+        "generated:apps/docs/src/generated/anatomy/fieldset.tsx",
+        "generated:apps/docs/src/generated/anatomy/hover-card.tsx",
+        "generated:apps/docs/src/generated/anatomy/index.ts",
+        "generated:apps/docs/src/generated/anatomy/input-group.tsx",
+        "generated:apps/docs/src/generated/anatomy/input-otp.tsx",
+        "generated:apps/docs/src/generated/anatomy/input.tsx",
+        "generated:apps/docs/src/generated/anatomy/menubar.tsx",
+        "generated:apps/docs/src/generated/anatomy/meter.tsx",
+        "generated:apps/docs/src/generated/anatomy/native-select.tsx",
+        "generated:apps/docs/src/generated/anatomy/navigation-menu.tsx",
+        "generated:apps/docs/src/generated/anatomy/pagination.tsx",
+        "generated:apps/docs/src/generated/anatomy/popover.tsx",
+        "generated:apps/docs/src/generated/anatomy/progress.tsx",
+        "generated:apps/docs/src/generated/anatomy/radio-group.tsx",
+        "generated:apps/docs/src/generated/anatomy/resizable.tsx",
+        "generated:apps/docs/src/generated/anatomy/scroll-area.tsx",
+        "generated:apps/docs/src/generated/anatomy/select.tsx",
+        "generated:apps/docs/src/generated/anatomy/separator.tsx",
+        "generated:apps/docs/src/generated/anatomy/sidebar.tsx",
+        "generated:apps/docs/src/generated/anatomy/skeleton.tsx",
+        "generated:apps/docs/src/generated/anatomy/slider.tsx",
+        "generated:apps/docs/src/generated/anatomy/spinner.tsx",
+        "generated:apps/docs/src/generated/anatomy/stat.tsx",
+        "generated:apps/docs/src/generated/anatomy/switch.tsx",
+        "generated:apps/docs/src/generated/anatomy/table.tsx",
+        "generated:apps/docs/src/generated/anatomy/tabs.tsx",
+        "generated:apps/docs/src/generated/anatomy/textarea.tsx",
+        "generated:apps/docs/src/generated/anatomy/theme-mode.tsx",
+        "generated:apps/docs/src/generated/anatomy/theme-scope.tsx",
+        "generated:apps/docs/src/generated/anatomy/toast.tsx",
+        "generated:apps/docs/src/generated/anatomy/toggle-group.tsx",
+        "generated:apps/docs/src/generated/anatomy/toggle.tsx",
+        "generated:apps/docs/src/generated/anatomy/tooltip.tsx",
+        "generated:apps/docs/src/generated/blocks.ts",
+        "generated:apps/docs/src/generated/catalogue.ts",
+        "generated:apps/docs/src/generated/component-pages.ts",
+        "generated:apps/docs/src/generated/elements.ts",
+        "generated:apps/docs/src/generated/recipes.ts",
+        "generated:packages/ui/src/index.ts",
+        "generated:registry/items.config.ts",
+        "generated:scripts/generated/browser-dependencies.ts"
+      ],
+      "skipped": [],
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-17T22:49:59.646Z",
+      "durationMs": 9665.662624,
+      "processes": [
+        {
+          "argv": [
+            "pnpm",
+            "catalogue:check",
+            "--json"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-source-change/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 12752,
+          "status": "exited",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 9649.161327000002
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/catalogue-freshness.log",
+        "artifacts/catalogue-freshness.evidence.json",
+        "artifacts/catalogue-freshness.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "typecheck",
+      "title": "Types, including the root TypeScript project",
+      "status": "passed",
+      "failure": null,
+      "reason": "executed 8 expected test(s) or case(s)",
+      "selection": {
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 600,
+      "expected": [
+        "tsc:.",
+        "tsc:apps/docs",
+        "tsc:packages/analysis",
+        "tsc:packages/blocks",
+        "tsc:packages/cli",
+        "tsc:packages/elements",
+        "tsc:packages/tokens",
+        "tsc:packages/ui"
+      ],
+      "executed": [
+        "tsc:.",
+        "tsc:apps/docs",
+        "tsc:packages/analysis",
+        "tsc:packages/blocks",
+        "tsc:packages/cli",
+        "tsc:packages/elements",
+        "tsc:packages/tokens",
+        "tsc:packages/ui"
+      ],
+      "skipped": [],
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-17T22:50:09.314Z",
+      "durationMs": 267599.60127600003,
+      "processes": [
+        {
+          "argv": [
+            "pnpm",
+            "typecheck"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-source-change/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 14546,
+          "status": "exited",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 267578.187287
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/typecheck.log",
+        "artifacts/typecheck.evidence.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "registry-build",
+      "title": "Registry, token exports, element bundles and budgets",
+      "status": "passed",
+      "failure": null,
+      "reason": "executed 16 expected test(s) or case(s)",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "a prerequisite of docs-tests"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "registry:build"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [],
+      "deadlineSeconds": 600,
+      "expected": [
+        "build:tokens",
+        "bundle:ult-badge",
+        "bundle:ult-button",
+        "bundle:ult-card",
+        "bundle:ult-code",
+        "bundle:ult-meter",
+        "bundle:ult-stat",
+        "bundle:ult-table",
+        "bundle:ult-tabs",
+        "bundle:ult-tooltip",
+        "bundle:ultima",
+        "registry:items and stamps"
+      ],
+      "executed": [
+        "budget:ult-button",
+        "budget:ult-tabs",
+        "budget:ult-tooltip",
+        "budget:ultima",
+        "build:tokens",
+        "bundle:ult-badge",
+        "bundle:ult-button",
+        "bundle:ult-card",
+        "bundle:ult-code",
+        "bundle:ult-meter",
+        "bundle:ult-stat",
+        "bundle:ult-table",
+        "bundle:ult-tabs",
+        "bundle:ult-tooltip",
+        "bundle:ultima",
+        "registry:items and stamps"
+      ],
+      "skipped": [],
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-17T22:50:26.653Z",
+      "durationMs": 51530.256697,
+      "processes": [
+        {
+          "argv": [
+            "pnpm",
+            "registry:build"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-source-change/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 17326,
+          "status": "exited",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 49463.170728000005
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/registry-build.log",
+        "artifacts/registry-build.evidence.json",
+        "artifacts/registry-build.outputs.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "docs-tests",
+      "title": "Docs site suites, including the axe sweep and element fixture",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "files",
+        "reasons": [
+          "1 test file(s) reached by the selection"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/docs",
+        "exec",
+        "vitest",
+        "run",
+        "--reporter=verbose",
+        "src/__tests__/build-a-screen.test.tsx",
+        "src/__tests__/components.test.ts",
+        "src/__tests__/document-title.test.tsx",
+        "src/__tests__/elements.test.ts",
+        "src/__tests__/elements.test.tsx",
+        "src/__tests__/first-screen.test.ts",
+        "src/__tests__/install.test.tsx",
+        "src/__tests__/recipes.test.tsx",
+        "src/__tests__/sitemap.test.ts",
+        "src/__tests__/support.test.tsx",
+        "src/__tests__/theme-studio-export.test.tsx"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness",
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [
+        "apps/docs/src/__tests__/build-a-screen.test.tsx",
+        "apps/docs/src/__tests__/components.test.ts",
+        "apps/docs/src/__tests__/document-title.test.tsx",
+        "apps/docs/src/__tests__/elements.test.ts",
+        "apps/docs/src/__tests__/elements.test.tsx",
+        "apps/docs/src/__tests__/first-screen.test.ts",
+        "apps/docs/src/__tests__/install.test.tsx",
+        "apps/docs/src/__tests__/recipes.test.tsx",
+        "apps/docs/src/__tests__/sitemap.test.ts",
+        "apps/docs/src/__tests__/support.test.tsx",
+        "apps/docs/src/__tests__/theme-studio-export.test.tsx",
+        "first-screen.agent-runs@docs-vitest[default]"
+      ],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "tooling-tests",
+      "title": "Catalogue and verification tooling fixtures",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "--test",
+        "scripts/catalogue/*.test.ts",
+        "scripts/verification/*.test.ts"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser"
+      ],
+      "needs": [
+        "chromium",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 600,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "analysis-fixtures",
+      "title": "Architecture checker fixtures",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/analysis",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 600,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "palette",
+      "title": "Contrast gate and palette freshness",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "python3",
+        "packages/tokens/scripts/palette.py",
+        "--check"
+      ],
+      "cwd": ".",
+      "prerequisites": [],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [
+        "python3"
+      ],
+      "deadlineSeconds": 120,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "tokens-tests",
+      "title": "Token and theme unit suite",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/tokens",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 300,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "ui-tests",
+      "title": "React component proof bar: browser, axe and both modes",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/ui",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser"
+      ],
+      "needs": [
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "blocks-tests",
+      "title": "Block proof items: browser, axe at both widths and both modes, and wired behavior",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/blocks",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser"
+      ],
+      "needs": [
+        "chromium"
+      ],
+      "deadlineSeconds": 600,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "elements-tests",
+      "title": "Element families, lifecycle, parity and bundle assertions",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/elements",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist"
+      ],
+      "needs": [
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "cli-tests",
+      "title": "Consumer CLI suite",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "ultima-design",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 600,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "docs-build",
+      "title": "Production docs build",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/docs",
+        "build"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness",
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry",
+        "writes:docs-dist"
+      ],
+      "needs": [],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-smoke",
+      "title": "Consumer install: Vite, Next.js and element consumers",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "scripts/smoke-install.sh",
+        "--keep"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry",
+        "writes:docs-dist"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 2700,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof",
+      "title": "Installed consumer paint: Vite, generated CSS and Chromium in both modes",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-app",
+      "title": "Installed Next root app paint and hydration, generated CSS and Chromium",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-src",
+      "title": "Installed Next src/app paint and hydration, generated CSS and Chromium",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-mode-vite",
+      "title": "Installed theme-mode: vite first paint, hydration, persistence and popup inheritance",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "theme-mode"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-mode-next-app",
+      "title": "Installed theme-mode: next-app first paint, hydration, persistence and popup inheritance",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "theme-mode"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-mode-next-src",
+      "title": "Installed theme-mode: next-src first paint, hydration, persistence and popup inheritance",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "theme-mode"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-copy-vite",
+      "title": "Installed copy bundles: vite typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "copy-bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-copy-next-app",
+      "title": "Installed copy bundles: next-app typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "copy-bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-copy-next-src",
+      "title": "Installed copy bundles: next-src typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "copy-bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-lint-vite",
+      "title": "Installed StyleX lint: vite fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "lint"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-lint-next-app",
+      "title": "Installed StyleX lint: next-app fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "lint"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-lint-next-src",
+      "title": "Installed StyleX lint: next-src fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "lint"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-bundles-vite",
+      "title": "Installed production bundles: theme and CSS, overlay and keyboard, form, Date Picker, direction and locale, and narrow touch on the canonical Vite fixture in both modes across Chromium, Firefox and WebKit",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-bundles-next-app",
+      "title": "Installed production bundles: next-app hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-bundles-next-src",
+      "title": "Installed production bundles: next-src hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-elements",
+      "title": "Installed element lifecycle: registration, reconnect, attribute updates and ult-tabs keyboard and theme on a light-DOM fixture in both modes across Chromium, Firefox and WebKit",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "elements"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "production-scenarios",
+      "title": "Production browser scenarios against the built docs",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/docs",
+        "test:production"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "docs-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:docs-dist"
+      ],
+      "needs": [
+        "chromium",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1800,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-stylex-subtree",
+      "title": "Installed consumer paint: Vite, stylex-subtree and Chromium in both modes (stylex-subtree)",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "stylex-subtree"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-registry",
+      "title": "Installed consumer paint: Vite, registry and Chromium in both modes (registry)",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "registry"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-cli",
+      "title": "Installed consumer paint: Vite, cli and Chromium in both modes (cli)",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "cli"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-app-stylex-subtree",
+      "title": "Installed Next root app paint and hydration, stylex-subtree and Chromium (stylex-subtree)",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "stylex-subtree"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-app-registry",
+      "title": "Installed Next root app paint and hydration, registry and Chromium (registry)",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "registry"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-app-cli",
+      "title": "Installed Next root app paint and hydration, cli and Chromium (cli)",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "cli"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-src-stylex-subtree",
+      "title": "Installed Next src/app paint and hydration, stylex-subtree and Chromium (stylex-subtree)",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "stylex-subtree"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-src-registry",
+      "title": "Installed Next src/app paint and hydration, registry and Chromium (registry)",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "registry"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-src-cli",
+      "title": "Installed Next src/app paint and hydration, cli and Chromium (cli)",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "cli"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    }
+  ],
+  "counts": {
+    "passed": 4,
+    "failed": 0,
+    "unavailable": 1,
+    "timed_out": 0,
+    "cancelled": 0,
+    "blocked": 0,
+    "skipped": 36,
+    "not_run": 0
+  },
+  "abandonedRuns": [],
+  "cleanup": {
+    "survivors": [],
+    "errors": []
+  },
+  "plan": {
+    "schemaVersion": 1,
+    "command": "feature",
+    "status": "planned",
+    "selectors": [
+      "first-screen"
+    ],
+    "scope": "scoped",
+    "fallbacks": [],
+    "base": null,
+    "changes": [],
+    "selection": {
+      "items": [],
+      "features": [
+        {
+          "id": "first-screen",
+          "reasons": [
+            "declares a runtime dependency on scripts/consumer-external.ts",
+            "named by `verify feature first-screen`",
+            "scripts/first-screen-record.ts is under its source roots (scripts/first-screen-record.ts is in scope)",
+            "scripts/first-screen.ts is under its source roots (scripts/first-screen.ts is in scope)"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "first-screen.agent-runs",
+          "reasons": [
+            "feature first-screen is selected",
+            "scripts/first-screen-record.ts is in scope",
+            "scripts/first-screen.ts is in scope"
+          ]
+        }
+      ],
+      "deletedTests": []
+    },
+    "unrelatedDirty": {
+      "paths": [],
+      "recommendation": "Every dirty path is inside the selected scope."
+    },
+    "findings": [],
+    "checks": [
+      {
+        "id": "architecture",
+        "title": "Architecture and metadata",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#460 (static, type and unit checks)"
+        },
+        "argv": [
+          "pnpm",
+          "check:architecture"
+        ],
+        "cwd": ".",
+        "nested": [],
+        "prerequisites": [],
+        "after": [],
+        "locks": [],
+        "needs": [],
+        "deadlineSeconds": 300,
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "catalogue-freshness",
+        "title": "Catalogue freshness and the feature map",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#460 (static, type and unit checks)"
+        },
+        "argv": [
+          "pnpm",
+          "catalogue:check"
+        ],
+        "cwd": ".",
+        "nested": [],
+        "prerequisites": [],
+        "after": [],
+        "locks": [],
+        "needs": [],
+        "deadlineSeconds": 120,
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "typecheck",
+        "title": "Types, including the root TypeScript project",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#460 (static, type and unit checks)"
+        },
+        "argv": [
+          "pnpm",
+          "typecheck"
+        ],
+        "cwd": ".",
+        "nested": [
+          "tsc -p tsconfig.json",
+          "pnpm -r typecheck"
+        ],
+        "prerequisites": [
+          "catalogue-freshness"
+        ],
+        "after": [],
+        "locks": [],
+        "needs": [],
+        "deadlineSeconds": 600,
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "registry-build",
+        "title": "Registry, token exports, element bundles and budgets",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#461 (browser, build and install checks)"
+        },
+        "argv": [
+          "pnpm",
+          "registry:build"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm --filter @ultima/tokens build",
+          "pnpm --filter @ultima/elements build",
+          "scripts/build-registry.ts"
+        ],
+        "prerequisites": [
+          "catalogue-freshness"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [],
+        "deadlineSeconds": 600,
+        "scope": "whole",
+        "reasons": [
+          "a prerequisite of docs-tests"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "docs-tests",
+        "title": "Docs site suites, including the axe sweep and element fixture",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#461 (browser, build and install checks)"
+        },
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "exec",
+          "vitest",
+          "run",
+          "--reporter=verbose",
+          "src/__tests__/build-a-screen.test.tsx",
+          "src/__tests__/components.test.ts",
+          "src/__tests__/document-title.test.tsx",
+          "src/__tests__/elements.test.ts",
+          "src/__tests__/elements.test.tsx",
+          "src/__tests__/first-screen.test.ts",
+          "src/__tests__/install.test.tsx",
+          "src/__tests__/recipes.test.tsx",
+          "src/__tests__/sitemap.test.ts",
+          "src/__tests__/support.test.tsx",
+          "src/__tests__/theme-studio-export.test.tsx"
+        ],
+        "cwd": ".",
+        "nested": [],
+        "prerequisites": [
+          "catalogue-freshness",
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "chromium"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "files",
+        "reasons": [
+          "1 test file(s) reached by the selection"
+        ],
+        "files": [
+          {
+            "path": "apps/docs/src/__tests__/build-a-screen.test.tsx",
+            "present": true,
+            "reasons": [
+              "reads inputs outside its imports, so the graph cannot rule it out"
+            ]
+          },
+          {
+            "path": "apps/docs/src/__tests__/components.test.ts",
+            "present": true,
+            "reasons": [
+              "reads inputs outside its imports, so the graph cannot rule it out"
+            ]
+          },
+          {
+            "path": "apps/docs/src/__tests__/document-title.test.tsx",
+            "present": true,
+            "reasons": [
+              "reads inputs outside its imports, so the graph cannot rule it out"
+            ]
+          },
+          {
+            "path": "apps/docs/src/__tests__/elements.test.ts",
+            "present": true,
+            "reasons": [
+              "reads inputs outside its imports, so the graph cannot rule it out"
+            ]
+          },
+          {
+            "path": "apps/docs/src/__tests__/elements.test.tsx",
+            "present": true,
+            "reasons": [
+              "reads inputs outside its imports, so the graph cannot rule it out"
+            ]
+          },
+          {
+            "path": "apps/docs/src/__tests__/first-screen.test.ts",
+            "present": true,
+            "reasons": [
+              "binds scenario first-screen.agent-runs"
+            ]
+          },
+          {
+            "path": "apps/docs/src/__tests__/install.test.tsx",
+            "present": true,
+            "reasons": [
+              "reads inputs outside its imports, so the graph cannot rule it out"
+            ]
+          },
+          {
+            "path": "apps/docs/src/__tests__/recipes.test.tsx",
+            "present": true,
+            "reasons": [
+              "reads inputs outside its imports, so the graph cannot rule it out"
+            ]
+          },
+          {
+            "path": "apps/docs/src/__tests__/sitemap.test.ts",
+            "present": true,
+            "reasons": [
+              "reads inputs outside its imports, so the graph cannot rule it out"
+            ]
+          },
+          {
+            "path": "apps/docs/src/__tests__/support.test.tsx",
+            "present": true,
+            "reasons": [
+              "reads inputs outside its imports, so the graph cannot rule it out"
+            ]
+          },
+          {
+            "path": "apps/docs/src/__tests__/theme-studio-export.test.tsx",
+            "present": true,
+            "reasons": [
+              "reads inputs outside its imports, so the graph cannot rule it out"
+            ]
+          }
+        ],
+        "cases": [
+          "first-screen.agent-runs@docs-vitest[default]"
+        ]
+      }
+    ],
+    "deadline": {
+      "overallSeconds": 5400,
+      "source": "default"
+    },
+    "output": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-source-change",
+    "outcome": {
+      "status": "planned",
+      "ran": 0,
+      "passed": 0,
+      "canPass": true,
+      "unavailable": [],
+      "pending": [],
+      "note": "Planned only: no check ran and nothing passed. Every selected check has an execution adapter; only a run can pass."
+    }
+  }
+}
