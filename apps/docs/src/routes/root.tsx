@@ -35,7 +35,7 @@ const styles = stylex.create({
     blockSize: { default: '1px', ':focus-visible': 'auto' },
     inlineSize: { default: '1px', ':focus-visible': 'auto' },
     marginBlock: { default: 0, ':focus-visible': space['--ult-space-4'] },
-    marginInline: { default: space['--ult-space-6'], [breakpoints.WIDE]: space['--ult-space-9'] },
+    marginInline: { default: space['--ult-space-6'], [breakpoints.DESKTOP]: space['--ult-space-9'] },
     overflow: { default: 'hidden', ':focus-visible': 'visible' },
     position: { default: 'absolute', ':focus-visible': 'static' },
     whiteSpace: 'nowrap',

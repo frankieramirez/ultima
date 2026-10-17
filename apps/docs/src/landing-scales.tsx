@@ -21,22 +21,22 @@ const ROLES: Record<ScaleName, { role: string; use: string; tag?: string }> = {
 const styles = stylex.create({
   list: { display: 'flex', flexDirection: 'column', listStyle: 'none', margin: 0, padding: 0 },
   band: {
-    alignItems: { default: 'stretch', [breakpoints.DESKTOP]: 'center' },
+    alignItems: { default: 'stretch', [breakpoints.WIDE]: 'center' },
     borderBottomWidth: 0,
     borderInlineWidth: 0,
     borderRadius: 0,
     display: 'flex',
-    flexDirection: { default: 'column', [breakpoints.DESKTOP]: 'row' },
-    gap: { default: space['--ult-space-5'], [breakpoints.DESKTOP]: space['--ult-space-10'] },
-    paddingBlock: { default: space['--ult-space-7'], [breakpoints.DESKTOP]: '1.375rem' },
-    paddingInline: { default: space['--ult-space-7'], [breakpoints.WIDE]: space['--ult-space-12'] },
+    flexDirection: { default: 'column', [breakpoints.WIDE]: 'row' },
+    gap: { default: space['--ult-space-5'], [breakpoints.WIDE]: space['--ult-space-10'] },
+    paddingBlock: { default: space['--ult-space-7'], [breakpoints.WIDE]: '1.375rem' },
+    paddingInline: { default: space['--ult-space-7'], [breakpoints.DESKTOP]: space['--ult-space-12'] },
   },
   title: {
-    alignItems: { default: 'center', [breakpoints.DESKTOP]: 'baseline' },
+    alignItems: { default: 'center', [breakpoints.WIDE]: 'baseline' },
     display: 'flex',
     flexShrink: 0,
-    gap: { default: space['--ult-space-5'], [breakpoints.DESKTOP]: space['--ult-space-10'] },
-    inlineSize: { default: 'auto', [breakpoints.DESKTOP]: '36rem' },
+    gap: { default: space['--ult-space-5'], [breakpoints.WIDE]: space['--ult-space-10'] },
+    inlineSize: { default: 'auto', [breakpoints.WIDE]: '36rem' },
   },
   index: {
     color: color['--ult-color-text-muted'],
@@ -46,7 +46,7 @@ const styles = stylex.create({
   },
   name: {
     fontFamily: 'Space Grotesk, Figtree, ui-sans-serif, system-ui, sans-serif',
-    fontSize: { default: '2.75rem', [breakpoints.DESKTOP]: '6rem' },
+    fontSize: { default: '2.75rem', [breakpoints.WIDE]: '6rem' },
     fontWeight: font['--ult-font-weight-medium'],
     letterSpacing: '-0.03em',
     lineHeight: 0.95,
@@ -70,11 +70,11 @@ const styles = stylex.create({
   tag: { fontFamily: font['--ult-font-mono'], letterSpacing: font['--ult-font-tracking-wide'] },
   apply: { color: 'inherit', paddingInline: 0 },
   ladder: {
-    blockSize: { default: space['--ult-space-9'], [breakpoints.DESKTOP]: '4.5rem' },
+    blockSize: { default: space['--ult-space-9'], [breakpoints.WIDE]: '4.5rem' },
     display: 'grid',
     flexShrink: 0,
     gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
-    inlineSize: { default: '100%', [breakpoints.DESKTOP]: '25.5rem' },
+    inlineSize: { default: '100%', [breakpoints.WIDE]: '25.5rem' },
   },
   step: { blockSize: '100%', borderRadius: 0, inlineSize: '100%' },
 });
