@@ -51,6 +51,10 @@ function settle(): Promise<void> {
   );
 }
 
+function transitioned(el: Element): Promise<unknown> {
+  return Promise.all(el.getAnimations().map((animation) => animation.finished));
+}
+
 function mountTabs(markup = TABS_MARKUP, parent: HTMLElement = document.body): HTMLElement {
   const wrapper = document.createElement('div');
   wrapper.innerHTML = markup;
@@ -410,11 +414,14 @@ test('data-theme re-themes through the tokens stylesheet', async () => {
   const host = mountTabs();
   await settle();
   const tab = innerTab(host, 1);
+  // The tab eases its colour over motion-fast, so read each theme once the transition ends.
   document.documentElement.setAttribute('data-theme', 'dark');
   await settle();
+  await transitioned(tab);
   const dark = getComputedStyle(tab).color;
   document.documentElement.setAttribute('data-theme', 'light');
   await settle();
+  await transitioned(tab);
   expect(getComputedStyle(tab).color).not.toBe(dark);
 });
 
