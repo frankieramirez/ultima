@@ -54,7 +54,7 @@ const styles = stylex.create({
     },
     borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     boxShadow: shadow['--ult-shadow-md'],
     boxSizing: 'border-box',
     color: {
@@ -127,7 +127,7 @@ const styles = stylex.create({
       backgroundColor: color['--ult-color-surface-raised'],
       borderColor: color['--ult-color-border'],
       borderStyle: 'solid',
-      borderWidth: border.hairline,
+      borderWidth: border.fine,
       content: '""',
       display: 'block',
       height: space['--ult-space-4'],

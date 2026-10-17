@@ -50,8 +50,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: {
       default: 'none',
-      ':focus-within:not(:is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])))': `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      ':is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])):focus-within': `${border.focus} solid ${color['--ult-color-danger']}`,
+      ':focus-within': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
     outlineOffset: border.focusOffset,
     transitionDuration: motion['--ult-motion-fast'],
@@ -130,7 +129,7 @@ const styles = stylex.create({
     borderColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     boxShadow: shadow['--ult-shadow-md'],
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
@@ -192,7 +191,7 @@ const styles = stylex.create({
   separator: {
     borderTopColor: color['--ult-color-border'],
     borderTopStyle: 'solid',
-    borderTopWidth: border.hairline,
+    borderTopWidth: border.fine,
     marginBlock: space['--ult-space-2'],
   },
   groupLabel: {
@@ -225,7 +224,7 @@ const styles = stylex.create({
     borderRightColor: { default: 'transparent', [DOWN]: color['--ult-color-border'], [RIGHTWARD]: color['--ult-color-border'] },
     borderTopColor: { default: 'transparent', [UP]: color['--ult-color-border'], [RIGHTWARD]: color['--ult-color-border'] },
     borderStyle: 'solid',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     bottom: { default: null, [DOWN]: ARROW_OFFSET },
     boxSizing: 'border-box',
     height: space['--ult-space-4'],

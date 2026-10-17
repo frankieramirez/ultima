@@ -50,7 +50,7 @@ const styles = stylex.create({
     borderInlineEndStyle: "solid",
     borderInlineEndWidth: {
       default: 0,
-      [DESKTOP]: { default: border.hairline, ":is([data-closed])": 0 },
+      [DESKTOP]: { default: border.fine, ":is([data-closed])": 0 },
     },
     boxSizing: "border-box",
     color: color["--ult-color-text"],
@@ -198,7 +198,7 @@ const mobile = stylex.create({
   },
   popup: {
     blockSize: "100%",
-    borderInlineEndWidth: border.hairline,
+    borderInlineEndWidth: border.fine,
     borderRadius: 0,
     borderWidth: 0,
     inlineSize: `min(calc(4 * ${space["--ult-space-12"]}), 100%)`,

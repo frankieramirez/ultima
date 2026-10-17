@@ -5,7 +5,7 @@ const styles = stylex.create({
   root: {
     borderRadius: radius['--ult-radius-full'],
     borderStyle: 'solid',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     boxSizing: 'border-box',
     display: 'inline-flex',
     fontFamily: font['--ult-font-sans'],

@@ -10,7 +10,7 @@ const styles = stylex.create({
     alignItems: 'flex-start',
     borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'row',

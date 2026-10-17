@@ -35,8 +35,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: {
       default: 'none',
-      ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
+      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
     outlineOffset: border.focusOffset,
     resize: 'vertical',

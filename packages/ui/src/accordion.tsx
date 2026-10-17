@@ -12,7 +12,7 @@ const styles = stylex.create({
   item: {
     borderBlockEndColor: color['--ult-color-border'],
     borderBlockEndStyle: 'solid',
-    borderBlockEndWidth: border.hairline,
+    borderBlockEndWidth: border.fine,
   },
   header: {
     margin: 0,

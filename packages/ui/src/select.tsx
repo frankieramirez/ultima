@@ -18,8 +18,8 @@ const styles = stylex.create({
   },
   // The trigger wears Input's field recipe: the field fill, a 3:1 edge that darkens on hover and
   // holds that edge while its popup is open, the focus outline outside the edge, and a muted
-  // fill and ink when disabled or read-only, with no opacity. Each edge and outline key names its
-  // whole state, so an invalid trigger keeps its danger edge through every other state.
+  // fill and ink when disabled or read-only, with no opacity. Each edge key names its whole state,
+  // so an invalid trigger keeps its danger edge through every other state; focus stays the focus color.
   trigger: {
     alignItems: 'center',
     appearance: 'none',
@@ -52,8 +52,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: {
       default: 'none',
-      ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
+      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
     outlineOffset: border.focusOffset,
     transitionDuration: motion['--ult-motion-fast'],
@@ -83,7 +82,7 @@ const styles = stylex.create({
     borderColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     boxShadow: shadow['--ult-shadow-md'],
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
@@ -155,7 +154,7 @@ const styles = stylex.create({
   },
   separator: {
     backgroundColor: color['--ult-color-border'],
-    blockSize: border.hairline,
+    blockSize: border.fine,
     border: 'none',
     marginBlock: space['--ult-space-2'],
   },

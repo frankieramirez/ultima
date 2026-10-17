@@ -74,8 +74,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: {
       default: 'none',
-      ':focus-within:not(:is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])))': `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      ':is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])):focus-within': `${border.focus} solid ${color['--ult-color-danger']}`,
+      ':focus-within': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
     outlineOffset: border.focusOffset,
     transitionDuration: motion['--ult-motion-fast'],
@@ -133,7 +132,7 @@ const styles = stylex.create({
     borderColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
-    borderWidth: border.hairline,
+    borderWidth: border.fine,
     boxShadow: shadow['--ult-shadow-md'],
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
