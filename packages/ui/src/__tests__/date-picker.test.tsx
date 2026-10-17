@@ -237,8 +237,11 @@ for (const mode of themes) {
     await expect.poll(
       () => screen.getByTestId('Release date-content').element().hasAttribute('hidden'),
     ).toBe(false);
+    // The content fades in; axe reads a mid-fade frame as low contrast.
+    const content = screen.getByTestId('Release date-content').element();
+    await Promise.all(content.getAnimations().map((animation) => animation.finished));
 
-    expect(await violations(screen.getByTestId('Release date-content').element())).toEqual([]);
+    expect(await violations(content)).toEqual([]);
   });
 }
 
