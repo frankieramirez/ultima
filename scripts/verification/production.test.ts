@@ -4,7 +4,7 @@
  * foreign and edited builds), and the runner's cells: readiness, axe, fresh storage, a production-only
  * stylesheet defect, a missing asset, an element fixture's definitions and bundle, the clipboard grant,
  * a stuck readiness condition, a deadline, cancellation, a browser that cannot launch, a declared capability
- * removal and an absent case.
+ * removal and an absent case, and the colors and ratios a contrast violation records.
  * The real matrix runs through `pnpm --filter @ultima/docs test:production`.
  */
 import assert from 'node:assert/strict';
@@ -258,6 +258,33 @@ describe('the runner', () => {
     assert.deepEqual(only?.artifacts.map((a) => a.kind), ['screenshot']);
     assert.match(only?.artifacts[0]?.label ?? '', /^fixture dark desktop fixture\.paint: settled final state$/);
     assert.ok(existsSync(join(evidence, only?.artifacts[0]?.path ?? '')));
+  });
+
+  test('a contrast violation records its colors and ratios, and the failure names them', async () => {
+    const faint = site();
+    writeFileSync(join(faint, 'assets/app.css'), `${readFileSync(join(faint, 'assets/app.css'), 'utf8')}\n.faint { color: #aaaaaa; }\n`);
+    writeFileSync(join(faint, 'assets/app.js'), `document.getElementById('root').innerHTML = '<main><h1>Fixture</h1><p class="faint" id="faint">Faint</p></main>';`);
+    const run: Cell['run'] = async ({ open, axe }) => {
+      await open('/');
+      await axe('faint text');
+    };
+    const { result } = await runOn(faint, [cell('fixture.faint@production[light]', run, { ...VARIANT, mode: 'light' })]);
+    const [only] = result.cells;
+    assert.equal(only?.status, 'failed');
+    assert.equal(only?.failure?.kind, 'validation');
+    assert.match(only?.failure?.message ?? '', /color-contrast \(#faint: #aaaaaa on #ffffff is 2\.32:1, needs 4\.5:1\)/);
+    assert.deepEqual(only?.axe[0]?.violations, [
+      {
+        id: 'color-contrast',
+        impact: 'serious',
+        nodes: [
+          {
+            target: '#faint',
+            data: { fgColor: '#aaaaaa', bgColor: '#ffffff', contrastRatio: 2.32, expectedContrastRatio: '4.5:1', fontSize: '12.0pt (16px)', fontWeight: 'normal', messageKey: null },
+          },
+        ],
+      },
+    ]);
   });
 
   test('gives every cell a fresh context: storage one cell writes never reaches the next', async () => {
