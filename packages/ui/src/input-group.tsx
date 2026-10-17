@@ -41,8 +41,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: {
       default: 'none',
-      ':focus-within:not(:has([aria-invalid="true"], [data-invalid]))': `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      ':has(:is([aria-invalid="true"], [data-invalid])):focus-within': `${border.focus} solid ${color['--ult-color-danger']}`,
+      ':focus-within': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
     outlineOffset: border.focusOffset,
     transitionDuration: motion['--ult-motion-fast'],
