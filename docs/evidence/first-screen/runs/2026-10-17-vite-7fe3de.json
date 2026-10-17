@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-17-vite-7fe3de",
+  "layout": "vite",
+  "brief": {
+    "path": "docs/evidence/first-screen/brief.md",
+    "sha256": "2cd7e4621eb2fb7c28083867553cc45a4ae8c4e735b1ea4c9ff5305afd45c657",
+    "brand": "#A3237F"
+  },
+  "source": {
+    "head": "3a6fa374ee6495743dec5fe08926900b98b10575",
+    "manifest": "ffeee539f71d46fc7a030e65bb7ddcc9b9d12b284b57c45b972bbf603a158c79",
+    "registryManifest": "5df5e3528a70a05dd02e7e08a437f87ad049736feb9fa57de5756f7b0372e881",
+    "cliTarball": {
+      "packed": "dc986f6168d2206d71753d7482b88886b524480abeeddc95e2ce6320cbe93428",
+      "served": "f156a30ae55b7079f0d312307432414ab3807ed200dc65a6d2d95a95f0bafc31",
+      "version": "0.1.0"
+    },
+    "draftDigest": "501a385a935547d2e94b9a0f9140e4bbde1564284a3f1ccfe95e4229bc6ac4bd",
+    "draftFingerprint": "ec18cb"
+  },
+  "host": {
+    "origin": "http://127.0.0.1:59700",
+    "standsFor": "https://ultima.systems",
+    "npm": "http://127.0.0.1:59700/npm/"
+  },
+  "theme": {
+    "madeIn": "Theme Studio",
+    "command": "npx shadcn@4.21.4 add \"http://127.0.0.1:59700/r/theme.json?theme=eJyNlMtu2zAQRff-igE33lCF3469awsYzcJAUKPdT6ixRJgmhSElxA3y7wVl6-HYCbLkGd7R1R2SrwMAURF77axYw0zGNZPSBf1t6aSmyhnHYg2vAwAAcdQhZ21aACDykuLu5UI2xGMoGcO5zaimb-eiQFZo6VY-nU3uy8ffRqvldDZfzcbz8cNkMZpf9TuixTtmRrOvmKmIU7ThVj9efOTmSk_HZ-Jb9XL1FTGX2t5xPv5UO7joRTgVLmMs8lM3G4_WizWI4UZngYmGEkqdRJp4Yr2X4E8-0DEptYQEi8JQciYShjvKHMGfx6GEX2QqClqhhO-s0Ujoeogmd2dd_a3HH1t4MvQCW2fd-Yux5gtUJGG3iTj5TVlpkCVsyRon4aez3hn0Etq9TeNn9LTT_-jppZ7DhXqFJsYjfHDq0Ow1hKm2WeQp7bE0oakERnV4V2qzS8l6HWJwddjC51jQ-yaCDFVt-jU5uqulq4hZp-S7CaTIh7hqZmx0ltfHqxuccerQUzTXa4_GU2O-P9t-oTPep439Puub7_P2F2rYmvJ5ud8b2hGlvvUvCiZP3e0QOo0hWSoDo2mSZqr05cGYtv1QKbJho018KOqTPXgb_AfEtDLk\""
+  },
+  "prompt": {
+    "sha256": "ebca7a245dddd427434f4a17434f269635f0cf6b5fe22601a7b9cd8d5793b46f"
+  },
+  "agent": {
+    "harness": "claude-code",
+    "version": "2.1.300 (Claude Code)",
+    "flags": [
+      "-p",
+      "--safe-mode",
+      "--strict-mcp-config",
+      "--no-chrome",
+      "--permission-mode",
+      "auto",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--settings",
+      "settings: deny WebSearch, the live host, and other checkouts",
+      "--model",
+      "claude-opus-5-5"
+    ],
+    "cwd": "an empty directory under ~/.cache/ultima-first-screen, outside any checkout",
+    "startedAt": "2026-10-17T06:49:11.137Z",
+    "finishedAt": "2026-10-17T06:54:55.718Z",
+    "exit": 0,
+    "model": "claude-opus-5-5",
+    "session": "11fd6203-18b2-46ef-9762-371a5a8baf2c",
+    "turns": 34,
+    "costUsd": 1.7237646,
+    "durationMs": 343517,
+    "outcome": "success"
+  },
+  "transcript": {
+    "file": "2026-10-17-vite-7fe3de.stream.jsonl.gz",
+    "sha256": "74f235a09159638435cacafb29b19629cedecee76d64adb5313c6806eaaedd74",
+    "events": 173,
+    "commands": [
+      "ls -la && curl -s http://127.0.0.1:59700/llms.txt | head -200",
+      "cat /Users/f/.claude/projects/-Users-f--cache-ultima-first-screen-2026-10-17-vite-7fe3de-work/11fd6203-18b2-46ef-9762-371a5a8baf2c/tool-results/b1zkmqecx.txt",
+      "curl -s http://127.0.0.1:59700/llms.txt | sed -n '201,1000p'",
+      "curl -s http://127.0.0.1:59700/llms.txt | sed -n '1000,1200p'; echo ----; curl -s http://127.0.0.1:59700/guides/install.md",
+      "curl -s http://127.0.0.1:59700/guides/build-a-screen.md",
+      "npx --yes ultima-design@latest init --help 2>&1 | head -60",
+      "npx --yes ultima-design@latest init larder --framework vite --plan --json > ultima-init-plan.json; echo exit=$?; head -c 6000 ultima-init-plan.json",
+      "python3 -I -c \"\nimport json,sys\np=json.load(open(sys.argv[1]))\nfor o in p['operations']:\n    print(o['id'], o['kind'], o.get('path',''), (o.get('command') or {}).get('args',''))\nprint([k for k in p.keys()])\nfor k in p:\n    if k not in ('operations','payloads','dependencies','inputs','target','request','recipe','cli','kind','schemaVersion'): print(k, json.dumps(p[k])[:3000])\n\" ultima-init-plan.json",
+      "npx --yes ultima-design@latest init --apply ultima-init-plan.json 2>&1 | tail -80",
+      "cd /Users/f/.cache/ultima-first-screen/2026-10-17-vite-7fe3de/work/larder && npx --yes shadcn@4.21.4 add \"http://127.0.0.1:59700/r/theme.json?theme=eJyNlMtu2zAQRff-igE33lCF3469awsYzcJAUKPdT6ixRJgmhSElxA3y7wVl6-HYCbLkGd7R1R2SrwMAURF77axYw0zGNZPSBf1t6aSmyhnHYg2vAwAAcdQhZ21aACDykuLu5UI2xGMoGcO5zaimb-eiQFZo6VY-nU3uy8ffRqvldDZfzcbz8cNkMZpf9TuixTtmRrOvmKmIU7ThVj9efOTmSk_HZ-Jb9XL1FTGX2t5xPv5UO7joRTgVLmMs8lM3G4_WizWI4UZngYmGEkqdRJp4Yr2X4E8-0DEptYQEi8JQciYShjvKHMGfx6GEX2QqClqhhO-s0Ujoeogmd2dd_a3HH1t4MvQCW2fd-Yux5gtUJGG3iTj5TVlpkCVsyRon4aez3hn0Etq9TeNn9LTT_-jppZ7DhXqFJsYjfHDq0Ow1hKm2WeQp7bE0oakERnV4V2qzS8l6HWJwddjC51jQ-yaCDFVt-jU5uqulq4hZp-S7CaTIh7hqZmx0ltfHqxuccerQUzTXa4_GU2O-P9t-oTPep439Puub7_P2F2rYmvJ5ud8b2hGlvvUvCiZP3e0QOo0hWSoDo2mSZqr05cGYtv1QKbJho018KOqTPXgb_AfEtDLk\" 2>&1 | tail -30; ls; cat src/main.tsx; cat src/index.css; cat src/App.tsx",
+      "cat DESIGN.md; head -60 ultima-theme.css; cat ultima-theme.json | head -50",
+      "python3 - <<'EOF'\np='src/main.tsx'\ns=open(p).read()\ns=s.replace(\"import './index.css'\\n\",\"import './index.css'\\nimport '../ultima-theme.css'\\n\")\nopen(p,'w').write(s)\nEOF\ncat src/main.tsx; mkdir -p ../scratch && cd ../scratch && for f in projects list-detail interaction-states product-tokens style-overrides; do curl -s http://127.0.0.1:59700/guides/lessons/$f.md -o $f.md; wc -c $f.md; done",
+      "cat product-tokens.md list-detail.md",
+      "cd /Users/f/.cache/ultima-first-screen/2026-10-17-vite-7fe3de/work/larder && npx --yes shadcn@4.21.4 add @ultima/badge @ultima/toggle-group @ultima/field @ultima/input @ultima/select 2>&1 | tail -20; ls src/components/ui src/lib",
+      "npx --yes shadcn@4.21.4 add @ultima/badge @ultima/toggle-group @ultima/field @ultima/input @ultima/select 2>&1 | head -40; grep -n \"export\" src/components/ui/select.tsx src/components/ui/field.tsx src/components/ui/input.tsx src/components/ui/badge.tsx | head -60",
+      "sed -n 370,400p src/components/ui/select.tsx; sed -n 1,96p src/components/ui/field.tsx | grep -n \"function\\|Base\" | head; sed -n 1,40p src/components/ui/input.tsx",
+      "mkdir -p /Users/f/.cache/ultima-first-screen/2026-10-17-vite-7fe3de/work/larder/src/components/pantry && cd /Users/f/.cache/ultima-first-screen/2026-10-17-vite-7fe3de/work/larder && cat > src/components/pantry/pantry-data.ts <<'EOF'\nexport const categories = ['Canned goods', 'Dry goods', 'Produce', 'Toiletries'] as const;\n\nexport type Category = (typeof categories)[number];\n\nexport type PantryItem = {\n  id: string;\n  name: string;\n  category: Category;\n  quantity: number;\n  /** The last restock as an ISO calendar date, `YYYY-MM-DD`. */\n  restocked: string;\n};\n\n/** Below this many on hand, an item is flagged as low stock. */\nexport const LOW_STOCK = 10;\n\nexport const sampleItems: PantryItem[] = [\n  { id: 'black-beans', name: 'Black beans', category: 'Canned goods', quantity: 48, restocked: '2026-10-14' },\n  { id: 'tomato-soup', name: 'Tomato soup', category: 'Canned goods', quantity: 6, restocked: '2026-09-30' },\n  { id: 'rice', name: 'Long-grain rice', category: 'Dry goods', quantity: 32, restocked: '2026-10-11' },\n  { id: 'oats', name: 'Rolled oats', category: 'Dry goods', quantity: 14, restocked: '2026-10-02' },\n  { id: 'apples', name: 'Apples', category: 'Produce', quantity: 60, restocked: '2026-10-16' },\n  { id: 'potatoes', name: 'Potatoes', category: 'Produce', quantity: 0, restocked: '2026-09-21' },\n  { id: 'toothpaste', name: 'Toothpaste', category: 'Toiletries', quantity: 9, restocked: '2026-10-07' },\n  { id: 'soap', name: 'Bar soap', category: 'Toiletries', quantity: 25, restocked: '2026-10-09' },\n];\nEOF\ncat > src/components/pantry/screen.stylex.ts <<'EOF'\nimport * as stylex from '@stylexjs/stylex';\n\nexport const screen = stylex.defineVars({\n  /** The widest the Pantry screen grows on a large display. */\n  '--app-size-content-max': '72rem',\n});\nEOF\ncat > src/App.tsx <<'EOF'\nimport Pantry from '@/components/pantry/pantry';\n\nexport default function App() {\n  return <Pantry />;\n}\nEOF",
+      "npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 2>&1 | tail -3 && curl -s http://127.0.0.1:59700/ultima.eslint.mjs -o ultima.eslint.mjs && cat ultima.eslint.mjs && cat > eslint.config.mjs <<'EOF'\nimport tseslint from 'typescript-eslint';\nimport { ultimaStylex } from './ultima.eslint.mjs';\n\nexport default [\n  { ignores: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/out/**', '**/coverage/**'] },\n  {\n    files: ultimaStylex.files,\n    languageOptions: {\n      parser: tseslint.parser,\n      parserOptions: { ecmaFeatures: { jsx: true } },\n    },\n  },\n  ultimaStylex,\n];\nEOF\nnpm pkg set scripts.lint=\"oxlint && eslint .\" && grep lint package.json",
+      "npm run lint 2>&1 | tail -30; echo \"lint exit=${PIPESTATUS[0]}\"; for f in src/App.tsx src/components/pantry/pantry.tsx src/components/ui/select.tsx src/lib/tokens.stylex.ts src/components/pantry/screen.stylex.ts; do echo -n \"$f: \"; npx --no-install eslint --print-config $f | python3 -I -c \"import json,sys;c=json.load(sys.stdin);print(c['rules'].get('@stylexjs/valid-styles'), c['languageOptions'].get('parser'))\"; done",
+      "npm run lint >/dev/null 2>&1; echo \"lint exit=$?\"; npx --no-install ultima-design doctor; echo \"doctor exit=$?\"; npx --no-install ultima-design doctor --theme; echo \"doctor-theme exit=$?\"; npx --no-install ultima-design check --files src/App.tsx src/main.tsx src/components/pantry/pantry.tsx src/components/pantry/pantry-data.ts src/components/pantry/screen.stylex.ts; echo \"check-files exit=$?\"; npx --no-install ultima-design check; echo \"check exit=$?\"",
+      "npx --no-install eslint --print-config src/components/ui/badge.tsx | python3 -I -c \"import json,sys;print(json.load(sys.stdin)['rules'].get('@stylexjs/valid-styles')[0])\"; npx --no-install eslint --print-config src/lib/themes.ts | python3 -I -c \"import json,sys;print(json.load(sys.stdin)['rules'].get('@stylexjs/valid-styles')[0])\"; npm run build 2>&1 | tail -15; ls dist/assets; ",
+      "python3 -I - dist/assets/index-CUjJR3Tq.css <<'EOF'\nimport sys,re\ns=open(sys.argv[1]).read()\ndef pos(pat):\n    m=[x.start() for x in re.finditer(re.escape(pat),s)]\n    return m[:3], len(m)\nfor p in ['@layer reset','@layer priority','--ult-color-accent:#e968be','--ult-color-accent:','[data-theme=light]','prefers-reduced-motion','@layer']:\n    print(p, pos(p))\nprint(len(s))\nEOF",
+      "python3 -I - dist/assets/index-CUjJR3Tq.css <<'EOF'\nimport sys,re\ns=open(sys.argv[1]).read()\nfor i in [0,380,4300,8200,12050,16000,16186,23800,24357]:\n    print(i, repr(s[i:i+160])); print()\n# find all top-level selectors containing --ult-color-accent:\nfor m in re.finditer(r'([^{}]*)\\{[^{}]*--ult-color-accent:([^;]*)',s):\n    print(m.start(), m.group(1)[-80:], m.group(2))\nEOF",
+      "ls /Applications | grep -i -E \"chrome|chromium|edge|firefox\"; ls ~/Library/Caches/ms-playwright 2>/dev/null; which chromium google-chrome 2>/dev/null; npm ls -g --depth=0 2>/dev/null | grep -i playwright",
+      "cd /Users/f/.cache/ultima-first-screen/2026-10-17-vite-7fe3de/work/scratch && npm init -y >/dev/null && npm install playwright-core@1 2>&1 | tail -2; (cd ../larder && nohup npx vite preview --port 4173 --strictPort > ../scratch/preview.log 2>&1 &) ; sleep 3; curl -s -o /dev/null -w \"%{http_code}\\n\" http://localhost:4173/",
+      "node verify.mjs 2>&1 | tail -60",
+      "pkill -f \"vite preview --port 4173\" ; cd /Users/f/.cache/ultima-first-screen/2026-10-17-vite-7fe3de/work && cat > exercise-notes.json <<'EOF'\n{\n  \"interventions\": [\n    {\n      \"step\": \"Browser verification of the production build\",\n      \"action\": \"Installed playwright-core in ./scratch (outside ./larder), served the build with `vite preview`, and drove the locally installed Google Chrome with a script. The script read computed --ult-* values and color-scheme on the root, a Button and the portalled Select popup in dark, light and system mode at 375px and 1280px. It also checked for horizontal overflow, keyboard open, Escape and focus return on the Select, the empty-name error, adding a new item and adding to an existing one, and took screenshots.\",\n      \"reason\": \"The guidance says to check the root, a control and an open popup in each mode of a production build, but it prints no tool or command for that browser check.\"\n    },\n    {\n      \"step\": \"Production cascade inspection\",\n      \"action\": \"Read the built dist/assets/*.css with a small Python script to find where the unlayered ultima-theme.css rules sit relative to StyleX's @layer priority* rules.\",\n      \"reason\": \"The guidance says to inspect the production stylesheet order, but it gives no command for that inspection.\"\n    },\n    {\n      \"step\": \"Reviewing the init plan\",\n      \"action\": \"Summarized the operations, manualSteps and agents fields of ultima-init-plan.json with a Python one-liner before running --apply.\",\n      \"reason\": \"The guidance says to read the plan before applying it, but it gives no way to read it. The JSON is long, so I summarized it.\"\n    }\n  ],\n  \"decisions\": [\n    {\n      \"choice\": \"Pick the category with a portalled Ultima Select inside an inline form card, with no Dialog\",\n      \"options\": [\"Portalled Select for Category\", \"Open the donation form in a Dialog\", \"Both\"],\n      \"why\": \"On a phone at the shelves, a form that is always visible takes fewer taps. Select is portalled, opens from the keyboard, closes on Escape and returns focus to its trigger, as the Projects lesson shows, so it meets the requirement by itself.\"\n    },\n    {\n      \"choice\": \"Put the list and detail side by side at the DESKTOP breakpoint (min-width: 48rem), not WIDE (64rem)\",\n      \"options\": [\"DESKTOP 48rem\", \"WIDE 64rem\"],\n      \"why\": \"The list-detail lesson uses DESKTOP, and a laptop at the intake desk is well above 48rem. The Projects lesson switches its columns at WIDE, so the guidance does not pick one for this layout.\"\n    },\n    {\n      \"choice\": \"Cap the screen's width with one app token, --app-size-content-max: 72rem, in src/components/pantry/screen.stylex.ts\",\n      \"options\": [\"Application defineVars token for the max width\", \"No max width\"],\n      \"why\": \"On wide displays the two columns would otherwise stretch too far. A length the app chooses has to live in its own token module, as the product-tokens lesson does.\"\n    },\n    {\n      \"choice\": \"Use the font fallbacks instead of loading the Figtree and IBM Plex Mono faces named by the theme\",\n      \"options\": [\"Load the font faces in the app\", \"Use the documented fallback stack\"],\n      \"why\": \"The guidance leaves this to the consumer. Loading faces would mean fetching from a host other than the public Ultima host. The system-ui fallback in the exported stack renders correctly.\"\n    },\n    {\n      \"choice\": \"Show stock level with Badge tones: warning for low stock (under 10), danger for out of stock, neutral for category\",\n      \"options\": [\"Status Badge tones\", \"Accent Badge for category\", \"No status badges\"],\n      \"why\": \"The brief keeps the brand accent out of status meaning. Category is not a status, so it uses the neutral tone, and status uses the success, warning and danger roles.\"\n    },\n    {\n      \"choice\": \"Skip the optional agent setup (`ultima install --harness`) and the strict-CSP step\",\n      \"options\": [\"git init and install the skill and hooks\", \"Skip\"],\n      \"why\": \"Init reported both as optional. Agent setup would need a git repository, which init never creates, and the brief does not ask for one. The app sets no CSP.\"\n    }\n  ]\n}\nEOF\npython3 -I -m json.tool exercise-notes.json >/dev/null && echo valid; ls"
+    ],
+    "fetches": [],
+    "outsideReferences": []
+  },
+  "selfReport": {
+    "interventions": [
+      {
+        "step": "Browser verification of the production build",
+        "action": "Installed playwright-core in ./scratch (outside ./larder), served the build with `vite preview`, and drove the locally installed Google Chrome with a script. The script read computed --ult-* values and color-scheme on the root, a Button and the portalled Select popup in dark, light and system mode at 375px and 1280px. It also checked for horizontal overflow, keyboard open, Escape and focus return on the Select, the empty-name error, adding a new item and adding to an existing one, and took screenshots.",
+        "reason": "The guidance says to check the root, a control and an open popup in each mode of a production build, but it prints no tool or command for that browser check."
+      },
+      {
+        "step": "Production cascade inspection",
+        "action": "Read the built dist/assets/*.css with a small Python script to find where the unlayered ultima-theme.css rules sit relative to StyleX's @layer priority* rules.",
+        "reason": "The guidance says to inspect the production stylesheet order, but it gives no command for that inspection."
+      },
+      {
+        "step": "Reviewing the init plan",
+        "action": "Summarized the operations, manualSteps and agents fields of ultima-init-plan.json with a Python one-liner before running --apply.",
+        "reason": "The guidance says to read the plan before applying it, but it gives no way to read it. The JSON is long, so I summarized it."
+      }
+    ],
+    "decisions": [
+      {
+        "choice": "Pick the category with a portalled Ultima Select inside an inline form card, with no Dialog",
+        "options": [
+          "Portalled Select for Category",
+          "Open the donation form in a Dialog",
+          "Both"
+        ],
+        "why": "On a phone at the shelves, a form that is always visible takes fewer taps. Select is portalled, opens from the keyboard, closes on Escape and returns focus to its trigger, as the Projects lesson shows, so it meets the requirement by itself."
+      },
+      {
+        "choice": "Put the list and detail side by side at the DESKTOP breakpoint (min-width: 48rem), not WIDE (64rem)",
+        "options": [
+          "DESKTOP 48rem",
+          "WIDE 64rem"
+        ],
+        "why": "The list-detail lesson uses DESKTOP, and a laptop at the intake desk is well above 48rem. The Projects lesson switches its columns at WIDE, so the guidance does not pick one for this layout."
+      },
+      {
+        "choice": "Cap the screen's width with one app token, --app-size-content-max: 72rem, in src/components/pantry/screen.stylex.ts",
+        "options": [
+          "Application defineVars token for the max width",
+          "No max width"
+        ],
+        "why": "On wide displays the two columns would otherwise stretch too far. A length the app chooses has to live in its own token module, as the product-tokens lesson does."
+      },
+      {
+        "choice": "Use the font fallbacks instead of loading the Figtree and IBM Plex Mono faces named by the theme",
+        "options": [
+          "Load the font faces in the app",
+          "Use the documented fallback stack"
+        ],
+        "why": "The guidance leaves this to the consumer. Loading faces would mean fetching from a host other than the public Ultima host. The system-ui fallback in the exported stack renders correctly."
+      },
+      {
+        "choice": "Show stock level with Badge tones: warning for low stock (under 10), danger for out of stock, neutral for category",
+        "options": [
+          "Status Badge tones",
+          "Accent Badge for category",
+          "No status badges"
+        ],
+        "why": "The brief keeps the brand accent out of status meaning. Category is not a status, so it uses the neutral tone, and status uses the success, warning and danger roles."
+      },
+      {
+        "choice": "Skip the optional agent setup (`ultima install --harness`) and the strict-CSP step",
+        "options": [
+          "git init and install the skill and hooks",
+          "Skip"
+        ],
+        "why": "Init reported both as optional. Agent setup would need a git repository, which init never creates, and the brief does not ask for one. The app sets no CSP."
+      }
+    ]
+  },
+  "styling": {
+    "check": {
+      "exit": 0,
+      "counts": {
+        "errors": 0,
+        "advisories": 0,
+        "incomplete": 0,
+        "suppressions": 0
+      }
+    },
+    "doctor": {
+      "exit": 0
+    },
+    "lint": {
+      "state": "configured",
+      "config": "eslint.config.mjs",
+      "errors": 0,
+      "warnings": 20,
+      "exit": 0
+    },
+    "rawPaint": {
+      "files": [
+        "src/App.tsx",
+        "src/components/pantry/pantry-data.ts",
+        "src/components/pantry/pantry.tsx",
+        "src/index.css",
+        "src/main.tsx"
+      ],
+      "findings": []
+    }
+  },
+  "production": {
+    "status": "passed",
+    "layout": "vite",
+    "versions": {
+      "node": "v22.23.2",
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "@stylexjs/stylex": "0.19.1",
+      "ultima-design": "0.1.0",
+      "vite": "8.3.4",
+      "chromium": "153.0.8010.12"
+    },
+    "cases": [
+      {
+        "id": "system-dark",
+        "status": "passed",
+        "snapshot": "system-dark.values.json",
+        "failures": []
+      },
+      {
+        "id": "system-light",
+        "status": "passed",
+        "snapshot": "system-light.values.json",
+        "failures": []
+      },
+      {
+        "id": "explicit-dark",
+        "status": "passed",
+        "snapshot": "explicit-dark.values.json",
+        "failures": []
+      },
+      {
+        "id": "explicit-light",
+        "status": "passed",
+        "snapshot": "explicit-light.values.json",
+        "failures": []
+      }
+    ],
+    "errors": []
+  },
+  "verdict": {
+    "conditions": {
+      "completed": "passed",
+      "publicGuidanceOnly": "passed",
+      "interventions": "passed",
+      "decisions": "passed",
+      "check": "passed",
+      "lint": "passed",
+      "rawPaint": "passed",
+      "production": "passed"
+    },
+    "status": "passed"
+  },
+  "review": {
+    "reviewer": "Claude on mbp1, #774: transcript, request log, notes and production report",
+    "rule": "An intervention is an action on the project or tooling that the guidance or CLI output did not print or link. A decision is an unresolved Ultima setup, theme or styling choice that changed the output. Product choices and documented alternatives do not count. Browser checks of the consumer application follow the guidance; rendering documentation to retrieve guidance or source would count.",
+    "interventions": [],
+    "decisions": [],
+    "notes": "The agent fetched llms.txt, the install and build-a-screen guides, and the projects, list-detail, interaction-states, product-tokens and style-overrides lessons over HTTP. It did not render documentation, decode a data link, extract a bundle, read CRM 01's registry source or reference the live host or another checkout. Both /r/theme.json requests came from the printed `shadcn add`. It read the printed `init --help` and ran init through --plan and --apply. Summarizing the plan JSON before --apply carries out the printed 'review the plan' step and is not counted. It installed the theme and components with the printed shadcn@4.21.4, imported ../ultima-theme.css from src/main.tsx as printed, and set up ESLint by the documented project-without-ESLint path. It keeps `minBlockSize: '100dvh'` and its track templates literal, uses the documented DESKTOP breakpoint as a named constant, and puts only `--app-size-content-max` in screen.stylex.ts (#845 and #856 hold). Step #16 repeats the printed component install it had just run at #15, to read the head of its output. shadcn skipped all 11 files as identical, so it wrote nothing and is not counted, the same call as the Next src repeat at #20. The browser check follows the printed hand step. Reading dist CSS carries out the printed cascade step. The self-reported decisions (Select over Dialog, DESKTOP over WIDE, the app token, the font fallback, Badge tones, skipping the optional agent setup and CSP steps) are documented options or product choices. check, doctor, StyleX lint (0 errors), the raw-paint scan and all four external production cases passed. No operator edited the app."
+  }
+}

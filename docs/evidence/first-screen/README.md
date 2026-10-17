@@ -200,6 +200,33 @@ The gate is unmet on this revision: Next root and Next src fail on interventions
 | [#857](https://github.com/frankieramirez/ultima/issues/857) `ultima-design` rejects `--help`, so agents probing for usage count as an intervention | Next root, Next src |
 | [#858](https://github.com/frankieramirez/ultima/issues/858) External `axe-open` fails when the Select trigger sits on one of axe's modal sample points | Next root |
 
+## Reruns on `3a6fa37` on macOS (#774)
+
+The candidate is `3a6fa37`: main after #862, #867, #870, #872 and #873, plus the design-pass merges. The machine and executor are the same as the `074af87` reruns. All three run-start source manifests and the release report's manifest match `ffeee539f71d46fc7a030e65bb7ddcc9b9d12b284b57c45b972bbf603a158c79`. So do the registry manifest (`5df5e352…`) and the packed CLI digest (`dc986f61…`).
+
+| Run | Layout | Interventions | Decisions | Check, lint, raw paint, production | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| [2026-10-17-vite-7fe3de](runs/2026-10-17-vite-7fe3de.json) | Vite | 0 | 0 | passed | **passed** |
+| [2026-10-17-next-app-551511](runs/2026-10-17-next-app-551511.json) | Next root | 0 | 0 | passed | **passed** |
+| [2026-10-17-next-src-27671b](runs/2026-10-17-next-src-27671b.json) | Next src | 0 | 0 | passed | **passed** |
+
+All three layouts pass S9 on one revision. #845 holds: each run keeps `minBlockSize: '100dvh'` and its `minmax(0, …)` track templates literal and puts only `--app-size-content-max` in its token module. #856 holds: each declares its breakpoint as a named constant in the screen file, DESKTOP in all three and WIDE as well in Next src. #857 holds: each agent ran `init --help`, which the install guide now prints, and the CLI printed its usage. No run rendered documentation, decoded a data link, extracted a bundle, read CRM 01's registry source or referenced the live host or another checkout. The reviews did not count these: Next src's `--yes` on the printed `shadcn add`, which copies init's own invocations; Vite's repeat of the printed component install, where shadcn skipped all 11 files as identical; Next src's repeat of that install at step #20 with `--overwrite=false`, which wrote nothing; summarizing the init plan and reading the built CSS, which carry out the printed review and cascade steps; deleting init's setup-check preview after replacing the page, which follows the starter comment; and the browser check, which follows the printed hand step.
+
+Three earlier runs on `25dc6bf` also passed with 0 interventions and 0 decisions, but its gate failed the overall-deadline test under its own parallel load twice, which #872 fixed after that commit, so the evidence moved to `3a6fa37` and those runs are not retained.
+
+### Adoption recommendation gate
+
+`pnpm verify release` on the same tree (report `20261017T071847-66bc65a5`, manifest `ffeee539…`, no source change) passed: 41 of 41 checks, exit 0, on darwin arm64 with node v22.23.2. Only `XUL_APP_FILE` was set, for Firefox.
+
+- **54-cell matrix:** all 54 cells executed and passed, 18 each in Chromium, Firefox and WebKit. `consumer-bundles-vite` passed 36 of 36, and `consumer-bundles-next-app`, `consumer-bundles-next-src` and `consumer-elements` passed 6 of 6 each. #847 now passes on macOS. The named gaps `tabs-indicator`, `date-picker-glyphs` and `drawer-backdrop-dismiss` stay explicit.
+- **Four delivery paths:** css, stylex-subtree, registry and cli passed in Vite, Next root and Next src. #848 now passes on macOS.
+- **`smoke-install`:** `consumer-smoke` passed 83 cases.
+- **Studio pairing and parity:** `palette`, `tokens-tests` and `docs-tests` passed.
+- **`production-scenarios`:** all 44 cases passed. #873 fixed #849.
+- **`tooling-tests`:** 505 cases passed. #846 is fixed.
+
+S9 is met on `3a6fa37`: all three layouts pass with 0 interventions and 0 decisions, and `pnpm verify release` passes on the same revision with every cell executed.
+
 ## Reproduce
 
 ```bash
@@ -212,11 +239,10 @@ node --experimental-strip-types scripts/first-screen.ts clean <run-dir>
 
 Run one layout at a time. A run needs Claude Code signed in, network access to npm, and Chromium for Playwright.
 
-On macOS 27, `pnpm verify release` needs Playwright's Firefox pointed away from the reserved profile folder, and a TMPDIR that is not a symlink (#846):
+On macOS 27, `pnpm verify release` needs Playwright's Firefox pointed away from the reserved profile folder:
 
 ```bash
 FF=~/Library/Caches/ms-playwright/firefox-1543/firefox/Nightly.app/Contents/Resources
 awk '{print} /^Name=Firefox$/{print "Profile=PlaywrightFirefox"}' $FF/application.ini > $FF/browser/application.ini
-mkdir -p /private/tmp/ultima-gate-tmp
-TMPDIR=/private/tmp/ultima-gate-tmp XUL_APP_FILE=$FF/browser/application.ini pnpm verify release
+XUL_APP_FILE=$FF/browser/application.ini pnpm verify release
 ```
