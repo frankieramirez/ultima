@@ -2,8 +2,10 @@
 
 import { useRender } from '@base-ui/react/use-render';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
+
+const HOVER = '@media (hover: hover)';
 
 const styles = stylex.create({
   root: {
@@ -19,8 +21,8 @@ const styles = stylex.create({
     alignItems: 'center',
     display: 'flex',
     flexWrap: 'wrap',
-    fontSize: text['--ult-text-3'],
-    gap: space['--ult-space-2'],
+    fontSize: text['--ult-text-4'],
+    gap: space['--ult-space-4'],
     listStyle: 'none',
     margin: 0,
     padding: 0,
@@ -34,13 +36,16 @@ const styles = stylex.create({
     color: {
       default: color['--ult-color-text-muted'],
       ':is([data-active], [aria-current="page"])': color['--ult-color-text'],
-      ':hover': color['--ult-color-text'],
+      [HOVER]: { ':hover': color['--ult-color-text'] },
     },
     fontWeight: {
       default: font['--ult-font-weight-regular'],
       ':is([data-active], [aria-current="page"])': font['--ult-font-weight-medium'],
     },
     textDecoration: 'none',
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'color',
+    transitionTimingFunction: easing.standard,
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,

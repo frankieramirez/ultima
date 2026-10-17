@@ -326,12 +326,13 @@ test('a consumer style keyed off Zag data-selected reaches the tab', async () =>
   probe.remove();
 });
 
-test('a disabled tab renders at reduced opacity and does not take click selection', async () => {
+test('a disabled tab takes the disabled ink instead of fading and does not take click selection', async () => {
   const host = mountTabs();
   await settle();
   const tabC = innerTab(host, 2);
   expect(tabC).toHaveAttribute('data-disabled');
-  expect(getComputedStyle(tabC).opacity).toBe('0.5');
+  expect(getComputedStyle(tabC).opacity).toBe('1');
+  expect(getComputedStyle(tabC).color).not.toBe(getComputedStyle(innerTab(host, 1)).color);
   tabC.click();
   await settle();
   expect(tabC).toHaveAttribute('aria-selected', 'false');

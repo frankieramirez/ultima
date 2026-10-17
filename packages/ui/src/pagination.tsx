@@ -2,8 +2,10 @@
 
 import { useRender } from '@base-ui/react/use-render';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
+
+const HOVER = '@media (hover: hover)';
 
 const styles = stylex.create({
   root: {
@@ -29,61 +31,73 @@ const styles = stylex.create({
   },
   /** Restated here rather than borrowed from Button: an item declares another Ultima component
    * only when it composes that component's behavior, never for its appearance. Shared tokens are
-   * what keep the two in step. */
+   * what keep the two in step. Every row is a ghost button at the md height: ink on no fill, a
+   * hover and a press one palette step apart on devices that hover, and a transparent hairline so
+   * the current page's edge costs no layout. */
   row: {
     alignItems: 'center',
     appearance: 'none',
     backgroundColor: {
       default: 'transparent',
-      ':hover': color['--ult-color-surface-hover'],
+      ':active:not([data-disabled])': color['--ult-color-surface-active'],
+      [HOVER]: {
+        ':hover:not([data-disabled])': color['--ult-color-surface-hover'],
+        ':active:not([data-disabled])': color['--ult-color-surface-active'],
+      },
     },
     blockSize: space['--ult-space-10'],
+    borderColor: 'transparent',
     borderRadius: radius['--ult-radius-md'],
-    borderStyle: 'none',
+    borderStyle: 'solid',
+    borderWidth: border.hairline,
     boxSizing: 'border-box',
-    color: {
-      default: color['--ult-color-text-muted'],
-      ':hover': color['--ult-color-text'],
-    },
+    color: color['--ult-color-text'],
     cursor: 'pointer',
     display: 'inline-flex',
+    flexShrink: 0,
     fontFamily: font['--ult-font-sans'],
-    fontSize: text['--ult-text-3'],
-    fontWeight: font['--ult-font-weight-regular'],
+    fontSize: text['--ult-text-4'],
+    fontVariantNumeric: 'tabular-nums',
+    fontWeight: font['--ult-font-weight-medium'],
+    gap: space['--ult-space-3'],
     justifyContent: 'center',
-    lineHeight: font['--ult-font-leading-normal'],
+    lineHeight: font['--ult-font-leading-none'],
     margin: 0,
     minInlineSize: space['--ult-space-10'],
     textDecoration: 'none',
+    touchAction: 'manipulation',
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'background-color, border-color, box-shadow, color',
+    transitionTimingFunction: easing.standard,
+    userSelect: 'none',
+    whiteSpace: 'nowrap',
+    WebkitTapHighlightColor: 'transparent',
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
     },
   },
-  /** Reading `aria-current` is what paints a router's own link, with no `current` prop. */
+  /** Reading `aria-current` is what paints a router's own link, with no `current` prop. The current
+   * page is an outline button, lifted on the quiet edge and `shadow-xs`, so it stays on the paper
+   * rather than on the grey kept for what can't be used. */
   page: {
-    backgroundColor: {
+    borderColor: {
       default: 'transparent',
-      ':is([data-active], [aria-current="page"])': color['--ult-color-surface-sunken'],
-      ':hover': color['--ult-color-surface-hover'],
+      ':is([data-active], [aria-current="page"])': color['--ult-color-border'],
     },
-    color: {
-      default: color['--ult-color-text-muted'],
-      ':is([data-active], [aria-current="page"])': color['--ult-color-text'],
-      ':hover': color['--ult-color-text'],
-    },
-    fontWeight: {
-      default: font['--ult-font-weight-regular'],
-      ':is([data-active], [aria-current="page"])': font['--ult-font-weight-medium'],
+    boxShadow: {
+      default: 'none',
+      ':is([data-active], [aria-current="page"])': shadow['--ult-shadow-xs'],
     },
     paddingInline: space['--ult-space-2'],
   },
   /** `pointer-events` is deliberately untouched: `none` would kill the hover state along with the
-   * click, and the element has to stay focusable, which is why the ends are never `disabled`. */
+   * click, and the element has to stay focusable, which is why the ends are never `disabled`. A
+   * disabled end takes the disabled ink instead of fading. */
   end: {
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     cursor: { default: 'pointer', ':is([data-disabled])': 'default' },
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
-    paddingInline: space['--ult-space-4'],
+    paddingInline: { default: space['--ult-space-6'], ':has(> svg)': space['--ult-space-5'] },
   },
   ellipsis: {
     alignItems: 'center',
@@ -91,7 +105,7 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     color: color['--ult-color-text-subtle'],
     display: 'inline-flex',
-    fontSize: text['--ult-text-3'],
+    fontSize: text['--ult-text-4'],
     justifyContent: 'center',
     minInlineSize: space['--ult-space-10'],
   },

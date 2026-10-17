@@ -7,6 +7,8 @@ import { afterEach, beforeEach, describe, expect, expectTypeOf, onTestFinished, 
 import { render } from 'vitest-browser-react';
 
 import { themeDocument, themes, violations } from './axe';
+import { hoversOnlyWhereHover } from './hover';
+import { resolved } from './overlay';
 
 const styles = stylex.create({
   scroll: { blockSize: '8rem' },
@@ -235,9 +237,8 @@ for (const mode of themes) {
 
     const currentStyle = getComputedStyle(current);
     const restingStyle = getComputedStyle(resting);
-    expect(parseFloat(restingStyle.borderInlineStartWidth)).toBe(0);
-    expect(parseFloat(currentStyle.borderInlineStartWidth)).toBeGreaterThan(0);
-    expect(currentStyle.fontWeight).toBe(restingStyle.fontWeight);
+    expect(Number(currentStyle.fontWeight)).toBeGreaterThan(Number(restingStyle.fontWeight));
+    expect(currentStyle.color).not.toBe(restingStyle.color);
     expect(currentStyle.backgroundColor).not.toBe(restingStyle.backgroundColor);
   });
 }
@@ -258,8 +259,20 @@ test('a router-set aria-current styles the link with no active prop', async () =
   const routed = screen.getByRole('link', { name: 'Routed' }).element();
   const resting = screen.getByRole('link', { name: 'Palette' }).element();
   expect(routed).not.toHaveAttribute('data-active');
-  expect(parseFloat(getComputedStyle(routed).borderInlineStartWidth)).toBeGreaterThan(0);
+  expect(getComputedStyle(routed).fontWeight).not.toBe(getComputedStyle(resting).fontWeight);
   expect(getComputedStyle(routed).backgroundColor).not.toBe(getComputedStyle(resting).backgroundColor);
+});
+
+test('a row is a 32px ghost control at the control corner, on the accent when current', async () => {
+  const screen = await render(<Sample />);
+  const current = screen.getByRole('link', { name: 'Tokens' }).element();
+  const resting = screen.getByRole('link', { name: 'Palette' }).element();
+  const style = getComputedStyle(resting);
+  expect(resting.getBoundingClientRect().height).toBeGreaterThanOrEqual(32);
+  expect(style.borderTopLeftRadius).toBe(resolved('border-top-left-radius', 'var(--ult-radius-md)'));
+  expect(parseFloat(getComputedStyle(current).borderInlineStartWidth)).toBe(0);
+  expect(getComputedStyle(current).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-accent-subtle)'));
+  expect(hoversOnlyWhereHover(resting)).toBe(true);
 });
 
 test('the trigger toggles the desktop collapse and reports it through aria-expanded', async () => {

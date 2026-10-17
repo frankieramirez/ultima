@@ -49,7 +49,7 @@ A run of exactly one hidden page is rendered rather than collapsed: an ellipsis 
 
 That is deliberate, and it is the whole reason the prop is not passed through. A natively disabled control is not focusable, so pressing it at the last page drops focus to `<body>` and the reader loses their place in the list — a bug MUI shipped a refocus workaround for. Keeping the element focusable means there is nothing to work around. It is also the only form that works for both elements: an anchor has no `disabled` attribute, and an anchor without `href` is not focusable either.
 
-Disabled styling is reduced opacity and `cursor: default`. `pointer-events` is untouched on purpose, since `none` would kill the hover state along with the click.
+A disabled end takes the disabled ink and `cursor: default`, instead of fading. `pointer-events` is untouched on purpose, since `none` would kill the hover state along with the click.
 
 Give a disabled end an `href` anyway — the current page's is the honest one. It keeps the element focusable, and Ultima stops the navigation.
 

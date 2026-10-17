@@ -2,9 +2,11 @@
 
 import { Accordion as BaseAccordion } from '@base-ui/react/accordion';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
+
+const HOVER = '@media (hover: hover)';
 
 const styles = stylex.create({
   item: {
@@ -18,13 +20,19 @@ const styles = stylex.create({
   trigger: {
     alignItems: 'center',
     appearance: 'none',
+    // Hover and press answer only on devices that hover and never on a disabled trigger, which
+    // takes the disabled ink instead of fading.
     backgroundColor: {
       default: 'transparent',
-      ':hover': color['--ult-color-surface-hover'],
+      ':active:not([data-disabled])': color['--ult-color-surface-active'],
+      [HOVER]: {
+        ':hover:not([data-disabled])': color['--ult-color-surface-hover'],
+        ':active:not([data-disabled])': color['--ult-color-surface-active'],
+      },
     },
     borderStyle: 'none',
     borderWidth: 0,
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     cursor: 'default',
     display: 'flex',
     fontFamily: font['--ult-font-sans'],
@@ -33,13 +41,17 @@ const styles = stylex.create({
     gap: space['--ult-space-4'],
     inlineSize: '100%',
     justifyContent: 'space-between',
+    lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
-    paddingBlock: space['--ult-space-4'],
+    paddingBlock: space['--ult-space-5'],
     paddingInline: space['--ult-space-4'],
     textAlign: 'start',
+    touchAction: 'manipulation',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, color',
+    transitionTimingFunction: easing.standard,
+    userSelect: 'none',
+    WebkitTapHighlightColor: 'transparent',
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
