@@ -333,6 +333,10 @@ test('a disabled chip takes the disabled ink instead of fading, one fill step ab
   expect(off.opacity).toBe('1');
   expect(off.color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
   expect(off.backgroundColor).toBe(resolved('background-color', 'var(--ult-color-surface-hover)'));
+  // Base UI marks the remove button with aria-disabled, not disabled, and it takes the same ink.
+  const remove = screen.getByTestId('off-remove').element();
+  expect(remove.getAttribute('aria-disabled')).toBe('true');
+  expect(getComputedStyle(remove).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
 });
 
 test('a chip is a 24px tinted inset with no border, and its remove button a 16px target 4px from its edges', async () => {
