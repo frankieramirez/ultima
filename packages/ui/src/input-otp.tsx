@@ -2,9 +2,12 @@
 
 import { OTPField as BaseOTPField } from '@base-ui/react/otp-field';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import { createContext, use, type ComponentProps } from 'react';
+
+const HOVER = '@media (hover: hover)';
+const COARSE = '@media (pointer: coarse)';
 
 const styles = stylex.create({
   root: {
@@ -16,32 +19,43 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
   },
+  // Input's field recipe on each slot: the field fill, the 3:1 edge that darkens on hover, the
+  // outline outside the edge (in danger on an invalid slot), and the sunken fill, quiet edge and
+  // disabled ink in place of a fade. Each key names its whole state.
   input: {
     appearance: 'none',
-    backgroundColor: color['--ult-color-field'],
+    backgroundColor: { default: color['--ult-color-field'], ':disabled': color['--ult-color-surface-sunken'] },
     borderColor: {
       default: color['--ult-color-border-strong'],
+      ':disabled:not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
+      [HOVER]: { ':hover:not(:disabled, [aria-invalid="true"], [data-invalid])': color['--ult-color-border-hover'] },
     },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':disabled': color['--ult-color-text-disabled'] },
     fontFamily: font['--ult-font-sans'],
+    fontVariantNumeric: 'tabular-nums',
+    fontWeight: font['--ult-font-weight-medium'],
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: { default: 1, ':disabled': 0.5, ':is([data-disabled])': 0.5 },
+    outline: {
+      default: 'none',
+      ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
+    },
+    outlineOffset: border.focusOffset,
     padding: 0,
     textAlign: 'center',
-    ':focus-visible': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
-    },
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'background-color, border-color',
+    transitionTimingFunction: easing.standard,
   },
   separator: {
     alignSelf: 'center',
-    borderBlockStartColor: color['--ult-color-border-strong'],
+    borderBlockStartColor: color['--ult-color-text-subtle'],
     borderBlockStartStyle: 'solid',
     borderBlockStartWidth: border.hairline,
     boxSizing: 'border-box',
@@ -52,7 +66,7 @@ const styles = stylex.create({
 
 const sizes = stylex.create({
   sm: {
-    fontSize: text['--ult-text-4'],
+    fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     height: space['--ult-space-9'],
     width: space['--ult-space-9'],
   },
@@ -62,7 +76,7 @@ const sizes = stylex.create({
     width: space['--ult-space-10'],
   },
   lg: {
-    fontSize: text['--ult-text-5'],
+    fontSize: text['--ult-text-6'],
     height: space['--ult-space-11'],
     width: space['--ult-space-11'],
   },

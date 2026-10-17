@@ -2,24 +2,33 @@
 
 import { Slider as BaseSlider } from '@base-ui/react/slider';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
 const VERTICAL = ':is([data-orientation="vertical"])';
+const HOVER = '@media (hover: hover)';
 
-
+// The track is the quiet edge colour with the accent indicator over it. The thumb is the field's
+// paper with the 3:1 edge, so it can be found on any ground, and its edge darkens on hover the way a
+// field's does. Disabled is a colour, never a fade: the indicator takes the disabled ink, and the
+// thumb the sunken fill, the quiet edge and no shadow. Each key names its whole state.
 const styles = stylex.create({
   label: {
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     fontFamily: font['--ult-font-sans'],
-    fontSize: text['--ult-text-3'],
+    fontSize: text['--ult-text-4'],
     fontWeight: font['--ult-font-weight-medium'],
+    lineHeight: font['--ult-font-leading-none'],
+    margin: 0,
   },
   value: {
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text-muted'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     fontFamily: font['--ult-font-sans'],
-    fontSize: text['--ult-text-3'],
+    fontSize: text['--ult-text-4'],
+    fontVariantNumeric: 'tabular-nums',
+    lineHeight: font['--ult-font-leading-none'],
+    margin: 0,
   },
   /** Base UI reads this box back with `getComputedStyle` to turn a pointer position into a value. */
   control: {
@@ -29,32 +38,40 @@ const styles = stylex.create({
     height: { default: space['--ult-space-8'], [VERTICAL]: '100%' },
     justifyContent: 'center',
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
     touchAction: 'none',
     userSelect: 'none',
     width: { default: '100%', [VERTICAL]: space['--ult-space-8'] },
   },
   /** Base UI gives the indicator `height: inherit`, so without a size here it has none. */
   track: {
-    backgroundColor: color['--ult-color-surface-sunken'],
+    backgroundColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-full'],
     height: { default: space['--ult-space-2'], [VERTICAL]: '100%' },
     width: { default: '100%', [VERTICAL]: space['--ult-space-2'] },
   },
   /** Base UI sets the indicator's own position and length inline, from the values. */
   indicator: {
-    backgroundColor: color['--ult-color-accent'],
+    backgroundColor: { default: color['--ult-color-accent'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     borderRadius: radius['--ult-radius-full'],
   },
   thumb: {
-    backgroundColor: color['--ult-color-surface-raised'],
+    backgroundColor: { default: color['--ult-color-field'], ':is([data-disabled])': color['--ult-color-surface-sunken'] },
     /** A `<div>` loses its fill under forced colors; the hairline keeps the knob visible. */
-    borderColor: color['--ult-color-border'],
+    borderColor: {
+      default: color['--ult-color-border-strong'],
+      ':is([data-disabled])': color['--ult-color-border'],
+      [HOVER]: { ':hover:not([data-disabled])': color['--ult-color-border-hover'] },
+    },
     borderRadius: radius['--ult-radius-full'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
-    boxShadow: { default: shadow['--ult-shadow-sm'], ':is([data-dragging])': shadow['--ult-shadow-md'] },
+    boxShadow: {
+      default: shadow['--ult-shadow-sm'],
+      ':is([data-dragging]):not([data-disabled])': shadow['--ult-shadow-md'],
+      ':is([data-disabled])': 'none',
+    },
     boxSizing: 'border-box',
+    cursor: { default: 'grab', ':is([data-dragging])': 'grabbing', ':is([data-disabled])': 'default' },
     height: space['--ult-space-6'],
     /** The focusable element is the nested range input, so `:focus-visible` never matches here. */
     outline: {
@@ -62,9 +79,13 @@ const styles = stylex.create({
       ':has(:focus-visible)': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
     outlineOffset: { default: null, ':has(:focus-visible)': border.focusOffset },
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'border-color, box-shadow',
+    transitionTimingFunction: easing.standard,
     width: space['--ult-space-6'],
   },
 });
+
 
 type SliderValue = number | readonly number[];
 type SliderRootProps<Value extends SliderValue = SliderValue> = PartProps<
