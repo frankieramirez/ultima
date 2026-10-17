@@ -177,7 +177,8 @@ export const RUNTIME_VARIABLES: readonly RuntimeVariable[] = [
     '--transform-origin',
   ),
   ...variable("Base UI's positioner", ['combobox', 'command', 'navigation-menu'], ['length'], NOTES, '--available-width'),
-  ...variable("Base UI's positioner", ['combobox', 'command'], ['length'], NOTES, '--available-height', '--anchor-width'),
+  ...variable("Base UI's positioner", ['combobox', 'command'], ['length'], NOTES, '--available-height'),
+  ...variable("Base UI's positioner", ['combobox', 'command', 'select'], ['length'], NOTES, '--anchor-width'),
   ...variable("Base UI's Navigation Menu", ['navigation-menu'], ['length'], NOTES, '--positioner-width', '--positioner-height', '--popup-width', '--popup-height'),
   ...variable(
     "Base UI's Tabs indicator, restated by the tabs element",

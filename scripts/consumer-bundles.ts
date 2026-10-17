@@ -931,7 +931,7 @@ async function directionLocale({ page, check }: Cell) {
     const direction = await listbox.evaluate((element) => getComputedStyle(element).direction);
     await page.keyboard.press('Escape');
     await listbox.waitFor({ state: 'hidden' });
-    return { iconAtInlineEnd: holds(icon.right <= value.left, { icon, value }), popupDirection: direction, textAtInlineStart: holds(near(glyph.right, text.right) && text.left - row.left < row.right - text.right, { glyph, text, row }), alignedWithValue: holds(near(text.right, value.right), { text, value }) };
+    return { iconAtInlineEnd: holds(icon.right <= value.left, { icon, value }), popupDirection: direction, textAtInlineStart: holds(near(glyph.right, text.right) && row.right - text.right < text.left - row.left, { glyph, text, row }), alignedWithValue: holds(near(text.right, value.right), { text, value }) };
   });
   await check('select-keyboard', { value: 'الشرق', focused: true }, async () => {
     await page.mouse.move(0, 0);
