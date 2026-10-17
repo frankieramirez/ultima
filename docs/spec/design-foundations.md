@@ -214,11 +214,13 @@ Padding smaller than the corner lets content crowd the curve. Padding much bigge
 | Panel | Width |
 | --- | --- |
 | Sidebar, side Drawer | 256px (4 × step 12) |
-| Popover, Hover Card, at most | 320px (5 ×) |
+| Popover, Hover Card, anchored Toast, at most | 320px (5 ×) |
 | Toast stack | 384px (6 ×) |
 | Dialog, Alert Dialog, at most | 448px (7 ×) |
 
 A dialog is the widest panel built for reading. Inside its 24px padding it leaves 400px of 14px text. An average Figtree character is about half an em wide, so that's roughly 57 characters a line.
+
+An anchored Toast takes the popup cap, not the stack's 384px. It is a popup tied to its trigger, often a one-word confirmation, so it sizes to its message (`max-content`) and wraps only past 320px or `--available-width`. A stacked toast is a row in a column of others, so it keeps the stack's width.
 
 **Running text stays between 45 and 75 characters a line.** On longer lines the eye loses its place on the way back to the next line. Shorter lines break phrases apart. Prose, descriptions and long messages sit in a column whose maximum width keeps them in that range.
 
