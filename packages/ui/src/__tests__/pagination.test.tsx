@@ -13,6 +13,8 @@ import {
   type PaginationPreviousProps,
   type PaginationRootProps,
 } from '@ultima/ui';
+import { hoversOnlyWhereHover } from './hover';
+import { resolved } from './overlay';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
@@ -219,8 +221,9 @@ test('a disabled end reads as disabled without losing its hover state', async ()
   const previous = getComputedStyle(screen.getByRole('link', { name: 'Previous' }).element());
   const next = getComputedStyle(screen.getByRole('link', { name: 'Next' }).element());
 
-  expect(parseFloat(previous.opacity)).toBeLessThan(1);
-  expect(parseFloat(next.opacity)).toBe(1);
+  expect(previous.opacity).toBe('1');
+  expect(previous.color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+  expect(next.color).toBe(resolved('color', 'var(--ult-color-text)'));
   expect(previous.cursor).toBe('default');
   expect(next.cursor).toBe('pointer');
   expect(previous.pointerEvents).toBe(next.pointerEvents);
@@ -281,11 +284,31 @@ test('the current page is both attributes, and the style follows either of them'
   expect(resting).not.toHaveAttribute('data-active');
   expect(router).not.toHaveAttribute('data-active');
 
-  expect(getComputedStyle(current).fontWeight).not.toBe(getComputedStyle(resting).fontWeight);
-  expect(getComputedStyle(current).color).not.toBe(getComputedStyle(resting).color);
-  expect(getComputedStyle(current).backgroundColor).not.toBe(getComputedStyle(resting).backgroundColor);
-  expect(getComputedStyle(router).fontWeight).toBe(getComputedStyle(current).fontWeight);
-  expect(getComputedStyle(router).backgroundColor).toBe(getComputedStyle(current).backgroundColor);
+  expect(getComputedStyle(current).borderTopColor).not.toBe(getComputedStyle(resting).borderTopColor);
+  expect(getComputedStyle(current).boxShadow).not.toBe(getComputedStyle(resting).boxShadow);
+  expect(getComputedStyle(router).borderTopColor).toBe(getComputedStyle(current).borderTopColor);
+  expect(getComputedStyle(router).boxShadow).toBe(getComputedStyle(current).boxShadow);
+});
+
+test('the current page is an outline button on the paper, not a grey fill', async () => {
+  const screen = await render(<Window page={2} count={5} />);
+  const current = getComputedStyle(screen.getByRole('link', { name: '2' }).element());
+  const resting = getComputedStyle(screen.getByRole('link', { name: '1' }).element());
+  expect(current.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(current.borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border)'));
+  expect(current.boxShadow).toBe(resolved('box-shadow', 'var(--ult-shadow-xs)'));
+  expect(resting.borderTopColor).toBe('rgba(0, 0, 0, 0)');
+  expect(current.borderTopWidth).toBe(resting.borderTopWidth);
+});
+
+test('every row is control text: 14px, medium, ink, and hover only where the device hovers', async () => {
+  const screen = await render(<Window page={2} count={5} />);
+  const page = screen.getByRole('link', { name: '1' }).element();
+  const style = getComputedStyle(page);
+  expect(style.fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
+  expect(style.fontWeight).toBe(resolved('font-weight', 'var(--ult-font-weight-medium)'));
+  expect(style.color).toBe(resolved('color', 'var(--ult-color-text)'));
+  expect(hoversOnlyWhereHover(page)).toBe(true);
 });
 
 test('the ring lands on the three controls, and on nothing else Pagination paints', async () => {

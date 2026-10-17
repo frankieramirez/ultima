@@ -8,6 +8,7 @@ import {
   easing,
   font,
   motion,
+  radius,
   scrollbar,
   space,
   text,
@@ -34,6 +35,8 @@ import {
 const DESKTOP = "@media (min-width: 48rem)";
 
 const DESKTOP_CONDITION = DESKTOP.slice("@media ".length);
+
+const HOVER = "@media (hover: hover)";
 
 const styles = stylex.create({
   /**
@@ -99,28 +102,37 @@ const styles = stylex.create({
     textTransform: "uppercase",
   },
   list: {
+    display: "flex",
+    flexDirection: "column",
+    gap: space["--ult-space-1"],
     listStyle: "none",
     margin: 0,
     padding: 0,
   },
+  /**
+   * A row is a 32px ghost control at the control corner. Hover and press move one palette step on
+   * devices that hover, and never on a disabled `Button`, which takes the disabled ink.
+   */
   row: {
     alignItems: "center",
     appearance: "none",
     backgroundColor: {
       default: "transparent",
-      ":hover": color["--ult-color-surface-hover"],
+      ":active:not(:disabled)": color["--ult-color-surface-active"],
+      [HOVER]: {
+        ":hover:not(:disabled)": color["--ult-color-surface-hover"],
+        ":active:not(:disabled)": color["--ult-color-surface-active"],
+      },
     },
-    borderInlineStartColor: "transparent",
-    borderInlineStartStyle: "solid",
-    borderInlineStartWidth: 0,
-    borderRadius: 0,
+    borderRadius: radius["--ult-radius-md"],
     borderStyle: "none",
     boxSizing: "border-box",
     color: {
       default: color["--ult-color-text-muted"],
-      ":hover": color["--ult-color-text"],
+      ":disabled": color["--ult-color-text-disabled"],
+      [HOVER]: { ":hover:not(:disabled)": color["--ult-color-text"] },
     },
-    cursor: "pointer",
+    cursor: { default: "pointer", ":disabled": "default" },
     display: "flex",
     fontFamily: font["--ult-font-sans"],
     fontSize: text["--ult-text-4"],
@@ -129,42 +141,48 @@ const styles = stylex.create({
     inlineSize: "100%",
     lineHeight: font["--ult-font-leading-normal"],
     margin: 0,
+    minBlockSize: space["--ult-space-9"],
     paddingBlock: space["--ult-space-2"],
-    paddingInline: {
-      default: space["--ult-space-4"],
-      ':is([data-active], [aria-current="page"])': `calc(${space["--ult-space-4"]} - ${border.focus})`,
-    },
+    paddingInline: space["--ult-space-4"],
     textAlign: "start",
     textDecoration: "none",
+    touchAction: "manipulation",
     transitionDuration: motion["--ult-motion-fast"],
-    transitionProperty: "background-color, border-color, color",
+    transitionProperty: "background-color, color",
+    transitionTimingFunction: easing.standard,
+    WebkitTapHighlightColor: "transparent",
     ":focus-visible": {
       outline: `${border.focus} solid ${color["--ult-color-border-focus"]}`,
       outlineOffset: border.focusOffset,
     },
   },
-  /** Reading `aria-current` is what styles a router's own link, TanStack Router's included, with no `active` prop. */
+  /**
+   * Reading `aria-current` is what styles a router's own link, TanStack Router's included, with no
+   * `active` prop. The current page takes the accent's subtle fill, the ink and the medium weight,
+   * so it differs by more than hue, and its hover and press stay on the accent's steps.
+   */
   link: {
     backgroundColor: {
       default: "transparent",
-      ':is([data-active], [aria-current="page"])':
-        color["--ult-color-surface-sunken"],
-      ":hover": color["--ult-color-surface-hover"],
-    },
-    borderInlineStartColor: {
-      default: "transparent",
-      ':is([data-active], [aria-current="page"])': color["--ult-color-text"],
-    },
-    borderInlineStartWidth: {
-      default: 0,
-      ':is([data-active], [aria-current="page"])': border.focus,
+      ":active": color["--ult-color-surface-active"],
+      ':is([data-active], [aria-current="page"])': color["--ult-color-accent-subtle"],
+      ':is([data-active], [aria-current="page"]):active': color["--ult-color-accent-subtle-active"],
+      [HOVER]: {
+        ":hover": color["--ult-color-surface-hover"],
+        ":active": color["--ult-color-surface-active"],
+        ':is([data-active], [aria-current="page"]):hover': color["--ult-color-accent-subtle-hover"],
+        ':is([data-active], [aria-current="page"]):active': color["--ult-color-accent-subtle-active"],
+      },
     },
     color: {
       default: color["--ult-color-text-muted"],
       ':is([data-active], [aria-current="page"])': color["--ult-color-text"],
-      ":hover": color["--ult-color-text"],
+      [HOVER]: { ":hover": color["--ult-color-text"] },
     },
-    fontWeight: font["--ult-font-weight-regular"],
+    fontWeight: {
+      default: font["--ult-font-weight-regular"],
+      ':is([data-active], [aria-current="page"])': font["--ult-font-weight-medium"],
+    },
   },
 });
 

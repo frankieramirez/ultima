@@ -1,7 +1,10 @@
+import { CalendarDate } from '@internationalized/date';
 import { Calendar, type CalendarRootProps, type CalendarTableCellTriggerProps } from '@ultima/ui';
 import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
+
+import { resolved } from './overlay';
 
 function Sample({ children, ...props }: CalendarRootProps) {
   return (
@@ -232,4 +235,66 @@ test('part types expose the style slot and no className or render', () => {
   expectTypeOf<CalendarTableCellTriggerProps>().not.toHaveProperty('className');
   expectTypeOf<CalendarTableCellTriggerProps>().not.toHaveProperty('render');
   expectTypeOf<CalendarTableCellTriggerProps>().toHaveProperty('style');
+});
+
+// October 2026 starts on a Thursday, so the 5th to the 8th run Monday to Thursday in one week.
+const OCTOBER = new CalendarDate(2026, 10, 1);
+const day = (screen: Awaited<ReturnType<typeof render>>, date: string) => {
+  const el = screen.container.querySelector<HTMLElement>(`[data-part="table-cell-trigger"][data-value="${date}"]`);
+  if (!el) throw new Error(`no day ${date}`);
+  return el;
+};
+
+test('the days of a range meet in one band, squaring the corners between them', async () => {
+  const screen = await render(
+    <Sample
+      selectionMode="range"
+      defaultFocusedValue={OCTOBER}
+      defaultValue={[new CalendarDate(2026, 10, 5), new CalendarDate(2026, 10, 8)]}
+    />,
+  );
+  const md = resolved('border-top-left-radius', 'var(--ult-radius-md)');
+  const start = getComputedStyle(day(screen, '2026-10-05'));
+  const middle = getComputedStyle(day(screen, '2026-10-06'));
+  const end = getComputedStyle(day(screen, '2026-10-08'));
+
+  expect(getComputedStyle(day(screen, '2026-10-06').parentElement!).paddingLeft).toBe('0px');
+  expect([start.borderTopLeftRadius, start.borderBottomLeftRadius]).toEqual([md, md]);
+  expect([start.borderTopRightRadius, start.borderBottomRightRadius]).toEqual(['0px', '0px']);
+  expect([middle.borderTopLeftRadius, middle.borderTopRightRadius]).toEqual(['0px', '0px']);
+  expect([end.borderTopLeftRadius, end.borderTopRightRadius]).toEqual(['0px', md]);
+  expect(getComputedStyle(day(screen, '2026-10-01')).borderTopLeftRadius).toBe(md);
+});
+
+test('a band keeps its outer corners where it wraps to the next week', async () => {
+  const screen = await render(
+    <Sample
+      selectionMode="range"
+      defaultFocusedValue={OCTOBER}
+      defaultValue={[new CalendarDate(2026, 10, 8), new CalendarDate(2026, 10, 14)]}
+    />,
+  );
+  const md = resolved('border-top-left-radius', 'var(--ult-radius-md)');
+  expect(getComputedStyle(day(screen, '2026-10-10')).borderTopRightRadius).toBe(md);
+  expect(getComputedStyle(day(screen, '2026-10-11')).borderTopLeftRadius).toBe(md);
+  expect(getComputedStyle(day(screen, '2026-10-11')).borderTopRightRadius).toBe('0px');
+});
+
+test('a disabled day takes the disabled ink rather than fading, and today is ringed', async () => {
+  const screen = await render(<Sample defaultFocusedValue={OCTOBER} max={new CalendarDate(2026, 10, 20)} />);
+  const late = getComputedStyle(day(screen, '2026-10-24'));
+  expect(late.opacity).toBe('1');
+  expect(late.color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+
+  const live = await render(<Sample />);
+  const today = live.container.querySelector<HTMLElement>('[data-today]')!;
+  expect(getComputedStyle(today).boxShadow).toContain(resolved('color', 'var(--ult-color-border-strong)'));
+});
+
+test('the nav triggers are 32px squares', async () => {
+  const screen = await render(<Sample />);
+  const prev = screen.container.querySelector<HTMLElement>('[data-part="prev-trigger"]')!;
+  const size = resolved('height', 'var(--ult-space-9)');
+  expect(getComputedStyle(prev).height).toBe(size);
+  expect(getComputedStyle(prev).width).toBe(size);
 });

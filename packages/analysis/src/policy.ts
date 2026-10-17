@@ -170,8 +170,8 @@ const variable = (owner: string, items: readonly string[], categories: RuntimeVa
  */
 export const RUNTIME_VARIABLES: readonly RuntimeVariable[] = [
   ...variable(
-    "Base UI's positioner, and Zag's for the tooltip element",
-    ['alert-dialog', 'combobox', 'command', 'context-menu', 'dialog', 'dropdown-menu', 'hover-card', 'popover', 'select', 'tooltip', 'ult-tooltip'],
+    "Base UI's positioner, and Zag's for the tooltip element and the date picker",
+    ['alert-dialog', 'combobox', 'command', 'context-menu', 'date-picker', 'dialog', 'dropdown-menu', 'hover-card', 'popover', 'select', 'tooltip', 'ult-tooltip'],
     ['origin'],
     OVERLAYS,
     '--transform-origin',

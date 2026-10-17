@@ -1,7 +1,9 @@
 import * as stylex from '@stylexjs/stylex';
-import { border, color, easing, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 import { VanillaMachine, normalizeProps, spreadProps } from '@zag-js/vanilla';
 import * as zagTabs from '@zag-js/tabs';
+
+const HOVER = '@media (hover: hover)';
 
 const styles = stylex.create({
   root: {
@@ -16,24 +18,39 @@ const styles = stylex.create({
     position: 'relative',
   },
   tab: {
+    alignItems: 'center',
     appearance: 'none',
     backgroundColor: 'transparent',
     borderStyle: 'none',
     boxSizing: 'border-box',
-    color: { default: color['--ult-color-text-muted'], ':is([data-active])': color['--ult-color-text'] },
+    // Hover lifts a resting tab to the active ink, only on devices that hover; a disabled tab
+    // takes the disabled ink instead of fading.
+    color: {
+      default: color['--ult-color-text-muted'],
+      ':is([data-active])': color['--ult-color-text'],
+      ':is([data-disabled])': color['--ult-color-text-disabled'],
+      [HOVER]: { ':hover:not([data-disabled])': color['--ult-color-text'] },
+    },
     cursor: { default: 'pointer', ':is([data-disabled])': 'default' },
+    display: 'inline-flex',
+    flexShrink: 0,
     fontFamily: font['--ult-font-sans'],
     fontSize: text['--ult-text-4'],
     fontWeight: font['--ult-font-weight-medium'],
+    gap: space['--ult-space-4'],
+    justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
-    paddingBlock: space['--ult-space-2'],
-    paddingInline: space['--ult-space-4'],
+    paddingBlock: 0,
     position: 'relative',
+    touchAction: 'manipulation',
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'color',
+    transitionTimingFunction: easing.standard,
+    userSelect: 'none',
+    whiteSpace: 'nowrap',
     zIndex: 1,
+    WebkitTapHighlightColor: 'transparent',
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
@@ -55,7 +72,7 @@ const lists = stylex.create({
     borderBlockEndColor: color['--ult-color-border'],
     borderBlockEndStyle: 'solid',
     borderBlockEndWidth: border.fine,
-    gap: space['--ult-space-6'],
+    gap: space['--ult-space-4'],
   },
   segmented: {
     backgroundColor: color['--ult-color-surface-sunken'],
@@ -65,22 +82,38 @@ const lists = stylex.create({
   },
 });
 
+// An underline tab stands at the md control height; a segmented tab fills the sm height less the
+// list's inset, so the list is 32px and the tab's corner nests in it (4 + 2 = 6).
 const tabs = stylex.create({
-  underline: { borderRadius: radius['--ult-radius-md'] },
-  segmented: { borderRadius: radius['--ult-radius-sm'] },
+  underline: {
+    borderRadius: radius['--ult-radius-md'],
+    minBlockSize: space['--ult-space-10'],
+    paddingInline: space['--ult-space-4'],
+  },
+  segmented: {
+    borderRadius: radius['--ult-radius-sm'],
+    minBlockSize: `calc(${space['--ult-space-9']} - 2 * ${space['--ult-space-1']})`,
+    paddingInline: space['--ult-space-5'],
+  },
 });
 
 const indicators = stylex.create({
   underline: {
     backgroundColor: color['--ult-color-accent'],
     height: border.focus,
-    insetBlockEnd: 'var(--active-tab-bottom)',
+    // Lies over the list's hairline rather than above it.
+    insetBlockEnd: `calc(var(--active-tab-bottom) - ${border.fine})`,
     insetInlineStart: 'var(--active-tab-left)',
     width: 'var(--active-tab-width)',
   },
   segmented: {
     backgroundColor: color['--ult-color-surface-raised'],
+    borderColor: color['--ult-color-border'],
     borderRadius: radius['--ult-radius-sm'],
+    borderStyle: 'solid',
+    borderWidth: border.fine,
+    boxShadow: shadow['--ult-shadow-xs'],
+    boxSizing: 'border-box',
     height: 'var(--active-tab-height)',
     insetBlockStart: 'var(--active-tab-top)',
     insetInlineStart: 'var(--active-tab-left)',

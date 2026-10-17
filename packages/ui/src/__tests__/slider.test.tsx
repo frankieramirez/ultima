@@ -13,6 +13,8 @@ import {
   type SliderValueProps,
 } from '@ultima/ui';
 
+import { resolved } from './overlay';
+
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
  * 1. Every combination renders: no axes, so the one combination is the component itself, single
@@ -25,7 +27,7 @@ import {
  * 4. The primitive is still wired: arrows step, Shift+arrow takes largeStep, Home and End reach the
  *    bounds, and the indicator's inline width tracks the value.
  * 5. Documented state drives its style: data-orientation flips the track's cross axis, data-dragging
- *    raises the thumb, and data-disabled dims the control.
+ *    raises the thumb, and data-disabled mutes the indicator and thumb rather than fading the control.
  * 6. Typecheck passes: className is rejected on every part, and no part takes a tone.
  * 7. Behavior this component wires itself: none, because every interaction is the primitive's, which
  *    is item 4, or a style reacting to a data-* attribute, which is items 5 and 8.
@@ -226,7 +228,7 @@ test('data-orientation swaps which axis the track sizes', async () => {
   expect(getComputedStyle(across).width).not.toBe(getComputedStyle(up).width);
 });
 
-test('data-disabled dims the control, and data-dragging raises the thumb', async () => {
+test('data-disabled mutes the indicator and thumb instead of fading, and data-dragging raises the thumb', async () => {
   const screen = await render(
     <>
       <Volume name="live" />
@@ -237,14 +239,31 @@ test('data-disabled dims the control, and data-dragging raises the thumb', async
   const locked = groupOf(screen.getByRole('slider', { name: 'locked' }).element());
 
   expect(controlOf(locked)).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(controlOf(locked)).opacity)).toBeLessThan(
-    parseFloat(getComputedStyle(controlOf(live)).opacity),
-  );
+  expect(getComputedStyle(controlOf(locked)).opacity).toBe('1');
+  expect(getComputedStyle(indicatorOf(locked)).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-text-disabled)'));
+  expect(getComputedStyle(thumbOf(locked)).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-surface-sunken)'));
+  expect(getComputedStyle(thumbOf(locked)).boxShadow).toBe('none');
 
   const thumb = thumbOf(live);
   const resting = getComputedStyle(thumb).boxShadow;
   thumb.setAttribute('data-dragging', '');
-  expect(getComputedStyle(thumb).boxShadow).not.toBe(resting);
+  await expect.poll(() => getComputedStyle(thumb).boxShadow).not.toBe(resting);
+});
+
+test('the thumb carries the 3:1 edge, which darkens on hover', async () => {
+  const screen = await render(<Volume />);
+  const thumb = thumbOf(groupOf(screen.getByRole('slider').element()));
+  expect(getComputedStyle(thumb).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-strong)'));
+  await userEvent.hover(thumb);
+  await expect.poll(() => getComputedStyle(thumb).borderTopColor).toBe(resolved('border-top-color', 'var(--ult-color-border-hover)'));
+});
+
+test('the label is 14px medium, and the value sets tabular figures', async () => {
+  const screen = await render(<Volume />);
+  const group = groupOf(screen.getByRole('slider').element());
+  const label = group.firstElementChild as HTMLElement;
+  expect(getComputedStyle(label).fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
+  expect(getComputedStyle(label.nextElementSibling as HTMLElement).fontVariantNumeric).toBe('tabular-nums');
 });
 
 test('the control refuses the gestures that would scroll or select instead of dragging', async () => {

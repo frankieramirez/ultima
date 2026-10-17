@@ -10,6 +10,8 @@ import {
   type TabsTabProps,
   type TabsVariant,
 } from '@ultima/ui';
+import { hoversOnlyWhereHover } from './hover';
+import { resolved } from './overlay';
 
 type SampleProps = {
   name: string;
@@ -119,4 +121,35 @@ test('public prop types expose only supported styling axes', () => {
   expectTypeOf<TabsPanelProps>().not.toHaveProperty('className');
   expectTypeOf<TabsRootProps>().toHaveProperty('variant');
   expectTypeOf<TabsListProps>().not.toHaveProperty('variant');
+});
+
+test('an underline tab stands at the md control height and hovers only where the device hovers', async () => {
+  const screen = await render(<Sample name="line" />);
+  const tab = screen.getByRole('tab', { name: 'line themes' }).element();
+  expect(tab.getBoundingClientRect().height).toBeCloseTo(40, 0);
+  expect(hoversOnlyWhereHover(tab)).toBe(true);
+});
+
+test('a segmented list is 32px tall and its indicator lifts on a hairline and shadow-xs', async () => {
+  const screen = await render(<Sample name="seg" variant="segmented" />);
+  const list = screen.getByRole('tablist', { name: 'seg' }).element();
+  expect(list.getBoundingClientRect().height).toBeCloseTo(32, 0);
+  const indicator = list.querySelector('[role="presentation"], span:not([role])') as Element;
+  const style = getComputedStyle(indicator);
+  expect(style.boxShadow).toBe(resolved('box-shadow', 'var(--ult-shadow-xs)'));
+  expect(parseFloat(style.borderTopWidth)).toBeGreaterThan(0);
+});
+
+test('a disabled tab takes the disabled ink instead of fading', async () => {
+  const screen = await render(
+    <Tabs.Root defaultValue="a">
+      <Tabs.List aria-label="States">
+        <Tabs.Tab value="a">Live</Tabs.Tab>
+        <Tabs.Tab value="b" disabled>Off</Tabs.Tab>
+      </Tabs.List>
+    </Tabs.Root>,
+  );
+  const off = getComputedStyle(screen.getByRole('tab', { name: 'Off' }).element());
+  expect(off.opacity).toBe('1');
+  expect(off.color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
 });
