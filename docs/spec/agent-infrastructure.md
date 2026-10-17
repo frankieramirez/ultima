@@ -187,10 +187,9 @@ Extract reusable pure inventory/dependency checks from the registry builder as n
 | `filter` | It blurs | [Never blur content](design-foundations.md#blur) |
 | A border width reading `border.fine` | The namespace's border color is `--ult-color-border-strong` | [A control edge stays 1px](design-foundations.md#borders) |
 | A border width reading `border.focus` | It is outside a current-item condition (`data-active`, `data-selected`, `aria-current`, `aria-selected`) | [2px is for focus and the current-item indicator](design-foundations.md#borders) |
+| `opacity` under a disabled condition (`:disabled`, `data-disabled`, `aria-disabled`) or in a namespace named for disabled | It is anything but `1` | [Disabled is a color, not opacity](design-foundations.md#opacity) |
 
-A value that draws nothing (`none`, `0`, `transparent`) passes everywhere. A value the evaluator cannot resolve is `ULT-TOKEN-001`'s to report. A rule that needs the rendered result, such as contrast or which part a shadow lands on, belongs to the browser suites.
-
-Disabled opacity is not checked yet: the parts in [Where the code doesn't follow these rules yet](design-foundations.md#where-the-code-doesnt-follow-these-rules-yet) still dim to 50%, and a rule must deliver a clean blocking run. The check joins this rule once the design pass clears that list.
+A value that draws nothing (`none`, `0`, `transparent`) passes everywhere, except that the opacity that changes nothing is `1`. A value the evaluator cannot resolve is `ULT-TOKEN-001`'s to report. A rule that needs the rendered result, such as contrast or which part a shadow lands on, belongs to the browser suites.
 
 ### Exceptions
 

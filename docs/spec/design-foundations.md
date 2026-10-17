@@ -282,10 +282,7 @@ The specification's [Motion](https://github.com/frankieramirez/ultima/blob/main/
 
 ## Where the code doesn't follow these rules yet
 
-Known gaps, so nobody copies them as precedent. The component design pass ([#859](https://github.com/frankieramirez/ultima/issues/859)) owns the fixes.
-
-| Rule | Where it isn't followed yet |
-| --- | --- |
+None at present. A rule that lands before the code follows it lists each gap here, with the issue that owns the fix, so nobody copies the gap as precedent.
 
 ## Sources
 

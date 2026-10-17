@@ -14,6 +14,8 @@ const FOUNDATIONS = 'docs/spec/design-foundations.md';
 const FOCUS = /:focus/;
 /** A condition naming the one current item: the selected tab, the active link. */
 const CURRENT = /data-active|data-selected|aria-current|aria-selected/;
+/** A condition or namespace naming the disabled state, which takes the disabled colors and no opacity. */
+const DISABLED = /disabled/i;
 
 const BORDER_COLOR = /^border(Block|Inline)?(Start|End|Top|Right|Bottom|Left)?Color$/;
 const BORDER_WIDTH = /^border(Block|Inline)?(Start|End|Top|Right|Bottom|Left)?Width$/;
@@ -41,6 +43,13 @@ function draws(alternatives: readonly Pieces[]): boolean {
   if (alternatives.every((alternative) => alternative.every((piece) => piece.kind === 'null'))) return false;
   const texts = literals(alternatives);
   return texts === undefined || texts.some((text) => !['none', '0', 'transparent', 'initial', 'unset'].includes(text));
+}
+
+/** An opacity that lets what is behind show through: anything but `1` in some alternative. */
+function dims(alternatives: readonly Pieces[]): boolean {
+  const set = alternatives.filter((alternative) => !alternative.every((piece) => piece.kind === 'null'));
+  const texts = literals(set);
+  return set.length > 0 && (texts === undefined || texts.some((text) => Number(text) !== 1));
 }
 
 export function checkVisual(context: Context): void {
@@ -105,6 +114,14 @@ export function checkVisual(context: Context): void {
         }
         if (property === 'filter' && values.flat().some((piece) => (piece.kind === 'text' && /blur\(/.test(piece.text)) || (piece.kind === 'token' && piece.family === 'filter'))) {
           at(`${where} blurs its own content, which reads as broken`, 'Show loading with Skeleton and disabled with the disabled colors.', 'blur');
+        }
+
+        if (property === 'opacity' && (DISABLED.test(declaration.namespace) || conditions.some((condition) => DISABLED.test(condition))) && dims(values)) {
+          at(
+            `${where} dims a disabled state with opacity, which lets what is behind show through and gives ink the contrast gate never checked`,
+            "Set the disabled colors instead: backgroundColor color['--ult-color-surface-sunken'], borderColor color['--ult-color-border'] and color color['--ult-color-text-disabled'].",
+            'opacity',
+          );
         }
 
         if (BORDER_WIDTH.test(property)) {

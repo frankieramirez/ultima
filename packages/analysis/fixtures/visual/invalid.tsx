@@ -31,13 +31,20 @@ const styles = stylex.create({
     borderStyle: 'solid',
     borderWidth: border.focus,
   },
+  dimmed: {
+    color: color['--ult-color-text'],
+    opacity: { default: 1, ':is([data-disabled])': 0.5 },
+  },
+  disabled: {
+    opacity: 0.5,
+  },
 });
 
 function Separator({ style, ...rest }: import('@ultima/ui/lib/component').PlainProps<'hr'>) {
   return (
     <hr
       {...rest}
-      {...stylex.props(styles.floating, styles.ring, styles.frame, styles.frosted, styles.loading, styles.control, styles.heavy, style)}
+      {...stylex.props(styles.floating, styles.ring, styles.frame, styles.frosted, styles.loading, styles.control, styles.heavy, styles.dimmed, styles.disabled, style)}
     />
   );
 }
