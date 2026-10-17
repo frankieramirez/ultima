@@ -19,12 +19,15 @@ const styles = stylex.create({
     color: color['--ult-color-text-subtle'],
     fontSize: text['--ult-text-2'],
     letterSpacing: font['--ult-font-tracking-wide'],
+    lineHeight: font['--ult-font-leading-snug'],
     textTransform: 'uppercase',
   },
   value: {
     color: color['--ult-color-text'],
     fontSize: text['--ult-text-8'],
+    fontVariantNumeric: 'tabular-nums',
     fontWeight: font['--ult-font-weight-semibold'],
+    letterSpacing: font['--ult-font-tracking-tight'],
     lineHeight: font['--ult-font-leading-none'],
   },
 });

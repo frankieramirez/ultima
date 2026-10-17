@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { Stat, type StatLabelProps, type StatRootProps, type StatValueProps } from '@ultima/ui';
+import { tokenValue } from './token-value';
 
 function FullStat() {
   return (
@@ -51,4 +52,13 @@ test('public prop types carry the style slot and no className', () => {
   expectTypeOf<StatLabelProps>().not.toHaveProperty('render');
   expectTypeOf<StatRootProps>().toHaveProperty('render');
   expectTypeOf<StatValueProps>().toHaveProperty('style');
+});
+
+test('the value sets tabular figures and tight tracking, and the label its own line height', async () => {
+  const screen = await render(<FullStat />);
+  const value = getComputedStyle(screen.getByText('42').element());
+  expect(value.fontVariantNumeric).toBe('tabular-nums');
+  expect(value.letterSpacing).toBe(tokenValue('letter-spacing', 'calc(var(--ult-text-8) * -0.02)'));
+  const label = getComputedStyle(screen.getByText('Findings').element());
+  expect(label.lineHeight).toBe(tokenValue('line-height', 'calc(var(--ult-text-2) * var(--ult-font-leading-snug))'));
 });

@@ -17,6 +17,7 @@ import {
   type TableSort,
   type TableSortButtonProps,
 } from '@ultima/ui';
+import { TRANSPARENT, tokenValue } from './token-value';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
@@ -382,4 +383,22 @@ test('the sort parts type as a state prop and a wrapper trigger', () => {
   expectTypeOf<TableSortButtonProps>().toHaveProperty('render');
   expectTypeOf<TableSortButtonProps>().toHaveProperty('style');
   expectTypeOf<TableSortButtonProps>().not.toHaveProperty('className');
+});
+
+test('a hairline divides the head from the body', async () => {
+  const screen = await render(<FullTable />);
+  const head = getComputedStyle(screen.getByRole('columnheader', { name: 'Region' }).element());
+  expect(head.borderBottomStyle).toBe('solid');
+  expect(head.borderBottomColor).toBe(tokenValue('border-bottom-color', 'var(--ult-color-border)'));
+});
+
+test('a body row answers the pointer over motion-fast, and the head row does not', async () => {
+  const screen = await render(<FullTable />);
+  const headRow = screen.getByRole('columnheader', { name: 'Region' }).element().parentElement as HTMLElement;
+  const bodyRow = screen.getByRole('cell', { name: 'us-east-1' }).element().parentElement as HTMLElement;
+  expect(getComputedStyle(bodyRow).transitionDuration).toBe(tokenValue('transition-duration', 'var(--ult-motion-fast)'));
+  await userEvent.hover(headRow);
+  expect(getComputedStyle(headRow).backgroundColor).toBe(TRANSPARENT);
+  await userEvent.hover(bodyRow);
+  await expect.poll(() => getComputedStyle(bodyRow).backgroundColor).toBe(tokenValue('background-color', 'var(--ult-color-surface-hover)'));
 });

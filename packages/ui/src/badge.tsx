@@ -13,9 +13,8 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     display: 'inline-flex',
     fontFamily: font['--ult-font-sans'],
-    fontSize: text['--ult-text-3'],
+    fontSize: text['--ult-text-2'],
     fontWeight: font['--ult-font-weight-medium'],
-    letterSpacing: font['--ult-font-tracking-wide'],
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
     paddingBlock: space['--ult-space-2'],
@@ -26,32 +25,32 @@ const styles = stylex.create({
 const subtle = stylex.create({
   neutral: {
     backgroundColor: color['--ult-color-surface-sunken'],
-    borderColor: color['--ult-color-border'],
+    borderColor: 'transparent',
     color: color['--ult-color-text-muted'],
   },
   accent: {
     backgroundColor: color['--ult-color-accent-subtle'],
-    borderColor: color['--ult-color-accent-border'],
+    borderColor: 'transparent',
     color: color['--ult-color-accent-text'],
   },
   highlight: {
     backgroundColor: color['--ult-color-highlight-subtle'],
-    borderColor: color['--ult-color-highlight-border'],
+    borderColor: 'transparent',
     color: color['--ult-color-highlight-text'],
   },
   success: {
     backgroundColor: color['--ult-color-success-subtle'],
-    borderColor: color['--ult-color-success-border'],
+    borderColor: 'transparent',
     color: color['--ult-color-success-text'],
   },
   warning: {
     backgroundColor: color['--ult-color-warning-subtle'],
-    borderColor: color['--ult-color-warning-border'],
+    borderColor: 'transparent',
     color: color['--ult-color-warning-text'],
   },
   danger: {
     backgroundColor: color['--ult-color-danger-subtle'],
-    borderColor: color['--ult-color-danger-border'],
+    borderColor: 'transparent',
     color: color['--ult-color-danger-text'],
   },
 });

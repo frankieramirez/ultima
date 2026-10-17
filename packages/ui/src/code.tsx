@@ -24,7 +24,7 @@ const variants = stylex.create({
   },
   block: {
     borderColor: color['--ult-color-border'],
-    borderRadius: 0,
+    borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     fontSize: text['--ult-text-4'],

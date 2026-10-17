@@ -1,13 +1,14 @@
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, radius, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, font, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
 
 const styles = stylex.create({
   root: {
     backgroundColor: color['--ult-color-surface-raised'],
     borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-lg'],
+    borderRadius: radius['--ult-radius-xl'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
+    boxShadow: shadow['--ult-shadow-sm'],
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-sans'],
@@ -16,8 +17,8 @@ const styles = stylex.create({
   header: {
     display: 'flex',
     flexDirection: 'column',
-    gap: space['--ult-space-2'],
-    padding: space['--ult-space-6'],
+    gap: space['--ult-space-3'],
+    padding: space['--ult-space-8'],
   },
   title: {
     fontSize: text['--ult-text-6'],
@@ -28,17 +29,19 @@ const styles = stylex.create({
   description: {
     color: color['--ult-color-text-muted'],
     fontSize: text['--ult-text-4'],
+    lineHeight: font['--ult-font-leading-normal'],
+    margin: 0,
   },
   body: {
-    paddingBlockEnd: space['--ult-space-6'],
-    paddingInline: space['--ult-space-6'],
+    paddingBlockEnd: space['--ult-space-8'],
+    paddingInline: space['--ult-space-8'],
   },
   footer: {
     alignItems: 'center',
     display: 'flex',
     gap: space['--ult-space-4'],
-    paddingBlockEnd: space['--ult-space-6'],
-    paddingInline: space['--ult-space-6'],
+    paddingBlockEnd: space['--ult-space-8'],
+    paddingInline: space['--ult-space-8'],
   },
 });
 
