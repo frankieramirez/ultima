@@ -1,6 +1,6 @@
 # Design foundations
 
-The rulebook for visual decisions: when to raise a surface, draw a border, round a corner, fade, blur, color or space something, and why. The [specification](https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md) owns the values (the token tables, the palette, the contrast gate) and each component's contract. This document owns the reasoning that picks among those values, so an agent or a person choosing a value for a new component, a block, a screen or a consumer's own UI makes the same call Ultima would and can say why.
+The rulebook for visual decisions: when to raise a surface, draw a border, round a corner, fade, blur, color, space or lay out something, and which size, weight and leading text takes, and why. The [specification](https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md) owns the values (the token tables, the palette, the contrast gate) and each component's contract. This document owns the reasoning that picks among those values, so an agent or a person choosing a value for a new component, a block, a screen or a consumer's own UI makes the same call Ultima would and can say why.
 
 Every rule here gives a reason a reviewer can check: a WCAG criterion, a perceptual effect, a measurement, or a constraint of the platform. A rule without a reason doesn't belong here. When this document and the specification disagree on a value, the specification wins and the disagreement is a bug to report. When they disagree on a reason, this document wins and the specification's prose is the one to fix.
 
@@ -202,14 +202,83 @@ Padding smaller than the corner lets content crowd the curve. Padding much bigge
 
 **Targets are big enough to hit.** Buttons, fields and triggers are at least 32px tall. Anything interactive meets [WCAG 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html): 24 by 24px, or enough room around it that a 24px circle centered on it touches no other target. A small mark such as a 16px Checkbox gets its target from its label and spacing, never by drawing the mark bigger.
 
-## Type and motion
+## Layout
 
-The specification's [Type](https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md#type) and [Motion](https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md#motion) sections hold the values. The rules agents most often miss:
+**Let the container decide, and use a breakpoint last.** A component fills the width it's given and adapts with flex wrapping and `minmax()` grids, so the same component works in a sidebar, a dialog or a full page. A viewport breakpoint only knows the window size, not how wide the component's column is. Where a layout really changes shape (Sidebar turning into a menu, a block's panes stacking), it uses one of the two named breakpoints from the specification's Principles: `DESKTOP` at 48rem and `WIDE` at 64rem, declared as module constants under those names. The narrow layout is the default style and the wider one sits under the query, so what a phone gets never depends on a query matching. 48rem is the first width where a 256px sidebar and a 512px content column fit side by side.
 
-- Every text part sets its own size, line height and margin. Nothing inherits a browser default.
-- Control text is 14px and rises to 16px under `(pointer: coarse)` so iOS doesn't zoom into a field.
-- Numbers that line up in a column (Stat, Table) set `tabular-nums`.
-- Colors change over `--ult-motion-fast` with the standard easing. Popups fade and scale from 96% out of their trigger. Nothing moves that doesn't need to, and every duration collapses under reduced motion through the tokens.
+**Everything reflows at 320px.** At 320 CSS pixels wide (a 1280px window zoomed to 400%), every component fits without sideways scrolling ([WCAG 1.4.10 Reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html)). Panel widths are capped at the space available for that reason, with `min(…, 100%)` or the positioner's `--available-width`. Content that really needs two dimensions, such as a wide table or a palette grid, scrolls in its own focusable region (`Table.Scroll` or Scroll Area), never the page.
+
+**Panel widths step by 64px** (multiples of space step 12), so Density scales them along with everything else:
+
+| Panel | Width |
+| --- | --- |
+| Sidebar, side Drawer | 256px (4 × step 12) |
+| Popover, Hover Card, at most | 320px (5 ×) |
+| Toast stack | 384px (6 ×) |
+| Dialog, Alert Dialog, at most | 448px (7 ×) |
+
+A dialog is the widest panel built for reading. Inside its 24px padding it leaves 400px of 14px text. An average Figtree character is about half an em wide, so that's roughly 57 characters a line.
+
+**Running text stays between 45 and 75 characters a line.** On longer lines the eye loses its place on the way back to the next line. Shorter lines break phrases apart. Prose, descriptions and long messages sit in a column whose maximum width keeps them in that range.
+
+**A popup is at least as wide as its trigger,** through `--anchor-width` (Select, Combobox), and never wider than the space available (`--available-width`). A list as wide as its field reads as part of that field, and the cap keeps it on screen.
+
+**Flexible children can shrink.** A flex or grid child that holds text or a field sets `min-width: 0`. The platform default, `min-width: auto`, holds it at its content width and pushes it out of its container.
+
+**Content in a surface shares one start edge.** A group label, the items under it and the surface's title begin on the same inline line. Icons sit in a fixed-width leading slot ahead of that line. A selection indicator (a check or a radio dot) sits on the trailing edge, so the leading slot only ever holds icons. With no icon, text sits flush with the start edge. Aligned edges read as one group and let the eye scan straight down. A leading check would push selected items' text off the line every other item follows.
+
+**Icons size with their text.** An icon inside a line of text or a control is `1em` square, so it follows the text from `sm` to `lg`. An icon that stands alone, such as Empty's, sets a `text` step as its font size and is `1em` within it.
+
+## Type
+
+The specification's [Type](https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md#type) and [Typefaces](https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md#typefaces) sections hold the values. These rules choose among them.
+
+**Two sizes do most of the work.** 14px (`text-4`) is the size of a component's own text: control labels, field values, menu items, tabs, descriptions and table cells. 16px (`text-5`) is running page text, and a field's value under a coarse pointer. All four reference systems set UI text at 14px (shadcn/ui `text-sm`, Mantine `sm`, Radix Themes size 2, DaisyUI `0.875rem`). Holding one size inside components leaves size free for the few things that need to stand out.
+
+**Size, leading and weight follow the role:**
+
+| Role | Size | Leading | Weight | Examples |
+| --- | --- | --- | --- | --- |
+| Title of a container that holds a task | 18px (`text-6`) | tight | semibold | Card, Dialog, Alert Dialog, Drawer |
+| Title of a smaller surface or a state | 16px (`text-5`) | tight | semibold | Popover, Empty |
+| Title of a message | 14px | snug | semibold | Alert, Toast |
+| Field label, legend | 14px | snug | medium | Field, Fieldset, Select, Slider |
+| Text on a control | 14px; 13px (`text-3`) at `sm`, 16px at `lg` | none | medium | Button, Tab, Toggle |
+| Value in a field | 14px; 16px at `lg` and under a coarse pointer | none | regular | Input, Select, Combobox |
+| Item in a menu or list | 14px | normal | regular | Select, Dropdown Menu, Command, Sidebar |
+| Description, body inside a component | 14px | normal | regular | Card, Dialog, Alert |
+| Small print | 12px (`text-2`) | snug | regular | Field description and error, Tooltip |
+| Part label inside a control | 12px | none | medium | Badge, Calendar's weekdays, Color Field's channels |
+| Section micro-label | 12px, uppercase, `tracking-wide` | snug | regular | Menu group labels, Sidebar group label, Table head cells, Stat, Meter and Progress labels |
+| Headline number | 24px (`text-8`) and up, `tracking-tight` | none | semibold | Stat's value |
+
+A title steps up in size as its container grows, in step with the padding and corner in Spacing. Small, glanceable surfaces separate title from description by weight alone, which keeps them short.
+
+**Weight marks the kind of text.** Regular (400) is for text read as content. Medium (500) is for text that labels something or acts: labels, control text, tab names. Semibold (600) is for titles and the one headline number. Three weights cover those three jobs. There is no bold because no role needs a fourth, and in a single surface two weights never mean the same thing. Selection doesn't change weight. A selected item already shows its state with the check and the highlight, and heavier text is wider, so the label shifts or truncates differently. A mark inside a fixed cell, such as Calendar's today in tabular digits, can take weight because nothing around it moves.
+
+**Leading follows how many lines the text can run to:**
+
+- `none` (1) is for a line that never wraps inside a box whose height comes from the space scale, such as a Button, a Tab, a Badge or a Calendar day. The box centers the line, and any extra leading would only add uneven space above and below.
+- `tight` (1.2) is for titles and large numbers. The gap between lines looks bigger as text grows, so big text needs proportionally less leading.
+- `snug` (1.35) is for short text that might wrap to two or three lines in a compact place: labels, helper text, tooltips, table cells.
+- `normal` (1.55) is for anything read as a paragraph: descriptions, body text, code blocks, list items that can wrap.
+- `relaxed` (1.75) is for long-form reading at 16px, such as an article body.
+
+**A fixed height holds one line.** A control with a fixed height (Button, Input, Toggle) keeps its text on one line with `white-space: nowrap`. Anything whose text can wrap takes a minimum height instead (Textarea, Tabs, Select items). A reader may raise line height to 1.5 and widen letter and word spacing ([WCAG 1.4.12 Text Spacing](https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html)), and wrapped text inside a fixed height would be clipped.
+
+**Tracking follows size.** Text from 12px to 20px keeps the face's own spacing (`tracking-normal`). From 24px up, use `tracking-tight`, because a face spaced for text sizes looks loose at display sizes. `tighter` and `tightest` are for the docs' display headings from 36px up. Uppercase micro-labels take `tracking-wide`: capitals set at text spacing look cramped.
+
+**Mono is for characters a reader compares or copies one at a time:** code, hex values, keys and identifiers. Everything else is sans.
+
+**Numbers that line up or change in place set `tabular-nums`:** Stat, numeric table cells, Calendar days, Pagination, and Slider, Meter and Progress values. Proportional digits shift a column's alignment and make a changing value jitter.
+
+**Every text part sets its own size, line height and margin.** Nothing inherits a browser default, because a component can't know what surrounds it. Text sizes are in `rem`, so they follow the reader's chosen root size ([WCAG 1.4.4 Resize Text](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html)).
+
+**A field's value rises to 16px under `(pointer: coarse)`.** iOS zooms the page into any focused field whose text is smaller than 16px.
+
+## Motion
+
+The specification's [Motion](https://github.com/frankieramirez/ultima/blob/main/docs/spec/ultima.md#motion) section holds the values. Colors change over `--ult-motion-fast` with the standard easing. Popups fade and scale from 96% out of their trigger. Nothing moves that doesn't need to, and every duration collapses under reduced motion through the tokens.
 
 ## Where the code doesn't follow these rules yet
 
@@ -219,6 +288,15 @@ Known gaps, so nobody copies them as precedent. The component design pass ([#859
 | --- | --- |
 | Disabled is a color, not opacity | Combobox's chips, Field's label and Fieldset's legend still dim to 50%. The architecture check adds this rule once the list is empty |
 | Card padding | The specification's note on Card and Accordion cites space step 6 for `Card.Body`. It is step 8 since the surfaces pass |
+| Field label at 14px | Field's label and Fieldset's legend are 13px |
+| Title and description of a message | Toast's title uses tight leading and its description is 13px |
+| Section micro-labels are regular weight | Sidebar's group label and Table's head cells are medium |
+| Section micro-labels take snug leading | Menu group labels inherit `normal` from their popup, and Sidebar's group label uses `none` |
+| Every text part sets its own leading | Meter's and Progress's label and value set none |
+| Selection doesn't change weight | Select's and Combobox's selected items turn medium |
+| Panels reflow at 320px | Popover and Hover Card cap at 320px but not at the space available |
+| Numbers that change in place are tabular | Meter's and Progress's values use proportional digits |
+| Breakpoint names | The docs site's `breakpoints.stylex.ts` calls 48rem `WIDE` and 64rem `DESKTOP`, the reverse of the specification's names |
 
 ## Sources
 
