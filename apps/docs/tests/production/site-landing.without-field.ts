@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict';
 
 import { productionScenario } from '../../../../scripts/verification/production.ts';
-import { assertFits } from '../support/production.ts';
+import { animationsSettle, assertFits } from '../support/production.ts';
 
 export default productionScenario('site-landing.without-field', 'production', async ({ page, variant, open, axe }) => {
   await open('/');
@@ -22,5 +22,7 @@ export default productionScenario('site-landing.without-field', 'production', as
   await hero.locator('pre').filter({ hasText: 'npx shadcn@4.21.4 add' }).waitFor();
   await hero.getByRole('button', { name: 'Copy the Vite install commands' }).waitFor();
   await assertFits(page, heading, `/ at ${variant.viewport} width without the field`);
+  // The hero rises in over about half a second; axe sampled mid-rise reads its faint text at partial opacity.
+  await animationsSettle(hero, 'the hero entrance');
   await axe('landing without the field');
 });

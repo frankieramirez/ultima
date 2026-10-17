@@ -21,7 +21,7 @@ import {
  *    aria-describedby, invalid reaches it as aria-invalid / data-invalid, and a consumer
  *    onChange still fires; useRender carries render and ref on Root.
  * 5. Documented state drives its style: aria-invalid and data-invalid paint the danger
- *    border, and disabled dims.
+ *    border, and disabled takes the muted fill and ink.
  * 6. Typecheck passes: className is rejected, `size` is the axis and the native attribute
  *    is dropped, and options pass through as children.
  * 7. Behavior this component wires itself: the private chevron Root renders after its
@@ -198,7 +198,7 @@ test('data-invalid recolors the border without aria-invalid', async () => {
   expect(getComputedStyle(invalid).borderTopColor).not.toBe(valid.borderTopColor);
 });
 
-test('disabled dims the select', async () => {
+test('disabled takes the muted fill and ink, not opacity', async () => {
   const screen = await render(
     <>
       <NativeSelect.Root>
@@ -216,7 +216,9 @@ test('disabled dims the select', async () => {
   const enabled = screen.getByRole('combobox', { name: 'Enabled' }).element();
   const disabled = screen.getByRole('combobox', { name: 'Disabled' }).element();
   expect(disabled).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(disabled).opacity)).toBeLessThan(parseFloat(getComputedStyle(enabled).opacity));
+  expect(getComputedStyle(disabled).opacity).toBe('1');
+  expect(getComputedStyle(disabled).backgroundColor).not.toBe(getComputedStyle(enabled).backgroundColor);
+  expect(getComputedStyle(disabled).color).not.toBe(getComputedStyle(enabled).color);
 });
 
 test('the native appearance is gone and the select fills its root', async () => {
@@ -263,6 +265,35 @@ test('render and ref reach the root', async () => {
   expect(root).toHaveAttribute('data-custom', 'root');
 });
 
+const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+
+test('hover darkens the edge, not the fill, and a disabled select keeps its resting edge', async () => {
+  const screen = await render(
+    <>
+      <FruitSelect aria-label="Live" />
+      <FruitSelect aria-label="Off" disabled />
+    </>,
+  );
+  const live = screen.getByRole('combobox', { name: 'Live' }).element();
+  const off = screen.getByRole('combobox', { name: 'Off' }).element();
+  const [liveEdge, liveFill] = [getComputedStyle(live).borderTopColor, getComputedStyle(live).backgroundColor];
+  const offEdge = getComputedStyle(off).borderTopColor;
+  await userEvent.hover(live);
+  await settle();
+  expect(getComputedStyle(live).borderTopColor).not.toBe(liveEdge);
+  expect(getComputedStyle(live).backgroundColor).toBe(liveFill);
+  await userEvent.hover(off);
+  await settle();
+  expect(off.matches(':hover')).toBe(true);
+  expect(getComputedStyle(off).borderTopColor).toBe(offEdge);
+});
+
+test('the focus outline lies over the edge', async () => {
+  const screen = await render(<FruitSelect aria-label="Focus" />);
+  await userEvent.tab();
+  expect(getComputedStyle(screen.getByRole('combobox', { name: 'Focus' }).element()).outlineOffset).toBe('-1px');
+});
+
 test('public prop types expose the style slot and the size axis on Select only', () => {
   expectTypeOf<NativeSelectRootProps>().not.toHaveProperty('className');
   expectTypeOf<NativeSelectSelectProps>().not.toHaveProperty('className');
@@ -273,4 +304,15 @@ test('public prop types expose the style slot and the size axis on Select only',
   expectTypeOf<NativeSelectRootProps>().toHaveProperty('style');
   expectTypeOf<NativeSelectSelectProps>().toHaveProperty('style');
   expectTypeOf<NativeSelectSelectProps>().toHaveProperty('multiple');
+});
+
+test('an invalid select keeps its danger edge while disabled', async () => {
+  const screen = await render(
+    <>
+      <FruitSelect aria-label="Invalid" aria-invalid="true" />
+      <FruitSelect aria-label="Invalid off" aria-invalid="true" disabled />
+    </>,
+  );
+  const edge = (name: string) => getComputedStyle(screen.getByRole('combobox', { name }).element()).borderTopColor;
+  expect(edge('Invalid off')).toBe(edge('Invalid'));
 });
