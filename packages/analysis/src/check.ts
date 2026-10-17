@@ -11,6 +11,7 @@ import { checkRegistry } from './rules/registry.ts';
 import { checkSource } from './rules/source.ts';
 import { checkStyle } from './rules/style.ts';
 import { checkTokens } from './rules/tokens.ts';
+import { checkVisual } from './rules/visual.ts';
 import { DOCS_KINDS, PRODUCTION_KINDS, type Scope } from './scope.ts';
 
 export function check(scope: Scope): Report {
@@ -23,6 +24,7 @@ export function check(scope: Scope): Report {
   checkSource(context);
   checkImports(context);
   checkTokens(context);
+  checkVisual(context);
   checkStyle(context);
   checkApi(context, scope.inventory.filter(({ kind }) => kind === 'react-component').map(({ path }) => path));
   checkRegistry(context);

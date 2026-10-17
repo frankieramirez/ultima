@@ -38,12 +38,13 @@ describe('the repository', () => {
       'ULT-SOURCE-001',
       'ULT-STYLE-001',
       'ULT-TOKEN-001',
+      'ULT-VISUAL-001',
     ]);
     assert.deepEqual(report.rules.filter((rule) => rule.status === 'advisory').map((rule) => rule.id), ['ULT-DOCS-REVIEW-001']);
     for (const rule of report.rules.filter((entry) => entry.status === 'pending')) {
       assert.ok(report.unsupported.some((entry) => entry.step === rule.id), `${rule.id} is listed as unsupported`);
     }
-    assert.equal(Object.keys(RULES).length, 13);
+    assert.equal(Object.keys(RULES).length, 14);
   });
 
   test('classifies every source file, with no unclassified production source', () => {
