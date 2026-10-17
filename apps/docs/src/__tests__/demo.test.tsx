@@ -92,12 +92,12 @@ test("the toolbar copies the source from either tab and the demo wears Neutral's
     getComputedStyle(
       screen.getByRole('button', { name: 'Clicked 0' }).element(),
     ).borderRadius,
-  ).toBe('4px');
+  ).toBe('6px');
   expect(
     getComputedStyle(
       screen.getByRole('textbox', { name: 'Example input' }).element(),
     ).borderRadius,
-  ).toBe('4px');
+  ).toBe('6px');
   await userEvent.click(copy);
   expect(written.at(-1)).toBe(SOURCE);
   await userEvent.click(screen.getByRole('tab', { name: 'Code' }));

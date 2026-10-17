@@ -233,13 +233,29 @@ function describeLesson(example: CompositionProjection, blocks: GuideBlock[]): s
   return `### ${example.title}\n\nhttps://ultima.systems${example.route}#${example.anchor}. [Markdown bundle](https://ultima.systems${lessonPath(example.id)}). ${contents} Install: \`${example.install}\``;
 }
 
+const HUE_ROLES = ['accent', 'highlight', 'success', 'warning', 'danger'];
+
+/** A suffix every hue role carries is listed once as `--ult-color-<role><suffix>`: the guide is near its byte limit. */
+function describeColors(names: string[]): string {
+  const prefix = (role: string) => `--ult-color-${role}`;
+  const suffixes = [...new Set(names.flatMap((name) => {
+    const role = HUE_ROLES.find((candidate) => name === prefix(candidate) || name.startsWith(`${prefix(candidate)}-`));
+    return role ? [name.slice(prefix(role).length)] : [];
+  }))].filter((suffix) => HUE_ROLES.every((role) => names.includes(`${prefix(role)}${suffix}`)));
+  const shared = new Set(HUE_ROLES.flatMap((role) => suffixes.map((suffix) => `${prefix(role)}${suffix}`)));
+  const own = names.filter((name) => !shared.has(name)).map((name) => `\`${name}\``).join(', ');
+  if (suffixes.length === 0) return own;
+  const roles = HUE_ROLES.map((role) => `\`${role}\``).join(', ');
+  return `${own}\n\nFor each \`<role>\` of ${roles}: ${suffixes.map((suffix) => `\`${prefix('<role>')}${suffix}\``).join(', ')}`;
+}
+
 function describeTokens(tokens: TokensJson['tokens']): string {
   const groups = new Map<string, string[]>();
   for (const [name, { group }] of Object.entries(tokens)) {
     groups.set(group, [...(groups.get(group) ?? []), name]);
   }
   return [...groups]
-    .map(([group, names]) => `### ${group}\n\n${names.map((name) => `\`${name}\``).join(', ')}`)
+    .map(([group, names]) => `### ${group}\n\n${group === 'color' ? describeColors(names) : names.map((name) => `\`${name}\``).join(', ')}`)
     .join('\n\n');
 }
 

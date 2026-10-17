@@ -393,6 +393,7 @@ function pairings(): Pairing[] {
   for (const background of ['surface', 'surface-raised']) {
     add('border-strong', background, 3);
     add('border-focus', background, 3);
+    add('border-hover', background, 3);
   }
   for (const role of ROLES) {
     for (const background of ['surface', 'surface-raised', `${role}-subtle`]) {

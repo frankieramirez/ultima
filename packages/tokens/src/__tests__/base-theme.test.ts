@@ -53,13 +53,13 @@ test('every pre-base draft keeps its values through import, autosave, share and 
 
 test('stock uses the new Neutral/Tight identity without revising any preset', () => {
   const draft = stockDraft();
-  expect(draft).toMatchObject({ version: 3, recipeVersion: BASE_RECIPE_VERSION, shape: 'default', accentFill: 'ink' });
+  expect(draft).toMatchObject({ version: 4, recipeVersion: BASE_RECIPE_VERSION, shape: 'default', accentFill: 'ink' });
   expect(resolveDraft(draft)).toEqual(resolveDraft(presetDraft('neutral')));
   expect(parseDraft(serializeDraft(draft))).toEqual({ ok: true, draft });
   expect(resetDraft(draft)).toEqual(draft);
   for (const id of ['neutral', 'ultima'] as const) {
     const rows = gate(resolveDraft(presetDraft(id)));
-    expect(rows).toHaveLength(49);
+    expect(rows).toHaveLength(51);
     for (const row of rows) for (const mode of ['dark', 'light'] as const) {
       expect(row[mode].ratio, `${id} ${mode} ${row.foreground}/${row.background}`).toBeGreaterThanOrEqual(row.minimum);
     }
@@ -71,7 +71,7 @@ test('unknown recipe identities fail by name instead of falling back to the curr
   for (const draft of [stockDraft(), ...fixtures.cases.map(({ draft }) => draft as ThemeDraft)]) {
     expect(parseDraft(JSON.stringify({ ...draft, recipeVersion: 999 }))).toMatchObject({ ok: false, reason: 'unknown-version' });
   }
-  for (const version of [1, 2]) {
+  for (const version of [1, 2, 3]) {
     expect(parseDraft(JSON.stringify({ ...stockDraft(), version }))).toMatchObject({ ok: false, reason: 'unknown-version' });
   }
 });

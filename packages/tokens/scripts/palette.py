@@ -78,25 +78,28 @@ HUES=['arcane','mana','verdant','ember','ruin']
 ROLE={'accent':'arcane','highlight':'mana','success':'verdant','warning':'ember','danger':'ruin'}
 def semantic(p,mode,neutral=False):
     m=lambda s,i:p[s][mode][i-1]
-    t={'surface':m('mithril',1),'surface-raised':m('mithril',2),'surface-sunken':m('mithril',3),'surface-hover':m('mithril',4),'surface-active':m('mithril',5),
-       'text':m('mithril',12),'text-muted':m('mithril',11),'text-subtle':m('mithril',10),'text-inverse':m('mithril',1),
-       'border':m('mithril',6),'border-strong':m('mithril',8),'border-focus':m('arcane',9),
+    # light raised surfaces sit on step 1 and float on their shadow; dark keeps step 2
+    t={'surface':m('mithril',1),'surface-raised':m('mithril',2 if mode=='dark' else 1),'surface-sunken':m('mithril',3),'surface-hover':m('mithril',4),'surface-active':m('mithril',5),
+       'field':m('mithril',2 if mode=='dark' else 1),
+       'text':m('mithril',12),'text-muted':m('mithril',11),'text-subtle':m('mithril',10),'text-inverse':m('mithril',1),'text-disabled':m('mithril',9),
+       'border':m('mithril',6),'border-hover':m('mithril',9),'border-strong':m('mithril',8),'border-focus':m('arcane',9),
        'action':m('mana',9),'action-hover':m('mana',10),'action-active':m('mana',11)}
     t['action-contrast']=max((m('mithril',1),m('mithril',12)),key=lambda c:min(cr(c,t[key]) for key in ('action','action-hover','action-active')))
     for role,s in ROLE.items():
-        t[role]=m(s,9); t[role+'-hover']=m(s,10); t[role+'-active']=m(s,11); t[role+'-subtle']=m(s,3); t[role+'-border']=m(s,7); t[role+'-text']=m(s,12)
+        t[role]=m(s,9); t[role+'-hover']=m(s,10); t[role+'-active']=m(s,11); t[role+'-subtle']=m(s,3); t[role+'-subtle-hover']=m(s,4); t[role+'-subtle-active']=m(s,5)
+        t[role+'-border']=m(s,7); t[role+'-text']=m(s,12)
         # contrast on-color: mithril1 unless it fails on any of base/hover/active, then mithril12
         cands=[('mithril1',m('mithril',1)),('mithril12',m('mithril',12))]
         best=max(cands,key=lambda c:min(cr(c[1],t[role]),cr(c[1],t[role+'-hover']),cr(c[1],t[role+'-active'])))
         t[role+'-contrast']=best[1]; t[role+'-contrast@step']=best[0]
     if neutral:
         t['accent']=t['accent-text']=m('mithril',12)
-        t['accent-subtle']=m('mithril',3); t['accent-border']=m('mithril',7)
+        t['accent-subtle']=m('mithril',3); t['accent-subtle-hover']=m('mithril',4); t['accent-subtle-active']=m('mithril',5); t['accent-border']=m('mithril',7)
         offsets=(-0.06,-0.11) if mode=='dark' else (0.08,0.14)
         t['accent-hover'],t['accent-active']=[oklch_to_hex(L_TOP['mithril'][mode][3]+offset,0,HUE['mithril']) for offset in offsets]
         t['accent-contrast']=max((m('mithril',1),m('mithril',12)),key=lambda c:min(cr(c,t[key]) for key in ('accent','accent-hover','accent-active')))
         t['accent-contrast@step']='mithril1' if t['accent-contrast']==m('mithril',1) else 'mithril12'
-    t['surface-overlay']=m('mithril',2)+('b3' if mode=='dark' else 'cc')
+    t['surface-overlay']=t['surface-raised']+('b3' if mode=='dark' else 'cc')
     return t
 
 def gate(t,mode):
@@ -107,7 +110,7 @@ def gate(t,mode):
     for fg in ('text','text-muted','text-subtle'):
         for bg in ('surface','surface-raised','surface-sunken','surface-hover'): chk(fg,bg,4.5,'text')
     for bg in ('surface','surface-raised'):
-        chk('border-strong',bg,3,'border'); chk('border-focus',bg,3,'focus')
+        chk('border-strong',bg,3,'border'); chk('border-focus',bg,3,'focus'); chk('border-hover',bg,3,'hover edge')
     for role in ROLE:
         for bg in ('surface','surface-raised',role+'-subtle'): chk(role+'-text',bg,4.5,'hue text')
         for bg in (role,role+'-hover',role+'-active'): chk(role+'-contrast',bg,4.5,'on-color')

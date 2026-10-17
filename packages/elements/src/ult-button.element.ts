@@ -51,7 +51,7 @@ const solid = stylex.create({
 
 const outline = stylex.create({
   accent: {
-    backgroundColor: { default: 'transparent', ':hover': color['--ult-color-surface-raised'] },
+    backgroundColor: { default: 'transparent', ':hover': color['--ult-color-surface-hover'] },
     borderColor: color['--ult-color-border'],
     color: color['--ult-color-text'],
   },
@@ -64,7 +64,7 @@ const outline = stylex.create({
 
 const ghost = stylex.create({
   accent: {
-    backgroundColor: { default: 'transparent', ':hover': color['--ult-color-surface-raised'] },
+    backgroundColor: { default: 'transparent', ':hover': color['--ult-color-surface-hover'] },
     borderColor: 'transparent',
     color: color['--ult-color-text-muted'],
   },
