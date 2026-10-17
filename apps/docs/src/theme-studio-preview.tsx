@@ -61,6 +61,8 @@ type PaneMode = 'dark' | 'light';
 type TokenReadout = { name: string; value: string }[];
 type Inspection = { anchor: HTMLElement; name?: string; tokens: TokenReadout };
 
+const READOUT_COLLISION = { side: 'shift', align: 'shift' } as const;
+
 const CARD_TOKENS = [
   '--ult-color-surface-raised',
   '--ult-color-border',
@@ -506,7 +508,8 @@ function PreviewPane({
       </div>
       <HoverCard.Root open={inspect && readout !== null} onOpenChange={(open) => { if (!open) setReadout(null); }}>
         <HoverCard.Portal container={portal}>
-          <HoverCard.Positioner anchor={readout?.anchor} collisionBoundary={portal.current ?? undefined} side="bottom" align="start">
+          {/* Shift rather than flip: a tall gallery card in a phone-height pane leaves room on neither side, and a flipped readout would shrink to a sliver. */}
+          <HoverCard.Positioner anchor={readout?.anchor} collisionAvoidance={READOUT_COLLISION} collisionBoundary={portal.current ?? undefined} side="bottom" align="start">
             <HoverCard.Popup aria-label="Inspected tokens" tabIndex={0} style={styles.inspector}>
               <div aria-label="Token readout" aria-live="polite" role="status" {...stylex.props(styles.readout)}>
                 {readout ? (

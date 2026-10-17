@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { Card, type CardHeaderProps, type CardRootProps, type CardTitleProps } from '@ultima/ui';
+import { tokenValue } from './token-value';
 
 function FullCard() {
   return (
@@ -59,4 +60,22 @@ test('public prop types carry the style slot and no className', () => {
   expectTypeOf<CardHeaderProps>().not.toHaveProperty('render');
   expectTypeOf<CardRootProps>().toHaveProperty('render');
   expectTypeOf<CardHeaderProps>().toHaveProperty('style');
+});
+
+test('the card is a 12px surface on a hairline and a small shadow, with card padding', async () => {
+  const screen = await render(<FullCard />);
+  const root = getComputedStyle(screen.getByTestId('root').element());
+  expect(root.borderTopLeftRadius).toBe(tokenValue('border-top-left-radius', 'var(--ult-radius-xl)'));
+  expect(root.boxShadow).toBe(tokenValue('box-shadow', 'var(--ult-shadow-sm)'));
+  const header = screen.getByText('Latency').element().parentElement as HTMLElement;
+  expect(getComputedStyle(header).paddingTop).toBe(tokenValue('padding-top', 'var(--ult-space-8)'));
+  expect(getComputedStyle(header).rowGap).toBe(tokenValue('row-gap', 'var(--ult-space-3)'));
+  expect(getComputedStyle(screen.getByText('Body').element()).paddingLeft).toBe(tokenValue('padding-left', 'var(--ult-space-8)'));
+});
+
+test('the description sets its own line height and margin', async () => {
+  const screen = await render(<FullCard />);
+  const description = getComputedStyle(screen.getByText('p95 over the last hour').element());
+  expect(description.lineHeight).toBe(tokenValue('line-height', 'calc(var(--ult-text-4) * var(--ult-font-leading-normal))'));
+  expect(description.marginTop).toBe('0px');
 });

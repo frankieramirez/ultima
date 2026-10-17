@@ -1,5 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
+
+const HOVER = '@media (hover: hover)';
 
 const styles = stylex.create({
   root: {
@@ -12,10 +14,20 @@ const styles = stylex.create({
     margin: 0,
     width: '100%',
   },
+  /** Body rows answer the pointer; the header row is not a row of data. */
   row: {
-    backgroundColor: { default: 'transparent', ':hover': color['--ult-color-surface-hover'] },
+    backgroundColor: {
+      default: 'transparent',
+      [HOVER]: { ':hover:not(thead *)': color['--ult-color-surface-hover'] },
+    },
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'background-color',
+    transitionTimingFunction: easing.standard,
   },
   headCell: {
+    borderBlockEndColor: color['--ult-color-border'],
+    borderBlockEndStyle: 'solid',
+    borderBlockEndWidth: border.hairline,
     color: color['--ult-color-text-subtle'],
     fontSize: text['--ult-text-2'],
     fontWeight: font['--ult-font-weight-medium'],
@@ -44,6 +56,7 @@ const styles = stylex.create({
     captionSide: 'bottom',
     color: color['--ult-color-text-muted'],
     fontSize: text['--ult-text-3'],
+    lineHeight: font['--ult-font-leading-snug'],
     padding: space['--ult-space-3'],
   },
 });

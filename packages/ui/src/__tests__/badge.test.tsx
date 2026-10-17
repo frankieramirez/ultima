@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { Badge, type BadgeProps, type BadgeTone, type BadgeVariant } from '@ultima/ui';
+import { TRANSPARENT, tokenValue } from './token-value';
 
 const variants = ['subtle', 'solid'] as const satisfies readonly BadgeVariant[];
 const tones = ['neutral', 'accent', 'highlight', 'success', 'warning', 'danger'] as const satisfies readonly BadgeTone[];
@@ -96,4 +97,21 @@ test('public prop types expose the two axes and no className', () => {
   expectTypeOf<BadgeProps>().not.toHaveProperty('className');
   expectTypeOf<BadgeProps>().toHaveProperty('render');
   expectTypeOf<BadgeProps>().toHaveProperty('style');
+});
+
+test('the subtle variant is soft: a tinted fill with no edge, in every tone', async () => {
+  const tones = ['neutral', 'accent', 'highlight', 'success', 'warning', 'danger'] as const;
+  const screen = await render(<>{tones.map((tone) => <Badge key={tone} tone={tone}>{tone}</Badge>)}</>);
+  for (const tone of tones) {
+    const badge = getComputedStyle(screen.getByText(tone).element());
+    expect(badge.borderTopColor, tone).toBe(TRANSPARENT);
+    expect(badge.backgroundColor, tone).not.toBe(TRANSPARENT);
+  }
+});
+
+test('the label is text step 2 with no added tracking, since a badge is not set in capitals', async () => {
+  const screen = await render(<Badge>Beta</Badge>);
+  const badge = getComputedStyle(screen.getByText('Beta').element());
+  expect(badge.fontSize).toBe(tokenValue('font-size', 'var(--ult-text-2)'));
+  expect(badge.letterSpacing).toBe('normal');
 });
