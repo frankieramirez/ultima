@@ -38,7 +38,7 @@ const styles = stylex.create({
     transitionDuration: motion['--ult-motion-fast'],
     transitionTimingFunction: { default: easing.enter, ':is([data-ending-style])': easing.exit },
     opacity: { default: 1, ':is([data-starting-style])': 0, ':is([data-ending-style])': 0 },
-    transform: { default: 'none', ':is([data-starting-style])': 'scale(0.98)', ':is([data-ending-style])': 'scale(0.98)' },
+    transform: { default: 'none', ':is([data-starting-style])': 'scale(0.96)', ':is([data-ending-style])': 'scale(0.96)' },
   },
   // Items are 32px rows with the small radius, so the popup's 8px corner nests around them at its
   // 4px inset. An icon the item carries leads; the check, the dot and the chevron trail.

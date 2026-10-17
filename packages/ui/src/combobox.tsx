@@ -193,8 +193,8 @@ const styles = stylex.create({
     position: 'relative',
     transform: {
       default: 'none',
-      ':is([data-starting-style])': 'scale(0.98)',
-      ':is([data-ending-style])': 'scale(0.98)',
+      ':is([data-starting-style])': 'scale(0.96)',
+      ':is([data-ending-style])': 'scale(0.96)',
     },
     transformOrigin: 'var(--transform-origin)',
     transitionDuration: motion['--ult-motion-fast'],

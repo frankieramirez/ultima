@@ -5,7 +5,7 @@ import { Button, Dialog } from '@ultima/ui';
 /**
  * Dialog's own `transform` names a resting, a starting, and an ending state, and StyleX merges a
  * property one condition at a time, so each edge below names all three. An override that set only
- * the resting transform would leave Dialog's `scale(0.98)` alive underneath the slide.
+ * the resting transform would leave Dialog's `scale(0.96)` alive underneath the slide.
  */
 const sheet = stylex.create({
   row: {

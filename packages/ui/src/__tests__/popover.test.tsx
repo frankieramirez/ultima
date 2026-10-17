@@ -17,6 +17,7 @@
  *    absolutely positioned snapshot of a trigger change, and the transform-origin the positioner
  *    seeds along with the transition longhands that make the enter and exit run.
  */
+import { DirectionProvider } from '@base-ui/react/direction-provider';
 import { expect, expectTypeOf, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
@@ -32,6 +33,7 @@ import {
 } from '@ultima/ui';
 import source from '../popover?raw';
 
+import { expectArrowOnEdge, resolved } from './overlay';
 import { themeDocument, themes, violations } from './axe';
 
 test('every part renders, and the Title names the popup', async () => {
@@ -274,8 +276,8 @@ test('the enter and exit states drive the popup style, and the resting state is 
   expect(getComputedStyle(popup).transform).toBe('none');
   expect(declaresWhen(popup, 'opacity', 'data-starting-style')).toEqual(['0']);
   expect(declaresWhen(popup, 'opacity', 'data-ending-style')).toEqual(['0']);
-  expect(declaresWhen(popup, 'transform', 'data-starting-style')).toEqual(['scale(0.98)']);
-  expect(declaresWhen(popup, 'transform', 'data-ending-style')).toEqual(['scale(0.98)']);
+  expect(declaresWhen(popup, 'transform', 'data-starting-style')).toEqual(['scale(0.96)']);
+  expect(declaresWhen(popup, 'transform', 'data-ending-style')).toEqual(['scale(0.96)']);
   expect(declaresWhen(popup, 'transition-timing-function', 'data-ending-style')).toHaveLength(1);
   expect(popup.getAttribute('data-open')).toBe('');
 });
@@ -293,6 +295,7 @@ test('the popup wears the overlay surface and the recipe transition', async () =
   expect(popup.transitionDuration).not.toBe('0s');
   expect(declares(page.getByTestId('popup').element(), 'transform-origin')).toEqual(['var(--transform-origin)']);
   expect(getComputedStyle(page.getByTestId('positioner').element()).outlineStyle).toBe('none');
+  expect(popup.paddingTop).toBe(resolved('padding-top', 'var(--ult-space-6)'));
 });
 
 test('the viewport carries position relative and nothing else', async () => {
@@ -306,7 +309,7 @@ test('the viewport carries position relative and nothing else', async () => {
   expect([...new Set(own)]).toEqual(['position']);
 });
 
-test('the title and the description paint type, and the arrow reuses the tooltip geometry', async () => {
+test('the title and the description paint type', async () => {
   await openPopup();
   const title = getComputedStyle(page.getByTestId('title').element());
   const description = getComputedStyle(page.getByTestId('description').element());
@@ -314,11 +317,49 @@ test('the title and the description paint type, and the arrow reuses the tooltip
   expect(parseFloat(title.fontSize)).toBeGreaterThan(parseFloat(description.fontSize));
   expect(parseInt(title.fontWeight, 10)).toBeGreaterThan(400);
   expect(title.color).not.toBe(description.color);
-
-  const arrow = page.getByTestId('arrow').element();
-  expect(parseFloat(getComputedStyle(arrow).width)).toBeGreaterThan(0);
-  expect(getComputedStyle(arrow, '::before').transform).not.toBe('none');
 });
+
+const ARROW_CASES = [
+  { side: 'bottom', direction: 'ltr', points: 'up' },
+  { side: 'top', direction: 'ltr', points: 'down' },
+  { side: 'left', direction: 'ltr', points: 'right' },
+  { side: 'right', direction: 'ltr', points: 'left' },
+  { side: 'inline-start', direction: 'ltr', points: 'right' },
+  { side: 'inline-end', direction: 'ltr', points: 'left' },
+  { side: 'inline-start', direction: 'rtl', points: 'left' },
+  { side: 'inline-end', direction: 'rtl', points: 'right' },
+] as const;
+
+test.each(ARROW_CASES)(
+  'on side $side ($direction) the arrow straddles the edge facing the trigger and points $points',
+  async ({ side, direction, points }) => {
+    document.documentElement.dir = direction;
+    try {
+      await render(
+        <DirectionProvider direction={direction}>
+          <div style={{ display: 'grid', placeItems: 'center', height: 600 }}>
+            <Popover.Root open>
+              <Popover.Trigger render={<Button />}>Share</Popover.Trigger>
+              <Popover.Portal>
+                <Popover.Positioner side={side} sideOffset={12} collisionAvoidance={{ side: 'none', align: 'none' }}>
+                  <Popover.Popup data-testid="popup" aria-label="Share" initialFocus={false}>
+                    <Popover.Arrow data-testid="arrow" />
+                    Anyone with the link can read it.
+                  </Popover.Popup>
+                </Popover.Positioner>
+              </Popover.Portal>
+            </Popover.Root>
+          </div>
+        </DirectionProvider>,
+      );
+      await expect.element(page.getByTestId('popup')).toBeVisible();
+      await expect.poll(() => getComputedStyle(page.getByTestId('popup').element()).opacity).toBe('1');
+      expectArrowOnEdge(page.getByTestId('arrow').element(), page.getByTestId('popup').element(), points);
+    } finally {
+      document.documentElement.removeAttribute('dir');
+    }
+  },
+);
 
 test('the hover props sit on the Trigger and pass through untouched', async () => {
   const screen = await render(

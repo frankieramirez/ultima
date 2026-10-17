@@ -9,7 +9,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
-import { resolved } from './menu-arrow';
+import { resolved } from './overlay';
 
 function MenuFixture({ onActivate = () => {} }: { onActivate?: () => void }) {
   return <ContextMenu.Root>

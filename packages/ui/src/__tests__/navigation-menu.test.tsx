@@ -29,7 +29,7 @@ import {
 import source from '../navigation-menu?raw';
 
 import { themeDocument, themes, violations } from './axe';
-import { expectArrowOnEdge, resolved } from './menu-arrow';
+import { expectArrowOnEdge, resolved } from './overlay';
 
 function Menu({
   orientation = 'horizontal',

@@ -4,7 +4,7 @@ import { render } from 'vitest-browser-react';
 import { Button, DropdownMenu, type DropdownMenuItemProps, type DropdownMenuPopupProps } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
-import { expectArrowOnEdge, resolved } from './menu-arrow';
+import { expectArrowOnEdge, resolved } from './overlay';
 
 test('the trigger opens a named menu with named items', async () => {
   const screen = await render(

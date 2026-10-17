@@ -21,7 +21,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
-import { resolved } from './menu-arrow';
+import { resolved } from './overlay';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)

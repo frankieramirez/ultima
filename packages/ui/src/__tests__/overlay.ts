@@ -40,3 +40,20 @@ export function resolved(property: string, value: string): string {
   probe.remove();
   return out;
 }
+
+/**
+ * Dialogs are cards: the larger corner and shadow, card padding, and a description that sits a
+ * fixed step under the title instead of on the UA's paragraph margins.
+ */
+export function expectCardSurface(popup: Element, description: Element): void {
+  const style = getComputedStyle(popup);
+  expect(style.borderTopLeftRadius).toBe(resolved('border-top-left-radius', 'var(--ult-radius-xl)'));
+  expect(style.boxShadow).toBe(resolved('box-shadow', 'var(--ult-shadow-lg)'));
+  expect(style.paddingTop).toBe(resolved('padding-top', 'var(--ult-space-8)'));
+
+  const text = getComputedStyle(description);
+  expect(text.marginTop).toBe(resolved('margin-top', 'var(--ult-space-4)'));
+  expect(text.marginBottom).toBe('0px');
+  const leading = parseFloat(getComputedStyle(description).getPropertyValue('--ult-font-leading-normal'));
+  expect(parseFloat(text.lineHeight)).toBeCloseTo(leading * parseFloat(text.fontSize), 1);
+}

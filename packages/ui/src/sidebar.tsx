@@ -170,7 +170,7 @@ const styles = stylex.create({
 
 /**
  * StyleX merges a property one condition at a time, so the popup's `transform` names all three of
- * its states: a state left out here would keep Dialog's own `scale(0.98)` underneath the slide.
+ * its states: a state left out here would keep Dialog's own `scale(0.96)` underneath the slide.
  */
 const mobile = stylex.create({
   viewport: {

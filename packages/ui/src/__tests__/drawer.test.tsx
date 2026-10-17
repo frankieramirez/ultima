@@ -43,6 +43,7 @@ import {
 import source from '../drawer?raw';
 
 import { themeDocument, themes, violations } from './axe';
+import { expectCardSurface } from './overlay';
 
 type Direction = 'up' | 'down' | 'left' | 'right';
 
@@ -73,7 +74,7 @@ function SampleDrawer({
                 <Drawer.Popup data-testid="popup">
                   <Drawer.Content data-testid="content">
                     <Drawer.Title>{title}</Drawer.Title>
-                    <Drawer.Description>Narrow the report to one team.</Drawer.Description>
+                    <Drawer.Description data-testid="description">Narrow the report to one team.</Drawer.Description>
                     {extra}
                     <Drawer.Close render={<Button variant="ghost" />}>Done</Drawer.Close>
                   </Drawer.Content>
@@ -246,6 +247,8 @@ test('the popup wears the overlay surface and the velocity-scaled exit', async (
   expect(declaresWhen(element, 'transition-duration', '[data-ending-style]')).toEqual([
     'calc(var(--drawer-swipe-strength) * var(--ult-motion-base))',
   ]);
+  // A bottom drawer: its free top corners take the card radius.
+  expectCardSurface(element, page.getByTestId('description').element());
 });
 
 test('the popup’s resting transform reads the swipe movement, and its height falls back to auto', async () => {

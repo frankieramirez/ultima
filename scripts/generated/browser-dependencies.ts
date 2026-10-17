@@ -16,6 +16,7 @@ export const uiOptimizerInclude = [
   "@base-ui/react/combobox",
   "@base-ui/react/context-menu",
   "@base-ui/react/dialog",
+  "@base-ui/react/direction-provider",
   "@base-ui/react/drawer",
   "@base-ui/react/field",
   "@base-ui/react/fieldset",

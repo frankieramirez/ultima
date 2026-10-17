@@ -512,7 +512,7 @@ export const CI_OBLIGATIONS: readonly { workflow: string; command: string; check
   { workflow: 'ci.yml', command: 'node --experimental-strip-types --test scripts/catalogue/*.test.ts scripts/verification/*.test.ts', checks: ['tooling-tests'] },
   {
     workflow: 'ci.yml',
-    command: "pnpm -r --filter '!@ultima/docs' test",
+    command: "pnpm -r --filter './packages/*' test",
     checks: ['analysis-fixtures', 'cli-tests', 'tokens-tests', 'ui-tests', 'blocks-tests', 'elements-tests'],
   },
   { workflow: 'ci.yml', command: 'pnpm --filter @ultima/docs test --shard=${{ matrix.shard }}/4', checks: ['docs-tests'] },
