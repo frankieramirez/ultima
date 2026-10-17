@@ -2,6 +2,8 @@
 
 Read the [Principles](docs/spec/ultima.md#principles) section of the specification before touching anything. It holds what decides the next choice.
 
+Before choosing any elevation, border, radius, opacity, blur, color or spacing value, read [Design foundations](docs/spec/design-foundations.md). It says which value a role takes and why, and a new visual decision adds its rule there in the same change.
+
 Contributor-tooling plans and rollout live in [Agent infrastructure](docs/spec/agent-infrastructure.md). Its proposed commands become usable when their implementation lands.
 
 ## Layout
