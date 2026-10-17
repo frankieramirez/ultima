@@ -38,7 +38,7 @@ test('emits an Elements section once an element item exists', () => {
   expect(output).toContain('/elements/ult-button.js');
   expect(output).toContain('/elements/ultima.js');
   expect(output).toContain('/elements-gallery.html');
-  expect(output).toContain('- `variant`: `solid` | `outline` | `ghost`');
+  expect(output).toContain('- `variant`: `solid` | `soft` | `outline` | `ghost`');
   expect(output).toContain('- `size`: `sm` | `md` | `lg`');
   expect(output).toContain('- `tone`: `accent` | `danger`');
 });

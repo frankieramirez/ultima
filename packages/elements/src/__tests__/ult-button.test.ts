@@ -92,7 +92,7 @@ test('keyboard focus draws the root outline', async () => {
   expect(getComputedStyle(button).outlineStyle).toBe('solid');
 });
 
-test('disabled mirrors into data-disabled and takes the muted fill', () => {
+test('disabled mirrors into data-disabled and takes the muted fill', async () => {
   const host = mount({ disabled: '' }, 'Disabled');
   const button = inner(host);
   expect(button.disabled).toBe(true);
@@ -102,7 +102,8 @@ test('disabled mirrors into data-disabled and takes the muted fill', () => {
   host.removeAttribute('disabled');
   expect(button.disabled).toBe(false);
   expect(button).not.toHaveAttribute('data-disabled');
-  expect(getComputedStyle(button).backgroundColor).not.toBe(disabledFill);
+  // The fill transitions back, so wait for it rather than reading the first frame.
+  await expect.poll(() => getComputedStyle(button).backgroundColor).not.toBe(disabledFill);
   expect(getComputedStyle(button).cursor).toBe('pointer');
 });
 
