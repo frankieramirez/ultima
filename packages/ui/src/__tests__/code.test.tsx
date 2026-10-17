@@ -3,6 +3,7 @@ import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { Code, type CodeProps, type CodeVariant } from '@ultima/ui';
+import { tokenValue } from './token-value';
 
 test('both variants mount', async () => {
   const screen = await render(
@@ -102,4 +103,10 @@ test('public prop types expose the variant axis and no className', () => {
   expectTypeOf<CodeProps>().not.toHaveProperty('className');
   expectTypeOf<CodeProps>().toHaveProperty('render');
   expectTypeOf<CodeProps>().toHaveProperty('style');
+});
+
+test('the block takes the 8px surface corner', async () => {
+  const screen = await render(<Code variant="block">pnpm install</Code>);
+  const block = screen.getByText('pnpm install').element().closest('pre') as HTMLElement;
+  expect(getComputedStyle(block).borderTopLeftRadius).toBe(tokenValue('border-top-left-radius', 'var(--ult-radius-lg)'));
 });

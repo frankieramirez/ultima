@@ -8,7 +8,7 @@ import type { PartProps, PlainProps } from '@ultima/ui/lib/component';
 const styles = stylex.create({
   root: {
     alignItems: 'flex-start',
-    borderRadius: radius['--ult-radius-md'],
+    borderRadius: radius['--ult-radius-lg'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
@@ -18,16 +18,19 @@ const styles = stylex.create({
     gap: space['--ult-space-4'],
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
-    padding: space['--ult-space-5'],
+    paddingBlock: space['--ult-space-5'],
+    paddingInline: space['--ult-space-6'],
   },
   title: {
-    fontSize: text['--ult-text-5'],
+    fontSize: text['--ult-text-4'],
     fontWeight: font['--ult-font-weight-semibold'],
-    lineHeight: font['--ult-font-leading-tight'],
+    lineHeight: font['--ult-font-leading-snug'],
     margin: 0,
   },
   description: {
     fontSize: text['--ult-text-4'],
+    lineHeight: font['--ult-font-leading-normal'],
+    margin: 0,
   },
   icon: {
     display: 'flex',
@@ -39,9 +42,9 @@ const styles = stylex.create({
 
 const tones = stylex.create({
   neutral: {
-    backgroundColor: color['--ult-color-surface-sunken'],
+    backgroundColor: color['--ult-color-surface-raised'],
     borderColor: color['--ult-color-border'],
-    color: color['--ult-color-text-muted'],
+    color: color['--ult-color-text'],
   },
   accent: {
     backgroundColor: color['--ult-color-accent-subtle'],

@@ -10,6 +10,7 @@ import {
   type EmptyRootProps,
   type EmptyTitleProps,
 } from '@ultima/ui';
+import { TRANSPARENT, tokenValue } from './token-value';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
@@ -34,13 +35,16 @@ function NoResults({ title = 'No reports yet' }: { title?: string }) {
   );
 }
 
-test('an empty state with no props paints one sunken surface', async () => {
+test('an empty state with no props marks the gap with a dashed 12px outline and no fill', async () => {
   const screen = await render(<NoResults />);
   await expect.element(screen.getByRole('heading', { level: 3, name: 'No reports yet' })).toBeVisible();
   const root = screen.getByTestId('empty').element();
   expect(root.tagName).toBe('DIV');
   expect(root.className).not.toBe('');
-  expect(getComputedStyle(root).backgroundColor).not.toBe(getComputedStyle(document.body).backgroundColor);
+  const style = getComputedStyle(root);
+  expect(style.backgroundColor).toBe(TRANSPARENT);
+  expect(style.borderTopStyle).toBe('dashed');
+  expect(style.borderTopLeftRadius).toBe(tokenValue('border-top-left-radius', 'var(--ult-radius-xl)'));
 });
 
 test('the title is a level 3 heading and the root is a div with no live role', async () => {
@@ -136,4 +140,11 @@ test('public prop types expose the style slot and no axis', () => {
   expectTypeOf<EmptyIconProps>().not.toHaveProperty('render');
   expectTypeOf<EmptyRootProps>().toHaveProperty('style');
   expectTypeOf<EmptyIconProps>().toHaveProperty('style');
+});
+
+test('the description sets its own line height and margin', async () => {
+  const screen = await render(<NoResults />);
+  const description = screen.getByTestId('empty').element().querySelector('h3 + div') as HTMLElement;
+  expect(getComputedStyle(description).lineHeight).toBe(tokenValue('line-height', 'calc(var(--ult-text-4) * var(--ult-font-leading-normal))'));
+  expect(getComputedStyle(description).marginTop).toBe('0px');
 });

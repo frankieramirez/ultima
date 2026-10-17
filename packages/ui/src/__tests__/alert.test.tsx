@@ -10,6 +10,7 @@ import {
   type AlertTitleProps,
   type AlertTone,
 } from '@ultima/ui';
+import { tokenValue } from './token-value';
 
 const tones = ['neutral', 'accent', 'highlight', 'success', 'warning', 'danger'] as const satisfies readonly AlertTone[];
 
@@ -150,4 +151,21 @@ test('public prop types expose tone and no className', () => {
   expectTypeOf<AlertDescriptionProps>().not.toHaveProperty('render');
   expectTypeOf<AlertIconProps>().not.toHaveProperty('render');
   expectTypeOf<AlertRootProps>().toHaveProperty('style');
+});
+
+test('the neutral tone is ink on the raised surface, not a grey fill', async () => {
+  const screen = await render(<Callout title="neutral" />);
+  const root = getComputedStyle(screen.getByTestId('neutral').element());
+  expect(root.backgroundColor).toBe(tokenValue('background-color', 'var(--ult-color-surface-raised)'));
+  expect(root.color).toBe(tokenValue('color', 'var(--ult-color-text)'));
+});
+
+test('the callout takes the 8px surface corner, and its title and description set their own type', async () => {
+  const screen = await render(<Callout title="shape" />);
+  const root = screen.getByTestId('shape').element();
+  expect(getComputedStyle(root).borderTopLeftRadius).toBe(tokenValue('border-top-left-radius', 'var(--ult-radius-lg)'));
+  expect(getComputedStyle(root).paddingLeft).toBe(tokenValue('padding-left', 'var(--ult-space-6)'));
+  const title = getComputedStyle(screen.getByRole('heading', { level: 3 }).element());
+  expect(title.fontSize).toBe(tokenValue('font-size', 'var(--ult-text-4)'));
+  expect(title.lineHeight).toBe(tokenValue('line-height', 'calc(var(--ult-text-4) * var(--ult-font-leading-snug))'));
 });
