@@ -217,7 +217,7 @@ Known gaps, so nobody copies them as precedent. The component design pass ([#859
 
 | Rule | Where it isn't followed yet |
 | --- | --- |
-| Disabled is a color, not opacity | Accordion, Calendar, Color Field, Combobox, Date Picker, Field, Fieldset, Input OTP and Pagination still dim disabled parts to 50% |
+| Disabled is a color, not opacity | Accordion, Combobox, Field, Fieldset and Pagination still dim disabled parts to 50% |
 | Card padding | The specification's note on Card and Accordion cites space step 6 for `Card.Body`. It is step 8 since the surfaces pass |
 
 ## Sources
