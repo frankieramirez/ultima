@@ -103,8 +103,9 @@ export async function lifecycle({ page, check, table, mode }: Cell) {
       return { moved: !!host.closest('#reconnect-holder'), roots: host.querySelectorAll('[part="root"]').length, tabs: host.querySelectorAll('[role="tab"]').length, selected, panel, buttons: document.getElementById('proof-button')!.querySelectorAll('button').length };
     }, { selected, panel });
   });
-  const danger = await computedColors(page, { danger: table['--ult-color-danger']! });
-  await check('attribute-update', { selected: 'History', panel: 'History panel', tabDisabled: true, buttonDisabled: true, buttonBackground: danger.danger, restored: { selected: 'Overview', tabDisabled: false, buttonDisabled: false } }, async () => {
+  // A disabled button takes the muted fill whatever its tone, so the tone change is read once it is enabled again.
+  const fills = await computedColors(page, { danger: table['--ult-color-danger']!, muted: table['--ult-color-surface-sunken']! });
+  await check('attribute-update', { selected: 'History', panel: 'History panel', tabDisabled: true, buttonDisabled: true, buttonBackground: fills.muted, restored: { selected: 'Overview', tabDisabled: false, buttonDisabled: false, buttonBackground: fills.danger } }, async () => {
     const set = (values: { value: string; disabled: boolean; tone: string }) => page.evaluate((values) => {
       document.getElementById('proof-tabs')!.setAttribute('value', values.value);
       document.querySelector('#proof-tabs ult-tabs-tab[value="findings"]')!.toggleAttribute('disabled', values.disabled);
@@ -120,10 +121,12 @@ export async function lifecycle({ page, check, table, mode }: Cell) {
     await set({ value: 'history', disabled: true, tone: 'danger' });
     await settle(page);
     const updated = { ...(await state()), ...(await read()) };
-    await set({ value: 'overview', disabled: false, tone: 'accent' });
+    await set({ value: 'overview', disabled: false, tone: 'danger' });
     await settle(page);
     const restored = { ...(await state()), ...(await read()) };
-    return { selected: updated.selected, panel: updated.panel, tabDisabled: updated.tabDisabled, buttonDisabled: updated.buttonDisabled, buttonBackground: updated.buttonBackground, restored: { selected: restored.selected, tabDisabled: restored.tabDisabled, buttonDisabled: restored.buttonDisabled } };
+    await set({ value: 'overview', disabled: false, tone: 'accent' });
+    await settle(page);
+    return { selected: updated.selected, panel: updated.panel, tabDisabled: updated.tabDisabled, buttonDisabled: updated.buttonDisabled, buttonBackground: updated.buttonBackground, restored: { selected: restored.selected, tabDisabled: restored.tabDisabled, buttonDisabled: restored.buttonDisabled, buttonBackground: restored.buttonBackground } };
   });
   await check('tabs-keyboard', {
     arrow: { focused: 'Findings', selected: 'Overview', panel: 'Overview panel' }, enter: { focused: 'Findings', selected: 'Findings', panel: 'Findings panel' },

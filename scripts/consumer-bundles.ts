@@ -392,8 +392,8 @@ async function themeCss({ page, check, table, mode, tables, stock, id, engine }:
       return { bodyMargin: getComputedStyle(document.body).marginTop, layer, beatsReset: css.backgroundColor === accent && css.paddingLeft !== '0px' };
     }, expected.accent);
   });
-  await check('state-styles', { hover: true, focusVisible: true, outline: true, disabledOpacity: '0.5' }, async () => {
-    const expected = await computedColors(page, { hover: table['--ult-color-accent-hover']!, focus: table['--ult-color-border-focus']! });
+  await check('state-styles', { hover: true, focusVisible: true, outline: true, disabled: { opacity: '1', muted: true } }, async () => {
+    const expected = await computedColors(page, { hover: table['--ult-color-accent-hover']!, focus: table['--ult-color-border-focus']!, muted: table['--ult-color-surface-sunken']! });
     await control.hover();
     await settle(page);
     const hover = await control.evaluate((element) => getComputedStyle(element).backgroundColor) === expected.hover;
@@ -402,8 +402,12 @@ async function themeCss({ page, check, table, mode, tables, stock, id, engine }:
     await page.keyboard.press('Tab');
     await page.keyboard.press('Shift+Tab');
     const focus = await control.evaluate((element) => ({ visible: element.matches(':focus-visible'), outline: getComputedStyle(element).outlineColor }));
-    const disabledOpacity = await page.getByRole('button', { name: 'Unavailable', exact: true }).evaluate((element) => getComputedStyle(element).opacity);
-    return { hover, focusVisible: focus.visible, outline: focus.outline === expected.focus, disabledOpacity };
+    // A disabled button takes the muted fill and ink at full opacity instead of fading.
+    const disabled = await page.getByRole('button', { name: 'Unavailable', exact: true }).evaluate((element, muted) => {
+      const css = getComputedStyle(element);
+      return { opacity: css.opacity, muted: css.backgroundColor === muted };
+    }, expected.muted);
+    return { hover, focusVisible: focus.visible, outline: focus.outline === expected.focus, disabled };
   });
   const scoped = { inScope: true, colorScheme: '', mismatched: [] as string[] };
   await check('scoped-portal', { dark: { ...scoped, colorScheme: 'dark' }, light: { ...scoped, colorScheme: 'light' } }, async () => {
