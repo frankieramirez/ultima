@@ -5,13 +5,15 @@
  *
  *   pnpm --filter @ultima/docs build
  *   node --experimental-strip-types scripts/first-screen.ts serve
- *   node --experimental-strip-types scripts/first-screen.ts run --layout vite|next-app|next-src [--root <dir>] [--model <name>] [--timeout <minutes>]
+ *   node --experimental-strip-types scripts/first-screen.ts run --layout vite|next-app|next-src [--live] [--root <dir>] [--model <name>] [--timeout <minutes>]
  *   node --experimental-strip-types scripts/first-screen.ts measure <run-dir>
  *
  * The candidate build is served at a loopback origin that stands in for the public host: every
  * `https://ultima.systems` in a served text response and in the served CLI tarball reads as that origin, except the
  * generated DESIGN.md link whose region digest both sides compute, and
  * `/npm/` answers `ultima-design` with the candidate tarball and redirects every other package to npm.
+ * With `--live` nothing is served: the agent uses the deployed `https://ultima.systems` and the CLI npm publishes,
+ * which is the stranger path the adoption plan's public-claims gate reruns after publication.
  * The agent runs Claude Code in safe mode, so no CLAUDE.md, memory, skill, plugin, hook or MCP server reaches it.
  */
 import { spawn } from 'node:child_process';
@@ -144,6 +146,20 @@ export async function servePublic(work: string, port = 0): Promise<Served & { cl
   };
 }
 
+/** The deployed host and the CLI npm serves as `ultima-design@latest`, identified by the bytes each serves. */
+async function liveHost(work: string) {
+  const response = await fetch(`${PUBLIC_ORIGIN}/r/registry.json`);
+  if (!response.ok) throw new Error(`${PUBLIC_ORIGIN}/r/registry.json answered ${response.status}`);
+  const registryManifest = sha256(Buffer.from(await response.arrayBuffer()));
+  const pack = join(work, 'pack');
+  await mkdir(pack, { recursive: true });
+  await run(pack, 'npm', ['pack', 'ultima-design@latest', '--pack-destination', pack]);
+  const names = (await readdir(pack)).filter((name) => /^ultima-design-.*\.tgz$/.test(name));
+  if (names.length !== 1) throw new Error(`expected one CLI tarball in ${pack}, found ${names.length}`);
+  const digest = sha256(await readFile(join(pack, names[0]!)));
+  return { registryManifest, cli: { version: /^ultima-design-(.+)\.tgz$/.exec(names[0]!)![1]!, packedDigest: digest, servedDigest: digest } };
+}
+
 /** Makes the brief's theme in the served Theme Studio: Neutral with the brand generating the Accent palette and a hue accent fill, then Export theme's install command. */
 export async function studioTheme(origin: string, brand: string, output: string): Promise<{ command: string; url: string }> {
   const browser = await chromium.launch({ headless: true });
@@ -177,7 +193,9 @@ export function prompt(brief: string, layout: Layout, origin: string, theme: str
     '',
     '## This run',
     '',
-    `Ultima's public site for this run is ${origin}. Treat it as the public host: its docs, /llms.txt, registry and Theme Studio are there. Do not use any other copy of Ultima, and do not search the web for it. npm resolves \`ultima-design\` to the version served there.`,
+    origin === PUBLIC_ORIGIN
+      ? `Ultima's public site is ${origin}: its docs, /llms.txt, registry and Theme Studio are there, and npm serves \`ultima-design\`. Do not use any other copy of Ultima, and do not search the web for it.`
+      : `Ultima's public site for this run is ${origin}. Treat it as the public host: its docs, /llms.txt, registry and Theme Studio are there. Do not use any other copy of Ultima, and do not search the web for it. npm resolves \`ultima-design\` to the version served there.`,
     '',
     `Start in this empty directory. The documented entry command for this layout is:`,
     '',
@@ -305,8 +323,8 @@ async function lint(app: string, env: NodeJS.ProcessEnv) {
   return { state: fragment ? 'configured' as const : 'missing-fragment' as const, config, errors, warnings, exit: result.exit };
 }
 
-/** The Bash commands and fetched URLs from a stream-json transcript, and whether anything reached the live host or another checkout. */
-export function transcriptFacts(lines: string[], work: string) {
+/** The Bash commands and fetched URLs from a stream-json transcript, and whether anything reached another checkout, or the live host when it is not the run's host. */
+export function transcriptFacts(lines: string[], work: string, live = false) {
   const commands: string[] = [];
   const fetches: string[] = [];
   let model: string | null = null;
@@ -323,7 +341,7 @@ export function transcriptFacts(lines: string[], work: string) {
       if (block.name === 'WebFetch' && typeof block.input?.url === 'string') fetches.push(block.input.url);
     }
   }
-  const outside = [...commands, ...fetches].filter((text) => text.includes('ultima.systems') || /\/(orca|Projects|\.herdr)\//.test(text.replaceAll(work, '')));
+  const outside = [...commands, ...fetches].filter((text) => (!live && text.includes('ultima.systems')) || /\/(orca|Projects|\.herdr)\//.test(text.replaceAll(work, '')));
   return { model, session, result, commands, fetches, outside };
 }
 
@@ -332,7 +350,7 @@ export async function measure(dir: string, env: NodeJS.ProcessEnv = process.env)
   const record = JSON.parse(await readFile(join(dir, 'record.json'), 'utf8'));
   const app = join(dir, 'work', APP);
   const transcript = existsSync(join(dir, 'transcript.jsonl')) ? (await readFile(join(dir, 'transcript.jsonl'), 'utf8')).split('\n').filter(Boolean) : [];
-  const facts = transcriptFacts(transcript, join(dir, 'work'));
+  const facts = transcriptFacts(transcript, join(dir, 'work'), record.host?.live === true);
   record.agent = { ...record.agent, model: facts.model, session: facts.session, turns: facts.result?.num_turns ?? null, costUsd: facts.result?.total_cost_usd ?? null, durationMs: facts.result?.duration_ms ?? null, outcome: facts.result?.subtype ?? null };
   record.transcript = { file: `${record.runId}.stream.jsonl.gz`, sha256: sha256(transcript.join('\n')), events: transcript.length, commands: facts.commands, fetches: facts.fetches, outsideReferences: facts.outside };
   const notes = await readFile(join(dir, 'work', NOTES), 'utf8').then((text) => JSON.parse(text), () => null);
@@ -370,37 +388,42 @@ export async function measure(dir: string, env: NodeJS.ProcessEnv = process.env)
 /** The run's own TMPDIR. Chromium puts its singleton socket there, and a path under the run directory is too long for one. */
 const shortTmp = (runId: string) => join('/tmp', `ultima-fs-${runId.slice(runId.lastIndexOf('-') + 1)}`);
 
-async function exercise(layout: Layout, options: { root: string; model?: string; timeout: number }) {
-  const runId = `${new Date().toISOString().slice(0, 10)}-${layout}-${randomBytes(3).toString('hex')}`;
+async function exercise(layout: Layout, options: { root: string; model?: string; timeout: number; live: boolean }) {
+  const runId = `${new Date().toISOString().slice(0, 10)}-${layout}-${options.live ? 'live-' : ''}${randomBytes(3).toString('hex')}`;
   const dir = join(options.root, runId);
   const work = join(dir, 'work');
   const tmp = shortTmp(runId);
   for (const path of [work, tmp, join(dir, 'npm-cache'), join(dir, 'serve')]) await mkdir(path, { recursive: true });
   const source = hashSource(repository);
   const brief = await readFile(join(repository, BRIEF), 'utf8');
-  const served = await servePublic(join(dir, 'serve'));
+  const served = options.live ? null : await servePublic(join(dir, 'serve'));
+  const host = served ?? { origin: PUBLIC_ORIGIN, ...(await liveHost(join(dir, 'serve'))) };
   const env: NodeJS.ProcessEnv = {
-    ...process.env, TMPDIR: tmp, npm_config_registry: `${served.origin}/npm/`, npm_config_cache: join(dir, 'npm-cache'),
+    ...process.env, TMPDIR: tmp, npm_config_cache: join(dir, 'npm-cache'),
     npm_config_update_notifier: 'false', NEXT_TELEMETRY_DISABLED: '1',
+    ...(served ? { npm_config_registry: `${served.origin}/npm/` } : {}),
   };
   for (const name of Object.keys(env)) if (name.startsWith('CLAUDE') || name.startsWith('ORCA') || name === 'PNPM_SCRIPT_SRC_DIR' || name.startsWith('npm_package') || name.startsWith('npm_lifecycle')) delete env[name];
-  const registryManifest = sha256(await readFile(join(DIST, 'r/registry.json')));
+  const registryManifest = 'registryManifest' in host ? host.registryManifest : sha256(await readFile(join(DIST, 'r/registry.json')));
   const record: Record<string, unknown> = {
     schemaVersion: 1, runId, layout,
     brief: { path: BRIEF, sha256: sha256(brief), brand: briefBrand(brief) },
     source: {
       head: source.ok ? source.head : null, manifest: source.ok ? source.manifest.digest : null, registryManifest,
-      cliTarball: { packed: served.cli.packedDigest, served: served.cli.servedDigest, version: served.cli.version },
+      cliTarball: { packed: host.cli.packedDigest, served: host.cli.servedDigest, version: host.cli.version },
     },
-    host: { origin: served.origin, standsFor: PUBLIC_ORIGIN, npm: `${served.origin}/npm/` },
+    host: served
+      ? { origin: served.origin, standsFor: PUBLIC_ORIGIN, npm: `${served.origin}/npm/` }
+      : { origin: PUBLIC_ORIGIN, live: true, npm: 'https://registry.npmjs.org/' },
   };
   try {
-    const theme = await studioTheme(served.origin, briefBrand(brief), dir);
+    const theme = await studioTheme(host.origin, briefBrand(brief), dir);
     record.theme = { madeIn: 'Theme Studio', command: theme.command };
-    const text = prompt(brief, layout, served.origin, theme.command);
+    const text = prompt(brief, layout, host.origin, theme.command);
     await writeFile(join(dir, 'prompt.md'), `${text}\n`);
     record.prompt = { sha256: sha256(text) };
-    const settings = { permissions: { deny: ['WebSearch', 'WebFetch(domain:ultima.systems)', 'Read(~/orca/**)', 'Read(~/Projects/**)', 'Read(~/.herdr/**)'] } };
+    const deny = ['WebSearch', ...(served ? ['WebFetch(domain:ultima.systems)'] : []), 'Read(~/orca/**)', 'Read(~/Projects/**)', 'Read(~/.herdr/**)'];
+    const settings = { permissions: { deny } };
     const args = ['-p', text, '--safe-mode', '--strict-mcp-config', '--no-chrome', '--permission-mode', 'auto', '--output-format', 'stream-json', '--verbose', '--settings', JSON.stringify(settings), ...(options.model ? ['--model', options.model] : [])];
     const version = await capture(work, 'claude', ['--version'], env);
     const started = new Date();
@@ -420,14 +443,16 @@ async function exercise(layout: Layout, options: { root: string; model?: string;
     });
     await writeFile(join(dir, 'transcript.jsonl'), `${transcript.join('\n')}\n`);
     record.agent = {
-      harness: 'claude-code', version: version.output.trim(), flags: args.filter((arg) => arg !== text).map((arg) => (arg.startsWith('{') ? 'settings: deny WebSearch, the live host, and other checkouts' : arg)),
+      harness: 'claude-code', version: version.output.trim(), flags: args.filter((arg) => arg !== text).map((arg) => (arg.startsWith('{') ? `settings: deny WebSearch${served ? ', the live host,' : ''} and other checkouts` : arg)),
       cwd: 'an empty directory under ~/.cache/ultima-first-screen, outside any checkout', startedAt: started.toISOString(), finishedAt: new Date().toISOString(), exit,
     };
     await writeFile(join(dir, 'record.json'), `${JSON.stringify(record, null, 2)}\n`);
     await measure(dir, env);
   } finally {
-    await writeFile(join(dir, 'requests.log'), `${served.requests.join('\n')}\n`);
-    await served.close();
+    if (served) {
+      await writeFile(join(dir, 'requests.log'), `${served.requests.join('\n')}\n`);
+      await served.close();
+    }
   }
   console.log(`first-screen ${layout}: ${dir}`);
   return dir;
@@ -469,7 +494,7 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(repository, 'scripts
     console.log(await studioTheme(served.origin, briefBrand(readFileSync(join(repository, BRIEF), 'utf8')), root));
     await served.close();
   } else if (command === 'run' && flag('layout') && flag('layout')! in LAYOUTS) {
-    await exercise(flag('layout') as Layout, { root, model: flag('model'), timeout: Number(flag('timeout') ?? 90) });
+    await exercise(flag('layout') as Layout, { root, model: flag('model'), timeout: Number(flag('timeout') ?? 90), live: rest.includes('--live') });
   } else if (command === 'measure' && rest[0]) {
     console.log(JSON.stringify((await measure(resolve(rest[0])) as { verdict: unknown }).verdict, null, 2));
   } else if (command === 'retain' && rest[0]) {
@@ -481,7 +506,7 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(repository, 'scripts
     await rm(resolve(rest[0], 'npm-cache'), { recursive: true, force: true });
     await rm(shortTmp(basename(resolve(rest[0]))), { recursive: true, force: true });
   } else {
-    console.error('usage: first-screen.ts serve [--port n] | studio | run --layout vite|next-app|next-src [--root dir] [--model name] [--timeout minutes] | measure <run-dir> | review <record.json> <review.json> | retain <run-dir> | clean <run-dir>');
+    console.error('usage: first-screen.ts serve [--port n] | studio | run --layout vite|next-app|next-src [--live] [--root dir] [--model name] [--timeout minutes] | measure <run-dir> | review <record.json> <review.json> | retain <run-dir> | clean <run-dir>');
     process.exit(2);
   }
 }

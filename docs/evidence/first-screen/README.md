@@ -239,6 +239,8 @@ node --experimental-strip-types scripts/first-screen.ts clean <run-dir>
 
 Run one layout at a time. A run needs Claude Code signed in, network access to npm, and Chromium for Playwright.
 
+The stranger path the [public-claims gate](../../spec/adoption-delivery.md#gates) reruns after publication adds `--live`: nothing is served or packed from the checkout, the agent uses the deployed `https://ultima.systems` and the `ultima-design` npm serves, and the record names the live registry manifest and npm tarball digests. It needs no docs build.
+
 On macOS 27, `pnpm verify release` needs Playwright's Firefox pointed away from the reserved profile folder:
 
 ```bash
