@@ -6,6 +6,12 @@ import { border, color, easing, font, motion, radius, shadow, space, z } from '@
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
+const UP = ':is([data-side="bottom"])';
+const DOWN = ':is([data-side="top"])';
+// The `dir` attribute rather than `:dir()`, which the CSS pipeline lowers to language matching.
+const RIGHTWARD = ':is([data-side="left"], [data-side="inline-start"]:not([dir="rtl"] *), [data-side="inline-end"]:is([dir="rtl"] *))';
+const LEFTWARD = ':is([data-side="right"], [data-side="inline-end"]:not([dir="rtl"] *), [data-side="inline-start"]:is([dir="rtl"] *))';
+
 const styles = stylex.create({
   /**
    * `inherit` rather than a token, so the trigger takes the prose around it instead of asserting
@@ -45,11 +51,11 @@ const styles = stylex.create({
       ':is([data-starting-style])': 0,
       ':is([data-ending-style])': 0,
     },
-    padding: space['--ult-space-5'],
+    padding: space['--ult-space-6'],
     transform: {
       default: 'none',
-      ':is([data-starting-style])': 'scale(0.98)',
-      ':is([data-ending-style])': 'scale(0.98)',
+      ':is([data-starting-style])': 'scale(0.96)',
+      ':is([data-ending-style])': 'scale(0.96)',
     },
     transformOrigin: 'var(--transform-origin)',
     transitionDuration: motion['--ult-motion-fast'],
@@ -57,20 +63,27 @@ const styles = stylex.create({
     transitionTimingFunction: { default: easing.enter, ':is([data-ending-style])': easing.exit },
     zIndex: z.popup,
   },
+  /**
+   * A square turned 45deg, half outside the popup's edge on the side that faces the anchor.
+   * Base UI places only the cross axis; the side offset and the two outward hairlines are set
+   * here, so the arrow continues the popup's border and covers it where they meet.
+   */
   arrow: {
+    backgroundColor: color['--ult-color-surface-raised'],
+    borderBottomColor: { default: 'transparent', [DOWN]: color['--ult-color-border'], [LEFTWARD]: color['--ult-color-border'] },
+    borderLeftColor: { default: 'transparent', [UP]: color['--ult-color-border'], [LEFTWARD]: color['--ult-color-border'] },
+    borderRightColor: { default: 'transparent', [DOWN]: color['--ult-color-border'], [RIGHTWARD]: color['--ult-color-border'] },
+    borderTopColor: { default: 'transparent', [UP]: color['--ult-color-border'], [RIGHTWARD]: color['--ult-color-border'] },
+    borderStyle: 'solid',
+    borderWidth: border.hairline,
+    bottom: { default: null, [DOWN]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    boxSizing: 'border-box',
     height: space['--ult-space-4'],
+    left: { default: null, [LEFTWARD]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    right: { default: null, [RIGHTWARD]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    top: { default: null, [UP]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    transform: 'rotate(45deg)',
     width: space['--ult-space-4'],
-    '::before': {
-      backgroundColor: color['--ult-color-surface-raised'],
-      borderColor: color['--ult-color-border'],
-      borderStyle: 'solid',
-      borderWidth: border.hairline,
-      content: '""',
-      display: 'block',
-      height: space['--ult-space-4'],
-      transform: 'rotate(45deg)',
-      width: space['--ult-space-4'],
-    },
   },
   /**
    * During a trigger change Base UI renders the outgoing content as an absolutely positioned

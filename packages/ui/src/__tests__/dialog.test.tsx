@@ -14,6 +14,7 @@ import {
 
 import { scenario } from '../../../../scripts/verification/register.ts';
 import { themeDocument, themes, violations } from './axe';
+import { expectCardSurface } from './overlay';
 
 function SampleDialog({
   open,
@@ -32,7 +33,7 @@ function SampleDialog({
         <Dialog.Viewport>
           <Dialog.Popup data-testid="popup">
             <Dialog.Title>{title}</Dialog.Title>
-            <Dialog.Description>This cannot be undone.</Dialog.Description>
+            <Dialog.Description data-testid="description">This cannot be undone.</Dialog.Description>
             {extra}
             <Dialog.Close>Close</Dialog.Close>
           </Dialog.Popup>
@@ -118,6 +119,12 @@ test('data-open on Backdrop makes it visible and a closed dialog unmounts the po
   backdrop.style.transitionDuration = '0s';
   expect(getComputedStyle(backdrop).opacity).not.toBe('0');
   await expect.element(open.getByTestId('popup')).toBeVisible();
+});
+
+test('the popup is a card, and the description keeps its own rhythm', async () => {
+  const screen = await render(<SampleDialog open />);
+  await expect.element(screen.getByRole('dialog')).toBeVisible();
+  expectCardSurface(screen.getByTestId('popup').element(), screen.getByTestId('description').element());
 });
 
 test('public prop types drop className on styled parts', () => {

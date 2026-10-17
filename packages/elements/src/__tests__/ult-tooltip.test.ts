@@ -269,6 +269,22 @@ test('the positioner resolves the popup token z-index and the arrow resolves its
   expect(Number.parseFloat(getComputedStyle(arrow!).width)).toBeGreaterThan(0);
 });
 
+test('the arrow carries the side Zag placed and straddles the popup edge facing the trigger', async () => {
+  const root = mountTooltip(true);
+  const { popup, arrow } = parts(root);
+  await vi.waitFor(() => expect(popup!.hasAttribute('hidden')).toBe(false), { timeout: 2000 });
+  await vi.waitFor(() => expect(getComputedStyle(popup!).opacity).toBe('1'));
+  const side = arrow!.getAttribute('data-side');
+  expect(['top', 'bottom', 'left', 'right']).toContain(side);
+
+  const a = arrow!.getBoundingClientRect();
+  const p = popup!.getBoundingClientRect();
+  const edge = { top: [(a.top + a.bottom) / 2, p.bottom], bottom: [(a.top + a.bottom) / 2, p.top], left: [(a.left + a.right) / 2, p.right], right: [(a.left + a.right) / 2, p.left] }[side as 'top'];
+  expect(Math.abs((edge[0] as number) - (edge[1] as number))).toBeLessThan(1.5);
+  const facing = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' }[side as 'top'];
+  expect(getComputedStyle(arrow!).getPropertyValue(`border-${facing}-color`)).not.toBe('rgba(0, 0, 0, 0)');
+});
+
 test('data-ending-style holds through the closing window and drops with the popup', async () => {
   const root = mountTooltip();
   await flush();
