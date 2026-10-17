@@ -6,6 +6,12 @@ import { border, color, easing, font, motion, radius, shadow, space, text, z } f
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
+const UP = ':is([data-side="bottom"])';
+const DOWN = ':is([data-side="top"])';
+// The `dir` attribute rather than `:dir()`, which the CSS pipeline lowers to language matching.
+const RIGHTWARD = ':is([data-side="left"], [data-side="inline-start"]:not([dir="rtl"] *), [data-side="inline-end"]:is([dir="rtl"] *))';
+const LEFTWARD = ':is([data-side="right"], [data-side="inline-end"]:not([dir="rtl"] *), [data-side="inline-start"]:is([dir="rtl"] *))';
+
 const stackWidth = `calc(6 * ${space['--ult-space-12']})`;
 
 const scaleStep = 0.1;
@@ -94,7 +100,7 @@ const styles = stylex.create({
     zIndex: `calc(${z.toast} - var(--toast-index))`,
   },
   content: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
     boxSizing: 'border-box',
     display: 'flex',
     gap: space['--ult-space-5'],
@@ -104,7 +110,7 @@ const styles = stylex.create({
       ':is([data-behind][data-expanded])': 1,
     },
     overflow: 'hidden',
-    padding: space['--ult-space-5'],
+    padding: space['--ult-space-6'],
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'opacity',
     transitionTimingFunction: easing.standard,
@@ -118,22 +124,29 @@ const styles = stylex.create({
   description: {
     color: color['--ult-color-text-muted'],
     fontSize: text['--ult-text-3'],
+    lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
   },
+  /**
+   * Popover's arrow: a square turned 45deg, half outside the toast on the side that faces the
+   * anchor. It inherits the Root's fill and edge, so a toned toast's arrow takes its tone.
+   */
   arrow: {
+    backgroundColor: 'inherit',
+    borderBottomColor: { default: 'transparent', [DOWN]: 'inherit', [LEFTWARD]: 'inherit' },
+    borderLeftColor: { default: 'transparent', [UP]: 'inherit', [LEFTWARD]: 'inherit' },
+    borderRightColor: { default: 'transparent', [DOWN]: 'inherit', [RIGHTWARD]: 'inherit' },
+    borderTopColor: { default: 'transparent', [UP]: 'inherit', [RIGHTWARD]: 'inherit' },
+    borderStyle: 'solid',
+    borderWidth: border.fine,
+    bottom: { default: null, [DOWN]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    boxSizing: 'border-box',
     height: space['--ult-space-4'],
+    left: { default: null, [LEFTWARD]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    right: { default: null, [RIGHTWARD]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    top: { default: null, [UP]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    transform: 'rotate(45deg)',
     width: space['--ult-space-4'],
-    '::before': {
-      backgroundColor: color['--ult-color-surface-raised'],
-      borderColor: color['--ult-color-border'],
-      borderStyle: 'solid',
-      borderWidth: border.fine,
-      content: '""',
-      display: 'block',
-      height: space['--ult-space-4'],
-      transform: 'rotate(45deg)',
-      width: space['--ult-space-4'],
-    },
   },
 });
 

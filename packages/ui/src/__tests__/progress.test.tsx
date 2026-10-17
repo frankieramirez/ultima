@@ -3,6 +3,8 @@ import { userEvent } from 'vitest/browser';
 import { expect, expectTypeOf, test } from 'vitest';
 import { Fragment } from 'react';
 import { render } from 'vitest-browser-react';
+import * as stylex from '@stylexjs/stylex';
+import { color } from '@ultima/tokens/tokens.stylex';
 import {
   Progress,
   type ProgressIndicatorProps,
@@ -263,6 +265,40 @@ test('reduced motion turns the loop off by name rather than by duration alone', 
   expect(getComputedStyle(fill).animationName).not.toBe('none');
   expect(stopped.length).toBeGreaterThan(0);
   for (const rule of stopped) expect(rule.style.getPropertyValue('animation-name')).toBe('none');
+});
+
+const probes = stylex.create({
+  accent: { backgroundColor: color['--ult-color-accent'] },
+  edge: { backgroundColor: color['--ult-color-border'] },
+  ink: { color: color['--ult-color-text'] },
+  muted: { color: color['--ult-color-text-muted'] },
+});
+
+test('the label is a sentence-case field label, the number lines up, and neutral fills with the accent on a quiet track', async () => {
+  const screen = await render(
+    <>
+      <Sample name="Uploading footage" />
+      <span data-testid="accent" {...stylex.props(probes.accent)} />
+      <span data-testid="edge" {...stylex.props(probes.edge)} />
+      <span data-testid="ink" {...stylex.props(probes.ink)} />
+      <span data-testid="muted" {...stylex.props(probes.muted)} />
+    </>,
+  );
+  const probe = (id: string) => getComputedStyle(screen.getByTestId(id).element());
+  const bar = screen.getByRole('progressbar').element();
+
+  const label = getComputedStyle(screen.getByText('Uploading footage').element());
+  expect(label.textTransform).toBe('none');
+  expect(label.fontSize).toBe('14px');
+  expect(label.color).toBe(probe('ink').color);
+
+  expect(getComputedStyle(valueOf(bar)).fontVariantNumeric).toBe('tabular-nums');
+  expect(valueColor(bar)).toBe(probe('muted').color);
+
+  expect(fillColor(bar)).toBe(probe('accent').backgroundColor);
+  const track = getComputedStyle(trackOf(bar));
+  expect(track.backgroundColor).toBe(probe('edge').backgroundColor);
+  expect(track.height).toBe('8px');
 });
 
 test('public prop types expose only supported styling axes', () => {

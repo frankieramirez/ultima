@@ -322,14 +322,39 @@ test('Close dismisses the toast it sits in', async () => {
   await expect.poll(() => screen.getByTestId('content').query()).toBeNull();
 });
 
-test('the anchored Positioner renders no ring and the Arrow carries the surface hairline', async () => {
-  const screen = await one({ title: 'Anchored', positionerProps: { anchor: document.body } }, <AnchoredList />);
+test("the anchored Positioner renders no ring and the Arrow sits half outside, facing the anchor in the toast's own paint", async () => {
+  const screen = await one(
+    { title: 'Anchored', type: 'success', positionerProps: { anchor: document.body } },
+    <AnchoredList />,
+  );
   expect(getComputedStyle(screen.getByTestId('positioner').element()).outlineWidth).toBe('0px');
 
-  const arrow = getComputedStyle(screen.getByTestId('arrow').element(), '::before');
-  expect(arrow.borderTopStyle).toBe('solid');
-  expect(parseFloat(arrow.borderTopWidth)).toBeGreaterThan(0);
-  expect(arrow.content).not.toBe('none');
+  const element = screen.getByTestId('arrow').element();
+  await expect.poll(() => element.getAttribute('data-side')).toMatch(/^(top|bottom)$/);
+  const facing = element.getAttribute('data-side') === 'top' ? 'Bottom' : 'Top';
+  const away = facing === 'Top' ? 'Bottom' : 'Top';
+  const arrow = getComputedStyle(element);
+  const root = getComputedStyle(screen.getByTestId('toast-success').element());
+
+  expect(parseFloat(arrow[facing === 'Top' ? 'top' : 'bottom'])).toBeLessThan(0);
+  expect(arrow[`border${facing}Style`]).toBe('solid');
+  expect(parseFloat(arrow[`border${facing}Width`])).toBeGreaterThan(0);
+  expect(arrow[`border${facing}Color`]).toBe(root.borderTopColor);
+  expect(arrow[`border${away}Color`]).toBe('rgba(0, 0, 0, 0)');
+  expect(arrow.backgroundColor).toBe(root.backgroundColor);
+  expect(getComputedStyle(element, '::before').content).toBe('none');
+});
+
+test('the content pads like a popover and centres its actions on the text, which sets its own leading', async () => {
+  const screen = await one({ title: 'Report exported', description: 'Saved to your downloads.' }, <ButtonList />);
+  const content = getComputedStyle(screen.getByTestId('content').element());
+  expect(content.paddingTop).toBe('16px');
+  expect(content.paddingInlineStart).toBe('16px');
+  expect(content.alignItems).toBe('center');
+
+  const description = screen.getByText('Saved to your downloads.').element();
+  const size = parseFloat(getComputedStyle(description).fontSize);
+  expect(parseFloat(getComputedStyle(description).lineHeight)).toBeGreaterThan(size);
 });
 
 test('the manager sits on the namespace as a hook and a value, and Ultima adds no useToast', () => {

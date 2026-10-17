@@ -3,9 +3,11 @@
 import { mergeProps, normalizeProps, useMachine } from '@zag-js/react';
 import * as splitter from '@zag-js/splitter';
 import * as stylex from '@stylexjs/stylex';
-import { border, color, font, space } from '@ultima/tokens/tokens.stylex';
+import { border, color, easing, font, motion, radius, space, text } from '@ultima/tokens/tokens.stylex';
 import type { PlainProps } from '@ultima/ui/lib/component';
 import { createContext, use, useId } from 'react';
+
+const HOVER = '@media (hover: hover)';
 
 const styles = stylex.create({
   root: {
@@ -16,28 +18,48 @@ const styles = stylex.create({
     inlineSize: '100%',
     margin: 0,
   },
-  // The machine leaves the trigger a zero-area element, so the file paints the hairline and
-  // stretches the hit area to a full space step past it with a ::before, Drawer's SwipeArea answer.
+  // The machine leaves the trigger a zero-area element, so the file draws the line as a fine border
+  // on a zero-width box, Separator's line, and stretches the hit area to a full space step past it
+  // with a ::before, Drawer's SwipeArea answer. The line darkens on hover and while dragging.
   handle: {
     alignItems: 'center',
-    backgroundColor: color['--ult-color-border'],
+    borderColor: {
+      default: color['--ult-color-border'],
+      ':is([data-dragging])': color['--ult-color-border-hover'],
+      [HOVER]: { ':hover:not([data-disabled])': color['--ult-color-border-hover'] },
+    },
+    borderStyle: 'none',
     boxSizing: 'border-box',
     display: 'flex',
     fontFamily: font['--ult-font-sans'],
     justifyContent: 'center',
     margin: 0,
     position: 'relative',
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'border-color',
+    transitionTimingFunction: easing.standard,
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
     },
   },
+  // A raised knob over the line, so the boundary reads as something to grab.
   indicator: {
     alignItems: 'center',
+    backgroundColor: color['--ult-color-surface-raised'],
+    borderColor: color['--ult-color-border'],
+    borderRadius: radius['--ult-radius-sm'],
+    borderStyle: 'solid',
+    borderWidth: border.hairline,
+    boxSizing: 'border-box',
     color: color['--ult-color-text-subtle'],
     display: 'flex',
+    flexShrink: 0,
+    fontSize: text['--ult-text-2'],
+    height: space['--ult-space-6'],
     justifyContent: 'center',
     transform: { default: 'none', ':is([data-orientation="vertical"])': 'rotate(90deg)' },
+    width: space['--ult-space-5'],
   },
 });
 
@@ -49,20 +71,24 @@ const orientations = stylex.create({
 const handleOrientations = stylex.create({
   horizontal: {
     blockSize: '100%',
-    inlineSize: border.hairline,
+    borderInlineStartStyle: 'solid',
+    borderInlineStartWidth: border.fine,
+    inlineSize: 0,
     '::before': {
       content: '""',
       insetBlock: 0,
-      insetInline: `calc((${border.hairline} - ${space['--ult-space-8']}) / 2)`,
+      insetInline: `calc(-0.5 * ${space['--ult-space-8']})`,
       position: 'absolute',
     },
   },
   vertical: {
-    blockSize: border.hairline,
+    blockSize: 0,
+    borderBlockStartStyle: 'solid',
+    borderBlockStartWidth: border.fine,
     inlineSize: '100%',
     '::before': {
       content: '""',
-      insetBlock: `calc((${border.hairline} - ${space['--ult-space-8']}) / 2)`,
+      insetBlock: `calc(-0.5 * ${space['--ult-space-8']})`,
       insetInline: 0,
       position: 'absolute',
     },
