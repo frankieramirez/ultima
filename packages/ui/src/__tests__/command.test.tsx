@@ -19,7 +19,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
-import { resolved } from './overlay';
+import { expectMicroLabel, resolved } from './overlay';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
@@ -282,7 +282,7 @@ test('items are 32px rows with the small radius in the popup\'s 4px inset, an ic
   const label = document.querySelector('[data-testid="label"]')!.getBoundingClientRect();
   expect(icon.right).toBeLessThan(label.left);
   expect(Math.abs(icon.top + icon.height / 2 - label.top - label.height / 2)).toBeLessThan(1);
-  expect(getComputedStyle(document.querySelector('[data-testid="group-label"]')!).textTransform).toBe('uppercase');
+  expectMicroLabel(document.querySelector('[data-testid="group-label"]')!);
 });
 
 test('the input group is Input Group\'s field, with the disabled ink instead of dimming', async () => {

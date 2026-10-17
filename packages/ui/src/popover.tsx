@@ -28,7 +28,8 @@ const styles = stylex.create({
     fontFamily: font['--ult-font-sans'],
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
-    maxWidth: `calc(${space['--ult-space-12']} * 5)`,
+    maxWidth: `min(calc(${space['--ult-space-12']} * 5), var(--available-width))`,
+    overflowWrap: 'break-word',
     opacity: {
       default: 1,
       ':is([data-starting-style])': 0,

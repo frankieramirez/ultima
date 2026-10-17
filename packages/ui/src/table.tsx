@@ -35,7 +35,7 @@ const styles = stylex.create({
     borderBlockEndWidth: border.fine,
     color: color['--ult-color-text-subtle'],
     fontSize: text['--ult-text-2'],
-    fontWeight: font['--ult-font-weight-medium'],
+    fontWeight: font['--ult-font-weight-regular'],
     letterSpacing: font['--ult-font-tracking-wide'],
     paddingBlock: space['--ult-space-3'],
     paddingInline: space['--ult-space-4'],

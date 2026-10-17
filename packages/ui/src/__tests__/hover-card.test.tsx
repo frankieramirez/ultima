@@ -17,7 +17,7 @@
  * 8. CSS the primitive reads: Viewport's position: relative, the one declaration that contains the
  *    absolutely positioned snapshot of a trigger change.
  */
-import { expect, expectTypeOf, test } from 'vitest';
+import { expect, expectTypeOf, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import {
@@ -212,6 +212,38 @@ test('the popup wears the full overlay surface and the recipe transition', async
   expect(getComputedStyle(page.getByTestId('positioner').element()).outlineStyle).toBe('none');
   expect(popup.paddingTop).toBe(resolved('padding-top', 'var(--ult-space-6)'));
 
+});
+
+test('the popup is at most 320px wide, no wider than the viewport has room for, and wraps a long line inside', async () => {
+  // An unbreakable line wider than the cap, so only max-width decides the popup's width.
+  const screen = await render(
+    <HoverCard.Root>
+      <HoverCard.Trigger href={DESTINATION} delay={0} closeDelay={0} data-testid="trigger">
+        semantic color
+      </HoverCard.Trigger>
+      <HoverCard.Portal>
+        <HoverCard.Positioner>
+          <HoverCard.Popup data-testid="popup">https://example.com/tokens/color/semantic-ramps-and-every-dark-and-light-pairing-measured</HoverCard.Popup>
+        </HoverCard.Positioner>
+      </HoverCard.Portal>
+    </HoverCard.Root>,
+  );
+  await screen.getByTestId('trigger').hover();
+  await expect.element(page.getByTestId('popup')).toBeVisible();
+  // Layout width, so the entry scale doesn't count.
+  const width = () => (page.getByTestId('popup').element() as HTMLElement).offsetWidth;
+  expect(width()).toBe(parseFloat(resolved('width', 'calc(5 * var(--ult-space-12))')));
+  // The line breaks inside the popup rather than running past its edge.
+  const overflow = () => {
+    const popup = page.getByTestId('popup').element() as HTMLElement;
+    return popup.scrollWidth - popup.clientWidth;
+  };
+  expect(overflow()).toBe(0);
+
+  onTestFinished(() => page.viewport(1280, 720));
+  await page.viewport(240, 600);
+  await expect.poll(width).toBeLessThanOrEqual(240);
+  expect(overflow()).toBe(0);
 });
 
 test('the arrow straddles the edge facing the trigger', async () => {

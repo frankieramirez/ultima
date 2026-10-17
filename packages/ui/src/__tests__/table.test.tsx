@@ -392,6 +392,15 @@ test('a hairline divides the head from the body', async () => {
   expect(head.borderBottomColor).toBe(tokenValue('border-bottom-color', 'var(--ult-color-border)'));
 });
 
+test('a head cell is a regular-weight micro-label, not the browser\'s bold', async () => {
+  const screen = await render(<FullTable />);
+  const head = getComputedStyle(screen.getByRole('columnheader', { name: 'Region' }).element());
+  expect(head.fontSize).toBe(tokenValue('font-size', 'var(--ult-text-2)'));
+  expect(head.fontWeight).toBe(tokenValue('font-weight', 'var(--ult-font-weight-regular)'));
+  expect(head.lineHeight).toBe(tokenValue('line-height', 'calc(var(--ult-text-2) * var(--ult-font-leading-snug))'));
+  expect(head.textTransform).toBe('uppercase');
+});
+
 test('a body row answers the pointer over motion-fast, and the head row does not', async () => {
   const screen = await render(<FullTable />);
   const headRow = screen.getByRole('columnheader', { name: 'Region' }).element().parentElement as HTMLElement;

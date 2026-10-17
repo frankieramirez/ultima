@@ -15,6 +15,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
+import { tokenValue } from './token-value';
 
 const tones = ['neutral', 'accent', 'highlight', 'success', 'warning', 'danger'] as const;
 
@@ -355,6 +356,17 @@ test('the content pads like a popover and centres its actions on the text, which
   const description = screen.getByText('Saved to your downloads.').element();
   const size = parseFloat(getComputedStyle(description).fontSize);
   expect(parseFloat(getComputedStyle(description).lineHeight)).toBeGreaterThan(size);
+});
+
+test('the title is a message title at snug leading, and the description is 14px body', async () => {
+  const screen = await one({ title: 'Report exported', description: 'Saved to your downloads.' }, <List />);
+  const title = getComputedStyle(screen.getByText('Report exported').element());
+  const description = getComputedStyle(screen.getByText('Saved to your downloads.').element());
+  expect(title.fontSize).toBe(tokenValue('font-size', 'var(--ult-text-4)'));
+  expect(title.fontWeight).toBe(tokenValue('font-weight', 'var(--ult-font-weight-semibold)'));
+  expect(title.lineHeight).toBe(tokenValue('line-height', 'calc(var(--ult-text-4) * var(--ult-font-leading-snug))'));
+  expect(description.fontSize).toBe(tokenValue('font-size', 'var(--ult-text-4)'));
+  expect(description.lineHeight).toBe(tokenValue('line-height', 'calc(var(--ult-text-4) * var(--ult-font-leading-normal))'));
 });
 
 test('the manager sits on the namespace as a hook and a value, and Ultima adds no useToast', () => {

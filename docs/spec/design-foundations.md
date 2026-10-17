@@ -242,14 +242,14 @@ The specification's [Type](https://github.com/frankieramirez/ultima/blob/main/do
 | Title of a container that holds a task | 18px (`text-6`) | tight | semibold | Card, Dialog, Alert Dialog, Drawer |
 | Title of a smaller surface or a state | 16px (`text-5`) | tight | semibold | Popover, Empty |
 | Title of a message | 14px | snug | semibold | Alert, Toast |
-| Field label, legend | 14px | snug | medium | Field, Fieldset, Select, Slider |
+| Field label, legend | 14px | snug | medium | Field, Fieldset, Select, Slider, Meter, Progress |
 | Text on a control | 14px; 13px (`text-3`) at `sm`, 16px at `lg` | none | medium | Button, Tab, Toggle |
 | Value in a field | 14px; 16px at `lg` and under a coarse pointer | none | regular | Input, Select, Combobox |
 | Item in a menu or list | 14px | normal | regular | Select, Dropdown Menu, Command, Sidebar |
 | Description, body inside a component | 14px | normal | regular | Card, Dialog, Alert |
 | Small print | 12px (`text-2`) | snug | regular | Field description and error, Tooltip |
 | Part label inside a control | 12px | none | medium | Badge, Calendar's weekdays, Color Field's channels |
-| Section micro-label | 12px, uppercase, `tracking-wide` | snug | regular | Menu group labels, Sidebar group label, Table head cells, Stat, Meter and Progress labels |
+| Section micro-label | 12px, uppercase, `tracking-wide` | snug | regular | Menu group labels, Sidebar group label, Table head cells, Stat |
 | Headline number | 24px (`text-8`) and up, `tracking-tight` | none | semibold | Stat's value |
 
 A title steps up in size as its container grows, in step with the padding and corner in Spacing. Small, glanceable surfaces separate title from description by weight alone, which keeps them short.
@@ -286,16 +286,6 @@ Known gaps, so nobody copies them as precedent. The component design pass ([#859
 
 | Rule | Where it isn't followed yet |
 | --- | --- |
-| Disabled is a color, not opacity | Combobox's chips, Field's label and Fieldset's legend still dim to 50%. The architecture check adds this rule once the list is empty |
-| Card padding | The specification's note on Card and Accordion cites space step 6 for `Card.Body`. It is step 8 since the surfaces pass |
-| Field label at 14px | Field's label and Fieldset's legend are 13px |
-| Title and description of a message | Toast's title uses tight leading and its description is 13px |
-| Section micro-labels are regular weight | Sidebar's group label and Table's head cells are medium |
-| Section micro-labels take snug leading | Menu group labels inherit `normal` from their popup, and Sidebar's group label uses `none` |
-| Every text part sets its own leading | Meter's and Progress's label and value set none |
-| Selection doesn't change weight | Select's and Combobox's selected items turn medium |
-| Panels reflow at 320px | Popover and Hover Card cap at 320px but not at the space available |
-| Numbers that change in place are tabular | Meter's and Progress's values use proportional digits |
 
 ## Sources
 
