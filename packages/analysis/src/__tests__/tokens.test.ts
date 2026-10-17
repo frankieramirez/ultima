@@ -19,6 +19,9 @@ const token = (line: number, column: number, target: string, extra: { symbol?: s
   ...(extra.selector !== undefined && { selector: extra.selector }),
 });
 
+/** The value findings alone: these fixtures exercise the grammar, and their visual choices are ULT-VISUAL-001's to judge. */
+const values = (report: Parameters<typeof located>[0]) => located(report).filter((entry) => entry.ruleId !== 'ULT-VISUAL-001');
+
 /** Check a literal value against a property the way a declaration is checked. */
 function check(property: string, value: string, context: Partial<Context> = {}) {
   const pieces: Piece<string>[] = [{ kind: 'text', text: value, at: value }];
@@ -53,7 +56,7 @@ describe('ULT-TOKEN-001', () => {
   });
 
   test('follows aliases, spreads, computed keys, nested conditions and token calculations', () => {
-    assert.deepEqual(located(run({ [SEPARATOR]: fixture('tokens/hidden.tsx') })), [
+    assert.deepEqual(values(run({ [SEPARATOR]: fixture('tokens/hidden.tsx') })), [
       // A pixel offset hidden in a token calculation, reported in the local constant that holds it.
       token(8, 46, 'insetBlockStart'),
       // A raw value in a spread object.
@@ -106,7 +109,7 @@ describe('ULT-TOKEN-001', () => {
 
   test('accepts structural values, token calculations, glyph boxes, the clip-hidden recipe and runtime percentages', () => {
     const report = run({ [SEPARATOR]: fixture('tokens/valid.tsx') });
-    assert.deepEqual(located(report), []);
+    assert.deepEqual(values(report), []);
   });
 
   test("keeps Toast's geometry valid, and rejects a design length slipped into it", () => {

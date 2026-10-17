@@ -46,6 +46,7 @@ Rule IDs are stable strings. Their wording may improve without changing the ID. 
 | `ULT-IMPORT-001` | Production workspace imports and re-exports | Enforce dependency direction, staged module paths and declared component composition. Resolve aliases and relative paths before classifying the target. |
 | `ULT-REGISTRY-001` | Authored source and registry metadata | Detect missing or stale item metadata, missing staged dependencies, and source/item shape mismatches before the registry build. Reuse the builder's source inventory and dependency logic. |
 | `ULT-SOURCE-001` | Component source layout | Enforce one source file per component, the React client directive, module-scope StyleX tables, and test placement under the package's `src/__tests__/`. Reject incomplete scaffold markers. Respect element file conventions and documented helper modules. |
+| `ULT-VISUAL-001` | React and element component declarations, and block files | Enforce the rules in [Design foundations](design-foundations.md) that one StyleX namespace shows. See [Visual rules](#visual-rules). |
 | `ULT-EXCEPTION-001` | Checker configuration | Reject malformed, broad, stale, duplicate or unmatched exception entries and invalid authority links. |
 | `ULT-ANALYSIS-001` | Expressions relevant to a blocking rule | Report constructs the checker cannot resolve; do not interpret an unresolved spread, computed property or dependency as a successful check. |
 
@@ -172,6 +173,24 @@ Block files, `packages/blocks/src/<id>/*.tsx`, are their own source kind under t
 **The chart engine is judged by entry, not by package.** Settled on [How the checker, registry build and import policy carry the chart engine](https://github.com/frankieramirez/ultima/issues/832), from ADR 0007's 2026-10-16 amendment. `packages/analysis/src/policy.ts` gains a `chart-engine` category, listed before `engine` and matched on the whole import specifier instead of `packageName()`, against an explicit allowlist of `@tanstack/charts` entries. The first list is the entries an import-graph walk of the 1.1.0 build found free of DOM and browser globals: `/scene`, `/runtime`, `/types`, `/bar`, `/line`, `/area`, `/dot`, `/rule`, `/rect`, `/text`, `/tick`, `/band`, `/stack`, `/transform/stack`, and `/scales/band`, `/scales/linear`, `/scales/point` and `/scales/ordinal` ([research notes](../research/2026-10-16-tanstack-charts-rendering-and-theming.md)). Every other `@tanstack/charts` specifier, the root included, and `@tanstack/react-charts` fall through to `engine`. An entry joins the list only through a review of this policy with its walk recorded in those notes, the rule any new production dependency already follows. The `react-component` allowance gains `chart-engine`, bounded to the `chart` item the way Zag is bounded to `ZAG_REACT_ITEMS`. A block's engine set gains `chart-engine` when the block imports `@ultima/ui/chart`. Demos follow the same allowlist, because a demo is code a reader copies, so a demo that imports `/react` or `/tooltip` fails `ULT-IMPORT-001`. The diagnostic's repair names `/scene` or the mark entry to import instead. Fixtures under `packages/analysis/fixtures/` prove the allowance from both sides: an allowed entry passes in the `chart` item, and the root, `/react` and `/tooltip` fail there, while any chart entry fails in another item. Nothing goes in `exceptions.ts`: the allowance is policy, as Zag's is. The registry build derives `@tanstack/charts` from the import's package name like any dependency, at the version `packages/ui` declares, so `chart` is the one component item with an engine among its `dependencies` and the smoke install covers it as a `registry:ui` item. `packages/ui/vitest.config.ts` lists the allowed entries the file imports in `optimizeDeps.include`, keeping their subpaths. The consumer scope enables `ULT-IMPORT-001` on installed items, so an installed `chart.tsx` edited to import a denied entry is reported, while the consumer's own files stay out of scope.
 
 Extract reusable pure inventory/dependency checks from the registry builder as needed. The static command must not invoke generation or maintain its own list of what the builder stages. It validates source-side completeness; registry builds and fresh consumer installs still prove generated output and installation. Setup items and vendored element items keep their distinct dependency rules. Broader catalogue ownership and generated-output freshness policy are decisions for the metadata ticket.
+
+### Visual rules
+
+`ULT-VISUAL-001` reads each StyleX `create` namespace in the `ULT-TOKEN-001` scope as one surface, because a namespace is what a part applies together. It reports a declaration that breaks one of these rules from [Design foundations](design-foundations.md):
+
+| Declaration | Rejected when | Rule |
+| --- | --- | --- |
+| `boxShadow` reading a shadow token | The namespace sets no border color token | [Every shadow comes with a border](design-foundations.md#elevation) |
+| `boxShadow` under a focus condition | It draws anything | [Focus is an outline, never a box-shadow](design-foundations.md#outlines-and-borders) |
+| `outline`, `outlineWidth`, `outlineStyle`, `outlineColor` | It draws anything outside a focus condition | [An outline is for focus only](design-foundations.md#outlines-and-borders) |
+| `backdropFilter` | The namespace's background is not `--ult-color-surface-overlay` | [Blur is for the modal scrim only](design-foundations.md#blur) |
+| `filter` | It blurs | [Never blur content](design-foundations.md#blur) |
+| A border width reading `border.fine` | The namespace's border color is `--ult-color-border-strong` | [A control edge stays 1px](design-foundations.md#borders) |
+| A border width reading `border.focus` | It is outside a current-item condition (`data-active`, `data-selected`, `aria-current`, `aria-selected`) | [2px is for focus and the current-item indicator](design-foundations.md#borders) |
+
+A value that draws nothing (`none`, `0`, `transparent`) passes everywhere. A value the evaluator cannot resolve is `ULT-TOKEN-001`'s to report. A rule that needs the rendered result, such as contrast or which part a shadow lands on, belongs to the browser suites.
+
+Disabled opacity is not checked yet: the parts in [Where the code doesn't follow these rules yet](design-foundations.md#where-the-code-doesnt-follow-these-rules-yet) still dim to 50%, and a rule must deliver a clean blocking run. The check joins this rule once the design pass clears that list.
 
 ### Exceptions
 

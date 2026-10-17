@@ -60,6 +60,11 @@ export const RULES = {
     scope: 'Component source layout',
     link: `${INFRA}#authority-and-source-scopes`,
   },
+  'ULT-VISUAL-001': {
+    status: 'blocking',
+    scope: 'React and element component declarations, and block files',
+    link: `${INFRA}#visual-rules`,
+  },
   'ULT-EXCEPTION-001': {
     status: 'blocking',
     scope: 'Checker configuration',
