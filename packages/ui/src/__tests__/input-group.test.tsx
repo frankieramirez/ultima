@@ -22,7 +22,7 @@ import {
  * 4. The primitive is still wired: typing changes the value, and a Field's label and invalid
  *    state reach the inner input.
  * 5. Documented state drives its style: `aria-invalid` and `data-invalid` on the input recolor
- *    Root's border through `:has()`, and a disabled input dims Root through `:has(:disabled)`.
+ *    Root's border through `:has()`, and a disabled input mutes Root's fill and ink through `:has()`.
  * 6. Typecheck passes: className is rejected, and the size and align unions are exactly their
  *    values.
  * 7. Behavior this component wires itself: none, because every interaction is the inner input's
@@ -119,6 +119,7 @@ test('keyboard focus rings the box while the input inside draws none', async () 
   expect(document.activeElement).toBe(input);
   expect(parseFloat(getComputedStyle(box).outlineWidth)).toBeGreaterThan(0);
   expect(getComputedStyle(box).outlineStyle).toBe('solid');
+  expect(getComputedStyle(box).outlineOffset).toBe('-1px');
   expect(getComputedStyle(input).outlineStyle).toBe('none');
 });
 
@@ -192,7 +193,7 @@ test('a Field labels and invalidates the inner input', async () => {
   expect(invalid.borderTopColor).not.toBe(valid.borderTopColor);
 });
 
-test('a disabled input dims the box', async () => {
+test('a disabled input gives the box the muted fill and ink, not opacity', async () => {
   const screen = await render(
     <>
       <InputGroup.Root data-testid="enabled-box">
@@ -205,9 +206,9 @@ test('a disabled input dims the box', async () => {
   );
   const enabled = screen.getByTestId('enabled-box').element();
   const disabled = screen.getByTestId('disabled-box').element();
-  expect(parseFloat(getComputedStyle(disabled).opacity)).toBeLessThan(
-    parseFloat(getComputedStyle(enabled).opacity),
-  );
+  expect(getComputedStyle(disabled).opacity).toBe('1');
+  expect(getComputedStyle(disabled).backgroundColor).not.toBe(getComputedStyle(enabled).backgroundColor);
+  expect(getComputedStyle(disabled).color).not.toBe(getComputedStyle(enabled).color);
 });
 
 test('public prop types expose size on Root, align on Addon, and no className', () => {
@@ -220,4 +221,26 @@ test('public prop types expose size on Root, align on Addon, and no className', 
   expectTypeOf<InputGroupRootProps>().not.toHaveProperty('className');
   expectTypeOf<InputGroupInputProps>().not.toHaveProperty('className');
   expectTypeOf<InputGroupAddonProps>().not.toHaveProperty('className');
+});
+
+test('hover darkens the box edge, not the fill, and a group around a disabled input keeps its resting edge', async () => {
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+  const screen = await render(
+    <>
+      <InputGroup.Root data-testid="live"><InputGroup.Input aria-label="Live" /></InputGroup.Root>
+      <InputGroup.Root data-testid="off"><InputGroup.Input aria-label="Off" disabled /></InputGroup.Root>
+    </>,
+  );
+  const live = screen.getByTestId('live').element();
+  const off = screen.getByTestId('off').element();
+  const resting = getComputedStyle(live);
+  const [liveEdge, liveFill] = [resting.borderTopColor, resting.backgroundColor];
+  const offEdge = getComputedStyle(off).borderTopColor;
+  await userEvent.hover(live);
+  await settle();
+  expect(getComputedStyle(live).borderTopColor).not.toBe(liveEdge);
+  expect(getComputedStyle(live).backgroundColor).toBe(liveFill);
+  await userEvent.hover(off);
+  await settle();
+  expect(getComputedStyle(off).borderTopColor).toBe(offEdge);
 });

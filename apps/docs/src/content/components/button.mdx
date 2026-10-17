@@ -15,7 +15,7 @@ import iconOnlySource from '../../demos/button/icon-only?raw';
 
 # Button
 
-Trigger an action with three variants, three sizes, and two tones. Built on Base UI.
+Trigger an action with four variants, three sizes, and two tones. Built on Base UI.
 
 ## Install
 
@@ -43,7 +43,7 @@ Use danger for destructive actions.
 
 ## Disabled
 
-Unavailable actions remain visible.
+Unavailable actions stay visible in a muted fill and ink, the same for every variant, and don't answer the pointer.
 
 <Demo component={Disabled} source={disabledSource} />
 
@@ -51,11 +51,11 @@ Unavailable actions remain visible.
 
 Ultima ships no icon dependency, and any set works. These demos use [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency.
 
-An icon before the label needs nothing but the icon: the button's name still comes from its text.
+An icon before the label needs nothing but the icon: the button's name still comes from its text. A button holding an icon gives up one space step of inline padding, so the icon doesn't sit further from the edge than a label would.
 
 <Demo component={LeadingIcon} source={leadingIconSource} />
 
-There is no `IconButton` and no `iconOnly` prop. An icon-only button is a recipe: `aria-label` for the name, the glyph as the only child, and a `style` override setting `paddingInline` to the size's block padding, so the glyph sits in even padding instead of the wider padding a label needs.
+There is no `IconButton` and no `iconOnly` prop. An icon-only button is a recipe: `aria-label` for the name, the glyph as the only child, and a `style` override setting `aspectRatio: 1` and `paddingInline: 0`, so the button is exactly as wide as it is tall at every size and the glyph sits centered in it.
 
 <Demo component={IconOnly} source={iconOnlySource} />
 
@@ -65,7 +65,7 @@ Only what Ultima adds. Everything else is Base UI's; see [Base UI's Button](http
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `variant` | `'solid' \| 'outline' \| 'ghost'` | `'solid'` | Shape and emphasis. |
+| `variant` | `'solid' \| 'soft' \| 'outline' \| 'ghost'` | `'solid'` | Shape and emphasis. `soft` is a tinted fill for a secondary action that `ghost` would make too faint. |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Control height, padding, and text step. |
 | `tone` | `'accent' \| 'danger'` | `'accent'` | Color role, contrast color included. |
 | `style` | `StyleXStyles` | — | The style slot: StyleX styles merged last, so they win per property. There is no `className`. |

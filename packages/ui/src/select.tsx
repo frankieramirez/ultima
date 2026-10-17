@@ -19,7 +19,7 @@ const styles = stylex.create({
     backgroundColor: color['--ult-color-surface-sunken'],
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':is([aria-invalid="true"])': color['--ult-color-danger-border'],
+      ':is([aria-invalid="true"])': color['--ult-color-danger'],
     },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',

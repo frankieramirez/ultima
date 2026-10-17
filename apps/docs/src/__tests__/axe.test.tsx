@@ -86,6 +86,11 @@ for (const [path, module] of Object.entries(demos)) {
         </main>,
       );
 
+      // A demo that changes state on mount (a carousel enabling its Next button) starts colour
+      // transitions; contrast is measured once they settle, not on an in-between frame. Looping
+      // animations never finish, so only transitions are awaited.
+      const transitions = document.getAnimations().filter((animation) => animation instanceof CSSTransition);
+      await Promise.all(transitions.map((transition) => transition.finished.catch(() => undefined)));
       const { violations } = await axe.run(document.body);
       const kept = name.endsWith('/anatomy') ? withoutBaseUiHiddenFocusables(violations) : violations;
       expect(kept.map(describe)).toEqual([]);

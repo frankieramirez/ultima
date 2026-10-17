@@ -17,7 +17,7 @@ import { randomBytes } from 'node:crypto';
 import { lookup } from 'node:dns/promises';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { hostname, tmpdir } from 'node:os';
-import { isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 import { CHECKS, type CheckId, type Need } from './checks.ts';
 import type { Plan, PlannedCheck } from './plan.ts';
@@ -229,7 +229,7 @@ export const newRunId = () => `${new Date().toISOString().replace(/[-:]/g, '').r
 export function runDirectory(root: string, runId: string, output?: string, cwd = process.cwd()): { directory: string } | { usage: string } {
   if (output === undefined) return { directory: join(root, RUNS_DIRECTORY, runId) };
   const directory = resolve(cwd, output);
-  const inside = relative(realpathSync(root), existsSync(directory) ? realpathSync(directory) : directory);
+  const inside = relative(realpathSync(root), realpathNearest(directory));
   if (!inside.startsWith('..') && !isAbsolute(inside) && !`${inside}${sep}`.startsWith(`.scratch${sep}`)) {
     return { usage: `--output ${output} is inside the checkout, where it would become source; use a directory outside it or under .scratch/` };
   }
@@ -238,6 +238,17 @@ export function runDirectory(root: string, runId: string, output?: string, cwd =
     if (readdirSync(directory).length > 0) return { usage: `--output ${output} is not empty; evidence goes only to a new or empty directory` };
   }
   return { directory };
+}
+
+/** A path with its nearest existing ancestor resolved, so a symlinked spelling of the checkout still compares as inside it. */
+function realpathNearest(path: string): string {
+  const rest: string[] = [];
+  let head = path;
+  while (!existsSync(head) && dirname(head) !== head) {
+    rest.unshift(basename(head));
+    head = dirname(head);
+  }
+  return join(realpathSync(head), ...rest);
 }
 
 function tools() {

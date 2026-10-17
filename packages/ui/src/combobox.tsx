@@ -17,10 +17,10 @@ const styles = stylex.create({
   },
   inputGroup: {
     alignItems: 'center',
-    backgroundColor: color['--ult-color-surface-sunken'],
+    backgroundColor: color['--ult-color-field'],
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger-border'],
+      ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
     },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',
