@@ -84,7 +84,11 @@ const styles = stylex.create({
     minWidth: 0,
     outline: 'none',
     padding: 0,
-    '::placeholder': { color: color['--ult-color-text-subtle'], opacity: 1 },
+    // A disabled field's placeholder takes the disabled ink too, so an empty field doesn't look editable.
+    '::placeholder': {
+      color: { default: color['--ult-color-text-subtle'], ':disabled': color['--ult-color-text-disabled'] },
+      opacity: 1,
+    },
   },
   trigger: {
     alignItems: 'center',
@@ -93,10 +97,11 @@ const styles = stylex.create({
     borderStyle: 'none',
     borderWidth: 0,
     // Base UI sets `data-placeholder` on Trigger and renders Value's text into it, so the
-    // chevron button carries the value colour as well as the chevron's.
+    // chevron button carries the value colour as well as the chevron's. A disabled placeholder
+    // takes the disabled ink, so the placeholder key steps aside for it.
     color: {
       default: color['--ult-color-text'],
-      ':is([data-placeholder])': color['--ult-color-text-subtle'],
+      ':is([data-placeholder]):not([data-disabled])': color['--ult-color-text-subtle'],
       ':is([data-disabled])': color['--ult-color-text-disabled'],
     },
     cursor: 'default',

@@ -131,7 +131,7 @@ Corners are set by role, in `px` so they don't grow with the font size:
 
 Don't use opacity for:
 
-- **Disabled.** A disabled control takes the `surface-sunken` fill, the quiet `border` and `--ult-color-text-disabled` ink. Transparency lets whatever is behind the control show through and makes its value hard to read. The color is gated against its fill; an alpha isn't.
+- **Disabled.** A disabled control takes the `surface-sunken` fill, the quiet `border` and `--ult-color-text-disabled` ink. Its placeholder takes the disabled ink too, or an empty disabled field looks editable. Read-only isn't disabled and keeps the `text-subtle` placeholder. Transparency lets whatever is behind the control show through and makes its value hard to read. The color is gated against its fill; an alpha isn't.
 - **Secondary text.** Use `text-muted` or `text-subtle`. Alpha text changes contrast with every background it sits on, so the contrast gate can't vouch for it.
 - **Hover and press.** Move one palette step. An alpha hover on a solid fill gives a different color over every background.
 - **Borders.** A translucent border doubles up where two surfaces meet and disappears on busy content.

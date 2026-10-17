@@ -98,7 +98,11 @@ const styles = stylex.create({
     outline: 'none',
     padding: 0,
     width: '100%',
-    '::placeholder': { color: color['--ult-color-text-subtle'], opacity: 1 },
+    // A disabled field's placeholder takes the disabled ink too, so an empty field doesn't look editable.
+    '::placeholder': {
+      color: { default: color['--ult-color-text-subtle'], ':disabled': color['--ult-color-text-disabled'] },
+      opacity: 1,
+    },
   },
   // The calendar and clear buttons inside the control: a 24px ground on the 4px corner, pulled in
   // so the glyph sits as far from the edge as the text does. The glyph is the subtle ink, and inks

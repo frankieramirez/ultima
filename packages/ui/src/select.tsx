@@ -60,8 +60,10 @@ const styles = stylex.create({
     transitionTimingFunction: easing.standard,
     userSelect: 'none',
   },
+  // Value carries no disabled attribute of its own; inside a disabled trigger the placeholder
+  // inherits the trigger's disabled ink rather than the subtle one, so it doesn't look editable.
   value: {
-    color: { default: 'inherit', ':is([data-placeholder])': color['--ult-color-text-subtle'] },
+    color: { default: 'inherit', ':is([data-placeholder]):not([data-disabled] *)': color['--ult-color-text-subtle'] },
     flexGrow: 1,
     overflow: 'hidden',
     textAlign: 'start',
