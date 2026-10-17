@@ -114,8 +114,9 @@ describe('ULT-TOKEN-001', () => {
     const mutated = source(TOAST).replace("const slideDistance = '150%';", "const slideDistance = '24px';");
     assert.notEqual(mutated, source(TOAST));
     const found = located(run({ [TOAST]: mutated }), TOAST);
+    const line = mutated.split('\n').findIndex((text) => text.includes("const slideDistance = '24px';")) + 1;
     assert.ok(found.length > 0);
-    assert.ok(found.every((entry) => entry.ruleId === 'ULT-TOKEN-001' && entry.symbol === 'styles.root' && entry.target === 'transform' && entry.line === 12));
+    assert.ok(found.every((entry) => entry.ruleId === 'ULT-TOKEN-001' && entry.symbol === 'styles.root' && entry.target === 'transform' && entry.line === line));
   });
 
   test('holds the zero-duration contracts to their exact part, condition and value', () => {
