@@ -6,32 +6,58 @@ import { border, color, easing, font, motion, radius, shadow, space, text, z } f
 import type { PartProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
+const HOVER = '@media (hover: hover)';
+const COARSE = '@media (pointer: coarse)';
+
+const UP = ':is([data-side="bottom"])';
+const DOWN = ':is([data-side="top"])';
+// The `dir` attribute rather than `:dir()`, which the CSS pipeline lowers to language matching.
+const RIGHTWARD = ':is([data-side="left"], [data-side="inline-start"]:not([dir="rtl"] *), [data-side="inline-end"]:is([dir="rtl"] *))';
+const LEFTWARD = ':is([data-side="right"], [data-side="inline-end"]:not([dir="rtl"] *), [data-side="inline-start"]:is([dir="rtl"] *))';
+const ARROW_OFFSET = `calc(-0.5 * ${space['--ult-space-4']})`;
+
 const listHeight = `calc(5 * ${space['--ult-space-12']})`;
 
 const styles = stylex.create({
+  // Input Group's field recipe, restated. Its own `:read-only` would match the div, so the keys
+  // ask whether the input inside is read-only, which a disabled input also is. Invalid is read on
+  // the group itself as well as inside it, since a caller or Field may mark either.
   inputGroup: {
     alignItems: 'center',
-    backgroundColor: color['--ult-color-field'],
+    backgroundColor: {
+      default: color['--ult-color-field'],
+      ':has(:is(input, textarea):read-only)': color['--ult-color-surface-sunken'],
+    },
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
+      ':has(:is(input, textarea):read-only):not(:is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])))': color['--ult-color-border'],
+      ':is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid]))': color['--ult-color-danger'],
+      [HOVER]: {
+        ':hover:not(:is([aria-invalid="true"], [data-invalid]), :has(:is(input, textarea):read-only, [aria-invalid="true"], [data-invalid]))':
+          color['--ult-color-border-hover'],
+      },
     },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':has(:disabled)': color['--ult-color-text-disabled'] },
     display: 'inline-flex',
     fontFamily: font['--ult-font-sans'],
     gap: space['--ult-space-3'],
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
-    width: '100%',
-    ':focus-within': {
-      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      outlineOffset: border.focusOffset,
+    minWidth: 0,
+    outline: {
+      default: 'none',
+      ':focus-within:not(:is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])))': `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      ':is([aria-invalid="true"], [data-invalid], :has([aria-invalid="true"], [data-invalid])):focus-within': `${border.focus} solid ${color['--ult-color-danger']}`,
     },
+    outlineOffset: `calc(-1 * ${border.hairline})`,
+    transitionDuration: motion['--ult-motion-fast'],
+    transitionProperty: 'background-color, border-color',
+    transitionTimingFunction: easing.standard,
+    width: '100%',
   },
   input: {
     appearance: 'none',
@@ -39,7 +65,7 @@ const styles = stylex.create({
     borderStyle: 'none',
     borderWidth: 0,
     borderRadius: 0,
-    color: color['--ult-color-text'],
+    color: 'inherit',
     flexGrow: 1,
     fontFamily: 'inherit',
     fontSize: 'inherit',
@@ -48,7 +74,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: 'none',
     padding: 0,
-    '::placeholder': { color: color['--ult-color-text-subtle'] },
+    '::placeholder': { color: color['--ult-color-text-subtle'], opacity: 1 },
   },
   trigger: {
     alignItems: 'center',
@@ -56,7 +82,7 @@ const styles = stylex.create({
     backgroundColor: 'transparent',
     borderStyle: 'none',
     borderWidth: 0,
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     cursor: 'default',
     display: 'inline-flex',
     flexShrink: 0,
@@ -64,7 +90,6 @@ const styles = stylex.create({
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
     padding: 0,
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
@@ -117,7 +142,7 @@ const styles = stylex.create({
       ':is([data-ending-style])': 0,
     },
     outline: 'none',
-    paddingInline: space['--ult-space-1'],
+    paddingInline: space['--ult-space-2'],
     position: 'relative',
     transform: {
       default: 'none',
@@ -139,24 +164,25 @@ const styles = stylex.create({
     outline: 'none',
     overflowY: 'auto',
     overscrollBehavior: 'contain',
-    paddingBlock: space['--ult-space-1'],
-    scrollPaddingBlock: space['--ult-space-1'],
+    paddingBlock: space['--ult-space-2'],
+    scrollPaddingBlock: space['--ult-space-2'],
   },
+  // A 32px row with the small radius, nested in the popup's 4px inset; an icon the item carries leads.
   item: {
+    alignItems: 'center',
     appearance: 'none',
     backgroundColor: { default: 'transparent', ':is([data-highlighted])': color['--ult-color-surface-hover'] },
-    borderRadius: radius['--ult-radius-md'],
+    borderRadius: radius['--ult-radius-sm'],
     boxSizing: 'border-box',
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     cursor: 'default',
-    display: 'grid',
+    display: 'flex',
     fontFamily: font['--ult-font-sans'],
     fontSize: text['--ult-text-4'],
-    gap: space['--ult-space-4'],
-    gridTemplateColumns: '1fr',
+    gap: space['--ult-space-3'],
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
+    minHeight: space['--ult-space-9'],
     outlineStyle: 'none',
     outlineWidth: 0,
     paddingBlock: space['--ult-space-2'],
@@ -171,11 +197,13 @@ const styles = stylex.create({
   },
   groupLabel: {
     color: color['--ult-color-text-subtle'],
-    fontFamily: font['--ult-font-sans'],
     fontSize: text['--ult-text-2'],
+    letterSpacing: font['--ult-font-tracking-wide'],
     paddingBlock: space['--ult-space-2'],
     paddingInline: space['--ult-space-4'],
+    textTransform: 'uppercase',
   },
+
   // Empty and Status stay mounted so a screen reader hears the text change, so the box
   // collapses on `:empty` instead of being hidden.
   message: {
@@ -185,31 +213,39 @@ const styles = stylex.create({
     paddingBlock: { default: 0, ':not(:empty)': space['--ult-space-4'] },
     paddingInline: { default: 0, ':not(:empty)': space['--ult-space-4'] },
   },
+  /**
+   * A square turned 45deg, half outside the popup's edge on the side that faces the anchor.
+   * Base UI places only the cross axis; the side offset and the two outward hairlines are set
+   * here, so the arrow continues the popup's border and covers it where they meet.
+   */
   arrow: {
+    backgroundColor: color['--ult-color-surface-raised'],
+    borderBottomColor: { default: 'transparent', [DOWN]: color['--ult-color-border'], [LEFTWARD]: color['--ult-color-border'] },
+    borderLeftColor: { default: 'transparent', [UP]: color['--ult-color-border'], [LEFTWARD]: color['--ult-color-border'] },
+    borderRightColor: { default: 'transparent', [DOWN]: color['--ult-color-border'], [RIGHTWARD]: color['--ult-color-border'] },
+    borderTopColor: { default: 'transparent', [UP]: color['--ult-color-border'], [RIGHTWARD]: color['--ult-color-border'] },
+    borderStyle: 'solid',
+    borderWidth: border.hairline,
+    bottom: { default: null, [DOWN]: ARROW_OFFSET },
+    boxSizing: 'border-box',
     height: space['--ult-space-4'],
+    left: { default: null, [LEFTWARD]: ARROW_OFFSET },
+    right: { default: null, [RIGHTWARD]: ARROW_OFFSET },
+    top: { default: null, [UP]: ARROW_OFFSET },
+    transform: 'rotate(45deg)',
     width: space['--ult-space-4'],
-    '::before': {
-      backgroundColor: color['--ult-color-surface-raised'],
-      borderColor: color['--ult-color-border'],
-      borderStyle: 'solid',
-      borderWidth: border.hairline,
-      content: '""',
-      display: 'block',
-      height: space['--ult-space-4'],
-      transform: 'rotate(45deg)',
-      width: space['--ult-space-4'],
-    },
   },
 });
 
+// Field text is text step 4, and rises to step 5 under a coarse pointer so iOS doesn't zoom on focus.
 const sizes = stylex.create({
   sm: {
-    fontSize: text['--ult-text-4'],
+    fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     minHeight: space['--ult-space-9'],
     paddingInline: space['--ult-space-4'],
   },
   md: {
-    fontSize: text['--ult-text-5'],
+    fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     minHeight: space['--ult-space-10'],
     paddingInline: space['--ult-space-5'],
   },

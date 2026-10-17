@@ -4,6 +4,7 @@ import { render } from 'vitest-browser-react';
 import { Button, DropdownMenu, type DropdownMenuItemProps, type DropdownMenuPopupProps } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
+import { expectArrowOnEdge, resolved } from './overlay';
 
 test('the trigger opens a named menu with named items', async () => {
   const screen = await render(
@@ -122,7 +123,7 @@ test('keyboard navigation highlights, loops, matches text, activates, and restor
   await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
 });
 
-test('checkbox and radio states render their glyphs and disabled items are dimmed', async () => {
+test('checkbox and radio states render their glyphs and disabled items take the disabled ink', async () => {
   const screen = await render(<MenuFixture />);
   await screen.getByRole('button', { name: 'Actions' }).click();
   await expect.element(page.getByRole('group', { name: 'File' })).toBeVisible();
@@ -141,8 +142,50 @@ test('checkbox and radio states render their glyphs and disabled items are dimme
   await expect.element(page.getByTestId('dot')).not.toBeInTheDocument();
   const disabled = page.getByRole('menuitem', { name: 'Delete' }).element();
   expect(disabled).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(disabled).opacity)).toBeLessThan(parseFloat(getComputedStyle(checkbox.element()).opacity));
+  expect(getComputedStyle(disabled).opacity).toBe('1');
+  expect(getComputedStyle(disabled).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
   expect(getComputedStyle(page.getByRole('menuitem', { name: 'Help' }).element()).textDecorationLine).toBe('none');
+});
+
+test('items are 32px rows with the small radius inside the popup\'s 8px corner, an icon sharing the label\'s row', async () => {
+  await render(
+    <DropdownMenu.Root defaultOpen>
+      <DropdownMenu.Trigger>Options</DropdownMenu.Trigger>
+      <DropdownMenu.Portal><DropdownMenu.Positioner><DropdownMenu.Popup data-testid="popup">
+        <DropdownMenu.Item data-testid="item">
+          <svg data-testid="icon" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /></svg>
+          <span data-testid="label">Rename</span>
+        </DropdownMenu.Item>
+      </DropdownMenu.Popup></DropdownMenu.Positioner></DropdownMenu.Portal>
+    </DropdownMenu.Root>,
+  );
+  await expect.element(page.getByRole('menu')).toBeVisible();
+  const popup = getComputedStyle(page.getByTestId('popup').element());
+  const item = page.getByTestId('item').element();
+  expect(popup.borderTopLeftRadius).toBe(resolved('border-top-left-radius', 'var(--ult-radius-lg)'));
+  expect(popup.paddingTop).toBe(resolved('padding-top', 'var(--ult-space-2)'));
+  expect(getComputedStyle(item).borderTopLeftRadius).toBe(resolved('border-top-left-radius', 'var(--ult-radius-sm)'));
+  expect(`${item.getBoundingClientRect().height}px`).toBe(resolved('height', 'var(--ult-space-9)'));
+  const icon = page.getByTestId('icon').element().getBoundingClientRect();
+  const label = page.getByTestId('label').element().getBoundingClientRect();
+  expect(icon.right).toBeLessThan(label.left);
+  expect(Math.abs(icon.top + icon.height / 2 - label.top - label.height / 2)).toBeLessThan(1);
+});
+
+test('the group label is set in tracked capitals, as Select\'s is', async () => {
+  const screen = await render(<MenuFixture />);
+  await screen.getByRole('button', { name: 'Actions' }).click();
+  const label = page.getByText('File').element();
+  expect(getComputedStyle(label).textTransform).toBe('uppercase');
+  expect(getComputedStyle(label).letterSpacing).not.toBe('normal');
+});
+
+test('the arrow straddles the edge facing the trigger', async () => {
+  const screen = await render(<MenuFixture />);
+  await screen.getByRole('button', { name: 'Actions' }).click();
+  const popup = page.getByRole('menu').element();
+  await expect.poll(() => getComputedStyle(popup).opacity).toBe('1');
+  expectArrowOnEdge(page.getByTestId('arrow').element(), popup, 'up');
 });
 
 test('ArrowRight opens the submenu and the open trigger stays highlighted', async () => {
