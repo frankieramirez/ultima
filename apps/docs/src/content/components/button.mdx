@@ -25,7 +25,7 @@ npx shadcn@4.21.4 add @ultima/button
 
 ## Variants
 
-Choose the emphasis an action needs. Soft sits between solid and outline: a tinted fill for a secondary action that ghost would make too faint.
+Choose the emphasis an action needs.
 
 <Demo component={Variants} source={variantsSource} />
 
@@ -65,7 +65,7 @@ Only what Ultima adds. Everything else is Base UI's; see [Base UI's Button](http
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `variant` | `'solid' \| 'soft' \| 'outline' \| 'ghost'` | `'solid'` | Shape and emphasis. |
+| `variant` | `'solid' \| 'soft' \| 'outline' \| 'ghost'` | `'solid'` | Shape and emphasis. `soft` is a tinted fill for a secondary action that `ghost` would make too faint. |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Control height, padding, and text step. |
 | `tone` | `'accent' \| 'danger'` | `'accent'` | Color role, contrast color included. |
 | `style` | `StyleXStyles` | — | The style slot: StyleX styles merged last, so they win per property. There is no `className`. |
