@@ -64,7 +64,7 @@ describe('ULT-DOCS-001', () => {
     assert.deepEqual(
       found.map((diagnostic) => [diagnostic.ruleId, diagnostic.start.line, diagnostic.symbol, diagnostic.selector]),
       [
-        ['ULT-DOCS-001', 6, 'styles.bar', '@media (min-width: 48rem)'],
+        ['ULT-DOCS-001', 6, 'styles.bar', '@media (min-width: 64rem)'],
         // layoutStyles is a create table, not a defineConsts group: its key stays unestablished.
         ['ULT-ANALYSIS-001', 7, 'styles', undefined],
       ],
