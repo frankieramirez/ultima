@@ -8,10 +8,9 @@ import type { PartProps, PlainProps } from '@ultima/ui/lib/component';
 const styles = stylex.create({
   root: {
     alignItems: 'center',
-    backgroundColor: color['--ult-color-surface-sunken'],
     borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-md'],
-    borderStyle: 'solid',
+    borderRadius: radius['--ult-radius-xl'],
+    borderStyle: 'dashed',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
     color: color['--ult-color-text-muted'],
@@ -33,6 +32,8 @@ const styles = stylex.create({
   },
   description: {
     fontSize: text['--ult-text-4'],
+    lineHeight: font['--ult-font-leading-normal'],
+    margin: 0,
   },
   icon: {
     color: color['--ult-color-text-subtle'],
