@@ -214,7 +214,7 @@ test('the popup wears the full overlay surface and the recipe transition', async
 
 });
 
-test('the popup is at most 320px wide, and no wider than the viewport has room for', async () => {
+test('the popup is at most 320px wide, no wider than the viewport has room for, and wraps a long line inside', async () => {
   // An unbreakable line wider than the cap, so only max-width decides the popup's width.
   const screen = await render(
     <HoverCard.Root>
@@ -233,10 +233,17 @@ test('the popup is at most 320px wide, and no wider than the viewport has room f
   // Layout width, so the entry scale doesn't count.
   const width = () => (page.getByTestId('popup').element() as HTMLElement).offsetWidth;
   expect(width()).toBe(parseFloat(resolved('width', 'calc(5 * var(--ult-space-12))')));
+  // The line breaks inside the popup rather than running past its edge.
+  const overflow = () => {
+    const popup = page.getByTestId('popup').element() as HTMLElement;
+    return popup.scrollWidth - popup.clientWidth;
+  };
+  expect(overflow()).toBe(0);
 
   onTestFinished(() => page.viewport(1280, 720));
   await page.viewport(240, 600);
   await expect.poll(width).toBeLessThanOrEqual(240);
+  expect(overflow()).toBe(0);
 });
 
 test('the arrow straddles the edge facing the trigger', async () => {
