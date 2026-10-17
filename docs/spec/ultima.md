@@ -137,8 +137,8 @@ Amended on [Decide the default radius scale and respace the Shape presets](https
 | `--ult-radius-xs` | 2px | swatches, bars, indicator dots |
 | `--ult-radius-sm` | 4px | inline code, small insets |
 | `--ult-radius-md` | 6px | Button, Input, Select trigger, menu items |
-| `--ult-radius-lg` | 8px | Card, popups |
-| `--ult-radius-xl` | 12px | Dialog, Alert Dialog, Drawer, large panels and sheets |
+| `--ult-radius-lg` | 8px | popups, Alert, the Code block |
+| `--ult-radius-xl` | 12px | Card, Empty, Dialog, Alert Dialog, Drawer, large panels and sheets |
 | `--ult-radius-full` | 9999px | Badge and any pill |
 
 This is the Studio's `default` Shape in draft document v4, amended by the design foundations redesign: 2/4/6/8 replaces the Tight 1/2/4/6, and every shape gains `xl`. Version-3 drafts keep Tight and have no `xl`. Nested corners rely on one relationship: `lg` minus `md` equals the 2px `space-1` inset a popup gives its items, so a Select item sits concentric inside its popup (8 − 6 = 2), and a segmented Tabs trigger (`sm`) sits concentric inside its `md` list. No component computes a value from a radius step.
