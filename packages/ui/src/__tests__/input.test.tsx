@@ -160,7 +160,7 @@ test('an invalid field keeps its danger edge while disabled or read-only', async
   expect(edge('Invalid read-only')).toBe(edge('Invalid'));
 });
 
-test('an invalid field draws its focus outline in danger', async () => {
+test('an invalid field keeps its danger edge and focuses in the focus color', async () => {
   const screen = await render(
     <>
       <Input aria-label="Plain" />
@@ -171,6 +171,6 @@ test('an invalid field draws its focus outline in danger', async () => {
   const plain = getComputedStyle(screen.getByRole('textbox', { name: 'Plain' }).element()).outlineColor;
   await userEvent.tab();
   const invalid = screen.getByRole('textbox', { name: 'Invalid' }).element();
-  expect(getComputedStyle(invalid).outlineColor).not.toBe(plain);
-  expect(getComputedStyle(invalid).outlineColor).toBe(getComputedStyle(invalid).borderTopColor);
+  expect(getComputedStyle(invalid).outlineColor).toBe(plain);
+  expect(getComputedStyle(invalid).borderTopColor).not.toBe(plain);
 });

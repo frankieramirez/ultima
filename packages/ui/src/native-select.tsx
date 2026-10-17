@@ -50,8 +50,7 @@ const styles = stylex.create({
     opacity: 1,
     outline: {
       default: 'none',
-      ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
+      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
     outlineOffset: border.focusOffset,
     paddingInlineEnd: chevronRoom,

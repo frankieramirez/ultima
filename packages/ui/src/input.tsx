@@ -11,9 +11,10 @@ const COARSE = '@media (pointer: coarse)';
 
 // A field is the brightest surface and its edge meets 3:1 against the page. Hover darkens the
 // edge one step on devices that hover. `:read-only` also matches a disabled input, so one key
-// gives both the sunken fill and the quiet edge. Each edge and outline key names its whole state,
-// so an invalid field keeps its danger edge through hover, focus, read-only and disabled. Focus
-// draws the outline outside the edge with a gap, as on every other control.
+// gives both the sunken fill and the quiet edge. Each edge key names its whole state, so an
+// invalid field keeps its danger edge through hover, focus, read-only and disabled. Focus draws the
+// outline outside the edge with a gap, in the focus color even when invalid: the edge already
+// carries the error, so one red mark is enough.
 const styles = stylex.create({
   root: {
     appearance: 'none',
@@ -37,8 +38,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: {
       default: 'none',
-      ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
-      ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
+      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
     outlineOffset: border.focusOffset,
     transitionDuration: motion['--ult-motion-fast'],
