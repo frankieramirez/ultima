@@ -154,6 +154,10 @@ A per-file hash of a canonical form of the file, prefixed with the scheme that p
 
 What `status` says about one installed file, from comparing its installed, local, and served content hashes: `current`, `edited`, `behind`, `diverged`, `unstamped`, or `retired`. An update is available when a file is `behind` or `diverged`. Only `behind` is safe to reinstall without losing edits.
 
+## Installed base
+
+The exact content a consumer received for one installed file, rebuilt by `update` from the item's source at the stamp's revision and trusted only when its content hash matches the stamp. A `diverged` file is merged against it. Element bundles, the tokens stylesheet and unstamped files have none.
+
 ## Incomplete run
 
 A consumer CLI run whose command was well formed but that could not reach a complete answer, because of the project or the network: a missing `components.json`, an unresolvable value a blocking rule needs, an unreachable registry. It exits 3 and is never a pass. It is not an invalid invocation, which exits 2 and is fixed by changing the command rather than the project.
