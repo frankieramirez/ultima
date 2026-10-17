@@ -158,7 +158,14 @@ export function AnatomyPanel({ item, component: Component }: { item: string; com
         }
         deferred = 0;
         // A new width lays the demo out again, so the stage gives back any room an earlier stack took.
-        if (width !== undefined && width !== next.size.width) setReach(0);
+        // That measurement still holds the old room, so the stage measures again once it is gone and
+        // grows from its own height, as it did on first load.
+        if (width !== undefined && width !== next.size.width) {
+          width = next.size.width;
+          setReach(0);
+          update();
+          return;
+        }
         width = next.size.width;
         setMeasured((current) => (JSON.stringify(current) === JSON.stringify(next) ? current : next));
       });
