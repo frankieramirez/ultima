@@ -43,7 +43,11 @@ const styles = stylex.create({
     transitionProperty: 'background-color, border-color',
     transitionTimingFunction: easing.standard,
     width: '100%',
-    '::placeholder': { color: color['--ult-color-text-subtle'], opacity: 1 },
+    // A disabled field's placeholder takes the disabled ink too, so an empty field doesn't look editable.
+    '::placeholder': {
+      color: { default: color['--ult-color-text-subtle'], ':disabled': color['--ult-color-text-disabled'] },
+      opacity: 1,
+    },
   },
 });
 

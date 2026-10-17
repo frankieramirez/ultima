@@ -73,7 +73,11 @@ const styles = stylex.create({
     minWidth: 0,
     outline: 'none',
     padding: 0,
-    '::placeholder': { color: color['--ult-color-text-subtle'], opacity: 1 },
+    // A disabled field's placeholder takes the disabled ink too, so an empty field doesn't look editable.
+    '::placeholder': {
+      color: { default: color['--ult-color-text-subtle'], ':disabled': color['--ult-color-text-disabled'] },
+      opacity: 1,
+    },
   },
   trigger: {
     alignItems: 'center',
@@ -95,8 +99,9 @@ const styles = stylex.create({
       outlineOffset: border.focusOffset,
     },
   },
+  // The chevron and the clear mark take the disabled ink inside a disabled field.
   icon: {
-    color: color['--ult-color-text-subtle'],
+    color: { default: color['--ult-color-text-subtle'], ':is(:disabled *, [data-disabled] *)': color['--ult-color-text-disabled'] },
     display: 'flex',
     flexShrink: 0,
   },
@@ -106,7 +111,7 @@ const styles = stylex.create({
     backgroundColor: 'transparent',
     borderStyle: 'none',
     borderWidth: 0,
-    color: color['--ult-color-text-subtle'],
+    color: { default: color['--ult-color-text-subtle'], ':is(:disabled, [data-disabled], [data-disabled] *)': color['--ult-color-text-disabled'] },
     cursor: 'default',
     // Base UI unmounts Clear after its exit transition, so the button is still in the DOM
     // without `data-visible` during that window and must not paint there.
