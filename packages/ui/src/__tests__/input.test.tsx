@@ -79,7 +79,7 @@ test('data-invalid recolors the border without aria-invalid', async () => {
   expect(getComputedStyle(invalid).borderTopColor).not.toBe(valid.borderTopColor);
 });
 
-test('disabled dims the input', async () => {
+test('disabled takes the muted fill and ink, not opacity', async () => {
   const screen = await render(
     <>
       <Input aria-label="Enabled" />
@@ -89,10 +89,88 @@ test('disabled dims the input', async () => {
   const enabled = screen.getByRole('textbox', { name: 'Enabled' }).element();
   const disabled = screen.getByRole('textbox', { name: 'Disabled' }).element();
   expect(disabled).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(disabled).opacity)).toBeLessThan(parseFloat(getComputedStyle(enabled).opacity));
+  expect(getComputedStyle(disabled).opacity).toBe('1');
+  expect(getComputedStyle(disabled).backgroundColor).not.toBe(getComputedStyle(enabled).backgroundColor);
+  expect(getComputedStyle(disabled).color).not.toBe(getComputedStyle(enabled).color);
 });
 
 test('public prop types expose only supported styling axes', () => {
   expectTypeOf<InputProps>().not.toHaveProperty('className');
   expectTypeOf<InputSize>().toEqualTypeOf<'sm' | 'md' | 'lg'>();
+});
+
+const settle = () => new Promise((resolve) => setTimeout(resolve, 300));
+
+test('hover darkens the edge, not the fill, and a disabled field keeps its resting edge', async () => {
+  const screen = await render(
+    <>
+      <Input aria-label="Live" />
+      <Input aria-label="Off" disabled />
+    </>,
+  );
+  const live = screen.getByRole('textbox', { name: 'Live' }).element();
+  const off = screen.getByRole('textbox', { name: 'Off' }).element();
+  const liveResting = getComputedStyle(live);
+  const [liveEdge, liveFill] = [liveResting.borderTopColor, liveResting.backgroundColor];
+  const offEdge = getComputedStyle(off).borderTopColor;
+  await userEvent.hover(live);
+  await settle();
+  expect(getComputedStyle(live).borderTopColor).not.toBe(liveEdge);
+  expect(getComputedStyle(live).backgroundColor).toBe(liveFill);
+  await userEvent.hover(off);
+  await settle();
+  expect(off.matches(':hover')).toBe(true);
+  expect(getComputedStyle(off).borderTopColor).toBe(offEdge);
+});
+
+test('the focus outline lies over the edge', async () => {
+  const screen = await render(<Input aria-label="Focus" />);
+  await userEvent.tab();
+  expect(getComputedStyle(screen.getByRole('textbox', { name: 'Focus' }).element()).outlineOffset).toBe('-1px');
+});
+
+test('field text is 14px at every size below lg', async () => {
+  const screen = await render(
+    <>
+      <Input aria-label="Small" size="sm" />
+      <Input aria-label="Medium" />
+    </>,
+  );
+  for (const name of ['Small', 'Medium']) {
+    expect(getComputedStyle(screen.getByRole('textbox', { name }).element()).fontSize).toBe('14px');
+  }
+});
+
+test('the placeholder is drawn at full opacity', async () => {
+  const screen = await render(<Input aria-label="Email" placeholder="you@example.com" />);
+  const input = screen.getByRole('textbox', { name: 'Email' }).element();
+  expect(getComputedStyle(input, '::placeholder').opacity).toBe('1');
+});
+
+test('an invalid field keeps its danger edge while disabled or read-only', async () => {
+  const screen = await render(
+    <>
+      <Input aria-label="Invalid" aria-invalid="true" />
+      <Input aria-label="Invalid off" aria-invalid="true" disabled />
+      <Input aria-label="Invalid read-only" aria-invalid="true" readOnly />
+    </>,
+  );
+  const edge = (name: string) => getComputedStyle(screen.getByRole('textbox', { name }).element()).borderTopColor;
+  expect(edge('Invalid off')).toBe(edge('Invalid'));
+  expect(edge('Invalid read-only')).toBe(edge('Invalid'));
+});
+
+test('an invalid field draws its focus outline in danger', async () => {
+  const screen = await render(
+    <>
+      <Input aria-label="Plain" />
+      <Input aria-label="Invalid" aria-invalid="true" />
+    </>,
+  );
+  await userEvent.tab();
+  const plain = getComputedStyle(screen.getByRole('textbox', { name: 'Plain' }).element()).outlineColor;
+  await userEvent.tab();
+  const invalid = screen.getByRole('textbox', { name: 'Invalid' }).element();
+  expect(getComputedStyle(invalid).outlineColor).not.toBe(plain);
+  expect(getComputedStyle(invalid).outlineColor).toBe(getComputedStyle(invalid).borderTopColor);
 });

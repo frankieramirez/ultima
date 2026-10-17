@@ -18,7 +18,7 @@ npx shadcn@4.21.4 add @ultima/input
 
 ## Sizes
 
-`sm`, `md`, and `lg` use Ultima's three control heights. `md` is the default.
+`sm`, `md`, and `lg` use Ultima's three control heights. `md` is the default. Text is 14px at `sm` and `md` and 16px at `lg`, and rises to 16px on touch screens so iOS does not zoom into the field on focus.
 
 <Demo component={Sizes} source={sizesSource} />
 
@@ -30,7 +30,7 @@ Prefer a visible `<label htmlFor>` when the interface has one. `aria-label` name
 
 ## Validation and disabled state
 
-Standalone, validation state belongs to the consumer's `aria-invalid`; connect the error text with `aria-describedby`. Inside a `Field.Root`, Base UI owns `aria-invalid`, `data-invalid`, and the description merge — Input needs no new prop. The danger border matches `':is([aria-invalid="true"], [data-invalid])'`, so a control that is disabled while invalid keeps the border.
+Standalone, validation state belongs to the consumer's `aria-invalid`; connect the error text with `aria-describedby`. Inside a `Field.Root`, Base UI owns `aria-invalid`, `data-invalid`, and the description merge — Input needs no new prop. The danger border matches `':is([aria-invalid="true"], [data-invalid])'`, so a control that is disabled while invalid keeps the border. A disabled or read-only field takes the sunken fill and a quieter edge, and a disabled field's text drops to the disabled ink, with no fading.
 
 <Demo component={Validation} source={validationSource} />
 
