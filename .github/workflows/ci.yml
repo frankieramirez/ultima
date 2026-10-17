@@ -37,12 +37,14 @@ jobs:
         run: pnpm typecheck
 
       # `pnpm test` without the docs suite, which runs sharded in the `docs` job below. The docs suite
-      # keeps one browser per shard, so `fileParallelism: false` still holds inside each one.
+      # keeps one browser per shard, so `fileParallelism: false` still holds inside each one. The filter
+      # names `packages/*` because any negative filter also selects the workspace root, whose own `test`
+      # script runs every suite again, docs included.
       - name: Test
         run: |
           pnpm --filter @ultima/ui exec playwright install --with-deps chromium
           node --experimental-strip-types --test scripts/catalogue/*.test.ts scripts/verification/*.test.ts
-          pnpm -r --filter '!@ultima/docs' test
+          pnpm -r --filter './packages/*' test
 
       - name: Contrast gate
         run: python3 packages/tokens/scripts/palette.py --check
