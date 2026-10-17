@@ -10,7 +10,7 @@ export type AnatomyBox = { x: number; y: number; width: number; height: number }
 
 export type AnatomySize = { width: number; height: number };
 
-/** One labelled target: its full label, the short form shown below `WIDE`, and its box, or `null` when not shown. */
+/** One labelled target: its full label, the short form shown below `DESKTOP`, and its box, or `null` when not shown. */
 export type AnatomyEntry = { key: string; label: string; short: string; box: AnatomyBox | null };
 
 const intersects = (a: AnatomyBox, b: AnatomyBox) =>
@@ -50,10 +50,10 @@ export function placeLabels(targets: { box: AnatomyBox; size: AnatomySize }[], p
   return placed;
 }
 
-const WIDE_REM = Number(/min-width:\s*([\d.]+)rem/.exec(breakpoints.WIDE)?.[1]);
+const DESKTOP_REM = Number(/min-width:\s*([\d.]+)rem/.exec(breakpoints.DESKTOP)?.[1]);
 
 export function isWide(width: number): boolean {
-  return width >= WIDE_REM * parseFloat(getComputedStyle(document.documentElement).fontSize);
+  return width >= DESKTOP_REM * parseFloat(getComputedStyle(document.documentElement).fontSize);
 }
 
 const styles = stylex.create({

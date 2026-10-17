@@ -33,8 +33,8 @@ const styles = stylex.create({
     gap: space['--ult-space-5'],
     gridTemplateColumns: {
       default: 'minmax(0, 1fr)',
-      [breakpoints.WIDE]: 'repeat(2, minmax(0, 1fr))',
-      [breakpoints.DESKTOP]: 'repeat(3, minmax(0, 1fr))',
+      [breakpoints.DESKTOP]: 'repeat(2, minmax(0, 1fr))',
+      [breakpoints.WIDE]: 'repeat(3, minmax(0, 1fr))',
     },
     listStyle: 'none',
     margin: 0,

@@ -7,8 +7,8 @@ import * as stylex from '@stylexjs/stylex';
  * compiler resolve the constants into each importing file's `stylex.create`.
  */
 export const breakpoints = stylex.defineConsts({
-  WIDE: '@media (min-width: 48rem)',
+  DESKTOP: '@media (min-width: 48rem)',
   RAIL: '@media (min-width: 52.5rem)',
-  DESKTOP: '@media (min-width: 64rem)',
+  WIDE: '@media (min-width: 64rem)',
   INDEX: '@media (min-width: 80rem)',
 });

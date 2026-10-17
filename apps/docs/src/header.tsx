@@ -15,7 +15,7 @@ import { TextLink } from './text-link';
 const styles = stylex.create({
   chrome: {
     backgroundColor: color['--ult-color-surface'],
-    blockSize: { default: shell.narrowChromeBlock, [breakpoints.WIDE]: shell.chromeBlock },
+    blockSize: { default: shell.narrowChromeBlock, [breakpoints.DESKTOP]: shell.chromeBlock },
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
@@ -28,24 +28,24 @@ const styles = stylex.create({
     alignItems: 'center',
     boxSizing: 'border-box',
     display: 'flex',
-    gap: { default: space['--ult-space-4'], [breakpoints.DESKTOP]: space['--ult-space-7'] },
+    gap: { default: space['--ult-space-4'], [breakpoints.WIDE]: space['--ult-space-7'] },
     flexGrow: 1,
     inlineSize: '100%',
     paddingBlock: space['--ult-space-4'],
-    paddingInlineStart: { default: shell.narrowEdge, [breakpoints.WIDE]: shell.edge },
-    paddingInlineEnd: { default: space['--ult-space-4'], [breakpoints.WIDE]: shell.edge },
+    paddingInlineStart: { default: shell.narrowEdge, [breakpoints.DESKTOP]: shell.edge },
+    paddingInlineEnd: { default: space['--ult-space-4'], [breakpoints.DESKTOP]: shell.edge },
   },
   brandLogo: { display: 'block', height: text['--ult-text-8'], width: 'auto' },
-  search: { marginInlineStart: { default: 'auto', [breakpoints.WIDE]: 0 } },
+  search: { marginInlineStart: { default: 'auto', [breakpoints.DESKTOP]: 0 } },
   trigger: {
     height: space['--ult-space-10'],
-    display: { default: 'inline-flex', [breakpoints.WIDE]: 'none' },
+    display: { default: 'inline-flex', [breakpoints.DESKTOP]: 'none' },
     inlineSize: space['--ult-space-10'],
     paddingInline: 0,
   },
   links: {
     alignItems: 'center',
-    display: { default: 'none', [breakpoints.WIDE]: 'flex' },
+    display: { default: 'none', [breakpoints.DESKTOP]: 'flex' },
     flexGrow: 1,
   },
   link: {
@@ -60,14 +60,14 @@ const styles = stylex.create({
     textUnderlineOffset: space['--ult-space-3'],
   },
   // The footer's copy serves narrow viewports; this one covers the Studio, which renders no footer.
-  mode: { display: { default: 'none', [breakpoints.WIDE]: 'inline-flex' }, flexShrink: 0 },
+  mode: { display: { default: 'none', [breakpoints.DESKTOP]: 'inline-flex' }, flexShrink: 0 },
   github: {
-    display: { default: 'none', [breakpoints.DESKTOP]: 'inline-flex' },
+    display: { default: 'none', [breakpoints.WIDE]: 'inline-flex' },
     fontSize: text['--ult-text-4'],
   },
   githubAlways: { display: 'inline-flex' },
-  githubMark: { display: { default: 'inline', [breakpoints.DESKTOP]: 'none' } },
-  githubLabel: { display: { default: 'none', [breakpoints.DESKTOP]: 'inline' } },
+  githubMark: { display: { default: 'inline', [breakpoints.WIDE]: 'none' } },
+  githubLabel: { display: { default: 'none', [breakpoints.WIDE]: 'inline' } },
 });
 
 const LINKS = [

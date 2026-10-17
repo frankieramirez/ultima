@@ -221,7 +221,7 @@ A dialog is the widest panel built for reading. Inside its 24px padding it leave
 
 **Running text stays between 45 and 75 characters a line.** On longer lines the eye loses its place on the way back to the next line. Shorter lines break phrases apart. Prose, descriptions and long messages sit in a column whose maximum width keeps them in that range.
 
-**A popup is at least as wide as its trigger,** through `--anchor-width` (Select, Combobox), and never wider than the space available (`--available-width`). A list as wide as its field reads as part of that field, and the cap keeps it on screen.
+**A popup is at least as wide as its trigger,** through `--anchor-width` (Select, Combobox), and never wider than the space available (`--available-width`). A list as wide as its field reads as part of that field, and the cap keeps it on screen. When the space available is narrower than the trigger, the cap wins and the popup is narrower than its trigger.
 
 **Flexible children can shrink.** A flex or grid child that holds text or a field sets `min-width: 0`. The platform default, `min-width: auto`, holds it at its content width and pushes it out of its container.
 
@@ -286,7 +286,6 @@ Known gaps, so nobody copies them as precedent. The component design pass ([#859
 
 | Rule | Where it isn't followed yet |
 | --- | --- |
-| Breakpoint names | The docs site's `breakpoints.stylex.ts` calls 48rem `WIDE` and 64rem `DESKTOP`, the reverse of the specification's names |
 
 ## Sources
 

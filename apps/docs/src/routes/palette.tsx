@@ -57,7 +57,7 @@ const GATE_COLUMNS = [
 
 const styles = stylex.create({
   steps: {
-    display: { default: 'none', [breakpoints.DESKTOP]: 'grid' },
+    display: { default: 'none', [breakpoints.WIDE]: 'grid' },
     gap: space['--ult-space-2'],
     gridTemplateColumns: `5.75rem repeat(${STEPS}, minmax(0, 1fr))`,
     paddingBlockEnd: space['--ult-space-4'],
@@ -71,7 +71,7 @@ const styles = stylex.create({
   scale: {
     columnGap: space['--ult-space-2'],
     display: 'grid',
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.DESKTOP]: '5.75rem minmax(0, 1fr)' },
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.WIDE]: '5.75rem minmax(0, 1fr)' },
     paddingBlock: space['--ult-space-5'],
   },
   scaleName: {
@@ -87,7 +87,7 @@ const styles = stylex.create({
     gap: space['--ult-space-2'],
     gridTemplateColumns: {
       default: `repeat(6, minmax(0, 1fr))`,
-      [breakpoints.DESKTOP]: `repeat(${STEPS}, minmax(0, 1fr))`,
+      [breakpoints.WIDE]: `repeat(${STEPS}, minmax(0, 1fr))`,
     },
   },
   rampLabel: {
@@ -97,12 +97,12 @@ const styles = stylex.create({
     marginBlock: 0,
   },
   stepNoteHiddenOnDesktop: {
-    blockSize: { default: null, [breakpoints.DESKTOP]: '1px' },
-    clipPath: { default: null, [breakpoints.DESKTOP]: 'inset(50%)' },
-    inlineSize: { default: null, [breakpoints.DESKTOP]: '1px' },
-    overflow: { default: null, [breakpoints.DESKTOP]: 'hidden' },
-    position: { default: null, [breakpoints.DESKTOP]: 'absolute' },
-    whiteSpace: { default: null, [breakpoints.DESKTOP]: 'nowrap' },
+    blockSize: { default: null, [breakpoints.WIDE]: '1px' },
+    clipPath: { default: null, [breakpoints.WIDE]: 'inset(50%)' },
+    inlineSize: { default: null, [breakpoints.WIDE]: '1px' },
+    overflow: { default: null, [breakpoints.WIDE]: 'hidden' },
+    position: { default: null, [breakpoints.WIDE]: 'absolute' },
+    whiteSpace: { default: null, [breakpoints.WIDE]: 'nowrap' },
   },
   anchor: {
     color: color['--ult-color-highlight-text'],
@@ -119,7 +119,7 @@ const styles = stylex.create({
   },
   summary: {
     display: 'grid',
-    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.WIDE]: 'repeat(3, minmax(0, 1fr))' },
+    gridTemplateColumns: { default: 'minmax(0, 1fr)', [breakpoints.DESKTOP]: 'repeat(3, minmax(0, 1fr))' },
     marginBlockStart: space['--ult-space-6'],
   },
   stat: { padding: space['--ult-space-6'] },

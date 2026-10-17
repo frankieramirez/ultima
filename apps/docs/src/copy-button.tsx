@@ -23,7 +23,7 @@ const styles = stylex.create({
     backgroundColor: {
       default: color['--ult-color-surface-sunken'],
       ':hover': color['--ult-color-surface-hover'],
-      [breakpoints.WIDE]: { default: 'transparent', ':hover': color['--ult-color-surface-hover'] },
+      [breakpoints.DESKTOP]: { default: 'transparent', ':hover': color['--ult-color-surface-hover'] },
     },
     flexShrink: 0,
     height: ICON_SQUARE,
