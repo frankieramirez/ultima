@@ -1,0 +1,14 @@
+Importing packages to virtual store
+Already up to date
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 343, reused 0, downloaded 138, added 114
+Progress: resolved 343, reused 0, downloaded 226, added 157
+Progress: resolved 343, reused 0, downloaded 343, added 343, done
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: esbuild@0.28.2.                                     │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯

@@ -1,0 +1,19 @@
+
+> ultima-monorepo@ typecheck /tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-baseline/source
+> node --experimental-strip-types scripts/catalogue/preflight.ts "tsc -p tsconfig.json && pnpm -r typecheck"
+
+Scope: 7 of 8 workspace projects
+packages/tokens typecheck$ tsc -p tsconfig.json
+packages/tokens typecheck: Done
+packages/analysis typecheck$ tsc -p tsconfig.json
+packages/elements typecheck$ tsc -p tsconfig.json
+packages/ui typecheck$ node --experimental-strip-types ../../scripts/catalogue/preflight.ts "tsc -p tsconfig.json"
+packages/analysis typecheck: Done
+packages/elements typecheck: Done
+packages/ui typecheck: Done
+packages/blocks typecheck$ node --experimental-strip-types ../../scripts/catalogue/preflight.ts "tsc -p tsconfig.json"
+packages/cli typecheck$ tsc -p tsconfig.json
+packages/cli typecheck: Done
+packages/blocks typecheck: Done
+apps/docs typecheck$ node --experimental-strip-types ../../scripts/catalogue/preflight.ts "tsc -p tsconfig.json"
+apps/docs typecheck: Done

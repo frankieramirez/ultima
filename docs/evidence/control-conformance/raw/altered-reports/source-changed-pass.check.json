@@ -1,0 +1,26 @@
+{
+  "contract": "control/0",
+  "mode": "report",
+  "file": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/lies/source-changed-pass.json",
+  "valid": false,
+  "findings": [
+    {
+      "rule": "report.judge-state",
+      "severity": "error",
+      "path": null,
+      "message": "status passed while checks are failed, unavailable"
+    },
+    {
+      "rule": "report.judge-prerequisite",
+      "severity": "error",
+      "path": null,
+      "message": "status passed while a prerequisite is missing"
+    },
+    {
+      "rule": "report.judge-source",
+      "severity": "error",
+      "path": null,
+      "message": "status passed although the checkout changed during the run"
+    }
+  ]
+}

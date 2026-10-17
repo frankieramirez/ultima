@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "command": "describe",
+  "status": "discovered",
+  "type": "scenario",
+  "scenario": {
+    "id": "dialog.keyboard-dismissal",
+    "title": "Keyboard opens, contains and dismisses a dialog",
+    "intent": "A keyboard user opens the dialog, Tab and Shift+Tab stay inside it, and Escape closes it with focus back on the trigger.",
+    "record": "verification/scenarios/dialog/keyboard-dismissal.json",
+    "feature": {
+      "id": "dialog",
+      "title": "Dialog",
+      "record": "verification/features/dialog.json"
+    },
+    "contract": "docs/spec/ultima.md#accessibility-contract",
+    "ownership": {
+      "items": [
+        {
+          "id": "dialog",
+          "kind": "react",
+          "paths": [
+            "packages/ui/src/dialog.tsx",
+            "apps/docs/src/content/components/dialog.mdx",
+            "packages/ui/src/__tests__/dialog.test.tsx",
+            "apps/docs/src/demos/dialog"
+          ]
+        }
+      ],
+      "sources": [
+        "packages/ui/src/dialog.tsx"
+      ],
+      "demos": [
+        "apps/docs/src/demos/dialog/basic.tsx"
+      ]
+    },
+    "routes": [
+      {
+        "pathname": "/components/dialog",
+        "definedBy": "catalogue item dialog"
+      }
+    ],
+    "fixtures": [
+      {
+        "name": "basic dialog demo",
+        "path": "apps/docs/src/demos/dialog/basic.tsx",
+        "reset": "fresh-context"
+      },
+      {
+        "name": "SampleDialog in the Dialog suite",
+        "path": "packages/ui/src/__tests__/dialog.test.tsx",
+        "reset": "unmount"
+      }
+    ],
+    "preconditions": [
+      "The dialog starts closed.",
+      "On the docs page the demo trigger is the button \"Open dialog\" and the dialog is \"Archive report\"; the UI suite's fixture uses \"Open\" and \"Archive run\"."
+    ],
+    "steps": [
+      {
+        "action": "Focus the trigger button and press Enter.",
+        "expect": "The dialog opens, named by its title, and focus moves inside it."
+      },
+      {
+        "action": "Press Tab past the last focusable control, then Shift+Tab past the first.",
+        "expect": "Focus loops and never leaves the dialog."
+      },
+      {
+        "action": "Press Escape.",
+        "expect": "The dialog closes and focus is on the trigger that opened it."
+      }
+    ],
+    "targets": [
+      {
+        "target": "ui-vitest",
+        "binding": {
+          "path": "packages/ui/src/__tests__/dialog.test.tsx",
+          "line": 91
+        },
+        "executed": false,
+        "cases": [
+          "dialog.keyboard-dismissal@ui-vitest[default]"
+        ],
+        "commands": [
+          {
+            "argv": [
+              "pnpm",
+              "--filter",
+              "@ultima/ui",
+              "exec",
+              "vitest",
+              "run",
+              "src/__tests__/dialog.test.tsx"
+            ],
+            "display": "pnpm --filter @ultima/ui exec vitest run src/__tests__/dialog.test.tsx",
+            "status": "available",
+            "note": "every test in packages/ui/src/__tests__/dialog.test.tsx, not this scenario alone"
+          }
+        ]
+      },
+      {
+        "target": "production",
+        "binding": {
+          "path": "apps/docs/tests/production/dialog.keyboard-dismissal.ts",
+          "line": 12
+        },
+        "executed": false,
+        "cases": [
+          "dialog.keyboard-dismissal@production[mode=dark,viewport=desktop,motion=normal]",
+          "dialog.keyboard-dismissal@production[mode=dark,viewport=narrow,motion=normal]",
+          "dialog.keyboard-dismissal@production[mode=light,viewport=desktop,motion=normal]",
+          "dialog.keyboard-dismissal@production[mode=light,viewport=narrow,motion=normal]"
+        ],
+        "commands": [
+          {
+            "argv": [
+              "pnpm",
+              "verify",
+              "feature",
+              "dialog"
+            ],
+            "display": "pnpm verify feature dialog",
+            "status": "available",
+            "note": "runs this binding's production cases with every other case of dialog against a production build"
+          }
+        ]
+      }
+    ],
+    "scope": {
+      "command": {
+        "argv": [
+          "pnpm",
+          "verify",
+          "feature",
+          "dialog"
+        ],
+        "display": "pnpm verify feature dialog",
+        "status": "available",
+        "note": "an isolated run: every registered case of the feature, production included, its supporting suites, and the architecture, type, build and install checks the plan selects"
+      },
+      "note": "There is no single-scenario mode. The feature command runs every required case of dialog (dialog.keyboard-dismissal) plus its dependency checks, so its result is never a single-case pass."
+    }
+  },
+  "sourceManifest": {
+    "algorithm": "sha256",
+    "digest": "54080dce824f2ff9585b0b02f52a5dd9366e1d948d6f02c8baae2ea3fbb606b9",
+    "files": 877
+  }
+}

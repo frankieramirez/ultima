@@ -1,0 +1,3937 @@
+{
+  "schemaVersion": 1,
+  "contract": "control/0",
+  "kind": "verification-run",
+  "runId": "20261017T224110-e4a4d897",
+  "command": "feature",
+  "selectors": [
+    "dialog"
+  ],
+  "status": "incomplete",
+  "exit": 3,
+  "summary": "incomplete (exit 3): at least one required check did not pass, and nothing failed validation. Checks: 5 passed, 3 failed, 21 unavailable, 12 skipped.",
+  "scope": {
+    "requested": "feature dialog",
+    "effective": "scoped",
+    "note": "A local scoped result for `feature dialog` only; it says nothing about paths outside that scope."
+  },
+  "directory": {
+    "run": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore",
+    "source": "source",
+    "artifacts": "artifacts",
+    "logs": "logs",
+    "report": "report.json",
+    "sourceRetained": false
+  },
+  "source": {
+    "capture": {
+      "status": "captured",
+      "attempts": 1,
+      "durationMs": 2908.1796189999986,
+      "reason": null
+    },
+    "identity": {
+      "head": "43fd8346b0fc5589b95ba24006ff51e2acdd8ed7",
+      "index": {
+        "algorithm": "sha256",
+        "digest": "0c5bba6e3de26bee923de1dac66d0d5726c0d9acf0df754ec3e70fc150c2d2ea",
+        "entries": 3033
+      },
+      "status": [],
+      "submodules": [],
+      "manifest": {
+        "version": 1,
+        "algorithm": "sha256",
+        "digest": "1b573d37c247307d7976e446f30887e162c9022233361499c340413fe7eb8d79",
+        "files": 3033,
+        "bytes": 67168147
+      },
+      "exclusions": [
+        {
+          "pattern": ".git/",
+          "reason": "Git internals; HEAD and the index are recorded as their own identities"
+        },
+        {
+          "pattern": "**/node_modules/",
+          "reason": "dependencies, prepared from the lockfile inside the run"
+        },
+        {
+          "pattern": ".scratch/",
+          "reason": "verification runs and their evidence"
+        },
+        {
+          "pattern": "paths Git ignores",
+          "reason": "the rules in .gitignore, .git/info/exclude and core.excludesFile; .gitignore is itself in the manifest"
+        }
+      ],
+      "requiredIgnoredInputs": []
+    },
+    "completion": {
+      "status": "unchanged",
+      "digest": "1b573d37c247307d7976e446f30887e162c9022233361499c340413fe7eb8d79",
+      "reason": null
+    },
+    "sourceChanged": false
+  },
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v22.22.0",
+    "pnpm": "10.33.0",
+    "git": "git version 2.43.0",
+    "host": "vm",
+    "pid": 2847
+  },
+  "timestamps": {
+    "started": "2026-10-17T22:41:12.544Z",
+    "finished": "2026-10-17T22:49:18.564Z"
+  },
+  "durationMs": 488154.004593,
+  "deadline": {
+    "overallSeconds": 5400,
+    "source": "default"
+  },
+  "cancellation": null,
+  "preparation": {
+    "status": "passed",
+    "reason": "installed from the snapshot lockfile into the run",
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile",
+      "--prefer-offline",
+      "--config.confirmModulesPurge=false"
+    ],
+    "cwd": "source",
+    "lockfile": "5f39fa5c11210e15aefe108f8d214a6cb588032e30de9fa31376b69d8852a812",
+    "durationMs": 7647.688195000002,
+    "exitCode": 0,
+    "log": "logs/preparation.log"
+  },
+  "prerequisites": [
+    {
+      "need": "network",
+      "status": "present",
+      "detail": null
+    },
+    {
+      "need": "loopback-port",
+      "status": "present",
+      "detail": null
+    },
+    {
+      "need": "chromium",
+      "status": "missing",
+      "detail": "the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome"
+    },
+    {
+      "need": "python3",
+      "status": "not_probed",
+      "detail": "no runnable selected check needs it"
+    }
+  ],
+  "checks": [
+    {
+      "id": "architecture",
+      "title": "Architecture and metadata",
+      "status": "passed",
+      "failure": null,
+      "reason": "executed 14 expected test(s) or case(s)",
+      "selection": {
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "check:architecture"
+      ],
+      "cwd": ".",
+      "prerequisites": [],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 300,
+      "expected": [
+        "rule:ULT-ANALYSIS-001",
+        "rule:ULT-API-001",
+        "rule:ULT-API-002",
+        "rule:ULT-DOCS-001",
+        "rule:ULT-DOCS-002",
+        "rule:ULT-EXCEPTION-001",
+        "rule:ULT-IMPORT-001",
+        "rule:ULT-PRIMITIVE-001",
+        "rule:ULT-REGISTRY-001",
+        "rule:ULT-SOURCE-001",
+        "rule:ULT-STYLE-001",
+        "rule:ULT-TOKEN-001",
+        "rule:ULT-VISUAL-001"
+      ],
+      "executed": [
+        "rule:ULT-ANALYSIS-001",
+        "rule:ULT-API-001",
+        "rule:ULT-API-002",
+        "rule:ULT-DOCS-001",
+        "rule:ULT-DOCS-002",
+        "rule:ULT-DOCS-REVIEW-001",
+        "rule:ULT-EXCEPTION-001",
+        "rule:ULT-IMPORT-001",
+        "rule:ULT-PRIMITIVE-001",
+        "rule:ULT-REGISTRY-001",
+        "rule:ULT-SOURCE-001",
+        "rule:ULT-STYLE-001",
+        "rule:ULT-TOKEN-001",
+        "rule:ULT-VISUAL-001"
+      ],
+      "skipped": [],
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-17T22:41:29.560Z",
+      "durationMs": 43203.100372999994,
+      "processes": [
+        {
+          "argv": [
+            "pnpm",
+            "check:architecture",
+            "--format",
+            "json"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 12551,
+          "status": "exited",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 43193.543817
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/architecture.log",
+        "artifacts/architecture.evidence.json",
+        "artifacts/architecture.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "catalogue-freshness",
+      "title": "Catalogue freshness and the feature map",
+      "status": "passed",
+      "failure": null,
+      "reason": "executed 67 expected test(s) or case(s)",
+      "selection": {
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "catalogue:check"
+      ],
+      "cwd": ".",
+      "prerequisites": [],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 120,
+      "expected": [],
+      "executed": [
+        "feature-map",
+        "generated:apps/docs/src/generated/anatomy-tabs.ts",
+        "generated:apps/docs/src/generated/anatomy/accordion.tsx",
+        "generated:apps/docs/src/generated/anatomy/alert-dialog.tsx",
+        "generated:apps/docs/src/generated/anatomy/alert.tsx",
+        "generated:apps/docs/src/generated/anatomy/aspect-ratio.tsx",
+        "generated:apps/docs/src/generated/anatomy/avatar.tsx",
+        "generated:apps/docs/src/generated/anatomy/badge.tsx",
+        "generated:apps/docs/src/generated/anatomy/breadcrumb.tsx",
+        "generated:apps/docs/src/generated/anatomy/button-group.tsx",
+        "generated:apps/docs/src/generated/anatomy/button.tsx",
+        "generated:apps/docs/src/generated/anatomy/calendar.tsx",
+        "generated:apps/docs/src/generated/anatomy/card.tsx",
+        "generated:apps/docs/src/generated/anatomy/checkbox.tsx",
+        "generated:apps/docs/src/generated/anatomy/code.tsx",
+        "generated:apps/docs/src/generated/anatomy/collapsible.tsx",
+        "generated:apps/docs/src/generated/anatomy/color-field.tsx",
+        "generated:apps/docs/src/generated/anatomy/combobox.tsx",
+        "generated:apps/docs/src/generated/anatomy/command.tsx",
+        "generated:apps/docs/src/generated/anatomy/context-menu.tsx",
+        "generated:apps/docs/src/generated/anatomy/date-picker.tsx",
+        "generated:apps/docs/src/generated/anatomy/dialog.tsx",
+        "generated:apps/docs/src/generated/anatomy/drawer.tsx",
+        "generated:apps/docs/src/generated/anatomy/dropdown-menu.tsx",
+        "generated:apps/docs/src/generated/anatomy/empty.tsx",
+        "generated:apps/docs/src/generated/anatomy/field.tsx",
+        "generated:apps/docs/src/generated/anatomy/fieldset.tsx",
+        "generated:apps/docs/src/generated/anatomy/hover-card.tsx",
+        "generated:apps/docs/src/generated/anatomy/index.ts",
+        "generated:apps/docs/src/generated/anatomy/input-group.tsx",
+        "generated:apps/docs/src/generated/anatomy/input-otp.tsx",
+        "generated:apps/docs/src/generated/anatomy/input.tsx",
+        "generated:apps/docs/src/generated/anatomy/menubar.tsx",
+        "generated:apps/docs/src/generated/anatomy/meter.tsx",
+        "generated:apps/docs/src/generated/anatomy/native-select.tsx",
+        "generated:apps/docs/src/generated/anatomy/navigation-menu.tsx",
+        "generated:apps/docs/src/generated/anatomy/pagination.tsx",
+        "generated:apps/docs/src/generated/anatomy/popover.tsx",
+        "generated:apps/docs/src/generated/anatomy/progress.tsx",
+        "generated:apps/docs/src/generated/anatomy/radio-group.tsx",
+        "generated:apps/docs/src/generated/anatomy/resizable.tsx",
+        "generated:apps/docs/src/generated/anatomy/scroll-area.tsx",
+        "generated:apps/docs/src/generated/anatomy/select.tsx",
+        "generated:apps/docs/src/generated/anatomy/separator.tsx",
+        "generated:apps/docs/src/generated/anatomy/sidebar.tsx",
+        "generated:apps/docs/src/generated/anatomy/skeleton.tsx",
+        "generated:apps/docs/src/generated/anatomy/slider.tsx",
+        "generated:apps/docs/src/generated/anatomy/spinner.tsx",
+        "generated:apps/docs/src/generated/anatomy/stat.tsx",
+        "generated:apps/docs/src/generated/anatomy/switch.tsx",
+        "generated:apps/docs/src/generated/anatomy/table.tsx",
+        "generated:apps/docs/src/generated/anatomy/tabs.tsx",
+        "generated:apps/docs/src/generated/anatomy/textarea.tsx",
+        "generated:apps/docs/src/generated/anatomy/theme-mode.tsx",
+        "generated:apps/docs/src/generated/anatomy/theme-scope.tsx",
+        "generated:apps/docs/src/generated/anatomy/toast.tsx",
+        "generated:apps/docs/src/generated/anatomy/toggle-group.tsx",
+        "generated:apps/docs/src/generated/anatomy/toggle.tsx",
+        "generated:apps/docs/src/generated/anatomy/tooltip.tsx",
+        "generated:apps/docs/src/generated/blocks.ts",
+        "generated:apps/docs/src/generated/catalogue.ts",
+        "generated:apps/docs/src/generated/component-pages.ts",
+        "generated:apps/docs/src/generated/elements.ts",
+        "generated:apps/docs/src/generated/recipes.ts",
+        "generated:packages/ui/src/index.ts",
+        "generated:registry/items.config.ts",
+        "generated:scripts/generated/browser-dependencies.ts"
+      ],
+      "skipped": [],
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-17T22:41:29.575Z",
+      "durationMs": 14505.945752,
+      "processes": [
+        {
+          "argv": [
+            "pnpm",
+            "catalogue:check",
+            "--json"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 12553,
+          "status": "exited",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 14483.434014000002
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/catalogue-freshness.log",
+        "artifacts/catalogue-freshness.evidence.json",
+        "artifacts/catalogue-freshness.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "typecheck",
+      "title": "Types, including the root TypeScript project",
+      "status": "passed",
+      "failure": null,
+      "reason": "executed 8 expected test(s) or case(s)",
+      "selection": {
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 600,
+      "expected": [
+        "tsc:.",
+        "tsc:apps/docs",
+        "tsc:packages/analysis",
+        "tsc:packages/blocks",
+        "tsc:packages/cli",
+        "tsc:packages/elements",
+        "tsc:packages/tokens",
+        "tsc:packages/ui"
+      ],
+      "executed": [
+        "tsc:.",
+        "tsc:apps/docs",
+        "tsc:packages/analysis",
+        "tsc:packages/blocks",
+        "tsc:packages/cli",
+        "tsc:packages/elements",
+        "tsc:packages/tokens",
+        "tsc:packages/ui"
+      ],
+      "skipped": [],
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-17T22:41:44.088Z",
+      "durationMs": 238787.06853699998,
+      "processes": [
+        {
+          "argv": [
+            "pnpm",
+            "typecheck"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 16305,
+          "status": "exited",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 238781.048175
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/typecheck.log",
+        "artifacts/typecheck.evidence.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "ui-tests",
+      "title": "React component proof bar: browser, axe and both modes",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "files",
+        "reasons": [
+          "1 test file(s) reached by the selection"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/ui",
+        "exec",
+        "vitest",
+        "run",
+        "--reporter=verbose",
+        "src/__tests__/dialog.test.tsx"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser"
+      ],
+      "needs": [
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [
+        "packages/ui/src/__tests__/dialog.test.tsx",
+        "dialog.keyboard-dismissal@ui-vitest[default]"
+      ],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "registry-build",
+      "title": "Registry, token exports, element bundles and budgets",
+      "status": "passed",
+      "failure": null,
+      "reason": "executed 16 expected test(s) or case(s)",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is a distributed react item"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "registry:build"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [],
+      "deadlineSeconds": 600,
+      "expected": [
+        "build:tokens",
+        "bundle:ult-badge",
+        "bundle:ult-button",
+        "bundle:ult-card",
+        "bundle:ult-code",
+        "bundle:ult-meter",
+        "bundle:ult-stat",
+        "bundle:ult-table",
+        "bundle:ult-tabs",
+        "bundle:ult-tooltip",
+        "bundle:ultima",
+        "registry:items and stamps"
+      ],
+      "executed": [
+        "budget:ult-button",
+        "budget:ult-tabs",
+        "budget:ult-tooltip",
+        "budget:ultima",
+        "build:tokens",
+        "bundle:ult-badge",
+        "bundle:ult-button",
+        "bundle:ult-card",
+        "bundle:ult-code",
+        "bundle:ult-meter",
+        "bundle:ult-stat",
+        "bundle:ult-table",
+        "bundle:ult-tabs",
+        "bundle:ult-tooltip",
+        "bundle:ultima",
+        "registry:items and stamps"
+      ],
+      "skipped": [],
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-17T22:42:12.769Z",
+      "durationMs": 56641.662612,
+      "processes": [
+        {
+          "argv": [
+            "pnpm",
+            "registry:build"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 24726,
+          "status": "exited",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 55205.495720000006
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/registry-build.log",
+        "artifacts/registry-build.evidence.json",
+        "artifacts/registry-build.outputs.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "docs-build",
+      "title": "Production docs build",
+      "status": "passed",
+      "failure": null,
+      "reason": "executed 19 expected test(s) or case(s)",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "the docs site renders dialog at /components/dialog"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/docs",
+        "build"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness",
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry",
+        "writes:docs-dist"
+      ],
+      "needs": [],
+      "deadlineSeconds": 900,
+      "expected": [
+        "build:manifest",
+        "build:tokens",
+        "build:vite",
+        "bundle:ult-badge",
+        "bundle:ult-button",
+        "bundle:ult-card",
+        "bundle:ult-code",
+        "bundle:ult-meter",
+        "bundle:ult-stat",
+        "bundle:ult-table",
+        "bundle:ult-tabs",
+        "bundle:ult-tooltip",
+        "bundle:ultima",
+        "registry:items and stamps"
+      ],
+      "executed": [
+        "budget:ult-button",
+        "budget:ult-tabs",
+        "budget:ult-tooltip",
+        "budget:ultima",
+        "build:manifest",
+        "build:tokens",
+        "build:vite",
+        "build:vite",
+        "bundle:ult-badge",
+        "bundle:ult-button",
+        "bundle:ult-card",
+        "bundle:ult-code",
+        "bundle:ult-meter",
+        "bundle:ult-stat",
+        "bundle:ult-table",
+        "bundle:ult-tabs",
+        "bundle:ult-tooltip",
+        "bundle:ultima",
+        "registry:items and stamps"
+      ],
+      "skipped": [],
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-17T22:43:09.416Z",
+      "durationMs": 94136.366446,
+      "processes": [
+        {
+          "argv": [
+            "pnpm",
+            "--filter",
+            "@ultima/docs",
+            "build"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 8190,
+          "status": "exited",
+          "exitCode": 0,
+          "signal": null,
+          "durationMs": 93530.35279099998
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/docs-build.log",
+        "artifacts/docs-build.evidence.json",
+        "artifacts/docs-build/build-manifest.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-smoke",
+      "title": "Consumer install: Vite, Next.js and element consumers",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by consumers; scoped runs use the full smoke until a validated selector exists"
+        ]
+      },
+      "argv": [
+        "scripts/smoke-install.sh",
+        "--keep"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry",
+        "writes:docs-dist"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 2700,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof",
+      "title": "Installed consumer paint: Vite, generated CSS and Chromium in both modes",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Vite rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-app",
+      "title": "Installed Next root app paint and hydration, generated CSS and Chromium",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-src",
+      "title": "Installed Next src/app paint and hydration, generated CSS and Chromium",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-copy-vite",
+      "title": "Installed copy bundles: vite typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the copy-bundle consumers"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "copy-bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-copy-next-app",
+      "title": "Installed copy bundles: next-app typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the copy-bundle consumers"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "copy-bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-copy-next-src",
+      "title": "Installed copy bundles: next-src typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the copy-bundle consumers"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "copy-bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-lint-vite",
+      "title": "Installed StyleX lint: vite fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "status": "failed",
+      "failure": {
+        "kind": "incomplete",
+        "reason": "lint installed source inventory is incomplete; consumer-proof case coverage is incomplete; consumer-proof case results are incomplete; consumer-proof source identity is incomplete",
+        "failures": []
+      },
+      "reason": "lint installed source inventory is incomplete; consumer-proof case coverage is incomplete; consumer-proof case results are incomplete; consumer-proof source identity is incomplete",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed and linted by the StyleX lint consumers"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "lint"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": 2,
+      "signal": null,
+      "startedAt": "2026-10-17T22:44:43.564Z",
+      "durationMs": 92354.00516899998,
+      "processes": [
+        {
+          "argv": [
+            "node",
+            "--experimental-strip-types",
+            "scripts/consumer-proof.ts",
+            "--layout",
+            "vite",
+            "--delivery-path",
+            "css",
+            "--exercise",
+            "lint",
+            "--output",
+            "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/artifacts/consumer-lint-vite"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 31986,
+          "status": "exited",
+          "exitCode": 2,
+          "signal": null,
+          "durationMs": 92003.47356700001
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/consumer-lint-vite.log",
+        "artifacts/consumer-lint-vite.evidence.json",
+        "artifacts/consumer-lint-vite/report.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-lint-next-app",
+      "title": "Installed StyleX lint: next-app fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "status": "failed",
+      "failure": {
+        "kind": "incomplete",
+        "reason": "lint installed source inventory is incomplete; consumer-proof case coverage is incomplete; consumer-proof case results are incomplete; consumer-proof source identity is incomplete",
+        "failures": []
+      },
+      "reason": "lint installed source inventory is incomplete; consumer-proof case coverage is incomplete; consumer-proof case results are incomplete; consumer-proof source identity is incomplete",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed and linted by the StyleX lint consumers"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "lint"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": 2,
+      "signal": null,
+      "startedAt": "2026-10-17T22:46:15.929Z",
+      "durationMs": 89510.92969100003,
+      "processes": [
+        {
+          "argv": [
+            "node",
+            "--experimental-strip-types",
+            "scripts/consumer-proof.ts",
+            "--layout",
+            "next-app",
+            "--delivery-path",
+            "css",
+            "--exercise",
+            "lint",
+            "--output",
+            "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/artifacts/consumer-lint-next-app"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 20122,
+          "status": "exited",
+          "exitCode": 2,
+          "signal": null,
+          "durationMs": 89501.52620099997
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/consumer-lint-next-app.log",
+        "artifacts/consumer-lint-next-app.evidence.json",
+        "artifacts/consumer-lint-next-app/report.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-lint-next-src",
+      "title": "Installed StyleX lint: next-src fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "status": "failed",
+      "failure": {
+        "kind": "incomplete",
+        "reason": "lint installed source inventory is incomplete; consumer-proof case coverage is incomplete; consumer-proof case results are incomplete; consumer-proof source identity is incomplete",
+        "failures": []
+      },
+      "reason": "lint installed source inventory is incomplete; consumer-proof case coverage is incomplete; consumer-proof case results are incomplete; consumer-proof source identity is incomplete",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed and linted by the StyleX lint consumers"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "lint"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": 2,
+      "signal": null,
+      "startedAt": "2026-10-17T22:47:45.460Z",
+      "durationMs": 61893.28080000001,
+      "processes": [
+        {
+          "argv": [
+            "node",
+            "--experimental-strip-types",
+            "scripts/consumer-proof.ts",
+            "--layout",
+            "next-src",
+            "--delivery-path",
+            "css",
+            "--exercise",
+            "lint",
+            "--output",
+            "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/artifacts/consumer-lint-next-src"
+          ],
+          "cwd": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore/source",
+          "leftovers": [],
+          "survivors": [],
+          "pid": 21317,
+          "status": "exited",
+          "exitCode": 2,
+          "signal": null,
+          "durationMs": 61872.595430000045
+        }
+      ],
+      "servers": [],
+      "evidence": [
+        "logs/consumer-lint-next-src.log",
+        "artifacts/consumer-lint-next-src.evidence.json",
+        "artifacts/consumer-lint-next-src/report.json"
+      ],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-bundles-vite",
+      "title": "Installed production bundles: theme and CSS, overlay and keyboard, form, Date Picker, direction and locale, and narrow touch on the canonical Vite fixture in both modes across Chromium, Firefox and WebKit",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the cross-engine Vite bundle fixture"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-bundles-next-app",
+      "title": "Installed production bundles: next-app hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the cross-engine Next hydration fixture"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-bundles-next-src",
+      "title": "Installed production bundles: next-src hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the cross-engine Next hydration fixture"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "bundles"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "production-scenarios",
+      "title": "Production browser scenarios against the built docs",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "scenario dialog.keyboard-dismissal registers 4 production case(s)"
+        ]
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/docs",
+        "test:production"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "docs-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:docs-dist"
+      ],
+      "needs": [
+        "chromium",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1800,
+      "expected": [
+        "dialog.keyboard-dismissal@production[mode=dark,viewport=desktop,motion=normal]",
+        "dialog.keyboard-dismissal@production[mode=dark,viewport=narrow,motion=normal]",
+        "dialog.keyboard-dismissal@production[mode=light,viewport=desktop,motion=normal]",
+        "dialog.keyboard-dismissal@production[mode=light,viewport=narrow,motion=normal]"
+      ],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-stylex-subtree",
+      "title": "Installed consumer paint: Vite, stylex-subtree and Chromium in both modes (stylex-subtree)",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Vite rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "stylex-subtree"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-registry",
+      "title": "Installed consumer paint: Vite, registry and Chromium in both modes (registry)",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Vite rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "registry"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-cli",
+      "title": "Installed consumer paint: Vite, cli and Chromium in both modes (cli)",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Vite rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "cli"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-app-stylex-subtree",
+      "title": "Installed Next root app paint and hydration, stylex-subtree and Chromium (stylex-subtree)",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "stylex-subtree"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-app-registry",
+      "title": "Installed Next root app paint and hydration, registry and Chromium (registry)",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "registry"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-app-cli",
+      "title": "Installed Next root app paint and hydration, cli and Chromium (cli)",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "cli"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-src-stylex-subtree",
+      "title": "Installed Next src/app paint and hydration, stylex-subtree and Chromium (stylex-subtree)",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "stylex-subtree"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-src-registry",
+      "title": "Installed Next src/app paint and hydration, registry and Chromium (registry)",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "registry"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-proof-next-src-cli",
+      "title": "Installed Next src/app paint and hydration, cli and Chromium (cli)",
+      "status": "unavailable",
+      "failure": null,
+      "reason": "missing prerequisite: the locked Playwright Chromium is not installed at /opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+      "selection": {
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ]
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "cli"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "tooling-tests",
+      "title": "Catalogue and verification tooling fixtures",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "--test",
+        "scripts/catalogue/*.test.ts",
+        "scripts/verification/*.test.ts"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser"
+      ],
+      "needs": [
+        "chromium",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 600,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "analysis-fixtures",
+      "title": "Architecture checker fixtures",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/analysis",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 600,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "palette",
+      "title": "Contrast gate and palette freshness",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "python3",
+        "packages/tokens/scripts/palette.py",
+        "--check"
+      ],
+      "cwd": ".",
+      "prerequisites": [],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [
+        "python3"
+      ],
+      "deadlineSeconds": 120,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "tokens-tests",
+      "title": "Token and theme unit suite",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/tokens",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 300,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "blocks-tests",
+      "title": "Block proof items: browser, axe at both widths and both modes, and wired behavior",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/blocks",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser"
+      ],
+      "needs": [
+        "chromium"
+      ],
+      "deadlineSeconds": 600,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "elements-tests",
+      "title": "Element families, lifecycle, parity and bundle assertions",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/elements",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist"
+      ],
+      "needs": [
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "docs-tests",
+      "title": "Docs site suites, including the axe sweep and element fixture",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/docs",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "cli-tests",
+      "title": "Consumer CLI suite",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "ultima-design",
+        "test"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "blockedBy": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 600,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-mode-vite",
+      "title": "Installed theme-mode: vite first paint, hydration, persistence and popup inheritance",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "theme-mode"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-mode-next-app",
+      "title": "Installed theme-mode: next-app first paint, hydration, persistence and popup inheritance",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "theme-mode"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-mode-next-src",
+      "title": "Installed theme-mode: next-src first paint, hydration, persistence and popup inheritance",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "theme-mode"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    },
+    {
+      "id": "consumer-elements",
+      "title": "Installed element lifecycle: registration, reconnect, attribute updates and ult-tabs keyboard and theme on a light-DOM fixture in both modes across Chromium, Firefox and WebKit",
+      "status": "skipped",
+      "failure": null,
+      "reason": "outside the selected scope",
+      "selection": {
+        "scope": "outside",
+        "reasons": []
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "elements"
+      ],
+      "cwd": ".",
+      "prerequisites": [
+        "registry-build"
+      ],
+      "blockedBy": [],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "expected": [],
+      "executed": [],
+      "skipped": [],
+      "exitCode": null,
+      "signal": null,
+      "startedAt": null,
+      "durationMs": null,
+      "processes": [],
+      "servers": [],
+      "evidence": [],
+      "missingEvidence": []
+    }
+  ],
+  "counts": {
+    "passed": 5,
+    "failed": 3,
+    "unavailable": 21,
+    "timed_out": 0,
+    "cancelled": 0,
+    "blocked": 0,
+    "skipped": 12,
+    "not_run": 0
+  },
+  "abandonedRuns": [],
+  "cleanup": {
+    "survivors": [],
+    "errors": []
+  },
+  "plan": {
+    "schemaVersion": 1,
+    "command": "feature",
+    "status": "planned",
+    "selectors": [
+      "dialog"
+    ],
+    "scope": "scoped",
+    "fallbacks": [],
+    "base": null,
+    "changes": [],
+    "selection": {
+      "items": [
+        {
+          "id": "dialog",
+          "kind": "react",
+          "present": true,
+          "reasons": [
+            "an item of feature dialog"
+          ]
+        }
+      ],
+      "features": [
+        {
+          "id": "dialog",
+          "reasons": [
+            "named by `verify feature dialog`"
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "id": "dialog.keyboard-dismissal",
+          "reasons": [
+            "covers item dialog",
+            "feature dialog is selected"
+          ]
+        }
+      ],
+      "deletedTests": []
+    },
+    "unrelatedDirty": {
+      "paths": [],
+      "recommendation": "Every dirty path is inside the selected scope."
+    },
+    "findings": [],
+    "checks": [
+      {
+        "id": "architecture",
+        "title": "Architecture and metadata",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#460 (static, type and unit checks)"
+        },
+        "argv": [
+          "pnpm",
+          "check:architecture"
+        ],
+        "cwd": ".",
+        "nested": [],
+        "prerequisites": [],
+        "after": [],
+        "locks": [],
+        "needs": [],
+        "deadlineSeconds": 300,
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "catalogue-freshness",
+        "title": "Catalogue freshness and the feature map",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#460 (static, type and unit checks)"
+        },
+        "argv": [
+          "pnpm",
+          "catalogue:check"
+        ],
+        "cwd": ".",
+        "nested": [],
+        "prerequisites": [],
+        "after": [],
+        "locks": [],
+        "needs": [],
+        "deadlineSeconds": 120,
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "typecheck",
+        "title": "Types, including the root TypeScript project",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#460 (static, type and unit checks)"
+        },
+        "argv": [
+          "pnpm",
+          "typecheck"
+        ],
+        "cwd": ".",
+        "nested": [
+          "tsc -p tsconfig.json",
+          "pnpm -r typecheck"
+        ],
+        "prerequisites": [
+          "catalogue-freshness"
+        ],
+        "after": [],
+        "locks": [],
+        "needs": [],
+        "deadlineSeconds": 600,
+        "scope": "global",
+        "reasons": [
+          "runs in every executable plan"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "ui-tests",
+        "title": "React component proof bar: browser, axe and both modes",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#461 (browser, build and install checks)"
+        },
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/ui",
+          "exec",
+          "vitest",
+          "run",
+          "--reporter=verbose",
+          "src/__tests__/dialog.test.tsx"
+        ],
+        "cwd": ".",
+        "nested": [],
+        "prerequisites": [
+          "catalogue-freshness"
+        ],
+        "after": [],
+        "locks": [
+          "browser"
+        ],
+        "needs": [
+          "chromium"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "files",
+        "reasons": [
+          "1 test file(s) reached by the selection"
+        ],
+        "files": [
+          {
+            "path": "packages/ui/src/__tests__/dialog.test.tsx",
+            "present": true,
+            "reasons": [
+              "binds scenario dialog.keyboard-dismissal",
+              "the proof-bar suite of dialog (an item of feature dialog)"
+            ]
+          }
+        ],
+        "cases": [
+          "dialog.keyboard-dismissal@ui-vitest[default]"
+        ]
+      },
+      {
+        "id": "registry-build",
+        "title": "Registry, token exports, element bundles and budgets",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#461 (browser, build and install checks)"
+        },
+        "argv": [
+          "pnpm",
+          "registry:build"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm --filter @ultima/tokens build",
+          "pnpm --filter @ultima/elements build",
+          "scripts/build-registry.ts"
+        ],
+        "prerequisites": [
+          "catalogue-freshness"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [],
+        "deadlineSeconds": 600,
+        "scope": "whole",
+        "reasons": [
+          "dialog is a distributed react item"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "docs-build",
+        "title": "Production docs build",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#461 (browser, build and install checks)"
+        },
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "build"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm -w run registry:build",
+          "vite build"
+        ],
+        "prerequisites": [
+          "catalogue-freshness",
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry",
+          "writes:docs-dist"
+        ],
+        "needs": [],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "the docs site renders dialog at /components/dialog"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-smoke",
+        "title": "Consumer install: Vite, Next.js and element consumers",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#461 (browser, build and install checks)"
+        },
+        "argv": [
+          "scripts/smoke-install.sh",
+          "--keep"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm --filter @ultima/tokens build",
+          "pnpm registry:build",
+          "pnpm --filter @ultima/docs build",
+          "loopback server on port 0",
+          "Vite consumer",
+          "Next.js root and src consumers with production browser styles",
+          "sidebar consumer",
+          "each block alone in Vite and Next.js consumers",
+          "element consumer"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry",
+          "writes:docs-dist"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 2700,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by consumers; scoped runs use the full smoke until a validated selector exists"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof",
+        "title": "Installed consumer paint: Vite, generated CSS and Chromium in both modes",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#749 (Vite and generated CSS)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "vite",
+          "--delivery-path",
+          "css"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Vite scaffold",
+          "shadcn setup, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "Chromium computed variables and paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Vite rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof-next-app",
+        "title": "Installed Next root app paint and hydration, generated CSS and Chromium",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#750 (Next root generated CSS and hydration)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-app",
+          "--delivery-path",
+          "css"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Next scaffold",
+          "shadcn setup, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "next start",
+          "Chromium server/hydrated content, mode, errors, assets and computed paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof-next-src",
+        "title": "Installed Next src/app paint and hydration, generated CSS and Chromium",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#750 (Next src generated CSS and hydration)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-src",
+          "--delivery-path",
+          "css"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Next src scaffold",
+          "shadcn setup and src marker move, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "next start",
+          "Chromium server/hydrated content, mode, errors, assets and computed paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-copy-vite",
+        "title": "Installed copy bundles: vite typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#764 (copy bundles)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "vite",
+          "--delivery-path",
+          "css",
+          "--exercise",
+          "copy-bundles"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "fresh external scaffold",
+          "shadcn setup, every bundle item, engines, Settings 01 and theme installation",
+          "npm run build and tsc",
+          "Chromium recipe interactions, Projects at 200% zoom and Settings 01 at desktop and narrow widths"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the copy-bundle consumers"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-copy-next-app",
+        "title": "Installed copy bundles: next-app typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#764 (copy bundles)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-app",
+          "--delivery-path",
+          "css",
+          "--exercise",
+          "copy-bundles"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "fresh external scaffold",
+          "shadcn setup, every bundle item, engines, Settings 01 and theme installation",
+          "npm run build and tsc",
+          "Chromium recipe interactions, Projects at 200% zoom and Settings 01 at desktop and narrow widths"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the copy-bundle consumers"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-copy-next-src",
+        "title": "Installed copy bundles: next-src typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#764 (copy bundles)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-src",
+          "--delivery-path",
+          "css",
+          "--exercise",
+          "copy-bundles"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "fresh external scaffold",
+          "shadcn setup, every bundle item, engines, Settings 01 and theme installation",
+          "npm run build and tsc",
+          "Chromium recipe interactions, Projects at 200% zoom and Settings 01 at desktop and narrow widths"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the copy-bundle consumers"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-lint-vite",
+        "title": "Installed StyleX lint: vite fragment, effective config, positive catalogue, negative and offline cases, then one build",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#756 (StyleX lint)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "vite",
+          "--delivery-path",
+          "css",
+          "--exercise",
+          "lint"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "fresh external scaffold",
+          "shadcn setup, every registry:ui and registry:block item and theme installation",
+          "the downloaded ultima.eslint.mjs and pinned lint dependencies",
+          "eslint --print-config and eslint . with the network denied",
+          "packed CLI doctor and check",
+          "npm run build"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed and linted by the StyleX lint consumers"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-lint-next-app",
+        "title": "Installed StyleX lint: next-app fragment, effective config, positive catalogue, negative and offline cases, then one build",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#756 (StyleX lint)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-app",
+          "--delivery-path",
+          "css",
+          "--exercise",
+          "lint"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "fresh external scaffold with ESLint",
+          "shadcn setup, every registry:ui and registry:block item and theme installation",
+          "the downloaded ultima.eslint.mjs and pinned lint dependencies",
+          "eslint --print-config and eslint . with the network denied",
+          "packed CLI doctor and check",
+          "npm run build"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed and linted by the StyleX lint consumers"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-lint-next-src",
+        "title": "Installed StyleX lint: next-src fragment, effective config, positive catalogue, negative and offline cases, then one build",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#756 (StyleX lint)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-src",
+          "--delivery-path",
+          "css",
+          "--exercise",
+          "lint"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "fresh external scaffold with ESLint",
+          "shadcn setup, every registry:ui and registry:block item and theme installation",
+          "the downloaded ultima.eslint.mjs and pinned lint dependencies",
+          "eslint --print-config and eslint . with the network denied",
+          "packed CLI doctor and check",
+          "npm run build"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed and linted by the StyleX lint consumers"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-bundles-vite",
+        "title": "Installed production bundles: theme and CSS, overlay and keyboard, form, Date Picker, direction and locale, and narrow touch on the canonical Vite fixture in both modes across Chromium, Firefox and WebKit",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#770 (Firefox and WebKit bundles), #771 (Date Picker, direction and touch bundles)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "vite",
+          "--delivery-path",
+          "css",
+          "--exercise",
+          "bundles"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "fresh external Vite scaffold",
+          "shadcn setup, the Projects scene, checkbox, popover, date-picker, tabs and theme installation",
+          "one npm run build",
+          "Chromium, Firefox and WebKit, two cells at a time, against the one served build"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the cross-engine Vite bundle fixture"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-bundles-next-app",
+        "title": "Installed production bundles: next-app hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#772 (Next hydration cells)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-app",
+          "--delivery-path",
+          "css",
+          "--exercise",
+          "bundles"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "fresh external Next root app scaffold",
+          "shadcn setup, the Projects scene and theme installation",
+          "one npm run build",
+          "Chromium, Firefox and WebKit, two cells at a time, against the one next start server"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the cross-engine Next hydration fixture"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-bundles-next-src",
+        "title": "Installed production bundles: next-src hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#772 (Next hydration cells)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-src",
+          "--delivery-path",
+          "css",
+          "--exercise",
+          "bundles"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "fresh external Next src/app scaffold",
+          "shadcn setup, the Projects scene and theme installation",
+          "one npm run build",
+          "Chromium, Firefox and WebKit, two cells at a time, against the one next start server"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 1200,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the cross-engine Next hydration fixture"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "production-scenarios",
+        "title": "Production browser scenarios against the built docs",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#462 (Dialog and Studio pilot); #463 (the full 26-cell matrix)"
+        },
+        "argv": [
+          "pnpm",
+          "--filter",
+          "@ultima/docs",
+          "test:production"
+        ],
+        "cwd": ".",
+        "nested": [],
+        "prerequisites": [
+          "docs-build"
+        ],
+        "after": [],
+        "locks": [
+          "browser",
+          "writes:docs-dist"
+        ],
+        "needs": [
+          "chromium",
+          "loopback-port"
+        ],
+        "deadlineSeconds": 1800,
+        "scope": "whole",
+        "reasons": [
+          "scenario dialog.keyboard-dismissal registers 4 production case(s)"
+        ],
+        "files": [],
+        "cases": [
+          "dialog.keyboard-dismissal@production[mode=dark,viewport=desktop,motion=normal]",
+          "dialog.keyboard-dismissal@production[mode=dark,viewport=narrow,motion=normal]",
+          "dialog.keyboard-dismissal@production[mode=light,viewport=desktop,motion=normal]",
+          "dialog.keyboard-dismissal@production[mode=light,viewport=narrow,motion=normal]"
+        ]
+      },
+      {
+        "id": "consumer-proof-stylex-subtree",
+        "title": "Installed consumer paint: Vite, stylex-subtree and Chromium in both modes (stylex-subtree)",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#751 (compiled subtree, registry presets and packed CLI)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "vite",
+          "--delivery-path",
+          "stylex-subtree"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Vite scaffold",
+          "shadcn setup, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "Chromium computed variables and paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Vite rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof-registry",
+        "title": "Installed consumer paint: Vite, registry and Chromium in both modes (registry)",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#751 (compiled subtree, registry presets and packed CLI)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "vite",
+          "--delivery-path",
+          "registry"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Vite scaffold",
+          "shadcn setup, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "Chromium computed variables and paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Vite rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof-cli",
+        "title": "Installed consumer paint: Vite, cli and Chromium in both modes (cli)",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#751 (compiled subtree, registry presets and packed CLI)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "vite",
+          "--delivery-path",
+          "cli"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Vite scaffold",
+          "shadcn setup, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "Chromium computed variables and paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Vite rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof-next-app-stylex-subtree",
+        "title": "Installed Next root app paint and hydration, stylex-subtree and Chromium (stylex-subtree)",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#751 (compiled subtree, registry presets and packed CLI)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-app",
+          "--delivery-path",
+          "stylex-subtree"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Next scaffold",
+          "shadcn setup, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "next start",
+          "Chromium server/hydrated content, mode, errors, assets and computed paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof-next-app-registry",
+        "title": "Installed Next root app paint and hydration, registry and Chromium (registry)",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#751 (compiled subtree, registry presets and packed CLI)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-app",
+          "--delivery-path",
+          "registry"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Next scaffold",
+          "shadcn setup, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "next start",
+          "Chromium server/hydrated content, mode, errors, assets and computed paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof-next-app-cli",
+        "title": "Installed Next root app paint and hydration, cli and Chromium (cli)",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#751 (compiled subtree, registry presets and packed CLI)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-app",
+          "--delivery-path",
+          "cli"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Next scaffold",
+          "shadcn setup, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "next start",
+          "Chromium server/hydrated content, mode, errors, assets and computed paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof-next-src-stylex-subtree",
+        "title": "Installed Next src/app paint and hydration, stylex-subtree and Chromium (stylex-subtree)",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#751 (compiled subtree, registry presets and packed CLI)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-src",
+          "--delivery-path",
+          "stylex-subtree"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Next src scaffold",
+          "shadcn setup and src marker move, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "next start",
+          "Chromium server/hydrated content, mode, errors, assets and computed paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof-next-src-registry",
+        "title": "Installed Next src/app paint and hydration, registry and Chromium (registry)",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#751 (compiled subtree, registry presets and packed CLI)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-src",
+          "--delivery-path",
+          "registry"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Next src scaffold",
+          "shadcn setup and src marker move, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "next start",
+          "Chromium server/hydrated content, mode, errors, assets and computed paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      },
+      {
+        "id": "consumer-proof-next-src-cli",
+        "title": "Installed Next src/app paint and hydration, cli and Chromium (cli)",
+        "status": "planned",
+        "adapter": {
+          "status": "available",
+          "since": "#751 (compiled subtree, registry presets and packed CLI)"
+        },
+        "argv": [
+          "node",
+          "--experimental-strip-types",
+          "scripts/consumer-proof.ts",
+          "--layout",
+          "next-src",
+          "--delivery-path",
+          "cli"
+        ],
+        "cwd": ".",
+        "nested": [
+          "pnpm registry:build",
+          "pnpm --filter ultima-design build",
+          "pnpm pack",
+          "fresh external Next src scaffold",
+          "shadcn setup and src marker move, scene and generated theme installation",
+          "packed CLI doctor and check",
+          "npm run build",
+          "next start",
+          "Chromium server/hydrated content, mode, errors, assets and computed paint"
+        ],
+        "prerequisites": [
+          "registry-build"
+        ],
+        "after": [
+          "architecture",
+          "catalogue-freshness"
+        ],
+        "locks": [
+          "browser",
+          "writes:tokens-dist",
+          "writes:elements-dist",
+          "writes:registry"
+        ],
+        "needs": [
+          "network",
+          "loopback-port",
+          "chromium"
+        ],
+        "deadlineSeconds": 900,
+        "scope": "whole",
+        "reasons": [
+          "dialog is installed by the Next rendered consumer scene"
+        ],
+        "files": [],
+        "cases": []
+      }
+    ],
+    "deadline": {
+      "overallSeconds": 5400,
+      "source": "default"
+    },
+    "output": "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-restore",
+    "outcome": {
+      "status": "planned",
+      "ran": 0,
+      "passed": 0,
+      "canPass": true,
+      "unavailable": [],
+      "pending": [],
+      "note": "Planned only: no check ran and nothing passed. Every selected check has an execution adapter; only a run can pass."
+    }
+  }
+}

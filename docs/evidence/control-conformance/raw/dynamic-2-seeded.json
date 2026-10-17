@@ -1,0 +1,77 @@
+{
+  "contract": "control/0",
+  "mode": "dynamic",
+  "root": "/home/user/wt/ultima-102",
+  "static": {
+    "conformant": true,
+    "findings": [
+      {
+        "rule": "feature.source-roots",
+        "severity": "warn",
+        "path": "verification/features/dialog.json",
+        "message": "sourceRoots is empty, so changed-file selection and refresh cannot see this feature's code unless the CLI derives it"
+      },
+      {
+        "rule": "feature.source-roots",
+        "severity": "warn",
+        "path": "verification/features/motion.json",
+        "message": "sourceRoots is empty, so changed-file selection and refresh cannot see this feature's code unless the CLI derives it"
+      }
+    ]
+  },
+  "worktree": "/tmp/conform-kl0btmfp/tree",
+  "feature": "dialog",
+  "probes": [
+    {
+      "probe": "prepare",
+      "status": "passed",
+      "detail": "the worktree is prepared",
+      "argv": "pnpm install --frozen-lockfile --offline",
+      "exit": 0,
+      "ms": 1960
+    },
+    {
+      "probe": "list",
+      "status": "passed",
+      "detail": "every feature record is listed",
+      "argv": "node --experimental-strip-types scripts/verify.ts list --json",
+      "exit": 0,
+      "ms": 1473
+    },
+    {
+      "probe": "describe",
+      "status": "passed",
+      "detail": "describe feature --json exits 0 with JSON",
+      "argv": "node --experimental-strip-types scripts/verify.ts describe feature dialog --json",
+      "exit": 0,
+      "ms": 1583
+    },
+    {
+      "probe": "unknown",
+      "status": "passed",
+      "detail": "an unknown feature is a usage error",
+      "argv": "node --experimental-strip-types scripts/verify.ts feature conform-missing-feature --json",
+      "exit": 2,
+      "ms": 3293
+    },
+    {
+      "probe": "baseline",
+      "status": "blocked",
+      "detail": "the run was incomplete, so nothing is established; see the report's prerequisites",
+      "argv": "node --experimental-strip-types scripts/verify.ts feature dialog --json",
+      "exit": 3,
+      "ms": 239070,
+      "stderr": "verify: capturing the checkout into .scratch/verify/20261017T222719-c46600bc/source\nverify: preparing dependencies: pnpm install --frozen-lockfile --prefer-offline --config.confirmModulesPurge=false\nverify: architecture started\nverify: catalogue-freshness started\nverify: catalogue-freshness passed\nverify: typecheck started\nverify: architecture passed\nverify: registry-build started\nverify: registry-build passed\nverify: docs-build started\nverify: docs-build passed\nverify: consumer-lint-vite started\nverify: typecheck passed\nverify: consumer-lint-vite failed: lint installed source inventory is incomplete; consumer-proof case coverage is incomplete; consumer-proof case results are incomplete; consumer-proof source identity is incomplete\nverify: consumer-lint-next-app started\nverify: consumer-lint-next-app failed: lint installed source inventory is incomplete; consumer-proof case coverage is incomplete; consumer-proof case results are incomplete; consumer-proof source identity is incomplete\nverify: consumer-lint-next-src started\nverify: consumer-lint-next-src failed: lint installed source inventory is incomplete; consumer-proof case coverage is incomplete; consumer-proof case results are incomplete; consumer-proof source identity is incomplete\n"
+    },
+    {
+      "probe": "break",
+      "status": "blocked",
+      "detail": "the baseline did not pass, so a failure under the break patch would prove nothing"
+    },
+    {
+      "probe": "parallel",
+      "status": "blocked",
+      "detail": "the baseline did not pass, or the worktree no longer matches HEAD"
+    }
+  ]
+}

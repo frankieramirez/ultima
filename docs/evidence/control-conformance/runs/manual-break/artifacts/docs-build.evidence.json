@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "check": "docs-build",
+  "scope": "whole",
+  "planned": {
+    "argv": [
+      "pnpm",
+      "--filter",
+      "@ultima/docs",
+      "build"
+    ],
+    "cwd": "."
+  },
+  "executed": {
+    "argv": [
+      "pnpm",
+      "--filter",
+      "@ultima/docs",
+      "build"
+    ],
+    "cwd": "source",
+    "status": "exited",
+    "exitCode": 0,
+    "signal": null
+  },
+  "configuration": [
+    {
+      "path": "apps/docs/package.json",
+      "sha256": "023fffac9acf90336dc049c45223ec1093ccc6e34f05e2e535e59d9043e03f4a"
+    },
+    {
+      "path": "apps/docs/vite.config.ts",
+      "sha256": "77bf624e19bce92d08c2e6b587101007ac64eee8bd305e99d1e18561a40afec3"
+    },
+    {
+      "path": "apps/docs/index.html",
+      "sha256": "9a70da691462ed903f148e9bbe785cc3c8027a71c53455da7f70548449b33e94"
+    },
+    {
+      "path": "stylex.options.ts",
+      "sha256": "1d66bb886ec43fe542a1001bbbafa2ad4fa098c3ba223b1c214e58b95532aa94"
+    },
+    {
+      "path": "package.json",
+      "sha256": "73890277f3bb9855d40c544f4ec4f95020cfac2248814fbd5d5c1aadd0bb2cca"
+    },
+    {
+      "path": "scripts/build-registry.ts",
+      "sha256": "6341d0d29c90a88018ee416657139673e492ed8be0c7edc979b05c9b236ffd18"
+    }
+  ],
+  "obligations": [
+    "ci.yml: pnpm --filter @ultima/docs build",
+    "ci.yml: pnpm --filter @ultima/docs test:production --output \"$RUNNER_TEMP/production\" --timeout 1800"
+  ],
+  "discovered": [],
+  "report": null,
+  "notes": [
+    "built by vite v8.2.2 for production"
+  ],
+  "verdict": "passed",
+  "reason": "208 served file(s) hashed into the build manifest (e2e61ec3fdaf)"
+}

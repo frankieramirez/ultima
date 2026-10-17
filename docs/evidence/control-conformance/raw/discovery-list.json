@@ -1,0 +1,1290 @@
+{
+  "schemaVersion": 1,
+  "command": "list",
+  "status": "discovered",
+  "sourceManifest": {
+    "algorithm": "sha256",
+    "digest": "54080dce824f2ff9585b0b02f52a5dd9366e1d948d6f02c8baae2ea3fbb606b9",
+    "files": 877
+  },
+  "modes": [
+    {
+      "mode": "list",
+      "status": "available"
+    },
+    {
+      "mode": "describe",
+      "status": "available"
+    },
+    {
+      "mode": "component",
+      "status": "available",
+      "note": "an isolated run: architecture, freshness and typecheck, then the proof-bar suites, builds, consumer smoke and production cases the plan selects for the item and what depends on it"
+    },
+    {
+      "mode": "feature",
+      "status": "available",
+      "note": "an isolated run: every registered case of the feature, production included, its supporting suites, and the architecture, type, build and install checks the plan selects"
+    },
+    {
+      "mode": "changed",
+      "status": "available",
+      "note": "an isolated run of the checks the change set selects against the merge base; an unknown base or mapping broadens it to release"
+    },
+    {
+      "mode": "release",
+      "status": "available",
+      "note": "an isolated run of every check and whole suite, consumer smoke and the full 26-cell production matrix"
+    }
+  ],
+  "features": [
+    {
+      "id": "blocks",
+      "title": "Block pages and the Blocks index",
+      "contract": "docs/spec/ultima.md#docs-routes",
+      "record": "verification/features/blocks.json",
+      "scenarios": [
+        "blocks.preview"
+      ]
+    },
+    {
+      "id": "catalogue",
+      "title": "Component catalogue and documentation",
+      "contract": "docs/spec/ultima.md#page-set",
+      "record": "verification/features/catalogue.json",
+      "scenarios": [
+        "catalogue.filter-and-demo"
+      ]
+    },
+    {
+      "id": "dialog",
+      "title": "Dialog",
+      "contract": "docs/spec/ultima.md#accessibility-contract",
+      "record": "verification/features/dialog.json",
+      "scenarios": [
+        "dialog.keyboard-dismissal"
+      ]
+    },
+    {
+      "id": "elements",
+      "title": "Shipped elements",
+      "contract": "docs/spec/ultima.md#the-fixture-page-and-the-first-consumer",
+      "record": "verification/features/elements.json",
+      "scenarios": [
+        "elements.fixture-interactions"
+      ]
+    },
+    {
+      "id": "first-screen",
+      "title": "First-screen exercise",
+      "contract": "docs/spec/adoption-delivery.md#first-screen-exercise",
+      "record": "verification/features/first-screen.json",
+      "scenarios": [
+        "first-screen.agent-runs"
+      ]
+    },
+    {
+      "id": "motion",
+      "title": "Motion and reduced motion",
+      "contract": "docs/spec/ultima.md#motion",
+      "record": "verification/features/motion.json",
+      "scenarios": [
+        "motion.reduced-loop"
+      ]
+    },
+    {
+      "id": "screen-composition",
+      "title": "Copy bundles for recipes and complete screens",
+      "contract": "docs/spec/screen-composition.md#compiling-and-exercising-the-examples",
+      "record": "verification/features/screen-composition.json",
+      "scenarios": [
+        "screen-composition.copy-bundles",
+        "screen-composition.recipe-index"
+      ]
+    },
+    {
+      "id": "site-discovery",
+      "title": "Search discovery surface",
+      "contract": "docs/spec/ultima.md#launch",
+      "record": "verification/features/site-discovery.json",
+      "scenarios": [
+        "site-discovery.discovery-surface"
+      ]
+    },
+    {
+      "id": "site-landing",
+      "title": "Landing dot field",
+      "contract": "docs/spec/ultima.md#landing-motion",
+      "record": "verification/features/site-landing.json",
+      "scenarios": [
+        "site-landing.dot-field",
+        "site-landing.without-field"
+      ]
+    },
+    {
+      "id": "site-navigation",
+      "title": "Site navigation and color mode",
+      "contract": "docs/spec/ultima.md#docs-navigation-and-component-ownership",
+      "record": "verification/features/site-navigation.json",
+      "scenarios": [
+        "site-navigation.route-and-mode"
+      ]
+    },
+    {
+      "id": "theme-studio",
+      "title": "Theme studio",
+      "contract": "docs/spec/theme-studio.md#contracts",
+      "record": "verification/features/theme-studio.json",
+      "scenarios": [
+        "theme-studio.draft-history",
+        "theme-studio.pane-boundaries"
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "blocks.preview",
+      "title": "A block card opens from the keyboard, its framed preview copies, narrows and draws its Anatomy, and every block page passes",
+      "feature": "blocks",
+      "targets": [
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/blocks.preview.ts:73",
+          "cases": [
+            "blocks.preview@production[mode=dark,viewport=desktop,motion=normal]",
+            "blocks.preview@production[mode=dark,viewport=narrow,motion=normal]",
+            "blocks.preview@production[mode=light,viewport=desktop,motion=normal]",
+            "blocks.preview@production[mode=light,viewport=narrow,motion=normal]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "catalogue.filter-and-demo",
+      "title": "Filtering the catalogue narrows, empties and clears, and a demo's source copies exactly",
+      "feature": "catalogue",
+      "targets": [
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/catalogue.filter-and-demo.ts:59",
+          "cases": [
+            "catalogue.filter-and-demo@production[mode=dark,viewport=desktop,motion=normal]",
+            "catalogue.filter-and-demo@production[mode=dark,viewport=narrow,motion=normal]",
+            "catalogue.filter-and-demo@production[mode=light,viewport=desktop,motion=normal]",
+            "catalogue.filter-and-demo@production[mode=light,viewport=narrow,motion=normal]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dialog.keyboard-dismissal",
+      "title": "Keyboard opens, contains and dismisses a dialog",
+      "feature": "dialog",
+      "targets": [
+        {
+          "target": "ui-vitest",
+          "binding": "packages/ui/src/__tests__/dialog.test.tsx:91",
+          "cases": [
+            "dialog.keyboard-dismissal@ui-vitest[default]"
+          ]
+        },
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/dialog.keyboard-dismissal.ts:12",
+          "cases": [
+            "dialog.keyboard-dismissal@production[mode=dark,viewport=desktop,motion=normal]",
+            "dialog.keyboard-dismissal@production[mode=dark,viewport=narrow,motion=normal]",
+            "dialog.keyboard-dismissal@production[mode=light,viewport=desktop,motion=normal]",
+            "dialog.keyboard-dismissal@production[mode=light,viewport=narrow,motion=normal]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "elements.fixture-interactions",
+      "title": "The element fixture defines every family and its button, tabs and tooltip respond to the keyboard",
+      "feature": "elements",
+      "targets": [
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/elements.fixture-interactions.ts:19",
+          "cases": [
+            "elements.fixture-interactions@production[mode=dark,viewport=desktop,motion=normal]",
+            "elements.fixture-interactions@production[mode=dark,viewport=narrow,motion=normal]",
+            "elements.fixture-interactions@production[mode=light,viewport=desktop,motion=normal]",
+            "elements.fixture-interactions@production[mode=light,viewport=narrow,motion=normal]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "first-screen.agent-runs",
+      "title": "A fresh agent builds the brief's themed screen in each layout from public guidance alone",
+      "feature": "first-screen",
+      "targets": [
+        {
+          "target": "docs-vitest",
+          "binding": "apps/docs/src/__tests__/first-screen.test.ts:18",
+          "cases": [
+            "first-screen.agent-runs@docs-vitest[default]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "motion.reduced-loop",
+      "title": "Spinner stops looping under reduced motion",
+      "feature": "motion",
+      "targets": [
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/motion.reduced-loop.ts:11",
+          "cases": [
+            "motion.reduced-loop@production[mode=dark,viewport=desktop,motion=reduced]",
+            "motion.reduced-loop@production[mode=dark,viewport=narrow,motion=reduced]",
+            "motion.reduced-loop@production[mode=light,viewport=desktop,motion=reduced]",
+            "motion.reduced-loop@production[mode=light,viewport=narrow,motion=reduced]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "screen-composition.copy-bundles",
+      "title": "Every exposed copy bundle shows, copies and downloads the bytes installed consumers compile and exercise",
+      "feature": "screen-composition",
+      "targets": [
+        {
+          "target": "docs-vitest",
+          "binding": "apps/docs/src/__tests__/demo.test.tsx:23",
+          "cases": [
+            "screen-composition.copy-bundles@docs-vitest[default]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "screen-composition.recipe-index",
+      "title": "Every recipe appears once on /recipes with its canonical anchor and derived install commands",
+      "feature": "screen-composition",
+      "targets": [
+        {
+          "target": "docs-vitest",
+          "binding": "apps/docs/src/__tests__/recipes.test.tsx:8",
+          "cases": [
+            "screen-composition.recipe-index@docs-vitest[default]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "site-discovery.discovery-surface",
+      "title": "Routes serve their own document.title, and robots.txt and the sitemap are served",
+      "feature": "site-discovery",
+      "targets": [
+        {
+          "target": "docs-vitest",
+          "binding": "apps/docs/src/__tests__/document-title.test.tsx:37",
+          "cases": [
+            "site-discovery.discovery-surface@docs-vitest[default]"
+          ]
+        },
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/site-discovery.discovery-surface.ts:15",
+          "cases": [
+            "site-discovery.discovery-surface@production[mode=dark,viewport=desktop,motion=normal]",
+            "site-discovery.discovery-surface@production[mode=light,viewport=desktop,motion=normal]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "site-landing.dot-field",
+      "title": "The dot field loads after the hero, paints behind it and settles, or holds still under reduced motion",
+      "feature": "site-landing",
+      "targets": [
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/site-landing.dot-field.ts:46",
+          "cases": [
+            "site-landing.dot-field@production[mode=dark,viewport=desktop,motion=normal]",
+            "site-landing.dot-field@production[mode=dark,viewport=desktop,motion=reduced]",
+            "site-landing.dot-field@production[mode=dark,viewport=narrow,motion=normal]",
+            "site-landing.dot-field@production[mode=dark,viewport=narrow,motion=reduced]",
+            "site-landing.dot-field@production[mode=light,viewport=desktop,motion=normal]",
+            "site-landing.dot-field@production[mode=light,viewport=desktop,motion=reduced]",
+            "site-landing.dot-field@production[mode=light,viewport=narrow,motion=normal]",
+            "site-landing.dot-field@production[mode=light,viewport=narrow,motion=reduced]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "site-landing.without-field",
+      "title": "Without WebGL the landing has no field and the hero stands on its own",
+      "feature": "site-landing",
+      "targets": [
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/site-landing.without-field.ts:11",
+          "cases": [
+            "site-landing.without-field@production[mode=dark,viewport=desktop,motion=normal]",
+            "site-landing.without-field@production[mode=dark,viewport=narrow,motion=normal]",
+            "site-landing.without-field@production[mode=light,viewport=desktop,motion=normal]",
+            "site-landing.without-field@production[mode=light,viewport=narrow,motion=normal]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "site-navigation.route-and-mode",
+      "title": "Routes load directly and through links, history walks back and forward, and the color mode persists",
+      "feature": "site-navigation",
+      "targets": [
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/site-navigation.route-and-mode.ts:65",
+          "cases": [
+            "site-navigation.route-and-mode@production[mode=dark,viewport=desktop,motion=normal]",
+            "site-navigation.route-and-mode@production[mode=dark,viewport=narrow,motion=normal]",
+            "site-navigation.route-and-mode@production[mode=light,viewport=desktop,motion=normal]",
+            "site-navigation.route-and-mode@production[mode=light,viewport=narrow,motion=normal]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "theme-studio.draft-history",
+      "title": "Reset theme is one undoable step that keeps edits, overrides and locks",
+      "feature": "theme-studio",
+      "targets": [
+        {
+          "target": "docs-vitest",
+          "binding": "apps/docs/src/__tests__/theme-studio.test.tsx:1184",
+          "cases": [
+            "theme-studio.draft-history@docs-vitest[default]"
+          ]
+        },
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/theme-studio.draft-history.ts:52",
+          "cases": [
+            "theme-studio.draft-history@production[mode=dark,viewport=desktop,motion=normal]",
+            "theme-studio.draft-history@production[mode=dark,viewport=narrow,motion=normal]",
+            "theme-studio.draft-history@production[mode=light,viewport=desktop,motion=normal]",
+            "theme-studio.draft-history@production[mode=light,viewport=narrow,motion=normal]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "theme-studio.pane-boundaries",
+      "title": "Compare panes own their overlays and theme, and one edit reaches both",
+      "feature": "theme-studio",
+      "targets": [
+        {
+          "target": "production",
+          "binding": "apps/docs/tests/production/theme-studio.pane-boundaries.ts:38",
+          "cases": [
+            "theme-studio.pane-boundaries@production[mode=dark,viewport=desktop,motion=normal]",
+            "theme-studio.pane-boundaries@production[mode=light,viewport=desktop,motion=normal]"
+          ]
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "button",
+      "kind": "react",
+      "title": "Button",
+      "registration": "registered"
+    },
+    {
+      "id": "badge",
+      "kind": "react",
+      "title": "Badge",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "card",
+      "kind": "react",
+      "title": "Card",
+      "registration": "registered"
+    },
+    {
+      "id": "table",
+      "kind": "react",
+      "title": "Table",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "tabs",
+      "kind": "react",
+      "title": "Tabs",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "meter",
+      "kind": "react",
+      "title": "Meter",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "stat",
+      "kind": "react",
+      "title": "Stat",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "code",
+      "kind": "react",
+      "title": "Code",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "tooltip",
+      "kind": "react",
+      "title": "Tooltip",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "dialog",
+      "kind": "react",
+      "title": "Dialog",
+      "registration": "registered"
+    },
+    {
+      "id": "dropdown-menu",
+      "kind": "react",
+      "title": "Dropdown Menu",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "select",
+      "kind": "react",
+      "title": "Select",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "input",
+      "kind": "react",
+      "title": "Input",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "switch",
+      "kind": "react",
+      "title": "Switch",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "sidebar",
+      "kind": "react",
+      "title": "Sidebar",
+      "registration": "registered"
+    },
+    {
+      "id": "collapsible",
+      "kind": "react",
+      "title": "Collapsible",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "toggle-group",
+      "kind": "react",
+      "title": "Toggle Group",
+      "registration": "registered"
+    },
+    {
+      "id": "separator",
+      "kind": "react",
+      "title": "Separator",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "field",
+      "kind": "react",
+      "title": "Field",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "fieldset",
+      "kind": "react",
+      "title": "Fieldset",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "checkbox",
+      "kind": "react",
+      "title": "Checkbox",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "radio-group",
+      "kind": "react",
+      "title": "Radio Group",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "textarea",
+      "kind": "react",
+      "title": "Textarea",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "combobox",
+      "kind": "react",
+      "title": "Combobox",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "slider",
+      "kind": "react",
+      "title": "Slider",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "alert",
+      "kind": "react",
+      "title": "Alert",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "alert-dialog",
+      "kind": "react",
+      "title": "Alert Dialog",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "toast",
+      "kind": "react",
+      "title": "Toast",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "progress",
+      "kind": "react",
+      "title": "Progress",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "skeleton",
+      "kind": "react",
+      "title": "Skeleton",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "spinner",
+      "kind": "react",
+      "title": "Spinner",
+      "registration": "registered"
+    },
+    {
+      "id": "empty",
+      "kind": "react",
+      "title": "Empty",
+      "registration": "registered"
+    },
+    {
+      "id": "breadcrumb",
+      "kind": "react",
+      "title": "Breadcrumb",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "pagination",
+      "kind": "react",
+      "title": "Pagination",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "navigation-menu",
+      "kind": "react",
+      "title": "Navigation Menu",
+      "registration": "registered"
+    },
+    {
+      "id": "popover",
+      "kind": "react",
+      "title": "Popover",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "drawer",
+      "kind": "react",
+      "title": "Drawer",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "context-menu",
+      "kind": "react",
+      "title": "Context Menu",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "hover-card",
+      "kind": "react",
+      "title": "Hover Card",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "menubar",
+      "kind": "react",
+      "title": "Menubar",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "accordion",
+      "kind": "react",
+      "title": "Accordion",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "avatar",
+      "kind": "react",
+      "title": "Avatar",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "scroll-area",
+      "kind": "react",
+      "title": "Scroll Area",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "toggle",
+      "kind": "react",
+      "title": "Toggle",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "color-field",
+      "kind": "react",
+      "title": "Color Field",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "aspect-ratio",
+      "kind": "react",
+      "title": "Aspect Ratio",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "command",
+      "kind": "react",
+      "title": "Command",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "calendar",
+      "kind": "react",
+      "title": "Calendar",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "date-picker",
+      "kind": "react",
+      "title": "Date Picker",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "button-group",
+      "kind": "react",
+      "title": "Button Group",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "input-group",
+      "kind": "react",
+      "title": "Input Group",
+      "registration": "registered"
+    },
+    {
+      "id": "input-otp",
+      "kind": "react",
+      "title": "Input OTP",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "native-select",
+      "kind": "react",
+      "title": "Native Select",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "resizable",
+      "kind": "react",
+      "title": "Resizable",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "theme-mode",
+      "kind": "react",
+      "title": "Theme Mode",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "theme-scope",
+      "kind": "react",
+      "title": "Theme Scope",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "ult-button",
+      "kind": "element",
+      "title": "Button element",
+      "registration": "registered"
+    },
+    {
+      "id": "ult-badge",
+      "kind": "element",
+      "title": "Badge element",
+      "registration": "registered"
+    },
+    {
+      "id": "ult-card",
+      "kind": "element",
+      "title": "Card element",
+      "registration": "registered"
+    },
+    {
+      "id": "ult-table",
+      "kind": "element",
+      "title": "Table element",
+      "registration": "registered"
+    },
+    {
+      "id": "ult-tabs",
+      "kind": "element",
+      "title": "Tabs element",
+      "registration": "registered"
+    },
+    {
+      "id": "ult-meter",
+      "kind": "element",
+      "title": "Meter element",
+      "registration": "registered"
+    },
+    {
+      "id": "ult-stat",
+      "kind": "element",
+      "title": "Stat element",
+      "registration": "registered"
+    },
+    {
+      "id": "ult-code",
+      "kind": "element",
+      "title": "Code element",
+      "registration": "registered"
+    },
+    {
+      "id": "ult-tooltip",
+      "kind": "element",
+      "title": "Tooltip element",
+      "registration": "registered"
+    },
+    {
+      "id": "carousel",
+      "kind": "recipe",
+      "title": "Carousel",
+      "registration": "registered"
+    },
+    {
+      "id": "chart",
+      "kind": "recipe",
+      "title": "Chart",
+      "registration": "registered"
+    },
+    {
+      "id": "command-dialog",
+      "kind": "recipe",
+      "title": "Command dialog",
+      "registration": "registered"
+    },
+    {
+      "id": "data-table",
+      "kind": "recipe",
+      "title": "Data Table",
+      "registration": "registered"
+    },
+    {
+      "id": "item",
+      "kind": "recipe",
+      "title": "Item",
+      "registration": "registered"
+    },
+    {
+      "id": "kbd",
+      "kind": "recipe",
+      "title": "Kbd",
+      "registration": "registered"
+    },
+    {
+      "id": "react-hook-form",
+      "kind": "recipe",
+      "title": "React Hook Form",
+      "registration": "registered"
+    },
+    {
+      "id": "sheet",
+      "kind": "recipe",
+      "title": "Sheet",
+      "registration": "registered"
+    },
+    {
+      "id": "typography",
+      "kind": "recipe",
+      "title": "Typography",
+      "registration": "registered"
+    },
+    {
+      "id": "setup-next",
+      "kind": "setup",
+      "title": "Ultima setup for Next.js App Router",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "setup-vite",
+      "kind": "setup",
+      "title": "Ultima setup for Vite",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "lib",
+      "kind": "source-bundle",
+      "title": "Ultima component helpers",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "tokens",
+      "kind": "source-bundle",
+      "title": "Ultima tokens",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "design-md",
+      "kind": "artifact",
+      "title": "Ultima design system",
+      "registration": "catalogue-only"
+    },
+    {
+      "id": "tokens-css",
+      "kind": "artifact",
+      "title": "Ultima tokens as CSS",
+      "registration": "catalogue-only"
+    }
+  ],
+  "checks": [
+    {
+      "id": "architecture",
+      "title": "Architecture and metadata",
+      "scope": "global",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      }
+    },
+    {
+      "id": "catalogue-freshness",
+      "title": "Catalogue freshness and the feature map",
+      "scope": "global",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      }
+    },
+    {
+      "id": "typecheck",
+      "title": "Types, including the root TypeScript project",
+      "scope": "global",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      }
+    },
+    {
+      "id": "tooling-tests",
+      "title": "Catalogue and verification tooling fixtures",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      }
+    },
+    {
+      "id": "analysis-fixtures",
+      "title": "Architecture checker fixtures",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      }
+    },
+    {
+      "id": "palette",
+      "title": "Contrast gate and palette freshness",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      }
+    },
+    {
+      "id": "tokens-tests",
+      "title": "Token and theme unit suite",
+      "scope": "scoped",
+      "selector": "file",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      }
+    },
+    {
+      "id": "ui-tests",
+      "title": "React component proof bar: browser, axe and both modes",
+      "scope": "scoped",
+      "selector": "file",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      }
+    },
+    {
+      "id": "blocks-tests",
+      "title": "Block proof items: browser, axe at both widths and both modes, and wired behavior",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      }
+    },
+    {
+      "id": "elements-tests",
+      "title": "Element families, lifecycle, parity and bundle assertions",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      }
+    },
+    {
+      "id": "docs-tests",
+      "title": "Docs site suites, including the axe sweep and element fixture",
+      "scope": "scoped",
+      "selector": "file",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      }
+    },
+    {
+      "id": "cli-tests",
+      "title": "Consumer CLI suite",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      }
+    },
+    {
+      "id": "registry-build",
+      "title": "Registry, token exports, element bundles and budgets",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      }
+    },
+    {
+      "id": "docs-build",
+      "title": "Production docs build",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      }
+    },
+    {
+      "id": "consumer-smoke",
+      "title": "Consumer install: Vite, Next.js and element consumers",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      }
+    },
+    {
+      "id": "consumer-proof",
+      "title": "Installed consumer paint: Vite, generated CSS and Chromium in both modes",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#749 (Vite and generated CSS)"
+      }
+    },
+    {
+      "id": "consumer-proof-next-app",
+      "title": "Installed Next root app paint and hydration, generated CSS and Chromium",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#750 (Next root generated CSS and hydration)"
+      }
+    },
+    {
+      "id": "consumer-proof-next-src",
+      "title": "Installed Next src/app paint and hydration, generated CSS and Chromium",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#750 (Next src generated CSS and hydration)"
+      }
+    },
+    {
+      "id": "consumer-mode-vite",
+      "title": "Installed theme-mode: vite first paint, hydration, persistence and popup inheritance",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#754 (theme-mode)"
+      }
+    },
+    {
+      "id": "consumer-mode-next-app",
+      "title": "Installed theme-mode: next-app first paint, hydration, persistence and popup inheritance",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#754 (theme-mode)"
+      }
+    },
+    {
+      "id": "consumer-mode-next-src",
+      "title": "Installed theme-mode: next-src first paint, hydration, persistence and popup inheritance",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#754 (theme-mode)"
+      }
+    },
+    {
+      "id": "consumer-copy-vite",
+      "title": "Installed copy bundles: vite typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#764 (copy bundles)"
+      }
+    },
+    {
+      "id": "consumer-copy-next-app",
+      "title": "Installed copy bundles: next-app typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#764 (copy bundles)"
+      }
+    },
+    {
+      "id": "consumer-copy-next-src",
+      "title": "Installed copy bundles: next-src typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#764 (copy bundles)"
+      }
+    },
+    {
+      "id": "consumer-lint-vite",
+      "title": "Installed StyleX lint: vite fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#756 (StyleX lint)"
+      }
+    },
+    {
+      "id": "consumer-lint-next-app",
+      "title": "Installed StyleX lint: next-app fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#756 (StyleX lint)"
+      }
+    },
+    {
+      "id": "consumer-lint-next-src",
+      "title": "Installed StyleX lint: next-src fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#756 (StyleX lint)"
+      }
+    },
+    {
+      "id": "consumer-bundles-vite",
+      "title": "Installed production bundles: theme and CSS, overlay and keyboard, form, Date Picker, direction and locale, and narrow touch on the canonical Vite fixture in both modes across Chromium, Firefox and WebKit",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#770 (Firefox and WebKit bundles), #771 (Date Picker, direction and touch bundles)"
+      }
+    },
+    {
+      "id": "consumer-bundles-next-app",
+      "title": "Installed production bundles: next-app hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#772 (Next hydration cells)"
+      }
+    },
+    {
+      "id": "consumer-bundles-next-src",
+      "title": "Installed production bundles: next-src hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#772 (Next hydration cells)"
+      }
+    },
+    {
+      "id": "consumer-elements",
+      "title": "Installed element lifecycle: registration, reconnect, attribute updates and ult-tabs keyboard and theme on a light-DOM fixture in both modes across Chromium, Firefox and WebKit",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#772 (element lifecycle cells)"
+      }
+    },
+    {
+      "id": "production-scenarios",
+      "title": "Production browser scenarios against the built docs",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#462 (Dialog and Studio pilot); #463 (the full 26-cell matrix)"
+      }
+    },
+    {
+      "id": "consumer-proof-stylex-subtree",
+      "title": "Installed consumer paint: Vite, stylex-subtree and Chromium in both modes (stylex-subtree)",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      }
+    },
+    {
+      "id": "consumer-proof-registry",
+      "title": "Installed consumer paint: Vite, registry and Chromium in both modes (registry)",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      }
+    },
+    {
+      "id": "consumer-proof-cli",
+      "title": "Installed consumer paint: Vite, cli and Chromium in both modes (cli)",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      }
+    },
+    {
+      "id": "consumer-proof-next-app-stylex-subtree",
+      "title": "Installed Next root app paint and hydration, stylex-subtree and Chromium (stylex-subtree)",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      }
+    },
+    {
+      "id": "consumer-proof-next-app-registry",
+      "title": "Installed Next root app paint and hydration, registry and Chromium (registry)",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      }
+    },
+    {
+      "id": "consumer-proof-next-app-cli",
+      "title": "Installed Next root app paint and hydration, cli and Chromium (cli)",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      }
+    },
+    {
+      "id": "consumer-proof-next-src-stylex-subtree",
+      "title": "Installed Next src/app paint and hydration, stylex-subtree and Chromium (stylex-subtree)",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      }
+    },
+    {
+      "id": "consumer-proof-next-src-registry",
+      "title": "Installed Next src/app paint and hydration, registry and Chromium (registry)",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      }
+    },
+    {
+      "id": "consumer-proof-next-src-cli",
+      "title": "Installed Next src/app paint and hydration, cli and Chromium (cli)",
+      "scope": "scoped",
+      "selector": "none",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      }
+    }
+  ]
+}

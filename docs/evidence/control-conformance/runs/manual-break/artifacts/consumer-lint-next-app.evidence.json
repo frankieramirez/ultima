@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "check": "consumer-lint-next-app",
+  "scope": "whole",
+  "planned": {
+    "argv": [
+      "node",
+      "--experimental-strip-types",
+      "scripts/consumer-proof.ts",
+      "--layout",
+      "next-app",
+      "--delivery-path",
+      "css",
+      "--exercise",
+      "lint"
+    ],
+    "cwd": "."
+  },
+  "executed": {
+    "argv": [
+      "node",
+      "--experimental-strip-types",
+      "scripts/consumer-proof.ts",
+      "--layout",
+      "next-app",
+      "--delivery-path",
+      "css",
+      "--exercise",
+      "lint",
+      "--output",
+      "/tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-break/artifacts/consumer-lint-next-app"
+    ],
+    "cwd": "source",
+    "status": "exited",
+    "exitCode": 2,
+    "signal": null
+  },
+  "configuration": [
+    {
+      "path": "scripts/consumer-proof.ts",
+      "sha256": "c310cc032118378098e26ae2320057db43346657f56ddcc6df24624dff128f3b"
+    },
+    {
+      "path": "scripts/consumer-next.ts",
+      "sha256": "60789ea220011ede6a2858c351958750f906e17a1d01c2596462333167a60c8d"
+    },
+    {
+      "path": "scripts/consumer-helpers.ts",
+      "sha256": "997b757549c7b7edb99bf92bb124d42f6ab4495c7f4acb68eacde1f2f6b6ac63"
+    },
+    {
+      "path": "scripts/consumer-report.ts",
+      "sha256": "d84365ce2184b37a9ed08a5e6a8c0cea24758cf5e118e5c6ed239242a9f0e12c"
+    },
+    {
+      "path": "package.json",
+      "sha256": "73890277f3bb9855d40c544f4ec4f95020cfac2248814fbd5d5c1aadd0bb2cca"
+    },
+    {
+      "path": "scripts/build-registry.ts",
+      "sha256": "6341d0d29c90a88018ee416657139673e492ed8be0c7edc979b05c9b236ffd18"
+    },
+    {
+      "path": "registry/static/setup-next/babel.config.js",
+      "sha256": "1fcee70383f94bf101baa6b2c2c98984665d940121b2f99fc97d891c9c868482"
+    },
+    {
+      "path": "registry/static/setup-next/postcss.config.js",
+      "sha256": "19eae9fd5777d88bd2fdaa11533a7c4b17653a8948f3746414b682b600887bd3"
+    },
+    {
+      "path": "registry/static/setup-next/app/ultima.css",
+      "sha256": "02e62d80d70f29f4670e1a7126c45d52a15ec055ee92a2f9cb694c5389fe6a17"
+    },
+    {
+      "path": "scripts/consumer-scene.ts",
+      "sha256": "401467cf7f086df5258997b83af97ee68f62468a2c9747d85fd42df06ef44ec4"
+    },
+    {
+      "path": "scripts/consumer-values.ts",
+      "sha256": "87d2c988c1323c644f19acd22bbe23944fb3b9c69b6ef48b2c451e3c9e073472"
+    },
+    {
+      "path": "scripts/consumer-delivery.ts",
+      "sha256": "86c6141ca7d887a0b0a0c55d02fa90ddd9c470ff76b8f9b450e49d2096fb53c3"
+    },
+    {
+      "path": "apps/docs/src/generated/recipes.ts",
+      "sha256": "770227110889859e48171928bff0c1942faf4d3203ce47702de76c05ef776776"
+    },
+    {
+      "path": "apps/docs/src/examples/complete-screen/projects.tsx",
+      "sha256": "a5d0ef43089db7ad6d8c436875430d2d0234477d6f62ab97fdd88f73926e37a4"
+    },
+    {
+      "path": "apps/docs/src/examples/complete-screen/projects-data.ts",
+      "sha256": "77068ffa6a60ad9237ec16cb8167b58b2e3d3ed8f989b994bfcf99459696f57a"
+    },
+    {
+      "path": "apps/docs/src/examples/complete-screen/screen.stylex.ts",
+      "sha256": "4cf345d130db0cfc1fb1aeff5f271e3589225053e2b3a983006fe30e922ded62"
+    },
+    {
+      "path": "scripts/consumer-lint.ts",
+      "sha256": "a6ea1f68ace3fcda37600ff7210f821bc62e1e62c3ccd790470520867ef32439"
+    },
+    {
+      "path": "apps/docs/public/ultima.eslint.mjs",
+      "sha256": "28b9ba12ea3896368c9e0a3da9d4bf210cd7673086db2f4e8f965fbc878c6261"
+    },
+    {
+      "path": "packages/analysis/fixtures/app/palette.tsx",
+      "sha256": "e4c07283e3284f91a00867be313f1f5fa34af1c6d041660807887bde960787ec"
+    },
+    {
+      "path": "packages/analysis/fixtures/app/paint.tsx",
+      "sha256": "e3fad4df97b5e4212497559dad4f2c2037b151d1854806bb5aa3f1bc67bc54c6"
+    }
+  ],
+  "obligations": [
+    "consumer-proof.yml: node --experimental-strip-types scripts/consumer-proof.ts --layout \"${{ matrix.layout }}\" --delivery-path css --exercise lint --output \"$RUNNER_TEMP/consumer-proof\""
+  ],
+  "discovered": [],
+  "report": "artifacts/consumer-lint-next-app/report.json",
+  "notes": [],
+  "verdict": "incomplete",
+  "reason": "lint installed source inventory is incomplete; consumer-proof case coverage is incomplete; consumer-proof case results are incomplete; consumer-proof source identity is incomplete"
+}

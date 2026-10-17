@@ -1,0 +1,5 @@
+
+> ultima-monorepo@ check:architecture /tmp/claude-0/-home-user-mana/63a08ba4-a429-5bbf-9bfd-c3643c7c93ff/scratchpad/u102/runs/manual-cancel/source
+> node --experimental-strip-types scripts/check-architecture.ts --format json
+
+ ELIFECYCLE  Command failed.

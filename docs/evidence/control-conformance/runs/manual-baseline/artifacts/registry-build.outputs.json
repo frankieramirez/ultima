@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "source": "1b573d37c247307d7976e446f30887e162c9022233361499c340413fe7eb8d79",
+  "argv": [
+    "pnpm",
+    "registry:build"
+  ],
+  "exitCode": 0,
+  "outputs": {
+    "packages/tokens/dist": "a453dd4d48cf12dc58d1086f7d968996d5b852f03134ed8688822edf9dc997c4",
+    "packages/elements/dist": "e3f681cf7404ab001b46f96bc20a87ffb3a273be81f377701e6d7dc3306d29a9",
+    "registry/registry.json": "cf290c425ea70e90518aff92722a3e4ffac11a8e6b1ab60b1994a3b4cd69fc0d",
+    "registry/ultima": "38914752b61abc22ac8c0233c1aafcf9c8897910fe3431b69af0a64c9ede3711",
+    "apps/docs/public/r": "200097ea9aedbea643dc59e1f24b852147410aa1b51a3de2b2adcfb65756b4f1",
+    "apps/docs/public/tokens.css": "eba9fc41c2c445aef1a516b53845363047d2d037750de1fd000ac00fb21a10b0",
+    "apps/docs/public/tokens.json": "a3d7b5ea53be7bada4528ca79de7fb3ccd5e5d95e829262e4b3df7cd5c7ccc1c",
+    "apps/docs/public/llms.txt": "8edd49ccd5dbfa682a11b71d6bbb6420c8282fabc8cb0f15cdfecdb74b1982b7",
+    "apps/docs/public/elements": "e3f681cf7404ab001b46f96bc20a87ffb3a273be81f377701e6d7dc3306d29a9"
+  }
+}

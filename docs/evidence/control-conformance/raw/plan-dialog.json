@@ -1,0 +1,1514 @@
+{
+  "schemaVersion": 1,
+  "command": "feature",
+  "status": "planned",
+  "selectors": [
+    "dialog"
+  ],
+  "scope": "scoped",
+  "fallbacks": [],
+  "base": null,
+  "changes": [],
+  "selection": {
+    "items": [
+      {
+        "id": "dialog",
+        "kind": "react",
+        "present": true,
+        "reasons": [
+          "an item of feature dialog"
+        ]
+      }
+    ],
+    "features": [
+      {
+        "id": "dialog",
+        "reasons": [
+          "named by `verify feature dialog`"
+        ]
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "dialog.keyboard-dismissal",
+        "reasons": [
+          "covers item dialog",
+          "feature dialog is selected"
+        ]
+      }
+    ],
+    "deletedTests": []
+  },
+  "unrelatedDirty": {
+    "paths": [],
+    "recommendation": "Every dirty path is inside the selected scope."
+  },
+  "findings": [],
+  "checks": [
+    {
+      "id": "architecture",
+      "title": "Architecture and metadata",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      },
+      "argv": [
+        "pnpm",
+        "check:architecture"
+      ],
+      "cwd": ".",
+      "nested": [],
+      "prerequisites": [],
+      "after": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 300,
+      "scope": "global",
+      "reasons": [
+        "runs in every executable plan"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "catalogue-freshness",
+      "title": "Catalogue freshness and the feature map",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      },
+      "argv": [
+        "pnpm",
+        "catalogue:check"
+      ],
+      "cwd": ".",
+      "nested": [],
+      "prerequisites": [],
+      "after": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 120,
+      "scope": "global",
+      "reasons": [
+        "runs in every executable plan"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "typecheck",
+      "title": "Types, including the root TypeScript project",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#460 (static, type and unit checks)"
+      },
+      "argv": [
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": ".",
+      "nested": [
+        "tsc -p tsconfig.json",
+        "pnpm -r typecheck"
+      ],
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "after": [],
+      "locks": [],
+      "needs": [],
+      "deadlineSeconds": 600,
+      "scope": "global",
+      "reasons": [
+        "runs in every executable plan"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "ui-tests",
+      "title": "React component proof bar: browser, axe and both modes",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/ui",
+        "exec",
+        "vitest",
+        "run",
+        "--reporter=verbose",
+        "src/__tests__/dialog.test.tsx"
+      ],
+      "cwd": ".",
+      "nested": [],
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "after": [],
+      "locks": [
+        "browser"
+      ],
+      "needs": [
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "scope": "files",
+      "reasons": [
+        "1 test file(s) reached by the selection"
+      ],
+      "files": [
+        {
+          "path": "packages/ui/src/__tests__/dialog.test.tsx",
+          "present": true,
+          "reasons": [
+            "binds scenario dialog.keyboard-dismissal",
+            "the proof-bar suite of dialog (an item of feature dialog)"
+          ]
+        }
+      ],
+      "cases": [
+        "dialog.keyboard-dismissal@ui-vitest[default]"
+      ]
+    },
+    {
+      "id": "registry-build",
+      "title": "Registry, token exports, element bundles and budgets",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      },
+      "argv": [
+        "pnpm",
+        "registry:build"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm --filter @ultima/tokens build",
+        "pnpm --filter @ultima/elements build",
+        "scripts/build-registry.ts"
+      ],
+      "prerequisites": [
+        "catalogue-freshness"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [],
+      "deadlineSeconds": 600,
+      "scope": "whole",
+      "reasons": [
+        "dialog is a distributed react item"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "docs-build",
+      "title": "Production docs build",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/docs",
+        "build"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm -w run registry:build",
+        "vite build"
+      ],
+      "prerequisites": [
+        "catalogue-freshness",
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry",
+        "writes:docs-dist"
+      ],
+      "needs": [],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "the docs site renders dialog at /components/dialog"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-smoke",
+      "title": "Consumer install: Vite, Next.js and element consumers",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#461 (browser, build and install checks)"
+      },
+      "argv": [
+        "scripts/smoke-install.sh",
+        "--keep"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm --filter @ultima/tokens build",
+        "pnpm registry:build",
+        "pnpm --filter @ultima/docs build",
+        "loopback server on port 0",
+        "Vite consumer",
+        "Next.js root and src consumers with production browser styles",
+        "sidebar consumer",
+        "each block alone in Vite and Next.js consumers",
+        "element consumer"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry",
+        "writes:docs-dist"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 2700,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by consumers; scoped runs use the full smoke until a validated selector exists"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof",
+      "title": "Installed consumer paint: Vite, generated CSS and Chromium in both modes",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#749 (Vite and generated CSS)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Vite scaffold",
+        "shadcn setup, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "Chromium computed variables and paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Vite rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof-next-app",
+      "title": "Installed Next root app paint and hydration, generated CSS and Chromium",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#750 (Next root generated CSS and hydration)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Next scaffold",
+        "shadcn setup, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "next start",
+        "Chromium server/hydrated content, mode, errors, assets and computed paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Next rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof-next-src",
+      "title": "Installed Next src/app paint and hydration, generated CSS and Chromium",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#750 (Next src generated CSS and hydration)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Next src scaffold",
+        "shadcn setup and src marker move, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "next start",
+        "Chromium server/hydrated content, mode, errors, assets and computed paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Next rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-copy-vite",
+      "title": "Installed copy bundles: vite typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#764 (copy bundles)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "copy-bundles"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "fresh external scaffold",
+        "shadcn setup, every bundle item, engines, Settings 01 and theme installation",
+        "npm run build and tsc",
+        "Chromium recipe interactions, Projects at 200% zoom and Settings 01 at desktop and narrow widths"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the copy-bundle consumers"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-copy-next-app",
+      "title": "Installed copy bundles: next-app typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#764 (copy bundles)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "copy-bundles"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "fresh external scaffold",
+        "shadcn setup, every bundle item, engines, Settings 01 and theme installation",
+        "npm run build and tsc",
+        "Chromium recipe interactions, Projects at 200% zoom and Settings 01 at desktop and narrow widths"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the copy-bundle consumers"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-copy-next-src",
+      "title": "Installed copy bundles: next-src typecheck, build and Chromium interactions for every recipe, lesson and the adapted Settings 01",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#764 (copy bundles)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "copy-bundles"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "fresh external scaffold",
+        "shadcn setup, every bundle item, engines, Settings 01 and theme installation",
+        "npm run build and tsc",
+        "Chromium recipe interactions, Projects at 200% zoom and Settings 01 at desktop and narrow widths"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the copy-bundle consumers"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-lint-vite",
+      "title": "Installed StyleX lint: vite fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#756 (StyleX lint)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "lint"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "fresh external scaffold",
+        "shadcn setup, every registry:ui and registry:block item and theme installation",
+        "the downloaded ultima.eslint.mjs and pinned lint dependencies",
+        "eslint --print-config and eslint . with the network denied",
+        "packed CLI doctor and check",
+        "npm run build"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1200,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed and linted by the StyleX lint consumers"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-lint-next-app",
+      "title": "Installed StyleX lint: next-app fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#756 (StyleX lint)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "lint"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "fresh external scaffold with ESLint",
+        "shadcn setup, every registry:ui and registry:block item and theme installation",
+        "the downloaded ultima.eslint.mjs and pinned lint dependencies",
+        "eslint --print-config and eslint . with the network denied",
+        "packed CLI doctor and check",
+        "npm run build"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1200,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed and linted by the StyleX lint consumers"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-lint-next-src",
+      "title": "Installed StyleX lint: next-src fragment, effective config, positive catalogue, negative and offline cases, then one build",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#756 (StyleX lint)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "lint"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "fresh external scaffold with ESLint",
+        "shadcn setup, every registry:ui and registry:block item and theme installation",
+        "the downloaded ultima.eslint.mjs and pinned lint dependencies",
+        "eslint --print-config and eslint . with the network denied",
+        "packed CLI doctor and check",
+        "npm run build"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1200,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed and linted by the StyleX lint consumers"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-bundles-vite",
+      "title": "Installed production bundles: theme and CSS, overlay and keyboard, form, Date Picker, direction and locale, and narrow touch on the canonical Vite fixture in both modes across Chromium, Firefox and WebKit",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#770 (Firefox and WebKit bundles), #771 (Date Picker, direction and touch bundles)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "bundles"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "fresh external Vite scaffold",
+        "shadcn setup, the Projects scene, checkbox, popover, date-picker, tabs and theme installation",
+        "one npm run build",
+        "Chromium, Firefox and WebKit, two cells at a time, against the one served build"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the cross-engine Vite bundle fixture"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-bundles-next-app",
+      "title": "Installed production bundles: next-app hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#772 (Next hydration cells)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "bundles"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "fresh external Next root app scaffold",
+        "shadcn setup, the Projects scene and theme installation",
+        "one npm run build",
+        "Chromium, Firefox and WebKit, two cells at a time, against the one next start server"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the cross-engine Next hydration fixture"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-bundles-next-src",
+      "title": "Installed production bundles: next-src hydration, theme and portal smoke in both modes across Chromium, Firefox and WebKit",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#772 (Next hydration cells)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "css",
+        "--exercise",
+        "bundles"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "fresh external Next src/app scaffold",
+        "shadcn setup, the Projects scene and theme installation",
+        "one npm run build",
+        "Chromium, Firefox and WebKit, two cells at a time, against the one next start server"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 1200,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the cross-engine Next hydration fixture"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "production-scenarios",
+      "title": "Production browser scenarios against the built docs",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#462 (Dialog and Studio pilot); #463 (the full 26-cell matrix)"
+      },
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@ultima/docs",
+        "test:production"
+      ],
+      "cwd": ".",
+      "nested": [],
+      "prerequisites": [
+        "docs-build"
+      ],
+      "after": [],
+      "locks": [
+        "browser",
+        "writes:docs-dist"
+      ],
+      "needs": [
+        "chromium",
+        "loopback-port"
+      ],
+      "deadlineSeconds": 1800,
+      "scope": "whole",
+      "reasons": [
+        "scenario dialog.keyboard-dismissal registers 4 production case(s)"
+      ],
+      "files": [],
+      "cases": [
+        "dialog.keyboard-dismissal@production[mode=dark,viewport=desktop,motion=normal]",
+        "dialog.keyboard-dismissal@production[mode=dark,viewport=narrow,motion=normal]",
+        "dialog.keyboard-dismissal@production[mode=light,viewport=desktop,motion=normal]",
+        "dialog.keyboard-dismissal@production[mode=light,viewport=narrow,motion=normal]"
+      ]
+    },
+    {
+      "id": "consumer-proof-stylex-subtree",
+      "title": "Installed consumer paint: Vite, stylex-subtree and Chromium in both modes (stylex-subtree)",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "stylex-subtree"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Vite scaffold",
+        "shadcn setup, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "Chromium computed variables and paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Vite rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof-registry",
+      "title": "Installed consumer paint: Vite, registry and Chromium in both modes (registry)",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "registry"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Vite scaffold",
+        "shadcn setup, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "Chromium computed variables and paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Vite rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof-cli",
+      "title": "Installed consumer paint: Vite, cli and Chromium in both modes (cli)",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "vite",
+        "--delivery-path",
+        "cli"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Vite scaffold",
+        "shadcn setup, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "Chromium computed variables and paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Vite rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof-next-app-stylex-subtree",
+      "title": "Installed Next root app paint and hydration, stylex-subtree and Chromium (stylex-subtree)",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "stylex-subtree"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Next scaffold",
+        "shadcn setup, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "next start",
+        "Chromium server/hydrated content, mode, errors, assets and computed paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Next rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof-next-app-registry",
+      "title": "Installed Next root app paint and hydration, registry and Chromium (registry)",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "registry"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Next scaffold",
+        "shadcn setup, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "next start",
+        "Chromium server/hydrated content, mode, errors, assets and computed paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Next rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof-next-app-cli",
+      "title": "Installed Next root app paint and hydration, cli and Chromium (cli)",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-app",
+        "--delivery-path",
+        "cli"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Next scaffold",
+        "shadcn setup, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "next start",
+        "Chromium server/hydrated content, mode, errors, assets and computed paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Next rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof-next-src-stylex-subtree",
+      "title": "Installed Next src/app paint and hydration, stylex-subtree and Chromium (stylex-subtree)",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "stylex-subtree"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Next src scaffold",
+        "shadcn setup and src marker move, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "next start",
+        "Chromium server/hydrated content, mode, errors, assets and computed paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Next rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof-next-src-registry",
+      "title": "Installed Next src/app paint and hydration, registry and Chromium (registry)",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "registry"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Next src scaffold",
+        "shadcn setup and src marker move, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "next start",
+        "Chromium server/hydrated content, mode, errors, assets and computed paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Next rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    },
+    {
+      "id": "consumer-proof-next-src-cli",
+      "title": "Installed Next src/app paint and hydration, cli and Chromium (cli)",
+      "status": "planned",
+      "adapter": {
+        "status": "available",
+        "since": "#751 (compiled subtree, registry presets and packed CLI)"
+      },
+      "argv": [
+        "node",
+        "--experimental-strip-types",
+        "scripts/consumer-proof.ts",
+        "--layout",
+        "next-src",
+        "--delivery-path",
+        "cli"
+      ],
+      "cwd": ".",
+      "nested": [
+        "pnpm registry:build",
+        "pnpm --filter ultima-design build",
+        "pnpm pack",
+        "fresh external Next src scaffold",
+        "shadcn setup and src marker move, scene and generated theme installation",
+        "packed CLI doctor and check",
+        "npm run build",
+        "next start",
+        "Chromium server/hydrated content, mode, errors, assets and computed paint"
+      ],
+      "prerequisites": [
+        "registry-build"
+      ],
+      "after": [
+        "architecture",
+        "catalogue-freshness"
+      ],
+      "locks": [
+        "browser",
+        "writes:tokens-dist",
+        "writes:elements-dist",
+        "writes:registry"
+      ],
+      "needs": [
+        "network",
+        "loopback-port",
+        "chromium"
+      ],
+      "deadlineSeconds": 900,
+      "scope": "whole",
+      "reasons": [
+        "dialog is installed by the Next rendered consumer scene"
+      ],
+      "files": [],
+      "cases": []
+    }
+  ],
+  "deadline": {
+    "overallSeconds": 5400,
+    "source": "default"
+  },
+  "output": null,
+  "outcome": {
+    "status": "planned",
+    "ran": 0,
+    "passed": 0,
+    "canPass": true,
+    "unavailable": [],
+    "pending": [],
+    "note": "Planned only: no check ran and nothing passed. Every selected check has an execution adapter; only a run can pass."
+  },
+  "sourceManifest": {
+    "algorithm": "sha256",
+    "digest": "ec5326ca272531cc87912ccb2736f69e76df8ad694de8e2116a20b6e43a3cb1b",
+    "files": 1080
+  }
+}
