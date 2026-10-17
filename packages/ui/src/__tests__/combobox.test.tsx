@@ -295,34 +295,118 @@ test('the input group is Input Group\'s field: a hover edge, an inset ring, and 
   expect(getComputedStyle(off).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
 });
 
-test('a disabled chip takes the disabled ink instead of fading', async () => {
+function Reagents({ name, values, disabled, width }: { name: string; values: string[]; disabled?: boolean; width?: number }) {
+  return (
+    <div style={{ inlineSize: width }}>
+      <Combobox.Root items={SCHOOLS} multiple defaultValue={values} disabled={disabled}>
+        <Combobox.InputGroup data-testid={`${name}-group`}>
+          <Combobox.Chips data-testid={`${name}-chips`}>
+            <Combobox.Value>
+              {(selected: string[]) =>
+                selected.map((school) => (
+                  <Combobox.Chip key={school} data-testid={`${name}-chip`}>
+                    {school}
+                    <Combobox.ChipRemove aria-label={`Remove ${school}`} data-testid={`${name}-remove`} />
+                  </Combobox.Chip>
+                ))
+              }
+            </Combobox.Value>
+            <Combobox.Input aria-label={name} data-testid={`${name}-input`} />
+          </Combobox.Chips>
+        </Combobox.InputGroup>
+      </Combobox.Root>
+    </div>
+  );
+}
+
+test('a disabled chip takes the disabled ink instead of fading, one fill step above the sunken field', async () => {
   const screen = await render(
     <>
-      {[false, true].map((disabled) => (
-        <Combobox.Root key={String(disabled)} items={SCHOOLS} multiple defaultValue={['Illusion']} disabled={disabled}>
-          <Combobox.InputGroup>
-            <Combobox.Chips>
-              <Combobox.Value>
-                {(selected: string[]) =>
-                  selected.map((school) => (
-                    <Combobox.Chip key={school} data-testid={disabled ? 'off-chip' : 'live-chip'}>
-                      {school}
-                    </Combobox.Chip>
-                  ))
-                }
-              </Combobox.Value>
-              <Combobox.Input aria-label={disabled ? 'Off' : 'Live'} />
-            </Combobox.Chips>
-          </Combobox.InputGroup>
-        </Combobox.Root>
-      ))}
+      <Reagents name="live" values={['Illusion']} />
+      <Reagents name="off" values={['Illusion']} disabled />
     </>,
   );
   const live = getComputedStyle(screen.getByTestId('live-chip').element());
   const off = getComputedStyle(screen.getByTestId('off-chip').element());
   expect(live.color).toBe(resolved('color', 'var(--ult-color-text)'));
+  expect(live.backgroundColor).toBe(resolved('background-color', 'var(--ult-color-accent-subtle)'));
   expect(off.opacity).toBe('1');
   expect(off.color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+  expect(off.backgroundColor).toBe(resolved('background-color', 'var(--ult-color-surface-hover)'));
+  // Base UI marks the remove button with aria-disabled, not disabled, and it takes the same ink.
+  const remove = screen.getByTestId('off-remove').element();
+  expect(remove.getAttribute('aria-disabled')).toBe('true');
+  expect(getComputedStyle(remove).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+});
+
+test('a chip is a 24px tinted inset with no border, and its remove button a 16px target 4px from its edges', async () => {
+  const screen = await render(<Reagents name="r" values={['Illusion']} />);
+  const chip = screen.getByTestId('r-chip').element();
+  const style = getComputedStyle(chip);
+  const box = chip.getBoundingClientRect();
+  expect(`${box.height}px`).toBe(resolved('height', 'var(--ult-space-8)'));
+  expect(style.borderTopStyle).toBe('none');
+  expect(style.borderTopLeftRadius).toBe(resolved('border-top-left-radius', 'var(--ult-radius-sm)'));
+  expect(style.fontSize).toBe(resolved('font-size', 'var(--ult-text-3)'));
+  expect(style.paddingInlineStart).toBe(resolved('padding-left', 'var(--ult-space-4)'));
+
+  const remove = screen.getByTestId('r-remove').element().getBoundingClientRect();
+  const step = parseFloat(resolved('padding-top', 'var(--ult-space-2)'));
+  expect(`${remove.width}px`).toBe(resolved('width', 'var(--ult-space-6)'));
+  expect(`${remove.height}px`).toBe(resolved('height', 'var(--ult-space-6)'));
+  expect(Math.abs(remove.top - box.top - step)).toBeLessThan(1);
+  expect(Math.abs(box.right - remove.right - step)).toBeLessThan(1);
+});
+
+test('chips wrap in rows 4px apart, keep the single-row inset, and the input wraps only under 64px', async () => {
+  const screen = await render(
+    <>
+      <Reagents name="one" values={['Illusion']} width={320} />
+      <Reagents name="many" values={['Abjuration', 'Conjuration', 'Divination', 'Evocation', 'Necromancy']} width={320} />
+    </>,
+  );
+  const gap = resolved('row-gap', 'var(--ult-space-2)');
+  const chips = getComputedStyle(screen.getByTestId('many-chips').element());
+  expect(chips.display).toBe('flex');
+  expect(chips.flexWrap).toBe('wrap');
+  expect(chips.rowGap).toBe(gap);
+  expect(chips.columnGap).toBe(gap);
+  expect(getComputedStyle(screen.getByTestId('many-input').element()).flexBasis).toBe(resolved('flex-basis', 'var(--ult-space-12)'));
+
+  // One row sits centred in the 40px control, the chip's top and start inset matching.
+  const group = screen.getByTestId('one-group').element();
+  const outer = group.getBoundingClientRect();
+  const edge = parseFloat(getComputedStyle(group).borderTopWidth);
+  const chip = screen.getByTestId('one-chip').element().getBoundingClientRect();
+  expect(`${outer.height}px`).toBe(resolved('height', 'var(--ult-space-10)'));
+  const top = chip.top - outer.top - edge;
+  const start = chip.left - outer.left - edge;
+  expect(Math.abs(top - start)).toBeLessThanOrEqual(1);
+
+  // A wrapped field keeps that inset above its first row and below its last.
+  const many = screen.getByTestId('many-group').element();
+  const box = many.getBoundingClientRect();
+  const rows = screen.getByTestId('many-chip').elements().map((el) => el.getBoundingClientRect());
+  expect(new Set(rows.map((r) => Math.round(r.top))).size).toBeGreaterThan(1);
+  const input = screen.getByTestId('many-input').element().getBoundingClientRect();
+  const bottom = Math.max(input.bottom, ...rows.map((r) => r.bottom));
+  expect(Math.abs(rows[0]!.top - box.top - edge - top)).toBeLessThanOrEqual(1);
+  expect(Math.abs(box.bottom - edge - bottom - top)).toBeLessThanOrEqual(1);
+});
+
+test('the arrow key moves focus onto a chip, and the chip shows the ring outside its edge', async () => {
+  const screen = await render(<Reagents name="k" values={['Illusion', 'Necromancy']} />);
+  await screen.getByTestId('k-input').click();
+  await userEvent.keyboard('{Escape}');
+  await userEvent.keyboard('{ArrowLeft}');
+  const [first, second] = screen.getByTestId('k-chip').elements() as [HTMLElement, HTMLElement];
+  await expect.poll(() => document.activeElement).toBe(second);
+  const style = getComputedStyle(second);
+  expect(style.outlineStyle).toBe('solid');
+  expect(style.outlineWidth).toBe('2px');
+  expect(style.outlineColor).toBe(resolved('color', 'var(--ult-color-border-focus)'));
+  expect(parseFloat(style.outlineOffset)).toBeGreaterThan(0);
+  expect(getComputedStyle(first).outlineStyle).toBe('none');
 });
 
 test('public prop types expose size on InputGroup only and no className on styled parts', () => {

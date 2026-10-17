@@ -14,6 +14,7 @@ const DOWN = ':is([data-side="top"])';
 // The `dir` attribute rather than `:dir()`, which the CSS pipeline lowers to language matching.
 const RIGHTWARD = ':is([data-side="left"], [data-side="inline-start"]:not([dir="rtl"] *), [data-side="inline-end"]:is([dir="rtl"] *))';
 const LEFTWARD = ':is([data-side="right"], [data-side="inline-end"]:not([dir="rtl"] *), [data-side="inline-start"]:is([dir="rtl"] *))';
+const WITH_CHIPS = ':has([role="toolbar"])';
 const ARROW_OFFSET = `calc(-0.5 * ${space['--ult-space-4']})`;
 
 const listHeight = `calc(5 * ${space['--ult-space-12']})`;
@@ -71,11 +72,15 @@ const styles = stylex.create({
     borderWidth: 0,
     borderRadius: 0,
     color: 'inherit',
+    // Inside Chips the input wraps to a row of its own only when fewer than 64px are left.
+    flexBasis: space['--ult-space-12'],
     flexGrow: 1,
     fontFamily: 'inherit',
     fontSize: 'inherit',
     lineHeight: 'inherit',
     margin: 0,
+    // A chip's height, so a row the input wraps onto is as tall as a row of chips.
+    minHeight: space['--ult-space-8'],
     minWidth: 0,
     outline: 'none',
     padding: 0,
@@ -133,35 +138,74 @@ const styles = stylex.create({
       outlineOffset: border.focusOffset,
     },
   },
+  // Chips lays the chips and the input out in rows that wrap, 4px apart, the gap between
+  // things that belong together.
+  chips: {
+    alignItems: 'center',
+    display: 'flex',
+    flexGrow: 1,
+    flexWrap: 'wrap',
+    gap: space['--ult-space-2'],
+    minWidth: 0,
+  },
+  // A chip is a small inset object inside the field: the accent's tint is its edge, so it has
+  // no border, and it takes the small-inset corner. 24px tall, 8px of padding on the side that
+  // holds text and 4px on the side that holds the remove button, which sits 4px in from the
+  // chip's top, bottom and end alike. Keyboard focus moves between chips with the arrow keys
+  // and shows as the ring every control uses. A disabled or read-only field is already the
+  // sunken step the tint matches, so its chips move one step up to keep their shape.
   chip: {
     alignItems: 'center',
-    backgroundColor: color['--ult-color-accent-subtle'],
-    borderColor: color['--ult-color-accent-border'],
+    backgroundColor: {
+      default: color['--ult-color-accent-subtle'],
+      ':is([data-disabled], [aria-readonly="true"])': color['--ult-color-surface-hover'],
+    },
     borderRadius: radius['--ult-radius-sm'],
-    borderStyle: 'solid',
-    borderWidth: border.fine,
     boxSizing: 'border-box',
     color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     display: 'inline-flex',
     flexShrink: 0,
     fontSize: text['--ult-text-3'],
-    gap: space['--ult-space-2'],
-    paddingBlock: space['--ult-space-1'],
-    paddingInline: space['--ult-space-3'],
+    gap: space['--ult-space-1'],
+    height: space['--ult-space-8'],
+    lineHeight: font['--ult-font-leading-none'],
+    outline: {
+      default: 'none',
+      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
+    },
+    outlineOffset: border.focusOffset,
+    paddingInlineEnd: { default: space['--ult-space-4'], ':has(> button)': space['--ult-space-2'] },
+    paddingInlineStart: space['--ult-space-4'],
+    whiteSpace: 'nowrap',
   },
+  // A 16px target inside the chip's 4px inset, so the mark's corner is the 2px one. Hover moves
+  // the chip's tint one step.
   chipRemove: {
     alignItems: 'center',
     appearance: 'none',
-    backgroundColor: 'transparent',
+    backgroundColor: {
+      default: 'transparent',
+      [HOVER]: { ':hover:not(:disabled, [aria-disabled="true"])': color['--ult-color-accent-subtle-hover'] },
+      ':active:not(:disabled, [aria-disabled="true"])': color['--ult-color-accent-subtle-active'],
+    },
+    borderRadius: radius['--ult-radius-xs'],
     borderStyle: 'none',
     borderWidth: 0,
-    color: color['--ult-color-text-subtle'],
+    color: {
+      default: color['--ult-color-text-subtle'],
+      [HOVER]: { ':hover:not(:disabled, [aria-disabled="true"])': color['--ult-color-text'] },
+      ':is(:disabled, [aria-disabled="true"])': color['--ult-color-text-disabled'],
+    },
     cursor: 'default',
     display: 'inline-flex',
     flexShrink: 0,
+    fontSize: text['--ult-text-4'],
+    height: space['--ult-space-6'],
+    justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
     padding: 0,
+    width: space['--ult-space-6'],
     ':focus-visible': {
       outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
       outlineOffset: border.focusOffset,
@@ -294,21 +338,32 @@ const styles = stylex.create({
 });
 
 // Field text is text step 4, and rises to step 5 under a coarse pointer so iOS doesn't zoom on focus.
+// The block padding is the gap above and below a 24px chip, at or just under what centring it in
+// the control height leaves, so a wrapped field keeps the inset of a single row. With a chip in the
+// field, the start padding drops to about that same gap, so the first chip sits evenly in the corner
+// rather than further from the side than from the top. Base UI gives Chips `role="toolbar"` exactly
+// while it holds a chip.
 const sizes = stylex.create({
   sm: {
     fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     minHeight: space['--ult-space-9'],
-    paddingInline: space['--ult-space-4'],
+    paddingBlock: space['--ult-space-1'],
+    paddingInlineEnd: space['--ult-space-4'],
+    paddingInlineStart: { default: space['--ult-space-4'], [WITH_CHIPS]: space['--ult-space-2'] },
   },
   md: {
     fontSize: { default: text['--ult-text-4'], [COARSE]: text['--ult-text-5'] },
     minHeight: space['--ult-space-10'],
-    paddingInline: space['--ult-space-5'],
+    paddingBlock: space['--ult-space-3'],
+    paddingInlineEnd: space['--ult-space-5'],
+    paddingInlineStart: { default: space['--ult-space-5'], [WITH_CHIPS]: space['--ult-space-3'] },
   },
   lg: {
     fontSize: text['--ult-text-5'],
     minHeight: space['--ult-space-11'],
-    paddingInline: space['--ult-space-6'],
+    paddingBlock: space['--ult-space-4'],
+    paddingInlineEnd: space['--ult-space-6'],
+    paddingInlineStart: { default: space['--ult-space-6'], [WITH_CHIPS]: space['--ult-space-5'] },
   },
 });
 
@@ -426,7 +481,7 @@ function Clear({ style, children, ...props }: ComboboxClearProps) {
 }
 
 function Chips({ style, ...props }: ComboboxChipsProps) {
-  return <BaseCombobox.Chips {...props} {...stylex.props(style)} />;
+  return <BaseCombobox.Chips {...props} {...stylex.props(styles.chips, style)} />;
 }
 
 function Chip({ style, ...props }: ComboboxChipProps) {

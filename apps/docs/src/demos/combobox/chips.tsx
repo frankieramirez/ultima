@@ -6,13 +6,6 @@ const styles = stylex.create({
   box: {
     maxWidth: `calc(6 * ${space['--ult-space-12']})`,
   },
-  chips: {
-    alignItems: 'center',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: space['--ult-space-2'],
-    minWidth: 0,
-  },
 });
 
 const reagents = ['Bloodstone', 'Garlic', 'Ginseng', 'Mandrake', 'Nightshade', 'Spider silk', 'Sulphurous ash'];
@@ -24,7 +17,7 @@ export default function ComboboxChips() {
         <Field.Label>Reagents</Field.Label>
         <Combobox.Root items={reagents} multiple>
           <Combobox.InputGroup>
-            <Combobox.Chips style={styles.chips}>
+            <Combobox.Chips>
               <Combobox.Value>
                 {(selected: string[]) =>
                   selected.map((reagent) => (

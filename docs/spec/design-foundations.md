@@ -87,7 +87,7 @@ A border answers one of four questions, and the question picks the token:
 
 **Solid by default, dashed for "nothing here yet".** A dashed edge marks a placeholder: Empty, a drop zone, a slot to fill. It reads as incomplete on purpose, so it never appears on something that is already there. Ultima has no dotted borders.
 
-**Leave the border off when something else already draws the edge.** A solid Button's fill is its edge. A soft Badge's tint is its edge. Items inside a popup are separated by space and a highlight fill, not lines. A toned Alert's edge uses its hue (`<role>-border`) so the edge and the fill agree. Ultima doesn't use a single colored side stripe to signal tone. The fill, ink and icon already carry it, and a lone stripe reads as decoration.
+**Leave the border off when something else already draws the edge.** A solid Button's fill is its edge. A soft Badge's tint is its edge, and so is a Combobox chip's. Items inside a popup are separated by space and a highlight fill, not lines. A toned Alert's edge uses its hue (`<role>-border`) so the edge and the fill agree. Ultima doesn't use a single colored side stripe to signal tone. The fill, ink and icon already carry it, and a lone stripe reads as decoration.
 
 ## Outlines and borders
 
@@ -97,7 +97,7 @@ A border answers one of four questions, and the question picks the token:
 - An outline survives Windows forced-colors mode, where `box-shadow` focus rings disappear.
 - An outline sits outside the box with an offset, so it can't be mistaken for the control's own edge on a button.
 
-The focus outline is 2px `--ult-color-border-focus`, and it always sits outside the control with a 2px gap (`border.focusOffset`), on fields as well as buttons and selection controls. The gap keeps focus a separate signal from the control's own edge. A ring laid over a field's border merges with it and reads as a slightly heavier border, where a ring standing off the edge reads as something new around the control. The gap also puts the ring against the page around the control, which is the background the focus color is gated against at 3:1, rather than against the control's own edge ([WCAG 2.4.13 Focus Appearance](https://www.w3.org/WAI/WCAG22/Understanding/focus-appearance.html) measures the ring against what it replaces). An invalid field keeps its `--ult-color-danger` edge when focused, and its ring stays the focus color. The edge already carries the error before, during and after focus, so a red ring would only double it, and one focus color on every control is what lets a person find focus at a glance. Items in menus and lists show focus with the `surface-hover` highlight instead of a ring, because the highlight moves with the arrow keys. A popup that Base UI focuses only as a fallback container sets `outline: none`, since the popup itself is the visible signal.
+The focus outline is 2px `--ult-color-border-focus`, and it always sits outside the control with a 2px gap (`border.focusOffset`), on fields as well as buttons and selection controls. The gap keeps focus a separate signal from the control's own edge. A ring laid over a field's border merges with it and reads as a slightly heavier border, where a ring standing off the edge reads as something new around the control. The gap also puts the ring against the page around the control, which is the background the focus color is gated against at 3:1, rather than against the control's own edge ([WCAG 2.4.13 Focus Appearance](https://www.w3.org/WAI/WCAG22/Understanding/focus-appearance.html) measures the ring against what it replaces). An invalid field keeps its `--ult-color-danger` edge when focused, and its ring stays the focus color. The edge already carries the error before, during and after focus, so a red ring would only double it, and one focus color on every control is what lets a person find focus at a glance. Items in menus and lists show focus with the `surface-hover` highlight instead of a ring, because the highlight moves with the arrow keys. A Combobox chip takes the ring although arrow keys move between chips, because a one-step change on its tint would be too faint to find. A popup that Base UI focuses only as a fallback container sets `outline: none`, since the popup itself is the visible signal.
 
 One mark draws a ring that isn't focus: a thumb over arbitrary color, such as Color Field's area thumb, wears a two-tone ring. A 2px `surface-raised` border sits inside a 1px `border-strong` outline, because no single color contrasts with every hue under the thumb, and the light ring reads on dark colors while the dark line reads on light ones. Apart from that, never use an outline for decoration, and never draw focus with `box-shadow`. shadcn's translucent 3px ring measures about 1.5:1 and disappears in forced colors, which is why Ultima doesn't use one.
 
@@ -108,7 +108,7 @@ Corners are set by role, in `px` so they don't grow with the font size:
 | Role | Token | Value |
 | --- | --- | --- |
 | Marks: swatches, bars, indicator dots | `--ult-radius-xs` | 2px |
-| Small insets: inline code, popup items, Tooltip, Checkbox | `--ult-radius-sm` | 4px |
+| Small insets: inline code, popup items, chips, Tooltip, Checkbox | `--ult-radius-sm` | 4px |
 | Controls: Button, Input, Select trigger | `--ult-radius-md` | 6px |
 | Surfaces: popups, Alert, the Code block | `--ult-radius-lg` | 8px |
 | Objects and modals: Card, Empty, Dialog, Drawer | `--ult-radius-xl` | 12px |
@@ -189,6 +189,7 @@ A theme may drop the blur and keep the wash, so the scrim never depends on blur 
 | --- | --- | --- |
 | Popup inset around its items | 4px (step 2) | 8px |
 | Menu item, inline | 8px (step 4) | 4px |
+| Combobox chip, inline | 8px (step 4) | 4px |
 | Button, inline, md | 16px (step 6) | 6px |
 | Alert | 12px block, 16px inline | 8px |
 | Popover | 16px (step 6) | 8px |
@@ -196,7 +197,7 @@ A theme may drop the blur and keep the wash, so the scrim never depends on blur 
 
 Padding smaller than the corner lets content crowd the curve. Padding much bigger than the corner makes the box feel empty.
 
-**Adjust for what the eye sees.** An icon is lighter than a word, so the side of a Button that holds an icon takes one step less padding (16 → 12px) to look balanced. Uppercase micro-labels get wide tracking because capitals set tight look cramped.
+**Adjust for what the eye sees.** An icon is lighter than a word, so the side of a Button that holds an icon takes one step less padding (16 → 12px) to look balanced. A field holding chips drops its start padding to the gap above the chips, so the first chip sits evenly in the corner. Uppercase micro-labels get wide tracking because capitals set tight look cramped.
 
 **Components carry no outer margin.** A component sets `margin: 0` on its root, and the layout around it sets the space between components with `gap`. Space between things belongs to whatever contains them. That keeps a component reusable in any layout.
 
