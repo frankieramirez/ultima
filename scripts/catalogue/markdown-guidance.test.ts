@@ -39,6 +39,12 @@ test('support and lesson exports retain dynamic evidence and reject unhandled co
   await assert.rejects(markdownGuidance(files, catalogue, { ...composition, sources: {} }), /missing copy bundle/);
 });
 
+test('an HTTP reader gets the design foundations exactly as the repository writes them', async () => {
+  const guides = await markdownGuidance(files, catalogue, composition);
+  assert.equal(guides.get('foundations.md'), files.read('docs/spec/design-foundations.md'));
+  assert.match(guides.get('foundations.md')!, /^## Elevation$/m);
+});
+
 test('link rewriting preserves labels, titles and encoded destinations', async () => {
   const cases = [
     ['[/install](/install "/install")', '[/install](https://ultima.systems/guides/install.md "/install")'],
