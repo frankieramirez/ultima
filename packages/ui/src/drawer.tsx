@@ -83,14 +83,14 @@ const styles = stylex.create({
    */
   popup: {
     backgroundColor: color['--ult-color-surface-raised'],
-    borderBottomLeftRadius: { default: radius['--ult-radius-lg'], [DOWN_OR_LEFT]: 0 },
-    borderBottomRightRadius: { default: radius['--ult-radius-lg'], [DOWN_OR_RIGHT]: 0 },
+    borderBottomLeftRadius: { default: radius['--ult-radius-xl'], [DOWN_OR_LEFT]: 0 },
+    borderBottomRightRadius: { default: radius['--ult-radius-xl'], [DOWN_OR_RIGHT]: 0 },
     borderColor: color['--ult-color-border'],
     borderStyle: 'solid',
-    borderTopLeftRadius: { default: radius['--ult-radius-lg'], [UP_OR_LEFT]: 0 },
-    borderTopRightRadius: { default: radius['--ult-radius-lg'], [UP_OR_RIGHT]: 0 },
+    borderTopLeftRadius: { default: radius['--ult-radius-xl'], [UP_OR_LEFT]: 0 },
+    borderTopRightRadius: { default: radius['--ult-radius-xl'], [UP_OR_RIGHT]: 0 },
     borderWidth: border.hairline,
-    boxShadow: shadow['--ult-shadow-md'],
+    boxShadow: shadow['--ult-shadow-lg'],
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-sans'],
@@ -104,7 +104,7 @@ const styles = stylex.create({
     },
     outline: { default: 'none', ':focus': 'none', ':focus-visible': 'none' },
     outlineWidth: { default: 0, ':focus': 0, ':focus-visible': 0 },
-    padding: space['--ult-space-6'],
+    padding: space['--ult-space-8'],
     transform: {
       default: 'translate(var(--drawer-swipe-movement-x), calc(var(--drawer-snap-point-offset) + var(--drawer-swipe-movement-y)))',
       [DOWN_TRANSITIONING]: 'translateY(100%)',
@@ -133,6 +133,10 @@ const styles = stylex.create({
   description: {
     color: color['--ult-color-text-muted'],
     fontSize: text['--ult-text-4'],
+    lineHeight: font['--ult-font-leading-normal'],
+    marginBlockEnd: 0,
+    marginBlockStart: space['--ult-space-4'],
+    marginInline: 0,
   },
   /**
    * Base UI supplies this part's `touch-action` inline and nothing dimensional, so an unstyled

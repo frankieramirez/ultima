@@ -52,9 +52,9 @@ Component dependencies: `dialog` and `button`.
 npx shadcn@4.21.4 add @ultima/dialog @ultima/button
 ```
 
-`Dialog.Viewport` zeroes its padding and swaps `placeItems: center` for the edge. `Dialog.Popup` drops its radius and its measure cap, keeps a hairline on the side facing the page, and slides in from its edge over `--ult-motion-base` in place of the shared `scale(0.98)`. The four edges are physical rather than logical, because CSS has no logical transform.
+`Dialog.Viewport` zeroes its padding and swaps `placeItems: center` for the edge. `Dialog.Popup` drops its radius and its measure cap, keeps a hairline on the side facing the page, and slides in from its edge over `--ult-motion-base` in place of the shared `scale(0.96)`. The four edges are physical rather than logical, because CSS has no logical transform.
 
-**The override names the resting, starting, and ending transforms, or Dialog's scale survives underneath the slide.** `Dialog.Popup` carries `scale(0.98)` on both `[data-starting-style]` and `[data-ending-style]`, and StyleX merges a property one condition at a time. An override that sets only the resting transform leaves the scale in place for the other two states, and the panel scales while it travels.
+**The override names the resting, starting, and ending transforms, or Dialog's scale survives underneath the slide.** `Dialog.Popup` carries `scale(0.96)` on both `[data-starting-style]` and `[data-ending-style]`, and StyleX merges a property one condition at a time. An override that sets only the resting transform leaves the scale in place for the other two states, and the panel scales while it travels.
 
 <Demo component={Sheet} source={sheetSource} />
 

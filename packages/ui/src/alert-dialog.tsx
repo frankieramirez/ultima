@@ -34,10 +34,10 @@ const styles = stylex.create({
   popup: {
     backgroundColor: color['--ult-color-surface-raised'],
     borderColor: color['--ult-color-border'],
-    borderRadius: radius['--ult-radius-lg'],
+    borderRadius: radius['--ult-radius-xl'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
-    boxShadow: shadow['--ult-shadow-md'],
+    boxShadow: shadow['--ult-shadow-lg'],
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-sans'],
@@ -52,11 +52,11 @@ const styles = stylex.create({
     outline: { default: 'none', ':focus': 'none', ':focus-visible': 'none' },
     outlineWidth: { default: 0, ':focus': 0, ':focus-visible': 0 },
     overflow: 'auto',
-    padding: space['--ult-space-6'],
+    padding: space['--ult-space-8'],
     transform: {
       default: 'none',
-      ':is([data-starting-style])': 'scale(0.98)',
-      ':is([data-ending-style])': 'scale(0.98)',
+      ':is([data-starting-style])': 'scale(0.96)',
+      ':is([data-ending-style])': 'scale(0.96)',
     },
     transformOrigin: 'var(--transform-origin)',
     transitionDuration: motion['--ult-motion-fast'],
@@ -73,6 +73,10 @@ const styles = stylex.create({
   description: {
     color: color['--ult-color-text-muted'],
     fontSize: text['--ult-text-4'],
+    lineHeight: font['--ult-font-leading-normal'],
+    marginBlockEnd: 0,
+    marginBlockStart: space['--ult-space-4'],
+    marginInline: 0,
   },
 });
 

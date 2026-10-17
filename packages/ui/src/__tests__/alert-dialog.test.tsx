@@ -13,6 +13,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
+import { expectCardSurface } from './overlay';
 
 function SampleAlertDialog({
   open,
@@ -31,7 +32,7 @@ function SampleAlertDialog({
         <AlertDialog.Viewport data-testid="viewport">
           <AlertDialog.Popup data-testid="popup">
             <AlertDialog.Title>{title}</AlertDialog.Title>
-            <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>
+            <AlertDialog.Description data-testid="description">This cannot be undone.</AlertDialog.Description>
             {extra}
             <AlertDialog.Close>Cancel</AlertDialog.Close>
             <AlertDialog.Close>Delete</AlertDialog.Close>
@@ -134,6 +135,12 @@ test('Handle and createHandle sit on the namespace as values', () => {
   expect(typeof AlertDialog.createHandle).toBe('function');
   const handle = AlertDialog.createHandle();
   expect(handle).toBeInstanceOf(AlertDialog.Handle);
+});
+
+test('the popup is a card, and the description keeps its own rhythm', async () => {
+  const screen = await render(<SampleAlertDialog open />);
+  await expect.element(screen.getByRole('alertdialog')).toBeVisible();
+  expectCardSurface(screen.getByTestId('popup').element(), screen.getByTestId('description').element());
 });
 
 test('public prop types drop className on styled parts and omit modal and disablePointerDismissal', () => {

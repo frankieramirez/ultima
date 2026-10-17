@@ -14,6 +14,12 @@ import {
   z,
 } from '@ultima/tokens/tokens.stylex';
 
+const UP = ':is([data-side="bottom"])';
+const DOWN = ':is([data-side="top"])';
+// The `dir` attribute rather than `:dir()`, which the CSS pipeline lowers to language matching.
+const RIGHTWARD = ':is([data-side="left"], [data-side="inline-start"]:not([dir="rtl"] *), [data-side="inline-end"]:is([dir="rtl"] *))';
+const LEFTWARD = ':is([data-side="right"], [data-side="inline-end"]:not([dir="rtl"] *), [data-side="inline-start"]:is([dir="rtl"] *))';
+
 const styles = stylex.create({
   positioner: {
     outline: '0',
@@ -43,8 +49,8 @@ const styles = stylex.create({
     paddingInline: space['--ult-space-3'],
     transform: {
       default: 'none',
-      ':is([data-starting-style])': 'scale(0.98)',
-      ':is([data-ending-style])': 'scale(0.98)',
+      ':is([data-starting-style])': 'scale(0.96)',
+      ':is([data-ending-style])': 'scale(0.96)',
     },
     transformOrigin: 'var(--transform-origin)',
     transitionDuration: motion['--ult-motion-fast'],
@@ -52,20 +58,27 @@ const styles = stylex.create({
     transitionTimingFunction: { default: easing.enter, ':is([data-ending-style])': easing.exit },
     zIndex: z.popup,
   },
+  /**
+   * A square turned 45deg, half outside the popup's edge on the side that faces the anchor.
+   * Base UI places only the cross axis; the side offset and the two outward hairlines are set
+   * here, so the arrow continues the popup's border and covers it where they meet.
+   */
   arrow: {
+    backgroundColor: color['--ult-color-surface-raised'],
+    borderBottomColor: { default: 'transparent', [DOWN]: color['--ult-color-border'], [LEFTWARD]: color['--ult-color-border'] },
+    borderLeftColor: { default: 'transparent', [UP]: color['--ult-color-border'], [LEFTWARD]: color['--ult-color-border'] },
+    borderRightColor: { default: 'transparent', [DOWN]: color['--ult-color-border'], [RIGHTWARD]: color['--ult-color-border'] },
+    borderTopColor: { default: 'transparent', [UP]: color['--ult-color-border'], [RIGHTWARD]: color['--ult-color-border'] },
+    borderStyle: 'solid',
+    borderWidth: border.hairline,
+    bottom: { default: null, [DOWN]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    boxSizing: 'border-box',
     height: space['--ult-space-4'],
+    left: { default: null, [LEFTWARD]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    right: { default: null, [RIGHTWARD]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    top: { default: null, [UP]: `calc(-0.5 * ${space['--ult-space-4']})` },
+    transform: 'rotate(45deg)',
     width: space['--ult-space-4'],
-    '::before': {
-      backgroundColor: color['--ult-color-surface-raised'],
-      borderColor: color['--ult-color-border'],
-      borderStyle: 'solid',
-      borderWidth: border.hairline,
-      content: '""',
-      display: 'block',
-      height: space['--ult-space-4'],
-      transform: 'rotate(45deg)',
-      width: space['--ult-space-4'],
-    },
   },
 });
 
@@ -216,10 +229,12 @@ class UltTooltip extends HTMLElement {
     this.spread(positioner, api.getPositionerProps());
     const popup = this.partInner(popupHost);
     this.spread(popup, api.getContentProps());
-    this.spread(
-      this.partInner(positionerHost?.querySelector('ult-tooltip-arrow')),
-      api.getArrowProps(),
-    );
+    const arrow = this.partInner(positionerHost?.querySelector('ult-tooltip-arrow'));
+    this.spread(arrow, api.getArrowProps());
+    // Base UI marks the arrow with the side it renders on and the restated table reads it;
+    // Zag keeps that side in its context, so the element mirrors it onto the arrow.
+    const placement = machine.service.context.get('currentPlacement');
+    if (arrow && placement) arrow.setAttribute('data-side', placement.split('-')[0] as string);
     if (!(popup instanceof HTMLElement)) return;
     // The machine can reach open before the parts are parsed, and its deferred
     // positioning effect never retries when the elements were missing, so the
