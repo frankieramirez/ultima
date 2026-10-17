@@ -512,13 +512,15 @@ export const CI_OBLIGATIONS: readonly { workflow: string; command: string; check
   { workflow: 'ci.yml', command: 'node --experimental-strip-types --test scripts/catalogue/*.test.ts scripts/verification/*.test.ts', checks: ['tooling-tests'] },
   {
     workflow: 'ci.yml',
-    command: "pnpm -r --filter './packages/*' test",
-    checks: ['analysis-fixtures', 'cli-tests', 'tokens-tests', 'ui-tests', 'blocks-tests', 'elements-tests'],
+    command: "pnpm -r --filter './packages/*' --filter '!@ultima/analysis' test",
+    checks: ['cli-tests', 'tokens-tests', 'ui-tests', 'blocks-tests', 'elements-tests'],
   },
+  { workflow: 'ci.yml', command: 'pnpm --filter @ultima/analysis test', checks: ['analysis-fixtures'] },
   { workflow: 'ci.yml', command: 'pnpm --filter @ultima/docs test --shard=${{ matrix.shard }}/4', checks: ['docs-tests'] },
   { workflow: 'ci.yml', command: 'python3 packages/tokens/scripts/palette.py --check', checks: ['palette'] },
   { workflow: 'ci.yml', command: 'pnpm registry:build', checks: ['registry-build'] },
   { workflow: 'ci.yml', command: 'pnpm --filter @ultima/docs build', checks: ['docs-build'] },
+  { workflow: 'ci.yml', command: 'test -z "$(printf \'%s\\n\' $RESULTS | grep -vx success)"', preparation: 'the required check passes only when every suite job did' },
   { workflow: 'ci.yml', command: 'pnpm --filter @ultima/docs exec playwright install --with-deps chromium', preparation: 'the chromium the production matrix needs' },
   {
     workflow: 'ci.yml',

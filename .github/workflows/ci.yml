@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -36,15 +36,13 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      # `pnpm test` without the docs suite, which runs sharded in the `docs` job below. The docs suite
-      # keeps one browser per shard, so `fileParallelism: false` still holds inside each one. The filter
-      # names `packages/*` because any negative filter also selects the workspace root, whose own `test`
-      # script runs every suite again, docs included.
+      # `pnpm test` without the tooling, analysis and docs suites, which run beside this job in the
+      # `tooling`, `analysis` and `docs` jobs. The filter names `packages/*` because a filter with only
+      # exclusions also selects the workspace root, whose own `test` script runs every suite again.
       - name: Test
         run: |
           pnpm --filter @ultima/ui exec playwright install --with-deps chromium
-          node --experimental-strip-types --test scripts/catalogue/*.test.ts scripts/verification/*.test.ts
-          pnpm -r --filter './packages/*' test
+          pnpm -r --filter './packages/*' --filter '!@ultima/analysis' test
 
       - name: Contrast gate
         run: python3 packages/tokens/scripts/palette.py --check
@@ -54,6 +52,51 @@ jobs:
 
       - name: Docs build
         run: pnpm --filter @ultima/docs build
+
+  # The catalogue and verification node:test suites, which `pnpm test` runs before the packages.
+  tooling:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Chromium
+        run: pnpm --filter @ultima/ui exec playwright install --with-deps chromium
+
+      - name: Tooling tests
+        run: node --experimental-strip-types --test scripts/catalogue/*.test.ts scripts/verification/*.test.ts
+
+  # The architecture checker's fixtures. Each test runs the checker over the whole repository, so this
+  # is the slowest package suite, and inside `pnpm -r test` it held back every package in the dependency
+  # level after its own.
+  analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Analysis tests
+        run: pnpm --filter @ultima/analysis test
 
   # The docs Vitest suite, the slowest in `pnpm test`, split by file across four runners. Each shard
   # runs the package's own test script, so the catalogue preflight and the registry build still precede it.
@@ -82,6 +125,18 @@ jobs:
 
       - name: Docs tests
         run: pnpm --filter @ultima/docs test --shard=${{ matrix.shard }}/4
+
+  # The one result the `main` ruleset requires beside `production`: green only when the build and every
+  # suite job passed, so splitting the suites across jobs loses none of them from the gate.
+  check:
+    if: ${{ always() }}
+    needs: [build, tooling, analysis, docs]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every job passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: test -z "$(printf '%s\n' $RESULTS | grep -vx success)"
 
   # The full production matrix on every pull request and push to main, against this job's own
   # production docs build: docs/spec/agent-infrastructure.md, Local, PR and release policy. No path

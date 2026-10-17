@@ -2776,16 +2776,16 @@ Decided on [Decide the rendered consumer proof required for a production recomme
 
 ### CI
 
-The main validation workflow, `.github/workflows/ci.yml`, runs on `pull_request` and on `push` to `main`. Consumer installation also has the separate smoke workflow described above. Its `check` job runs, in order:
+The main validation workflow, `.github/workflows/ci.yml`, runs on `pull_request` and on `push` to `main`. Consumer installation also has the separate smoke workflow described above. Its `build` job runs, in order:
 
 1. Install.
 2. `pnpm typecheck`.
-3. Every suite `pnpm test` runs except the docs suite.
+3. Every package suite `pnpm test` runs except the analysis and docs suites.
 4. The contrast gate, `palette.py --check`.
 5. `pnpm registry:build`.
 6. The docs site build.
 
-The docs Vitest suite, axe sweep included, runs beside it in the `docs` job, split by file across four shards. It is most of `pnpm test`'s time, and each shard keeps the suite's one-browser rule. The `production` job runs the production matrix.
+The rest of `pnpm test` runs beside it. The `tooling` job runs the catalogue and verification suites, and the `analysis` job runs the architecture checker's fixtures. The `docs` job runs the docs Vitest suite, axe sweep included, split by file across four shards. That suite is most of `pnpm test`'s time, and each shard keeps its one-browser rule. The `check` job passes only when `build`, `tooling`, `analysis` and every `docs` shard passed, so it stays the one test result the `main` ruleset requires. The `production` job runs the production matrix.
 
 Steps 5 and 6 are in the list because generation breaking is a real failure mode that no unit test observes: the stage globs, the import rewriting, and the dependency derivation all fail silently from a component test's point of view.
 
