@@ -30,6 +30,7 @@ import {
 } from '@ultima/ui';
 import source from '../hover-card?raw';
 
+import { expectArrowOnEdge, resolved } from './overlay';
 import { themeDocument, themes, violations } from './axe';
 
 const DESTINATION = '/tokens/color';
@@ -190,8 +191,8 @@ test('the enter and exit states drive the popup style, and the resting state is 
   expect(getComputedStyle(popup).transform).toBe('none');
   expect(declaresWhen(popup, 'opacity', '[data-starting-style]')).toEqual(['0']);
   expect(declaresWhen(popup, 'opacity', '[data-ending-style]')).toEqual(['0']);
-  expect(declaresWhen(popup, 'transform', '[data-starting-style]')).toEqual(['scale(0.98)']);
-  expect(declaresWhen(popup, 'transform', '[data-ending-style]')).toEqual(['scale(0.98)']);
+  expect(declaresWhen(popup, 'transform', '[data-starting-style]')).toEqual(['scale(0.96)']);
+  expect(declaresWhen(popup, 'transform', '[data-ending-style]')).toEqual(['scale(0.96)']);
   expect(popup.getAttribute('data-open')).toBe('');
 });
 
@@ -209,10 +210,13 @@ test('the popup wears the full overlay surface and the recipe transition', async
   expect(popup.transitionDuration).not.toBe('0s');
   expect(declares(page.getByTestId('popup').element(), 'transform-origin')).toEqual(['var(--transform-origin)']);
   expect(getComputedStyle(page.getByTestId('positioner').element()).outlineStyle).toBe('none');
+  expect(popup.paddingTop).toBe(resolved('padding-top', 'var(--ult-space-6)'));
 
-  const arrow = page.getByTestId('arrow').element();
-  expect(parseFloat(getComputedStyle(arrow).width)).toBeGreaterThan(0);
-  expect(getComputedStyle(arrow, '::before').transform).not.toBe('none');
+});
+
+test('the arrow straddles the edge facing the trigger', async () => {
+  await openCard();
+  expectArrowOnEdge(page.getByTestId('arrow').element(), page.getByTestId('popup').element(), 'up');
 });
 
 test('the viewport carries position relative and nothing else', async () => {

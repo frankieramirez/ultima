@@ -118,6 +118,7 @@ const ELEMENTS: ElementParity[] = [
     stateMap: {
       'data-starting-style': 'data-starting-style',
       'data-ending-style': 'data-ending-style',
+      'data-side': 'data-side',
     },
   },
 ];

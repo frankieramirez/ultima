@@ -30,7 +30,7 @@ const styles = stylex.create({
     transitionDuration: motion['--ult-motion-fast'],
     transitionTimingFunction: { default: easing.enter, ':is([data-ending-style])': easing.exit },
     opacity: { default: 1, ':is([data-starting-style])': 0, ':is([data-ending-style])': 0 },
-    transform: { default: 'none', ':is([data-starting-style])': 'scale(0.98)', ':is([data-ending-style])': 'scale(0.98)' },
+    transform: { default: 'none', ':is([data-starting-style])': 'scale(0.96)', ':is([data-ending-style])': 'scale(0.96)' },
   },
   item: {
     appearance: 'none',

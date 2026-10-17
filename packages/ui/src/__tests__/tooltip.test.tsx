@@ -9,6 +9,7 @@ import {
   type TooltipTriggerProps,
 } from '@ultima/ui';
 
+import { expectArrowOnEdge } from './overlay';
 import { themeDocument, themes, violations } from './axe';
 import { parkPointer } from './setup';
 
@@ -52,6 +53,31 @@ test('opening yields a tooltip named by its text and the trigger carries aria-la
     'aria-label',
     'Copied to clipboard',
   );
+});
+
+test('the arrow straddles the edge facing the trigger', async () => {
+  const screen = await render(
+    <div style={{ paddingBlockStart: 120 }}>
+      <Tooltip.Provider delay={0}>
+        <Tooltip.Root defaultOpen>
+          <Tooltip.Trigger aria-label="Copy" render={<button type="button" />}>
+            Copy
+          </Tooltip.Trigger>
+          <Tooltip.Portal>
+            <Tooltip.Positioner sideOffset={8}>
+              <Tooltip.Popup data-testid="popup">
+                <Tooltip.Arrow data-testid="arrow" />
+                Copy
+              </Tooltip.Popup>
+            </Tooltip.Positioner>
+          </Tooltip.Portal>
+        </Tooltip.Root>
+      </Tooltip.Provider>
+    </div>,
+  );
+  await expect.element(screen.getByTestId('popup')).toBeVisible();
+  await expect.poll(() => getComputedStyle(screen.getByTestId('popup').element()).opacity).toBe('1');
+  expectArrowOnEdge(screen.getByTestId('arrow').element(), screen.getByTestId('popup').element(), 'down');
 });
 
 test('the popup has no outline', async () => {
