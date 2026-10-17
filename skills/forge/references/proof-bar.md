@@ -22,7 +22,7 @@ Paste this at the top of the new test file, replace each blank with what this co
 
 Item by item:
 
-1. **Every combination renders.** Loop the axes rather than writing the cells out; `button.test.tsx` nests three `for` loops over the literal unions. Prove the default separately by rendering one component with no props beside one with every axis passed explicitly, and comparing the two class strings.
+1. **Every combination renders.** Loop the axes rather than writing the cells out, and mount every cell in one test rather than one test per cell; `button.test.tsx` maps the three literal unions into one render and finds each cell by name. Prove the default separately by rendering one component with no props beside one with every axis passed explicitly, and comparing the two class strings.
 2. **The name resolves** through the source the contract row names, queried by role and accessible name.
 3. **The focus ring** shows after keyboard focus on the part the contract names, and a part the contract says renders no ring shows none. Menu and Select items assert their `data-highlighted` styling instead.
 4. **The primitive is still wired.** One assertion per contract row marked Base UI in the Keyboard column: Escape closes, arrows move and loop, focus returns to the trigger. This confirms the composition did not break Base UI. It is not a re-test of Base UI, which tests itself.

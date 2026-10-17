@@ -36,10 +36,13 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # `pnpm test` without the docs suite, which runs sharded in the `docs` job below. The docs suite
+      # keeps one browser per shard, so `fileParallelism: false` still holds inside each one.
       - name: Test
         run: |
           pnpm --filter @ultima/ui exec playwright install --with-deps chromium
-          pnpm test
+          node --experimental-strip-types --test scripts/catalogue/*.test.ts scripts/verification/*.test.ts
+          pnpm -r --filter '!@ultima/docs' test
 
       - name: Contrast gate
         run: python3 packages/tokens/scripts/palette.py --check
@@ -49,6 +52,34 @@ jobs:
 
       - name: Docs build
         run: pnpm --filter @ultima/docs build
+
+  # The docs Vitest suite, the slowest in `pnpm test`, split by file across four runners. Each shard
+  # runs the package's own test script, so the catalogue preflight and the registry build still precede it.
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Chromium
+        run: pnpm --filter @ultima/docs exec playwright install --with-deps chromium
+
+      - name: Docs tests
+        run: pnpm --filter @ultima/docs test --shard=${{ matrix.shard }}/4
 
   # The full production matrix on every pull request and push to main, against this job's own
   # production docs build: docs/spec/agent-infrastructure.md, Local, PR and release policy. No path

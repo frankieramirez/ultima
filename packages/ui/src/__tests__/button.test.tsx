@@ -11,16 +11,21 @@ test('a button is named by its text', async () => {
   await expect.element(screen.getByRole('button', { name: 'Save changes' })).toBeVisible();
 });
 
-for (const variant of ['solid', 'soft', 'outline', 'ghost'] as const) {
-  for (const size of ['sm', 'md', 'lg'] as const) {
-    for (const tone of ['accent', 'danger'] as const) {
-      test(`${variant} / ${size} / ${tone} renders`, async () => {
-        const screen = await render(<Button variant={variant} size={size} tone={tone}>Action</Button>);
-        await expect.element(screen.getByRole('button', { name: 'Action' })).toBeVisible();
-      });
-    }
-  }
-}
+const variants = ['solid', 'soft', 'outline', 'ghost'] as const;
+const sizes = ['sm', 'md', 'lg'] as const;
+const tones = ['accent', 'danger'] as const;
+const cells = variants.flatMap((variant) => sizes.flatMap((size) => tones.map((tone) => ({ variant, size, tone, name: `${variant} ${size} ${tone}` }))));
+
+test('every variant by size by tone cell renders', async () => {
+  const screen = await render(
+    <>
+      {cells.map(({ variant, size, tone, name }) => (
+        <Button key={name} variant={variant} size={size} tone={tone}>{name}</Button>
+      ))}
+    </>,
+  );
+  for (const { name } of cells) await expect.element(screen.getByRole('button', { name })).toBeVisible();
+});
 
 test('omitted axes match solid / md / accent', async () => {
   const screen = await render(<><Button>Default</Button><Button variant="solid" size="md" tone="accent">Explicit</Button></>);
