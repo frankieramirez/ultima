@@ -23,7 +23,7 @@ A principle earns a line here only if it already settled a decision on the map, 
 
 ## Consumer support
 
-The [browser and integration support plan](consumer-support.md) records the accepted target matrix, localization boundaries and evidence required before publishing a production support promise. Its cross-engine and device coverage is pending implementation.
+The [browser and integration support plan](consumer-support.md) records the accepted target matrix, localization boundaries and evidence required before publishing a production support promise. Its 54-cell cross-engine matrix is implemented ([#770](https://github.com/frankieramirez/ultima/issues/770), [#771](https://github.com/frankieramirez/ultima/issues/771), [#772](https://github.com/frankieramirez/ultima/issues/772)) and passed on `3a6fa37`, and `/support` publishes the evidence manifest ([#773](https://github.com/frankieramirez/ultima/issues/773)). The open evidence gaps it names, such as physical phones and screen readers, remain.
 
 ## Tokens
 
@@ -131,7 +131,7 @@ There is no display family. Mana's `--pixel` (Pixelify Sans) stays mana's brand,
 
 Six values, in `px` so corners do not grow with the font size.
 
-Amended on [Decide the default radius scale and respace the Shape presets](https://github.com/frankieramirez/ultima/issues/644). Status: the Shape presets are implemented (draft document v3, [#665](https://github.com/frankieramirez/ultima/issues/665)), and the `site` and Neutral theme boundaries show the new scale ([#666](https://github.com/frankieramirez/ultima/issues/666)). The base tokens still ship the previous values, 2/4/10/12, until this lands with the Neutral base-token rollout under Consumer default theme. Both changes reach consumers in one release, with one piece of update guidance. A consumer who wants the previous corners selects the Ultima preset, whose `soft` shape keeps them.
+Amended on [Decide the default radius scale and respace the Shape presets](https://github.com/frankieramirez/ultima/issues/644). Status: the Shape presets are implemented (draft document v3, [#665](https://github.com/frankieramirez/ultima/issues/665)), and the `site` and Neutral theme boundaries show the new scale ([#666](https://github.com/frankieramirez/ultima/issues/666)). The base tokens ship the `default` scale: the Neutral base-token rollout under Consumer default theme replaced 2/4/10/12 ([#747](https://github.com/frankieramirez/ultima/issues/747)), and the design foundations redesign moved it to the version-4 values below ([#869](https://github.com/frankieramirez/ultima/pull/869)). Both changes reach consumers in one release, with one piece of update guidance. A consumer who wants the previous corners selects the Ultima preset, whose `soft` shape keeps them.
 
 | Token | Value | Used by |
 | --- | --- | --- |
@@ -256,7 +256,7 @@ The scale and step per token cannot be read back out of compiled CSS, so the exp
 
 ## Consumer default theme
 
-Decided on [Decide the consumer default theme and separation from Ultima branding](https://github.com/frankieramirez/ultima/issues/614). Status: accepted for implementation. The current generated palette and `stockDraft()` still use the indigo/cyan defaults; this section specifies their replacement. The palette tables below document the existing Ultima palette until that work lands.
+Decided on [Decide the consumer default theme and separation from Ultima branding](https://github.com/frankieramirez/ultima/issues/614). Status: implemented on [#747](https://github.com/frankieramirez/ultima/issues/747) and [#748](https://github.com/frankieramirez/ultima/issues/748). `stockDraft()`, the generated palette, `themes.ts`, the base tokens and their exports ship Neutral, and the [base-theme update page](https://ultima.systems/install/update) and `status` notice name the change. The value tables under [Palette](#palette) still show the pre-rollout Ultima palette, not the shipped Neutral values.
 
 ### Fresh installs and brand boundaries
 
@@ -311,7 +311,7 @@ Implementation must capture pre-change stock and customized v1 fixtures, includi
 
 ## Theme adoption
 
-Decided on [Decide a complete theme adoption path for people and agents](https://github.com/frankieramirez/ultima/issues/616). Status: accepted for implementation. The paths below are the contract for consumer guidance; the current README, install page, setup-item prose, generated guide, and consumer skill do not yet teach the full path. The [Theme Studio export contract](theme-studio.md#theme-export-installation-and-recovery) owns artifact formats and draft recovery.
+Decided on [Decide a complete theme adoption path for people and agents](https://github.com/frankieramirez/ultima/issues/616). Status: implemented on [#748](https://github.com/frankieramirez/ultima/issues/748) and [#760](https://github.com/frankieramirez/ultima/issues/760). The paths below are the contract for consumer guidance; the README, install page, setup-item prose, generated guide and consumer skill teach them as [Guidance ownership](#guidance-ownership) assigns. The [Theme Studio export contract](theme-studio.md#theme-export-installation-and-recovery) owns artifact formats and draft recovery.
 
 ### Choose and export
 
@@ -347,7 +347,7 @@ The export carries font stacks but loads no font files. Load each chosen face in
 
 ### Mode and scope packaging
 
-Decided on [Decide how to package theme mode and portal recipes](https://github.com/frankieramirez/ultima/issues/729). Status: accepted for implementation. Two optional copy-source catalogue items package the behavior above: `theme-mode` for the document's mode and `theme-scope` for a subtree theme. Neither is a provider an app must mount. A consumer that only imports the CSS theme and never switches modes installs neither, and the docs app's `ThemeRoot` and `ThemeBoundary` stay docs-only references rather than consumer files.
+Decided on [Decide how to package theme mode and portal recipes](https://github.com/frankieramirez/ultima/issues/729). Status: implemented on [#754](https://github.com/frankieramirez/ultima/issues/754) and [#755](https://github.com/frankieramirez/ultima/issues/755). Two optional copy-source catalogue items package the behavior above: `theme-mode` for the document's mode and `theme-scope` for a subtree theme. Neither is a provider an app must mount. A consumer that only imports the CSS theme and never switches modes installs neither, and the docs app's `ThemeRoot` and `ThemeBoundary` stay docs-only references rather than consumer files.
 
 **`theme-mode`** is one file, `theme-mode.tsx`, with no dependency beyond React. Its public API:
 
@@ -404,15 +404,15 @@ Updating an existing consumer requires a visible review of its base token and th
 
 ## Complete-screen composition
 
-Decided on [Decide the complete-screen composition guide and recipe discovery](https://github.com/frankieramirez/ultima/issues/728). Status: accepted for implementation. The [composition guide contract](screen-composition.md) owns the bounded example inventory, source and discovery ownership, installed-consumer checks, and an empty-app implementation brief. Its proposed `/build-a-screen` and `/recipes` pages and consumer-copy projections remain to be built. Existing recipes retain their owning component pages and descriptors; existing blocks remain the installable complete screens.
+Decided on [Decide the complete-screen composition guide and recipe discovery](https://github.com/frankieramirez/ultima/issues/728). Status: implemented on [#761](https://github.com/frankieramirez/ultima/issues/761), [#762](https://github.com/frankieramirez/ultima/issues/762), [#763](https://github.com/frankieramirez/ultima/issues/763) and [#764](https://github.com/frankieramirez/ultima/issues/764). The [composition guide contract](screen-composition.md) owns the bounded example inventory, source and discovery ownership, installed-consumer checks, and an empty-app implementation brief. The `/build-a-screen` and `/recipes` pages and the consumer-copy projection ship, and installed Vite and Next projects check every copy bundle. Existing recipes retain their owning component pages and descriptors; existing blocks remain the installable complete screens.
 
 ## Consumer StyleX linting
 
-Decided on [Decide the StyleX linting contract for consumer projects](https://github.com/frankieramirez/ultima/issues/730). Status: implemented apart from doctor diagnostics. The [consumer lint contract](consumer-lint.md) owns the published compatibility, the consumer-owned flat-config recipe, severities, local/CI commands and installed-fixture proof. Both setup items link a hand step to the downloadable `ultima.eslint.mjs` and the [install walkthrough](https://ultima.systems/install#stylex-lint): the official StyleX plugin with `valid-styles` as an error, cleanup warnings and key sorting off. The runner's `lint` exercise proves it in installed Vite, Next root and Next `src` projects. Doctor will advise about integration gaps without executing config code; `check` retains Ultima's policies.
+Decided on [Decide the StyleX linting contract for consumer projects](https://github.com/frankieramirez/ultima/issues/730). Status: implemented on [#756](https://github.com/frankieramirez/ultima/issues/756) and [#757](https://github.com/frankieramirez/ultima/issues/757). The [consumer lint contract](consumer-lint.md) owns the published compatibility, the consumer-owned flat-config recipe, severities, local/CI commands and installed-fixture proof. Both setup items link a hand step to the downloadable `ultima.eslint.mjs` and the [install walkthrough](https://ultima.systems/install#stylex-lint): the official StyleX plugin with `valid-styles` as an error, cleanup warnings and key sorting off. The runner's `lint` exercise proves it in installed Vite, Next root and Next `src` projects. Doctor advises about integration gaps without executing config code; `check` retains Ultima's policies.
 
 ## Adoption delivery
 
-Decided on [Decide the adoption delivery order and first-screen acceptance test](https://github.com/frankieramirez/ultima/issues/731). Status: accepted for implementation. The [adoption delivery plan](adoption-delivery.md) orders the consumer default theme rollout, the consumer proof runner, the mode and scope recipes, consumer linting, product theme discovery, screen composition, project bootstrap and the full support matrix. It defines the first-screen exercise that gates an adoption recommendation.
+Decided on [Decide the adoption delivery order and first-screen acceptance test](https://github.com/frankieramirez/ultima/issues/731). Status: implemented. Slices S1 to S9 landed under [#746](https://github.com/frankieramirez/ultima/issues/746), and the adoption recommendation gate passed on `3a6fa37`: agent runs in all three layouts and `pnpm verify release` ([evidence](../evidence/first-screen/README.md)). The [adoption delivery plan](adoption-delivery.md) orders the consumer default theme rollout, the consumer proof runner, the mode and scope recipes, consumer linting, product theme discovery, screen composition, project bootstrap and the full support matrix. It defines the first-screen exercise that gates an adoption recommendation.
 
 ## Palette
 
@@ -2772,7 +2772,7 @@ The smoke install scaffolds both frameworks and installs the released catalogue 
 
 ### Rendered consumer proof
 
-Decided on [Decide the rendered consumer proof required for a production recommendation](https://github.com/frankieramirez/ultima/issues/617). Status: accepted for implementation. The smoke install above remains the full-catalogue build and dependency check. Its catalogue-count page and Button do not establish that an installed theme paints and behaves correctly in a production browser. [The rendered consumer proof contract](consumer-proof.md) specifies the shared fresh-consumer fixture, installation and export paths, exact browser assertions, failure evidence and PR/release gates. It reuses the browser matrix settled on [Decide the browser and integration support promise](https://github.com/frankieramirez/ultima/issues/618) rather than defining a second matrix. A green smoke build or isolated Studio export parity result cannot be reported as this proof.
+Decided on [Decide the rendered consumer proof required for a production recommendation](https://github.com/frankieramirez/ultima/issues/617). Status: implemented on [#749](https://github.com/frankieramirez/ultima/issues/749) to [#753](https://github.com/frankieramirez/ultima/issues/753), with the 54-cell matrix on [#770](https://github.com/frankieramirez/ultima/issues/770) to [#772](https://github.com/frankieramirez/ultima/issues/772); the release gate passed on `3a6fa37` ([evidence](../evidence/first-screen/README.md)). The smoke install above remains the full-catalogue build and dependency check. Its catalogue-count page and Button do not establish that an installed theme paints and behaves correctly in a production browser. [The rendered consumer proof contract](consumer-proof.md) specifies the shared fresh-consumer fixture, installation and export paths, exact browser assertions, failure evidence and PR/release gates. It reuses the browser matrix settled on [Decide the browser and integration support promise](https://github.com/frankieramirez/ultima/issues/618) rather than defining a second matrix. A green smoke build or isolated Studio export parity result cannot be reported as this proof.
 
 ### CI
 
@@ -3122,7 +3122,7 @@ $ npx ultima-design diff sidebar
 
 ### Specimen
 
-Decided on [Decide whether the consumer app gets a live specimen of its installed items](https://github.com/frankieramirez/ultima/issues/854). Status: accepted for implementation after [#774](https://github.com/frankieramirez/ultima/issues/774) closes. Until then nothing below ships, and `init`'s preview, `/llms.txt`, Build a screen and the consumer skill are unchanged.
+Decided on [Decide whether the consumer app gets a live specimen of its installed items](https://github.com/frankieramirez/ultima/issues/854). Status: accepted for implementation. [#774](https://github.com/frankieramirez/ultima/issues/774) has closed, and nothing below is built yet: `init`'s preview, `/llms.txt`, Build a screen and the consumer skill are unchanged.
 
 **Why it exists.** The consumer skill asks an agent to check production rendering in both modes and with a popup open before it hands work back. The docs site shows every item live, but in Neutral and outside the product. `init`'s preview shows four items and never changes. An agent that wants to see the product's own theme on everything the product installed has to build that scene itself. `specimen` builds it on request.
 

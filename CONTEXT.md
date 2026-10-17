@@ -12,7 +12,7 @@ A named design value (color, space, radius, type, motion) defined once in Ultima
 
 ## Theme studio
 
-The planned editor for customizing Ultima's design variables and seeing their effect on live components. It groups controls by design concern and exposes individual semantic-token overrides for finer editing. Its first release targets themes for existing Ultima applications, with export and installation, rather than project creation. The [theme studio map](https://github.com/frankieramirez/ultima/issues/204) owns the planning decisions.
+The editor for customizing Ultima's design variables and seeing their effect on live components. It groups controls by design concern and exposes individual semantic-token overrides for finer editing. Its first release targets themes for existing Ultima applications, with export and installation, rather than project creation. The [theme studio map](https://github.com/frankieramirez/ultima/issues/204) owns the planning decisions.
 
 ## Palette scale
 
@@ -92,7 +92,7 @@ The universal registry item that prepares a project for Ultima: one per target (
 
 ## Project bootstrap
 
-The supported workflow that takes a new or existing application to its first working Ultima screen. The planned `init` command shows a plan before applying framework, registry and setup operations; the consumer owns the resulting application files. It is separate from the consumer CLI's managed skill and hook installation. [Consumer project bootstrap](docs/spec/consumer-setup.md) owns the contract.
+The supported workflow that takes a new or existing application to its first working Ultima screen. The `init` command shows a plan before applying framework, registry and setup operations; the consumer owns the resulting application files. It is separate from the consumer CLI's managed skill and hook installation. [Consumer project bootstrap](docs/spec/consumer-setup.md) owns the contract.
 
 ## Hand step
 
@@ -112,7 +112,7 @@ Any project that installs Ultima. Mana's report is the first consumer of the tok
 
 ## Consumer CLI
 
-The planned command a consumer runs with `npx` in their own repository: `doctor` proves the post-install hand steps landed, `status` and `diff` report installed items against the registry, and `check` runs Ultima's contract checks over the consumer's code. `install` writes its managed files. It is not `pnpm verify`, the contributor verification CLI, and it is not mana's `ultima` audit skill. [Map: A consumer CLI for Ultima](https://github.com/frankieramirez/ultima/issues/467) owns its decisions.
+The command a consumer runs with `npx` in their own repository: `doctor` proves the post-install hand steps landed, `status` and `diff` report installed items against the registry, and `check` runs Ultima's contract checks over the consumer's code. `install` writes its managed files. It is not `pnpm verify`, the contributor verification CLI, and it is not mana's `ultima` audit skill. [Map: A consumer CLI for Ultima](https://github.com/frankieramirez/ultima/issues/467) owns its decisions.
 
 ## Managed file
 
@@ -120,7 +120,7 @@ A file the consumer CLI writes into a consumer's repository and refreshes on eve
 
 ## Consumer skill
 
-The skill `install` writes into a consumer's repository, named `ultima-design`. It is a managed file that versions with the CLI. It says when to fetch `/llms.txt` and which CLI command to run at each step. The accepted product-theme workflow adds a local discovery pointer and an offline branch; detailed conventions stay hosted. It is not `forge`, the contributor skill, and it is not mana's `ultima` audit skill.
+The skill `install` writes into a consumer's repository, named `ultima-design`. It is a managed file that versions with the CLI. It says when to fetch `/llms.txt` and which CLI command to run at each step. The product-theme workflow adds a local discovery pointer and an offline branch; detailed conventions stay hosted. It is not `forge`, the contributor skill, and it is not mana's `ultima` audit skill.
 
 ## Active product theme
 
@@ -508,7 +508,7 @@ A citation naming a decision ticket on the private pre-GitHub Linear workspace t
 
 ## Consumer default theme
 
-The complete theme a new project gets before choosing its own. The accepted next default is Neutral, with achromatic interactive colors and distinct status colors. Ultima names the explicit preset that preserves the original indigo/cyan appearance. The [default-theme contract](docs/spec/ultima.md#consumer-default-theme) records the pending implementation and compatibility requirements.
+The complete theme a new project gets before choosing its own. The default is Neutral, with achromatic interactive colors and distinct status colors. Ultima names the explicit preset that preserves the original indigo/cyan appearance. The [default-theme contract](docs/spec/ultima.md#consumer-default-theme) records its compatibility requirements.
 
 ## Theme adoption
 
