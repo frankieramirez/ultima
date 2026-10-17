@@ -43,12 +43,12 @@ describe('offline read-only theme freshness', () => {
 
   it('detects hand-edited values with the original header and preserves both files', async () => {
     const root = theme();
-    edit(root, 'ultima-theme.css', (text) => text.replace('--ult-radius-md: 4px', '--ult-radius-md: 31px'));
+    edit(root, 'ultima-theme.css', (text) => text.replace('--ult-radius-md: 6px', '--ult-radius-md: 31px'));
     const result = await report(root);
     expect(result.code).toBe(1);
     const css = result.theme.rows.find((row) => row.artifact === 'css')!;
     expect(css.state).toBe('mismatch');
-    expect(css.differences).toContainEqual(expect.objectContaining({ actual: expect.stringContaining('31px'), expected: expect.stringContaining('4px') }));
+    expect(css.differences).toContainEqual(expect.objectContaining({ actual: expect.stringContaining('31px'), expected: expect.stringContaining('6px') }));
     expect(result.diagnostics.some((item) => item.ruleId === 'ULT-THEME-001')).toBe(true);
   });
 
@@ -77,7 +77,7 @@ describe('offline read-only theme freshness', () => {
       selector: () => text.replace(':root', '.product'),
       mode: () => text.replace('prefers-color-scheme: light', 'prefers-color-scheme: dark'),
       'reduced-motion': () => text.replace('prefers-reduced-motion: reduce', 'prefers-reduced-motion: no-preference'),
-      duplicate: () => text.replace('--ult-radius-md: 4px;', '--ult-radius-md: 4px; --ult-radius-md: 10px;'),
+      duplicate: () => text.replace('--ult-radius-md: 6px;', '--ult-radius-md: 6px; --ult-radius-md: 10px;'),
       cascade: () => `@layer other {\n${text}\n}`,
     })[change]());
     const result = await report(root);
@@ -140,9 +140,9 @@ describe('offline read-only theme freshness', () => {
   it.each(['dynamic', 'version', 'recipe', 'expression', 'ambiguous', 'header'] as const)('reports %s as incomplete', async (change) => {
     const root = theme();
     if (change === 'dynamic') edit(root, 'src/main.tsx', (text) => `${text}\nimport('./pending.css');`);
-    if (change === 'version') edit(root, 'ultima-theme.json', (text) => text.replace('"version": 3', '"version": 999'));
+    if (change === 'version') edit(root, 'ultima-theme.json', (text) => text.replace('"version": 4', '"version": 999'));
     if (change === 'recipe') edit(root, 'ultima-theme.json', (text) => text.replace('"recipeVersion": 3', '"recipeVersion": 999'));
-    if (change === 'expression') edit(root, 'ultima-theme.css', (text) => text.replace('--ult-radius-md: 4px', '--ult-radius-md: var(--local-radius)'));
+    if (change === 'expression') edit(root, 'ultima-theme.css', (text) => text.replace('--ult-radius-md: 6px', '--ult-radius-md: var(--local-radius)'));
     if (change === 'ambiguous') {
       write(root, 'other-theme.css', toCss(stockDraft()));
       edit(root, 'src/main.tsx', (text) => text.replace('../ultima-theme.css', '../other-theme.css'));
@@ -157,7 +157,7 @@ describe('offline read-only theme freshness', () => {
   it('makes blocking setup or theme findings take precedence over incomplete analysis', async () => {
     const root = theme();
     edit(root, 'src/main.tsx', (text) => `${text}\nimport('./pending.css');`);
-    edit(root, 'ultima-theme.css', (text) => text.replace('--ult-radius-md: 4px', '--ult-radius-md: 99px'));
+    edit(root, 'ultima-theme.css', (text) => text.replace('--ult-radius-md: 6px', '--ult-radius-md: 99px'));
     expect((await report(root)).code).toBe(1);
   });
 
@@ -231,8 +231,8 @@ describe('offline read-only theme freshness', () => {
     write(root, 'DESIGN.md', toDefaultDesignMd(resolveDraft(draft)));
     const before = doctorTheme(root, 'vite');
     expect(before.theme.rows.find((row) => row.artifact === 'design')).toMatchObject({ state: 'unlinked', coverage: { contentMatches: true } });
-    edit(root, 'src/lib/tokens.stylex.ts', (text) => text.replace("'--ult-radius-md': '4px'", "'--ult-radius-md': '22px'"));
+    edit(root, 'src/lib/tokens.stylex.ts', (text) => text.replace("'--ult-radius-md': '6px'", "'--ult-radius-md': '22px'"));
     expect(doctorTheme(root, 'vite').theme.rows.find((row) => row.artifact === 'design')?.state).toBe('mismatch');
-    expect(readFileSync(join(root, 'DESIGN.md'), 'utf8')).toContain('4px');
+    expect(readFileSync(join(root, 'DESIGN.md'), 'utf8')).toContain('6px');
   });
 });

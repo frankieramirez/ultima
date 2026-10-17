@@ -212,7 +212,7 @@ test('Use closest passing value turns the pairing green in both modes and is one
   localStorage.setItem(AUTOSAVE_KEY, serializeDraft(failingSubtle()));
   const screen = await mount('/theme-studio', false);
   const footer = checksFooter(screen);
-  await expect.element(footer.getByText('90 of 98 pass', { exact: true })).toBeVisible();
+  await expect.element(footer.getByText('94 of 102 pass', { exact: true })).toBeVisible();
   const hiddenFooter = footer.element();
   const count = () => hiddenFooter.querySelector('p')?.textContent;
   const marks = () => checkMarks(hiddenFooter).filter((mark) => mark.dataset.pairing === '--ult-color-text-subtle on --ult-color-surface');
@@ -224,7 +224,7 @@ test('Use closest passing value turns the pairing green in both modes and is one
   await expect.element(item.getByRole('button', { name: 'Reset to derived', exact: true })).toBeVisible();
   await userEvent.click(item.getByRole('button', { name: 'Use closest passing value', exact: true }));
 
-  await expect.poll(count).toBe('98 of 98 pass');
+  await expect.poll(count).toBe('102 of 102 pass');
   expect(marks().map((mark) => mark.dataset.pass)).toEqual(['true', 'true']);
   await expect.element(report.getByText('All pairings pass', { exact: true })).toBeVisible();
   await expect.element(report.getByRole('heading', { name: 'Token contrast', exact: true })).toHaveFocus();
@@ -235,7 +235,7 @@ test('Use closest passing value turns the pairing green in both modes and is one
   await expect.element(report).not.toBeInTheDocument();
   await expect.element(screen.getByRole('button', { name: 'View draft report', exact: true })).toHaveFocus();
   await userEvent.click(screen.getByRole('button', { name: 'Undo', exact: true }));
-  await expect.element(footer.getByText('90 of 98 pass', { exact: true })).toBeVisible();
+  await expect.element(footer.getByText('94 of 102 pass', { exact: true })).toBeVisible();
   expect(readToken(pane, '--ult-color-text-subtle')).toBe('#555555');
   await expect.element(screen.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
 });
@@ -252,7 +252,7 @@ test('a derived target fixes only its failing mode and offers no reset', async (
   expect(item.getByRole('button', { name: 'Reset to derived' }).query()).toBeNull();
   await expect.element(item.getByText('Sets danger-contrast to #fefefe in light.', { exact: true })).toBeVisible();
   await userEvent.click(item.getByRole('button', { name: 'Use closest passing value', exact: true }));
-  await expect.poll(() => hiddenFooter.querySelector('p')?.textContent).toBe('98 of 98 pass');
+  await expect.poll(() => hiddenFooter.querySelector('p')?.textContent).toBe('102 of 102 pass');
   const stored = JSON.parse(localStorage.getItem(AUTOSAVE_KEY)!);
   expect(stored.overrides.dark['--ult-color-danger-contrast']).toBeUndefined();
   expect(stored.overrides.light['--ult-color-danger-contrast']).toBe('#fefefe');
@@ -301,7 +301,7 @@ test('the gallery-bar count names the draft report it opens and takes focus back
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
   const screen = await mount('/theme-studio', false);
-  const trigger = screen.getByRole('button', { name: '98 of 98 pass. View draft report', exact: true });
+  const trigger = screen.getByRole('button', { name: '102 of 102 pass. View draft report', exact: true });
   await userEvent.click(trigger);
   const report = screen.getByRole('dialog', { name: 'Draft report' });
   await expect.element(report).toBeVisible();
@@ -945,7 +945,7 @@ test('the mobile drawer offers the six groups as chips, one shown at a time, wit
   await page.viewport(390, 844);
   onTestFinished(() => page.viewport(1280, 720));
   const screen = await mount('/theme-studio');
-  await expect.element(screen.getByRole('button', { name: '98 of 98 pass. View draft report', exact: true })).toBeVisible();
+  await expect.element(screen.getByRole('button', { name: '102 of 102 pass. View draft report', exact: true })).toBeVisible();
   await userEvent.click(screen.getByRole('button', { name: 'Edit theme', exact: true }));
   const drawer = screen.getByRole('dialog', { name: 'Edit theme' });
   const chips = drawer.getByRole('group', { name: 'Theme groups' });
@@ -960,7 +960,7 @@ test('the mobile drawer offers the six groups as chips, one shown at a time, wit
   await userEvent.click(chips.getByRole('button', { name: 'Shape', exact: true }));
   await expect.element(drawer.getByRole('heading', { name: 'Shape', level: 2 })).toBeVisible();
   expect(drawer.getByRole('heading', { name: 'Color', level: 2 }).query()).toBeNull();
-  await expect.element(drawer.getByRole('region', { name: 'Token checks' }).getByText('98 of 98 pass', { exact: true })).toBeVisible();
+  await expect.element(drawer.getByRole('region', { name: 'Token checks' }).getByText('102 of 102 pass', { exact: true })).toBeVisible();
 });
 
 for (const width of [1280, 390] as const) for (const mode of ['dark', 'light'] as const) {
@@ -1377,7 +1377,7 @@ test('the checks footer counts every manifest pairing in both modes, dark marks 
   const screen = await mount('/theme-studio');
   const footer = checksFooter(screen);
   const total = PAIRINGS.length * 2;
-  expect(total).toBe(98);
+  expect(total).toBe(102);
   await expect.element(footer.getByText(`${total} of ${total} pass`, { exact: true })).toBeVisible();
 
   const strip = footer.element().querySelector('[data-checks-strip]')!;
@@ -1414,7 +1414,7 @@ test('a failing override applies marked, turns its marks to danger and changes t
   expect(getComputedStyle(lightTextOnSurface).backgroundColor).toBe(paintedColor(readToken(footer, '--ult-color-success')));
   const failing = marks.filter((mark) => mark.dataset.pass === 'false').length;
   expect(failing).toBeGreaterThan(0);
-  await expect.element(checksFooter(screen).getByText(`${98 - failing} of 98 pass`, { exact: true })).toBeVisible();
+  await expect.element(checksFooter(screen).getByText(`${102 - failing} of 102 pass`, { exact: true })).toBeVisible();
 });
 
 test('the draft report lists every pairing per mode at full precision', async () => {
@@ -1431,7 +1431,7 @@ test('the draft report lists every pairing per mode at full precision', async ()
   await userEvent.click(screen.getByRole('button', { name: 'View draft report', exact: true }));
   const report = screen.getByRole('dialog', { name: 'Draft report' });
   const panel = report.getByRole('region', { name: 'Token contrast' }).element();
-  expect(panel.querySelectorAll('li').length).toBe(49);
+  expect(panel.querySelectorAll('li').length).toBe(51);
   const pair = [...panel.querySelectorAll('li')].find((li) => li.textContent?.startsWith('text on surface ·'));
   expect(pair!.textContent).toMatch(/min 4\.5:1/);
   expect(pair!.textContent).toContain('Dark 21:1 pass');

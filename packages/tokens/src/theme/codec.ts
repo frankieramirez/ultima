@@ -336,7 +336,7 @@ export function parseDraft(input: string): DraftParseResult {
 
   if (!isRecord(raw)) return fail('malformed', 'Draft must be an object.');
   if (!isFiniteNumber(raw.version)) return fail('malformed', 'Draft is missing a version.');
-  if (raw.version !== 1 && raw.version !== 2 && raw.version !== THEME_DRAFT_VERSION) {
+  if (raw.version !== 1 && raw.version !== 2 && raw.version !== 3 && raw.version !== THEME_DRAFT_VERSION) {
     return fail('unknown-version', `Draft version ${raw.version} is not supported.`);
   }
   if (!isFiniteNumber(raw.recipeVersion)) return fail('malformed', 'Draft is missing a recipe version.');
@@ -358,7 +358,8 @@ export function parseDraft(input: string): DraftParseResult {
     }
     preset = { id: definition.id, revision };
   }
-  if (version === THEME_DRAFT_VERSION && !isOneOf(raw.accentFill, ACCENT_FILLS)) {
+  const fillable = version === 3 || version === THEME_DRAFT_VERSION;
+  if (fillable && !isOneOf(raw.accentFill, ACCENT_FILLS)) {
     return fail('malformed', 'Draft accent fill must be hue or ink.');
   }
 
@@ -395,7 +396,7 @@ export function parseDraft(input: string): DraftParseResult {
       locks,
       shuffleSeeds,
       ...(version !== 1 ? { preset } : {}),
-      ...(version === THEME_DRAFT_VERSION ? { accentFill: raw.accentFill as AccentFill } : {}),
+      ...(fillable ? { accentFill: raw.accentFill as AccentFill } : {}),
     },
   };
 }
