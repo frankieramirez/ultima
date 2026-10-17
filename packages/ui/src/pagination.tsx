@@ -97,7 +97,7 @@ const styles = stylex.create({
   end: {
     color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     cursor: { default: 'pointer', ':is([data-disabled])': 'default' },
-    paddingInline: { default: space['--ult-space-6'], ':has(> svg)': space['--ult-space-5'] },
+    paddingInline: { default: space['--ult-space-6'], ':has(> svg, > [data-ult-icon])': space['--ult-space-5'] },
   },
   ellipsis: {
     alignItems: 'center',

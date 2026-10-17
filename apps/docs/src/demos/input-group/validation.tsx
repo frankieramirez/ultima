@@ -1,7 +1,7 @@
 import { EnvelopeIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
-import { Field, InputGroup } from '@ultima/ui';
+import { Field, Icon, InputGroup } from '@ultima/ui';
 
 const styles = stylex.create({
   stack: {
@@ -17,7 +17,7 @@ export default function Validation() {
         <Field.Label>Email</Field.Label>
         <InputGroup.Root>
           <InputGroup.Addon>
-            <EnvelopeIcon />
+            <Icon><EnvelopeIcon /></Icon>
           </InputGroup.Addon>
           <InputGroup.Input type="email" defaultValue="not-an-email" />
         </InputGroup.Root>

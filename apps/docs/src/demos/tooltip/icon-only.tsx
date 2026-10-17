@@ -1,6 +1,6 @@
 import { InfoIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
-import { Button, Tooltip } from '@ultima/ui';
+import { Button, Icon, Tooltip } from '@ultima/ui';
 
 const styles = stylex.create({
   iconOnly: {
@@ -17,7 +17,7 @@ export default function IconOnly() {
           aria-label="More information"
           render={<Button variant="outline" style={styles.iconOnly} />}
         >
-          <InfoIcon />
+          <Icon><InfoIcon /></Icon>
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Positioner>

@@ -192,21 +192,21 @@ const sizes = stylex.create({
     gap: space['--ult-space-3'],
     height: space['--ult-space-9'],
     paddingBlock: space['--ult-space-2'],
-    paddingInline: { default: space['--ult-space-5'], ':has(> svg)': space['--ult-space-4'] },
+    paddingInline: { default: space['--ult-space-5'], ':has(> svg, > [data-ult-icon])': space['--ult-space-4'] },
   },
   md: {
     fontSize: text['--ult-text-4'],
     gap: space['--ult-space-4'],
     height: space['--ult-space-10'],
     paddingBlock: space['--ult-space-4'],
-    paddingInline: { default: space['--ult-space-6'], ':has(> svg)': space['--ult-space-5'] },
+    paddingInline: { default: space['--ult-space-6'], ':has(> svg, > [data-ult-icon])': space['--ult-space-5'] },
   },
   lg: {
     fontSize: text['--ult-text-5'],
     gap: space['--ult-space-4'],
     height: space['--ult-space-11'],
     paddingBlock: space['--ult-space-5'],
-    paddingInline: { default: space['--ult-space-7'], ':has(> svg)': space['--ult-space-6'] },
+    paddingInline: { default: space['--ult-space-7'], ':has(> svg, > [data-ult-icon])': space['--ult-space-6'] },
   },
 });
 

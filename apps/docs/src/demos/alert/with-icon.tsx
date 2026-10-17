@@ -1,7 +1,7 @@
 import { WarningIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
-import { Alert } from '@ultima/ui';
+import { Alert, Icon } from '@ultima/ui';
 
 const styles = stylex.create({
   copy: {
@@ -15,7 +15,7 @@ export default function WithIcon() {
   return (
     <Alert.Root tone="warning">
       <Alert.Icon>
-        <WarningIcon />
+        <Icon><WarningIcon /></Icon>
       </Alert.Icon>
       <div {...stylex.props(styles.copy)}>
         <Alert.Title>Disk almost full</Alert.Title>

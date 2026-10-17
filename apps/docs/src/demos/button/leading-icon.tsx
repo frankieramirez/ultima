@@ -1,7 +1,7 @@
 import { ArrowDownIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
-import { Button } from '@ultima/ui';
+import { Button, Icon } from '@ultima/ui';
 
 const styles = stylex.create({
   row: {
@@ -16,11 +16,11 @@ export default function LeadingIcon() {
   return (
     <div {...stylex.props(styles.row)}>
       <Button>
-        <ArrowDownIcon />
+        <Icon><ArrowDownIcon /></Icon>
         Download
       </Button>
       <Button variant="outline">
-        <ArrowDownIcon />
+        <Icon><ArrowDownIcon /></Icon>
         Download
       </Button>
     </div>

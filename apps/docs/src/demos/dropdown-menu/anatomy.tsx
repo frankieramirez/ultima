@@ -1,6 +1,6 @@
 import { ArchiveIcon, LinkSimpleIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
-import { Button, DropdownMenu } from '@ultima/ui';
+import { Button, DropdownMenu, Icon } from '@ultima/ui';
 import { useRef } from 'react';
 
 const styles = stylex.create({
@@ -28,11 +28,11 @@ export default function DropdownMenuAnatomy() {
                 <DropdownMenu.Group>
                   <DropdownMenu.GroupLabel>Document</DropdownMenu.GroupLabel>
                   <DropdownMenu.Item>
-                    <PencilSimpleIcon />
+                    <Icon><PencilSimpleIcon /></Icon>
                     Rename
                   </DropdownMenu.Item>
                   <DropdownMenu.LinkItem href="https://base-ui.com/react/components/menu">
-                    <LinkSimpleIcon />
+                    <Icon><LinkSimpleIcon /></Icon>
                     Base UI docs
                   </DropdownMenu.LinkItem>
                 </DropdownMenu.Group>
@@ -54,7 +54,7 @@ export default function DropdownMenuAnatomy() {
                 <DropdownMenu.Separator />
                 <DropdownMenu.SubmenuRoot>
                   <DropdownMenu.SubmenuTrigger>
-                    <ArchiveIcon />
+                    <Icon><ArchiveIcon /></Icon>
                     Move to
                   </DropdownMenu.SubmenuTrigger>
                 </DropdownMenu.SubmenuRoot>

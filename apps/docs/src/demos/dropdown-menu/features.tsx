@@ -1,5 +1,5 @@
 import { ArchiveIcon, LinkSimpleIcon, PencilSimpleIcon } from '@phosphor-icons/react';
-import { Button, DropdownMenu } from '@ultima/ui';
+import { Button, DropdownMenu, Icon } from '@ultima/ui';
 
 export default function MenuFeatures() {
   return (
@@ -14,11 +14,11 @@ export default function MenuFeatures() {
               <DropdownMenu.Group>
                 <DropdownMenu.GroupLabel>Document</DropdownMenu.GroupLabel>
                 <DropdownMenu.Item>
-                  <PencilSimpleIcon />
+                  <Icon><PencilSimpleIcon /></Icon>
                   Rename
                 </DropdownMenu.Item>
                 <DropdownMenu.LinkItem href="https://base-ui.com/react/components/menu">
-                  <LinkSimpleIcon />
+                  <Icon><LinkSimpleIcon /></Icon>
                   Base UI docs
                 </DropdownMenu.LinkItem>
                 <DropdownMenu.Item disabled>Delete</DropdownMenu.Item>
@@ -41,7 +41,7 @@ export default function MenuFeatures() {
               <DropdownMenu.Separator />
               <DropdownMenu.SubmenuRoot>
                 <DropdownMenu.SubmenuTrigger>
-                  <ArchiveIcon />
+                  <Icon><ArchiveIcon /></Icon>
                   Move to
                 </DropdownMenu.SubmenuTrigger>
                 <DropdownMenu.Portal>

@@ -228,9 +228,9 @@ An anchored Toast takes the popup cap, not the stack's 384px. It is a popup tied
 
 **Flexible children can shrink.** A flex or grid child that holds text or a field sets `min-width: 0`. The platform default, `min-width: auto`, holds it at its content width and pushes it out of its container.
 
-**Content in a surface shares one start edge.** A group label, the items under it and the surface's title begin on the same inline line. Icons sit in a fixed-width leading slot ahead of that line. A selection indicator (a check or a radio dot) sits on the trailing edge, so the leading slot only ever holds icons. With no icon, text sits flush with the start edge. Aligned edges read as one group and let the eye scan straight down. A leading check would push selected items' text off the line every other item follows.
+**Content in a surface shares one start edge.** A group label, the items under it and the surface's title begin on the same inline line. An icon leads its label in a `1em` box, so every label that carries one starts on the same line. A selection indicator (a check or a radio dot) sits on the trailing edge, so the leading slot only ever holds icons. With no icon, text sits flush with the start edge. Aligned edges read as one group and let the eye scan straight down. A leading check would push selected items' text off the line every other item follows.
 
-**Icons size with their text.** An icon inside a line of text or a control is `1em` square, so it follows the text from `sm` to `lg`. An icon that stands alone, such as Empty's, sets a `text` step as its font size and is `1em` within it.
+**Icons size with their text.** An icon inside a line of text or a control is `1em` square, so it follows the text from `sm` to `lg`. An icon that stands alone, such as Empty's, sets a `text` step as its font size and is `1em` within it. Icon sets are not consistent about size: Lucide and Tabler draw 24px, Heroicons sets no size, and Radix Icons draws 15px. So an icon from the consumer's set goes inside `Icon`, which makes it `1em` whatever the set wrote. Icon leaves the weight to the set, because the set's weight is the consumer's choice.
 
 ## Type
 

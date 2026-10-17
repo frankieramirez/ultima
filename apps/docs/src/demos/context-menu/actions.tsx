@@ -1,7 +1,7 @@
 import { ArchiveIcon, DotsThreeIcon, LinkSimpleIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import * as stylex from '@stylexjs/stylex';
 import { color, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, ContextMenu, DropdownMenu } from '@ultima/ui';
+import { Button, ContextMenu, DropdownMenu, Icon } from '@ultima/ui';
 
 const styles = stylex.create({
   row: {
@@ -33,16 +33,16 @@ export default function ContextMenuActions() {
           <ContextMenu.Positioner>
             <ContextMenu.Popup aria-label="Quarterly report">
               <ContextMenu.Item>
-                <PencilSimpleIcon />
+                <Icon><PencilSimpleIcon /></Icon>
                 Rename
               </ContextMenu.Item>
               <ContextMenu.LinkItem href="https://base-ui.com/react/components/context-menu">
-                <LinkSimpleIcon />
+                <Icon><LinkSimpleIcon /></Icon>
                 Base UI docs
               </ContextMenu.LinkItem>
               <ContextMenu.Separator />
               <ContextMenu.Item>
-                <ArchiveIcon />
+                <Icon><ArchiveIcon /></Icon>
                 Archive
               </ContextMenu.Item>
             </ContextMenu.Popup>
@@ -51,22 +51,22 @@ export default function ContextMenuActions() {
       </ContextMenu.Root>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger render={<Button variant="ghost" size="sm" aria-label="Quarterly report actions" />}>
-          <DotsThreeIcon />
+          <Icon><DotsThreeIcon /></Icon>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
           <DropdownMenu.Positioner sideOffset={8}>
             <DropdownMenu.Popup>
               <DropdownMenu.Item>
-                <PencilSimpleIcon />
+                <Icon><PencilSimpleIcon /></Icon>
                 Rename
               </DropdownMenu.Item>
               <DropdownMenu.LinkItem href="https://base-ui.com/react/components/context-menu">
-                <LinkSimpleIcon />
+                <Icon><LinkSimpleIcon /></Icon>
                 Base UI docs
               </DropdownMenu.LinkItem>
               <DropdownMenu.Separator />
               <DropdownMenu.Item>
-                <ArchiveIcon />
+                <Icon><ArchiveIcon /></Icon>
                 Archive
               </DropdownMenu.Item>
             </DropdownMenu.Popup>

@@ -42,6 +42,7 @@ export const anatomyTabs: Record<string, { parts: readonly string[]; demo?: Comp
   'field': { parts: ['Root', 'Label', 'Description', 'Error', 'Item', 'Control'] },
   'fieldset': { parts: ['Root', 'Legend'] },
   'hover-card': { parts: ['Trigger', 'Positioner', 'Popup', 'Arrow', 'Backdrop', 'Viewport'], demo: HoverCardAnatomy },
+  'icon': { parts: ['Icon'] },
   'input': { parts: ['Input'] },
   'input-group': { parts: ['Root', 'Input', 'Addon'] },
   'input-otp': { parts: ['Root', 'Input', 'Separator'] },

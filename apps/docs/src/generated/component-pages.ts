@@ -30,6 +30,7 @@ import EmptyContent from '../content/components/empty.mdx';
 import FieldContent from '../content/components/field.mdx';
 import FieldsetContent from '../content/components/fieldset.mdx';
 import HoverCardContent from '../content/components/hover-card.mdx';
+import IconContent from '../content/components/icon.mdx';
 import InputContent from '../content/components/input.mdx';
 import InputGroupContent from '../content/components/input-group.mdx';
 import InputOTPContent from '../content/components/input-otp.mdx';
@@ -88,6 +89,7 @@ export const componentPages: Record<string, ComponentType<{ components?: MDXComp
   "field": FieldContent,
   "fieldset": FieldsetContent,
   "hover-card": HoverCardContent,
+  "icon": IconContent,
   "input": InputContent,
   "input-group": InputGroupContent,
   "input-otp": InputOTPContent,
