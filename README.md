@@ -23,7 +23,19 @@ Ultima has no version number. The registry serves the latest build, and every in
 
 ## Install
 
+`init` sets up a new or existing Vite or Next.js App Router project in one reviewed step. It wires the StyleX compiler, installs the setup item with Button, Card and Dialog, and puts a small preview on the page for you to replace.
+
+```bash
+npx ultima-design@latest init my-app --framework vite
+npx ultima-design@latest init my-next-app --framework next --layout src
+npx ultima-design@latest init .
+```
+
+Ultima is plug-and-play for the [supported combinations](https://ultima.systems/support). A fresh agent given only [ultima.systems](https://ultima.systems) and this command built a themed first screen in about five minutes. It passed `ultima-design check`, StyleX lint, the raw-paint scan and a production build in both modes and system mode, with no step outside the printed guidance and no undocumented choice ([evidence](docs/evidence/first-screen/README.md#stranger-path-on-the-public-host)).
+
 Choose a theme in [Theme Studio](https://ultima.systems/theme-studio), then follow the [install walkthrough](https://ultima.systems/install#theme-adoption): install the registry item, apply the export after StyleX, and check a production build in both modes and system mode. A fresh project can keep Neutral. Preserve an existing brand in an authorized custom draft; review local design guidance and the active theme before replacing files.
+
+For a project `init` does not cover, the setup items do the same by hand.
 
 Vite:
 

@@ -1,6 +1,6 @@
 # Adoption delivery plan
 
-Decided on [Decide the adoption delivery order and first-screen acceptance test](https://github.com/frankieramirez/ultima/issues/731), under [Make Ultima a plug-and-play StyleX design system](https://github.com/frankieramirez/ultima/issues/725). Status: accepted for implementation. This is a plan. It does not mean any slice has landed or that any acceptance suite has run.
+Decided on [Decide the adoption delivery order and first-screen acceptance test](https://github.com/frankieramirez/ultima/issues/731), under [Make Ultima a plug-and-play StyleX design system](https://github.com/frankieramirez/ultima/issues/725). Status: delivered. Every slice landed under [Build: Plug-and-play StyleX adoption](https://github.com/frankieramirez/ultima/issues/746), which closed on 2026-10-17. S9 and the adoption recommendation gate passed on `3a6fa37`, and the stranger path passed against the public host with `ultima-design` 0.2.0 ([evidence](../evidence/first-screen/README.md)).
 
 The plan orders delivery of the map's five new decisions together with the work those earlier decisions accepted but never built. It defines the first-screen exercise, which is the acceptance test for the whole effort. It does not change Neutral, Tight, source ownership or [the accepted support matrix](consumer-support.md).
 
@@ -99,7 +99,7 @@ A run passes when it has no manual interventions outside printed hand steps, no 
 
 - **Pull request:** each slice runs its own acceptance plus the affected installed-consumer cases under [Gates and cost](consumer-proof.md#gates-and-cost). `smoke-install` keeps its path filter.
 - **Adoption recommendation:** S1 to S8 merged, then on one source revision: the full 54-cell matrix, all four delivery paths, `smoke-install`, the Studio pairing and parity gates, `pnpm verify release`, and passing agent runs in all three layouts.
-- **Public claims:** until S9 passes, docs and README describe what each slice delivered and make no plug-and-play or "first screen in minutes" claim. Supported combinations are only those that passed. After publication, the public-domain stranger path from [the launch effort](https://github.com/frankieramirez/ultima/issues/587) reruns one agent exercise against the public host. That rerun belongs to the launch work, not to this plan.
+- **Public claims:** until S9 passed, docs and README described what each slice delivered and made no plug-and-play or "first screen in minutes" claim. After publication, the public-domain stranger path from [the launch effort](https://github.com/frankieramirez/ultima/issues/587) reruns one agent exercise against the public host. Both have passed: S9 on `3a6fa37`, and the stranger path in [2026-10-17-vite-live-4711e8](../evidence/first-screen/README.md#stranger-path-on-the-public-host), against `https://ultima.systems` and `ultima-design` 0.2.0 from npm. Docs and README may make the claim. Supported combinations are still only those that passed.
 
 ## Compatibility and migration
 
