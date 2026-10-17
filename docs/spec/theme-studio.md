@@ -41,7 +41,7 @@ Generated Neutral revision 2 values, all 49 pairings passing in each mode (weake
 | `accent-text` | `#e8e8e8` | `#1b1b1b` |
 | `accent-contrast` | `#0e0e0e` | `#fdfdfd` |
 
-Revision 1 stays resolvable with its grey accent (`#9e9e9e` dark, `#717171` light). Fresh sessions and the preset picker select the current revision, revision 3 since draft document version 4, which keeps the Ink accent. Saved, shared, downloaded, and registry-item revision-1 drafts keep their values and Reset to revision 1; moving one to revision 2 is an explicit selection recorded as a history entry. The registry's default theme file moves to revision 2 when regenerated. The redesign frames draw Neutral's accent with Ultima's tinted mithril 12 (`#e7e8e9`, `#181a24`); the build uses the generated values above.
+Revision 1 stays resolvable with its grey accent (`#9e9e9e` dark, `#717171` light). Fresh sessions and the preset picker select the current revision, revision 3 since draft document version 4, which keeps the Ink accent. Saved, shared, downloaded, and registry-item revision-1 drafts keep their values and Reset to revision 1; moving one to revision 2 is an explicit selection recorded as a history entry. The registry's default theme file moves to revision 3 when regenerated. The redesign frames draw Neutral's accent with Ultima's tinted mithril 12 (`#e7e8e9`, `#181a24`); the build uses the generated values above.
 
 ### Identity, selection, and recovery
 

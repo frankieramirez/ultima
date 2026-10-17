@@ -138,6 +138,10 @@ test('the codec opens version 4 documents and share links, and refuses version 5
   expect(legacy).toMatchObject({ version: 3, preset: { id: 'grove', revision: 2 }, accentFill: 'hue' });
   expect(parseDraft(serializeDraft(legacy))).toEqual({ ok: true, draft: legacy });
   expect(parseDraft(JSON.stringify({ ...legacy, preset: { id: 'grove', revision: 3 } }))).toMatchObject({ ok: false, reason: 'unknown-version' });
+  // A version-3 document cannot pick up a token version 4 added, and a version-4 one can.
+  const hover = { dark: { '--ult-color-border-hover': '#808080' }, light: {} };
+  expect(parseDraft(JSON.stringify({ ...legacy, overrides: hover }))).toMatchObject({ ok: false, reason: 'malformed' });
+  expect(parseDraft(JSON.stringify({ ...draft, overrides: hover }))).toMatchObject({ ok: true });
   const provenance = parseProvenance(provenanceComment(draftProvenance(draft)));
   expect(provenance).toMatchObject({ status: 'linked', provenance: { draftVersion: 4, preset: { id: 'grove', revision: 3 } } });
 });

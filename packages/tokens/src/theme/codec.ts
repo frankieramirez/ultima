@@ -129,19 +129,26 @@ function isFontStack(value: unknown): value is string {
   return false;
 }
 
-const OVERRIDE_TOKENS = new Set(Object.keys(resolveDraft(stockDraft()).dark).filter(
-  (name) => !['--ult-color-surface-overlay', '--ult-radius-full', '--ult-filter-backdrop'].includes(name),
-));
+function overrideTokens(draft: ThemeDraft): Set<string> {
+  return new Set(Object.keys(resolveDraft(draft).dark).filter(
+    (name) => !['--ult-color-surface-overlay', '--ult-radius-full', '--ult-filter-backdrop'].includes(name),
+  ));
+}
+
+// A draft may override only the tokens its own version resolves, so an older document never
+// gains a token a later version added. Versions 1 to 3 share the version-3 table.
+const OVERRIDE_TOKENS_V3 = overrideTokens({ ...stockDraft(), version: 3 });
+const OVERRIDE_TOKENS = overrideTokens(stockDraft());
 
 function inRange(value: unknown, min: number, max: number): value is number {
   return isFiniteNumber(value) && value >= min && value <= max;
 }
 
-function parseTokenTable(value: unknown): Partial<TokenTable> | string {
+function parseTokenTable(value: unknown, allowed: Set<string>): Partial<TokenTable> | string {
   if (!isRecord(value)) return 'Overrides must contain dark and light token tables.';
   const table: Partial<TokenTable> = {};
   for (const [name, token] of Object.entries(value)) {
-    if (!OVERRIDE_TOKENS.has(name)) return `Override ${name} is unknown, fixed, or derived and cannot be edited.`;
+    if (!allowed.has(name)) return `Override ${name} is unknown, fixed, or derived and cannot be edited.`;
     if (typeof token !== 'string' || !token.trim()) return `Override ${name} must be a non-empty value.`;
     if ((name === '--ult-font-sans' || name === '--ult-font-mono') && !isFontStack(token)) {
       return `Override ${name} must be a comma-separated list of font family names.`;
@@ -196,10 +203,11 @@ function parseTypography(value: unknown): ThemeDraft['typography'] | null {
   };
 }
 
-function parseOverrides(value: unknown): ThemeDraft['overrides'] | string {
+function parseOverrides(value: unknown, version: ThemeDraft['version']): ThemeDraft['overrides'] | string {
   if (!isRecord(value)) return 'Draft must contain overrides for dark and light modes.';
-  const dark = parseTokenTable(value.dark);
-  const light = parseTokenTable(value.light);
+  const allowed = version === THEME_DRAFT_VERSION ? OVERRIDE_TOKENS : OVERRIDE_TOKENS_V3;
+  const dark = parseTokenTable(value.dark, allowed);
+  const light = parseTokenTable(value.light, allowed);
   if (typeof dark === 'string') return `Dark: ${dark}`;
   if (typeof light === 'string') return `Light: ${light}`;
   return { dark, light };
@@ -365,7 +373,7 @@ export function parseDraft(input: string): DraftParseResult {
 
   const color = parseColor(raw.color);
   const typography = parseTypography(raw.typography);
-  const overrides = parseOverrides(raw.overrides);
+  const overrides = parseOverrides(raw.overrides, version);
   const locks = parseLocks(raw.locks);
   const shuffleSeeds = parseShuffleSeeds(raw.shuffleSeeds);
   if (!color) return fail('malformed', 'Color seeds need a hue from 0 up to 360 (exclusive) and saturation from 0 to 1.5.');
