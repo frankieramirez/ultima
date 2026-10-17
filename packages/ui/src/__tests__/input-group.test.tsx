@@ -119,7 +119,7 @@ test('keyboard focus rings the box while the input inside draws none', async () 
   expect(document.activeElement).toBe(input);
   expect(parseFloat(getComputedStyle(box).outlineWidth)).toBeGreaterThan(0);
   expect(getComputedStyle(box).outlineStyle).toBe('solid');
-  expect(getComputedStyle(box).outlineOffset).toBe('-1px');
+  expect(getComputedStyle(box).outlineOffset).toBe('2px');
   expect(getComputedStyle(input).outlineStyle).toBe('none');
 });
 
