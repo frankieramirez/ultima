@@ -40,16 +40,15 @@ afterEach(() => {
   document.documentElement.removeAttribute('data-theme');
 });
 
-for (const variant of VARIANTS) {
-  for (const tone of TONES) {
-    test(`${variant} / ${tone} mounts through the parser`, async () => {
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = `<ult-badge variant="${variant}" tone="${tone}">${variant} ${tone}</ult-badge>`;
-      document.body.appendChild(wrapper);
-      await expect.element(inner(wrapper.querySelector('ult-badge') as Element)).toBeVisible();
-    });
-  }
-}
+test('every variant by tone cell mounts through the parser', async () => {
+  const cells = VARIANTS.flatMap((variant) => TONES.map((tone) => ({ variant, tone })));
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = cells.map(({ variant, tone }) => `<ult-badge variant="${variant}" tone="${tone}">${variant} ${tone}</ult-badge>`).join('');
+  document.body.appendChild(wrapper);
+  const hosts = [...wrapper.querySelectorAll('ult-badge')];
+  expect(hosts).toHaveLength(cells.length);
+  for (const host of hosts) await expect.element(inner(host)).toBeVisible();
+});
 
 test('omitted axes match subtle / neutral', () => {
   const implicit = inner(mount({}, 'Default'));

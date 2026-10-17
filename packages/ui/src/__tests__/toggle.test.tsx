@@ -10,18 +10,19 @@ const themes = [
   { name: 'light', theme: lightTheme, scheme: colorScheme.light },
 ];
 
-for (const variant of ['outline', 'ghost'] as const) {
-  for (const size of ['sm', 'md', 'lg'] as const) {
-    test(`${variant} / ${size} renders`, async () => {
-      const screen = await render(
-        <Toggle variant={variant} size={size}>
-          Bold
-        </Toggle>,
-      );
-      await expect.element(screen.getByRole('button', { name: 'Bold' })).toBeVisible();
-    });
-  }
-}
+test('every variant by size cell renders', async () => {
+  const cells = (['outline', 'ghost'] as const).flatMap((variant) => (['sm', 'md', 'lg'] as const).map((size) => ({ variant, size, name: `${variant} ${size}` })));
+  const screen = await render(
+    <>
+      {cells.map(({ variant, size, name }) => (
+        <Toggle key={name} variant={variant} size={size}>
+          {name}
+        </Toggle>
+      ))}
+    </>,
+  );
+  for (const { name } of cells) await expect.element(screen.getByRole('button', { name })).toBeVisible();
+});
 
 test('omitted axes match outline / md', async () => {
   const screen = await render(
