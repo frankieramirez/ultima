@@ -118,12 +118,12 @@ const styles = stylex.create({
   title: {
     fontSize: text['--ult-text-4'],
     fontWeight: font['--ult-font-weight-semibold'],
-    lineHeight: font['--ult-font-leading-tight'],
+    lineHeight: font['--ult-font-leading-snug'],
     margin: 0,
   },
   description: {
     color: color['--ult-color-text-muted'],
-    fontSize: text['--ult-text-3'],
+    fontSize: text['--ult-text-4'],
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
   },

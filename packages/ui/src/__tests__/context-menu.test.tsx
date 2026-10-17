@@ -9,7 +9,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
-import { resolved } from './overlay';
+import { expectMicroLabel, resolved } from './overlay';
 
 function MenuFixture({ onActivate = () => {} }: { onActivate?: () => void }) {
   return <ContextMenu.Root>
@@ -184,6 +184,12 @@ test('an item paints exactly as a Dropdown Menu item does', async () => {
   };
   const dropdown = paint(page.getByTestId('dropdown-item').element());
   expect(paint(page.getByTestId('context-item').element())).toEqual(dropdown);
+});
+
+test('the group label is a micro-label that sets its own leading', async () => {
+  await render(<MenuFixture />);
+  await openAt();
+  expectMicroLabel(page.getByText('Document').element());
 });
 
 test('styled parts reject className', () => {

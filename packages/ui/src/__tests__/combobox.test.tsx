@@ -225,7 +225,8 @@ test('highlight and selection change computed styles', async () => {
   const unselected = options.find((option) => option !== selected);
   expect(selected).not.toBeNull();
   expect(unselected).not.toBeUndefined();
-  expect(getComputedStyle(selected!).fontWeight).not.toBe(getComputedStyle(unselected!).fontWeight);
+  // Selection shows with the check; the weight holds so the label doesn't shift.
+  expect(getComputedStyle(selected!).fontWeight).toBe(getComputedStyle(unselected!).fontWeight);
 });
 
 test('the list scrolls and the popup tracks the anchor width', async () => {
@@ -292,6 +293,36 @@ test('the input group is Input Group\'s field: a hover edge, an inset ring, and 
   const off = screen.getByTestId('off-group').element();
   expect(getComputedStyle(off).opacity).toBe('1');
   expect(getComputedStyle(off).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+});
+
+test('a disabled chip takes the disabled ink instead of fading', async () => {
+  const screen = await render(
+    <>
+      {[false, true].map((disabled) => (
+        <Combobox.Root key={String(disabled)} items={SCHOOLS} multiple defaultValue={['Illusion']} disabled={disabled}>
+          <Combobox.InputGroup>
+            <Combobox.Chips>
+              <Combobox.Value>
+                {(selected: string[]) =>
+                  selected.map((school) => (
+                    <Combobox.Chip key={school} data-testid={disabled ? 'off-chip' : 'live-chip'}>
+                      {school}
+                    </Combobox.Chip>
+                  ))
+                }
+              </Combobox.Value>
+              <Combobox.Input aria-label={disabled ? 'Off' : 'Live'} />
+            </Combobox.Chips>
+          </Combobox.InputGroup>
+        </Combobox.Root>
+      ))}
+    </>,
+  );
+  const live = getComputedStyle(screen.getByTestId('live-chip').element());
+  const off = getComputedStyle(screen.getByTestId('off-chip').element());
+  expect(live.color).toBe(resolved('color', 'var(--ult-color-text)'));
+  expect(off.opacity).toBe('1');
+  expect(off.color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
 });
 
 test('public prop types expose size on InputGroup only and no className on styled parts', () => {

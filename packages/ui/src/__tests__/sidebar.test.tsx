@@ -8,7 +8,7 @@ import { render } from 'vitest-browser-react';
 
 import { themeDocument, themes, violations } from './axe';
 import { hoversOnlyWhereHover } from './hover';
-import { resolved } from './overlay';
+import { expectMicroLabel, resolved } from './overlay';
 
 const styles = stylex.create({
   scroll: { blockSize: '8rem' },
@@ -273,6 +273,11 @@ test('a row is a 32px ghost control at the control corner, on the accent when cu
   expect(parseFloat(getComputedStyle(current).borderInlineStartWidth)).toBe(0);
   expect(getComputedStyle(current).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-accent-subtle)'));
   expect(hoversOnlyWhereHover(resting)).toBe(true);
+});
+
+test('the group label is a regular-weight micro-label with its own snug leading', async () => {
+  const screen = await render(<Sample />);
+  expectMicroLabel(screen.getByRole('heading', { name: 'Reference' }).element());
 });
 
 test('the trigger toggles the desktop collapse and reports it through aria-expanded', async () => {

@@ -13,6 +13,8 @@ import { Field, Fieldset, Input, type FieldsetLegendProps, type FieldsetRootProp
 import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 
+import { resolved } from './overlay';
+
 test('a fieldset with no props renders its parts', async () => {
   const screen = await render(
     <Fieldset.Root>
@@ -66,7 +68,7 @@ test('Root resets the UA fieldset chrome', async () => {
   expect(styles.marginTop).toBe('0px');
 });
 
-test('a disabled fieldset dims its legend', async () => {
+test('a legend is a 14px field label, and a disabled fieldset gives it the disabled ink', async () => {
   const screen = await render(
     <>
       <Fieldset.Root>
@@ -77,8 +79,13 @@ test('a disabled fieldset dims its legend', async () => {
       </Fieldset.Root>
     </>,
   );
-  expect(getComputedStyle(screen.getByText('Live').element()).opacity).toBe('1');
-  expect(getComputedStyle(screen.getByText('Off').element()).opacity).toBe('0.5');
+  const live = getComputedStyle(screen.getByText('Live').element());
+  const off = getComputedStyle(screen.getByText('Off').element());
+  expect(live.color).toBe(resolved('color', 'var(--ult-color-text)'));
+  expect(live.fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
+  expect(live.fontWeight).toBe(resolved('font-weight', 'var(--ult-font-weight-medium)'));
+  expect(off.opacity).toBe('1');
+  expect(off.color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
 });
 
 test('public prop types reject className', () => {

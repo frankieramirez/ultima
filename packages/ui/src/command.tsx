@@ -198,6 +198,7 @@ const styles = stylex.create({
     color: color['--ult-color-text-subtle'],
     fontSize: text['--ult-text-2'],
     letterSpacing: font['--ult-font-tracking-wide'],
+    lineHeight: font['--ult-font-leading-snug'],
     paddingBlock: space['--ult-space-2'],
     paddingInline: space['--ult-space-4'],
     textTransform: 'uppercase',

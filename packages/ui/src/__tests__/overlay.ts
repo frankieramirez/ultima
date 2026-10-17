@@ -31,6 +31,18 @@ export function expectArrowOnEdge(arrow: Element, popup: Element, points: Points
   }
 }
 
+/**
+ * A section micro-label: 12px tracked capitals at regular weight, with its own snug leading
+ * rather than whatever its popup or panel sets.
+ */
+export function expectMicroLabel(element: Element) {
+  const style = getComputedStyle(element);
+  expect(style.fontSize).toBe(resolved('font-size', 'var(--ult-text-2)'));
+  expect(style.fontWeight).toBe(resolved('font-weight', 'var(--ult-font-weight-regular)'));
+  expect(style.lineHeight).toBe(resolved('line-height', 'calc(var(--ult-text-2) * var(--ult-font-leading-snug))'));
+  expect(style.textTransform).toBe('uppercase');
+}
+
 /** What a token resolves to for one property, read off a probe so units and colour forms match. */
 export function resolved(property: string, value: string): string {
   const probe = document.createElement('div');

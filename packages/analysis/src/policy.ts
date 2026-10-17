@@ -176,7 +176,7 @@ export const RUNTIME_VARIABLES: readonly RuntimeVariable[] = [
     OVERLAYS,
     '--transform-origin',
   ),
-  ...variable("Base UI's positioner", ['combobox', 'command', 'navigation-menu'], ['length'], NOTES, '--available-width'),
+  ...variable("Base UI's positioner", ['combobox', 'command', 'hover-card', 'navigation-menu', 'popover'], ['length'], NOTES, '--available-width'),
   ...variable("Base UI's positioner", ['combobox', 'command'], ['length'], NOTES, '--available-height'),
   ...variable("Base UI's positioner", ['combobox', 'command', 'select'], ['length'], NOTES, '--anchor-width'),
   ...variable("Base UI's Navigation Menu", ['navigation-menu'], ['length'], NOTES, '--positioner-width', '--positioner-height', '--popup-width', '--popup-height'),

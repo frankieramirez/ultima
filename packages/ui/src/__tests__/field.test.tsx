@@ -4,7 +4,7 @@
  * 2. The name resolves: role textbox, named by Field.Label.
  * 3. The focus ring lands where the contract says: on none of Field's parts; the control brings its own.
  * 4. The primitive is still wired: Description and Error merge into aria-describedby; aria-invalid / data-invalid reach the control.
- * 5. Documented state drives its style: invalid paints the control's danger border; disabled + invalid keeps data-invalid; disabled dims Label and leaves Description readable.
+ * 5. Documented state drives its style: invalid paints the control's danger border; disabled + invalid keeps data-invalid; disabled gives Label the disabled ink and leaves Description readable.
  * 6. Typecheck passes: className is rejected on every styled part.
  * 7. Behavior this component wires itself: none, because every interaction is the primitive's or a style on a data-* attribute.
  * 8. CSS the primitive reads: none, because Field has no clause-2 declarations.
@@ -12,6 +12,8 @@
 import { Field, Input, type FieldErrorProps, type FieldRootProps } from '@ultima/ui';
 import { expect, expectTypeOf, test } from 'vitest';
 import { render } from 'vitest-browser-react';
+
+import { resolved } from './overlay';
 
 test('a field with no props renders its parts', async () => {
   const screen = await render(
@@ -112,7 +114,7 @@ test('disabled while invalid keeps data-invalid and the danger border', async ()
   await expect.element(screen.getByText('Still shown.')).toBeVisible();
 });
 
-test('a disabled field dims its label with the control and keeps its description readable', async () => {
+test('a disabled field gives its label the disabled ink and keeps its description readable', async () => {
   const screen = await render(
     <>
       <Field.Root name="live">
@@ -127,10 +129,17 @@ test('a disabled field dims its label with the control and keeps its description
       </Field.Root>
     </>,
   );
-  expect(getComputedStyle(screen.getByText('Live', { exact: true }).element()).opacity).toBe('1');
-  expect(getComputedStyle(screen.getByText('Live help.').element()).opacity).toBe('1');
-  expect(getComputedStyle(screen.getByText('Off', { exact: true }).element()).opacity).toBe('0.5');
-  expect(getComputedStyle(screen.getByText('Off help.').element()).opacity).toBe('1');
+  const live = getComputedStyle(screen.getByText('Live', { exact: true }).element());
+  const off = getComputedStyle(screen.getByText('Off', { exact: true }).element());
+  expect(live.color).toBe(resolved('color', 'var(--ult-color-text)'));
+  expect(live.fontSize).toBe(resolved('font-size', 'var(--ult-text-4)'));
+  expect(live.fontWeight).toBe(resolved('font-weight', 'var(--ult-font-weight-medium)'));
+  expect(live.lineHeight).toBe(resolved('line-height', 'calc(var(--ult-text-4) * var(--ult-font-leading-snug))'));
+  expect(off.opacity).toBe('1');
+  expect(off.color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+  const help = getComputedStyle(screen.getByText('Off help.').element());
+  expect(help.opacity).toBe('1');
+  expect(help.color).toBe(getComputedStyle(screen.getByText('Live help.').element()).color);
 });
 
 test('a label that wraps keeps its lines apart', async () => {

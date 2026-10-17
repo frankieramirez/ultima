@@ -16,6 +16,7 @@ import {
 } from '@ultima/ui';
 
 import { reducedMotionRules } from './reduced-motion';
+import { tokenValue } from './token-value';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
@@ -293,6 +294,10 @@ test('the label is a sentence-case field label, the number lines up, and neutral
   expect(label.color).toBe(probe('ink').color);
 
   expect(getComputedStyle(valueOf(bar)).fontVariantNumeric).toBe('tabular-nums');
+  // Each part sets its own leading, so neither takes the page's.
+  const snug = tokenValue('line-height', 'calc(var(--ult-text-4) * var(--ult-font-leading-snug))');
+  expect(label.lineHeight).toBe(snug);
+  expect(getComputedStyle(valueOf(bar)).lineHeight).toBe(snug);
   expect(valueColor(bar)).toBe(probe('muted').color);
 
   expect(fillColor(bar)).toBe(probe('accent').backgroundColor);

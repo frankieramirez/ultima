@@ -17,6 +17,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
+import { expectMicroLabel } from './overlay';
 
 function FruitSelect({
   size,
@@ -179,7 +180,8 @@ test('placeholder, highlight, selected, and invalid change computed styles witho
   const unselected = options.find((option) => option !== selected && !option.hasAttribute('data-disabled'));
   expect(selected).not.toBeNull();
   expect(unselected).not.toBeUndefined();
-  expect(getComputedStyle(selected!).fontWeight).not.toBe(getComputedStyle(unselected!).fontWeight);
+  // Selection shows with the check; the weight holds so the label doesn't shift.
+  expect(getComputedStyle(selected!).fontWeight).toBe(getComputedStyle(unselected!).fontWeight);
   expect(getComputedStyle(invalid).borderColor).not.toBe(getComputedStyle(empty).borderColor);
 });
 
@@ -311,6 +313,12 @@ test('items set their own leading rather than inheriting the page', async () => 
   const screen = await render(<Plain name="Leading" defaultOpen />);
   await expect.element(screen.getByTestId('Leading item')).toBeVisible();
   expect(getComputedStyle(screen.getByTestId('Leading item').element()).lineHeight).not.toBe('normal');
+});
+
+test('the group label is a micro-label that sets its own leading', async () => {
+  const screen = await render(<FruitSelect name="Grouped" defaultOpen />);
+  await expect.element(screen.getByText('Citrus')).toBeVisible();
+  expectMicroLabel(screen.getByText('Citrus').element());
 });
 
 test('public prop types expose size on Trigger only and no className on styled parts', () => {

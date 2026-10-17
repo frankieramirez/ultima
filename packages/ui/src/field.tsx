@@ -17,16 +17,15 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
   },
-  // A disabled Field dims its label with the control, so the label never reads as live beside a dimmed input.
+  // A disabled Field gives its label the disabled ink with the control, so the label never reads as live beside it.
   // Description stays readable: it is often the line that says why the field is disabled.
   label: {
-    color: color['--ult-color-text'],
+    color: { default: color['--ult-color-text'], ':is([data-disabled])': color['--ult-color-text-disabled'] },
     fontFamily: font['--ult-font-sans'],
-    fontSize: text['--ult-text-3'],
+    fontSize: text['--ult-text-4'],
     fontWeight: font['--ult-font-weight-medium'],
     lineHeight: font['--ult-font-leading-snug'],
     margin: 0,
-    opacity: { default: 1, ':is([data-disabled])': 0.5 },
   },
   description: {
     color: color['--ult-color-text-muted'],

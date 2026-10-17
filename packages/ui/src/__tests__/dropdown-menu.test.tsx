@@ -4,7 +4,7 @@ import { render } from 'vitest-browser-react';
 import { Button, DropdownMenu, type DropdownMenuItemProps, type DropdownMenuPopupProps } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
-import { expectArrowOnEdge, resolved } from './overlay';
+import { expectArrowOnEdge, expectMicroLabel, resolved } from './overlay';
 
 test('the trigger opens a named menu with named items', async () => {
   const screen = await render(
@@ -172,11 +172,11 @@ test('items are 32px rows with the small radius inside the popup\'s 8px corner, 
   expect(Math.abs(icon.top + icon.height / 2 - label.top - label.height / 2)).toBeLessThan(1);
 });
 
-test('the group label is set in tracked capitals, as Select\'s is', async () => {
+test('the group label is a micro-label in tracked capitals, as Select\'s is', async () => {
   const screen = await render(<MenuFixture />);
   await screen.getByRole('button', { name: 'Actions' }).click();
   const label = page.getByText('File').element();
-  expect(getComputedStyle(label).textTransform).toBe('uppercase');
+  expectMicroLabel(label);
   expect(getComputedStyle(label).letterSpacing).not.toBe('normal');
 });
 

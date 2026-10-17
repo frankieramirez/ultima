@@ -15,7 +15,7 @@ const styles = stylex.create({
     color: color['--ult-color-text'],
     fontSize: text['--ult-text-4'],
     fontWeight: font['--ult-font-weight-medium'],
-    lineHeight: font['--ult-font-leading-none'],
+    lineHeight: font['--ult-font-leading-snug'],
     margin: 0,
   },
   track: {
@@ -31,7 +31,7 @@ const styles = stylex.create({
   value: {
     fontSize: text['--ult-text-4'],
     fontVariantNumeric: 'tabular-nums',
-    lineHeight: font['--ult-font-leading-none'],
+    lineHeight: font['--ult-font-leading-snug'],
     margin: 0,
   },
 });

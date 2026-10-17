@@ -18,7 +18,7 @@
  *    seeds along with the transition longhands that make the enter and exit run.
  */
 import { DirectionProvider } from '@base-ui/react/direction-provider';
-import { expect, expectTypeOf, test } from 'vitest';
+import { expect, expectTypeOf, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 import {
@@ -317,6 +317,31 @@ test('the title and the description paint type', async () => {
   expect(parseFloat(title.fontSize)).toBeGreaterThan(parseFloat(description.fontSize));
   expect(parseInt(title.fontWeight, 10)).toBeGreaterThan(400);
   expect(title.color).not.toBe(description.color);
+});
+
+test('the popup is at most 320px wide, and no wider than the viewport has room for', async () => {
+  // An unbreakable line wider than the cap, so only max-width decides the popup's width.
+  const screen = await render(
+    <Popover.Root>
+      <Popover.Trigger render={<Button />}>Share</Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner>
+          <Popover.Popup data-testid="popup" aria-label="Share">
+            https://example.com/reports/2026/quarterly-revenue-by-region-and-product-line-final-export
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>,
+  );
+  await screen.getByRole('button', { name: 'Share' }).click();
+  await expect.element(page.getByTestId('popup')).toBeVisible();
+  // Layout width, so the entry scale doesn't count.
+  const width = () => (page.getByTestId('popup').element() as HTMLElement).offsetWidth;
+  expect(width()).toBe(parseFloat(resolved('width', 'calc(5 * var(--ult-space-12))')));
+
+  onTestFinished(() => page.viewport(1280, 720));
+  await page.viewport(240, 600);
+  await expect.poll(width).toBeLessThanOrEqual(240);
 });
 
 const ARROW_CASES = [
