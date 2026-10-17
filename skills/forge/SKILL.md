@@ -97,7 +97,7 @@ Run `pnpm check:architecture` before you commit. It is the static gate for every
 
 Eight items in `packages/ui/src/__tests__/<name>.test.tsx`, never beside the component ([What a build ticket proves](../../docs/spec/ultima.md#what-a-build-ticket-proves)). The last two exist for what a static screenshot would pass: behavior Ultima wires itself, and a declaration the primitive reads. Copy the checklist out of [`references/proof-bar.md`](references/proof-bar.md) into the test file and answer each line for this component. That reference also carries the browser-environment traps, which read as broken components and are not.
 
-One standing rule: **no test asserts a color value.**
+One standing rule, enforced as `ULT-TEST-001`: **no test asserts a color value.**
 
 When the change creates or alters a user-facing obligation, register or revise its scenario in the same review: the record under `verification/scenarios/<feature>/<name>.json` states the contract, steps and required targets, and the binding is the existing test wrapped in `scenario('<id>', '<target>', …)` from `scripts/verification/register.ts` — the dialog and theme-studio suites are the worked examples. Static validation rejects an incomplete record, so a placeholder names its missing fields rather than pretending to pass.
 

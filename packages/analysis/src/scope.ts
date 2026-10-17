@@ -101,6 +101,11 @@ export type Scope = {
   globalStyles: { stylesheet: string; importers: string[]; authority: string }[];
   /** Where each component package keeps its tests. */
   testPlacement: { package: string; tests: string }[];
+  /**
+   * The directories whose test files prove component behavior, which `ULT-TEST-001` reads. Token and
+   * compiler output tests stay outside them. Only the workspace scope sets them.
+   */
+  componentTests?: readonly string[];
   /** Component and element files no descriptor claims, from the catalogue. */
   unclaimed: { path: string; message: string }[];
   /** Headings of a repository document, for authority links; undefined when it does not exist. */
