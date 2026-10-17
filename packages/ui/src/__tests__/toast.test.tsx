@@ -323,6 +323,90 @@ test('Close dismisses the toast it sits in', async () => {
   await expect.poll(() => screen.getByTestId('content').query()).toBeNull();
 });
 
+/** A real anchor mid-page, so the Positioner has room on every side and a measured `--available-width`. */
+function anchorButton() {
+  const button = document.createElement('button');
+  button.textContent = 'Copy link';
+  Object.assign(button.style, { position: 'fixed', left: '50%', top: '50%' });
+  document.body.append(button);
+  return button;
+}
+
+/** The lines a text element's single text node lays out on. */
+function lines(element: Element) {
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  return new Set(Array.from(range.getClientRects(), (rect) => Math.round(rect.top))).size;
+}
+
+async function anchored(title: string, positionerProps: NonNullable<Added['positionerProps']> = {}) {
+  const anchor = anchorButton();
+  const screen = await one({ title, positionerProps: { anchor, side: 'top', sideOffset: 8, ...positionerProps } }, <AnchoredList />);
+  const root = screen.getByTestId('toast-default').element() as HTMLElement;
+  const positioner = screen.getByTestId('positioner').element() as HTMLElement;
+  // Base UI seeds `100vw` until the first measurement lands.
+  await expect.poll(() => positioner.style.getPropertyValue('--available-width')).toMatch(/px$/);
+  await expect.poll(() => root.getAttribute('data-starting-style')).toBeNull();
+  return { screen, root: settled(root), title: screen.getByText(title).element(), anchor, available: parseFloat(positioner.style.getPropertyValue('--available-width')) };
+}
+
+test('an anchored toast sizes to a short message on one line, at its own height and without the stack transform', async () => {
+  const { screen, root, title, anchor } = await anchored('Link copied');
+  const word = document.createRange();
+  word.setStart(title.firstChild!, 0);
+  word.setEnd(title.firstChild!, 'Link'.length);
+
+  expect(lines(title)).toBe(1);
+  expect(root.getBoundingClientRect().width).toBeGreaterThan(word.getBoundingClientRect().width * 2);
+  expect(getComputedStyle(root).position).toBe('relative');
+  expect(getComputedStyle(root).transform).toBe('none');
+
+  // The viewport's frontmost-height clamp is the stack's, not the anchored toast's.
+  (screen.getByTestId('viewport').element() as HTMLElement).style.setProperty('--toast-frontmost-height', '200px');
+  const content = screen.getByTestId('content').element().getBoundingClientRect().height;
+  expect(root.getBoundingClientRect().height).toBeLessThan(content + 4);
+  anchor.remove();
+});
+
+const longMessage = 'Link copied to your clipboard. Anyone in the workspace with the link can open this report.';
+const popupCap = () => parseFloat(tokenValue('width', 'calc(5 * var(--ult-space-12))'));
+
+test("an anchored toast wraps a long message at Popover's width", async () => {
+  const { root, title, anchor } = await anchored(longMessage);
+  expect(lines(title)).toBeGreaterThan(1);
+  expect(root.getBoundingClientRect().width).toBeCloseTo(popupCap(), 0);
+  anchor.remove();
+});
+
+test('an anchored toast narrows to the space available when that is under the cap', async () => {
+  // Collision padding leaves the Positioner a narrow band, which Base UI writes as --available-width.
+  const inset = (innerWidth - 200) / 2;
+  const { root, title, anchor, available } = await anchored(longMessage, {
+    collisionPadding: { top: 0, bottom: 0, left: inset, right: inset },
+  });
+  expect(available).toBeLessThan(popupCap());
+  expect(lines(title)).toBeGreaterThan(1);
+  expect(root.getBoundingClientRect().width).toBeCloseTo(available, 0);
+  anchor.remove();
+});
+
+test('a stacked toast keeps the stack geometry: absolute, as wide as the viewport, clamped and transformed', async () => {
+  const screen = await one({ title: 'Report exported' });
+  const front = nth(screen, 0);
+  await expect.poll(() => front.getAttribute('data-starting-style')).toBeNull();
+  settled(front);
+  const viewport = screen.getByTestId('viewport').element() as HTMLElement;
+
+  const style = getComputedStyle(front);
+  expect(style.position).toBe('absolute');
+  expect(style.maxWidth).toBe('none');
+  expect(style.transform).not.toBe('none');
+  expect(style.transformOrigin).toBe(`${front.offsetWidth / 2}px ${front.offsetHeight}px`);
+  expect(front.getBoundingClientRect().width).toBeCloseTo(viewport.getBoundingClientRect().width, 1);
+  viewport.style.setProperty('--toast-frontmost-height', '120px');
+  expect(style.height).toBe('120px');
+});
+
 test("the anchored Positioner renders no ring and the Arrow sits half outside, facing the anchor in the toast's own paint", async () => {
   const screen = await one(
     { title: 'Anchored', type: 'success', positionerProps: { anchor: document.body } },

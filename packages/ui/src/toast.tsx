@@ -14,6 +14,16 @@ const LEFTWARD = ':is([data-side="right"], [data-side="inline-end"]:not([dir="rt
 
 const stackWidth = `calc(6 * ${space['--ult-space-12']})`;
 
+/**
+ * A Root inside a Positioner, which Base UI renders with `data-side` whatever route the anchor took.
+ * The Root itself carries no anchored attribute.
+ */
+const ANCHORED = ':is([data-side] > *)';
+/** One attribute more specific than the stack's slide, so it wins the enter and exit outright. */
+const ANCHORED_MOTION = ':is([data-side] > *):is([data-starting-style], [data-ending-style])';
+/** Popover's cap: an anchored toast is a popup tied to its trigger. */
+const popupWidth = `min(calc(5 * ${space['--ult-space-12']}), var(--available-width))`;
+
 const scaleStep = 0.1;
 const slideDistance = '150%';
 
@@ -72,31 +82,34 @@ const styles = stylex.create({
       ':is([data-type="danger"], [data-type="error"])': color['--ult-color-danger-text'],
     },
     fontFamily: font['--ult-font-sans'],
-    height: { default: clampedHeight, ':is([data-expanded])': 'var(--toast-height)' },
+    height: { default: clampedHeight, ':is([data-expanded]):not([data-side] > *)': 'var(--toast-height)', [ANCHORED]: 'auto' },
     insetBlockEnd: 0,
     insetInlineEnd: 0,
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
+    maxWidth: { default: null, [ANCHORED]: popupWidth },
     opacity: {
       default: 1,
       ':is([data-starting-style], [data-ending-style], [data-limited])': 0,
     },
-    position: 'absolute',
+    position: { default: 'absolute', [ANCHORED]: 'relative' },
     transform: {
       default: collapsedTransform,
-      ':is([data-expanded]):not([data-starting-style], [data-ending-style])': expandedTransform,
+      ':is([data-expanded]):not([data-starting-style], [data-ending-style], [data-side] > *)': expandedTransform,
       ':is([data-starting-style], [data-ending-style])': `translateY(${slideDistance})`,
       ':is([data-ending-style][data-swipe-direction="up"])': `translateY(calc(${swipeY} - ${slideDistance}))`,
       ':is([data-ending-style][data-swipe-direction="down"])': `translateY(calc(${swipeY} + ${slideDistance}))`,
       ':is([data-ending-style][data-swipe-direction="left"])': `translateX(calc(${swipeX} - ${slideDistance})) translateY(${expandedY})`,
       ':is([data-ending-style][data-swipe-direction="right"])': `translateX(calc(${swipeX} + ${slideDistance})) translateY(${expandedY})`,
+      [ANCHORED]: 'none',
+      [ANCHORED_MOTION]: 'scale(0.96)',
     },
-    transformOrigin: 'bottom center',
+    transformOrigin: { default: 'bottom center', [ANCHORED]: 'var(--transform-origin)' },
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'height, opacity, transform',
     transitionTimingFunction: easing.standard,
     userSelect: 'none',
-    width: '100%',
+    width: { default: '100%', [ANCHORED]: 'max-content' },
     zIndex: `calc(${z.toast} - var(--toast-index))`,
   },
   content: {

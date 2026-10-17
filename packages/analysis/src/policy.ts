@@ -171,12 +171,12 @@ const variable = (owner: string, items: readonly string[], categories: RuntimeVa
 export const RUNTIME_VARIABLES: readonly RuntimeVariable[] = [
   ...variable(
     "Base UI's positioner, and Zag's for the tooltip element and the date picker",
-    ['alert-dialog', 'combobox', 'command', 'context-menu', 'date-picker', 'dialog', 'dropdown-menu', 'hover-card', 'popover', 'select', 'tooltip', 'ult-tooltip'],
+    ['alert-dialog', 'combobox', 'command', 'context-menu', 'date-picker', 'dialog', 'dropdown-menu', 'hover-card', 'popover', 'select', 'toast', 'tooltip', 'ult-tooltip'],
     ['origin'],
     OVERLAYS,
     '--transform-origin',
   ),
-  ...variable("Base UI's positioner", ['combobox', 'command', 'hover-card', 'navigation-menu', 'popover'], ['length'], NOTES, '--available-width'),
+  ...variable("Base UI's positioner", ['combobox', 'command', 'hover-card', 'navigation-menu', 'popover', 'toast'], ['length'], NOTES, '--available-width'),
   ...variable("Base UI's positioner", ['combobox', 'command'], ['length'], NOTES, '--available-height'),
   ...variable("Base UI's positioner", ['combobox', 'command', 'select'], ['length'], NOTES, '--anchor-width'),
   ...variable("Base UI's Navigation Menu", ['navigation-menu'], ['length'], NOTES, '--positioner-width', '--positioner-height', '--popup-width', '--popup-height'),
