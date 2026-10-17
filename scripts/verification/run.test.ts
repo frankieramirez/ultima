@@ -713,6 +713,11 @@ describe('the verify command', () => {
     const inside = await execute(['release', '--output', join(root, 'evidence')], root);
     assert.equal(inside.exit, EXIT.usage);
     assert.match(inside.stderr, /inside the checkout/);
+    const link = join(mkdtempSync(join(scratch, 'link-')), 'checkout');
+    symlinkSync(root, link);
+    const linked = await execute(['release', '--output', join(link, 'evidence')], root);
+    assert.equal(linked.exit, EXIT.usage, 'a new --output reached through a symlink to the checkout');
+    assert.match(linked.stderr, /inside the checkout/);
   });
 
   test('writes a run to a new --output directory, with human output summarizing the same report', async () => {

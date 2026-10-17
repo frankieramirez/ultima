@@ -45,7 +45,7 @@ const ELEMENTS: ElementParity[] = [
     element: elementButton,
     react: reactButton,
     axes: {
-      variant: ['solid', 'outline', 'ghost'],
+      variant: ['solid', 'soft', 'outline', 'ghost'],
       size: ['sm', 'md', 'lg'],
       tone: ['accent', 'danger'],
     },

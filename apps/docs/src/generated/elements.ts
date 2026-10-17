@@ -16,6 +16,7 @@ export const elements: readonly ElementEntry[] = [
         "on": "ult-button",
         "values": [
           "solid",
+          "soft",
           "outline",
           "ghost"
         ]

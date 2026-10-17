@@ -15,6 +15,9 @@ export default function Danger() {
   return (
     <div {...stylex.props(styles.row)}>
       <Button tone="danger">Delete account</Button>
+      <Button variant="soft" tone="danger">
+        Delete account
+      </Button>
       <Button variant="outline" tone="danger">
         Delete account
       </Button>
