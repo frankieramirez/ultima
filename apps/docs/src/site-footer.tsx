@@ -33,7 +33,7 @@ const styles = stylex.create({
     gap: space['--ult-space-6'],
   },
   // Above the breakpoint the header carries the switch, so the footer's copy serves narrow viewports only.
-  mode: { display: { default: 'inline-flex', [breakpoints.WIDE]: 'none' } },
+  mode: { display: { default: 'inline-flex', [breakpoints.DESKTOP]: 'none' } },
 });
 
 export function SiteFooter({ wide = false }: { wide?: boolean }) {

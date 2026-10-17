@@ -30,8 +30,8 @@ const styles = stylex.create({
   row: {
     alignItems: 'start',
     display: 'flex',
-    flexDirection: { default: 'column', [breakpoints.WIDE]: 'row' },
-    gap: { default: space['--ult-space-4'], [breakpoints.WIDE]: space['--ult-space-8'] },
+    flexDirection: { default: 'column', [breakpoints.DESKTOP]: 'row' },
+    gap: { default: space['--ult-space-4'], [breakpoints.DESKTOP]: space['--ult-space-8'] },
     justifyContent: 'space-between',
     paddingBlockEnd: space['--ult-space-6'],
   },
