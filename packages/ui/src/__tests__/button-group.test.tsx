@@ -93,7 +93,7 @@ test('a vertical group stacks its items', async () => {
   expect(getComputedStyle(group).flexDirection).toBe('column');
 });
 
-for (const variant of ['solid', 'outline', 'ghost'] as const) {
+for (const variant of ['solid', 'soft', 'outline', 'ghost'] as const) {
   for (const size of ['sm', 'md', 'lg'] as const) {
     for (const tone of ['accent', 'danger'] as const) {
       test(`${variant} / ${size} / ${tone} on Root renders`, async () => {
@@ -135,10 +135,18 @@ test('a horizontal join squares the touching corners and drops the leading borde
     expect(style.getPropertyValue('border-start-start-radius')).toBe('0px');
     expect(style.getPropertyValue('border-end-start-radius')).toBe('0px');
     expect(style.getPropertyValue('border-inline-start-width')).toBe('0px');
-    expect(style.getPropertyValue('border-start-end-radius')).not.toBe('0px');
-    expect(style.getPropertyValue('border-end-end-radius')).not.toBe('0px');
     expect(style.getPropertyValue('border-inline-end-width')).not.toBe('0px');
   }
+
+  // Every item before the last touches the next one on its end side, so those corners square too.
+  for (const element of [first, second]) {
+    const style = getComputedStyle(element);
+    expect(style.getPropertyValue('border-start-end-radius')).toBe('0px');
+    expect(style.getPropertyValue('border-end-end-radius')).toBe('0px');
+  }
+  const thirdStyle = getComputedStyle(third);
+  expect(thirdStyle.getPropertyValue('border-start-end-radius')).not.toBe('0px');
+  expect(thirdStyle.getPropertyValue('border-end-end-radius')).not.toBe('0px');
 });
 
 test('a vertical join squares the touching corners and drops the leading border', async () => {
@@ -153,8 +161,12 @@ test('a vertical join squares the touching corners and drops the leading border'
   expect(secondStyle.getPropertyValue('border-block-start-width')).toBe('0px');
   expect(secondStyle.getPropertyValue('border-start-start-radius')).toBe('0px');
   expect(secondStyle.getPropertyValue('border-start-end-radius')).toBe('0px');
-  expect(secondStyle.getPropertyValue('border-end-start-radius')).not.toBe('0px');
-  expect(secondStyle.getPropertyValue('border-end-end-radius')).not.toBe('0px');
+  expect(secondStyle.getPropertyValue('border-end-start-radius')).toBe('0px');
+  expect(secondStyle.getPropertyValue('border-end-end-radius')).toBe('0px');
+
+  const lastStyle = getComputedStyle(screen.getByRole('button', { name: 'Paste' }).element());
+  expect(lastStyle.getPropertyValue('border-end-start-radius')).not.toBe('0px');
+  expect(lastStyle.getPropertyValue('border-end-end-radius')).not.toBe('0px');
 });
 
 test('every item is its own tab stop, and Space and Enter activate the focused one', async () => {
@@ -208,7 +220,7 @@ test('an item can take its own variant and tone, which win over the root', async
   expect(discard.backgroundColor).not.toBe(publish.backgroundColor);
 });
 
-test('a disabled item dims, stays in the tab order, and swallows activation', async () => {
+test('a disabled item goes muted, stays in the tab order, and swallows activation', async () => {
   const onClick = vi.fn();
   const screen = await render(
     <Actions>
@@ -219,8 +231,11 @@ test('a disabled item dims, stays in the tab order, and swallows activation', as
     </Actions>,
   );
   const copy = screen.getByRole('button', { name: 'Copy' }).element();
+  const cut = screen.getByRole('button', { name: 'Cut' }).element();
   expect(copy).toHaveAttribute('data-disabled');
-  expect(parseFloat(getComputedStyle(copy).opacity)).toBeLessThan(1);
+  expect(getComputedStyle(copy).opacity).toBe('1');
+  expect(getComputedStyle(copy).backgroundColor).not.toBe(getComputedStyle(cut).backgroundColor);
+  expect(getComputedStyle(copy).color).not.toBe(getComputedStyle(cut).color);
   copy.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   expect(onClick).not.toHaveBeenCalled();
 });
@@ -275,7 +290,7 @@ test('the part types expose the axes, the style slot, and no className or item s
   expectTypeOf<ButtonGroupRootProps>().toHaveProperty('render');
   expectTypeOf<ButtonGroupItemProps>().toHaveProperty('render');
   expectTypeOf<ButtonGroupItemProps>().not.toHaveProperty('size');
-  expectTypeOf<ButtonGroupVariant>().toEqualTypeOf<'solid' | 'outline' | 'ghost'>();
+  expectTypeOf<ButtonGroupVariant>().toEqualTypeOf<'solid' | 'soft' | 'outline' | 'ghost'>();
   expectTypeOf<ButtonGroupSize>().toEqualTypeOf<'sm' | 'md' | 'lg'>();
   expectTypeOf<ButtonGroupTone>().toEqualTypeOf<'accent' | 'danger'>();
   expectTypeOf<ButtonGroupOrientation>().toEqualTypeOf<'horizontal' | 'vertical'>();

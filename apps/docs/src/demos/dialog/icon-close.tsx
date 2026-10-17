@@ -5,7 +5,8 @@ import { Button, Dialog } from '@ultima/ui';
 
 const styles = stylex.create({
   close: {
-    paddingInline: space['--ult-space-4'],
+    aspectRatio: 1,
+    paddingInline: 0,
   },
   header: {
     alignItems: 'center',

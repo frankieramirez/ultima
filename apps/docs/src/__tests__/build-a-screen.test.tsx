@@ -206,7 +206,13 @@ for (const mode of ['dark', 'light'] as const) {
     expect(ring.height).toBe(getComputedStyle(probe).height);
     // The disabled Button keeps its native disabled state, so Tab passed over it to Send invitation.
     await expect.element(resend).toBeDisabled();
-    expect(getComputedStyle(resend.element()).opacity).toBe('0.5');
+    // Disabled is the muted ink, not a faded button.
+    const muted = document.createElement('span');
+    muted.style.color = 'var(--ult-color-text-disabled)';
+    resend.element().parentElement!.append(muted);
+    onTestFinished(() => muted.remove());
+    expect(getComputedStyle(resend.element()).opacity).toBe('1');
+    expect(getComputedStyle(resend.element()).color).toBe(getComputedStyle(muted).color);
 
     for (const node of [
       screen.getByRole('heading', { name: 'Invite a teammate' }).element(),

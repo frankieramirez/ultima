@@ -8,7 +8,7 @@ import validationSource from '../../demos/input-group/validation?raw';
 
 # Input Group
 
-A field box holding an input and its addons. `Root` is the box — a plain `div` wearing the paint `Combobox.InputGroup` carries, restated so `input` does not land in every install: the sunken surface, the strong border, and the ring while focus is inside it. `Input` is a Base UI `Input` rendered borderless inside the box, and `Addon` is the layout slot for leading and trailing content.
+A field box holding an input and its addons. `Root` is the box — a plain `div` wearing the paint `Combobox.InputGroup` carries, restated so `input` does not land in every install: the field fill, the 3:1 edge that darkens on hover, and the outline while focus is inside it. `Input` is a Base UI `Input` rendered borderless inside the box, and `Addon` is the layout slot for leading and trailing content.
 
 ## Install
 
@@ -30,7 +30,7 @@ npx shadcn@4.21.4 add @ultima/input-group
 
 ## Validation and disabled state
 
-The box reads state off the inner control with `:has()`: `aria-invalid` or `data-invalid` on `Input` draws the danger border, and a disabled `Input` dims the whole box. Inside a `Field.Root`, Base UI owns `aria-invalid`, `data-invalid`, and the description merge — the inner input needs no new prop, the same as a bare Input.
+The box reads state off the inner control with `:has()`: `aria-invalid` or `data-invalid` on `Input` draws the danger border, and a disabled or read-only `Input` mutes the whole box to the sunken fill and the disabled ink. Inside a `Field.Root`, Base UI owns `aria-invalid`, `data-invalid`, and the description merge — the inner input needs no new prop, the same as a bare Input.
 
 <Demo component={Validation} source={validationSource} />
 
