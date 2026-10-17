@@ -311,3 +311,21 @@ for (const mode of themes) {
     expect(await violations(screen.getByTestId('popup').element())).toEqual([]);
   });
 }
+
+test('an invalid trigger keeps its danger edge while disabled', async () => {
+  const Invalid = ({ name, disabled = false }: { name: string; disabled?: boolean }) => (
+    <Select.Root items={[{ value: 'oak', label: 'Oak' }]} disabled={disabled}>
+      <Select.Trigger aria-label={name} aria-invalid="true">
+        <Select.Value placeholder="Pick" />
+      </Select.Trigger>
+    </Select.Root>
+  );
+  const screen = await render(
+    <>
+      <Invalid name="Invalid" />
+      <Invalid name="Invalid off" disabled />
+    </>,
+  );
+  const edge = (name: string) => getComputedStyle(screen.getByRole('combobox', { name }).element()).borderTopColor;
+  expect(edge('Invalid off')).toBe(edge('Invalid'));
+});

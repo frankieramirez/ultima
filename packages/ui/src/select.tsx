@@ -18,7 +18,8 @@ const styles = stylex.create({
   },
   // The trigger wears Input's field recipe: the field fill, a 3:1 edge that darkens on hover and
   // holds that edge while its popup is open, the focus outline laid over the edge, and a muted
-  // fill and ink when disabled or read-only, with no opacity.
+  // fill and ink when disabled or read-only, with no opacity. Each edge and outline key names its
+  // whole state, so an invalid trigger keeps its danger edge through every other state.
   trigger: {
     alignItems: 'center',
     appearance: 'none',
@@ -28,12 +29,13 @@ const styles = stylex.create({
     },
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':is([data-popup-open])': color['--ult-color-border-hover'],
-      ':is([data-disabled], [data-readonly])': color['--ult-color-border'],
+      ':is([data-popup-open]):not([data-disabled], [data-readonly], [aria-invalid="true"], [data-invalid])':
+        color['--ult-color-border-hover'],
+      ':is([data-disabled], [data-readonly]):not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
       [HOVER]: {
-        ':hover:not([data-disabled], [data-readonly])': color['--ult-color-border-hover'],
-        ':is([aria-invalid="true"], [data-invalid]):hover': color['--ult-color-danger'],
+        ':hover:not([data-disabled], [data-readonly], [aria-invalid="true"], [data-invalid])':
+          color['--ult-color-border-hover'],
       },
     },
     borderRadius: radius['--ult-radius-md'],
@@ -50,7 +52,7 @@ const styles = stylex.create({
     minWidth: 0,
     outline: {
       default: 'none',
-      ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
       ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
     },
     outlineOffset: `-${border.hairline}`,

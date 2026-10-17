@@ -305,3 +305,14 @@ test('public prop types expose the style slot and the size axis on Select only',
   expectTypeOf<NativeSelectSelectProps>().toHaveProperty('style');
   expectTypeOf<NativeSelectSelectProps>().toHaveProperty('multiple');
 });
+
+test('an invalid select keeps its danger edge while disabled', async () => {
+  const screen = await render(
+    <>
+      <FruitSelect aria-label="Invalid" aria-invalid="true" />
+      <FruitSelect aria-label="Invalid off" aria-invalid="true" disabled />
+    </>,
+  );
+  const edge = (name: string) => getComputedStyle(screen.getByRole('combobox', { name }).element()).borderTopColor;
+  expect(edge('Invalid off')).toBe(edge('Invalid'));
+});
