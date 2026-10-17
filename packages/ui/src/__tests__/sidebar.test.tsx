@@ -643,3 +643,22 @@ test('crossing the breakpoint upward closes the menu and leaves the desktop pref
   expect(screen.getByTestId('panel').element()).toHaveAttribute('data-open');
   expect(desktopChanges).toEqual([]);
 });
+
+test('a disabled Button row takes the disabled ink instead of fading, and holds still under the pointer', async () => {
+  const screen = await render(
+    <Sample>
+      <Sidebar.List>
+        <Sidebar.Item>
+          <Sidebar.Button disabled>Archived</Sidebar.Button>
+        </Sidebar.Item>
+      </Sidebar.List>
+    </Sample>,
+  );
+  const row = screen.getByRole('button', { name: 'Archived' }).element();
+  const resting = getComputedStyle(row).backgroundColor;
+  expect(getComputedStyle(row).opacity).toBe('1');
+  expect(getComputedStyle(row).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+  expect(getComputedStyle(row).cursor).toBe('default');
+  await userEvent.hover(row, { force: true });
+  expect(getComputedStyle(row).backgroundColor).toBe(resting);
+});
