@@ -7,7 +7,7 @@
     {
       "name": "ultima-design",
       "description": "Use Ultima components and tokens with current guidance and CLI checks.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "source": "./packages/cli/skill",
       "strict": false,
       "skills": [
