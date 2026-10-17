@@ -154,7 +154,9 @@ test('the default glyph is the filled-circle dot', async () => {
   const indicator = screen.getByTestId('pro-indicator').element();
   const circle = indicator.querySelector('circle');
   expect(circle).not.toBeNull();
-  expect(circle).toHaveAttribute('fill', 'currentColor');
+  // The dot is filled in the indicator's ink and carries no stroke.
+  expect(getComputedStyle(circle!).fill).toBe(getComputedStyle(indicator).color);
+  expect(getComputedStyle(circle!).stroke).toBe('none');
 });
 
 test('children replace the default glyph', async () => {
