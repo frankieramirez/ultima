@@ -58,8 +58,9 @@ const styles = stylex.create({
     transitionProperty: 'background-color, border-color',
     transitionTimingFunction: easing.standard,
   },
+  // The chevron follows the select, so a disabled select gives it the disabled ink.
   chevron: {
-    color: color['--ult-color-text-subtle'],
+    color: { default: color['--ult-color-text-subtle'], ':is(:disabled ~ *)': color['--ult-color-text-disabled'] },
     insetBlockStart: '50%',
     insetInlineEnd: space['--ult-space-5'],
     pointerEvents: 'none',

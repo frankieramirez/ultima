@@ -71,7 +71,7 @@ const styles = stylex.create({
     whiteSpace: 'nowrap',
   },
   icon: {
-    color: color['--ult-color-text-subtle'],
+    color: { default: color['--ult-color-text-subtle'], ':is([data-disabled] *)': color['--ult-color-text-disabled'] },
     display: 'flex',
     flexShrink: 0,
   },

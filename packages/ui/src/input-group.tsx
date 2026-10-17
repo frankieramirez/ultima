@@ -70,9 +70,10 @@ const styles = stylex.create({
       opacity: 1,
     },
   },
+  // An addon's glyph or text takes the disabled ink with the field; read-only keeps the subtle one.
   addon: {
     alignItems: 'center',
-    color: color['--ult-color-text-subtle'],
+    color: { default: color['--ult-color-text-subtle'], ':is(:has(:is(input, textarea):disabled) > *)': color['--ult-color-text-disabled'] },
     display: 'inline-flex',
     flexShrink: 0,
   },

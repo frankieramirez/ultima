@@ -54,7 +54,7 @@ const styles = stylex.create({
   },
   separator: {
     alignSelf: 'center',
-    borderBlockStartColor: color['--ult-color-text-subtle'],
+    borderBlockStartColor: { default: color['--ult-color-text-subtle'], ':is([data-disabled] *)': color['--ult-color-text-disabled'] },
     borderBlockStartStyle: 'solid',
     borderBlockStartWidth: border.hairline,
     boxSizing: 'border-box',
