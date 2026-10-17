@@ -40,7 +40,7 @@ const styles = stylex.create({
       ':focus-visible:not([aria-invalid="true"], [data-invalid])': `${border.focus} solid ${color['--ult-color-border-focus']}`,
       ':is([aria-invalid="true"], [data-invalid]):focus-visible': `${border.focus} solid ${color['--ult-color-danger']}`,
     },
-    outlineOffset: `-${border.hairline}`,
+    outlineOffset: `calc(-1 * ${border.hairline})`,
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color, border-color',
     transitionTimingFunction: easing.standard,
