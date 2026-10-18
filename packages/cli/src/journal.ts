@@ -1,8 +1,8 @@
-// The recovery record of `init` in an existing application: docs/spec/consumer-setup.md, Conflicts, idempotence and
-// recovery. Before a run writes, it saves the original bytes and mode of every path it may write under
-// `.ultima-init/<run-id>/` at the application root, then journals each operation with the hashes it found and left and
-// each subprocess's exit. A rerun continues the latest unfinished run; `--rollback` undoes only what still holds the
-// bytes the run left.
+// The recovery record of `init` in an existing application (docs/spec/consumer-setup.md, Conflicts, idempotence and
+// recovery) and of `update` (docs/spec/ultima.md, Update, Journal and rollback). Before a run writes, it saves the
+// original bytes and mode of every path it may write under `<recovery>/<run-id>/` at the project root, then journals
+// each operation with the hashes it found and left and, for `init`, each subprocess's exit. A rerun of `init` continues
+// its latest unfinished run; `--rollback` undoes only what still holds the bytes the run left.
 import { randomBytes } from 'node:crypto';
 import { chmodSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, rmdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
@@ -11,8 +11,11 @@ import type { InitIO } from './init.ts';
 import type { Manager } from './recipe.ts';
 import { sha256 } from './recipe.ts';
 
-export const RECOVERY = '.ultima-init';
-const KIND = 'ultima-init-journal';
+/** The directory at the project root that holds a command's runs. */
+export type Recovery = '.ultima-init' | '.ultima-update';
+export const INIT = '.ultima-init' satisfies Recovery;
+export const UPDATE = '.ultima-update' satisfies Recovery;
+const KINDS = { '.ultima-init': 'ultima-init-journal', '.ultima-update': 'ultima-update-journal' } as const;
 const VERSION = 1;
 const RUN_ID = /^[0-9TZ-]+-[0-9a-f]{6}$/;
 
@@ -28,35 +31,42 @@ export type JournalEntry = {
   error?: string;
 };
 
-export type Journal = {
-  kind: typeof KIND;
+export type RunJournal = {
+  kind: (typeof KINDS)[Recovery];
   schemaVersion: typeof VERSION;
   runId: string;
   root: string;
-  manager: Manager;
-  lockfile: string;
   status: 'running' | 'stopped' | 'finished' | 'rolled back';
-  /** The planHash of each apply that ran under this id: the first, then every resume. */
-  plans: string[];
   /** Each path the run may write, as it was before the run first touched it; the bytes are in `files/<sha256>`. */
   originals: Record<string, { sha256: string; mode: number } | null>;
   /** Directories the run's paths sit in that did not exist before it, which rollback removes once empty. */
   directories: string[];
   /** The sha256 each path held when the run last wrote it, null when it removed it; absent when it holds the original. */
   outputs: Record<string, string | null>;
+  operations: JournalEntry[];
+  rollback?: { at: string; restored: string[]; removed: string[]; left: string[] };
+};
+
+/** `init`'s journal. */
+export type Journal = RunJournal & {
+  manager: Manager;
+  lockfile: string;
+  /** The planHash of each apply that ran under this id: the first, then every resume. */
+  plans: string[];
   /** The registry payloads pinned before shadcn ran, and the destinations it was to create. */
   payloads: { item: string; url: string; sha256: string }[];
   creates: string[];
   /** The dependencies this run added to package.json, as it wrote them, and the version each tested package resolved to before it. */
   dependencies: Record<string, string>;
   versions: Record<string, string>;
-  operations: JournalEntry[];
-  rollback?: { at: string; restored: string[]; removed: string[]; left: string[] };
 };
+
+type Journals = { '.ultima-init': Journal; '.ultima-update': RunJournal };
 
 export const initCli = (manager: Manager) => (manager === 'npm' ? 'npx ultima-design init' : 'pnpm exec ultima init');
 export const newRunId = () => `${new Date().toISOString().replace(/[:.]/g, '-')}-${randomBytes(3).toString('hex')}`;
-export const recoveryDirectory = (root: string, runId: string) => join(root, RECOVERY, runId);
+export const recoveryDirectory = (root: string, recovery: Recovery, runId: string) => join(root, recovery, runId);
+const recoveryOf = (journal: RunJournal) => (Object.keys(KINDS) as Recovery[]).find((recovery) => KINDS[recovery] === journal.kind) as Recovery;
 
 export function fileHash(path: string): string | null {
   try {
@@ -66,46 +76,54 @@ export function fileHash(path: string): string | null {
   }
 }
 
-export function createJournal(root: string, runId: string, manager: Manager, lockfile: string): Journal {
-  mkdirSync(join(root, RECOVERY), { recursive: true });
+/** Makes the run's directory, private to its owner, and returns a journal with nothing recorded yet. */
+export function startJournal(root: string, recovery: Recovery, runId: string): RunJournal {
+  mkdirSync(join(root, recovery), { recursive: true });
   // Git ignores the directory through its own .gitignore, so the consumer's is never edited.
-  if (!existsSync(join(root, RECOVERY, '.gitignore'))) writeFileSync(join(root, RECOVERY, '.gitignore'), '*\n');
-  mkdirSync(join(recoveryDirectory(root, runId), 'files'), { recursive: true });
-  chmodSync(recoveryDirectory(root, runId), 0o700);
-  return { kind: KIND, schemaVersion: VERSION, runId, root, manager, lockfile, status: 'running', plans: [], originals: {}, directories: [], outputs: {}, payloads: [], creates: [], dependencies: {}, versions: {}, operations: [] };
+  if (!existsSync(join(root, recovery, '.gitignore'))) writeFileSync(join(root, recovery, '.gitignore'), '*\n');
+  mkdirSync(join(recoveryDirectory(root, recovery, runId), 'files'), { recursive: true });
+  chmodSync(recoveryDirectory(root, recovery, runId), 0o700);
+  return { kind: KINDS[recovery], schemaVersion: VERSION, runId, root, status: 'running', originals: {}, directories: [], outputs: {}, operations: [] };
 }
 
-export function loadJournal(root: string, runId: string): Journal | null {
+export function createJournal(root: string, runId: string, manager: Manager, lockfile: string): Journal {
+  return { ...startJournal(root, INIT, runId), manager, lockfile, plans: [], payloads: [], creates: [], dependencies: {}, versions: {} };
+}
+
+export function loadJournal<R extends Recovery>(root: string, recovery: R, runId: string): Journals[R] | null {
   if (!RUN_ID.test(runId)) return null;
   try {
-    const journal = JSON.parse(readFileSync(join(recoveryDirectory(root, runId), 'journal.json'), 'utf8')) as Journal;
-    return journal.kind === KIND && journal.schemaVersion === VERSION && journal.runId === runId ? { ...journal, root } : null;
+    const journal = JSON.parse(readFileSync(join(recoveryDirectory(root, recovery, runId), 'journal.json'), 'utf8')) as Journals[R];
+    return journal.kind === KINDS[recovery] && journal.schemaVersion === VERSION && journal.runId === runId ? { ...journal, root } : null;
   } catch {
     return null;
   }
 }
 
+/** The run ids recorded under the recovery directory, oldest first. */
+export function recordedRuns(root: string, recovery: Recovery): string[] {
+  const directory = join(root, recovery);
+  return existsSync(directory) ? readdirSync(directory).filter((name) => RUN_ID.test(name)).sort() : [];
+}
+
 /** The latest run that neither finished nor was rolled back, which a rerun continues. */
 export function unfinishedJournal(root: string): Journal | null {
-  const directory = join(root, RECOVERY);
-  if (!existsSync(directory)) return null;
-  const runs = readdirSync(directory).filter((name) => RUN_ID.test(name)).sort();
-  for (const runId of runs.reverse()) {
-    const journal = loadJournal(root, runId);
+  for (const runId of recordedRuns(root, INIT).reverse()) {
+    const journal = loadJournal(root, INIT, runId);
     if (journal && (journal.status === 'running' || journal.status === 'stopped')) return journal;
   }
   return null;
 }
 
 /** Written to a sibling and renamed, so an interruption leaves the previous journal whole. */
-export function saveJournal(journal: Journal) {
-  const path = join(recoveryDirectory(journal.root, journal.runId), 'journal.json');
+export function saveJournal(journal: RunJournal) {
+  const path = join(recoveryDirectory(journal.root, recoveryOf(journal), journal.runId), 'journal.json');
   writeFileSync(`${path}.tmp`, `${JSON.stringify(journal, null, 2)}\n`);
   renameSync(`${path}.tmp`, path);
 }
 
 /** Saves the original of each path the run has not touched before, and the directories it would create. */
-export function rememberOriginals(journal: Journal, paths: string[]) {
+export function rememberOriginals(journal: RunJournal, paths: string[]) {
   const { root } = journal;
   for (const path of paths) {
     if (path in journal.originals) continue;
@@ -118,7 +136,7 @@ export function rememberOriginals(journal: Journal, paths: string[]) {
       }
       continue;
     }
-    const blob = join(recoveryDirectory(root, journal.runId), 'files', hash);
+    const blob = join(recoveryDirectory(root, recoveryOf(journal), journal.runId), 'files', hash);
     if (!existsSync(blob)) copyFileSync(absolute, blob);
     journal.originals[path] = { sha256: hash, mode: lstatSync(absolute).mode & 0o7777 };
   }
@@ -130,7 +148,7 @@ export function hashes(root: string, paths: string[]): Record<string, string | n
 }
 
 /** Records what each path holds now as this run's output, or forgets it when it holds the original again. */
-export function recordOutputs(journal: Journal, after: Record<string, string | null>) {
+export function recordOutputs(journal: RunJournal, after: Record<string, string | null>) {
   for (const [path, hash] of Object.entries(after)) {
     if (hash === (journal.originals[path]?.sha256 ?? null)) delete journal.outputs[path];
     else journal.outputs[path] = hash;
@@ -156,15 +174,13 @@ function removeIfEmpty(directory: string) {
   }
 }
 
-/** `init --rollback <run-id>`: restores originals and removes created files only where they still hold this run's output. */
-export function rollback(root: string, runId: string, io: InitIO): number {
-  const journal = loadJournal(root, runId);
-  if (!journal) {
-    const runs = existsSync(join(root, RECOVERY)) ? readdirSync(join(root, RECOVERY)).filter((name) => RUN_ID.test(name)).sort() : [];
-    io.err(`ultima init: ${root} has no init run ${runId}. Runs recorded there: ${runs.join(', ') || 'none'}\n`);
-    return 2;
-  }
-  const directory = recoveryDirectory(root, runId);
+/**
+ * Restores originals and removes created files only where they still hold the run's output, lists the rest with a note
+ * on recovering each, and records the rollback in the journal.
+ */
+export function undo(journal: RunJournal): { restored: string[]; removed: string[]; left: string[]; notes: string[] } {
+  const { root } = journal;
+  const directory = recoveryDirectory(root, recoveryOf(journal), journal.runId);
   const restored: string[] = [];
   const removed: string[] = [];
   const left: string[] = [];
@@ -194,12 +210,24 @@ export function rollback(root: string, runId: string, io: InitIO): number {
   for (const created of [...journal.directories].sort((a, b) => b.split('/').length - a.split('/').length || b.localeCompare(a))) {
     removeIfEmpty(join(root, created));
   }
-  const packageFiles = ['package.json', journal.lockfile].filter((path) => restored.includes(path) || removed.includes(path));
-  const lockfile = journal.originals[journal.lockfile] !== null && journal.originals[journal.lockfile] !== undefined;
-  const reinstall = journal.manager === 'npm' ? (lockfile ? 'npm ci' : 'npm install') : lockfile ? 'pnpm install --frozen-lockfile' : 'pnpm install';
   journal.status = 'rolled back';
   journal.rollback = { at: new Date().toISOString(), restored, removed, left };
   saveJournal(journal);
+  return { restored, removed, left, notes };
+}
+
+/** `init --rollback <run-id>`: undoes the run and names the reinstall a restored package.json needs. */
+export function rollback(root: string, runId: string, io: InitIO): number {
+  const journal = loadJournal(root, INIT, runId);
+  if (!journal) {
+    io.err(`ultima init: ${root} has no init run ${runId}. Runs recorded there: ${recordedRuns(root, INIT).join(', ') || 'none'}\n`);
+    return 2;
+  }
+  const directory = recoveryDirectory(root, INIT, runId);
+  const { restored, removed, left, notes } = undo(journal);
+  const packageFiles = ['package.json', journal.lockfile].filter((path) => restored.includes(path) || removed.includes(path));
+  const lockfile = journal.originals[journal.lockfile] !== null && journal.originals[journal.lockfile] !== undefined;
+  const reinstall = journal.manager === 'npm' ? (lockfile ? 'npm ci' : 'npm install') : lockfile ? 'pnpm install --frozen-lockfile' : 'pnpm install';
 
   const list = (paths: string[]) => (paths.length > 0 ? paths.join(', ') : 'none');
   io.out(

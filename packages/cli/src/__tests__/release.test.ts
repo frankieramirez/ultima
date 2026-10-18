@@ -73,6 +73,7 @@ describe('the published package', () => {
     ['doctor'],
     ['status'],
     ['diff', 'button'],
+    ['update'],
     ['check'],
     ['install', '--dry-run'],
     ['uninstall'],

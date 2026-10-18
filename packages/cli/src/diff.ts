@@ -46,22 +46,30 @@ export async function diff(
     else rows.push(...ofItem.filter(({ state }) => state !== 'current'));
   }
 
-  const served = new Map<string, { path: string; content?: string }[] | undefined>();
+  const served: ServedPayloads = new Map();
   for (const row of rows) {
     if (row.state === 'retired') {
       blocks.push(`${row.item}: retired, the registry no longer serves ${row.file}\n`);
       continue;
     }
-    if (!served.has(row.item)) {
-      const item = (await fetchJson(url.replace('{name}', row.item))) as { files?: { path: string; content?: string }[] } | undefined;
-      served.set(row.item, item?.files);
-    }
-    const files = served.get(row.item) ?? [];
-    const content = (files.find(({ path }) => basename(path) === basename(row.file)) ?? (files.length === 1 ? files[0] : undefined))?.content;
+    const content = await servedContent(url, row, served);
     if (content === undefined) return incomplete(row, url.replace('{name}', row.item));
     blocks.push(patch(root, row, renderAsInstalled(content, scope.aliases, scope.components.rsc === true), readStamp(content)?.revision ?? report.revision));
   }
   return { output: blocks.join('') };
+}
+
+/** Each item's served files, fetched once per run. */
+export type ServedPayloads = Map<string, { path: string; content?: string }[] | undefined>;
+
+/** The served text of a row's file, stamp included, or undefined when the item's payload does not carry it. */
+export async function servedContent(url: string, row: Pick<Row, 'item' | 'file'>, served: ServedPayloads): Promise<string | undefined> {
+  if (!served.has(row.item)) {
+    const item = (await fetchJson(url.replace('{name}', row.item))) as { files?: { path: string; content?: string }[] } | undefined;
+    served.set(row.item, item?.files);
+  }
+  const files = served.get(row.item) ?? [];
+  return (files.find(({ path }) => basename(path) === basename(row.file)) ?? (files.length === 1 ? files[0] : undefined))?.content;
 }
 
 function patch(root: string, row: Row, installed: string, revision: string | null): string {
