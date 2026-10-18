@@ -17,7 +17,7 @@ export {
   verdant,
   z,
 } from './tokens.stylex';
-export { colorScheme, darkTheme, lightTheme } from './themes';
+export { colorScheme, darkShadow, darkTheme, lightShadow, lightTheme } from './themes';
 export { palette } from './palette';
 export type { ColorMode, ScaleName } from './palette';
 export type { ContrastResult, TokenEntry, TokenValue, TokensJson } from './tokens-json';
