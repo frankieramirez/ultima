@@ -15,12 +15,12 @@ import { printStatus, status } from './status.ts';
 import { printRollback, printUpdate, rollbackUpdate, update, updateExit } from './update.ts';
 
 const COMMANDS = ['init', 'doctor', 'status', 'diff', 'update', 'check', 'install', 'uninstall'];
-const USAGE = `usage: ultima <${COMMANDS.join('|')}> [item…] [--json] [--cwd <dir>] [--target vite|next] [--project <tsconfig>] [--files <path>...] [--strict] [--harness <name>]... [--dry-run] [--force] [--yes] [--rollback [<run-id>]]`;
+const USAGE = `usage: ultima <${COMMANDS.join('|')}> [item…] [--json] [--cwd <dir>] [--target vite|next] [--project <tsconfig>] [--files <path>...] [--strict] [--harness <name>]... [--dry-run] [--force] [--yes] [--accept-base-theme] [--rollback [<run-id>]]`;
 const FLAGS: Record<string, string[]> = {
   doctor: ['target', 'theme', 'json'],
   status: ['project', 'json'],
   diff: ['project'],
-  update: ['project', 'yes', 'rollback'],
+  update: ['project', 'yes', 'accept-base-theme', 'rollback'],
   check: ['files', 'strict', 'project', 'json'],
   install: ['harness', 'dry-run', 'force', 'json'],
   uninstall: ['json'],
@@ -63,7 +63,7 @@ export async function run(argv: string[], stdin = '', io?: InitIO): Promise<{ co
       if ('diagnostics' in undone) return { code: exitCode(undone), stdout: print({ command: 'update', ...undone }, false), stderr: '' };
       return { code: 0, stdout: printRollback(undone), stderr: '' };
     }
-    const result = await update(invocation.root, invocation.items, { project: invocation.project, yes: invocation.yes });
+    const result = await update(invocation.root, invocation.items, { project: invocation.project, yes: invocation.yes, acceptBaseTheme: invocation.acceptBaseTheme });
     if ('usage' in result) return usageError(result);
     if ('diagnostics' in result) return { code: updateExit(result), stdout: print({ command: 'update', ...result }, false), stderr: '' };
     return { code: updateExit(result), stdout: printUpdate(result), stderr: '' };
@@ -114,7 +114,7 @@ type Invocation = { root: string; json: boolean } & (
   | { command: 'doctor'; target: Target | undefined; theme: boolean }
   | { command: 'status'; project: string | undefined }
   | { command: 'diff'; project: string | undefined; items: string[] }
-  | { command: 'update'; project: string | undefined; items: string[]; yes: boolean; rollback: false }
+  | { command: 'update'; project: string | undefined; items: string[]; yes: boolean; acceptBaseTheme: boolean; rollback: false }
   | { command: 'update'; rollback: true; runId: string | undefined }
   | { command: 'check'; project: string | undefined; files: string[] | undefined; strict: boolean }
   | { command: 'install'; harnesses: Harness[] | undefined; dryRun: boolean; force: boolean }
@@ -139,6 +139,7 @@ function parseInvocation(argv: string[]): { usage: string } | Invocation {
         'dry-run': { type: 'boolean' },
         force: { type: 'boolean' },
         yes: { type: 'boolean' },
+        'accept-base-theme': { type: 'boolean' },
         rollback: { type: 'boolean' },
       },
     });
@@ -169,10 +170,10 @@ function parseInvocation(argv: string[]): { usage: string } | Invocation {
   if (command === 'diff') return { command, root, project, json, items: rest };
   if (command === 'update' && args.values.rollback) {
     // parseArgs has no optional-value string option, so `--rollback` is a boolean and its run id the one positional.
-    if (rest.length > 1 || args.values.yes || project !== undefined) return { usage: '--rollback takes at most a run id, and no other flag but --cwd' };
+    if (rest.length > 1 || args.values.yes || args.values['accept-base-theme'] || project !== undefined) return { usage: '--rollback takes at most a run id, and no other flag but --cwd' };
     return { command, root, json, rollback: true, runId: rest[0] };
   }
-  if (command === 'update') return { command, root, project, json, items: rest, yes: args.values.yes ?? false, rollback: false };
+  if (command === 'update') return { command, root, project, json, items: rest, yes: args.values.yes ?? false, acceptBaseTheme: args.values['accept-base-theme'] ?? false, rollback: false };
   if (command === 'check') return { command, root, project, json, files: files && [...files, ...rest], strict: args.values.strict ?? false };
   if (command === 'uninstall') return { command, root, json };
   if (command === 'install') {
