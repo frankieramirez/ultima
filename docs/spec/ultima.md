@@ -3165,15 +3165,16 @@ Charted on [Map: The consumer CLI's update command](https://github.com/frankiera
 $ npx ultima-design update
 Registry  https://ultima.systems/r  revision 3f9c2ab04e1d
 
-item      file                           state      action
-dialog    src/components/ui/dialog.tsx   behind     replace
-sidebar   src/components/ui/sidebar.tsx  diverged   merge
-select    src/components/ui/select.tsx   diverged   conflict  2 hunks
-tokens    src/lib/tokens.stylex.ts       behind     hold      base theme changes to neutral-tight
-lib       src/lib/component.ts           unstamped  report    no installed base
-skill     .claude/skills/ultima-design   stale      refresh
+item      file                                   state      action
+dialog    src/components/ui/dialog.tsx           behind     replace
+sidebar   src/components/ui/sidebar.tsx          diverged   merge
+select    src/components/ui/select.tsx           diverged   conflict  2 hunks
+tokens    src/lib/tokens.stylex.ts               behind     hold      base theme changes to neutral-tight
+lib       src/lib/component.ts                   unstamped  report    no installed base
+skill     .claude/skills/ultima-design/SKILL.md  stale      refresh
 
 hold      npx ultima-design update --accept-base-theme  (https://ultima.systems/install/update)
+keep      npx shadcn@4.21.4 add "https://ultima.systems/r/theme.json?theme=…"  installs the Ultima preset, which keeps the previous look
 conflict  npx ultima-design update --write-conflicts  or  --replace select
 apply     npx ultima-design update --yes
 ```
@@ -3222,7 +3223,7 @@ Both keys are additive, so an older CLI does not misread them and the format sta
 
 **No lockfile.** The stamp names the item, the revision and the content hash. With the base retrievable by revision and verified by hash, a lockfile would only restate the stamps, and it would fall out of step with them whenever a file is copied, moved or edited. The registry comes from `components.json`. What a run did is in its journal, a recovery record that is ignored by git and never read to decide a file's state.
 
-**The base theme.** `update` never changes a consumer's theme without the consumer choosing to. A `tokens` or `tokens-css` file is planned as `hold`, whatever its state, when the item's served `meta.ultima.baseTheme` differs from the base the file holds. The file's base is its `@ultima-base` marker, else `neutral-tight` for the pre-marker Neutral hashes `status` already recognises, else the legacy Ultima base. The hold's closing lines name what changes, link `/install/update`, and print the frozen Ultima preset's install command, which keeps the previous look. `--accept-base-theme` turns the hold into the action the file's state gives. `update` never installs the preset, never writes a Studio theme file, never regenerates an export and never edits where a theme is imported. Theme Studio's frozen preset revisions stay as [Theme Studio](theme-studio.md) defines them. A later base, with a new marker, follows the same rule. Components read semantic token names and carry no theme values, so they update without a hold.
+**The base theme.** `update` never changes a consumer's theme without the consumer choosing to. A `tokens` or `tokens-css` file is planned as `hold`, whatever its state, when the item's served `meta.ultima.baseTheme` differs from the base the file holds. The file's base is its `@ultima-base` marker, else `neutral-tight` for the pre-marker Neutral hashes `status` already recognises, else the legacy Ultima base. The hold's closing lines name what changes, link `/install/update`, and print the frozen Ultima preset's install command, which keeps the previous look. `--accept-base-theme` turns the hold into the action the file's state gives, and `--replace` does not lift it. `update` never installs the preset, never writes a Studio theme file, never regenerates an export and never edits where a theme is imported. Theme Studio's frozen preset revisions stay as [Theme Studio](theme-studio.md) defines them. A later base, with a new marker, follows the same rule. Components read semantic token names and carry no theme values, so they update without a hold.
 
 **How it writes.** `update` writes the files itself and does not call shadcn. `shadcn add --overwrite` would discard every edit, can prompt, adds npm dependencies, and pulls `tokens` in behind a component. Each file is rendered as `diff` renders it, then written atomically through a temporary file in its own directory. An item whose served files need a registry item or an npm package the project lacks is held, and the plan prints the command that adds it: `npx shadcn@4.21.4 add @ultima/<item>`, or the detected package manager's add command. A rerun after that picks it up. `update` never edits `package.json`. When a planned file has uncommitted changes in git, the plan says so. It does not refuse, because the journal keeps the original.
 
@@ -3253,7 +3254,7 @@ Both keys are additive, so an older CLI does not misread them and the format sta
 
 `action` is one of `none`, `replace`, `merge`, `conflict`, `hold`, `report` and `refresh`. `base` is `verified`, `unavailable` with a `reason`, or `null` when the action needs none. `hunks` counts the hunks that conflict: `0` for a `merge`, the count for a `conflict`, `null` for every other action. `writeConflicts` records `--write-conflicts`, so `--apply` writes a `conflict` row with markers only when the plan it applies says so. `notices` is `status`'s list. Each file row also carries `sha256`, the digest of the local file's bytes, so an edit of any kind after planning makes the plan stale, and `uncommitted`, true when git holds uncommitted changes to the file. `planHash` is the `sha256:` digest of the plan's `registry`, `revision`, `writeConflicts`, `files` and `managed`, with keys and rows sorted and `uncommitted` left out. `--apply` refuses with exit 2 a plan whose fields no longer give its `planHash`. An apply prints `{ "kind": "ultima-update-run", "schemaVersion": 1, "runId", "planHash", "written", "conflicts", "held", "reported", "next", "failed" }`, where `failed` is the write that stopped the run, as `{ "file", "error" }`, or `null`, and a rollback prints `{ "kind": "ultima-update-rollback", "schemaVersion": 1, "runId", "restored", "left" }`.
 
-**Exits.** By the table under [Package and engine](#package-and-engine). 0 when the plan, the apply or the rollback completes, held, conflicted and reported files included, since each is a decision left to the consumer and not a failure. `update` never exits 1. 2 for an invalid invocation: an item the registry neither serves nor has installed, `--replace` naming an item that is not installed, `--apply` with a file that is not a plan, or `--apply` combined with item names, `--replace` or `--write-conflicts`. 3 for the conditions `status` names, a stale plan, a write that failed, or `--rollback` with no run to undo.
+**Exits.** By the table under [Package and engine](#package-and-engine). 0 when the plan, the apply or the rollback completes, held, conflicted and reported files included, since each is a decision left to the consumer and not a failure. `update` never exits 1. 2 for an invalid invocation: an item the registry neither serves nor has installed, `--replace` naming an item that is not installed, `--apply` with a file that is not a plan, or `--apply` combined with item names, `--yes`, `--plan`, `--replace`, `--write-conflicts` or `--accept-base-theme`. 3 for the conditions `status` names, a stale plan, a write that failed, or `--rollback` with no run to undo.
 
 **The docs page.** `/install/update` becomes the update page. It opens with the loop: `status`, `update`, review the plan, `update --yes`, `check`, and `--rollback` if needed. It then names the two refresh steps for the CLI and the skill. Its base-theme sections stay as they are. The build ticket writes that section with the command, and the agent guide's install pointer links it.
 
