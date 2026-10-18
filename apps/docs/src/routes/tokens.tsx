@@ -192,7 +192,7 @@ function capitalize(group: string): string {
 }
 
 const groupDescriptions: Record<string, string> = {
-  color: 'Surfaces, text, borders, and status colors',
+  color: 'Surfaces, text, borders, status colors, and chart series',
   space: 'Spacing and control sizes',
   text: 'The type scale',
   font: 'Families, weights, leading, and tracking',

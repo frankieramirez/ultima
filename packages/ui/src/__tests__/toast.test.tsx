@@ -8,6 +8,7 @@ import {
   type ToastArrowProps,
   type ToastContentProps,
   type ToastDescriptionProps,
+  type ToastIconProps,
   type ToastPositionerProps,
   type ToastRootProps,
   type ToastTitleProps,
@@ -34,6 +35,18 @@ function List() {
   ));
 }
 
+function IconList({ mark }: { mark?: ReactNode }) {
+  const { toasts } = Toast.useToastManager();
+  return toasts.map((toast) => (
+    <Toast.Root key={toast.id} toast={toast} data-testid={`toast-${toast.type ?? 'default'}`}>
+      <Toast.Content data-testid="content">
+        <Toast.Icon data-testid={`icon-${toast.type ?? 'default'}`}>{mark}</Toast.Icon>
+        <Toast.Title />
+      </Toast.Content>
+    </Toast.Root>
+  ));
+}
+
 function ButtonList() {
   const { toasts } = Toast.useToastManager();
   return toasts.map((toast) => (
@@ -41,7 +54,7 @@ function ButtonList() {
       <Toast.Content data-testid="content">
         <Toast.Title />
         <Toast.Description />
-        <Toast.Action data-testid="action" render={<Button variant="ghost" size="sm" />}>
+        <Toast.Action data-testid="action" render={<Button size="sm" />}>
           Undo
         </Toast.Action>
         <Toast.Close data-testid="close" render={<Button variant="ghost" size="sm" />}>
@@ -56,7 +69,7 @@ function AnchoredList() {
   const { toasts } = Toast.useToastManager();
   return toasts.map((toast) => (
     <Toast.Positioner key={toast.id} toast={toast} data-testid="positioner">
-      <Toast.Root toast={toast} data-testid={`toast-${toast.type ?? 'default'}`}>
+      <Toast.Root toast={toast} data-testid={`toast-${toast.id === 'older' || toast.id === 'newer' ? toast.id : (toast.type ?? 'default')}`}>
         <Toast.Arrow data-testid="arrow" />
         <Toast.Content data-testid="content">
           <Toast.Title />
@@ -265,6 +278,85 @@ test('Content fades behind the frontmost toast and returns when the viewport exp
   expect(getComputedStyle(behind).opacity).toBe('1');
 });
 
+test('an anchored toast behind a newer one keeps its text, since the two sit at their own anchors', async () => {
+  const { screen, manager } = await mount(<AnchoredList />);
+  const first = anchorButton();
+  const second = anchorButton();
+  second.style.top = '25%';
+  manager.add({ id: 'older', title: 'Link copied', positionerProps: { anchor: first } });
+  manager.add({ id: 'newer', title: 'Code copied', positionerProps: { anchor: second } });
+  await expect.element(screen.getByTestId('toast-newer')).toBeInTheDocument();
+
+  const older = settled(screen.getByTestId('toast-older').element().querySelector<HTMLElement>('[data-testid="content"]')!);
+  expect(older).toHaveAttribute('data-behind');
+  expect(older.getAttribute('data-expanded')).toBeNull();
+  expect(getComputedStyle(older).opacity).toBe('1');
+  first.remove();
+  second.remove();
+});
+
+const marked = ['success', 'warning', 'danger', 'error', 'loading'] as const;
+const unmarked = ['neutral', 'accent', 'highlight'] as const;
+
+/** The one glyph a status Icon shows, by its drawing. */
+function shownGlyph(icon: Element) {
+  const shown = Array.from(icon.querySelectorAll('svg')).filter((svg) => getComputedStyle(svg).display !== 'none');
+  return shown.map((svg) => svg.innerHTML);
+}
+
+test('Icon shows one status glyph per status type, the same for danger and error, and nothing on the rest', async () => {
+  const { screen, manager } = await mount(<IconList />, 10);
+  manager.add({ title: 'Untyped' });
+  for (const type of [...marked, ...unmarked]) manager.add({ title: type, type });
+  await expect.element(screen.getByTestId('icon-highlight')).toBeInTheDocument();
+
+  const glyphs = marked.map((type) => {
+    const shown = shownGlyph(screen.getByTestId(`icon-${type}`).element());
+    expect(shown, type).toHaveLength(1);
+    return shown[0];
+  });
+  expect(glyphs[2]).toBe(glyphs[3]);
+  expect(new Set(glyphs).size).toBe(marked.length - 1);
+
+  for (const type of [...unmarked, 'default']) {
+    expect(getComputedStyle(screen.getByTestId(`icon-${type}`).element()).display, type).toBe('none');
+  }
+});
+
+test("Icon paints in the tone's ink, sits in a text-6 square near the Title's line box, centred on the text, and hidden from the tree", async () => {
+  const screen = await one({ title: 'Saved', type: 'success' }, <IconList />);
+  const icon = screen.getByTestId('icon-success').element();
+  const glyph = icon.querySelector('svg')!;
+  const box = icon.getBoundingClientRect();
+  const size = parseFloat(tokenValue('font-size', 'var(--ult-text-6)'));
+  const line = parseFloat(tokenValue('line-height', 'calc(var(--ult-text-4) * var(--ult-font-leading-snug))'));
+
+  expect(icon).toHaveAttribute('aria-hidden', 'true');
+  expect(getComputedStyle(glyph).color).toBe(getComputedStyle(screen.getByTestId('toast-success').element()).color);
+  expect(glyph.getAttribute('stroke-width')).toBe('1.5');
+  expect(box.width).toBeCloseTo(size, 0);
+  expect(box.height).toBeCloseTo(size, 0);
+  expect(Math.abs(size - line)).toBeLessThan(2);
+  expect(getComputedStyle(screen.getByTestId('content').element()).alignItems).toBe('center');
+});
+
+test('the loading glyph turns, so a promise toast keeps its mark in place when it settles', async () => {
+  const screen = await one({ title: 'Uploading', type: 'loading' }, <IconList />);
+  const [glyph] = Array.from(screen.getByTestId('icon-loading').element().querySelectorAll('svg')).filter(
+    (svg) => getComputedStyle(svg).display !== 'none',
+  );
+  expect(getComputedStyle(glyph!).animationName).not.toBe('none');
+  expect(getComputedStyle(glyph!).animationIterationCount).toBe('infinite');
+});
+
+test("Icon's children replace the status mark and show on every type", async () => {
+  const screen = await one({ title: 'Event created' }, <IconList mark={<svg data-testid="own" />} />);
+  const icon = screen.getByTestId('icon-default').element();
+  expect(getComputedStyle(icon).display).toBe('flex');
+  expect(icon.querySelectorAll('svg')).toHaveLength(1);
+  expect(screen.getByTestId('own').element()).toBeInTheDocument();
+});
+
 test('each toast is a dialog named by Title and described by Description', async () => {
   const screen = await one({ title: 'Report exported', description: 'Ready to download.' });
   const toast = screen.getByRole('dialog', { name: 'Report exported' }).element();
@@ -468,6 +560,8 @@ test('public prop types drop className on the styled parts and keep the style sl
   expectTypeOf<ToastDescriptionProps>().not.toHaveProperty('className');
   expectTypeOf<ToastPositionerProps>().not.toHaveProperty('className');
   expectTypeOf<ToastArrowProps>().not.toHaveProperty('className');
+  expectTypeOf<ToastIconProps>().not.toHaveProperty('className');
+  expectTypeOf<ToastIconProps>().toHaveProperty('style');
   expectTypeOf<ToastRootProps>().toHaveProperty('style');
   expectTypeOf<ComponentProps<typeof Toast.Provider>>().toHaveProperty('limit');
   expectTypeOf<ToastRootProps>().toHaveProperty('swipeDirection');

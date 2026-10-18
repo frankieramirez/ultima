@@ -173,9 +173,11 @@ A theme may drop the blur and keep the wash, so the scrim never depends on blur 
 
 **Color never works alone** ([WCAG 1.4.1](https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html)). A status pairs its hue with an icon and words. An invalid field pairs its danger edge with a message. A chart pairs its series colors with a legend or labels.
 
+**A toast's status mark leads its text.** Toast draws a circled check for success, a triangle for warning and a circled exclamation for danger, in the tone's ink, which is gated at 4.5:1 and so clears 3:1 as a mark. Danger isn't an x, which beside Close would read as a second dismiss, and warning's triangle differs from danger in shape as well as hue. Loading turns a ring in the same slot, so the text doesn't move when the promise settles. Neutral, accent and highlight report no status and take no mark. The mark is `1em` at `text-6`, the step nearest the Title's 19px line box, so it weighs as much as the title, and it centres on the text with the actions.
+
 **Hue means status.** `success`, `warning` and `danger` say something about state and are kept for that. The accent is monochrome ink by default, so the one place color appears in a neutral screen is where something needs attention. Series colors are for charts only, and status roles never stand in for a chart series.
 
-**One solid accent per region.** The solid accent fill is the loudest thing on a screen. Spend it on the primary action, and use soft, outline or ghost for the actions beside it. Two solid accents next to each other leave the reader to guess which one matters.
+**One solid accent per region.** The solid accent fill is the loudest thing on a screen. Spend it on the primary action, and use soft, outline or ghost for the actions beside it. Two solid accents next to each other leave the reader to guess which one matters. A toast is a region of its own, and its one action is a solid `sm` Button: it has seconds to be found, and a ghost Button reads as text. The action keeps Button's tone, because its color says what pressing it does, not what the toast reports.
 
 **A grey fill means "you can't use this".** Fields are the brightest surface (ink on paper), so `surface-sunken` grey is kept for disabled. Don't grey-fill a live surface. Empty marks a gap with a dashed edge rather than a grey fill for this reason.
 
@@ -227,6 +229,8 @@ Padding smaller than the corner lets content crowd the curve. Padding much bigge
 A dialog is the widest panel built for reading. Inside its 24px padding it leaves 400px of 14px text. An average Figtree character is about half an em wide, so that's roughly 57 characters a line.
 
 An anchored Toast takes the popup cap, not the stack's 384px. It is a popup tied to its trigger, often a one-word confirmation, so it sizes to its message (`max-content`) and wraps only past 320px or `--available-width`. A stacked toast is a row in a column of others, so it keeps the stack's width.
+
+One trigger holds one anchored toast: a repeat passes the trigger's fixed `id` and updates the toast in place, as Base UI, Sonner and Mantine all dedupe. Toasts at different anchors don't overlap, so an anchored toast keeps its text when a newer one opens. Only the collapsed stack hides the content behind its front.
 
 **Running text stays between 45 and 75 characters a line.** On longer lines the eye loses its place on the way back to the next line. Shorter lines break phrases apart. Prose, descriptions and long messages sit in a column whose maximum width keeps them in that range.
 

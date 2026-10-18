@@ -50,6 +50,9 @@ export const PAIRINGS: Pairing[] = [
   ...['action', 'action-hover', 'action-active'].map((background) =>
     pairing('action-contrast', background, 4.5),
   ),
+  ...[1, 2, 3, 4, 5, 6].flatMap((n) =>
+    ['surface', 'surface-raised'].map((background) => pairing(`series-${n}`, background, 3)),
+  ),
 ];
 
 function modeResult(table: TokenTable, pairing: Pairing): PairingModeResult {
@@ -57,7 +60,7 @@ function modeResult(table: TokenTable, pairing: Pairing): PairingModeResult {
   return { ratio, pass: ratio >= pairing.minimum };
 }
 
-/** A draft is gated on the pairings its version resolves: a version-3 draft has no `border-hover`. */
+/** A draft is gated on the pairings its version resolves: a version-3 draft has no `border-hover` or series. */
 export function gate(tables: ResolvedDraft): PairingResult[] {
   const resolves = (pairing: Pairing) => pairing.foreground in tables.dark && pairing.background in tables.dark;
   return PAIRINGS.filter(resolves).map((pairing) => ({

@@ -154,6 +154,35 @@ export function generateScales(seeds: ScaleSeeds, recipeVersion = RECIPE_VERSION
   return out;
 }
 
+const SERIES_HUES = [264, 47, 163, 293, 354, 215];
+const SERIES_CHROMA = 0.16;
+const SERIES_LIGHTNESS: Record<ColorMode, number> = { dark: 0.74, light: 0.56 };
+
+/**
+ * The chart series, one value per mode and the same in every theme. Lightness steps by .01 away from the
+ * surfaces until each value clears 3:1 on the Neutral and Ultima `surface` and `surface-raised`, as palette.py does.
+ */
+function generateSeries(): Record<ColorMode, string[]> {
+  const neutral = generateScales({ ...STOCK_SEEDS, mithril: { ...STOCK_SEEDS.mithril, saturation: 0 } }, BASE_RECIPE_VERSION);
+  const ultima = generateScales(STOCK_SEEDS, 2, true);
+  const series = (mode: ColorMode) => {
+    const grounds = [neutral, ultima].flatMap((scales) => [scales.mithril[mode][0], scales.mithril[mode][mode === 'dark' ? 1 : 0]]);
+    const step = mode === 'dark' ? 0.01 : -0.01;
+    return SERIES_HUES.map((hue, i) => {
+      let lightness = SERIES_LIGHTNESS[mode];
+      const clears = () => grounds.every((ground) => contrastRatio(oklchToHex(lightness, SERIES_CHROMA, hue), ground ?? '') >= 3);
+      while (!clears()) {
+        lightness = Math.round((lightness + step) * 100) / 100;
+        if (lightness < 0 || lightness > 1) throw new Error(`series-${i + 1} clears 3:1 on the surfaces at no lightness in ${mode}.`);
+      }
+      return oklchToHex(lightness, SERIES_CHROMA, hue);
+    });
+  };
+  return { dark: series('dark'), light: series('light') };
+}
+
+export const SERIES = generateSeries();
+
 export type InkStates = { hover: string; active: string };
 
 const INK_OFFSETS: Record<ColorMode, { hover: number; active: number }> = {
