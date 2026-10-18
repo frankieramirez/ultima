@@ -17,15 +17,16 @@ const styles = stylex.create({
     fontWeight: font['--ult-font-weight-medium'],
   },
   // The trigger wears Input's field recipe: the field fill, a 3:1 edge that darkens on hover and
-  // holds that edge while its popup is open, the focus outline outside the edge, and a muted
-  // fill and ink when disabled or read-only, with no opacity. Each edge key names its whole state,
+  // holds that edge while its popup is open, the focus outline outside the edge, and the sunken
+  // fill and disabled ink when disabled, with no opacity. Read-only keeps the fill and the value's
+  // ink and gives up the 3:1 edge and hover, since it won't open. Each edge key names its whole state,
   // so an invalid trigger keeps its danger edge through every other state; focus stays the focus color.
   trigger: {
     alignItems: 'center',
     appearance: 'none',
     backgroundColor: {
       default: color['--ult-color-field'],
-      ':is([data-disabled], [data-readonly])': color['--ult-color-surface-sunken'],
+      ':is([data-disabled])': color['--ult-color-surface-sunken'],
     },
     borderColor: {
       default: color['--ult-color-border-strong'],

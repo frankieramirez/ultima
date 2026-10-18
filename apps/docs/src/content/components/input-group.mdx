@@ -28,9 +28,9 @@ npx shadcn@4.21.4 add @ultima/input-group
 
 <Demo component={Sizes} source={sizesSource} />
 
-## Validation and disabled state
+## Validation, read-only and disabled state
 
-The box reads state off the inner control with `:has()`: `aria-invalid` or `data-invalid` on `Input` draws the danger border, and a read-only `Input` mutes the whole box to the sunken fill and the quieter edge, with no hover change, while its text keeps the normal ink so the value still reads. A disabled `Input` does the same and also drops the text to the disabled ink. Inside a `Field.Root`, Base UI owns `aria-invalid`, `data-invalid`, and the description merge — the inner input needs no new prop, the same as a bare Input.
+The box reads state off the inner control with `:has()`: `aria-invalid` or `data-invalid` on `Input` draws the danger border, and a read-only `Input` quiets the box's edge, turns hover off and hides the caret, while the fill, the text and the addons keep their normal look so the value still reads. A disabled `Input` also sinks the box to the sunken fill and drops the text and addons to the disabled ink. Inside a `Field.Root`, Base UI owns `aria-invalid`, `data-invalid`, and the description merge — the inner input needs no new prop, the same as a bare Input.
 
 <Demo component={Validation} source={validationSource} />
 
