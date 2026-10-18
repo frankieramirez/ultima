@@ -2,7 +2,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 
-import { BASE_THEME, BASE_THEME_MARKER, UNMARKED_NEUTRAL_HASHES } from './base-theme.ts';
+import { BASE_THEME, fileBaseTheme } from './base-theme.ts';
 import { type Diagnostic, SPEC } from './diagnostic.ts';
 import { type ManagedState, managedSkills } from './install.ts';
 import { type ConsumerScope, consumerScope } from './scope.ts';
@@ -38,8 +38,12 @@ export type StatusReport = {
 type CatalogueItem = {
   name: string;
   type: string;
+  /** What the item's files import: npm packages, and registry items as `@ultima/<name>` or a `/r/<name>.json` URL. */
+  dependencies?: string[];
+  registryDependencies?: string[];
   files: { path: string; target?: string }[];
-  meta?: { ultima?: { revision: string; files: Record<string, string>; baseTheme?: string } };
+  /** `sources` maps each served file name to its authored repository path; a catalogue built before it has none. */
+  meta?: { ultima?: { revision: string; files: Record<string, string>; sources?: Record<string, string>; baseTheme?: string } };
 };
 
 type Served = { item: string; name: string; installPath: string; hash: string };
@@ -104,9 +108,8 @@ export async function survey(
   const legacyTokens = files.filter((row) => {
     if (!['tokens', 'tokens-css'].includes(row.item) || row.state === 'current' || row.state === 'retired') return false;
     if (items.find(({ name }) => name === row.item)?.meta?.ultima?.baseTheme !== BASE_THEME) return false;
-    if (row.installed?.hash === row.served || [row.local, row.installed?.hash].some((hash) => hash && UNMARKED_NEUTRAL_HASHES.includes(hash))) return false;
-    const lines = readFileSync(join(root, row.file), 'utf8').replace(/\r\n/g, '\n').split('\n');
-    return !lines.some((line) => line.trim() === `// ${BASE_THEME_MARKER}` || line.trim() === `/* ${BASE_THEME_MARKER} */`);
+    if (row.installed?.hash === row.served) return false;
+    return fileBaseTheme(readFileSync(join(root, row.file), 'utf8'), row.local) !== BASE_THEME;
   });
   const report = {
     registry: url.replace(/\/\{name\}\.json$/, ''),

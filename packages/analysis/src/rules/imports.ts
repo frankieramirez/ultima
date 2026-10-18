@@ -4,7 +4,7 @@
 import ts from 'typescript';
 
 import { importsOf } from '../../../../scripts/catalogue/source.ts';
-import { DESIGN_ASSETS, allows, categoryOf, packageName } from '../policy.ts';
+import { type Category, DESIGN_ASSETS, allows, categoryOf, packageName } from '../policy.ts';
 import { DOCS_KINDS, PRODUCTION_KINDS, type Resolution, type SourceKind } from '../scope.ts';
 import type { Parsed } from '../sources.ts';
 import type { Context } from './context.ts';
@@ -71,8 +71,8 @@ export function checkImports(context: Context): void {
         const symbol = entry.names.map((name) => name.imported).join(', ') || undefined;
         const resolution = scope.resolve(entry.specifier, path);
         const verdict = production
-          ? productionVerdict(context, kind, item, path, resolution)
-          : docsVerdict(context, kind, path, resolution);
+          ? productionVerdict(context, kind, item, path, entry.specifier, resolution)
+          : docsVerdict(context, kind, path, entry.specifier, resolution);
         if (verdict) context.report({ ...at, ...(symbol && { symbol }), ...verdict });
       }
     }
@@ -120,8 +120,58 @@ function unresolved(resolution: Extract<Resolution, { kind: 'unresolved' }>, kin
   };
 }
 
-function docsVerdict(context: Context, kind: SourceKind, from: string, resolution: Resolution): Verdict | undefined {
-  if (resolution.kind === 'external') return undefined;
+/** The packages the chart engine ships in; their entries are judged one by one. */
+const CHART_PACKAGES = ['@tanstack/charts', '@tanstack/react-charts'];
+
+/**
+ * A chart engine import the policy does not allow where it stands: an entry outside the allowlist,
+ * anywhere, or an allowed entry outside the chart item and the code that composes it.
+ */
+function chartVerdict(who: string, specifier: string, category: Category): Verdict | undefined {
+  if (category === 'engine' && CHART_PACKAGES.includes(packageName(specifier))) {
+    return {
+      ruleId: 'ULT-IMPORT-001',
+      message: `${who} imports "${specifier}", a chart engine entry outside the allowlist: the root, /react and the other DOM hosts stay denied.`,
+      repair: 'Import the scene from "@tanstack/charts/scene" and each mark from its own entry, such as "@tanstack/charts/bar".',
+      link: BOUNDARIES,
+    };
+  }
+  if (category === 'chart-engine') {
+    return {
+      ruleId: 'ULT-IMPORT-001',
+      message: `${who} imports the chart engine entry "${specifier}", which only the chart item and the blocks and demos that compose it may import.`,
+      repair: 'Draw the chart through "@ultima/ui/chart"; a block that imports it may import the entries its definition needs.',
+      link: BOUNDARIES,
+    };
+  }
+  return undefined;
+}
+
+/** The consumer scope's ULT-IMPORT-001: chart engine imports in installed items. The consumer's own files stay out of scope. */
+export function checkInstalledImports(context: Context): void {
+  const { scope } = context;
+  for (const { path, kind } of scope.inventory) {
+    const item = kind === 'app' ? scope.itemOf(path) : undefined;
+    if (item === undefined) continue;
+    const parsed = context.source(path);
+    if (!parsed) continue;
+    for (const segment of parsed.segments) {
+      for (const entry of importsOf(segment.file).imports) {
+        const category = categoryOf(scope.policy, entry.specifier)?.category;
+        if (!category || allows(scope.policy, 'react-component', category, item)) continue;
+        const verdict = chartVerdict(`the installed item "${item}"`, entry.specifier, category);
+        if (verdict) context.report({ parsed, start: entry.start + segment.shift, end: entry.end + segment.shift, target: entry.specifier, ...verdict });
+      }
+    }
+  }
+}
+
+function docsVerdict(context: Context, kind: SourceKind, from: string, specifier: string, resolution: Resolution): Verdict | undefined {
+  if (resolution.kind === 'external') {
+    // A demo is code a reader copies, so it takes the chart engine's allowlist too.
+    const category = kind === 'demo' ? categoryOf(context.scope.policy, specifier)?.category : undefined;
+    return category === 'engine' ? chartVerdict(LABEL[kind], specifier, category) : undefined;
+  }
   if (resolution.kind === 'unresolved') return unresolved(resolution, kind);
   if (resolution.path.startsWith('ultima-assets/')) {
     const named = DESIGN_ASSETS.find(({ asset }) => asset === resolution.path);
@@ -150,6 +200,7 @@ function productionVerdict(
   kind: SourceKind,
   item: string | undefined,
   from: string,
+  specifier: string,
   resolution: Resolution,
 ): Verdict | undefined {
   const { scope } = context;
@@ -157,7 +208,7 @@ function productionVerdict(
 
   if (resolution.kind === 'external') {
     const name = resolution.package;
-    const category = categoryOf(scope.policy, name);
+    const category = categoryOf(scope.policy, specifier);
     if (!category) {
       return {
         ruleId: 'ULT-IMPORT-001',
@@ -167,6 +218,9 @@ function productionVerdict(
       };
     }
     if (allows(scope.policy, kind, category.category, item)) return undefined;
+    if (category.category === 'chart-engine' && kind === 'block' && item !== undefined && scope.blockEngines?.(item).has(specifier)) return undefined;
+    const chart = chartVerdict(LABEL[kind], specifier, category.category);
+    if (chart) return chart;
     if (category.category === 'engine' && kind === 'block') {
       if (item !== undefined && scope.blockEngines?.(item).has(name)) return undefined;
       return {

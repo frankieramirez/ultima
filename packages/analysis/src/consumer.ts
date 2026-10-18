@@ -5,6 +5,7 @@ import { type Diagnostic, type RuleStatus, type Unsupported, compareDiagnostics 
 import { APP_RULES, CHECK_SPEC, RULES } from './rules.ts';
 import { type Skipped, checkApp } from './rules/app.ts';
 import { createContext } from './rules/context.ts';
+import { checkInstalledImports } from './rules/imports.ts';
 import { checkThemes } from './rules/theme.ts';
 import type { Scope } from './scope.ts';
 
@@ -14,7 +15,10 @@ export type { Diagnostic, RuleStatus, Unsupported } from './diagnostic.ts';
 export { POLICY, STYLE_POLICY } from './policy.ts';
 export type { Classified, InstalledItem, Resolution, Scope, SourceKind } from './scope.ts';
 
-/** The rule IDs a consumer scope enables. No contributor family ever runs in a consumer's repository. */
+/**
+ * The rule IDs a consumer scope enables. No contributor family runs in a consumer's repository, apart
+ * from ULT-IMPORT-001 over the chart engine entries installed items import.
+ */
 export const CONSUMER_RULES = [
   'ULT-APP-CONTRAST-001',
   'ULT-APP-THEME-001',
@@ -23,6 +27,7 @@ export const CONSUMER_RULES = [
   'ULT-APP-PRIMITIVE-001',
   'ULT-APP-CONTROL-001',
   'ULT-APP-SUPPRESSION-001',
+  'ULT-IMPORT-001',
   'ULT-ANALYSIS-001',
 ] as const;
 
@@ -47,9 +52,11 @@ const UNSUPPORTED: Record<string, string> = {
 
 export function checkConsumer(scope: Scope, { strict = false }: { strict?: boolean } = {}): ConsumerReport {
   const context = createContext(scope);
+  const enabled = new Set(scope.rules ?? CONSUMER_RULES);
   const skipped: Skipped = new Map();
   checkApp(context, skipped);
   checkThemes(context);
+  if (enabled.has('ULT-IMPORT-001')) checkInstalledImports(context);
 
   // A diagnostic's link is absolute in a consumer's output: a repository path means nothing there.
   const found = [...scope.problems, ...context.diagnostics].map((diagnostic) => (/^https?:/.test(diagnostic.link) ? diagnostic : { ...diagnostic, link: CHECK_SPEC }));
@@ -74,9 +81,9 @@ export function checkConsumer(scope: Scope, { strict = false }: { strict?: boole
     }
   }
 
-  const enabled = new Set(scope.rules ?? CONSUMER_RULES);
   const rules = CONSUMER_RULES.filter((id) => enabled.has(id)).map((id): RuleStatus => {
     if (id === 'ULT-ANALYSIS-001') return { id, status: 'blocking', scope: 'Values and imports a rule needs; advisory against an advisory rule', link: CHECK_SPEC };
+    if (id === 'ULT-IMPORT-001') return { id, status: 'blocking', scope: 'Chart engine entries imported by installed items', link: CHECK_SPEC };
     return { id, ...APP_RULES[id] };
   });
 
