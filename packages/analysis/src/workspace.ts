@@ -10,7 +10,7 @@ import { loadCatalogue } from '../../../scripts/catalogue/model.ts';
 import { headingAnchors } from '../../../scripts/catalogue/source.ts';
 import { registryPlan, stagedSources } from '../../../scripts/catalogue/staging.ts';
 import type { Diagnostic } from './diagnostic.ts';
-import { POLICY, STYLE_POLICY, packageName } from './policy.ts';
+import { CHART_ENGINE_ENTRIES, CHART_ENGINE_ITEMS, POLICY, STYLE_POLICY, packageName } from './policy.ts';
 import { createTypeProgram } from './program.ts';
 import { RULES } from './rules.ts';
 import type { Classified, RegistryInputs, Resolution, Scope, SourceKind, Staged } from './scope.ts';
@@ -253,10 +253,15 @@ export function workspaceScope(files: Files): Scope {
     ...catalogue.blocks.flatMap((entry) => entry.files.map((name): [string, string] => [`${entry.directory}/${name}`, entry.id])),
   ]);
 
+  // A block that imports the chart item, @ultima/ui/chart, may import the chart engine's allowed entries.
+  const charts: readonly string[] = CHART_ENGINE_ITEMS;
   const engines = new Map(
     catalogue.blocks.map((block): [string, ReadonlySet<string>] => [
       block.id,
-      new Set(block.recipes.flatMap(({ id }) => catalogue.recipes.find((recipe) => recipe.id === id)?.dependencies ?? [])),
+      new Set([
+        ...block.recipes.flatMap(({ id }) => catalogue.recipes.find((recipe) => recipe.id === id)?.dependencies ?? []),
+        ...(block.registryDependencies.some((id) => charts.includes(id)) ? CHART_ENGINE_ENTRIES : []),
+      ]),
     ]),
   );
 

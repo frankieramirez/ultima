@@ -89,7 +89,8 @@ export type Scope = {
   itemOf(path: string): string | undefined;
   /**
    * The packages a block may import as engines: those the demos of the recipes its descriptor names
-   * import. Only the workspace scope reads descriptors, so a consumer scope leaves it unset.
+   * import, and the allowed chart-engine entries when it imports the chart item. Only the workspace
+   * scope reads descriptors, so a consumer scope leaves it unset.
    */
   blockEngines?(block: string): ReadonlySet<string>;
   policy: DependencyPolicy;
