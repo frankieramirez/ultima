@@ -239,6 +239,12 @@ export const color = stylex.defineVars({
   '--ult-color-danger-contrast': { default: mithril.dark1, [LIGHT]: mithril.light1 },
   '--ult-color-action-contrast': { default: mithril.dark1, [LIGHT]: mithril.light1 },
   '--ult-color-surface-overlay': { default: `${mithril.dark2}b3`, [LIGHT]: `${mithril.light1}cc` },
+  '--ult-color-series-1': { default: '#7fa9ff', [LIGHT]: '#436ed1' },
+  '--ult-color-series-2': { default: '#fa8749', [LIGHT]: '#ba5000' },
+  '--ult-color-series-3': { default: '#00c98d', [LIGHT]: '#008a60' },
+  '--ult-color-series-4': { default: '#af97ff', [LIGHT]: '#7a5dc8' },
+  '--ult-color-series-5': { default: '#f67cb2', [LIGHT]: '#b8437b' },
+  '--ult-color-series-6': { default: '#00bfde', [LIGHT]: '#008399' },
 });
 
 export const space = stylex.defineVars({

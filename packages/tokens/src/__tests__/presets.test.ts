@@ -38,7 +38,7 @@ test('a fresh Neutral theme is versioned, achromatic and passes both modes', () 
       expect(resolved[mode][token]).toMatch(/^#([0-9a-f]{2})\1\1$/);
     }
   }
-  expect(gate(resolved)).toHaveLength(51);
+  expect(gate(resolved)).toHaveLength(63);
   expect(gate(resolved).every((pair) => pair.dark.pass && pair.light.pass)).toBe(true);
 });
 
@@ -103,7 +103,7 @@ test('Neutral revision 3 resolves its Ink accent table in both modes', () => {
   expect(resolved.light['--ult-color-border-focus']).toBe(revision1.light['--ult-color-border-focus']);
 });
 
-test('every revision-3 preset is a version-4 draft on the five-step shape table and passes all 51 pairings', () => {
+test('every revision-3 preset is a version-4 draft on the five-step shape table and passes all 63 pairings', () => {
   const shapes = { neutral: 'default', ultima: 'soft', grove: 'round', cinder: 'sharp' } as const;
   const radii = { neutral: '2px 4px 6px 8px 12px', ultima: '2px 4px 10px 12px 16px', grove: '6px 10px 16px 24px 32px', cinder: '0px 0px 0px 0px 0px' };
   expect(drafts.shapePresets(4)).toEqual(['sharp', 'default', 'soft', 'round']);
@@ -120,7 +120,7 @@ test('every revision-3 preset is a version-4 draft on the five-step shape table 
     const resolved = drafts.resolveDraft(draft);
     expect(['xs', 'sm', 'md', 'lg', 'xl'].map((size) => resolved.dark[`--ult-radius-${size}`]).join(' ')).toBe(radii[id]);
     const results = gate(resolved);
-    expect(results).toHaveLength(51);
+    expect(results).toHaveLength(63);
     expect(results.every((row) => row.dark.pass && row.light.pass), id).toBe(true);
     expect(parseDraft(serializeDraft(draft))).toEqual({ ok: true, draft });
   }

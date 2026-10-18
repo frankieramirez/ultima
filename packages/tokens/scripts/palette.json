@@ -253,7 +253,13 @@
    "danger-text": "#ffaaa8",
    "danger-contrast": "#0e0e0e",
    "danger-contrast@step": "mithril1",
-   "surface-overlay": "#151515b3"
+   "surface-overlay": "#151515b3",
+   "series-1": "#7fa9ff",
+   "series-2": "#fa8749",
+   "series-3": "#00c98d",
+   "series-4": "#af97ff",
+   "series-5": "#f67cb2",
+   "series-6": "#00bfde"
   },
   "light": {
    "surface": "#fdfdfd",
@@ -325,7 +331,13 @@
    "danger-text": "#88222b",
    "danger-contrast": "#fdfdfd",
    "danger-contrast@step": "mithril1",
-   "surface-overlay": "#fdfdfdcc"
+   "surface-overlay": "#fdfdfdcc",
+   "series-1": "#436ed1",
+   "series-2": "#ba5000",
+   "series-3": "#008a60",
+   "series-4": "#7a5dc8",
+   "series-5": "#b8437b",
+   "series-6": "#008399"
   }
  },
  "ultima": {
@@ -582,7 +594,13 @@
     "danger-text": "#ffaaa8",
     "danger-contrast": "#101011",
     "danger-contrast@step": "mithril1",
-    "surface-overlay": "#141516b3"
+    "surface-overlay": "#141516b3",
+    "series-1": "#7fa9ff",
+    "series-2": "#fa8749",
+    "series-3": "#00c98d",
+    "series-4": "#af97ff",
+    "series-5": "#f67cb2",
+    "series-6": "#00bfde"
    },
    "light": {
     "surface": "#fdfdff",
@@ -654,7 +672,13 @@
     "danger-text": "#88222b",
     "danger-contrast": "#fdfdff",
     "danger-contrast@step": "mithril1",
-    "surface-overlay": "#fdfdffcc"
+    "surface-overlay": "#fdfdffcc",
+    "series-1": "#436ed1",
+    "series-2": "#ba5000",
+    "series-3": "#008a60",
+    "series-4": "#7a5dc8",
+    "series-5": "#b8437b",
+    "series-6": "#008399"
    }
   }
  }
