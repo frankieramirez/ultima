@@ -6,7 +6,7 @@ export default {
   title: 'Badge element',
   description: 'Ultima Badge as a custom element, vendored for a host that cannot run React.',
   contract: 'docs/spec/ultima.md#web-components',
-  installDocs: '<script type="module" src="./ult-badge.js"></script>\n\n<ult-badge variant="subtle" tone="success">Passing</ult-badge>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nAxes are attributes carrying the React prop values verbatim: variant and tone.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
+  installDocs: '<script type="module" src="./ult-badge.js"></script>\n\n<ult-badge variant="subtle" tone="success">Passing</ult-badge>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel="stylesheet" href="./ultima-tokens.css">\nAxes are attributes carrying the React prop values verbatim: variant and tone. A boolean dot attribute adds the status dot.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.',
   reactItem: 'badge',
   order: 2,
   registryDependencies: ['tokens-css'],
@@ -18,6 +18,7 @@ export default {
       on: 'ult-badge',
       symbol: 'TONES',
     },
+    { names: ['dot'], on: 'ult-badge', text: 'Boolean. A leading status dot in the tone\'s color.' },
   ],
-  example: '<ult-badge tone="neutral">Draft</ult-badge>\n<ult-badge tone="success">Passing</ult-badge>\n<ult-badge variant="solid" tone="danger">Failing</ult-badge>',
+  example: '<ult-badge tone="neutral">Draft</ult-badge>\n<ult-badge tone="success">Passing</ult-badge>\n<ult-badge variant="outline" tone="warning" dot>Degraded</ult-badge>\n<ult-badge variant="solid" tone="danger">Failing</ult-badge>',
 } satisfies ElementDescriptor;

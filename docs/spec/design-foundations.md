@@ -91,6 +91,8 @@ A border answers one of four questions, and the question picks the token:
 
 **Solid by default, dashed for "nothing here yet".** A dashed edge marks a placeholder: Empty, a drop zone, a slot to fill. It reads as incomplete on purpose, so it never appears on something that is already there. Ultima has no dotted borders.
 
+**A label's outline is decorative.** An outline Badge has no fill, so its edge draws the pill, but nobody operates a badge and its words carry the meaning, so the edge is `border.fine` in the tone's `<role>-border` (`border` for neutral) and is not gated. Every Badge variant draws the same 0.5px border, transparent where the fill is the edge, so the three variants are one size and can sit side by side in a row.
+
 **Leave the border off when something else already draws the edge.** A solid Button's fill is its edge. A soft Badge's tint is its edge, and so is a Combobox chip's. Items inside a popup are separated by space and a highlight fill, not lines. A toned Alert's edge uses its hue (`<role>-border`) so the edge and the fill agree. Ultima doesn't use a single colored side stripe to signal tone. The fill, ink and icon already carry it, and a lone stripe reads as decoration.
 
 ## Outlines and borders
@@ -169,6 +171,8 @@ A theme may drop the blur and keep the wash, so the scrim never depends on blur 
 
 **Interaction moves one step.** Hover is the next step and press the one after, for fills (9 → 10 → 11, 3 → 4 → 5) and for field edges (8 → 9). States come from palette steps the gate has checked, never from filters, opacity or `color-mix()`.
 
+**A held selection is step 5 and outranks hover.** A selected table row takes `accent-subtle-active`, the step the 12-step convention gives selected backgrounds, and keeps it under the pointer. A hovered row takes `surface-hover`, step 4. Selection is state and hover is a passing reading aid, so selection is the stronger fill and never looks like the pointer going by. In a monochrome theme the two sit one step apart and the row's checked box carries the state. With a hued accent they differ in hue as well.
+
 **Contrast is a gate, not a guideline.** Text meets 4.5:1 ([WCAG 1.4.3](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)). Any edge or mark a person needs to find or read a state meets 3:1. Decorative hairlines are not gated.
 
 **Color never works alone** ([WCAG 1.4.1](https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html)). A status pairs its hue with an icon and words. An invalid field pairs its danger edge with a message. A chart pairs its series colors with a legend or labels.
@@ -207,7 +211,7 @@ A theme may drop the blur and keep the wash, so the scrim never depends on blur 
 
 Padding smaller than the corner lets content crowd the curve. Padding much bigger than the corner makes the box feel empty.
 
-**Adjust for what the eye sees.** An icon is lighter than a word, so the side of a Button that holds an icon takes one step less padding (16 → 12px) to look balanced. A field holding chips drops its start padding to the gap above the chips, so the first chip sits evenly in the corner. Uppercase micro-labels get wide tracking because capitals set tight look cramped.
+**Adjust for what the eye sees.** An icon is lighter than a word, so the side of a Button that holds an icon takes one step less padding (16 → 12px) to look balanced. A Badge holding a leading icon or status dot does the same (8 → 6px), with the mark 4px from its label, the badge's block padding, so the mark groups with the word rather than the edge. A status dot is the label's x-height (6px on 12px text), so it reads as a glyph in the line. It takes the tone's solid step, or the label's ink on a solid fill, where the solid step would vanish. A field holding chips drops its start padding to the gap above the chips, so the first chip sits evenly in the corner. Uppercase micro-labels get wide tracking because capitals set tight look cramped.
 
 **Components carry no outer margin.** A component sets `margin: 0` on its root, and the layout around it sets the space between components with `gap`. Space between things belongs to whatever contains them. That keeps a component reusable in any layout.
 
@@ -215,7 +219,7 @@ Padding smaller than the corner lets content crowd the curve. Padding much bigge
 
 ## Layout
 
-**Let the container decide, and use a breakpoint last.** A component fills the width it's given and adapts with flex wrapping and `minmax()` grids, so the same component works in a sidebar, a dialog or a full page. A viewport breakpoint only knows the window size, not how wide the component's column is. Where a layout really changes shape (Sidebar turning into a menu, a block's panes stacking), it uses one of the two named breakpoints from the specification's Principles: `DESKTOP` at 48rem and `WIDE` at 64rem, declared as module constants under those names. The narrow layout is the default style and the wider one sits under the query, so what a phone gets never depends on a query matching. 48rem is the first width where a 256px sidebar and a 512px content column fit side by side.
+**Let the container decide, and use a breakpoint last.** A component fills the width it's given and adapts with flex wrapping and `minmax()` grids, so the same component works in a sidebar, a dialog or a full page. A viewport breakpoint only knows the window size, not how wide the component's column is. Where a layout really changes shape (Sidebar turning into a menu, a block's panes stacking), it uses one of the two named breakpoints from the specification's Principles: `DESKTOP` at 48rem and `WIDE` at 64rem, declared as module constants under those names. The narrow layout is the default style and the wider one sits under the query, so what a phone gets never depends on a query matching. 48rem is the first width where a 256px sidebar and a 512px content column fit side by side. Below 64rem four cards beside the sidebar leave under 100px each for a headline number, so a row of stat cards stays two-up until `WIDE`.
 
 **Everything reflows at 320px.** At 320 CSS pixels wide (a 1280px window zoomed to 400%), every component fits without sideways scrolling ([WCAG 1.4.10 Reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html)). Panel widths are capped at the space available for that reason, with `min(…, 100%)` or the positioner's `--available-width`. Content that really needs two dimensions, such as a wide table or a palette grid, scrolls in its own focusable region (`Table.Scroll` or Scroll Area), never the page.
 
@@ -270,10 +274,14 @@ The specification's [Type](https://github.com/frankieramirez/ultima/blob/main/do
 | Description, body inside a component | 14px | normal | regular | Card, Dialog, Alert |
 | Small print | 12px (`text-2`) | snug | regular | Field description and error, Tooltip |
 | Part label inside a control | 12px | none | medium | Badge, Calendar's weekdays, Color Field's channels |
+| Change tagged onto a figure | 12px, tabular | snug | medium | Stat's delta |
+| Summary row | 14px | snug | medium | Table's foot |
 | Section micro-label | 12px, uppercase, `tracking-wide` | snug | regular | Menu group labels, Sidebar group label, Table head cells, Stat |
-| Headline number | 24px (`text-8`) and up, `tracking-tight` | none | semibold | Stat's value |
+| Headline number | 30px (`text-9`), 24px below `DESKTOP`, `tracking-tight` | none | semibold | Stat's value |
 
 A title steps up in size as its container grows, in step with the padding and corner in Spacing. Small, glanceable surfaces separate title from description by weight alone, which keeps them short.
+
+**A headline number gets its presence from size, never a fourth weight.** Stat's value is the one figure on its surface read at a glance, so it sits at 30px, well clear of an 18px Card title, at semibold, the heaviest weight the scale has. A number can't wrap, so below `DESKTOP`, where stat cards sit two-up on a phone, it holds 24px and seven characters still fit. Where a row of stat cards narrows past a breakpoint, as four-up just past `WIDE` does, the value follows its card instead, the way Avatar's initials track their box: the card body takes `container-type: inline-size` and the value `clamp(20px, 18cqi, 30px)`, so 30px needs about 167px of card. At 18cqi a six-figure value leaves a tenth of its card spare, enough for a fallback font's wider figures, so it never runs into the padding. Its delta takes a Badge label's role without the pill, 12px medium in tabular figures. Its tone follows what the change means, not its sign: a rising refund rate is `warning`. A trend line glyph may lead it, never an arrow pointing up and to the right, which reads as an external link. A table's foot row takes medium weight because it labels the rows above it as their sum. The rule under the last body row sets it apart, so it needs no fill and no closing rule.
 
 **Weight marks the kind of text.** Regular (400) is for text read as content. Medium (500) is for text that labels something or acts: labels, control text, tab names. Semibold (600) is for titles and the one headline number. Three weights cover those three jobs. There is no bold because no role needs a fourth, and in a single surface two weights never mean the same thing. Selection doesn't change weight. A selected item already shows its state with the check and the highlight, and heavier text is wider, so the label shifts or truncates differently. A mark inside a fixed cell, such as Calendar's today in tabular digits, can take weight because nothing around it moves.
 
@@ -293,7 +301,7 @@ A title steps up in size as its container grows, in step with the padding and co
 
 **A shortcut attached to an item is muted text, never a key cap,** the same in a menu, Command and Tooltip: 12px `text-subtle`, `tracking-wide`, on one line. Capitals and modifier glyphs at text spacing run together, the reason micro-labels are tracked. A cap draws a border on every row, and a popup's items are separated by space and a highlight, never lines; muted ink is the weakest cue that sets keys apart from a label. Each component carries its own `Shortcut` part rather than sharing an element, so every item still installs alone. In a menu row it trails at the edge; in a Tooltip it follows the label 8px away, the item gap, since there is no column to line up. The trigger also names the keys in `aria-keyshortcuts`, because a tooltip is never read as its name. A key cap is for keys standing alone in a sentence or a hint bar, such as the command dialog's footer, where nothing else sets them apart.
 
-**Numbers that line up or change in place set `tabular-nums`:** Stat, numeric table cells, Calendar days, Pagination, and Slider, Meter and Progress values. Proportional digits shift a column's alignment and make a changing value jitter.
+**Numbers that line up or change in place set `tabular-nums`:** Stat, numeric table cells, Calendar days, Pagination, and Slider, Meter and Progress values. Proportional digits shift a column's alignment and make a changing value jitter. A column of numbers also aligns on the end edge, its head included (`numeric` on `Table.HeadCell` and `Table.Cell`), so units, tens and hundreds line up down the column.
 
 **Every text part sets its own size, line height and margin.** Nothing inherits a browser default, because a component can't know what surrounds it. Text sizes are in `rem`, so they follow the reader's chosen root size ([WCAG 1.4.4 Resize Text](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html)).
 

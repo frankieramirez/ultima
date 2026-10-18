@@ -34,10 +34,10 @@ const ELEMENTS: ElementParity[] = [
     element: elementBadge,
     react: reactBadge,
     axes: {
-      variant: ['subtle', 'solid'],
+      variant: ['subtle', 'solid', 'outline'],
       tone: ['neutral', 'accent', 'highlight', 'success', 'warning', 'danger'],
     },
-    parts: ['root'],
+    parts: ['root', 'dot'],
     stateMap: {},
   },
   {
@@ -82,8 +82,8 @@ const ELEMENTS: ElementParity[] = [
     tag: 'ult-stat',
     element: elementStat,
     react: reactStat,
-    axes: {},
-    parts: ['root', 'label', 'value'],
+    axes: { tone: ['neutral', 'success', 'warning', 'danger'], trend: ['up', 'down'] },
+    parts: ['root', 'label', 'value', 'delta'],
     stateMap: {},
   },
   {
@@ -91,8 +91,8 @@ const ELEMENTS: ElementParity[] = [
     element: elementTable,
     react: reactTable,
     axes: {},
-    parts: ['caption', 'cell', 'head-cell', 'root', 'row', 'scroll'],
-    stateMap: { 'data-sort': 'data-sort', 'aria-sort': 'aria-sort' },
+    parts: ['caption', 'cell', 'foot', 'head-cell', 'root', 'row', 'scroll'],
+    stateMap: { 'data-sort': 'data-sort', 'aria-sort': 'aria-sort', 'data-selected': 'data-selected' },
   },
   {
     tag: 'ult-tabs',

@@ -63,7 +63,7 @@ export const items: Record<string, RegistryItemDescription> = {
   },
   "badge": {
     "title": "Badge",
-    "description": "A small static label in two variants and six tones.",
+    "description": "A small static label in three variants and six tones.",
     "docs": "import { Badge } from '@/components/ui/badge';\n\n<Badge variant=\"subtle\" tone=\"success\">Passing</Badge>"
   },
   "breadcrumb": {
@@ -269,7 +269,7 @@ export const items: Record<string, RegistryItemDescription> = {
   "stat": {
     "title": "Stat",
     "description": "A single number with its label, for dashboards and summaries.",
-    "docs": "import { Stat } from '@/components/ui/stat';\n\n<Stat.Root>\n  <Stat.Label>Tokens</Stat.Label>\n  <Stat.Value>95</Stat.Value>\n</Stat.Root>"
+    "docs": "import { Stat } from '@/components/ui/stat';\n\n<Stat.Root>\n  <Stat.Label>Tokens</Stat.Label>\n  <Stat.Value>95</Stat.Value>\n  <Stat.Delta tone=\"success\" trend=\"up\">+4</Stat.Delta>\n</Stat.Root>"
   },
   "switch": {
     "title": "Switch",
@@ -334,7 +334,7 @@ export const items: Record<string, RegistryItemDescription> = {
   "ult-badge": {
     "title": "Badge element",
     "description": "Ultima Badge as a custom element, vendored for a host that cannot run React.",
-    "docs": "<script type=\"module\" src=\"./ult-badge.js\"></script>\n\n<ult-badge variant=\"subtle\" tone=\"success\">Passing</ult-badge>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nAxes are attributes carrying the React prop values verbatim: variant and tone.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+    "docs": "<script type=\"module\" src=\"./ult-badge.js\"></script>\n\n<ult-badge variant=\"subtle\" tone=\"success\">Passing</ult-badge>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nAxes are attributes carrying the React prop values verbatim: variant and tone. A boolean dot attribute adds the status dot.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
     "registryDependencies": [
       "https://ultima.systems/r/tokens-css.json"
     ]
@@ -374,7 +374,7 @@ export const items: Record<string, RegistryItemDescription> = {
   "ult-stat": {
     "title": "Stat element",
     "description": "Ultima Stat as a family of custom elements, vendored for a host that cannot run React.",
-    "docs": "<script type=\"module\" src=\"./ult-stat.js\"></script>\n\n<ult-stat><ult-stat-label>Tokens</ult-stat-label><ult-stat-value>95</ult-stat-value></ult-stat>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nThe parts are the family tags: ult-stat, ult-stat-label, and ult-stat-value. Stat declares no axes.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+    "docs": "<script type=\"module\" src=\"./ult-stat.js\"></script>\n\n<ult-stat><ult-stat-label>Tokens</ult-stat-label><ult-stat-value>95</ult-stat-value></ult-stat>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nThe parts are the family tags: ult-stat, ult-stat-label, ult-stat-value, and ult-stat-delta. tone and trend are attributes on ult-stat-delta carrying the React prop values verbatim.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
     "registryDependencies": [
       "https://ultima.systems/r/tokens-css.json"
     ]
@@ -382,7 +382,7 @@ export const items: Record<string, RegistryItemDescription> = {
   "ult-table": {
     "title": "Table element",
     "description": "Ultima Table as a family of custom elements, vendored for a host that cannot run React.",
-    "docs": "<script type=\"module\" src=\"./ult-table.js\"></script>\n\n<ult-table-scroll aria-labelledby=\"latency-caption\">\n  <ult-table>\n    <ult-table-caption id=\"latency-caption\">Latency by region</ult-table-caption>\n    <ult-table-head>\n      <ult-table-row><ult-table-head-cell>Region</ult-table-head-cell></ult-table-row>\n    </ult-table-head>\n    <ult-table-body>\n      <ult-table-row><ult-table-cell>us-east-1</ult-table-cell></ult-table-row>\n    </ult-table-body>\n  </ult-table>\n</ult-table-scroll>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nOne element per part: ult-table, ult-table-scroll, ult-table-head, ult-table-body, ult-table-row, ult-table-head-cell, ult-table-sort-button, ult-table-cell, ult-table-caption. sort is an attribute on ult-table-head-cell carrying the React prop values verbatim.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
+    "docs": "<script type=\"module\" src=\"./ult-table.js\"></script>\n\n<ult-table-scroll aria-labelledby=\"latency-caption\">\n  <ult-table>\n    <ult-table-caption id=\"latency-caption\">Latency by region</ult-table-caption>\n    <ult-table-head>\n      <ult-table-row><ult-table-head-cell>Region</ult-table-head-cell></ult-table-row>\n    </ult-table-head>\n    <ult-table-body>\n      <ult-table-row><ult-table-cell>us-east-1</ult-table-cell></ult-table-row>\n    </ult-table-body>\n  </ult-table>\n</ult-table-scroll>\n\nPair it with the tokens stylesheet the tokens-css item installed: <link rel=\"stylesheet\" href=\"./ultima-tokens.css\">\nOne element per part: ult-table, ult-table-scroll, ult-table-head, ult-table-body, ult-table-foot, ult-table-row, ult-table-head-cell, ult-table-sort-button, ult-table-cell, ult-table-caption. sort is an attribute on ult-table-head-cell carrying the React prop values verbatim; selected on ult-table-row and numeric on either cell are booleans.\nThis file is a vendored artifact: a reinstall overwrites it and local edits are forfeit.",
     "registryDependencies": [
       "https://ultima.systems/r/tokens-css.json"
     ]

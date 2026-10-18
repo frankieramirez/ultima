@@ -2,6 +2,8 @@ import { Demo } from '../../demo';
 import { WebComponent } from '../../web-component';
 import Report from '../../demos/table/report';
 import reportSource from '../../demos/table/report?raw';
+import Totals from '../../demos/table/totals';
+import totalsSource from '../../demos/table/totals?raw';
 import HorizontalScroll from '../../demos/table/horizontal-scroll';
 import horizontalScrollSource from '../../demos/table/horizontal-scroll?raw';
 import SortableHeader from '../../demos/table/sortable-header';
@@ -31,15 +33,21 @@ npx shadcn@4.21.4 add @ultima/table
 
 ## Anatomy
 
-`Root` is the `table`. `Head`, `Body`, `Row`, `HeadCell`, and `Cell` are the `thead`, `tbody`, `tr`, `th`, and `td` inside it. `Caption` names the table, and `Scroll` is the optional region around it.
+`Root` is the `table`. `Head`, `Body`, `Foot`, `Row`, `HeadCell`, and `Cell` are the `thead`, `tbody`, `tfoot`, `tr`, `th`, and `td` inside it. `Caption` names the table, and `Scroll` is the optional region around it.
 
-`HeadCell` also takes a `sort`, and `SortButton` is the control that sits inside it. Those two arrived in v0.2 for the Data Table recipe; the other eight parts are v0.
+`HeadCell` also takes a `sort`, and `SortButton` is the control that sits inside it. Those two arrived in v0.2 for the Data Table recipe.
 
 ## Report table
 
 Use a caption to name the table and head cells to label each column.
 
 <Demo component={Report} source={reportSource} />
+
+## Totals and numeric columns
+
+Give a column of numbers `numeric` on its `HeadCell` and every `Cell`. The figures align on the end edge in tabular digits, so place values line up down the column and the head sits over them. `Table.Foot` holds a summary row such as a total. It takes medium weight, and the rule under the last body row is all that sets it apart: no fill, and no closing rule of its own. A foot row doesn't answer the pointer, because it isn't a row of data.
+
+<Demo component={Totals} source={totalsSource} />
 
 ## Horizontal scrolling
 
@@ -82,6 +90,8 @@ The announcement is the third obligation, and it is yours. A sort moves rows sil
 Row selection is a second `tableFeatures()` call, not an addition to the one above: registering `rowSelectionFeature` here leaves the sorting example's table without it, which is the whole point of registering per example. The engine supplies the selection model and nothing else. Every checkbox on the page is Ultima's `Checkbox`, because where a recipe hands you a control that control comes from the catalogue, and the roles, the ARIA state, the keyboard, and the focus ring are its.
 
 The select-all is a standalone `Checkbox.Root` with a controlled `indeterminate`, not a `Checkbox.Group` parent. The header checkbox and the body rows are not one group: the rows live in the `tbody` and the parent lives in a `th`. `parent` plus `allValues` on `Checkbox.Group` is the form-list recipe for a select-all that *is* in the same group, and reaching for it here would put a `role="group"` around a table. Base UI turns `indeterminate` into `aria-checked="mixed"`, and the dash glyph is the visible signal.
+
+Hand each row its state with `selected={row.getIsSelected()}`. A selected row takes the accent's step-5 tint and keeps it under the pointer. A hovered row takes the lighter neutral `surface-hover`, so the two never look alike. The row's checkbox stays the accessible signal: `selected` emits `data-selected` for your CSS and no ARIA, because `aria-selected` belongs to grids, not tables.
 
 Three obligations are the consumer's, not the recipe's. Each row checkbox takes its name from that row's own data, because four checkboxes all reading "Select row" identify no row. The select-all takes its own distinct name. And the change is announced: the same `role="status"` region the sorting example introduced, carrying the selection count rather than the row order. One region for the table; a second would say the same thing twice.
 
@@ -133,11 +143,14 @@ Only what Ultima adds. The parts otherwise accept the corresponding [native tabl
 | `HeadCell` | `scope` | `'col' \| 'row' \| 'colgroup' \| 'rowgroup'` | `'col'` | Override with `row` for row headers. |
 | `HeadCell` | `sort` | `'ascending' \| 'descending' \| 'none'` | — | v0.2. Emits `aria-sort` and `data-sort`; omitted, it emits neither. |
 | `HeadCell` | `render` | `ReactElement \| function` | — | Changes the cell from its default `th`. |
+| `HeadCell` | `numeric` | `boolean` | `false` | Aligns a numeric column's head with its cells. |
+| `Cell` | `numeric` | `boolean` | `false` | End-aligned tabular figures, for a column of numbers. |
+| `Row` | `selected` | `boolean` | `false` | Paints the row as selected and emits `data-selected`. |
 | `SortButton` | `render` | `ReactElement \| function` | — | v0.2. The slot for your own button. Unstyled, so what you render carries the reset and the ring. |
 
 ## Accessibility
 
-- **Elements.** Native `table`, `thead`, `tbody`, `tr`, `th`, `td`, and `caption` parts, plus `Table.Scroll` as a `div` with `role="region"`.
+- **Elements.** Native `table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`, and `caption` parts, plus `Table.Scroll` as a `div` with `role="region"`.
 - **Name.** `Table.Caption` is optional on a bare table and required under `Table.Scroll`, which it names through `aria-labelledby`.
 - **Headers.** `Table.HeadCell` defaults to `scope="col"`; override it for a row header. Its `sort` emits `aria-sort` on the same `th`, which is where a screen reader looks for it.
 - **Focus and keyboard.** The table itself is static. `Table.Scroll` is the only part that enters the tab order, and only while its content overflows; it takes the focus ring. Without it nothing inside a table is focusable. `Table.SortButton` is a wrapper trigger, so the element you render into it must carry its own focus ring: an Ultima `Button` does.

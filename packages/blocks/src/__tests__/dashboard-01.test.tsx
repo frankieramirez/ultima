@@ -152,6 +152,43 @@ describe('4. the behavior the block wires', () => {
     expect(products(screen)[0]).toEqual({ name: 'Oak side table', value: '9860', text: '$9,860' });
   });
 
+  test.each([768, 1023, 1024, 1440])('every stat value and delta fits its card at %ipx, in each range', async (width) => {
+    await page.viewport(width, 900);
+    const screen = await render(<Dashboard01 />);
+    const keyMetrics = section(screen, 'Key metrics');
+    await expect.element(keyMetrics.getByText('$48,210')).toBeVisible();
+    expect(getComputedStyle(keyMetrics.element()).gridTemplateColumns.split(' ')).toHaveLength(width >= 1024 ? 4 : 2);
+    // The value follows its card between Stat's two steps: full size wherever the card has room.
+    const size = Number.parseFloat(getComputedStyle(keyMetrics.getByText('$48,210').element()).fontSize);
+    expect(size).toBeGreaterThanOrEqual(20);
+    if (width !== 1024) expect(size).toBe(30);
+    const ranges = [
+      { option: null, values: ['$48,210', '1,284', '9,431', '0.8%', '+12.4%', '+0.2%'] },
+      { option: 'Last 7 days', values: ['$11,640', '302', '2,318', '0.6%', '−1.6%', '−0.1%'] },
+      { option: 'Last 90 days', values: ['$139,870', '3,912', '24,906', '1.1%', '+18.9%', '+0.4%'] },
+    ];
+    for (const { option, values } of ranges) {
+      if (option) {
+        await userEvent.click(screen.getByRole('combobox', { name: 'Date range' }));
+        await userEvent.click(page.getByRole('option', { name: option }));
+        await expect.element(keyMetrics.getByText(values[0] as string)).toBeVisible();
+      }
+      for (const value of values) {
+        const element = keyMetrics.getByText(value, { exact: true }).element() as HTMLElement;
+        // Measured against the Card body's content box, so a figure may not run into the padding either.
+        const body = element.parentElement?.parentElement as HTMLElement;
+        const contentRight = body.getBoundingClientRect().right - Number.parseFloat(getComputedStyle(body).paddingInlineEnd);
+        const ink = document.createRange();
+        ink.selectNodeContents(element);
+        expect(ink.getBoundingClientRect().right, `${value} at ${width}px`).toBeLessThanOrEqual(contentRight);
+      }
+    }
+    // The delta is a Stat.Delta inside the Stat, with a glyph for its direction, not a Badge beside it.
+    const delta = keyMetrics.getByText('+18.9%', { exact: true }).element();
+    expect(delta.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    expect(delta.parentElement?.textContent).toBe('Revenue$139,870+18.9%');
+  });
+
   test("the period Toggle Group changes the chart's window, its subtitle and the disclosed Table, and the pressed item stays pressed", async () => {
     const screen = await render(<Dashboard01 />);
     const revenue = section(screen, 'Revenue');
