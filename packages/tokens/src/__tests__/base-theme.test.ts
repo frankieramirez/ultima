@@ -59,7 +59,7 @@ test('stock uses the new Neutral/Tight identity without revising any preset', ()
   expect(resetDraft(draft)).toEqual(draft);
   for (const id of ['neutral', 'ultima'] as const) {
     const rows = gate(resolveDraft(presetDraft(id)));
-    expect(rows).toHaveLength(51);
+    expect(rows).toHaveLength(63);
     for (const row of rows) for (const mode of ['dark', 'light'] as const) {
       expect(row[mode].ratio, `${id} ${mode} ${row.foreground}/${row.background}`).toBeGreaterThanOrEqual(row.minimum);
     }

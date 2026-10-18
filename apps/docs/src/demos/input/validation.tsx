@@ -32,6 +32,7 @@ export default function Validation() {
         />
         <span id="email-error" {...stylex.props(styles.error)}>Enter a valid email address.</span>
       </div>
+      <Input aria-label="Account ID" defaultValue="acct_7f3k2" readOnly />
       <Input aria-label="Workspace identifier" value="ult-001" disabled />
     </div>
   );

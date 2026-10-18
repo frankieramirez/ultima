@@ -20,13 +20,14 @@ const listHeight = `calc(5 * ${space['--ult-space-12']})`;
 
 const styles = stylex.create({
   // Input Group's field recipe, restated. Its own `:read-only` would match the div, so the keys
-  // ask whether the input inside is read-only, which a disabled input also is. Invalid is read on
+  // ask about the input inside: a read-only one (which a disabled one also is) quiets the edge and
+  // turns hover off, and only a disabled one sinks the fill. Invalid is read on
   // the group itself as well as inside it, since a caller or Field may mark either.
   inputGroup: {
     alignItems: 'center',
     backgroundColor: {
       default: color['--ult-color-field'],
-      ':has(:is(input, textarea):read-only)': color['--ult-color-surface-sunken'],
+      ':has(:is(input, textarea):disabled)': color['--ult-color-surface-sunken'],
     },
     borderColor: {
       default: color['--ult-color-border-strong'],
@@ -64,6 +65,7 @@ const styles = stylex.create({
     borderStyle: 'none',
     borderWidth: 0,
     borderRadius: 0,
+    caretColor: { default: null, ':read-only': 'transparent' },
     color: 'inherit',
     flexGrow: 1,
     fontFamily: 'inherit',
@@ -114,8 +116,9 @@ const styles = stylex.create({
     color: { default: color['--ult-color-text-subtle'], ':is(:disabled, [data-disabled], [data-disabled] *)': color['--ult-color-text-disabled'] },
     cursor: 'default',
     // Base UI unmounts Clear after its exit transition, so the button is still in the DOM
-    // without `data-visible` during that window and must not paint there.
-    display: { default: 'none', ':is([data-visible])': 'inline-flex' },
+    // without `data-visible` during that window and must not paint there. A read-only field
+    // can't be cleared, so the mark leaves it.
+    display: { default: 'none', ':is([data-visible]):not([data-readonly] *)': 'inline-flex' },
     flexShrink: 0,
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],

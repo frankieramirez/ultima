@@ -14,18 +14,19 @@ const height = `calc(${space['--ult-space-6']} + 2 * ${space['--ult-space-1']})`
 
 // The unchecked track is the 3:1 edge colour and darkens on hover like a field's edge; checked is the
 // accent fill, stepping on hover and press. Each key names its whole state, and disabled is the
-// muted track with no opacity, so the thumb's position still reads.
+// muted track with no opacity, so the thumb's position still reads. Read-only keeps the track and
+// drops hover and press.
 const styles = stylex.create({
   root: {
     appearance: 'none',
     backgroundColor: {
       default: color['--ult-color-border-strong'],
       ':is([data-disabled])': color['--ult-color-border'],
-      ':is([data-checked]):not([data-disabled], :active)': color['--ult-color-accent'],
-      ':is([data-checked]):active:not([data-disabled])': color['--ult-color-accent-active'],
+      ':is([data-checked]):is([data-readonly], :not(:active)):not([data-disabled])': color['--ult-color-accent'],
+      ':is([data-checked]):active:not([data-disabled], [data-readonly])': color['--ult-color-accent-active'],
       [HOVER]: {
-        ':hover:not([data-checked], [data-disabled])': color['--ult-color-border-hover'],
-        ':is([data-checked]):hover:not([data-disabled], :active)': color['--ult-color-accent-hover'],
+        ':hover:not([data-checked], [data-disabled], [data-readonly])': color['--ult-color-border-hover'],
+        ':is([data-checked]):hover:not([data-disabled], [data-readonly], :active)': color['--ult-color-accent-hover'],
       },
     },
     border: 'none',

@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -10,7 +11,7 @@ import { ultimaPresetUrl } from '../../../../apps/docs/src/ultima-preset.ts';
 import { UNMARKED_NEUTRAL_HASHES, fileBaseTheme } from '../base-theme.ts';
 import { run } from '../run.ts';
 import { contentHash, stampLine, withStamp } from '../stamp.ts';
-import { type UpdateReport, planAction, printUpdate, update, updateExit } from '../update.ts';
+import { type UpdateReport, planAction, planHash, printUpdate, update, updateExit } from '../update.ts';
 import { project, snapshot } from './fixtures.ts';
 
 const OLD = 'aaaaaaaaaaaa';
@@ -496,5 +497,189 @@ describe('update holds an item that needs a dependency', () => {
     expect(rerun.stdout).toContain('dialog   src/components/ui/dialog.tsx   behind  replace\n');
     expect(rerun.stdout).toContain('select   src/components/ui/select.tsx   behind  replace\n');
     expect(rerun.stdout).not.toContain('needs');
+  });
+
+  it('prints what each hold requires in its JSON row, and the add commands as needs', async () => {
+    const root = await needsFixture();
+    const { stdout } = await run(['update', '--plan', '--json', '--cwd', root]);
+    const plan = JSON.parse(stdout);
+    expect(plan.files.map(({ item, action, requires }: { item: string; action: string; requires: string[] }) => [item, action, requires])).toEqual([
+      ['sidebar', 'replace', []],
+      ['dialog', 'hold', ['@ultima/spinner']],
+      ['select', 'hold', ['@base-ui/react']],
+    ]);
+    expect(plan.commands).toEqual([
+      { for: 'needs', command: 'npx shadcn@4.21.4 add @ultima/spinner' },
+      { for: 'needs', command: 'pnpm add @base-ui/react' },
+      { for: 'apply', command: 'npx ultima-design update --yes' },
+    ]);
+  });
+});
+
+const sha256 = (text: string) => createHash('sha256').update(text).digest('hex');
+const projectFiles = (root: string) => Object.fromEntries(Object.entries(snapshot(root)).filter(([path]) => !path.startsWith('.ultima-update')));
+
+async function planFile(root: string, ...args: string[]) {
+  const { code, stdout, stderr } = await run(['update', ...args, '--plan', '--json', '--cwd', root]);
+  expect({ code, stderr }).toEqual({ code: 0, stderr: '' });
+  const path = join(root, '..', `${root.split('/').at(-1)}-plan.json`);
+  writeFileSync(path, stdout);
+  return { path, plan: JSON.parse(stdout) };
+}
+
+describe('update --plan --json and --apply', () => {
+  it('prints one ultima-update-plan object, and planning twice gives the same planHash', async () => {
+    const { root, registry } = await fixture();
+    const before = snapshot(root);
+    const { plan } = await planFile(root);
+    const dialog = await stamped('dialog', staged('Dialog', 'one'), OLD);
+    expect(plan).toEqual({
+      kind: 'ultima-update-plan',
+      schemaVersion: 1,
+      registry,
+      revision: NEW,
+      planHash: expect.stringMatching(/^sha256:[0-9a-f]{64}$/),
+      files: [
+        {
+          item: 'dialog',
+          file: 'src/components/ui/dialog.tsx',
+          state: 'behind',
+          action: 'replace',
+          reason: null,
+          installed: { revision: OLD, hash: await contentHash(staged('Dialog', 'one'), 'c1') },
+          local: await contentHash(staged('Dialog', 'one'), 'c1'),
+          served: await contentHash(staged('Dialog', 'two'), 'c1'),
+          base: null,
+          hunks: null,
+          requires: [],
+          sha256: sha256(dialog),
+          uncommitted: false,
+        },
+        expect.objectContaining({ item: 'lib', file: 'src/lib/component.ts', state: 'unstamped', action: 'report', reason: 'no installed base', installed: null }),
+        expect.objectContaining({ item: 'sidebar', state: 'diverged', action: 'report', reason: 'installed base verified; merging is not built yet', base: 'verified' }),
+      ],
+      managed: [],
+      notices: [],
+      commands: [{ for: 'apply', command: 'npx ultima-design update --yes' }],
+    });
+    expect((await planFile(root)).plan.planHash).toBe(plan.planHash);
+    expect(snapshot(root)).toEqual(before);
+  });
+
+  it('hashes the plan independently of key order and of row order', async () => {
+    const { root } = await fixture();
+    const { plan } = await planFile(root);
+    const reordered = { ...plan, files: [...plan.files].reverse().map((row: Record<string, unknown>) => Object.fromEntries(Object.entries(row).reverse())) };
+    expect(planHash(Object.fromEntries(Object.entries(reordered).reverse()) as never)).toBe(plan.planHash);
+    expect(planHash({ ...plan, revision: 'cccccccccccc' })).not.toBe(plan.planHash);
+  });
+
+  it('--apply writes the same bytes --yes writes, and prints the run object under --json', async () => {
+    const { root } = await fixture();
+    const { path, plan } = await planFile(root);
+    const applied = await run(['update', '--apply', path, '--json', '--cwd', root]);
+    expect(applied.code).toBe(0);
+    const viaApply = projectFiles(root);
+    const [runId] = runs(root);
+    expect(JSON.parse(applied.stdout)).toEqual({
+      kind: 'ultima-update-run',
+      schemaVersion: 1,
+      runId,
+      planHash: plan.planHash,
+      written: ['src/components/ui/dialog.tsx'],
+      conflicts: [],
+      held: [],
+      reported: ['src/lib/component.ts', 'src/components/ui/sidebar.tsx'],
+      next: ['npx ultima-design check --files src/components/ui/dialog.tsx', 'npx tsc --noEmit'],
+      failed: null,
+    });
+
+    const undone = await run(['update', '--rollback', '--json', '--cwd', root]);
+    expect(undone.code).toBe(0);
+    expect(JSON.parse(undone.stdout)).toEqual({ kind: 'ultima-update-rollback', schemaVersion: 1, runId, restored: ['src/components/ui/dialog.tsx'], left: [] });
+
+    const yes = await run(['update', '--yes', '--json', '--cwd', root]);
+    expect(JSON.parse(yes.stdout)).toMatchObject({ kind: 'ultima-update-run', planHash: plan.planHash, written: ['src/components/ui/dialog.tsx'] });
+    expect(projectFiles(root)).toEqual(viaApply);
+  });
+
+  it('applies the plan it recorded and leaves a file that drifted after planning but was not in it', async () => {
+    const { root } = await fixture();
+    const { path } = await planFile(root, 'dialog');
+    const button = join(root, 'src/components/ui/button.tsx');
+    writeFileSync(button, await stamped('button', staged('Button', 'one'), OLD));
+    const before = readFileSync(button, 'utf8');
+    const { code, stdout } = await run(['update', '--apply', path, '--cwd', root]);
+    expect(code).toBe(0);
+    expect(stdout).toMatch(/^wrote +src\/components\/ui\/dialog\.tsx$/m);
+    expect(stdout).not.toContain('button');
+    expect(readFileSync(button, 'utf8')).toBe(before);
+  });
+
+  it('refuses with exit 3 and writes nothing when a planned file changed after planning', async () => {
+    const { root } = await fixture();
+    const { path } = await planFile(root);
+    const dialog = join(root, 'src/components/ui/dialog.tsx');
+    writeFileSync(dialog, `// Our note.\n${readFileSync(dialog, 'utf8')}`);
+    const before = snapshot(root);
+    const { code, stdout } = await run(['update', '--apply', path, '--cwd', root]);
+    expect(code).toBe(3);
+    expect(stdout).toContain('ULT-UPDATE-003');
+    expect(stdout).toContain('src/components/ui/dialog.tsx changed since it was planned');
+    expect(snapshot(root)).toEqual(before);
+    expect(existsSync(join(root, '.ultima-update'))).toBe(false);
+  });
+
+  it('refuses with exit 3 when the served revision moved since planning', async () => {
+    const { root } = await fixture();
+    const { path, plan } = await planFile(root);
+    const moved = { ...plan, revision: OLD };
+    writeFileSync(path, JSON.stringify({ ...moved, planHash: planHash(moved) }));
+    const { code, stdout } = await run(['update', '--apply', path, '--json', '--cwd', root]);
+    expect(code).toBe(3);
+    expect(JSON.parse(stdout).diagnostics).toMatchObject([{ ruleId: 'ULT-UPDATE-003', message: expect.stringContaining(`revision ${OLD}`) }]);
+    expect(existsSync(join(root, '.ultima-update'))).toBe(false);
+  });
+
+  it('prints a base-theme hold with its commands, and --apply holds it as planned', async () => {
+    const root = await tokensFixture(LEGACY_TOKENS);
+    const before = snapshot(root);
+    const { path, plan } = await planFile(root);
+    expect(plan.files).toMatchObject([{ item: 'tokens', state: 'behind', action: 'hold', reason: 'base theme changes to neutral-tight', requires: [] }]);
+    expect(plan.commands).toEqual([
+      { for: 'hold', command: 'npx ultima-design update --accept-base-theme' },
+      { for: 'keep', command: `npx shadcn@4.21.4 add "${(await ultimaPresetUrl()).url}"` },
+    ]);
+    const applied = await run(['update', '--apply', path, '--json', '--cwd', root]);
+    expect(JSON.parse(applied.stdout)).toMatchObject({ runId: null, written: [], held: ['src/lib/tokens.stylex.ts'] });
+    expect(snapshot(root)).toEqual(before);
+  });
+
+  it('applies a plan made with --accept-base-theme as it was made, and refuses the flag beside --apply', async () => {
+    const root = await tokensFixture(LEGACY_TOKENS);
+    const { path, plan } = await planFile(root, '--accept-base-theme');
+    expect(plan.files).toMatchObject([{ item: 'tokens', action: 'replace' }]);
+    expect(plan.commands).toEqual([{ for: 'apply', command: 'npx ultima-design update --accept-base-theme --yes' }]);
+    expect((await run(['update', '--apply', path, '--accept-base-theme', '--cwd', root])).code).toBe(2);
+
+    const applied = await run(['update', '--apply', path, '--cwd', root]);
+    expect(applied.code).toBe(0);
+    expect(readFileSync(join(root, 'src/lib/tokens.stylex.ts'), 'utf8')).toBe(withStamp(NEUTRAL_TOKENS, stampLine('tokens', NEW, await contentHash(NEUTRAL_TOKENS, 'c1'), 'ts')));
+  });
+
+  it('exits 2 for --apply of a file that is not a plan, an edited plan, or with item names, --yes or --plan', async () => {
+    const { root } = await fixture();
+    const { path, plan } = await planFile(root);
+    const notaplan = join(root, '..', 'notaplan.json');
+    writeFileSync(notaplan, JSON.stringify({ kind: 'ultima-status', files: [] }));
+    const garbled = join(root, '..', 'garbled.json');
+    writeFileSync(garbled, 'not json');
+    const edited = join(root, '..', 'edited.json');
+    writeFileSync(edited, JSON.stringify({ ...plan, files: plan.files.map((row: { action: string }) => ({ ...row, action: 'replace' })) }));
+    for (const args of [['--apply', notaplan], ['--apply', garbled], ['--apply', join(root, 'missing.json')], ['--apply', edited], ['--apply', path, 'dialog'], ['--apply', path, '--yes'], ['--apply', path, '--plan'], ['--plan', '--yes'], ['--rollback', '--apply', path]]) {
+      const result = await run(['update', ...args, '--cwd', root]);
+      expect({ args, code: result.code, stdout: result.stdout }).toEqual({ args, code: 2, stdout: '' });
+    }
+    expect(existsSync(join(root, '.ultima-update'))).toBe(false);
   });
 });

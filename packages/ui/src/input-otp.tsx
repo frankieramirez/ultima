@@ -21,20 +21,23 @@ const styles = stylex.create({
   },
   // Input's field recipe on each slot: the field fill, the 3:1 edge that darkens on hover, the
   // outline outside the edge (an invalid slot keeps its danger edge), and the sunken fill, quiet
-  // edge and disabled ink in place of a fade. Each key names its whole state.
+  // edge and disabled ink in place of a fade. A read-only slot keeps the fill and the digit's ink
+  // and gives up the 3:1 edge, hover and the caret, as Input does; `:read-only` also matches a
+  // disabled slot. Each key names its whole state.
   input: {
     appearance: 'none',
     backgroundColor: { default: color['--ult-color-field'], ':disabled': color['--ult-color-surface-sunken'] },
     borderColor: {
       default: color['--ult-color-border-strong'],
-      ':disabled:not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
+      ':read-only:not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
-      [HOVER]: { ':hover:not(:disabled, [aria-invalid="true"], [data-invalid])': color['--ult-color-border-hover'] },
+      [HOVER]: { ':hover:not(:read-only, [aria-invalid="true"], [data-invalid])': color['--ult-color-border-hover'] },
     },
     borderRadius: radius['--ult-radius-md'],
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
+    caretColor: { default: null, ':read-only': 'transparent' },
     color: { default: color['--ult-color-text'], ':disabled': color['--ult-color-text-disabled'] },
     fontFamily: font['--ult-font-sans'],
     fontVariantNumeric: 'tabular-nums',

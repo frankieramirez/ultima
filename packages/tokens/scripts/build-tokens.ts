@@ -406,6 +406,9 @@ function pairings(): Pairing[] {
   for (const background of ['action', 'action-hover', 'action-active']) {
     add('action-contrast', background, 4.5);
   }
+  for (let n = 1; n <= 6; n++) {
+    for (const background of ['surface', 'surface-raised']) add(`series-${n}`, background, 3);
+  }
   return table;
 }
 

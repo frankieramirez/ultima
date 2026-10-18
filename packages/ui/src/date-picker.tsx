@@ -44,13 +44,14 @@ const styles = stylex.create({
   },
   // Input Group's field recipe, restated as Combobox restates it. Focus lands on the input, so the
   // ring is `:focus-within`, outside the edge. Its own `:read-only` would match the div, so the keys
-  // ask whether the input inside is read-only, which a disabled input also is. Invalid is read on the
+  // ask about the input inside: a read-only one (which a disabled one also is) quiets the edge and
+  // turns hover off, and only a disabled one sinks the fill. Invalid is read on the
   // control itself as well as inside it, since the machine marks both.
   control: {
     alignItems: 'center',
     backgroundColor: {
       default: color['--ult-color-field'],
-      ':has(:is(input, textarea):read-only)': color['--ult-color-surface-sunken'],
+      ':has(:is(input, textarea):disabled)': color['--ult-color-surface-sunken'],
     },
     borderColor: {
       default: color['--ult-color-border-strong'],
@@ -88,6 +89,7 @@ const styles = stylex.create({
     borderStyle: 'none',
     borderWidth: 0,
     borderRadius: 0,
+    caretColor: { default: null, ':read-only': 'transparent' },
     color: 'inherit',
     flexGrow: 1,
     fontFamily: 'inherit',
@@ -106,19 +108,26 @@ const styles = stylex.create({
   },
   // The calendar and clear buttons inside the control: a 24px ground on the 4px corner, pulled in
   // so the glyph sits as far from the edge as the text does. The glyph is the subtle ink, and inks
-  // up with the hover ground.
+  // up with the hover ground. In a read-only picker neither button acts, so the calendar keeps its
+  // glyph, which says the value is a date, without the hover, and the clear button leaves.
   fieldTrigger: {
+    backgroundColor: {
+      default: 'transparent',
+      [HOVER]: { ':hover:not(:disabled, [data-disabled], [data-readonly] *)': color['--ult-color-surface-hover'] },
+    },
     blockSize: space['--ult-space-8'],
     borderRadius: radius['--ult-radius-sm'],
     color: {
       default: color['--ult-color-text-subtle'],
       ':is(:disabled, [data-disabled])': color['--ult-color-text-disabled'],
-      [HOVER]: { ':hover:not(:disabled, [data-disabled])': color['--ult-color-text'] },
+      [HOVER]: { ':hover:not(:disabled, [data-disabled], [data-readonly] *)': color['--ult-color-text'] },
     },
+    cursor: { default: 'pointer', ':is(:disabled, [data-disabled], [data-readonly] *)': 'default' },
     inlineSize: space['--ult-space-8'],
     marginInlineEnd: `calc(-1 * ${space['--ult-space-2']})`,
   },
   clearTrigger: {
+    display: { default: 'inline-flex', ':is([hidden], [data-readonly] *)': 'none' },
     marginInlineEnd: 0,
   },
   presetTrigger: {
