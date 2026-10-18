@@ -91,6 +91,11 @@ export const items: Record<string, RegistryItemDescription> = {
     "description": "A surface with a header, body, and footer for grouping related content.",
     "docs": "import { Card } from '@/components/ui/card';\n\n<Card.Root>\n  <Card.Header>\n    <Card.Title>Ultima</Card.Title>\n    <Card.Description>A design system.</Card.Description>\n  </Card.Header>\n  <Card.Body>Anything.</Card.Body>\n</Card.Root>"
   },
+  "chart": {
+    "title": "Chart",
+    "description": "A figure that draws a TanStack Charts definition as SVG painted with tokens, named by its caption.",
+    "docs": "import { barY } from '@tanstack/charts/bar';\nimport { scaleBand } from '@tanstack/charts/scales/band';\nimport { scaleLinear } from '@tanstack/charts/scales/linear';\nimport { defineChart } from '@tanstack/charts/scene';\nimport { Chart } from '@/components/ui/chart';\n\nconst definition = defineChart({\n  marks: [barY(rows, { x: 'day', y: 'requests' })],\n  scales: { x: { scale: scaleBand }, y: { scale: scaleLinear, nice: true } },\n});\n\n<Chart.Root definition={definition} height={240}>\n  <Chart.Caption>Requests per weekday</Chart.Caption>\n  <Chart.Plot />\n</Chart.Root>\n\nThe definition is TanStack's grammar, imported from /scene and one entry per mark and scale. Give Root exactly one of height (CSS pixels) or aspectRatio, and put a Table holding the same rows beside the chart."
+  },
   "checkbox": {
     "title": "Checkbox",
     "description": "A checkbox with a check, a dash for mixed, and an optional group, on Base UI.",
@@ -411,7 +416,7 @@ export const items: Record<string, RegistryItemDescription> = {
   "dashboard-01": {
     "title": "Dashboard 01",
     "description": "A store overview: workspace navigation, four key metrics, a revenue chart with its data table, top products and recent orders.",
-    "docs": "Render it from a route of your own: import { Dashboard01 } from '@/components/dashboard-01/dashboard-01'. It installs d3-scale and d3-array for the revenue chart. Replace the sample data in each region file with your own; Export, the workspace menu items and the navigation links have no handler of their own."
+    "docs": "Render it from a route of your own: import { Dashboard01 } from '@/components/dashboard-01/dashboard-01'. The revenue chart draws through the Chart item, so it installs @tanstack/charts. Replace the sample data in each region file with your own; Export, the workspace menu items and the navigation links have no handler of their own."
   },
   "settings-01": {
     "title": "Settings 01",

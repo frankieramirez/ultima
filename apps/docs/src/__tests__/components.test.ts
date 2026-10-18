@@ -22,7 +22,7 @@ test('the six groups hold the counts the Components directory frame shows', () =
   expect(Object.fromEntries(GROUPS.map(({ label, id }) => [label, componentsInGroup(id).length]))).toEqual({
     Forms: 20,
     Overlays: 11,
-    'Data display': 9,
+    'Data display': 10,
     Navigation: 5,
     Feedback: 5,
     Layout: 7,
@@ -35,13 +35,13 @@ test('catalogue numbers follow id order, padded to three digits', () => {
     Avatar: '005',
     Button: '008',
     Card: '011',
-    'Date Picker': '019',
-    Input: '028',
-    Meter: '032',
-    Sidebar: '043',
-    Stat: '047',
-    Table: '049',
-    Tabs: '050',
+    'Date Picker': '020',
+    Input: '029',
+    Meter: '033',
+    Sidebar: '044',
+    Stat: '048',
+    Table: '050',
+    Tabs: '051',
   });
 });
 

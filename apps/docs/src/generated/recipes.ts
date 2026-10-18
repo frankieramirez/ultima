@@ -27,33 +27,6 @@ export const recipes = [
     ]
   },
   {
-    "id": "chart",
-    "title": "Chart",
-    "description": "A bar chart drawn with d3 scales inside a Table-backed figure.",
-    "page": "table",
-    "section": "chart",
-    "url": "/components/table#chart",
-    "items": [
-      "table"
-    ],
-    "dependencies": [
-      "@stylexjs/stylex",
-      "d3-array",
-      "d3-format",
-      "d3-scale"
-    ],
-    "devDependencies": [
-      "@types/d3-array",
-      "@types/d3-format",
-      "@types/d3-scale"
-    ],
-    "install": "npx shadcn@4.21.4 add @ultima/table",
-    "engines": "npm install @stylexjs/stylex d3-array d3-format d3-scale\nnpm install -D @types/d3-array @types/d3-format @types/d3-scale",
-    "sources": [
-      "apps/docs/src/demos/table/chart.tsx"
-    ]
-  },
-  {
     "id": "command-dialog",
     "title": "Command dialog",
     "description": "The inline Command lifted into a Dialog: the searchable command palette.",
@@ -374,26 +347,6 @@ export const recipeSources: Record<string, CopyBundle> = {
     "dependencies": [
       "@stylexjs/stylex",
       "embla-carousel-react"
-    ]
-  },
-  "apps/docs/src/demos/table/chart.tsx": {
-    "entry": "apps/docs/src/demos/table/chart.tsx",
-    "files": [
-      {
-        "source": "apps/docs/src/demos/table/chart.tsx",
-        "path": "examples/demos/table/chart.tsx",
-        "content": "'use client';\n\nimport * as stylex from '@stylexjs/stylex';\nimport { max } from 'd3-array';\nimport { format } from 'd3-format';\nimport { scaleBand, scaleLinear } from 'd3-scale';\nimport { color, space, text } from '@/lib/tokens.stylex';\nimport { Table } from '@/components/ui/table';\n\nconst data = [\n  { day: 'Mon', requests: 84_200 },\n  { day: 'Tue', requests: 91_700 },\n  { day: 'Wed', requests: 88_100 },\n  { day: 'Thu', requests: 96_300 },\n  { day: 'Fri', requests: 90_800 },\n  { day: 'Sat', requests: 41_500 },\n  { day: 'Sun', requests: 38_900 },\n];\n\nconst WIDTH = 360;\nconst HEIGHT = 220;\nconst MARGIN = { top: 8, right: 8, bottom: 22, left: 36 };\nconst INNER_BOTTOM = HEIGHT - MARGIN.bottom;\nconst INNER_RIGHT = WIDTH - MARGIN.right;\n\nconst thousands = format(',');\nconst x = scaleBand()\n  .domain(data.map((row) => row.day))\n  .range([MARGIN.left, INNER_RIGHT])\n  .padding(0.35);\nconst y = scaleLinear()\n  .domain([0, max(data, (row) => row.requests) ?? 0])\n  .nice()\n  .range([INNER_BOTTOM, MARGIN.top]);\nconst ticks = y.ticks(4);\nconst tickLabel = y.tickFormat(4, '~s');\n\nconst styles = stylex.create({\n  figure: {\n    alignItems: 'flex-end',\n    display: 'flex',\n    flexWrap: 'wrap',\n    gap: space['--ult-space-6'],\n  },\n  plot: {\n    blockSize: 'auto',\n    flexShrink: 0,\n    maxInlineSize: '100%',\n  },\n  mark: {\n    fill: color['--ult-color-accent'],\n  },\n  axis: {\n    stroke: color['--ult-color-border'],\n    strokeWidth: 1,\n  },\n  tickLabel: {\n    fill: color['--ult-color-text-subtle'],\n    fontSize: text['--ult-text-3'],\n  },\n  bandLabel: {\n    fill: color['--ult-color-text-muted'],\n    fontSize: text['--ult-text-3'],\n  },\n  table: {\n    flexBasis: '16rem',\n    flexGrow: 1,\n    minWidth: '14rem',\n  },\n});\n\nexport default function ChartRecipe() {\n  return (\n    <div {...stylex.props(styles.figure)}>\n      <svg\n        aria-hidden=\"true\"\n        height={HEIGHT}\n        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}\n        width={WIDTH}\n        {...stylex.props(styles.plot)}\n      >\n        {ticks.map((tick) => (\n          <text\n            key={tick}\n            textAnchor=\"end\"\n            x={MARGIN.left - 6}\n            y={y(tick) + 4}\n            {...stylex.props(styles.tickLabel)}\n          >\n            {tickLabel(tick)}\n          </text>\n        ))}\n        {data.map((row) => {\n          const bar = x(row.day) ?? 0;\n          const top = y(row.requests);\n          return (\n            <g key={row.day}>\n              <rect\n                height={INNER_BOTTOM - top}\n                width={x.bandwidth()}\n                x={bar}\n                y={top}\n                {...stylex.props(styles.mark)}\n              />\n              <text\n                textAnchor=\"middle\"\n                x={bar + x.bandwidth() / 2}\n                y={HEIGHT - 6}\n                {...stylex.props(styles.bandLabel)}\n              >\n                {row.day}\n              </text>\n            </g>\n          );\n        })}\n        <line\n          x1={MARGIN.left}\n          x2={INNER_RIGHT}\n          y1={INNER_BOTTOM}\n          y2={INNER_BOTTOM}\n          {...stylex.props(styles.axis)}\n        />\n      </svg>\n      <div {...stylex.props(styles.table)}>\n        <Table.Root>\n          <Table.Caption>Requests per weekday</Table.Caption>\n          <Table.Head>\n            <Table.Row>\n              <Table.HeadCell>Day</Table.HeadCell>\n              <Table.HeadCell>Requests</Table.HeadCell>\n            </Table.Row>\n          </Table.Head>\n          <Table.Body>\n            {data.map((row) => (\n              <Table.Row key={row.day}>\n                <Table.Cell>{row.day}</Table.Cell>\n                <Table.Cell>{thousands(row.requests)}</Table.Cell>\n              </Table.Row>\n            ))}\n          </Table.Body>\n        </Table.Root>\n      </div>\n    </div>\n  );\n}\n"
-      }
-    ],
-    "items": [
-      "table",
-      "tokens"
-    ],
-    "dependencies": [
-      "@stylexjs/stylex",
-      "d3-array",
-      "d3-format",
-      "d3-scale"
     ]
   },
   "apps/docs/src/demos/command/command-dialog.tsx": {

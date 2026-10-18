@@ -16,7 +16,7 @@ test('every bundle the inventory and the Recipes index expose is installed and e
   }
   assert.deepEqual(Object.values(EXERCISES).filter((exercise) => exercise.bundle === ADAPTED_BLOCK).map((exercise) => exercise.viewport.width), [1280, 390]);
   assert.equal(EXERCISES['projects-zoom-200']?.viewport.deviceScaleFactor, 2);
-  assert.ok(COPY_TYPES.includes('@types/d3-scale'), 'the Chart engines install their type packages');
+  assert.deepEqual(COPY_TYPES, [], 'every recipe engine ships its own types, so no recipe installs a type package');
 });
 
 test('the gallery imports every entry by its copied path and parses as TSX', () => {

@@ -6,7 +6,7 @@
   "knowledge": "proposed",
   "aliases": ["screen composition", "copy bundle", "copy bundles", "consumer copy", "recipes", "recipe index", "build a screen", "projects screen", "settings 01 adaptation", "200% zoom", "installed consumer", "copy-bundles"],
   "contract": "docs/spec/screen-composition.md#compiling-and-exercising-the-examples",
-  "items": ["carousel", "chart", "command-dialog", "data-table", "item", "kbd", "react-hook-form", "sheet", "typography"],
+  "items": ["carousel", "command-dialog", "data-table", "item", "kbd", "react-hook-form", "sheet", "typography"],
   "sourceRoots": [
     "apps/docs/src/examples/complete-screen",
     "apps/docs/src/routes/recipes.tsx",

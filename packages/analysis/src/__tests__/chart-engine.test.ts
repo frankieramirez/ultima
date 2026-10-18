@@ -17,16 +17,9 @@ const BLOCK = 'packages/blocks/src/sign-in-01/fixture-region.tsx';
 const BLOCK_TREND = 'packages/blocks/src/sign-in-01/fixture-trend.tsx';
 const DEMO = 'apps/docs/src/demos/separator/fixture-chart.tsx';
 
-/**
- * The repository as it stands once the item ships: a `chart` React descriptor and source, and the d3
- * Chart recipe gone, since the two share the id.
- */
+/** The repository with the chart item's source replaced. */
 function withChart(chart: string, changes: Record<string, string | null> = {}) {
-  const descriptor = source('registry/metadata/react/separator.ts')
-    .replace("id: 'separator'", "id: 'chart'")
-    .replace("title: 'Separator'", "title: 'Chart'")
-    .replace("primaryExport: 'Separator'", "primaryExport: 'Chart'");
-  return run({ 'registry/metadata/react/chart.ts': descriptor, 'registry/metadata/recipe/chart.ts': null, [CHART]: chart, ...changes });
+  return run({ [CHART]: chart, ...changes });
 }
 
 const imports = (rows: ReturnType<typeof located>) => rows.filter((row) => row.ruleId === 'ULT-IMPORT-001').map(({ line, target }) => [line, target]);
@@ -61,13 +54,8 @@ describe('the chart-engine category', () => {
 
 describe('ULT-IMPORT-001 for the chart engine', () => {
   test('passes the allowed entries in the chart item', () => {
-    const report = withChart(fixture('chart/item.tsx'));
-    assert.deepEqual(imports(located(report, CHART)), []);
-    // Until the item ticket installs @tanstack/charts, the API rule cannot read the entries' types.
-    for (const diagnostic of report.diagnostics.filter((row) => row.file === CHART)) {
-      assert.equal(diagnostic.ruleId, 'ULT-ANALYSIS-001');
-      assert.match(diagnostic.message, /"@tanstack\/charts\/[a-z/]+" resolves to no module the compiler can read/);
-    }
+    assert.deepEqual(located(withChart(fixture('chart/item.tsx')), CHART), []);
+    assert.deepEqual(located(run(), CHART), []);
   });
 
   test('rejects the root, /react and /tooltip in the chart item, and names an allowed entry', () => {

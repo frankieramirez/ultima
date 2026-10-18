@@ -166,7 +166,7 @@ for (const block of blocks) {
   });
 }
 
-test('Dashboard 01 outlines the Chart recipe on the figure named "Revenue"', async () => {
+test('Dashboard 01 outlines Chart on the figure named "Revenue"', async () => {
   const block = blocks.find(({ id }) => id === 'dashboard-01') as BlockEntry;
   const { panel, frame } = await openAnatomy(block);
   await outlinesSettle(block, panel, frame);
@@ -176,13 +176,13 @@ test('Dashboard 01 outlines the Chart recipe on the figure named "Revenue"', asy
   const figure = figures[0]!.getBoundingClientRect();
   const origin = frame.getBoundingClientRect();
   const scale = origin.width / Number(frame.width);
-  const outline = rectOf(panel.querySelector('[data-anatomy-outline="recipe-chart"]') as HTMLElement);
+  const outline = rectOf(panel.querySelector('[data-anatomy-outline="component-chart"]') as HTMLElement);
   expect(outline.left).toBeCloseTo(origin.left + figure.left * scale, 0);
   expect(outline.top).toBeCloseTo(origin.top + figure.top * scale, 0);
   expect(outline.right).toBeCloseTo(origin.left + figure.right * scale, 0);
   expect(outline.bottom).toBeCloseTo(origin.top + figure.bottom * scale, 0);
   await settledLabels(panel, [...expectedOutlines(block, frame).keys()]);
-  expect(panel.querySelector('[data-anatomy-label="recipe-chart"]')?.textContent).toBe('Chart 002');
+  expect(panel.querySelector('[data-anatomy-label="component-chart"]')?.textContent).toBe('Chart 012');
 });
 
 test('resizing the frame or toggling narrow repositions every outline and label, with no stale box', async () => {

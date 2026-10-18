@@ -84,43 +84,43 @@ export const blocks: readonly BlockEntry[] = [
       {
         "id": "empty",
         "title": "Empty",
-        "number": "023",
+        "number": "024",
         "kind": "component"
       },
       {
         "id": "input-group",
         "title": "Input Group",
-        "number": "029",
+        "number": "030",
         "kind": "component"
       },
       {
         "id": "separator",
         "title": "Separator",
-        "number": "042",
+        "number": "043",
         "kind": "component"
       },
       {
         "id": "sidebar",
         "title": "Sidebar",
-        "number": "043",
+        "number": "044",
         "kind": "component"
       },
       {
         "id": "tabs",
         "title": "Tabs",
-        "number": "050",
+        "number": "051",
         "kind": "component"
       },
       {
         "id": "toggle-group",
         "title": "Toggle Group",
-        "number": "056",
+        "number": "057",
         "kind": "component"
       },
       {
         "id": "item",
         "title": "Item",
-        "number": "005",
+        "number": "004",
         "kind": "recipe",
         "page": "card",
         "section": "item",
@@ -138,7 +138,7 @@ export const blocks: readonly BlockEntry[] = [
     "description": "A store overview: workspace navigation, four key metrics, a revenue chart with its data table, top products and recent orders.",
     "number": "002",
     "install": "npx shadcn@4.21.4 add @ultima/dashboard-01",
-    "installDocs": "Render it from a route of your own: import { Dashboard01 } from '@/components/dashboard-01/dashboard-01'. It installs d3-scale and d3-array for the revenue chart. Replace the sample data in each region file with your own; Export, the workspace menu items and the navigation links have no handler of their own.",
+    "installDocs": "Render it from a route of your own: import { Dashboard01 } from '@/components/dashboard-01/dashboard-01'. The revenue chart draws through the Chart item, so it installs @tanstack/charts. Replace the sample data in each region file with your own; Export, the workspace menu items and the navigation links have no handler of their own.",
     "files": [
       "dashboard-01.tsx",
       "app-sidebar.tsx",
@@ -175,76 +175,70 @@ export const blocks: readonly BlockEntry[] = [
         "kind": "component"
       },
       {
+        "id": "chart",
+        "title": "Chart",
+        "number": "012",
+        "kind": "component"
+      },
+      {
         "id": "collapsible",
         "title": "Collapsible",
-        "number": "014",
+        "number": "015",
         "kind": "component"
       },
       {
         "id": "dropdown-menu",
         "title": "Dropdown Menu",
-        "number": "022",
+        "number": "023",
         "kind": "component"
       },
       {
         "id": "input-group",
         "title": "Input Group",
-        "number": "029",
+        "number": "030",
         "kind": "component"
       },
       {
         "id": "meter",
         "title": "Meter",
-        "number": "032",
+        "number": "033",
         "kind": "component"
       },
       {
         "id": "select",
         "title": "Select",
-        "number": "041",
+        "number": "042",
         "kind": "component"
       },
       {
         "id": "separator",
         "title": "Separator",
-        "number": "042",
+        "number": "043",
         "kind": "component"
       },
       {
         "id": "sidebar",
         "title": "Sidebar",
-        "number": "043",
+        "number": "044",
         "kind": "component"
       },
       {
         "id": "stat",
         "title": "Stat",
-        "number": "047",
+        "number": "048",
         "kind": "component"
       },
       {
         "id": "table",
         "title": "Table",
-        "number": "049",
+        "number": "050",
         "kind": "component"
       },
       {
         "id": "toggle-group",
         "title": "Toggle Group",
-        "number": "056",
+        "number": "057",
         "kind": "component"
-      },
-      {
-        "id": "chart",
-        "title": "Chart",
-        "number": "002",
-        "kind": "recipe",
-        "page": "table",
-        "section": "chart",
-        "root": {
-          "role": "figure",
-          "name": "Revenue"
-        }
       }
     ],
     "preview": Dashboard01
@@ -278,49 +272,49 @@ export const blocks: readonly BlockEntry[] = [
       {
         "id": "field",
         "title": "Field",
-        "number": "024",
+        "number": "025",
         "kind": "component"
       },
       {
         "id": "fieldset",
         "title": "Fieldset",
-        "number": "025",
+        "number": "026",
         "kind": "component"
       },
       {
         "id": "native-select",
         "title": "Native Select",
-        "number": "033",
+        "number": "034",
         "kind": "component"
       },
       {
         "id": "radio-group",
         "title": "Radio Group",
-        "number": "038",
+        "number": "039",
         "kind": "component"
       },
       {
         "id": "separator",
         "title": "Separator",
-        "number": "042",
+        "number": "043",
         "kind": "component"
       },
       {
         "id": "sidebar",
         "title": "Sidebar",
-        "number": "043",
+        "number": "044",
         "kind": "component"
       },
       {
         "id": "switch",
         "title": "Switch",
-        "number": "048",
+        "number": "049",
         "kind": "component"
       },
       {
         "id": "toast",
         "title": "Toast",
-        "number": "054",
+        "number": "055",
         "kind": "component"
       }
     ],
@@ -355,25 +349,25 @@ export const blocks: readonly BlockEntry[] = [
       {
         "id": "checkbox",
         "title": "Checkbox",
-        "number": "012",
+        "number": "013",
         "kind": "component"
       },
       {
         "id": "field",
         "title": "Field",
-        "number": "024",
+        "number": "025",
         "kind": "component"
       },
       {
         "id": "input",
         "title": "Input",
-        "number": "028",
+        "number": "029",
         "kind": "component"
       },
       {
         "id": "separator",
         "title": "Separator",
-        "number": "042",
+        "number": "043",
         "kind": "component"
       }
     ],

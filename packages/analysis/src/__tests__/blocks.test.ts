@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 
 import { classify } from '../workspace.ts';
-import { fixture, located, run, source } from './support.ts';
+import { afterFirstLine, fixture, located, run, source } from './support.ts';
 
 const FILE = 'packages/blocks/src/sign-in-01/fixture-region.tsx';
 
@@ -65,12 +65,34 @@ describe('block files', () => {
     );
     assert.match(noRecipe.diagnostics.find((d) => d.target === 'd3-scale')?.message ?? '', /names no recipe whose demos import it/);
 
+    const descriptor = 'registry/metadata/block/sign-in-01.ts';
+    const followingCarousel = run({
+      [descriptor]: source(descriptor).replace('recipes: [],', "recipes: [{ id: 'carousel', root: { role: 'region', name: 'Stories' } }],"),
+      [FILE]: "import useEmblaCarousel from 'embla-carousel-react';\n\nexport function Region() {\n  const [viewport] = useEmblaCarousel();\n  return <div ref={viewport} />;\n}\n",
+    });
+    assert.deepEqual(located(followingCarousel, FILE).filter(({ ruleId }) => ruleId === 'ULT-IMPORT-001'), []);
+  });
+
+  test('reject a d3 import in Dashboard 01, which draws its chart through the Chart item and follows no recipe', () => {
     const dashboardFile = 'packages/blocks/src/dashboard-01/fixture-region.tsx';
-    const followingChart = run({ [dashboardFile]: fixture('blocks/engine.tsx') });
+    const report = run({ [dashboardFile]: fixture('blocks/engine.tsx') });
     assert.deepEqual(
-      located(followingChart, dashboardFile).map(({ ruleId, line, target }) => [ruleId, line, target]),
-      [['ULT-IMPORT-001', 3, 'd3-shape']],
+      located(report, dashboardFile).map(({ ruleId, line, target }) => [ruleId, line, target]),
+      [
+        ['ULT-IMPORT-001', 1, 'd3-array'],
+        ['ULT-IMPORT-001', 2, 'd3-scale'],
+        ['ULT-IMPORT-001', 3, 'd3-shape'],
+      ],
     );
+
+    const chart = 'packages/blocks/src/dashboard-01/revenue-chart.tsx';
+    assert.deepEqual(located(run(), chart), []);
+    const restored = run({ [chart]: afterFirstLine(source(chart), "import { scaleLinear } from 'd3-scale';") });
+    assert.deepEqual(
+      located(restored, chart).map(({ ruleId, line, target }) => [ruleId, line, target]),
+      [['ULT-IMPORT-001', 2, 'd3-scale']],
+    );
+    assert.equal(restored.status, 'violations');
   });
 
   test("reject an import of another block's file", () => {

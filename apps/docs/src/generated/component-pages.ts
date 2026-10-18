@@ -15,6 +15,7 @@ import ButtonContent from '../content/components/button.mdx';
 import ButtonGroupContent from '../content/components/button-group.mdx';
 import CalendarContent from '../content/components/calendar.mdx';
 import CardContent from '../content/components/card.mdx';
+import ChartContent from '../content/components/chart.mdx';
 import CheckboxContent from '../content/components/checkbox.mdx';
 import CodeContent from '../content/components/code.mdx';
 import CollapsibleContent from '../content/components/collapsible.mdx';
@@ -74,6 +75,7 @@ export const componentPages: Record<string, ComponentType<{ components?: MDXComp
   "button-group": ButtonGroupContent,
   "calendar": CalendarContent,
   "card": CardContent,
+  "chart": ChartContent,
   "checkbox": CheckboxContent,
   "code": CodeContent,
   "collapsible": CollapsibleContent,

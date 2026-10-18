@@ -17,7 +17,7 @@ test('every recipe appears once with its canonical anchor and derived install co
     expect(card.querySelector('pre')?.textContent).toBe([recipe.install, recipe.engines].filter(Boolean).join('\n'));
     expect(recipe.install).not.toContain(`@ultima/${recipe.id}`);
   }
-  expect(recipes.find((recipe) => recipe.id === 'chart')?.engines).toContain('npm install -D @types/d3-array @types/d3-format @types/d3-scale');
+  expect(recipes.find((recipe) => recipe.id === 'data-table')?.engines).toBe('npm install @stylexjs/stylex @tanstack/react-table');
 }));
 
 test('llms.txt indexes every recipe and its Markdown export includes install and engine commands', async () => {
@@ -34,5 +34,5 @@ test('llms.txt indexes every recipe and its Markdown export includes install and
     expect(bundle).toContain(recipe.install);
     if (recipe.engines) expect(bundle).toContain(recipe.engines);
   }
-  for (const id of ['chart', 'data-table', 'react-hook-form']) expect(recipes.find((recipe) => recipe.id === id)?.engines).toMatch(/^npm install /);
+  for (const id of ['carousel', 'data-table', 'react-hook-form']) expect(recipes.find((recipe) => recipe.id === id)?.engines).toMatch(/^npm install /);
 });

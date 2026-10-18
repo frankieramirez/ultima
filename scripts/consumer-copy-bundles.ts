@@ -211,14 +211,6 @@ export const EXERCISES: Record<string, Exercise> = {
       await until(async () => await previous.isEnabled(), 'Next enables Previous');
     },
   },
-  chart: {
-    bundle: 'chart',
-    viewport: DESKTOP,
-    run: async (page) => {
-      await page.getByRole('table', { name: 'Requests per weekday' }).waitFor();
-      assert.ok(await page.locator('svg rect').count() > 0, 'the chart draws its bars');
-    },
-  },
   'command-dialog': {
     bundle: 'command-dialog',
     viewport: DESKTOP,

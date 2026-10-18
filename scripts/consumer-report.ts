@@ -23,7 +23,7 @@ export const consumerCases = (layout: ConsumerLayout, path: DeliveryPath = 'css'
 export const modeCases = (layout: ConsumerLayout) => ['light', 'dark', 'missing', 'throwing'].flatMap((stored) => ['dark', 'light'].map((system) => `${layout}/theme-mode/chromium/${stored}-${system}`));
 export const CONSUMER_CASES = consumerCases('vite');
 /** The copy-bundles exercise: compile, then one case per exercise in scripts/consumer-copy-bundles.ts, which asserts the two agree. */
-export const COPY_CASES = ['compile', 'projects-zoom-200', 'product-tokens', 'style-overrides', 'interaction-states', 'list-detail', 'typography', 'carousel', 'chart', 'command-dialog', 'data-table-sorting', 'data-table-row-selection', 'data-table-filtering', 'data-table-pagination', 'item', 'kbd', 'react-hook-form', 'sheet', 'settings-01-desktop', 'settings-01-narrow'];
+export const COPY_CASES = ['compile', 'projects-zoom-200', 'product-tokens', 'style-overrides', 'interaction-states', 'list-detail', 'typography', 'carousel', 'command-dialog', 'data-table-sorting', 'data-table-row-selection', 'data-table-filtering', 'data-table-pagination', 'item', 'kbd', 'react-hook-form', 'sheet', 'settings-01-desktop', 'settings-01-narrow'];
 export const copyBundleCases = (layout: ConsumerLayout) => COPY_CASES.map((name) => `${layout}/copy-bundles/chromium/${name}`);
 /** The lint exercise: one case per row of docs/spec/consumer-lint.md#verification-and-delivery, which scripts/consumer-lint.ts asserts. */
 export const LINT_CASES = ['config', 'catalogue', 'invalid-property', 'palette-constant', 'raw-paint', 'warning-only', 'composition', 'no-eslint', 'missing-plugin', 'incompatible-package', 'bad-config', 'ignored-tsx', 'severity-override', 'offline', 'compile'];

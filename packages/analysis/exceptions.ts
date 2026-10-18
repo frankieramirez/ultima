@@ -105,6 +105,17 @@ export default [
     authority: 'docs/spec/theme-studio.md#studio-support-components-and-compositions',
   },
   {
+    id: 'chart-plot-height-is-its-one-size',
+    rule: 'ULT-STYLE-001',
+    path: 'packages/ui/src/chart.tsx',
+    symbol: 'Plot',
+    target: 'height',
+    expression: 'height',
+    count: 1,
+    reason: "Chart.Root's height prop, in CSS pixels, written inline as the plot's one size declaration, the way Aspect Ratio writes ratio.",
+    authority: 'docs/spec/ultima.md#chart',
+  },
+  {
     id: 'theme-studio-preview-applies-the-draft',
     rule: 'ULT-STYLE-001',
     path: 'apps/docs/src/theme-studio-preview.tsx',
