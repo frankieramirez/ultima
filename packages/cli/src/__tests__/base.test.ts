@@ -11,7 +11,9 @@ import type { Row } from '../status.ts';
 const scope = { aliases: { ui: '@/components/ui', lib: '@/lib' }, components: { rsc: false } } as Parameters<typeof installedBase>[2];
 
 function tokens(names: string[], source: string): BaseCatalogue {
-  return { source, items: [{ name: 'tokens', type: 'registry:lib', files: names.map((name) => ({ path: `ultima/lib/${name}` })) }], fetched: new Map() };
+  const files = names.map((name) => ({ path: `ultima/lib/${name}` }));
+  const sources = Object.fromEntries(names.map((name) => [name, `packages/tokens/src/${name}`]));
+  return { source, items: [{ name: 'tokens', type: 'registry:lib', files, meta: { ultima: { revision: 'e2f9db14c886', files: {}, sources } } }], fetched: new Map() };
 }
 
 function row(file: string, revision: string, hash: string): Row {

@@ -35,18 +35,18 @@ function authored(name: string, label: string): string {
   return staged(name, label).replace('@/registry/ultima/ui/', '@ultima/ui/');
 }
 
-type Source = 'named' | 'older' | 'none';
+type Source = 'named' | 'none';
 
 /**
  * A registry at revision NEW serving each item's one file, with its stamped content, and a raw host serving `raw` at
- * `/raw/<revision>/<path>`. `named` catalogues name that host and each file's source path, `older` ones carry neither
- * key, and `none` ones list the paths but no source.
+ * `/raw/<revision>/<path>`. `named` catalogues name that host, or `template` when given, and each file's source path;
+ * `none` ones list the paths but no source.
  */
 type Needs = { registryDependencies?: string[]; dependencies?: string[] };
 
 async function serve(
   items: ({ name: string; file: string; source: string; type?: string; scheme?: 'c1' | 'b1'; baseTheme?: string } & Needs)[],
-  { raw = {}, source = 'named' }: { raw?: Record<string, string>; source?: Source } = {},
+  { raw = {}, source = 'named', template: named }: { raw?: Record<string, string>; source?: Source; template?: string } = {},
 ) {
   const served: Record<string, unknown> = {};
   const requests: string[] = [];
@@ -61,7 +61,7 @@ async function serve(
   await new Promise<void>((listening) => server.listen(0, '127.0.0.1', listening));
   server.unref();
   const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-  const template = `${origin}/raw/{revision}/{path}`;
+  const template = named ?? `${origin}/raw/{revision}/{path}`;
 
   const catalogue = {
     name: 'ultima',
@@ -71,12 +71,12 @@ async function serve(
   for (const { name, file, source: text, type = 'registry:ui', scheme = 'c1', baseTheme, ...needs } of items) {
     const hash = await contentHash(text, scheme);
     const path = `ultima/${type === 'registry:lib' ? 'lib' : 'ui'}/${file}`;
-    const sources = source === 'older' ? {} : { sources: { [file]: `packages/ui/src/${type === 'registry:lib' ? 'lib/' : ''}${file}` } };
-    catalogue.items.push({ name, type, ...needs, files: [{ path, type }], meta: { ultima: { revision: NEW, files: { [file]: hash }, ...sources, ...(baseTheme && { baseTheme }) } } });
+    const sources = { [file]: `packages/ui/src/${type === 'registry:lib' ? 'lib/' : ''}${file}` };
+    catalogue.items.push({ name, type, ...needs, files: [{ path, type }], meta: { ultima: { revision: NEW, files: { [file]: hash }, sources, ...(baseTheme && { baseTheme }) } } });
     served[`/r/${name}.json`] = { name, files: [{ path, type, content: withStamp(text, stampLine(name, NEW, hash, 'ts')) }] };
   }
   served['/r/registry.json'] = catalogue;
-  return { registry: `${origin}/r/{name}.json`, raw: template, requests };
+  return { registry: `${origin}/r/{name}.json`, requests };
 }
 
 const SIDEBAR = `${OLD}/packages/ui/src/sidebar.tsx`;
@@ -85,7 +85,12 @@ const SIDEBAR = `${OLD}/packages/ui/src/sidebar.tsx`;
  * One file in each of the states behind, current, unstamped and diverged. The raw host serves the diverged sidebar's
  * authored source at its installed revision unless `raw` says otherwise.
  */
-async function fixture({ raw = { [SIDEBAR]: authored('Sidebar', 'one') }, source = 'named', sidebarRevision = OLD }: { raw?: Record<string, string>; source?: Source; sidebarRevision?: string } = {}) {
+async function fixture({
+  raw = { [SIDEBAR]: authored('Sidebar', 'one') },
+  source = 'named',
+  template,
+  sidebarRevision = OLD,
+}: { raw?: Record<string, string>; source?: Source; template?: string; sidebarRevision?: string } = {}) {
   const served = await serve(
     [
       { name: 'button', file: 'button.tsx', source: staged('Button', 'two') },
@@ -93,7 +98,7 @@ async function fixture({ raw = { [SIDEBAR]: authored('Sidebar', 'one') }, source
       { name: 'lib', file: 'component.ts', source: 'export type StyleSlot = unknown;\n', type: 'registry:lib' },
       { name: 'sidebar', file: 'sidebar.tsx', source: staged('Sidebar', 'two') },
     ],
-    { raw, source },
+    { raw, source, template },
   );
   const root = project({
     'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': served.registry } }),
@@ -103,7 +108,7 @@ async function fixture({ raw = { [SIDEBAR]: authored('Sidebar', 'one') }, source
     'src/lib/component.ts': 'export type StyleSlot = string;\n',
     'src/components/ui/sidebar.tsx': await stamped('sidebar', staged('Sidebar', 'one'), sidebarRevision, viteCopy(staged('Sidebar', 'three'))),
   });
-  return { root, registry: served.registry.replace('/{name}.json', ''), raw: served.raw, requests: served.requests };
+  return { root, registry: served.registry.replace('/{name}.json', ''), requests: served.requests };
 }
 
 const runs = (root: string) => readdirSync(join(root, '.ultima-update')).filter((name) => name !== '.gitignore').sort();
@@ -327,9 +332,9 @@ const CLOSED = await new Promise<number>((closed) => {
 });
 
 describe('installed base', () => {
-  async function sidebar(options: Parameters<typeof fixture>[0], raw?: (fixtureRaw: string) => string) {
+  async function sidebar(options: Parameters<typeof fixture>[0]) {
     const built = await fixture(options);
-    const result = (await update(built.root, ['sidebar'], { raw: raw?.(built.raw) })) as UpdateReport;
+    const result = (await update(built.root, ['sidebar'], {})) as UpdateReport;
     return { row: result.plan.files.find(({ item }) => item === 'sidebar'), requests: built.requests };
   }
 
@@ -344,21 +349,15 @@ describe('installed base', () => {
     expect(requests).toEqual([`/raw/${SIDEBAR}`]);
   });
 
-  it('falls back to the built-in address and the authored layout for a catalogue served before the source keys', async () => {
-    const { row, requests } = await sidebar({ source: 'older' }, (raw) => raw);
-    expect(row).toMatchObject({ action: 'conflict', base: 'verified', hunks: 1 });
-    expect(requests).toEqual([`/raw/${SIDEBAR}`]);
-  });
-
   it.each([
-    ['a served base whose hash differs', { raw: { [SIDEBAR]: authored('Sidebar', 'two') } }, undefined, /^no installed base: packages\/ui\/src\/sidebar\.tsx at aaaaaaaaaaaa rebuilds to c1:[0-9a-f]{16}, not the stamp's c1:[0-9a-f]{16}$/],
-    ['a 404', { raw: {} }, undefined, /^no installed base: http:\/\/127\.0\.0\.1:\d+\/raw\/aaaaaaaaaaaa\/packages\/ui\/src\/sidebar\.tsx answered 404, so the file is not in the repository at that revision$/],
-    ['a network error', { source: 'older' as const }, () => `http://127.0.0.1:${CLOSED}/{revision}/{path}`, /^no installed base: http:\/\/127\.0\.0\.1:\d+\/aaaaaaaaaaaa\/packages\/ui\/src\/sidebar\.tsx could not be fetched: ECONNREFUSED$/],
-    ['a local revision', { sidebarRevision: 'local' }, undefined, /^no installed base: installed from a build outside a git checkout \(revision local\)$/],
-    ['a registry that names no source', { source: 'none' as const }, undefined, /^no installed base: the registry names no source repository$/],
-    ['a source that imports a barrel', { raw: { [SIDEBAR]: `import { Spinner } from '@ultima/ui';\n${authored('Sidebar', 'one')}` } }, undefined, /^no installed base: packages\/ui\/src\/sidebar\.tsx at aaaaaaaaaaaa does not rebuild: .*imports "@ultima\/ui", a barrel/],
-  ])('reports %s with its own reason, and the run still completes', async (_, options, raw, reason) => {
-    const { row } = await sidebar(options, raw);
+    ['a served base whose hash differs', { raw: { [SIDEBAR]: authored('Sidebar', 'two') } }, /^no installed base: packages\/ui\/src\/sidebar\.tsx at aaaaaaaaaaaa rebuilds to c1:[0-9a-f]{16}, not the stamp's c1:[0-9a-f]{16}$/],
+    ['a 404', { raw: {} }, /^no installed base: http:\/\/127\.0\.0\.1:\d+\/raw\/aaaaaaaaaaaa\/packages\/ui\/src\/sidebar\.tsx answered 404, so the file is not in the repository at that revision$/],
+    ['a network error', { template: `http://127.0.0.1:${CLOSED}/{revision}/{path}` }, /^no installed base: http:\/\/127\.0\.0\.1:\d+\/aaaaaaaaaaaa\/packages\/ui\/src\/sidebar\.tsx could not be fetched: ECONNREFUSED$/],
+    ['a local revision', { sidebarRevision: 'local' }, /^no installed base: installed from a build outside a git checkout \(revision local\)$/],
+    ['a registry that names no source', { source: 'none' as const }, /^no installed base: the registry names no source repository$/],
+    ['a source that imports a barrel', { raw: { [SIDEBAR]: `import { Spinner } from '@ultima/ui';\n${authored('Sidebar', 'one')}` } }, /^no installed base: packages\/ui\/src\/sidebar\.tsx at aaaaaaaaaaaa does not rebuild: .*imports "@ultima\/ui", a barrel/],
+  ])('reports %s with its own reason, and the run still completes', async (_, options, reason) => {
+    const { row } = await sidebar(options);
     expect(row).toMatchObject({ action: 'report', base: 'unavailable' });
     expect(row?.reason).toMatch(reason);
   });

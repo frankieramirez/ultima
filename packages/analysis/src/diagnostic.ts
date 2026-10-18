@@ -42,8 +42,6 @@ export type Report = {
   status: 'clean' | 'violations' | 'incomplete';
   scopes: { kind: string; files: number }[];
   rules: RuleStatus[];
-  /** The dependency categories ULT-IMPORT-001 and ULT-PRIMITIVE-001 classify imports into, first match first. */
-  policy: { categories: { category: string; authority: string }[] };
   unsupported: Unsupported[];
   counts: { blocking: number; advisory: number; incomplete: number; excepted: number };
   diagnostics: Diagnostic[];
