@@ -49,11 +49,12 @@ function Stack() {
   return toasts.map((toast) => (
     <Toast.Root key={toast.id} toast={toast}>
       <Toast.Content>
+        <Toast.Icon />
         <div {...stylex.props(styles.text)}>
           <Toast.Title />
           <Toast.Description />
         </div>
-        <Toast.Action render={<Button variant="ghost" size="sm" />}>Undo</Toast.Action>
+        <Toast.Action render={<Button size="sm" />}>Undo</Toast.Action>
         <Toast.Close render={<Button variant="ghost" size="sm" />}>Dismiss</Toast.Close>
       </Toast.Content>
     </Toast.Root>

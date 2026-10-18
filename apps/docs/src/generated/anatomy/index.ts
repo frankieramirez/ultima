@@ -545,6 +545,7 @@ export {
   type ToastDescriptionProps,
   type ToastPositionerProps,
   type ToastArrowProps,
+  type ToastIconProps,
 } from './toast';
 export {
   Toggle,

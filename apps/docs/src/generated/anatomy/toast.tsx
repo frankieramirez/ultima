@@ -13,6 +13,7 @@ export {
   type ToastDescriptionProps,
   type ToastPositionerProps,
   type ToastArrowProps,
+  type ToastIconProps,
 } from '@ultima/ui/toast';
 
 export const Toast = {
@@ -21,6 +22,7 @@ export const Toast = {
   Positioner: mark(Source.Positioner, 'toast', 'Positioner'),
   Root: mark(Source.Root, 'toast', 'Root'),
   Content: mark(Source.Content, 'toast', 'Content'),
+  Icon: mark(Source.Icon, 'toast', 'Icon'),
   Title: mark(Source.Title, 'toast', 'Title'),
   Description: mark(Source.Description, 'toast', 'Description'),
   Action: mark(Source.Action, 'toast', 'Action'),
