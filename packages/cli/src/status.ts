@@ -42,7 +42,8 @@ type CatalogueItem = {
   dependencies?: string[];
   registryDependencies?: string[];
   files: { path: string; target?: string }[];
-  meta?: { ultima?: { revision: string; files: Record<string, string>; baseTheme?: string } };
+  /** `sources` maps each served file name to its authored repository path; a catalogue built before it has none. */
+  meta?: { ultima?: { revision: string; files: Record<string, string>; sources?: Record<string, string>; baseTheme?: string } };
 };
 
 type Served = { item: string; name: string; installPath: string; hash: string };

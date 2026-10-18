@@ -56,15 +56,24 @@ async function stamped(item: string, source: string, revision: string, local = v
 
 type Item = { name: string; type?: string; files: Record<string, string>; content?: string; targets?: Record<string, string>; baseTheme?: string };
 
-async function serve(items: Item[], format: unknown = 1): Promise<string> {
+const SOURCE = { repository: 'https://github.com/frankieramirez/ultima', raw: 'https://raw.githubusercontent.com/frankieramirez/ultima/{revision}/{path}' };
+
+async function serve(items: Item[], format: unknown = 1, sourced = false): Promise<string> {
   const catalogue = {
     name: 'ultima',
-    meta: { ultima: { format } },
+    meta: { ultima: { format, ...(sourced && { source: SOURCE }) } },
     items: items.map(({ name, type = 'registry:ui', files, targets, baseTheme }) => ({
       name,
       type,
       files: Object.keys(files).map((file) => ({ path: `ultima/${type === 'registry:lib' ? 'lib' : 'ui'}/${file}`, type, ...(targets?.[file] && { target: targets[file] }) })),
-      meta: { ultima: { revision: NEW, files, ...(baseTheme && { baseTheme }) } },
+      meta: {
+        ultima: {
+          revision: NEW,
+          files,
+          ...(sourced && { sources: Object.fromEntries(Object.keys(files).map((file) => [file, `packages/ui/src/${file}`])) }),
+          ...(baseTheme && { baseTheme }),
+        },
+      },
     })),
   };
   const served: Record<string, unknown> = { '/r/registry.json': catalogue };
@@ -250,6 +259,30 @@ describe('status', () => {
       ['sign-in-01', 'src/components/sign-in-01/brand.tsx', 'current'],
       ['sign-in-01', 'src/components/sign-in-01/sign-in-01.tsx', 'current'],
     ]);
+  });
+
+  it('reads a catalogue that names its sources exactly as one that does not', async () => {
+    const items: Item[] = [
+      { name: 'button', files: { 'button.tsx': await contentHash(staged('Button', 'two'), 'c1') } },
+      { name: 'dialog', files: { 'dialog.tsx': await contentHash(staged('Dialog', 'two'), 'c1') } },
+      { name: 'sidebar', files: { 'sidebar.tsx': await contentHash(staged('Sidebar', 'two'), 'c1') } },
+    ];
+    const files = {
+      'src/components/ui/button.tsx': await stamped('button', staged('Button', 'two'), NEW),
+      'src/components/ui/dialog.tsx': await stamped('dialog', staged('Dialog', 'one'), OLD),
+      'src/components/ui/sidebar.tsx': await stamped('sidebar', staged('Sidebar', 'one'), OLD, viteCopy(staged('Sidebar', 'three'))),
+    };
+    const [without, sourced] = await Promise.all([serve(items), serve(items, 1, true)]);
+    const read = async (registry: string) => {
+      const root = consumer(registry, files);
+      const json = await statusJson(root);
+      const text = await status(root);
+      const base = registry.replace('/{name}.json', '');
+      return { code: json.code, report: { ...json.report, registry: json.report.registry.replace(base, '<registry>') }, text: text.stdout.replace(base, '<registry>') };
+    };
+    const expected = await read(without);
+    expect(expected.report.files.map(({ state }) => state)).toEqual(['current', 'behind', 'diverged']);
+    expect(await read(sourced)).toEqual(expected);
   });
 
   it('takes the stamp over the file name', async () => {
@@ -449,6 +482,23 @@ describe('diff', () => {
     expect(covered).toEqual(drifted.filter(({ state }) => state !== 'retired').map(({ file, state }) => `${file} ${state}`));
     expect(stdout).toContain('tabs: retired, the registry no longer serves src/components/ui/tabs.tsx\n');
     expect(drifted.map(({ item }) => item)).toEqual(['dialog', 'menu', 'tabs']);
+  });
+
+  it('prints the same diff against a catalogue that names its sources', async () => {
+    const items = await Promise.all(['Button', 'Menu'].map((name) => servedCopy(name.toLowerCase(), staged(name, 'two'))));
+    const [button, menu] = items as [(typeof items)[0], (typeof items)[0]];
+    const served: Item[] = [
+      { name: 'button', files: { 'button.tsx': button.hash }, content: button.content },
+      { name: 'menu', files: { 'menu.tsx': menu.hash }, content: menu.content },
+    ];
+    const files = {
+      'src/components/ui/button.tsx': await stamped('button', staged('Button', 'two'), NEW, viteCopy(staged('Button', 'three'))),
+      'src/components/ui/menu.tsx': await stamped('menu', staged('Menu', 'one'), OLD),
+    };
+    const without = await diff(consumer(await serve(served), files));
+    expect(without.code).toBe(0);
+    expect(without.stdout).toContain('--- src/components/ui/menu.tsx  (local, behind,');
+    expect(await diff(consumer(await serve(served, 1, true), files))).toEqual(without);
   });
 
   it('prints a served item that is not installed as such', async () => {
