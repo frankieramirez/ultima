@@ -6,6 +6,7 @@ import { join, relative } from 'node:path';
 
 import ts from 'typescript';
 
+import { type Base, installedBase } from './base.ts';
 import { type Diagnostic, SPEC } from './diagnostic.ts';
 import { type ServedPayloads, renderAsInstalled, servedContent } from './diff.ts';
 import { UPDATE, type JournalEntry, hashes, loadJournal, newRunId, recordOutputs, recordedRuns, rememberOriginals, saveJournal, startJournal, undo, writeInPlace } from './journal.ts';
@@ -21,6 +22,8 @@ export type PlanRow = {
   state: Row['state'];
   action: Action;
   reason: string | null;
+  /** Whether a `diverged` `c1` file's installed base was rebuilt and matched its stamp; null for every other row. */
+  base: 'verified' | 'unavailable' | null;
   /** The file has changes git has not committed. The plan still writes it, since the journal keeps the original. */
   uncommitted: boolean;
 };
@@ -48,33 +51,39 @@ export type UpdateReport = { plan: UpdatePlan; run: UpdateRun | null };
 export type UpdateOptions = {
   project?: string;
   yes?: boolean;
+  /** The raw URL template a catalogue served before the source keys falls back to: `SOURCE.raw`, or a test's loopback host. */
+  raw?: string;
   /** Writes one file in place; a test replaces it to simulate a failed write. */
   write?: (path: string, content: string) => void;
 };
 
-/** The action a file's state gives it, with the reason for a `report`. */
-export function planAction(row: Row): { action: Action; reason: string | null } {
+const needsBase = (row: Row) => row.state === 'diverged' && row.installed?.hash.startsWith('c1:') === true;
+
+/** The action a file's state, and for a `diverged` `c1` file its installed base, gives it, with the reason for a `report`. */
+export function planAction(row: Row, base?: Base): { action: Action; reason: string | null; base: PlanRow['base'] } {
   switch (row.state) {
     case 'current':
     case 'edited':
-      return { action: 'none', reason: null };
+      return { action: 'none', reason: null, base: null };
     case 'behind':
-      return { action: 'replace', reason: null };
+      return { action: 'replace', reason: null, base: null };
     case 'diverged':
-      return { action: 'report', reason: row.local?.startsWith('b1:') ? 'built file, which cannot be merged' : 'no installed base' };
+      if (!needsBase(row)) return { action: 'report', reason: 'built file, which cannot be merged', base: null };
+      if (base && 'text' in base) return { action: 'report', reason: 'installed base verified; merging is not built yet', base: 'verified' };
+      return { action: 'report', reason: `no installed base: ${base?.reason ?? 'none was looked for'}`, base: 'unavailable' };
     case 'unstamped':
-      return { action: 'report', reason: 'no installed base' };
+      return { action: 'report', reason: 'no installed base', base: null };
     case 'retired':
-      return { action: 'report', reason: 'the registry no longer serves it' };
+      return { action: 'report', reason: 'the registry no longer serves it', base: null };
     case 'unknown-scheme':
-      return { action: 'report', reason: 'a hash scheme this CLI does not know' };
+      return { action: 'report', reason: 'a hash scheme this CLI does not know', base: null };
   }
 }
 
 export async function update(root: string, names: string[], options: UpdateOptions): Promise<{ usage: string } | { diagnostics: Diagnostic[] } | UpdateReport> {
   const surveyed = await survey(root, options);
   if ('diagnostics' in surveyed) return surveyed;
-  const { report, scope, url, items } = surveyed;
+  const { report, scope, url, items, source } = surveyed;
 
   const rowsOf = (name: string) => report.files.filter(({ item }) => item === name);
   const unknown = names.filter((name) => rowsOf(name).length === 0 && !items.some((item) => item.name === name));
@@ -83,9 +92,12 @@ export async function update(root: string, names: string[], options: UpdateOptio
   }
 
   const named = new Set(names);
-  const files = report.files
-    .filter((row) => names.length === 0 || named.has(row.item))
-    .map((row) => ({ item: row.item, file: row.file, state: row.state, ...planAction(row) }))
+  const covered = report.files.filter((row) => names.length === 0 || named.has(row.item));
+  const catalogue = { source, items, fetched: new Map() };
+  const bases = new Map<Row, Base>();
+  for (const row of covered.filter(needsBase)) bases.set(row, await installedBase(row, catalogue, scope));
+  const files = covered
+    .map((row) => ({ item: row.item, file: row.file, state: row.state, ...planAction(row, bases.get(row)) }))
     .filter((row) => row.action !== 'none' || named.has(row.item))
     .map((row) => ({ ...row, uncommitted: row.action === 'replace' && uncommitted(root, row.file) }))
     .sort((a, b) => ORDER.indexOf(a.action) - ORDER.indexOf(b.action) || a.item.localeCompare(b.item) || a.file.localeCompare(b.file));

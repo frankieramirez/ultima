@@ -6,7 +6,7 @@ import { BASE_THEME, BASE_THEME_MARKER, UNMARKED_NEUTRAL_HASHES } from './base-t
 import { type Diagnostic, SPEC } from './diagnostic.ts';
 import { type ManagedState, managedSkills } from './install.ts';
 import { type ConsumerScope, consumerScope } from './scope.ts';
-import { type Scheme, contentHash, readStamp } from './stamp.ts';
+import { type Scheme, SOURCE, contentHash, readStamp } from './stamp.ts';
 import { SHADCN_ADD } from './shadcn.ts';
 
 export type State = 'current' | 'edited' | 'behind' | 'diverged' | 'unstamped' | 'retired';
@@ -35,7 +35,7 @@ export type StatusReport = {
   notices: { id: string; message: string; link: string; files: string[] }[];
 };
 
-type CatalogueItem = {
+export type CatalogueItem = {
   name: string;
   type: string;
   files: { path: string; target?: string }[];
@@ -60,11 +60,16 @@ export async function status(root: string, options: { project?: string }): Promi
   return 'diagnostics' in surveyed ? surveyed : surveyed.report;
 }
 
-/** The status report, with the scope and catalogue it was made from, for `diff`. */
+/**
+ * The status report, with the scope and catalogue it was made from, for `diff` and `update`. `source` is the raw URL
+ * template the catalogue names at `meta.ultima.source.raw`. A catalogue served before that key and the items'
+ * `sources` falls back to `options.raw`, the built-in address unless a test points it elsewhere. One that names no
+ * source gives null.
+ */
 export async function survey(
   root: string,
-  options: { project?: string },
-): Promise<{ report: StatusReport; scope: ConsumerScope; url: string; items: CatalogueItem[] } | { diagnostics: Diagnostic[] }> {
+  options: { project?: string; raw?: string },
+): Promise<{ report: StatusReport; scope: ConsumerScope; url: string; items: CatalogueItem[]; source: string | null } | { diagnostics: Diagnostic[] }> {
   const scope = consumerScope(root, options);
   if ('incomplete' in scope) return { diagnostics: [scope.incomplete] };
 
@@ -84,7 +89,7 @@ export async function survey(
   if (catalogue === undefined) {
     return incomplete('ULT-STATUS-002', 'components.json', `The catalogue at ${catalogueUrl} could not be fetched.`, `Check the network and that ${catalogueUrl} serves registry.json.`);
   }
-  const { meta, items = [] } = catalogue as { meta?: { ultima?: { format?: unknown } }; items?: CatalogueItem[] };
+  const { meta, items = [] } = catalogue as { meta?: { ultima?: { format?: unknown; source?: { raw?: unknown } | null } }; items?: CatalogueItem[] };
   const format = meta?.ultima?.format;
   if (typeof format !== 'number' || format < READABLE_FORMATS.min || format > READABLE_FORMATS.max) {
     return incomplete(
@@ -94,6 +99,10 @@ export async function survey(
       `Upgrade the CLI: \`${UPGRADE}\`.`,
     );
   }
+
+  const raw = meta?.ultima?.source?.raw;
+  const older = !(meta?.ultima && 'source' in meta.ultima) && !items.some((item) => item.meta?.ultima?.sources);
+  const source = typeof raw === 'string' ? raw : older ? (options.raw ?? SOURCE.raw) : null;
 
   const served = servedFiles(root, scope, items);
   const files: Row[] = [];
@@ -121,7 +130,7 @@ export async function survey(
       files: legacyTokens.map(({ file }) => file),
     }] : [],
   };
-  return { report, scope, url, items };
+  return { report, scope, url, items, source };
 }
 
 function servedFiles(root: string, scope: ConsumerScope, items: CatalogueItem[]): Served[] {

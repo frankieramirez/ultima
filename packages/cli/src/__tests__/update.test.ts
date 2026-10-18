@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import { run } from '../run.ts';
 import { contentHash, stampLine, withStamp } from '../stamp.ts';
-import { planAction, printUpdate, update, updateExit } from '../update.ts';
+import { type UpdateReport, planAction, printUpdate, update, updateExit } from '../update.ts';
 import { project, snapshot } from './fixtures.ts';
 
 const OLD = 'aaaaaaaaaaaa';
@@ -26,44 +26,78 @@ async function stamped(item: string, source: string, revision: string, local = v
   return withStamp(local, stampLine(item, revision, await contentHash(source, 'c1'), 'ts'));
 }
 
-/** A registry at revision NEW serving each item's one file, with its stamped content. */
-async function serve(items: { name: string; file: string; source: string; type?: string }[]): Promise<string> {
+/** The authored source the registry build stages as `staged(name, label)`. */
+function authored(name: string, label: string): string {
+  return staged(name, label).replace('@/registry/ultima/ui/', '@ultima/ui/');
+}
+
+type Source = 'named' | 'older' | 'none';
+
+/**
+ * A registry at revision NEW serving each item's one file, with its stamped content, and a raw host serving `raw` at
+ * `/raw/<revision>/<path>`. `named` catalogues name that host and each file's source path, `older` ones carry neither
+ * key, and `none` ones list the paths but no source.
+ */
+async function serve(
+  items: { name: string; file: string; source: string; type?: string; scheme?: 'c1' | 'b1' }[],
+  { raw = {}, source = 'named' }: { raw?: Record<string, string>; source?: Source } = {},
+) {
   const served: Record<string, unknown> = {};
-  const catalogue = { name: 'ultima', meta: { ultima: { format: 1 } }, items: [] as unknown[] };
-  for (const { name, file, source, type = 'registry:ui' } of items) {
-    const hash = await contentHash(source, 'c1');
-    const path = `ultima/${type === 'registry:lib' ? 'lib' : 'ui'}/${file}`;
-    catalogue.items.push({ name, type, files: [{ path, type }], meta: { ultima: { revision: NEW, files: { [file]: hash } } } });
-    served[`/r/${name}.json`] = { name, files: [{ path, type, content: withStamp(source, stampLine(name, NEW, hash, 'ts')) }] };
-  }
-  served['/r/registry.json'] = catalogue;
+  const requests: string[] = [];
   const server = createServer((request, response) => {
-    const body = served[request.url ?? ''];
-    if (!body) response.writeHead(404).end();
+    const url = request.url ?? '';
+    if (url.startsWith('/raw/')) requests.push(url);
+    const body = url.startsWith('/raw/') ? raw[url.slice('/raw/'.length)] : served[url];
+    if (body === undefined) response.writeHead(404).end();
+    else if (typeof body === 'string') response.writeHead(200, { 'content-type': 'text/plain' }).end(body);
     else response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(body));
   });
   await new Promise<void>((listening) => server.listen(0, '127.0.0.1', listening));
   server.unref();
-  return `http://127.0.0.1:${(server.address() as AddressInfo).port}/r/{name}.json`;
+  const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  const template = `${origin}/raw/{revision}/{path}`;
+
+  const catalogue = {
+    name: 'ultima',
+    meta: { ultima: { format: 1, ...(source === 'named' && { source: { repository: 'https://example.test/ultima', raw: template } }) } },
+    items: [] as unknown[],
+  };
+  for (const { name, file, source: text, type = 'registry:ui', scheme = 'c1' } of items) {
+    const hash = await contentHash(text, scheme);
+    const path = `ultima/${type === 'registry:lib' ? 'lib' : 'ui'}/${file}`;
+    const sources = source === 'older' ? {} : { sources: { [file]: `packages/ui/src/${type === 'registry:lib' ? 'lib/' : ''}${file}` } };
+    catalogue.items.push({ name, type, files: [{ path, type }], meta: { ultima: { revision: NEW, files: { [file]: hash }, ...sources } } });
+    served[`/r/${name}.json`] = { name, files: [{ path, type, content: withStamp(text, stampLine(name, NEW, hash, 'ts')) }] };
+  }
+  served['/r/registry.json'] = catalogue;
+  return { registry: `${origin}/r/{name}.json`, raw: template, requests };
 }
 
-/** One file in each of the states behind, current, unstamped and diverged. */
-async function fixture() {
-  const registry = await serve([
-    { name: 'button', file: 'button.tsx', source: staged('Button', 'two') },
-    { name: 'dialog', file: 'dialog.tsx', source: staged('Dialog', 'two') },
-    { name: 'lib', file: 'component.ts', source: 'export type StyleSlot = unknown;\n', type: 'registry:lib' },
-    { name: 'sidebar', file: 'sidebar.tsx', source: staged('Sidebar', 'two') },
-  ]);
+const SIDEBAR = `${OLD}/packages/ui/src/sidebar.tsx`;
+
+/**
+ * One file in each of the states behind, current, unstamped and diverged. The raw host serves the diverged sidebar's
+ * authored source at its installed revision unless `raw` says otherwise.
+ */
+async function fixture({ raw = { [SIDEBAR]: authored('Sidebar', 'one') }, source = 'named', sidebarRevision = OLD }: { raw?: Record<string, string>; source?: Source; sidebarRevision?: string } = {}) {
+  const served = await serve(
+    [
+      { name: 'button', file: 'button.tsx', source: staged('Button', 'two') },
+      { name: 'dialog', file: 'dialog.tsx', source: staged('Dialog', 'two') },
+      { name: 'lib', file: 'component.ts', source: 'export type StyleSlot = unknown;\n', type: 'registry:lib' },
+      { name: 'sidebar', file: 'sidebar.tsx', source: staged('Sidebar', 'two') },
+    ],
+    { raw, source },
+  );
   const root = project({
-    'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }),
+    'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': served.registry } }),
     'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
     'src/components/ui/button.tsx': await stamped('button', staged('Button', 'two'), NEW),
     'src/components/ui/dialog.tsx': await stamped('dialog', staged('Dialog', 'one'), OLD),
     'src/lib/component.ts': 'export type StyleSlot = string;\n',
-    'src/components/ui/sidebar.tsx': await stamped('sidebar', staged('Sidebar', 'one'), OLD, viteCopy(staged('Sidebar', 'three'))),
+    'src/components/ui/sidebar.tsx': await stamped('sidebar', staged('Sidebar', 'one'), sidebarRevision, viteCopy(staged('Sidebar', 'three'))),
   });
-  return { root, registry: registry.replace('/{name}.json', '') };
+  return { root, registry: served.registry.replace('/{name}.json', ''), raw: served.raw, requests: served.requests };
 }
 
 const runs = (root: string) => readdirSync(join(root, '.ultima-update')).filter((name) => name !== '.gitignore').sort();
@@ -74,20 +108,25 @@ async function statusOf(root: string) {
 }
 
 describe('planAction', () => {
-  const row = (state: string, local = 'c1:1111') => ({ item: 'x', file: 'x.tsx', state, installed: null, local, served: 'c1:2222' }) as Parameters<typeof planAction>[0];
+  const row = (state: string, scheme = 'c1') =>
+    ({ item: 'x', file: 'x.tsx', state, installed: { revision: OLD, hash: `${scheme}:1111` }, local: `${scheme}:3333`, served: `${scheme}:2222` }) as Parameters<typeof planAction>[0];
 
   it('gives each state its action from the spec table', () => {
-    expect(planAction(row('current'))).toEqual({ action: 'none', reason: null });
-    expect(planAction(row('edited'))).toEqual({ action: 'none', reason: null });
-    expect(planAction(row('behind'))).toEqual({ action: 'replace', reason: null });
-    expect(planAction(row('diverged'))).toEqual({ action: 'report', reason: 'no installed base' });
-    expect(planAction(row('unstamped'))).toEqual({ action: 'report', reason: 'no installed base' });
+    expect(planAction(row('current'))).toEqual({ action: 'none', reason: null, base: null });
+    expect(planAction(row('edited'))).toEqual({ action: 'none', reason: null, base: null });
+    expect(planAction(row('behind'))).toEqual({ action: 'replace', reason: null, base: null });
+    expect(planAction({ ...row('unstamped'), installed: null })).toEqual({ action: 'report', reason: 'no installed base', base: null });
     expect(planAction(row('retired')).action).toBe('report');
     expect(planAction(row('unknown-scheme')).action).toBe('report');
   });
 
-  it('reports a diverged b1 file, which cannot be merged', () => {
-    expect(planAction(row('diverged', 'b1:1111'))).toEqual({ action: 'report', reason: 'built file, which cannot be merged' });
+  it('reports a diverged c1 file with its base, verified or not, until merging is built', () => {
+    expect(planAction(row('diverged'), { text: 'base' })).toEqual({ action: 'report', reason: 'installed base verified; merging is not built yet', base: 'verified' });
+    expect(planAction(row('diverged'), { reason: 'why' })).toEqual({ action: 'report', reason: 'no installed base: why', base: 'unavailable' });
+  });
+
+  it('reports a diverged b1 file, which cannot be merged, without a base', () => {
+    expect(planAction(row('diverged', 'b1'))).toEqual({ action: 'report', reason: 'built file, which cannot be merged', base: null });
   });
 });
 
@@ -104,7 +143,7 @@ describe('update', () => {
         'item     file                           state      action',
         'dialog   src/components/ui/dialog.tsx   behind     replace',
         'lib      src/lib/component.ts           unstamped  report   no installed base',
-        'sidebar  src/components/ui/sidebar.tsx  diverged   report   no installed base',
+        'sidebar  src/components/ui/sidebar.tsx  diverged   report   installed base verified; merging is not built yet',
         '',
         'apply    npx ultima-design update --yes',
         '',
@@ -253,5 +292,65 @@ describe('update', () => {
     const { root } = await fixture();
     expect((await run(['update', '--rollback', '--yes', '--cwd', root])).code).toBe(2);
     expect((await run(['update', '--rollback', 'a', 'b', '--cwd', root])).code).toBe(2);
+  });
+});
+
+/** A loopback port nothing listens on, so a request to it is refused. */
+const CLOSED = await new Promise<number>((closed) => {
+  const server = createServer().listen(0, '127.0.0.1', () => {
+    const { port } = server.address() as AddressInfo;
+    server.close(() => closed(port));
+  });
+});
+
+describe('installed base', () => {
+  async function sidebar(options: Parameters<typeof fixture>[0], raw?: (fixtureRaw: string) => string) {
+    const built = await fixture(options);
+    const result = (await update(built.root, ['sidebar'], { raw: raw?.(built.raw) })) as UpdateReport;
+    return { row: result.plan.files.find(({ item }) => item === 'sidebar'), requests: built.requests };
+  }
+
+  it('verifies a diverged c1 file against the authored source the raw host serves, with one request', async () => {
+    const { root, requests } = await fixture();
+    const { plan } = (await update(root, [], {})) as UpdateReport;
+    expect(plan.files.map(({ item, action, base }) => [item, action, base])).toEqual([
+      ['dialog', 'replace', null],
+      ['lib', 'report', null],
+      ['sidebar', 'report', 'verified'],
+    ]);
+    expect(requests).toEqual([`/raw/${SIDEBAR}`]);
+  });
+
+  it('falls back to the built-in address and the authored layout for a catalogue served before the source keys', async () => {
+    const { row, requests } = await sidebar({ source: 'older' }, (raw) => raw);
+    expect(row).toMatchObject({ action: 'report', base: 'verified' });
+    expect(requests).toEqual([`/raw/${SIDEBAR}`]);
+  });
+
+  it.each([
+    ['a served base whose hash differs', { raw: { [SIDEBAR]: authored('Sidebar', 'two') } }, undefined, /^no installed base: packages\/ui\/src\/sidebar\.tsx at aaaaaaaaaaaa rebuilds to c1:[0-9a-f]{16}, not the stamp's c1:[0-9a-f]{16}$/],
+    ['a 404', { raw: {} }, undefined, /^no installed base: http:\/\/127\.0\.0\.1:\d+\/raw\/aaaaaaaaaaaa\/packages\/ui\/src\/sidebar\.tsx answered 404, so the file is not in the repository at that revision$/],
+    ['a network error', { source: 'older' as const }, () => `http://127.0.0.1:${CLOSED}/{revision}/{path}`, /^no installed base: http:\/\/127\.0\.0\.1:\d+\/aaaaaaaaaaaa\/packages\/ui\/src\/sidebar\.tsx could not be fetched: ECONNREFUSED$/],
+    ['a local revision', { sidebarRevision: 'local' }, undefined, /^no installed base: installed from a build outside a git checkout \(revision local\)$/],
+    ['a registry that names no source', { source: 'none' as const }, undefined, /^no installed base: the registry names no source repository$/],
+    ['a source that imports a barrel', { raw: { [SIDEBAR]: `import { Spinner } from '@ultima/ui';\n${authored('Sidebar', 'one')}` } }, undefined, /^no installed base: packages\/ui\/src\/sidebar\.tsx at aaaaaaaaaaaa does not rebuild: .*imports "@ultima\/ui", a barrel/],
+  ])('reports %s with its own reason, and the run still completes', async (_, options, raw, reason) => {
+    const { row } = await sidebar(options, raw);
+    expect(row).toMatchObject({ action: 'report', base: 'unavailable' });
+    expect(row?.reason).toMatch(reason);
+  });
+
+  it('never fetches a base for a diverged b1 file', async () => {
+    const body = (label: string) => `export const ultima = "${label}";\n`;
+    const served = await serve([{ name: 'ultima', file: 'ultima.js', source: body('two'), type: 'registry:lib', scheme: 'b1' }]);
+    const root = project({
+      'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': served.registry } }),
+      'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
+      'src/lib/ultima.js': withStamp(body('three'), stampLine('ultima', OLD, await contentHash(body('one'), 'b1'), 'ts')),
+    });
+    const result = await run(['update', '--cwd', root]);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('ultima  src/lib/ultima.js  diverged  report  built file, which cannot be merged\n');
+    expect(served.requests).toEqual([]);
   });
 });

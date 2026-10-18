@@ -11,9 +11,11 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { markdownGuidance, publishGuidance } from './markdown-guidance.ts';
-import { BASE_THEME, BASE_THEME_MARKER } from '../packages/cli/src/base-theme.ts';
+import { BASE_THEME } from '../packages/cli/src/base-theme.ts';
+import { rewriteImports, withBaseThemeMarker } from '../packages/cli/src/rebuild.ts';
 import {
   REGISTRY_FORMAT,
+  SOURCE,
   catalogueRevision,
   contentHash,
   readStamp,
@@ -30,7 +32,7 @@ import { SHADCN } from '../packages/cli/src/shadcn.ts';
 import { formatDiagnostics, loadCatalogue } from './catalogue/model.ts';
 import { registryUrl } from './catalogue/projections.ts';
 import { sourcesFault } from './catalogue/served-sources.ts';
-import { type StagedSource, registryPlan, stagedSources, stagedSpecifier } from './catalogue/staging.ts';
+import { type StagedSource, registryPlan, stagedSources } from './catalogue/staging.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -47,12 +49,6 @@ const ELEMENTS_SRC = join(root, 'packages/elements/src');
 const ELEMENTS_PUBLIC = join(PUBLIC_DIR, 'elements');
 
 const HOMEPAGE = 'https://ultima.systems';
-
-/** Where `update` reads an item's authored source at a stamp's revision: Update, The installed base. */
-const SOURCE = {
-  repository: 'https://github.com/frankieramirez/ultima',
-  raw: 'https://raw.githubusercontent.com/frankieramirez/ultima/{revision}/{path}',
-};
 
 type RegistryFile = { path: string; type: string; target?: string };
 
@@ -124,7 +120,7 @@ const descriptions = new Map<string, Description>([
 ]);
 
 async function stamped(item: string, text: string, scheme: 'c1' | 'b1') {
-  if (item === 'tokens' || item === 'tokens-css') text = withStamp(text, scheme === 'c1' ? `// ${BASE_THEME_MARKER}` : `/* ${BASE_THEME_MARKER} */`);
+  text = withBaseThemeMarker(item, text, scheme === 'c1' ? 'ts' : 'css');
   const hash = await contentHash(text, scheme);
   return { hash, text: withStamp(text, stampLine(item, revision, hash, scheme === 'c1' ? 'ts' : 'css')) };
 }
@@ -151,23 +147,6 @@ async function stage(sources: StagedSource[]): Promise<Staged[]> {
     staged.push({ name, file: { path: to, type, ...(target && { target }), hash, authored: path }, source });
   }
   return staged;
-}
-
-/**
- * The workspace specifiers Ultima authors against become the `@/registry` ones
- * shadcn rewrites to the consumer's aliases on install.
- */
-function rewriteSpecifier(specifier: string, file: string): string {
-  const rewritten = stagedSpecifier(specifier);
-  if (rewritten === undefined) throw new Error(`${file} imports "${specifier}", a barrel that is never staged; import the module directly`);
-  return rewritten;
-}
-
-function rewriteImports(source: string, file: string): string {
-  return source.replace(
-    /(['"])(@ultima\/[^'"]*)\1/g,
-    (_match, quote: string, specifier: string) => `${quote}${rewriteSpecifier(specifier, file)}${quote}`,
-  );
 }
 
 const described = new Set<string>();
