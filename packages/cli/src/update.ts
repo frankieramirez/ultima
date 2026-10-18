@@ -90,8 +90,6 @@ export type UpdateReport = { plan: UpdatePlan; run: UpdateRun | null };
 export type UpdateOptions = {
   project?: string;
   yes?: boolean;
-  /** The raw URL template a catalogue served before the source keys falls back to: `SOURCE.raw`, or a test's loopback host. */
-  raw?: string;
   /** Plans a held base theme change by the file's state. Neither `yes` nor an applied plan implies it. */
   acceptBaseTheme?: boolean;
   /** The path of a plan `--plan --json` printed, to apply exactly as it was made. */
