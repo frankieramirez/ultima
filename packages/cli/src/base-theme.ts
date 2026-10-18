@@ -14,7 +14,7 @@ export const UNMARKED_NEUTRAL_HASHES = [
   'b1:a017b2da94928ac1',
 ];
 
-const MARKER = /^(?:\/\/ @ultima-base (\S+)|\/\* @ultima-base (\S+) \*\/)$/;
+export const MARKER = /^(?:\/\/ @ultima-base (\S+)|\/\* @ultima-base (\S+) \*\/)$/;
 
 /**
  * The base theme a `tokens` or `tokens-css` file holds: its `@ultima-base` marker, else Neutral when its stamp or
