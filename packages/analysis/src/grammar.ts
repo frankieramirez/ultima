@@ -497,7 +497,7 @@ set(
   'containIntrinsicSize',
 );
 set('radius', ...CORNERS.map((corner) => `border${corner}Radius`));
-set('border-width', 'outlineWidth', 'columnRuleWidth', ...SIDES.map((side) => `border${side}Width`));
+set('border-width', 'outlineWidth', 'columnRuleWidth', 'strokeWidth', ...SIDES.map((side) => `border${side}Width`));
 set('outline-offset', 'outlineOffset');
 set('border', 'border', 'outline', 'columnRule', ...SIDES.slice(1).map((side) => `border${side}`));
 set('shadow', 'boxShadow', 'textShadow');

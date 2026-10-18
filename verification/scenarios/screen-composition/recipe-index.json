@@ -5,7 +5,7 @@
   "intent": "The Recipes index lists each recipe descriptor exactly once, links its canonical component-page anchor, prints the registry install derived from its demos and, when it has engines, the npm command with their type packages, and never offers an install for the recipe itself.",
   "contract": "docs/spec/screen-composition.md#public-reading-path",
   "aliases": ["recipes page", "recipe index", "install commands", "engines", "llms.txt recipes"],
-  "items": ["carousel", "chart", "command-dialog", "data-table", "item", "kbd", "react-hook-form", "sheet", "typography"],
+  "items": ["carousel", "command-dialog", "data-table", "item", "kbd", "react-hook-form", "sheet", "typography"],
   "sources": ["apps/docs/src/routes/recipes.tsx"],
   "demos": [],
   "routes": [

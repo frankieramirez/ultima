@@ -89,6 +89,8 @@ A border answers one of four questions, and the question picks the token:
 
 **Two widths, chosen by purpose.** An edge that only decorates (a Card, a popup, a dialog, an Alert, a divider, a table rule) is `border.fine`, 0.5px. Browsers round a border to whole device pixels with a minimum of one, so 0.5px draws one crisp device pixel on a high-density screen and an ordinary 1px line on a standard one (measured in Chromium), which makes structure quieter on the screens that can show it without losing it on the ones that can't. An edge a person uses to find or operate a control (a field, a checkbox, a radio, a switch, the outline Button, a toggle) is `border.hairline`, 1px: halving it on a high-density screen halves how easy it is to see, whatever its contrast ratio. Marks drawn with a border, such as Spinner's ring and Input OTP's dash, keep 1px too, because they are glyphs rather than edges. Emphasis comes from a darker palette step, never a thicker line, because a thicker line changes the box size and reads as a different kind of thing. 2px is kept for the two things that mark one position: the focus outline, and the indicator under the current item (the selected tab's underline, Sidebar's active bar). Keeping 2px for them is part of what makes focus and the current item easy to find. Sidebar's bar is a `::before` border in `accent` on the current row's start edge, inset 8px top and bottom, beside the `accent-subtle` fill. Hover moves only the fill, and in a neutral theme both fills are grey, so the bar is what tells the current page from a hovered row. Never write a width between these values or compute one: `calc()` on a border width lands between device pixels.
 
+**A chart's rules are 1px strokes.** Gridlines, the axis baseline and tick marks are `border.hairline` strokes in `--ult-color-border`. They answer "where does this value fall?", the row-rule question, so they take the quiet color and stay out of the contrast gate: the caption and the data table carry every value. They take 1px rather than `border.fine` because an SVG stroke is not a border. The browser draws it where the scene puts it, often between device pixels, and never rounds it up to one, so a 0.5px stroke antialiases into a faint smear on a standard screen instead of the crisp line a 0.5px border draws.
+
 **Solid by default, dashed for "nothing here yet".** A dashed edge marks a placeholder: Empty, a drop zone, a slot to fill. It reads as incomplete on purpose, so it never appears on something that is already there. Ultima has no dotted borders.
 
 **A label's outline is decorative.** An outline Badge has no fill, so its edge draws the pill, but nobody operates a badge and its words carry the meaning, so the edge is `border.fine` in the tone's `<role>-border` (`border` for neutral) and is not gated. Every Badge variant draws the same 0.5px border, transparent where the fill is the edge, so the three variants are one size and can sit side by side in a row.
@@ -113,7 +115,7 @@ Corners are set by role, in `px` so they don't grow with the font size:
 
 | Role | Token | Value |
 | --- | --- | --- |
-| Marks: swatches, bars, indicator dots | `--ult-radius-xs` | 2px |
+| Marks: swatches, indicator dots | `--ult-radius-xs` | 2px |
 | Small insets: inline code, popup items, chips, Tooltip, Checkbox | `--ult-radius-sm` | 4px |
 | Controls: Button, Input, Select trigger | `--ult-radius-md` | 6px |
 | Surfaces: popups, Alert, the Code block | `--ult-radius-lg` | 8px |
@@ -125,6 +127,8 @@ Corners are set by role, in `px` so they don't grow with the font size:
 **Nested corners are concentric.** An inner corner equals the outer corner minus the gap between them: a popup item's 4px sits inside the popup's 8px with a 4px inset (8 − 4 = 4). Equal radii nested inside each other look pinched at the corners, because the gap between the curves is wider than the gap along the sides. When you put a rounded thing inside another, check the arithmetic.
 
 **An edge flush with another edge is square.** A Drawer squares the corners on the side that meets the viewport. Button Group items square the corners where they join, and keep the outer ones. Rounding an edge that touches something else leaves a notch.
+
+**A chart's bars are square.** A bar stands on the baseline, so its base is a flush edge, and a stacked segment is flush at both ends. The free end is the one the reader measures against a gridline, and a rounded end has no single line to read: it shows the value lower by the radius at its corners. An SVG `rect` rounds all four corners or none, so rounding only the free end would mean drawing every bar as a path. Square corners keep the mark exact and the renderer to the scene's own `rect`.
 
 **Never compute from a radius step.** Shape presets in Theme Studio change every radius value, so `calc()` on a radius token breaks under a consumer's theme. Pick the role's token.
 
@@ -195,7 +199,7 @@ A theme may drop the blur and keep the wash, so the scrim never depends on blur 
 
 **Every gap, padding and size comes from the `space` scale.** It runs in 2px steps at the bottom where component internals live and doubles at the top where page rhythm lives (2, 4, 6, 8, 12, 16, 20, 24, 32, 40, 48, 64). Control heights are steps 9, 10 and 11 (32, 40, 48px). The scale is themeable through Theme Studio's Density control, so a literal breaks density.
 
-**Space inside a group is smaller than space between groups.** This is the proximity rule, and it does most of the work borders would otherwise do. Each level out takes a bigger step: a Card's title and description sit 6px apart (step 3), its parts sit inside 24px of padding (step 8), and Cards in a grid need more than that between them.
+**Space inside a group is smaller than space between groups.** This is the proximity rule, and it does most of the work borders would otherwise do. Each level out takes a bigger step: a Card's title and description sit 6px apart (step 3), as do a Field's label and its control, and a Chart's caption and its plot, its parts sit inside 24px of padding (step 8), and Cards in a grid need more than that between them.
 
 **Padding grows with the container,** in step with the corner:
 
@@ -273,12 +277,13 @@ The specification's [Type](https://github.com/frankieramirez/ultima/blob/main/do
 | Title of a container that holds a task | 18px (`text-6`) | tight | semibold | Card, Dialog, Alert Dialog, Drawer |
 | Title of a smaller surface or a state | 16px (`text-5`) | tight | semibold | Popover, Empty |
 | Title of a message | 14px | snug | semibold | Alert, Toast |
-| Field label, legend | 14px | snug | medium | Field, Fieldset, Select, Slider, Meter, Progress |
+| Field label, legend | 14px | snug | medium | Field, Fieldset, Select, Slider, Meter, Progress, Chart's caption |
 | Text on a control | 14px; 13px (`text-3`) at `sm`, 16px at `lg` | none | medium | Button, Tab, Toggle |
 | Value in a field | 14px; 16px at `lg` and under a coarse pointer | none | regular | Input, Select, Combobox |
 | Item in a menu or list | 14px | normal | regular | Select, Dropdown Menu, Command, Sidebar |
 | Description, body inside a component | 14px | normal | regular | Card, Dialog, Alert |
 | Small print | 12px (`text-2`) | snug | regular | Field description and error, Tooltip |
+| Label in a chart: tick values, category names, axis titles | 13px (`text-3`) | none, one line each | regular | Chart |
 | Part label inside a control | 12px | none | medium | Badge, Calendar's weekdays, Color Field's channels |
 | Change tagged onto a figure | 12px, tabular | snug | medium | Stat's delta |
 | Summary row | 14px | snug | medium | Table's foot |
@@ -302,6 +307,8 @@ A title steps up in size as its container grows, in step with the padding and co
 **A fixed height holds one line.** A control with a fixed height (Button, Input, Toggle) keeps its text on one line with `white-space: nowrap`. Anything whose text can wrap takes a minimum height instead (Textarea, Tabs, Select items). A reader may raise line height to 1.5 and widen letter and word spacing ([WCAG 1.4.12 Text Spacing](https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html)), and wrapped text inside a fixed height would be clipped.
 
 **Tracking follows size.** Text from 12px to 20px keeps the face's own spacing (`tracking-normal`). From 24px up, use `tracking-tight`, because a face spaced for text sizes looks loose at display sizes. `tighter` and `tightest` are for the docs' display headings from 36px up. Uppercase micro-labels take `tracking-wide`: capitals set at text spacing look cramped.
+
+**A chart's labels are 13px.** They sit one step under component text because they annotate the marks rather than name anything, and one step over small print because a tick value is data the reader reads off the chart, not help beside it.
 
 **Mono is for characters a reader compares or copies one at a time:** code, hex values, API keys and identifiers. Everything else is sans, a keyboard shortcut included: it is read as one chord at a glance.
 

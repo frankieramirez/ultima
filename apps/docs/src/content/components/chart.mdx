@@ -1,0 +1,50 @@
+import { Demo } from '../../demo';
+import Bar from '../../demos/chart/bar';
+import barSource from '../../demos/chart/bar?raw';
+
+# Chart
+
+A figure that draws a [TanStack Charts](https://tanstack.com/charts) definition as SVG painted with Ultima's tokens, named by its caption. You write the chart in TanStack's grammar; `Chart` compiles it to a scene and draws the scene.
+
+## Install
+
+```bash
+npx shadcn@4.21.4 add @ultima/chart
+```
+
+The item imports `@tanstack/charts`, so the install adds it to your dependencies. It is the one Ultima item that carries an engine, because a chart is the engine's output.
+
+## Bar chart
+
+`Chart.Root` takes a `definition`, which you build with `defineChart({ marks })` from `@tanstack/charts/scene` and a mark and scale from their own entries: `barY` from `@tanstack/charts/bar`, `scaleBand` from `@tanstack/charts/scales/band` and `scaleLinear` from `@tanstack/charts/scales/linear`. Ultima neither wraps nor re-exports the grammar, so TanStack's reference is the reference for marks, scales, axes and tick formats. Keep the definition stable between renders, at module scope or in a `useMemo`: `Chart.Root` compiles it again whenever it changes.
+
+Give the root exactly one of `height`, in CSS pixels, or `aspectRatio`, width over height. Neither has a default, and the type accepts one or the other, never both. The plot fills the width it is given, and the root compiles the definition again at the plot's measured size whenever that size changes.
+
+<Demo component={Bar} source={barSource} fill />
+
+## What Chart draws, and what it ignores
+
+`Chart.Plot` walks the compiled scene and draws its `group`, `rule`, `rect` and `label` nodes as SVG elements painted from tokens. Bars take `--ult-color-series-1` through `-6` by their group's position in the color domain, and a seventh group starts again at series 1, so fold small groups into an "Other" group rather than let colors repeat. Gridlines and the axis baseline take `--ult-color-border`. Tick labels take `--ult-color-text-subtle`, and axis titles and band labels `--ult-color-text-muted`, all at `--ult-text-3`. Labels are measured with the plot's own font, so the scene's layout matches the text you see.
+
+The scene's own paint strings and `ts-chart` class names never reach the page, and no `--ts-chart-*` variable is set or read. The definition's `theme`, `tooltip`, `keyboard`, `focusRing` and `svgAnimation` options are ignored, because Chart owns each of them.
+
+A chart whose groups carry meaning, such as a series that should read as danger, re-points `--ult-color-series-<n>` on its `Root` with a `stylex.createTheme` passed through `style`.
+
+## Props
+
+| Part | Prop | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `Root` | `definition` | `ChartDefinition` | — | Required. A `defineChart({ marks })` result. |
+| `Root` | `height` | `number` | — | CSS pixels. Exactly one of `height` or `aspectRatio`, written inline on the plot as its one size declaration. |
+| `Root` | `aspectRatio` | `number` | — | Width over height. Exactly one of `height` or `aspectRatio`. |
+| `Root`, `Caption` | `render` | `ReactElement \| function` | — | Changes the part's element from its default `figure` or `figcaption`. |
+| Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+
+`Chart.Plot` renders a fixed `svg` and takes no `render`.
+
+## Accessibility
+
+- **Role and name.** `Chart.Root` is a `figure` named by `Chart.Caption`, which is required. `Chart.Plot` is an `svg` with `role="img"` and `aria-roledescription="chart"`, labelled by the same caption through `aria-labelledby`.
+- **The data equivalent.** Pair every chart with a `Table` holding the same rows, beside it or in a `Collapsible` disclosure. A visually hidden table is not an equivalent.
+- **Color alone.** The caption names the chart and the table carries every value, so no reading depends on a bar's color.
+- **Motion.** Nothing animates, and the definition's `svgAnimation` is ignored.

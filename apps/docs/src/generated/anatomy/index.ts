@@ -98,6 +98,12 @@ export {
   type CardFooterProps,
 } from './card';
 export {
+  Chart,
+  type ChartRootProps,
+  type ChartCaptionProps,
+  type ChartPlotProps,
+} from './chart';
+export {
   Checkbox,
   type CheckboxRootProps,
   type CheckboxIndicatorProps,

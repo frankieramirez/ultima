@@ -9,6 +9,7 @@ import type { ComponentType } from 'react';
 import ButtonGroupPreview from './demos/button-group/basic';
 import CalendarPreview from './demos/calendar/basic';
 import CardPreview from './demos/card/item';
+import ChartPreview from './demos/chart/bar';
 import CheckboxPreview from './demos/checkbox/field-group';
 import CodePreview from './demos/code/inline';
 import CollapsiblePreview from './demos/collapsible/basic';
@@ -45,7 +46,7 @@ import SliderPreview from './demos/slider/in-field';
 import SpinnerPreview from './demos/spinner/inline';
 import StatPreview from './demos/stat/summary';
 import SwitchPreview from './demos/switch/labels';
-import TablePreview from './demos/table/chart';
+import TablePreview from './demos/table/report';
 import TabsPreview from './demos/tabs/variants';
 import TextareaPreview from './demos/textarea/field-states';
 import ToastPreview from './demos/toast/stacked';
@@ -58,6 +59,7 @@ const previews = new Map<string, ComponentType>([
   ['button-group', ButtonGroupPreview],
   ['calendar', CalendarPreview],
   ['card', CardPreview],
+  ['chart', ChartPreview],
   ['checkbox', CheckboxPreview],
   ['code', CodePreview],
   ['collapsible', CollapsiblePreview],

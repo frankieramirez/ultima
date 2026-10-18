@@ -19,6 +19,7 @@
     "@base-ui/react": "^1.8.0",
     "@internationalized/date": "^3.12.4",
     "@stylexjs/stylex": "^0.19.0",
+    "@tanstack/charts": "1.1.0",
     "@ultima/tokens": "workspace:*",
     "@zag-js/date-picker": "1.44.0",
     "@zag-js/react": "1.44.0",

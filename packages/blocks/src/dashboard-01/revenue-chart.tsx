@@ -1,13 +1,17 @@
 import * as stylex from '@stylexjs/stylex';
-import { color, space, text } from '@ultima/tokens/tokens.stylex';
+import { barY } from '@tanstack/charts/bar';
+import { scaleBand } from '@tanstack/charts/scales/band';
+import { scaleLinear } from '@tanstack/charts/scales/linear';
+import { defineChart } from '@tanstack/charts/scene';
+import { space } from '@ultima/tokens/tokens.stylex';
 import { Button } from '@ultima/ui/button';
 import { Card } from '@ultima/ui/card';
+import { Chart } from '@ultima/ui/chart';
 import { Collapsible } from '@ultima/ui/collapsible';
+import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
 import { Table } from '@ultima/ui/table';
 import { ToggleGroup } from '@ultima/ui/toggle-group';
-import { max } from 'd3-array';
-import { scaleBand, scaleLinear } from 'd3-scale';
-import { useId, useLayoutEffect, useRef, useState } from 'react';
+import { useId, useState } from 'react';
 
 type Period = 'day' | 'week' | 'month';
 
@@ -73,12 +77,24 @@ const series: Record<Period, Series> = {
 };
 
 const dollars = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+const compactDollars = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact' });
 
-const INITIAL_WIDTH = 640;
-const HEIGHT = 240;
-const MARGIN = { top: 8, right: 0, bottom: 24, left: 44 };
-const INNER_BOTTOM = HEIGHT - MARGIN.bottom;
-const LABEL_WIDTH = 44;
+/**
+ * Fourteen day labels don't fit side by side, and the engine's collision thinning keeps an uneven set,
+ * so the day window labels every other day.
+ */
+function revenueChart(rows: Series['rows'], stride = 1) {
+  const labelled = rows.filter((_, index) => index % stride === 0).map((row) => row.period);
+  return defineChart({
+    marks: [barY(rows, { x: 'period', y: 'revenue' })],
+    scales: {
+      x: { scale: () => scaleBand<string>().padding(0.25), axis: { ticks: { values: labelled } } },
+      y: { scale: scaleLinear, nice: true, grid: true, axis: { ticks: { count: 4, format: (value: number) => compactDollars.format(value) } } },
+    },
+  });
+}
+
+const definitions = { day: revenueChart(series.day.rows, 2), week: revenueChart(series.week.rows), month: revenueChart(series.month.rows) };
 
 const styles = stylex.create({
   head: {
@@ -96,28 +112,7 @@ const styles = stylex.create({
     marginBlockStart: space['--ult-space-6'],
   },
   figure: {
-    display: 'flex',
-    flexDirection: 'column',
     gap: space['--ult-space-5'],
-    margin: 0,
-  },
-  plot: {
-    display: 'block',
-    inlineSize: '100%',
-  },
-  mark: {
-    fill: color['--ult-color-accent'],
-  },
-  axis: {
-    stroke: color['--ult-color-border'],
-  },
-  tickLabel: {
-    fill: color['--ult-color-text-subtle'],
-    fontSize: text['--ult-text-2'],
-  },
-  bandLabel: {
-    fill: color['--ult-color-text-muted'],
-    fontSize: text['--ult-text-2'],
   },
   disclosure: {
     alignSelf: 'flex-start',
@@ -127,43 +122,11 @@ const styles = stylex.create({
   },
 });
 
-function labelStride(width: number, count: number) {
-  return Math.max(1, Math.ceil((count * LABEL_WIDTH) / (width - MARGIN.left - MARGIN.right)));
-}
-
-function usePlotWidth() {
-  const ref = useRef<SVGSVGElement>(null);
-  const [width, setWidth] = useState(INITIAL_WIDTH);
-  useLayoutEffect(() => {
-    const plot = ref.current;
-    if (!plot) return;
-    const observer = new ResizeObserver(([entry]) => {
-      if (entry && entry.contentRect.width > 0) setWidth(entry.contentRect.width);
-    });
-    observer.observe(plot);
-    return () => observer.disconnect();
-  }, []);
-  return [ref, width] as const;
-}
-
 export function RevenueChart() {
   const [period, setPeriod] = useState<Period>('day');
   const [open, setOpen] = useState(false);
-  const [plotRef, width] = usePlotWidth();
   const titleId = useId();
   const { subtitle, unit, rows } = series[period];
-
-  const x = scaleBand()
-    .domain(rows.map((row) => row.period))
-    .range([MARGIN.left, width - MARGIN.right])
-    .padding(0.25);
-  const y = scaleLinear()
-    .domain([0, max(rows, (row) => row.revenue) ?? 0])
-    .nice()
-    .range([INNER_BOTTOM, MARGIN.top]);
-  const ticks = y.ticks(4);
-  const tickLabel = y.tickFormat(4, '$~s');
-  const stride = labelStride(width, rows.length);
 
   return (
     <Card.Root render={<section aria-labelledby={titleId} />}>
@@ -193,29 +156,9 @@ export function RevenueChart() {
         </ToggleGroup.Root>
       </div>
       <Card.Body>
-        <figure aria-labelledby={titleId} {...stylex.props(styles.figure)}>
-          <svg ref={plotRef} aria-hidden="true" height={HEIGHT} viewBox={`0 0 ${width} ${HEIGHT}`} {...stylex.props(styles.plot)}>
-            {ticks.map((tick) => (
-              <text key={tick} textAnchor="end" x={MARGIN.left - 8} y={y(tick) + 4} {...stylex.props(styles.tickLabel)}>
-                {tickLabel(tick)}
-              </text>
-            ))}
-            {rows.map((row, index) => {
-              const left = x(row.period) ?? 0;
-              const top = y(row.revenue);
-              return (
-                <g key={row.period}>
-                  <rect height={INNER_BOTTOM - top} width={x.bandwidth()} x={left} y={top} {...stylex.props(styles.mark)} />
-                  {index % stride === 0 ? (
-                    <text textAnchor="middle" x={left + x.bandwidth() / 2} y={HEIGHT - 6} {...stylex.props(styles.bandLabel)}>
-                      {row.period}
-                    </text>
-                  ) : null}
-                </g>
-              );
-            })}
-            <line strokeWidth={1} x1={MARGIN.left} x2={width - MARGIN.right} y1={INNER_BOTTOM} y2={INNER_BOTTOM} {...stylex.props(styles.axis)} />
-          </svg>
+        <Chart.Root definition={definitions[period]} height={240} style={styles.figure}>
+          <Chart.Caption style={visuallyHidden}>Revenue</Chart.Caption>
+          <Chart.Plot />
           <Collapsible.Root open={open} onOpenChange={setOpen}>
             <Collapsible.Trigger render={<Button variant="ghost" size="sm" style={styles.disclosure} />}>
               {open ? 'Hide data' : 'Show data'}
@@ -240,7 +183,7 @@ export function RevenueChart() {
               </Table.Root>
             </Collapsible.Panel>
           </Collapsible.Root>
-        </figure>
+        </Chart.Root>
       </Card.Body>
     </Card.Root>
   );

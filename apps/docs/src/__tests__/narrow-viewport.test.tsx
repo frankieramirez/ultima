@@ -6,6 +6,7 @@ import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
 import MonthsCalendar from '../demos/calendar/months';
+import BarChart from '../demos/chart/bar';
 import AddonsInputGroup from '../demos/input-group/addons';
 import LinkedPages from '../demos/pagination/links';
 import PageWindow from '../demos/pagination/window';
@@ -13,7 +14,6 @@ import WindowSize from '../demos/pagination/window-size';
 import BasicScrollArea from '../demos/scroll-area/basic';
 import BothAxesScrollArea from '../demos/scroll-area/both-axes';
 import FadeScrollArea from '../demos/scroll-area/fade';
-import ChartRecipe from '../demos/table/chart';
 import DataTablePagination from '../demos/table/data-table-pagination';
 import { Prose } from '../prose';
 import { PalettePage } from '../routes/palette';
@@ -105,8 +105,8 @@ test('the calendar/months demo scrolls its two-month panel inside its figure', a
 });
 
 const wideDemos = [
+  { name: 'chart/bar', Demo: BarChart },
   { name: 'input-group/addons', Demo: AddonsInputGroup },
-  { name: 'table/chart', Demo: ChartRecipe },
   { name: 'table/data-table-pagination', Demo: DataTablePagination },
 ];
 

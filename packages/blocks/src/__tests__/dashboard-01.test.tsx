@@ -2,7 +2,6 @@ import { describe, expect, expectTypeOf, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import descriptor from '../../../../registry/metadata/block/dashboard-01.ts';
 import { Dashboard01 } from '../dashboard-01/dashboard-01';
 import { themeDocument, themes, viewports, violations } from './axe';
 
@@ -261,17 +260,15 @@ describe('4. the behavior the block wires', () => {
   });
 });
 
-test('5. the Chart recipe holds in place: the SVG is decoration, the Table holds the same rows, and the root resolves once', async () => {
+test("5. Chart's contract holds in place: the plot is named by its caption, the Table holds the same rows, and the outline query resolves once", async () => {
   const screen = await render(<Dashboard01 />);
 
-  for (const { root } of descriptor.recipes) {
-    expect(await screen.getByRole(root.role as 'figure', { name: root.name, exact: true }).all()).toHaveLength(1);
-  }
+  expect(await screen.getByRole('figure', { name: 'Revenue', exact: true }).all()).toHaveLength(1);
   const figure = screen.getByRole('figure', { name: 'Revenue', exact: true }).element();
   const svg = chart(screen);
   expect(figure.contains(svg)).toBe(true);
-  expect(svg.getAttribute('aria-hidden')).toBe('true');
-  expect(svg.getAttribute('role')).toBeNull();
+  await expect.element(screen.getByRole('img', { name: 'Revenue', exact: true })).toHaveAttribute('aria-roledescription', 'chart');
+  expect(svg.getAttribute('aria-hidden')).toBeNull();
 
   for (const period of ['Day', 'Week', 'Month']) {
     await userEvent.click(screen.getByRole('button', { name: period, exact: true }));
@@ -279,8 +276,8 @@ test('5. the Chart recipe holds in place: the SVG is decoration, the Table holds
     const table = figure.querySelector('table') as HTMLTableElement;
     expect(table).not.toBeNull();
     const revenues = texts(table.querySelectorAll('tbody tr td:nth-child(2)')).map((cell) => Number(cell.replace(/[$,]/g, '')));
+    await expect.poll(() => svg.querySelectorAll('rect').length).toBe(revenues.length);
     const heights = [...svg.querySelectorAll('rect')].map((rect) => Number(rect.getAttribute('height')));
-    expect(heights).toHaveLength(revenues.length);
     const pixelsPerDollar = (heights[0] as number) / (revenues[0] as number);
     heights.forEach((height, index) => expect(height).toBeCloseTo((revenues[index] as number) * pixelsPerDollar, 6));
   }

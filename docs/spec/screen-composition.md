@@ -85,7 +85,7 @@ For the block path:
 npx shadcn@4.21.4 add @ultima/settings-01
 ```
 
-The default block entry import is `import { Settings01 } from '@/components/settings-01/settings-01'`; resolve its destination from the configured components alias and its exported symbol from the descriptor. Derive commands for every recipe from its dependencies; a reader following Chart, Data Table or React Hook Form must also see the relevant npm engine install.
+The default block entry import is `import { Settings01 } from '@/components/settings-01/settings-01'`; resolve its destination from the configured components alias and its exported symbol from the descriptor. Derive commands for every recipe from its dependencies; a reader following Carousel, Data Table or React Hook Form must also see the relevant npm engine install.
 
 The consumer skill at `packages/cli/skill/ultima-design/SKILL.md` stays a pointer: fetch the hosted guide, read the product's theme guidance, choose a screen/recipe/block, inspect installed items, and run the CLI checks. [Product theme discovery](https://github.com/frankieramirez/ultima/issues/727) owns the local theme discovery order. The guide reads existing consumer-owned `DESIGN.md` where available and preserves the product brand. It neither rewrites that document nor treats the docs' `site` theme as a consumer default.
 
