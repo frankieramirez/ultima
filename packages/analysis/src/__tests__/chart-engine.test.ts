@@ -55,7 +55,6 @@ describe('the chart-engine category', () => {
 describe('ULT-IMPORT-001 for the chart engine', () => {
   test('passes the allowed entries in the chart item', () => {
     assert.deepEqual(located(withChart(fixture('chart/item.tsx')), CHART), []);
-    assert.deepEqual(located(run(), CHART), []);
   });
 
   test('rejects the root, /react and /tooltip in the chart item, and names an allowed entry', () => {

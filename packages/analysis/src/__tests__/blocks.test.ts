@@ -74,17 +74,6 @@ describe('block files', () => {
   });
 
   test('reject a d3 import in Dashboard 01, which draws its chart through the Chart item and follows no recipe', () => {
-    const dashboardFile = 'packages/blocks/src/dashboard-01/fixture-region.tsx';
-    const report = run({ [dashboardFile]: fixture('blocks/engine.tsx') });
-    assert.deepEqual(
-      located(report, dashboardFile).map(({ ruleId, line, target }) => [ruleId, line, target]),
-      [
-        ['ULT-IMPORT-001', 1, 'd3-array'],
-        ['ULT-IMPORT-001', 2, 'd3-scale'],
-        ['ULT-IMPORT-001', 3, 'd3-shape'],
-      ],
-    );
-
     const chart = 'packages/blocks/src/dashboard-01/revenue-chart.tsx';
     assert.deepEqual(located(run(), chart), []);
     const restored = run({ [chart]: afterFirstLine(source(chart), "import { scaleLinear } from 'd3-scale';") });

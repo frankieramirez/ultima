@@ -458,7 +458,7 @@ export const components: ComponentEntry[] = [
     "item": "chart",
     "number": "012",
     "group": "data-display",
-    "description": "A figure that draws a TanStack Charts definition as SVG painted with tokens, named by its caption.",
+    "description": "A figure that draws a TanStack Charts definition as SVG painted with tokens.",
     "release": "v0.2",
     "primitive": null
   },

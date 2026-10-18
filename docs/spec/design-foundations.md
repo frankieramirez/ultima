@@ -294,7 +294,7 @@ A title steps up in size as its container grows, in step with the padding and co
 
 **Tracking follows size.** Text from 12px to 20px keeps the face's own spacing (`tracking-normal`). From 24px up, use `tracking-tight`, because a face spaced for text sizes looks loose at display sizes. `tighter` and `tightest` are for the docs' display headings from 36px up. Uppercase micro-labels take `tracking-wide`: capitals set at text spacing look cramped.
 
-**A chart's labels are measured in the font they paint in.** Chart sets `text-3` and regular weight on its plot and lays out the scene with that computed font, so a tick label's box is the box of the text the reader sees and the margins TanStack Charts reserves for it fit. They sit one step under component text because they annotate the marks rather than name anything, and one step over small print because a tick value is data the reader reads off the chart, not help beside it.
+**A chart's labels are 13px.** They sit one step under component text because they annotate the marks rather than name anything, and one step over small print because a tick value is data the reader reads off the chart, not help beside it.
 
 **Mono is for characters a reader compares or copies one at a time:** code, hex values, API keys and identifiers. Everything else is sans, a keyboard shortcut included: it is read as one chord at a glance.
 

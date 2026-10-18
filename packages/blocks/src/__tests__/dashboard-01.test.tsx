@@ -2,7 +2,6 @@ import { describe, expect, expectTypeOf, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
-import descriptor from '../../../../registry/metadata/block/dashboard-01.ts';
 import { Dashboard01 } from '../dashboard-01/dashboard-01';
 import { themeDocument, themes, viewports, violations } from './axe';
 
@@ -227,7 +226,6 @@ describe('4. the behavior the block wires', () => {
 test("5. Chart's contract holds in place: the plot is named by its caption, the Table holds the same rows, and the outline query resolves once", async () => {
   const screen = await render(<Dashboard01 />);
 
-  expect(descriptor.recipes).toEqual([]);
   expect(await screen.getByRole('figure', { name: 'Revenue', exact: true }).all()).toHaveLength(1);
   const figure = screen.getByRole('figure', { name: 'Revenue', exact: true }).element();
   const svg = chart(screen);

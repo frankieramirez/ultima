@@ -90,10 +90,9 @@ type ChartPlotProps = PartProps<Omit<ComponentProps<'svg'>, 'children'>>;
 function measurer(plot: SVGSVGElement): ChartLayoutOptions {
   const computed = getComputedStyle(plot);
   const context = plot.ownerDocument.createElement('canvas').getContext('2d');
-  if (!context) return { typography: { fontFamily: computed.fontFamily } };
+  if (!context) return {};
   context.font = `${computed.fontStyle} ${computed.fontWeight} ${computed.fontSize} ${computed.fontFamily}`;
   return {
-    typography: { fontFamily: computed.fontFamily },
     measureText(label, options) {
       context.textAlign = options.anchor === 'middle' ? 'center' : options.anchor;
       context.textBaseline = options.baseline === 'auto' ? 'alphabetic' : options.baseline;
@@ -158,29 +157,16 @@ function labelPaint(scene: ChartScene, label: SceneLabel) {
  * which follows the domain: the color string is matched, never painted.
  */
 function markPaint(scene: ChartScene, mark: SceneRect) {
-  const point = mark.interaction?.point ?? mark.interaction?.points?.[0] ?? mark.pointOwner;
+  const point = mark.interaction?.point;
   const position = point ? scene.colors.range.indexOf(point.color) : -1;
   return SERIES[Math.max(position, 0) % SERIES.length];
 }
 
 /** Draws one scene node from its geometry alone: the scene's paint, class names and focus layers are not Ultima's. */
-function draw(scene: ChartScene, node: SceneNode, clipPrefix: string): ReactNode {
+function draw(scene: ChartScene, node: SceneNode): ReactNode {
   switch (node.kind) {
-    case 'group': {
-      if (node.focus) return null;
-      const clipId = node.clip && `${clipPrefix}${node.key}`;
-      const translate = node.translateX || node.translateY ? `translate(${node.translateX ?? 0} ${node.translateY ?? 0})` : undefined;
-      return (
-        <g key={node.key} clipPath={clipId && `url(#${CSS.escape(clipId)})`} transform={translate}>
-          {node.clip ? (
-            <clipPath id={clipId}>
-              <rect height={node.clip.height} width={node.clip.width} x={node.clip.x} y={node.clip.y} />
-            </clipPath>
-          ) : null}
-          {node.children.map((child) => draw(scene, child, clipPrefix))}
-        </g>
-      );
-    }
+    case 'group':
+      return node.focus ? null : <g key={node.key}>{node.children.map((child) => draw(scene, child))}</g>;
     case 'rule':
       return <line key={node.key} x1={node.x1} x2={node.x2} y1={node.y1} y2={node.y2} {...stylex.props(styles.rule)} />;
     case 'rect':
@@ -214,7 +200,6 @@ function Plot({ ref, style, ...props }: ChartPlotProps) {
     },
     [ref, setPlot],
   );
-  const clipPrefix = useId();
   const { style: injected, ...stylexProps } = stylex.props(styles.plot, style);
   return (
     <svg
@@ -226,7 +211,7 @@ function Plot({ ref, style, ...props }: ChartPlotProps) {
       {...stylexProps}
       style={{ ...injected, aspectRatio, height }}
     >
-      {scene?.nodes.map((node) => draw(scene, node, clipPrefix))}
+      {scene?.nodes.map((node) => draw(scene, node))}
     </svg>
   );
 }

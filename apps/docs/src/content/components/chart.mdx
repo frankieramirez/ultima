@@ -20,15 +20,13 @@ The item imports `@tanstack/charts`, so the install adds it to your dependencies
 
 Give the root exactly one of `height`, in CSS pixels, or `aspectRatio`, width over height. Neither has a default, and the type accepts one or the other, never both. The plot fills the width it is given, and the root compiles the definition again at the plot's measured size whenever that size changes.
 
-Every chart sits beside a `Table` holding the same rows, or holds one in a `Collapsible` disclosure. The plot is how a reader sees the shape, and the table is where they read exact values.
-
 <Demo component={Bar} source={barSource} fill />
 
 ## What Chart draws, and what it ignores
 
 `Chart.Plot` walks the compiled scene and draws its `group`, `rule`, `rect` and `label` nodes as SVG elements painted from tokens. Bars take `--ult-color-series-1` through `-6` by their group's position in the color domain, and a seventh group starts again at series 1, so fold small groups into an "Other" group rather than let colors repeat. Gridlines and the axis baseline take `--ult-color-border`. Tick labels take `--ult-color-text-subtle`, and axis titles and band labels `--ult-color-text-muted`, all at `--ult-text-3`. Labels are measured with the plot's own font, so the scene's layout matches the text you see.
 
-The scene's own paint strings and `ts-chart` class names never reach the page, and no `--ts-chart-*` variable is set or read. The definition's `theme`, `tooltip`, `keyboard`, `focusRing` and `svgAnimation` options are ignored, because Chart owns each of them. Nothing animates.
+The scene's own paint strings and `ts-chart` class names never reach the page, and no `--ts-chart-*` variable is set or read. The definition's `theme`, `tooltip`, `keyboard`, `focusRing` and `svgAnimation` options are ignored, because Chart owns each of them.
 
 A chart whose groups carry meaning, such as a series that should read as danger, re-points `--ult-color-series-<n>` on its `Root` with a `stylex.createTheme` passed through `style`.
 

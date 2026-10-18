@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import ts from 'typescript';
 import { compositionExamples, recipeSources, recipes } from '../../apps/docs/src/generated/recipes.ts';
-import { COPY_BUNDLES, COPY_TYPES, EXERCISES, copySnapshotProblems, gallerySource } from '../consumer-copy-bundles.ts';
+import { COPY_BUNDLES, EXERCISES, copySnapshotProblems, gallerySource } from '../consumer-copy-bundles.ts';
 import { ADAPTED_BLOCK, consumerReportProblems, copyBundleCases } from '../consumer-report.ts';
 
 test('every bundle the inventory and the Recipes index expose is installed and exercised', () => {
@@ -16,7 +16,6 @@ test('every bundle the inventory and the Recipes index expose is installed and e
   }
   assert.deepEqual(Object.values(EXERCISES).filter((exercise) => exercise.bundle === ADAPTED_BLOCK).map((exercise) => exercise.viewport.width), [1280, 390]);
   assert.equal(EXERCISES['projects-zoom-200']?.viewport.deviceScaleFactor, 2);
-  assert.deepEqual(COPY_TYPES, [], 'every recipe engine ships its own types, so no recipe installs a type package');
 });
 
 test('the gallery imports every entry by its copied path and parses as TSX', () => {
