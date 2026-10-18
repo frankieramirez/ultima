@@ -91,6 +91,8 @@ A border answers one of four questions, and the question picks the token:
 
 **A chart's rules are 1px strokes.** Gridlines, the axis baseline and tick marks are `border.hairline` strokes in `--ult-color-border`. They answer "where does this value fall?", the row-rule question, so they take the quiet color and stay out of the contrast gate: the caption and the data table carry every value. They take 1px rather than `border.fine` because an SVG stroke is not a border. The browser draws it where the scene puts it, often between device pixels, and never rounds it up to one, so a 0.5px stroke antialiases into a faint smear on a standard screen instead of the crisp line a 0.5px border draws.
 
+**A chart's line is a 2px stroke**, `border.focus`'s width, in its series color. The line is the data, so its color is a mark gated at 3:1 ([WCAG 1.4.11](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)), and the scene puts it wherever the value falls, mostly between device pixels. A 1px stroke there spreads over two partly lit rows on a standard screen and shows a lighter color than the gate checked. A 2px stroke always covers at least one whole device pixel at full color. shadcn/ui's and Mantine's line charts draw 2px too. The 2px kept for focus and the current item is an edge width, and a line is a mark inside the plot rather than an edge around a control, so the two never read as each other. The line joins round, because a miter at a sharp turn overshoots its data point, and a round join stays within half the stroke's width of it.
+
 **Solid by default, dashed for "nothing here yet".** A dashed edge marks a placeholder: Empty, a drop zone, a slot to fill. It reads as incomplete on purpose, so it never appears on something that is already there. Ultima has no dotted borders.
 
 **A label's outline is decorative.** An outline Badge has no fill, so its edge draws the pill, but nobody operates a badge and its words carry the meaning, so the edge is `border.fine` in the tone's `<role>-border` (`border` for neutral) and is not gated. Every Badge variant draws the same 0.5px border, transparent where the fill is the edge, so the three variants are one size and can sit side by side in a row.
@@ -147,6 +149,8 @@ Don't use opacity for:
 - **Borders.** A translucent border doubles up where two surfaces meet and disappears on busy content.
 
 The rule underneath all four: every color a reader sees should be a token the contrast gate has checked. Opacity produces colors the gate never saw.
+
+**A chart's area fills solid.** TanStack's default is a 20% wash of the series color, which the gate never checked, and a band is a mark the reader has to find. A stacked band rests on the one below it, so nothing behind it needs to show through. Areas that would overlap, series compared against one baseline rather than added up, are drawn as lines instead.
 
 ## Blur
 
@@ -219,6 +223,10 @@ Padding smaller than the corner lets content crowd the curve. Padding much bigge
 
 **Adjust for what the eye sees.** An icon is lighter than a word, so the side of a Button that holds an icon takes one step less padding (16 → 12px) to look balanced. A Badge holding a leading icon or status dot does the same (8 → 6px), with the mark 4px from its label, the badge's block padding, so the mark groups with the word rather than the edge. A status dot is the label's x-height (6px on 12px text), so it reads as a glyph in the line. It takes the tone's solid step, or the label's ink on a solid fill, where the solid step would vanish. A field holding chips drops its start padding to the gap above the chips, so the first chip sits evenly in the corner. Uppercase micro-labels get wide tracking because capitals set tight look cramped.
 
+**A chart's dot is the size the scene gives it**, never a space step, the way a bar's width is. The dot mark's `r` channel can carry a value, as in a bubble chart, so a token radius would redraw the data. A line's points come out at a 2.5px radius, 5px across, two and a half times the 2px line, which is enough to read as a point on it.
+
+**A legend swatch is an 8px square** (space step 4) with the mark corner, `radius-xs`. Hue is harder to tell apart over a small field, so it is one step larger than the 6px status dot, which only has to read as present. shadcn/ui's legend draws the same 8px. It leads its label by 8px, the gap a leading icon takes, and legend items sit 16px apart (step 6), twice that, so each swatch reads with its own label. Wrapped rows sit 4px apart (step 2), closer than the items, so the legend reads as one block.
+
 **Components carry no outer margin.** A component sets `margin: 0` on its root, and the layout around it sets the space between components with `gap`. Space between things belongs to whatever contains them. That keeps a component reusable in any layout.
 
 **Targets are big enough to hit.** Buttons, fields and triggers are at least 32px tall. Anything interactive meets [WCAG 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html): 24 by 24px, or enough room around it that a 24px circle centered on it touches no other target. A small mark such as a 16px Checkbox gets its target from its label and spacing, never by drawing the mark bigger.
@@ -284,6 +292,7 @@ The specification's [Type](https://github.com/frankieramirez/ultima/blob/main/do
 | Description, body inside a component | 14px | normal | regular | Card, Dialog, Alert |
 | Small print | 12px (`text-2`) | snug | regular | Field description and error, Tooltip |
 | Label in a chart: tick values, category names, axis titles | 13px (`text-3`) | none, one line each | regular | Chart |
+| Legend label | 13px (`text-3`) | snug | regular | Chart's legend |
 | Part label inside a control | 12px | none | medium | Badge, Calendar's weekdays, Color Field's channels |
 | Change tagged onto a figure | 12px, tabular | snug | medium | Stat's delta |
 | Summary row | 14px | snug | medium | Table's foot |
@@ -308,7 +317,7 @@ A title steps up in size as its container grows, in step with the padding and co
 
 **Tracking follows size.** Text from 12px to 20px keeps the face's own spacing (`tracking-normal`). From 24px up, use `tracking-tight`, because a face spaced for text sizes looks loose at display sizes. `tighter` and `tightest` are for the docs' display headings from 36px up. Uppercase micro-labels take `tracking-wide`: capitals set at text spacing look cramped.
 
-**A chart's labels are 13px.** They sit one step under component text because they annotate the marks rather than name anything, and one step over small print because a tick value is data the reader reads off the chart, not help beside it.
+**A chart's labels are 13px.** They sit one step under component text because they annotate the marks rather than name anything, and one step over small print because a tick value is data the reader reads off the chart, not help beside it. A legend label names a series in the same voice as a category name, so it takes the same size. It is HTML rather than SVG and can wrap, so it takes snug leading where a scene label holds one line.
 
 **Mono is for characters a reader compares or copies one at a time:** code, hex values, API keys and identifiers. Everything else is sans, a keyboard shortcut included: it is read as one chord at a glance.
 

@@ -1,9 +1,13 @@
 import * as stylex from '@stylexjs/stylex';
+import { areaY } from '@tanstack/charts/area';
 import { barY } from '@tanstack/charts/bar';
+import { lineY } from '@tanstack/charts/line';
 import { scaleBand } from '@tanstack/charts/scales/band';
 import { scaleLinear } from '@tanstack/charts/scales/linear';
+import { scalePoint } from '@tanstack/charts/scales/point';
 import { defineChart } from '@tanstack/charts/scene';
-import { Chart, type ChartCaptionProps, type ChartPlotProps, type ChartRootProps } from '@ultima/ui';
+import { stackRowsY } from '@tanstack/charts/transform/stack';
+import { Chart, type ChartCaptionProps, type ChartLegendProps, type ChartPlotProps, type ChartRootProps } from '@ultima/ui';
 import { expect, expectTypeOf, test } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
@@ -13,8 +17,8 @@ import { tokenValue } from './token-value';
 
 /**
  * Proof bar (docs/spec/ultima.md#what-a-build-ticket-proves)
- * 1. Every combination renders: no axes; the canonical bar chart renders in both color modes, sized
- *    by `height` or by `aspectRatio`.
+ * 1. Every combination renders: no axes; the canonical bar chart, a two-series line with its legend
+ *    and a stacked area render in both color modes, sized by `height` or by `aspectRatio`.
  * 2. The name resolves: the figure is named by its caption, and the plot is `role="img"` with
  *    `aria-roledescription="chart"`, labelled by the same caption.
  * 3. The focus ring lands where the contract says: on nothing yet; the plot takes no focus until the
@@ -24,9 +28,10 @@ import { tokenValue } from './token-value';
  * 5. Documented state drives its style: none; Chart has no data-* state.
  * 6. Typecheck passes: `height` and `aspectRatio` are mutually exclusive, className is rejected,
  *    and Plot takes no `render`.
- * 7. Behavior this component wires itself: the plot draws the scene's bars, rules and labels from
- *    tokens, with no `ts-chart` class or scene paint string, and the definition's own theme, tooltip,
- *    keyboard, focus ring and animation ignored.
+ * 7. Behavior this component wires itself: the plot draws the scene's bars, lines, areas, dots, rules
+ *    and labels from tokens by color group, with no `ts-chart` class or scene paint string, and the
+ *    definition's own theme, tooltip, keyboard, focus ring and animation ignored; the legend lists
+ *    one swatch and label per color group and takes no focus.
  * 8. CSS the primitive reads: no primitive; the one inline declaration is the plot's size.
  */
 
@@ -119,7 +124,7 @@ test('the plot draws the bars, rules and labels of the scene, in proportion to t
 test('nothing from the scene paint, its class names or its --ts-chart variables reaches the DOM', async () => {
   const themed = defineChart(
     {
-      marks: [barY(weekdays, { x: 'day', y: 'requests' })],
+      marks: [barY(weekdays, { x: 'day', y: 'requests' }), lineY(weekdays, { x: 'day', y: 'requests', stroke: '#ff00ff', points: true })],
       scales: { x: { scale: scaleBand }, y: { scale: scaleLinear } },
       theme: { palette: ['#ff0000'], foreground: '#00ff00', grid: '#0000ff' },
     },
@@ -129,7 +134,8 @@ test('nothing from the scene paint, its class names or its --ts-chart variables 
   const plot = await drawn(screen.container);
   const markup = plot.outerHTML;
   expect(markup).not.toMatch(/ts-chart/);
-  expect(markup).not.toMatch(/currentColor|#ff0000|#00ff00|#0000ff/i);
+  expect(plot.querySelectorAll('polyline, circle')).not.toHaveLength(0);
+  expect(markup).not.toMatch(/currentColor|#ff0000|#00ff00|#0000ff|#ff00ff/i);
   for (const node of plot.querySelectorAll('*')) {
     for (const attribute of ['fill', 'stroke', 'style', 'opacity', 'fill-opacity', 'stroke-opacity', 'stroke-width']) {
       expect(node.hasAttribute(attribute), `${node.tagName} has no ${attribute} attribute`).toBe(false);
@@ -156,6 +162,148 @@ test('bars take the series tokens by color group, wrapping after six, and guides
   expect(getComputedStyle(label(plot, 'a')).fill).toBe(tokenValue('fill', 'var(--ult-color-text-muted)'));
   expect(getComputedStyle(label(plot, 'Group')).fill).toBe(tokenValue('fill', 'var(--ult-color-text-muted)'));
   for (const text of labels(plot)) expect(getComputedStyle(text).fontSize).toBe(tokenValue('font-size', 'var(--ult-text-3)'));
+});
+
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+const traffic = months.flatMap((month, index) => [
+  { month, source: 'Web', visits: 120 + index * 10 },
+  { month, source: 'API', visits: 80 + index * 6 },
+]);
+const pointScales = { x: { scale: scalePoint }, y: { scale: scaleLinear, nice: true, grid: true } } as const;
+const lineChart = defineChart({
+  marks: [lineY(traffic, { x: 'month', y: 'visits', color: 'source', points: true })],
+  scales: pointScales,
+});
+const areaChart = defineChart({
+  marks: [areaY(stackRowsY(traffic, { x: 'month', y: 'visits', z: 'source' }), { x: 'x', y1: 'y1', y2: 'y2', color: 'z' })],
+  scales: pointScales,
+});
+
+function Traffic({ definition }: { definition: ChartRootProps['definition'] }) {
+  return (
+    <div {...stylex.props(styles.column)}>
+      <Chart.Root definition={definition} height={240}>
+        <Chart.Caption>Visits by source</Chart.Caption>
+        <Chart.Plot />
+        <Chart.Legend />
+      </Chart.Root>
+    </div>
+  );
+}
+
+const seriesToken = (property: string, n: number) => tokenValue(property, `var(--ult-color-series-${n})`);
+const coordinates = (element: Element) =>
+  (element.getAttribute('points') as string).trim().split(/\s+/).map((pair) => pair.split(',').map(Number) as [number, number]);
+const legendItems = (container: Element) => [...container.querySelectorAll('ul > li')] as HTMLLIElement[];
+
+for (const mode of themes) {
+  test(`a two-series line with its legend and a stacked area pass axe in ${mode.name}`, async () => {
+    themeDocument(mode);
+    const screen = await render(
+      <main>
+        <Traffic definition={lineChart} />
+        <Traffic definition={areaChart} />
+      </main>,
+    );
+    await expect.poll(() => screen.container.querySelectorAll('polyline, polygon').length).toBe(4);
+    await expect.poll(() => legendItems(screen.container).length).toBe(4);
+    expect(await violations()).toEqual([]);
+  });
+}
+
+test('a two-series line draws each group as a line with a dot per point, in its series token', async () => {
+  const screen = await render(<Traffic definition={lineChart} />);
+  const plot = plotOf(screen.container);
+  await expect.poll(() => plot.querySelectorAll('polyline').length).toBe(2);
+
+  const lines = [...plot.querySelectorAll('polyline')];
+  lines.forEach((line, index) => {
+    const style = getComputedStyle(line);
+    expect(style.stroke).toBe(seriesToken('stroke', index + 1));
+    expect(style.fill).toBe('none');
+    expect(style.strokeWidth).toBe('2px');
+    expect(coordinates(line)).toHaveLength(months.length);
+  });
+  // Web sits above API in every month, and a larger value is drawn higher up.
+  const [web, api] = lines.map(coordinates) as [[number, number][], [number, number][]];
+  web.forEach(([x, y], index) => {
+    expect(x).toBeCloseTo(api[index]![0], 6);
+    expect(y).toBeLessThan(api[index]![1]);
+  });
+
+  const dots = [...plot.querySelectorAll('circle')];
+  expect(dots).toHaveLength(traffic.length);
+  const fills = dots.map((dot) => getComputedStyle(dot).fill);
+  expect(fills.filter((fill) => fill === seriesToken('fill', 1))).toHaveLength(months.length);
+  expect(fills.filter((fill) => fill === seriesToken('fill', 2))).toHaveLength(months.length);
+  const webDots = dots.filter((dot) => getComputedStyle(dot).fill === seriesToken('fill', 1));
+  webDots.forEach((dot, index) => {
+    expect(Number(dot.getAttribute('cx'))).toBeCloseTo(web[index]![0], 6);
+    expect(Number(dot.getAttribute('cy'))).toBeCloseTo(web[index]![1], 6);
+  });
+});
+
+test('a stacked area draws one solid band per group, each resting on the one below', async () => {
+  const screen = await render(<Traffic definition={areaChart} />);
+  const plot = plotOf(screen.container);
+  await expect.poll(() => plot.querySelectorAll('polygon').length).toBe(2);
+
+  const bands = [...plot.querySelectorAll('polygon')];
+  bands.forEach((band, index) => {
+    const style = getComputedStyle(band);
+    expect(style.fill).toBe(seriesToken('fill', index + 1));
+    expect(style.fillOpacity).toBe('1');
+    expect(style.stroke).toBe('none');
+  });
+  // A band's ring runs along its top edge and back along its base, one point per month each way.
+  const [web, api] = bands.map(coordinates) as [[number, number][], [number, number][]];
+  expect(web).toHaveLength(months.length * 2);
+  const webTop = web.slice(0, months.length);
+  const apiBase = api.slice(months.length).reverse();
+  apiBase.forEach(([x, y], index) => {
+    expect(x).toBeCloseTo(webTop[index]![0], 6);
+    expect(y).toBeCloseTo(webTop[index]![1], 6);
+  });
+  // The stack's top is the two series' sum, so it rises above either series alone.
+  expect(Math.min(...api.map(([, y]) => y))).toBeLessThan(Math.min(...webTop.map(([, y]) => y)));
+});
+
+test('a seventh group wraps to series 1, in the lines and in the legend', async () => {
+  const groups = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+  const rows = groups.flatMap((group, index) => months.map((month) => ({ month, group, value: index + 1 })));
+  const seven = defineChart({ marks: [lineY(rows, { x: 'month', y: 'value', color: 'group' })], scales: pointScales });
+  const screen = await render(<Traffic definition={seven} />);
+  const plot = plotOf(screen.container);
+  await expect.poll(() => plot.querySelectorAll('polyline').length).toBe(groups.length);
+  await expect.poll(() => legendItems(screen.container).length).toBe(groups.length);
+
+  const wrapped = [1, 2, 3, 4, 5, 6, 1];
+  expect([...plot.querySelectorAll('polyline')].map((line) => getComputedStyle(line).stroke)).toEqual(wrapped.map((n) => seriesToken('stroke', n)));
+  const swatches = legendItems(screen.container).map((item) => item.querySelector('[aria-hidden="true"]') as HTMLElement);
+  expect(swatches.map((swatch) => getComputedStyle(swatch).backgroundColor)).toEqual(wrapped.map((n) => seriesToken('background-color', n)));
+});
+
+test('the legend lists one swatch and text label per color group, and takes no focus', async () => {
+  const screen = await render(
+    <>
+      <Traffic definition={lineChart} />
+      <button type="button">After</button>
+    </>,
+  );
+  const list = screen.getByRole('list');
+  await expect.poll(() => legendItems(screen.container).map((item) => item.textContent)).toEqual(['Web', 'API']);
+  expect(list.element().tagName).toBe('UL');
+  expect(screen.container.querySelector('figure')?.contains(list.element())).toBe(true);
+
+  legendItems(screen.container).forEach((item, index) => {
+    const swatch = item.querySelector('[aria-hidden="true"]') as HTMLElement;
+    expect(getComputedStyle(swatch).backgroundColor).toBe(seriesToken('background-color', index + 1));
+    expect(getComputedStyle(item).color).toBe(tokenValue('color', 'var(--ult-color-text-muted)'));
+  });
+
+  await userEvent.tab();
+  expect(document.activeElement).toBe(screen.getByRole('button', { name: 'After' }).element());
+  expect(list.element().querySelectorAll('[tabindex], button, a, input')).toHaveLength(0);
 });
 
 test('height is the plot’s one inline size, and the scene fills the measured width', async () => {
@@ -199,17 +347,19 @@ test('the plot takes no focus yet', async () => {
   expect(plotOf(screen.container).hasAttribute('tabindex')).toBe(false);
 });
 
-test('render reaches Root and Caption', async () => {
+test('render reaches Root, Caption and Legend', async () => {
   const screen = await render(
-    <Chart.Root definition={weekdayChart} height={120} render={<div data-testid="root" />}>
+    <Chart.Root definition={lineChart} height={120} render={<div data-testid="root" />}>
       <Chart.Caption render={<p />}>Requests</Chart.Caption>
       <Chart.Plot />
+      <Chart.Legend render={<ol />} />
     </Chart.Root>,
   );
   const root = screen.getByTestId('root').element();
   expect(root.tagName).toBe('DIV');
   const caption = root.querySelector('p') as HTMLElement;
   expect(root.getAttribute('aria-labelledby')).toBe(caption.id);
+  await expect.poll(() => root.querySelectorAll('ol > li').length).toBe(2);
 });
 
 test('public prop types: one of height or aspectRatio, the style slot, no className, and no render on Plot', () => {
@@ -221,8 +371,9 @@ test('public prop types: one of height or aspectRatio, the style slot, no classN
   expectTypeOf<ChartRootProps>().toHaveProperty('definition');
   expectTypeOf<ChartRootProps>().toHaveProperty('render');
   expectTypeOf<ChartCaptionProps>().toHaveProperty('render');
+  expectTypeOf<ChartLegendProps>().toHaveProperty('render');
   expectTypeOf<ChartPlotProps>().not.toHaveProperty('render');
-  for (const part of [{} as ChartRootProps, {} as ChartCaptionProps, {} as ChartPlotProps]) {
+  for (const part of [{} as ChartRootProps, {} as ChartCaptionProps, {} as ChartPlotProps, {} as ChartLegendProps]) {
     expectTypeOf(part).not.toHaveProperty('className');
     expectTypeOf(part).toHaveProperty('style');
   }
