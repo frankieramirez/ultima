@@ -13,7 +13,8 @@ const HOVER = '@media (hover: hover)';
 // once checked, stepping on hover and press, with a transparent edge the fill shows through. Each
 // key names its whole state, so no two match at once and none depends on StyleX's ranking.
 // Disabled is the muted fill, edge and ink, with no opacity; an invalid box keeps its danger edge
-// through every state.
+// through every state. Read-only keeps the whole resting look, 3:1 edge included, because the box
+// is the value, and only gives up hover and press.
 const styles = stylex.create({
   root: {
     alignItems: 'center',
@@ -21,10 +22,10 @@ const styles = stylex.create({
     backgroundColor: {
       default: color['--ult-color-field'],
       ':is([data-disabled])': color['--ult-color-surface-sunken'],
-      ':is([data-checked], [data-indeterminate]):not([data-disabled], :active)': color['--ult-color-accent'],
-      ':is([data-checked], [data-indeterminate]):active:not([data-disabled])': color['--ult-color-accent-active'],
+      ':is([data-checked], [data-indeterminate]):is([data-readonly], :not(:active)):not([data-disabled])': color['--ult-color-accent'],
+      ':is([data-checked], [data-indeterminate]):active:not([data-disabled], [data-readonly])': color['--ult-color-accent-active'],
       [HOVER]: {
-        ':is([data-checked], [data-indeterminate]):hover:not([data-disabled], :active)': color['--ult-color-accent-hover'],
+        ':is([data-checked], [data-indeterminate]):hover:not([data-disabled], [data-readonly], :active)': color['--ult-color-accent-hover'],
       },
     },
     borderColor: {
@@ -33,7 +34,7 @@ const styles = stylex.create({
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
       ':is([data-checked], [data-indeterminate]):not([aria-invalid="true"], [data-invalid], [data-disabled])': 'transparent',
       [HOVER]: {
-        ':hover:not([data-checked], [data-indeterminate], [aria-invalid="true"], [data-invalid], [data-disabled])':
+        ':hover:not([data-checked], [data-indeterminate], [aria-invalid="true"], [data-invalid], [data-disabled], [data-readonly])':
           color['--ult-color-border-hover'],
       },
     },

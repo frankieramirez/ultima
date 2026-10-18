@@ -24,6 +24,10 @@ export default function Validation() {
         <Field.Error match>Enter a valid email address.</Field.Error>
       </Field.Root>
       <InputGroup.Root>
+        <InputGroup.Addon>https://</InputGroup.Addon>
+        <InputGroup.Input aria-label="Workspace URL" defaultValue="ultima.systems/ult-001" readOnly />
+      </InputGroup.Root>
+      <InputGroup.Root>
         <InputGroup.Addon>@</InputGroup.Addon>
         <InputGroup.Input aria-label="Workspace handle" value="ult-001" disabled />
       </InputGroup.Root>

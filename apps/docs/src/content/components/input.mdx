@@ -28,9 +28,9 @@ Prefer a visible `<label htmlFor>` when the interface has one. `aria-label` name
 
 <Demo component={Labels} source={labelsSource} />
 
-## Validation and disabled state
+## Validation, read-only and disabled state
 
-Standalone, validation state belongs to the consumer's `aria-invalid`; connect the error text with `aria-describedby`. Inside a `Field.Root`, Base UI owns `aria-invalid`, `data-invalid`, and the description merge — Input needs no new prop. The danger border matches `':is([aria-invalid="true"], [data-invalid])'`, so a control that is disabled while invalid keeps the border. A disabled or read-only field takes the sunken fill and a quieter edge, and a disabled field's text drops to the disabled ink, with no fading.
+Standalone, validation state belongs to the consumer's `aria-invalid`; connect the error text with `aria-describedby`. Inside a `Field.Root`, Base UI owns `aria-invalid`, `data-invalid`, and the description merge — Input needs no new prop. The danger border matches `':is([aria-invalid="true"], [data-invalid])'`, so a control that is disabled while invalid keeps the border. A read-only field keeps the bright fill and the normal ink, since its value is still there to read, select and submit, and gives up only what says "type here": the 3:1 edge quiets, hover stays off and the caret is hidden. A disabled field also takes the sunken fill and drops its text to the disabled ink, with no fading.
 
 <Demo component={Validation} source={validationSource} />
 

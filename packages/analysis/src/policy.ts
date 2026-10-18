@@ -16,14 +16,17 @@ export type Category =
   | 'zag-companion'
   | 'foreign-primitive'
   | 'icon'
+  | 'chart-engine'
   | 'engine';
 
-type CategoryRule = { category: Category; match: (name: string) => boolean; authority: string };
+/** `name` is the specifier's package name; a rule that judges by entry reads the whole `specifier`. */
+type CategoryRule = { category: Category; match: (name: string, specifier: string) => boolean; authority: string };
 
 const ADR_0001 = 'docs/adr/0001-stylex-only-styling.md';
 const ADR_0002 = 'docs/adr/0002-base-ui-primitives.md';
 const ADR_0002_ZAG = 'docs/adr/0002-base-ui-primitives.md#amendment-2026-09-20';
 const ADR_0007 = 'docs/adr/0007-engines-ship-as-recipes.md';
+const ADR_0007_CHARTS = 'docs/adr/0007-engines-ship-as-recipes.md#amendment-2026-10-16';
 const ADR_0008 = 'docs/adr/0008-zag-js-primitive-layer-for-elements.md';
 const ICONS = 'docs/spec/ultima.md#iconography';
 
@@ -32,6 +35,33 @@ const exact =
   (name: string) =>
     names.includes(name);
 const scoped = (scope: string) => (name: string) => name.startsWith(`${scope}/`);
+
+/**
+ * The @tanstack/charts 1.1.0 entries an import-graph walk found free of DOM and browser globals. An
+ * entry joins only through a review of this policy, with its walk added to
+ * docs/research/2026-10-16-tanstack-charts-rendering-and-theming.md, section 6. Every other entry, the
+ * root included, and @tanstack/react-charts stay `engine`.
+ */
+export const CHART_ENGINE_ENTRIES = [
+  'scene',
+  'runtime',
+  'types',
+  'bar',
+  'line',
+  'area',
+  'dot',
+  'rule',
+  'rect',
+  'text',
+  'tick',
+  'band',
+  'stack',
+  'transform/stack',
+  'scales/band',
+  'scales/linear',
+  'scales/point',
+  'scales/ordinal',
+].map((entry) => `@tanstack/charts/${entry}`);
 
 /** First match wins, so icon sets are named before the primitive families some of them share a scope with. */
 export const CATEGORIES: readonly CategoryRule[] = [
@@ -58,6 +88,7 @@ export const CATEGORIES: readonly CategoryRule[] = [
       ['@radix-ui', '@react-aria', '@ark-ui', '@mui', '@chakra-ui', '@mantine'].some((scope) => name.startsWith(`${scope}/`)),
     authority: ADR_0002,
   },
+  { category: 'chart-engine', match: (_, specifier) => CHART_ENGINE_ENTRIES.includes(specifier), authority: ADR_0007_CHARTS },
   {
     category: 'engine',
     match: (name) =>
@@ -80,6 +111,9 @@ export type DependencyPolicy = {
 /** Calendar, Date Picker and Resizable: the entries Base UI ships no primitive for. */
 export const ZAG_REACT_ITEMS = ['calendar', 'date-picker', 'resizable'] as const;
 
+/** Chart: the one component item whose identity is its engine's output, ADR 0007's 2026-10-16 amendment. */
+export const CHART_ENGINE_ITEMS = ['chart'] as const;
+
 export const POLICY: DependencyPolicy = {
   categories: CATEGORIES,
   allowed: {
@@ -88,6 +122,7 @@ export const POLICY: DependencyPolicy = {
     'react-component': {
       runtime: { categories: ['react', 'styling', 'base-ui'] },
       zag: { categories: ['zag-react', 'zag-machine', 'zag-companion'], items: ZAG_REACT_ITEMS },
+      chart: { categories: ['chart-engine'], items: CHART_ENGINE_ITEMS },
     },
     element: { runtime: { categories: ['styling', 'zag-vanilla', 'zag-machine'] } },
     // Base UI for the `Form` docs/spec/ultima.md#forms names, which ships no item of its own.
@@ -105,8 +140,10 @@ export function packageName(specifier: string): string {
   return specifier.startsWith('@') ? segments.slice(0, 2).join('/') : (segments[0] as string);
 }
 
-export function categoryOf(policy: DependencyPolicy, name: string): CategoryRule | undefined {
-  return policy.categories.find((rule) => rule.match(name));
+/** The category of an import, judged by its package name or, for an entry-judged rule, its whole specifier. */
+export function categoryOf(policy: DependencyPolicy, specifier: string): CategoryRule | undefined {
+  const name = packageName(specifier);
+  return policy.categories.find((rule) => rule.match(name, specifier));
 }
 
 /** Whether `kind` (as item `item`) may import a package of `category`. */

@@ -10,15 +10,18 @@ const HOVER = '@media (hover: hover)';
 const COARSE = '@media (pointer: coarse)';
 
 // A field is the brightest surface and its edge meets 3:1 against the page. Hover darkens the
-// edge one step on devices that hover. `:read-only` also matches a disabled input, so one key
-// gives both the sunken fill and the quiet edge. Each edge key names its whole state, so an
-// invalid field keeps its danger edge through hover, focus, read-only and disabled. Focus draws the
-// outline outside the edge with a gap, in the focus color even when invalid: the edge already
-// carries the error, so one red mark is enough.
+// edge one step on devices that hover. Read-only keeps the field fill and the value's ink, since
+// its value is still there to read, copy and submit, and gives up only what invites typing: the
+// 3:1 edge drops to the quiet one, hover stays off and the caret is hidden. `:read-only` also
+// matches a disabled input, so that key serves both; disabled alone adds the sunken fill and the
+// disabled ink. Each edge key names its whole state, so an invalid field keeps its danger edge
+// through hover, focus, read-only and disabled. Focus draws the outline outside the edge with a
+// gap, in the focus color even when invalid: the edge already carries the error, so one red mark
+// is enough.
 const styles = stylex.create({
   root: {
     appearance: 'none',
-    backgroundColor: { default: color['--ult-color-field'], ':read-only': color['--ult-color-surface-sunken'] },
+    backgroundColor: { default: color['--ult-color-field'], ':disabled': color['--ult-color-surface-sunken'] },
     borderColor: {
       default: color['--ult-color-border-strong'],
       ':read-only:not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
@@ -31,6 +34,7 @@ const styles = stylex.create({
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
+    caretColor: { default: null, ':read-only': 'transparent' },
     color: { default: color['--ult-color-text'], ':disabled': color['--ult-color-text-disabled'] },
     fontFamily: font['--ult-font-sans'],
     lineHeight: font['--ult-font-leading-none'],
