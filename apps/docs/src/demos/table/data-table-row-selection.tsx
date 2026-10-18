@@ -33,6 +33,9 @@ const columns = helper.columns([
   helper.accessor('requests', { header: 'Requests', cell: (cell) => cell.getValue().toLocaleString('en-US') }),
 ]);
 
+// Columns of numbers align on the end edge in tabular figures, head and cells alike.
+const numeric = new Set(['p95', 'requests']);
+
 const styles = stylex.create({
   shrinkToContent: { width: 0 },
   note: { marginBlockEnd: space['--ult-space-4'], marginBlockStart: 0 },
@@ -51,7 +54,11 @@ export default function DataTableRowSelection() {
           {table.getHeaderGroups().map((group) => (
             <Table.Row key={group.id}>
               {group.headers.map((header) => (
-                <Table.HeadCell key={header.id} style={header.column.id === 'select' ? styles.shrinkToContent : undefined}>
+                <Table.HeadCell
+                  key={header.id}
+                  numeric={numeric.has(header.column.id)}
+                  style={header.column.id === 'select' ? styles.shrinkToContent : undefined}
+                >
                   <table.FlexRender header={header} />
                 </Table.HeadCell>
               ))}
@@ -60,9 +67,9 @@ export default function DataTableRowSelection() {
         </Table.Head>
         <Table.Body>
           {rows.map((row) => (
-            <Table.Row key={row.id}>
+            <Table.Row key={row.id} selected={row.getIsSelected()}>
               {row.getAllCells().map((cell) => (
-                <Table.Cell key={cell.id}>
+                <Table.Cell key={cell.id} numeric={numeric.has(cell.column.id)}>
                   <table.FlexRender cell={cell} />
                 </Table.Cell>
               ))}

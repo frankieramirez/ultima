@@ -50,7 +50,6 @@ export function check(scope: Scope): Report {
     status: exit === 0 ? 'clean' : exit === 1 ? 'violations' : 'incomplete',
     scopes: [...scopes].map(([kind, files]) => ({ kind, files })).sort((a, b) => (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0)),
     rules,
-    policy: { categories: scope.policy.categories.map(({ category, authority }) => ({ category, authority })) },
     unsupported: [
       ...rules
         .filter((rule) => rule.status === 'pending')

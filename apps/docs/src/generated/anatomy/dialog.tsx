@@ -9,8 +9,10 @@ export {
   type DialogViewportProps,
   type DialogBackdropProps,
   type DialogPopupProps,
+  type DialogHeaderProps,
   type DialogTitleProps,
   type DialogDescriptionProps,
+  type DialogFooterProps,
 } from '@ultima/ui/dialog';
 
 export const Dialog = {
@@ -19,7 +21,9 @@ export const Dialog = {
   Backdrop: mark(Source.Backdrop, 'dialog', 'Backdrop'),
   Viewport: mark(Source.Viewport, 'dialog', 'Viewport'),
   Popup: mark(Source.Popup, 'dialog', 'Popup'),
+  Header: mark(Source.Header, 'dialog', 'Header'),
   Title: mark(Source.Title, 'dialog', 'Title'),
   Description: mark(Source.Description, 'dialog', 'Description'),
+  Footer: mark(Source.Footer, 'dialog', 'Footer'),
   Close: mark(Source.Close, 'dialog', 'Close'),
 };

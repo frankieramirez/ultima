@@ -11,7 +11,6 @@ const styles = stylex.create({
     alignItems: 'center',
     display: 'flex',
     gap: space['--ult-space-5'],
-    paddingBlock: space['--ult-space-4'],
     paddingInline: space['--ult-space-4'],
   },
   name: {
@@ -38,10 +37,12 @@ const LINKS: NavLink[] = [
 export function AppSidebar() {
   return (
     <Sidebar.Panel aria-label="Workspace">
-      <div {...stylex.props(styles.workspace)}>
-        <LogoGlyph />
-        <span {...stylex.props(styles.name)}>Halcyon</span>
-      </div>
+      <Sidebar.Header>
+        <div {...stylex.props(styles.workspace)}>
+          <LogoGlyph />
+          <span {...stylex.props(styles.name)}>Halcyon</span>
+        </div>
+      </Sidebar.Header>
       <Sidebar.Group>
         <Sidebar.List>
           {LINKS.map(({ label, href, glyph: Glyph, count, active }) => (

@@ -28,7 +28,7 @@ export async function installedBase(row: Row, catalogue: BaseCatalogue, scope: P
   const item = catalogue.items.find(({ name }) => name === row.item);
   const names = item?.files.map(({ path }) => basename(path)) ?? [];
   const name = names.includes(basename(row.file)) ? basename(row.file) : names.length === 1 ? names[0] : undefined;
-  const path = item && name && (item.meta?.ultima?.sources?.[name] ?? authoredPath(item, name));
+  const path = item && name && item.meta?.ultima?.sources?.[name];
   if (!path) return { reason: `the catalogue names no source path for ${row.file}` };
 
   const url = catalogue.source.replace('{revision}', installed.revision).replace('{path}', path);
@@ -45,15 +45,6 @@ export async function installedBase(row: Row, catalogue: BaseCatalogue, scope: P
   } catch (error) {
     return { reason: `${path} at ${installed.revision} does not rebuild: ${(error as Error).message}` };
   }
-}
-
-/** Where the build staged an item's file from, for a catalogue served before `meta.ultima.sources`. */
-function authoredPath({ name: item, type }: CatalogueItem, name: string): string | undefined {
-  if (item === 'tokens') return `packages/tokens/src/${name}`;
-  if (item === 'lib') return `packages/ui/src/lib/${name}`;
-  if (type === 'registry:block') return `packages/blocks/src/${item}/${name}`;
-  if (type === 'registry:ui') return `packages/ui/src/${name}`;
-  return undefined;
 }
 
 async function fetchSource(url: string): Promise<Base> {

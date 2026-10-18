@@ -144,11 +144,11 @@ describe('ULT-TOKEN-001', () => {
 
   test('checks element tables the same way', () => {
     const badge = 'packages/elements/src/ult-badge.element.ts';
-    const mutated = source(badge).replace("paddingInline: space['--ult-space-4']", "paddingInline: '6px'");
+    const mutated = source(badge).replace("gap: space['--ult-space-2']", "gap: '6px'");
     assert.notEqual(mutated, source(badge));
     const found = located(run({ [badge]: mutated }));
     assert.equal(found.length, 1);
-    assert.deepEqual([found[0]?.ruleId, found[0]?.target], ['ULT-TOKEN-001', 'paddingInline']);
+    assert.deepEqual([found[0]?.ruleId, found[0]?.target], ['ULT-TOKEN-001', 'gap']);
   });
 
   test('takes the relativeText constant for a font size and nowhere else', () => {

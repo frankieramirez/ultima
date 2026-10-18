@@ -161,7 +161,7 @@ for (const entry of tabbed) {
 
 test("Dialog's tab draws its parts open, named by the part alone", async () => {
   const { panel } = await openAnatomy(1440, 'dialog');
-  const parts = ['Backdrop', 'Viewport', 'Popup', 'Title', 'Description', 'Close'];
+  const parts = ['Backdrop', 'Viewport', 'Popup', 'Header', 'Title', 'Description', 'Footer', 'Close'];
   const labels = await settledLabels(panel, parts);
   expect(labels.map((label) => label.textContent).sort()).toEqual([...parts].sort());
   expect([...panel.querySelectorAll('ol[aria-label="Parts"] > li')].map((item) => item.childNodes[1]?.textContent)).toEqual(parts);
@@ -170,7 +170,7 @@ test("Dialog's tab draws its parts open, named by the part alone", async () => {
 
 test('below the wide breakpoint a label shows its number and the legend maps it to the part', async () => {
   const { panel } = await openAnatomy(390, 'dialog');
-  const labels = await settledLabels(panel, ['Backdrop', 'Viewport', 'Popup', 'Title', 'Description', 'Close']);
+  const labels = await settledLabels(panel, ['Backdrop', 'Viewport', 'Popup', 'Header', 'Title', 'Description', 'Footer', 'Close']);
   const legend = [...panel.querySelectorAll('ol[aria-label="Parts"] > li')];
   const numbers = new Map(legend.map((item) => [item.childNodes[1]?.textContent, item.firstChild?.textContent]));
   for (const label of labels) expect(label.textContent).toBe(numbers.get(label.dataset.anatomyLabel));
@@ -178,7 +178,7 @@ test('below the wide breakpoint a label shows its number and the legend maps it 
 
 test('the switch hides the labels and keeps the outlines and the legend; focusing an entry emphasises its outline', async () => {
   const { screen, panel } = await openAnatomy(1440, 'dialog');
-  await settledLabels(panel, ['Backdrop', 'Viewport', 'Popup', 'Title', 'Description', 'Close']);
+  await settledLabels(panel, ['Backdrop', 'Viewport', 'Popup', 'Header', 'Title', 'Description', 'Footer', 'Close']);
   const outline = () => panel.querySelector<HTMLElement>('[data-anatomy-outline="Popup"]') as HTMLElement;
   const hairline = getComputedStyle(outline()).borderTopWidth;
 
@@ -192,8 +192,8 @@ test('the switch hides the labels and keeps the outlines and the legend; focusin
   await expect.element(toggle).toBeChecked();
   await userEvent.click(toggle);
   expect(panel.querySelectorAll('[data-anatomy-label]')).toHaveLength(0);
-  expect(panel.querySelectorAll('[data-anatomy-outline]')).toHaveLength(6);
-  expect(panel.querySelectorAll('ol[aria-label="Parts"] > li')).toHaveLength(6);
+  expect(panel.querySelectorAll('[data-anatomy-outline]')).toHaveLength(8);
+  expect(panel.querySelectorAll('ol[aria-label="Parts"] > li')).toHaveLength(8);
 });
 
 test("Button's page has no Anatomy tab", async () => {
@@ -241,7 +241,7 @@ test("a Sidebar demo's mobile menu keeps its Panel mark inside the Neutral bound
 
 test('the Anatomy stage applies Neutral, and the open dialog sits inside it', async () => {
   const { panel } = await openAnatomy(1440, 'dialog');
-  await settledLabels(panel, ['Backdrop', 'Viewport', 'Popup', 'Title', 'Description', 'Close']);
+  await settledLabels(panel, ['Backdrop', 'Viewport', 'Popup', 'Header', 'Title', 'Description', 'Footer', 'Close']);
   const stage = panel.querySelector('[inert]') as HTMLElement;
   const boundary = stage.querySelector('[data-theme-boundary="neutral"]');
   expect(boundary).not.toBeNull();

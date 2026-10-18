@@ -6,7 +6,7 @@ import { BASE_THEME, fileBaseTheme } from './base-theme.ts';
 import { type Diagnostic, SPEC } from './diagnostic.ts';
 import { type ManagedState, managedSkills } from './install.ts';
 import { type ConsumerScope, consumerScope } from './scope.ts';
-import { type Scheme, SOURCE, contentHash, readStamp } from './stamp.ts';
+import { type Scheme, contentHash, readStamp } from './stamp.ts';
 import { SHADCN_ADD } from './shadcn.ts';
 
 export type State = 'current' | 'edited' | 'behind' | 'diverged' | 'unstamped' | 'retired';
@@ -65,13 +65,11 @@ export async function status(root: string, options: { project?: string }): Promi
 
 /**
  * The status report, with the scope and catalogue it was made from, for `diff` and `update`. `source` is the raw URL
- * template the catalogue names at `meta.ultima.source.raw`. A catalogue served before that key and the items'
- * `sources` falls back to `options.raw`, the built-in address unless a test points it elsewhere. One that names no
- * source gives null.
+ * template the catalogue names at `meta.ultima.source.raw`, or null when it names none.
  */
 export async function survey(
   root: string,
-  options: { project?: string; raw?: string },
+  options: { project?: string },
 ): Promise<{ report: StatusReport; scope: ConsumerScope; url: string; items: CatalogueItem[]; source: string | null } | { diagnostics: Diagnostic[] }> {
   const scope = consumerScope(root, options);
   if ('incomplete' in scope) return { diagnostics: [scope.incomplete] };
@@ -104,8 +102,7 @@ export async function survey(
   }
 
   const raw = meta?.ultima?.source?.raw;
-  const older = !(meta?.ultima && 'source' in meta.ultima) && !items.some((item) => item.meta?.ultima?.sources);
-  const source = typeof raw === 'string' ? raw : older ? (options.raw ?? SOURCE.raw) : null;
+  const source = typeof raw === 'string' ? raw : null;
 
   const served = servedFiles(root, scope, items);
   const files: Row[] = [];

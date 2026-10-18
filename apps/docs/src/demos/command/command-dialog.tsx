@@ -15,6 +15,7 @@ const styles = stylex.create({
     paddingBlockStart: space['--ult-space-9'],
   },
   popup: {
+    display: 'block',
     maxWidth: `min(calc(6 * ${space['--ult-space-12']}), 100%)`,
     overflow: 'hidden',
     padding: 0,

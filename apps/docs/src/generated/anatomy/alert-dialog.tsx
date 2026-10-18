@@ -9,8 +9,10 @@ export {
   type AlertDialogViewportProps,
   type AlertDialogBackdropProps,
   type AlertDialogPopupProps,
+  type AlertDialogHeaderProps,
   type AlertDialogTitleProps,
   type AlertDialogDescriptionProps,
+  type AlertDialogFooterProps,
 } from '@ultima/ui/alert-dialog';
 
 export const AlertDialog = {
@@ -19,7 +21,9 @@ export const AlertDialog = {
   Backdrop: mark(Source.Backdrop, 'alert-dialog', 'Backdrop'),
   Viewport: mark(Source.Viewport, 'alert-dialog', 'Viewport'),
   Popup: mark(Source.Popup, 'alert-dialog', 'Popup'),
+  Header: mark(Source.Header, 'alert-dialog', 'Header'),
   Title: mark(Source.Title, 'alert-dialog', 'Title'),
   Description: mark(Source.Description, 'alert-dialog', 'Description'),
+  Footer: mark(Source.Footer, 'alert-dialog', 'Footer'),
   Close: mark(Source.Close, 'alert-dialog', 'Close'),
 };

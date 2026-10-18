@@ -6,7 +6,6 @@ import { describe, test } from 'node:test';
 
 import { diskFiles } from '../../../../scripts/catalogue/files.ts';
 import { checkConsumer } from '../consumer.ts';
-import { formatJson } from '../diagnostic.ts';
 import { CHART_ENGINE_ENTRIES, CHART_ENGINE_ITEMS, POLICY, STYLE_POLICY, allows, categoryOf } from '../policy.ts';
 import type { Scope } from '../scope.ts';
 import { afterFirstLine, fixture, located, root, run, source } from './support.ts';
@@ -34,13 +33,6 @@ describe('the chart-engine category', () => {
       assert.equal(categoryOf(POLICY, denied)?.category, 'engine', denied);
     }
     assert.ok(POLICY.categories.findIndex((rule) => rule.category === 'chart-engine') < POLICY.categories.findIndex((rule) => rule.category === 'engine'));
-  });
-
-  test('is listed in the JSON report with its authority', () => {
-    const json = JSON.parse(formatJson(run())) as { policy: { categories: { category: string; authority: string }[] } };
-    const listed = json.policy.categories.map(({ category }) => category);
-    assert.ok(listed.indexOf('chart-engine') >= 0 && listed.indexOf('chart-engine') < listed.indexOf('engine'), listed.join(', '));
-    assert.equal(json.policy.categories.find(({ category }) => category === 'chart-engine')?.authority, 'docs/adr/0007-engines-ship-as-recipes.md#amendment-2026-10-16');
   });
 
   test('bounds the React allowance to the chart item', () => {

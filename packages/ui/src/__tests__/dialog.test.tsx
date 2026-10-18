@@ -7,6 +7,8 @@ import {
   Dialog,
   type DialogBackdropProps,
   type DialogDescriptionProps,
+  type DialogFooterProps,
+  type DialogHeaderProps,
   type DialogPopupProps,
   type DialogTitleProps,
   type DialogViewportProps,
@@ -14,7 +16,7 @@ import {
 
 import { scenario } from '../../../../scripts/verification/register.ts';
 import { themeDocument, themes, violations } from './axe';
-import { expectCardSurface } from './overlay';
+import { expectCardSurface, expectModalRhythm } from './overlay';
 
 function SampleDialog({
   open,
@@ -30,12 +32,16 @@ function SampleDialog({
       <Dialog.Trigger>Open</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Backdrop data-testid="backdrop" />
-        <Dialog.Viewport>
+        <Dialog.Viewport data-testid="viewport">
           <Dialog.Popup data-testid="popup">
-            <Dialog.Title>{title}</Dialog.Title>
-            <Dialog.Description data-testid="description">This cannot be undone.</Dialog.Description>
+            <Dialog.Header data-testid="header">
+              <Dialog.Title>{title}</Dialog.Title>
+              <Dialog.Description data-testid="description">This cannot be undone.</Dialog.Description>
+            </Dialog.Header>
             {extra}
-            <Dialog.Close>Close</Dialog.Close>
+            <Dialog.Footer data-testid="footer">
+              <Dialog.Close>Close</Dialog.Close>
+            </Dialog.Footer>
           </Dialog.Popup>
         </Dialog.Viewport>
       </Dialog.Portal>
@@ -127,13 +133,29 @@ test('the popup is a card, and the description keeps its own rhythm', async () =
   expectCardSurface(screen.getByTestId('popup').element(), screen.getByTestId('description').element());
 });
 
+test('a short dialog keeps its panel width and stacks header, body and footer a padding apart', async () => {
+  const screen = await render(
+    <SampleDialog open title="Hi" extra={<Button data-testid="inside">Continue</Button>} />,
+  );
+  await expect.element(screen.getByRole('dialog')).toBeVisible();
+  expectModalRhythm(
+    screen.getByTestId('viewport').element(),
+    screen.getByTestId('popup').element(),
+    screen.getByTestId('header').element(),
+    screen.getByTestId('footer').element(),
+  );
+});
+
 test('public prop types drop className on styled parts', () => {
   expectTypeOf<DialogPopupProps>().not.toHaveProperty('className');
   expectTypeOf<DialogViewportProps>().not.toHaveProperty('className');
   expectTypeOf<DialogBackdropProps>().not.toHaveProperty('className');
   expectTypeOf<DialogTitleProps>().not.toHaveProperty('className');
   expectTypeOf<DialogDescriptionProps>().not.toHaveProperty('className');
+  expectTypeOf<DialogHeaderProps>().not.toHaveProperty('className');
+  expectTypeOf<DialogFooterProps>().not.toHaveProperty('className');
   expectTypeOf<DialogPopupProps>().toHaveProperty('style');
+  expectTypeOf<DialogHeaderProps>().toHaveProperty('style');
 });
 
 for (const mode of themes) {

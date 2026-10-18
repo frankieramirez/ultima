@@ -22,8 +22,10 @@ export {
   type AlertDialogViewportProps,
   type AlertDialogBackdropProps,
   type AlertDialogPopupProps,
+  type AlertDialogHeaderProps,
   type AlertDialogTitleProps,
   type AlertDialogDescriptionProps,
+  type AlertDialogFooterProps,
 } from './alert-dialog';
 export {
   AspectRatio,
@@ -238,8 +240,10 @@ export {
   type DialogViewportProps,
   type DialogBackdropProps,
   type DialogPopupProps,
+  type DialogHeaderProps,
   type DialogTitleProps,
   type DialogDescriptionProps,
+  type DialogFooterProps,
 } from './dialog';
 export {
   type DrawerRootProps,
@@ -468,8 +472,10 @@ export {
   useSidebar,
   type SidebarButtonProps,
   type SidebarCloseProps,
+  type SidebarFooterProps,
   type SidebarGroupLabelProps,
   type SidebarGroupProps,
+  type SidebarHeaderProps,
   type SidebarItemProps,
   type SidebarLinkProps,
   type SidebarListProps,
@@ -501,6 +507,9 @@ export {
   type StatRootProps,
   type StatLabelProps,
   type StatValueProps,
+  type StatDeltaProps,
+  type StatDeltaTone,
+  type StatDeltaTrend,
 } from './stat';
 export {
   Switch,
@@ -513,6 +522,7 @@ export {
   type TableRootProps,
   type TableHeadProps,
   type TableBodyProps,
+  type TableFootProps,
   type TableRowProps,
   type TableHeadCellProps,
   type TableSortButtonProps,

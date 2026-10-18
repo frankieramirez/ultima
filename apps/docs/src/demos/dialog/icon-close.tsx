@@ -8,7 +8,7 @@ const styles = stylex.create({
     aspectRatio: 1,
     paddingInline: 0,
   },
-  header: {
+  heading: {
     alignItems: 'center',
     display: 'flex',
     gap: space['--ult-space-5'],
@@ -24,15 +24,17 @@ export default function IconCloseDialog() {
         <Dialog.Backdrop forceRender />
         <Dialog.Viewport>
           <Dialog.Popup>
-            <header {...stylex.props(styles.header)}>
-              <Dialog.Title>Edit profile</Dialog.Title>
-              <Dialog.Close
-                render={<Button aria-label="Close dialog" variant="ghost" style={styles.close} />}
-              >
-                <Icon><XIcon /></Icon>
-              </Dialog.Close>
-            </header>
-            <Dialog.Description>Change the details shown to other party members.</Dialog.Description>
+            <Dialog.Header>
+              <div {...stylex.props(styles.heading)}>
+                <Dialog.Title>Edit profile</Dialog.Title>
+                <Dialog.Close
+                  render={<Button aria-label="Close dialog" variant="ghost" style={styles.close} />}
+                >
+                  <Icon><XIcon /></Icon>
+                </Dialog.Close>
+              </div>
+              <Dialog.Description>Change the details shown to other party members.</Dialog.Description>
+            </Dialog.Header>
           </Dialog.Popup>
         </Dialog.Viewport>
       </Dialog.Portal>

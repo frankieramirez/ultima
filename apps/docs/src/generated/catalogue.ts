@@ -440,7 +440,7 @@ export const components: ComponentEntry[] = [
     "item": "badge",
     "number": "006",
     "group": "data-display",
-    "description": "A small static label in two variants and six tones.",
+    "description": "A small static label in three variants and six tones.",
     "release": "v0",
     "primitive": null
   },

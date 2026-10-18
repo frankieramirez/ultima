@@ -393,8 +393,10 @@ function EditProject({
         <Dialog.Backdrop />
         <Dialog.Viewport>
           <Dialog.Popup>
-            <Dialog.Title>Edit {project.name}</Dialog.Title>
-            <Dialog.Description>Rename the project. Its owner and status stay as they are.</Dialog.Description>
+            <Dialog.Header>
+              <Dialog.Title>Edit {project.name}</Dialog.Title>
+              <Dialog.Description>Rename the project. Its owner and status stay as they are.</Dialog.Description>
+            </Dialog.Header>
             <form aria-label={`Edit ${project.name}`} noValidate onSubmit={submit} {...stylex.props(styles.stack)}>
               <Field.Root name="name" invalid={invalid}>
                 <Field.Label>Name</Field.Label>

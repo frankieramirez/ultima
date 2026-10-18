@@ -44,12 +44,6 @@ const styles = stylex.create({
     insetBlockStart: 0,
     position: 'sticky',
   },
-  column: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: space['--ult-space-6'],
-    minBlockSize: '100%',
-  },
   switcher: {
     gap: space['--ult-space-5'],
   },
@@ -74,10 +68,7 @@ const styles = stylex.create({
     flexGrow: 1,
   },
   footer: {
-    display: 'flex',
-    flexDirection: 'column',
     gap: space['--ult-space-4'],
-    marginBlockStart: 'auto',
   },
   user: {
     alignItems: 'center',
@@ -153,23 +144,25 @@ function WorkspaceSwitcher() {
 export function AppSidebar() {
   return (
     <Sidebar.Panel aria-label="Workspace" style={styles.panel}>
-      <div {...stylex.props(styles.column)}>
+      <Sidebar.Header>
         <WorkspaceSwitcher />
+      </Sidebar.Header>
+      <Sidebar.Group>
         <Links destinations={primary} />
-        <div {...stylex.props(styles.footer)}>
-          <Links destinations={secondary} />
-          <Separator />
-          <div {...stylex.props(styles.user)}>
-            <Avatar.Root aria-hidden="true">
-              <Avatar.Fallback>AK</Avatar.Fallback>
-            </Avatar.Root>
-            <span {...stylex.props(styles.person)}>
-              <span {...stylex.props(styles.personName)}>Ada Kim</span>
-              <span {...stylex.props(styles.email)}>ada@northwind.co</span>
-            </span>
-          </div>
+      </Sidebar.Group>
+      <Sidebar.Footer style={styles.footer}>
+        <Links destinations={secondary} />
+        <Separator />
+        <div {...stylex.props(styles.user)}>
+          <Avatar.Root aria-hidden="true">
+            <Avatar.Fallback>AK</Avatar.Fallback>
+          </Avatar.Root>
+          <span {...stylex.props(styles.person)}>
+            <span {...stylex.props(styles.personName)}>Ada Kim</span>
+            <span {...stylex.props(styles.email)}>ada@northwind.co</span>
+          </span>
         </div>
-      </div>
+      </Sidebar.Footer>
     </Sidebar.Panel>
   );
 }

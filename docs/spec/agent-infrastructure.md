@@ -221,7 +221,7 @@ Do not allow directory globs, whole-file suppression, `disable-all` comments, or
 
 ### Diagnostics
 
-Each diagnostic contains rule ID, severity, repository-relative file, one-based line/column and end position, symbol/part when available, the failed condition, a repair suggestion, and an owning-spec link. Include the exception ID when relevant. Sort by file, position and rule ID for deterministic output. JSON adds a schema version, run status, analyzed scopes, the dependency categories `ULT-IMPORT-001` classifies imports into with their authority links, and advisory/error counts.
+Each diagnostic contains rule ID, severity, repository-relative file, one-based line/column and end position, symbol/part when available, the failed condition, a repair suggestion, and an owning-spec link. Include the exception ID when relevant. Sort by file, position and rule ID for deterministic output. JSON adds a schema version, run status, analyzed scopes and advisory/error counts.
 
 Example wording: `ULT-TOKEN-001: Dialog.Popup borderRadius uses an undeclared length. Read the semantic radius token; see docs/spec/ultima.md#tokens-in-component-code.` Suggest an exact token only when the component contract determines it. Do not silently choose a design value, rewrite behavior, or apply fixes during a check.
 

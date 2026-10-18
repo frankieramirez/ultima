@@ -24,6 +24,8 @@ npx shadcn@4.21.4 add @ultima/dialog
 
 The trigger and close slots must hold an Ultima Button or an element carrying its own focus ring. The canonical close action uses a text label.
 
+The popup is 448px wide whatever it holds, or the space available on a narrow screen. It stacks its parts 24px apart: `Dialog.Header` holds the Title and Description 8px apart, your content follows, and `Dialog.Footer` sets the actions 8px apart at the end edge, the primary action last.
+
 <Demo component={Basic} source={basicSource} />
 
 ## Close icon
@@ -52,7 +54,7 @@ Component dependencies: `dialog` and `button`.
 npx shadcn@4.21.4 add @ultima/dialog @ultima/button
 ```
 
-`Dialog.Viewport` zeroes its padding and swaps `placeItems: center` for the edge. `Dialog.Popup` drops its radius and its measure cap, keeps a hairline on the side facing the page, and slides in from its edge over `--ult-motion-base` in place of the shared `scale(0.96)`. The four edges are physical rather than logical, because CSS has no logical transform.
+`Dialog.Viewport` zeroes its padding and swaps `placeItems: center` for the edge. `Dialog.Popup` drops its radius and its width cap, keeps a hairline on the side facing the page, and slides in from its edge over `--ult-motion-base` in place of the shared `scale(0.96)`. The four edges are physical rather than logical, because CSS has no logical transform.
 
 **The override names the resting, starting, and ending transforms, or Dialog's scale survives underneath the slide.** `Dialog.Popup` carries `scale(0.96)` on both `[data-starting-style]` and `[data-ending-style]`, and StyleX merges a property one condition at a time. An override that sets only the resting transform leaves the scale in place for the other two states, and the panel scales while it travels.
 
@@ -70,7 +72,7 @@ Only what Ultima adds. Every inherited part and prop is documented by [Base UI's
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `style` | `StyleXStyles` | — | Available on the styled Viewport, Backdrop, Popup, Title, and Description parts; merged last. There is no `className`. |
+| `style` | `StyleXStyles` | — | Available on the styled Viewport, Backdrop, Popup, Header, Title, Description, and Footer parts; merged last. There is no `className`. A wider popup sets its own `width` and `maxWidth` here. |
 | `render` | `ReactElement \| function` | — | Base UI's render prop. Trigger and Close are unstyled slots for a control with its own focus ring. |
 
 ## Accessibility
