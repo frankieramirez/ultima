@@ -26,7 +26,7 @@ Give the root exactly one of `height`, in CSS pixels, or `aspectRatio`, width ov
 
 `Chart.Plot` is one Tab stop. Focusing it activates nothing: the first arrow key starts at the first point. Hovering activates the point nearest the pointer, and leaving the plot or moving focus away clears it. The active point carries a ring in `--ult-color-border-focus`, and `Chart.Plot` announces it through a status region it renders beside the SVG.
 
-`Chart.Tooltip` shows the same text near the active point. It wears Tooltip's popup tokens and is `aria-hidden`, since the status region already speaks the text. Place it inside `Chart.Root`, after the plot. It renders nothing while no point is active.
+`Chart.Tooltip` shows the same text near the active point. It wears Tooltip's popup tokens and is `aria-hidden`, since the status region already speaks the text. Place it inside `Chart.Root`, after the plot, with no positioned element between them, because Root's box is the one it is placed in. It renders nothing while no point is active.
 
 `formatPoint` on the root is the one text for the tooltip and the announcement. The default reads the series label, when the mark has color groups, then the x and y values through the definition's axis tick formats, so a compact axis such as `84K` reads `Mon, 84K`. The demo passes its own, which spells the exact value and its unit.
 

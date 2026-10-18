@@ -25,13 +25,11 @@ import {
   type KeyboardEvent,
   type PointerEvent,
   type ReactNode,
-  type RefObject,
   use,
   useCallback,
   useId,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 
@@ -96,7 +94,7 @@ const styles = stylex.create({
     lineHeight: font['--ult-font-leading-snug'],
     margin: 0,
     marginBlockStart: `calc(-1 * ${space['--ult-space-5']})`,
-    maxWidth: `calc(${space['--ult-space-12']} * 5)`,
+    maxWidth: `min(calc(${space['--ult-space-12']} * 5), 100%)`,
     paddingBlock: space['--ult-space-2'],
     paddingInline: space['--ult-space-3'],
     pointerEvents: 'none',
@@ -133,8 +131,9 @@ type ChartContextValue = {
   scene: ChartScene | null;
   height: number | undefined;
   aspectRatio: number | undefined;
-  plot: SVGSVGElement | null;
   setPlot: (plot: SVGSVGElement | null) => void;
+  /** Where the plot sits in Root's padding box, which the tooltip and the ring are positioned in. */
+  origin: Origin | null;
   /** The points the keyboard and pointer reach, in `viewportInteractionPoints` order. */
   points: readonly ChartPoint[];
   /** The active point, resolved against the current scene by key. */
@@ -142,6 +141,13 @@ type ChartContextValue = {
   setActive: (point: ChartPoint | null) => void;
   formatPoint: (point: ChartPoint) => string;
 };
+
+type Origin = { left: number; top: number; width: number; height: number };
+
+/** A point's place in Root's padding box, in percent, for an absolutely positioned part. */
+function placeOf(origin: Origin, point: ChartPoint) {
+  return { left: ((origin.left + point.x) / origin.width) * 100, top: ((origin.top + point.y) / origin.height) * 100 };
+}
 
 const ChartContext = createContext<ChartContextValue | null>(null);
 
@@ -221,20 +227,27 @@ function pointFormatter(definition: ChartDefinition, scene: ChartScene | null) {
 function Root({ definition, height, aspectRatio, active, defaultActive = null, onActiveChange, formatPoint, ref, render, style, ...props }: ChartRootProps) {
   const captionId = useId();
   const [runtime] = useState(() => createChartRuntime());
+  const [figure, setFigure] = useState<Element | null>(null);
   const [plot, setPlot] = useState<SVGSVGElement | null>(null);
   const [frame, setFrame] = useState<{ size: ChartSize; layout: ChartLayoutOptions } | null>(null);
+  const [origin, setOrigin] = useState<Origin | null>(null);
 
   useLayoutEffect(() => {
-    if (!plot) return;
+    if (!plot || !figure) return;
     const layout = measurer(plot);
-    const measure = ({ width, height }: { width: number; height: number }) => {
+    const measure = () => {
+      const { width, height, left, top } = plot.getBoundingClientRect();
       if (width > 0 && height > 0) setFrame((last) => (last?.layout === layout && last.size.width === width && last.size.height === height ? last : { size: { width, height }, layout }));
+      const outer = figure.getBoundingClientRect();
+      const next = { left: left - outer.left - figure.clientLeft, top: top - outer.top - figure.clientTop, width: figure.clientWidth, height: figure.clientHeight };
+      setOrigin((last) => (last && last.left === next.left && last.top === next.top && last.width === next.width && last.height === next.height ? last : next));
     };
-    measure(plot.getBoundingClientRect());
-    const observer = new ResizeObserver(([entry]) => entry && measure(entry.contentRect));
+    measure();
+    const observer = new ResizeObserver(measure);
     observer.observe(plot);
+    observer.observe(figure);
     return () => observer.disconnect();
-  }, [plot]);
+  }, [plot, figure]);
 
   const scene = useMemo(() => (frame ? runtime.render(definition, frame.size, frame.layout) : null), [runtime, definition, frame]);
   const points = useMemo(() => (scene ? viewportInteractionPoints(scene) : []), [scene]);
@@ -254,12 +267,12 @@ function Root({ definition, height, aspectRatio, active, defaultActive = null, o
 
   const element = useRender({
     defaultTagName: 'figure',
-    ref,
+    ref: ref ? [ref, setFigure] : setFigure,
     render,
     props: { 'aria-labelledby': captionId, ...props, ...stylex.props(styles.root, style) },
   });
   return (
-    <ChartContext value={{ active: current, aspectRatio, captionId, formatPoint: format, height, plot, points, scene, setActive, setPlot }}>
+    <ChartContext value={{ active: current, aspectRatio, captionId, formatPoint: format, height, origin, points, scene, setActive, setPlot }}>
       {element}
     </ChartContext>
   );
@@ -363,7 +376,7 @@ function pointAfter(points: readonly ChartPoint[], current: ChartPoint | null, k
 const WORD_JOINER = '\u2060';
 
 function Plot({ ref, style, ...props }: ChartPlotProps) {
-  const { active, aspectRatio, captionId, formatPoint, height, points, scene, setActive, setPlot } = useChartContext('Plot');
+  const { active, aspectRatio, captionId, formatPoint, height, origin, points, scene, setActive, setPlot } = useChartContext('Plot');
   const plotRef = useCallback(
     (plot: SVGSVGElement | null) => {
       setPlot(plot);
@@ -397,6 +410,8 @@ function Plot({ ref, style, ...props }: ChartPlotProps) {
     onBlur: () => setActive(null),
   };
   const { style: injected, ...stylexProps } = stylex.props(styles.plot, style);
+  const { style: ringStyle, ...ringProps } = stylex.props(styles.marker);
+  const ring = active && origin ? placeOf(origin, active) : null;
   return (
     <>
       <svg
@@ -410,7 +425,7 @@ function Plot({ ref, style, ...props }: ChartPlotProps) {
       >
         {scene?.nodes.map((node) => draw(scene, node))}
       </svg>
-      {active && <Marker />}
+      {ring && <span aria-hidden="true" {...ringProps} style={{ ...ringStyle, left: `${ring.left}%`, top: `${ring.top}%` }} />}
       <span aria-atomic="true" role="status" {...stylex.props(visuallyHidden)}>
         {status.text}
       </span>
@@ -418,43 +433,17 @@ function Plot({ ref, style, ...props }: ChartPlotProps) {
   );
 }
 
-/** The active point as percentages of the box `own` is positioned in, measured once it is laid out. */
-function usePlace(own: RefObject<HTMLElement | null>, part: string) {
-  const { active, plot, scene } = useChartContext(part);
-  const [place, setPlace] = useState({ left: 0, top: 0, shift: 0 });
-  useLayoutEffect(() => {
-    const parent = own.current?.offsetParent;
-    if (!plot || !parent || !active || !scene) return;
-    const from = parent.getBoundingClientRect();
-    const to = plot.getBoundingClientRect();
-    setPlace({
-      left: ((to.left - from.left - parent.clientLeft + active.x) / parent.clientWidth) * 100,
-      top: ((to.top - from.top - parent.clientTop + active.y) / parent.clientHeight) * 100,
-      // Left-aligned on the point at the plot's start, right-aligned at its end, so it stays within the plot's width.
-      shift: (active.x / scene.width) * -100,
-    });
-  }, [plot, scene, active]);
-  return place;
-}
-
-/** The active point's ring, drawn over the plot so its size follows the space scale. */
-function Marker() {
-  const own = useRef<HTMLSpanElement>(null);
-  const place = usePlace(own, 'Plot');
-  return <span aria-hidden="true" ref={own} {...stylex.props(styles.marker)} style={{ left: `${place.left}%`, top: `${place.top}%` }} />;
-}
-
 /** The visual readout of the active point, `aria-hidden` because the plot's status region speaks it. */
 function Tooltip({ ref, render, style, ...props }: ChartTooltipProps) {
-  const { active, formatPoint } = useChartContext('Tooltip');
-  const own = useRef<HTMLDivElement>(null);
-  const place = usePlace(own, 'Tooltip');
+  const { active, formatPoint, origin, scene } = useChartContext('Tooltip');
+  // Left-aligned on the point at the plot's start, right-aligned at its end, so it stays within the plot's width.
+  const place = active && origin && scene ? { ...placeOf(origin, active), shift: (active.x / scene.width) * -100 } : { left: 0, top: 0, shift: 0 };
 
   const { style: injected, ...stylexProps } = stylex.props(styles.tooltip, style);
   return useRender({
     defaultTagName: 'div',
     enabled: Boolean(active),
-    ref: ref ? [ref, own] : own,
+    ref,
     render,
     props: {
       'aria-hidden': true,
