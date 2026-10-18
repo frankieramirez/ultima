@@ -3,7 +3,7 @@
 import { Dialog as BaseDialog } from '@base-ui/react/dialog';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, easing, filter, font, motion, radius, shadow, space, text, z } from '@ultima/tokens/tokens.stylex';
-import type { PartProps } from '@ultima/ui/lib/component';
+import type { PartProps, PlainProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
 const styles = stylex.create({
@@ -40,7 +40,10 @@ const styles = stylex.create({
     boxShadow: shadow['--ult-shadow-lg'],
     boxSizing: 'border-box',
     color: color['--ult-color-text'],
+    display: 'flex',
+    flexDirection: 'column',
     fontFamily: font['--ult-font-sans'],
+    gap: space['--ult-space-8'],
     margin: 0,
     maxHeight: '100%',
     maxWidth: `min(calc(7 * ${space['--ult-space-12']}), 100%)`,
@@ -62,7 +65,15 @@ const styles = stylex.create({
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'opacity, transform',
     transitionTimingFunction: { default: easing.enter, ':is([data-ending-style])': easing.exit },
+    // The panel's width whatever it holds, so a short form does not shrink it into a popover.
+    width: '100%',
     zIndex: z.popup,
+  },
+  header: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: space['--ult-space-4'],
+    margin: 0,
   },
   title: {
     fontSize: text['--ult-text-6'],
@@ -74,17 +85,24 @@ const styles = stylex.create({
     color: color['--ult-color-text-muted'],
     fontSize: text['--ult-text-4'],
     lineHeight: font['--ult-font-leading-normal'],
-    marginBlockEnd: 0,
-    marginBlockStart: space['--ult-space-4'],
-    marginInline: 0,
+    margin: 0,
+  },
+  footer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: space['--ult-space-4'],
+    justifyContent: 'flex-end',
+    margin: 0,
   },
 });
 
 type DialogViewportProps = PartProps<ComponentProps<typeof BaseDialog.Viewport>>;
 type DialogBackdropProps = PartProps<ComponentProps<typeof BaseDialog.Backdrop>>;
 type DialogPopupProps = PartProps<ComponentProps<typeof BaseDialog.Popup>>;
+type DialogHeaderProps = PlainProps<'div'>;
 type DialogTitleProps = PartProps<ComponentProps<typeof BaseDialog.Title>>;
 type DialogDescriptionProps = PartProps<ComponentProps<typeof BaseDialog.Description>>;
+type DialogFooterProps = PlainProps<'div'>;
 
 function Viewport({ style, ...props }: DialogViewportProps) {
   return <BaseDialog.Viewport {...props} {...stylex.props(styles.viewport, style)} />;
@@ -98,12 +116,20 @@ function Popup({ style, ...props }: DialogPopupProps) {
   return <BaseDialog.Popup {...props} {...stylex.props(styles.popup, style)} />;
 }
 
+function Header({ style, ...props }: DialogHeaderProps) {
+  return <div {...props} {...stylex.props(styles.header, style)} />;
+}
+
 function Title({ style, ...props }: DialogTitleProps) {
   return <BaseDialog.Title {...props} {...stylex.props(styles.title, style)} />;
 }
 
 function Description({ style, ...props }: DialogDescriptionProps) {
   return <BaseDialog.Description {...props} {...stylex.props(styles.description, style)} />;
+}
+
+function Footer({ style, ...props }: DialogFooterProps) {
+  return <div {...props} {...stylex.props(styles.footer, style)} />;
 }
 
 const Dialog = {
@@ -113,8 +139,10 @@ const Dialog = {
   Backdrop,
   Viewport,
   Popup,
+  Header,
   Title,
   Description,
+  Footer,
   Close: BaseDialog.Close,
 };
 
@@ -123,6 +151,8 @@ export {
   type DialogViewportProps,
   type DialogBackdropProps,
   type DialogPopupProps,
+  type DialogHeaderProps,
   type DialogTitleProps,
   type DialogDescriptionProps,
+  type DialogFooterProps,
 };

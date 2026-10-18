@@ -147,7 +147,7 @@ const styles = stylex.create({
     whiteSpace: 'nowrap',
     width: '1px',
   },
-  exportPopup: { inlineSize: '100%', maxInlineSize: '48rem', maxBlockSize: 'min(48rem, calc(100dvh - 4rem))', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' },
+  exportPopup: { inlineSize: '100%', maxInlineSize: '48rem', maxBlockSize: 'min(48rem, calc(100dvh - 4rem))', display: 'flex', flexDirection: 'column', gap: 0, padding: 0, overflow: 'hidden' },
   exportHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: space['--ult-space-5'], padding: space['--ult-space-6'], flexShrink: 0 },
   exportBody: { overflow: 'auto', minBlockSize: 0, padding: space['--ult-space-6'] },
   exportCopy: { fontSize: text['--ult-text-5'], lineHeight: font['--ult-font-leading-normal'], overflowWrap: 'anywhere' },
@@ -359,11 +359,13 @@ export function StudioActions({
           <AlertDialog.Backdrop forceRender />
           <AlertDialog.Viewport>
             <AlertDialog.Popup style={styles.popup}>
-              <AlertDialog.Title>Replace the autosaved draft?</AlertDialog.Title>
-              <AlertDialog.Description>
-                A different draft is autosaved in this browser. Loading this draft replaces it as a
-                single history entry.
-              </AlertDialog.Description>
+              <AlertDialog.Header>
+                <AlertDialog.Title>Replace the autosaved draft?</AlertDialog.Title>
+                <AlertDialog.Description>
+                  A different draft is autosaved in this browser. Loading this draft replaces it as a
+                  single history entry.
+                </AlertDialog.Description>
+              </AlertDialog.Header>
               <div {...stylex.props(styles.footer)}>
                 <AlertDialog.Close render={<Button variant="ghost" style={[docsStyles.square, styles.touch]} />}>Cancel</AlertDialog.Close>
                 <Button onClick={onConfirmPending} style={[docsStyles.square, styles.touch]}>Replace draft</Button>
@@ -382,8 +384,10 @@ export function StudioActions({
           <AlertDialog.Backdrop forceRender />
           <AlertDialog.Viewport>
             <AlertDialog.Popup style={styles.popup}>
-              <AlertDialog.Title>Draft refused</AlertDialog.Title>
-              <AlertDialog.Description>{refusal}</AlertDialog.Description>
+              <AlertDialog.Header>
+                <AlertDialog.Title>Draft refused</AlertDialog.Title>
+                <AlertDialog.Description>{refusal}</AlertDialog.Description>
+              </AlertDialog.Header>
               <div {...stylex.props(styles.footer)}>
                 <AlertDialog.Close render={<Button variant="ghost" style={[docsStyles.square, styles.touch]} />}>Close</AlertDialog.Close>
               </div>
@@ -623,12 +627,12 @@ function ShareDialog({
         <Dialog.Viewport>
           <Dialog.Popup style={styles.popup}>
             <div {...stylex.props(styles.stack)}>
-              <div>
+              <Dialog.Header>
                 <Dialog.Title>Share theme</Dialog.Title>
                 <Dialog.Description>
                   The link encodes this draft and reopens it.
                 </Dialog.Description>
-              </div>
+              </Dialog.Header>
               {failed ? (
                 <>
                   <p {...stylex.props(styles.note)}>A share link could not be created. Share the draft file instead.</p>

@@ -7,13 +7,15 @@ import {
   Button,
   type AlertDialogBackdropProps,
   type AlertDialogDescriptionProps,
+  type AlertDialogFooterProps,
+  type AlertDialogHeaderProps,
   type AlertDialogPopupProps,
   type AlertDialogTitleProps,
   type AlertDialogViewportProps,
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
-import { expectCardSurface } from './overlay';
+import { expectCardSurface, expectModalRhythm } from './overlay';
 
 function SampleAlertDialog({
   open,
@@ -31,11 +33,15 @@ function SampleAlertDialog({
         <AlertDialog.Backdrop data-testid="backdrop" />
         <AlertDialog.Viewport data-testid="viewport">
           <AlertDialog.Popup data-testid="popup">
-            <AlertDialog.Title>{title}</AlertDialog.Title>
-            <AlertDialog.Description data-testid="description">This cannot be undone.</AlertDialog.Description>
+            <AlertDialog.Header data-testid="header">
+              <AlertDialog.Title>{title}</AlertDialog.Title>
+              <AlertDialog.Description data-testid="description">This cannot be undone.</AlertDialog.Description>
+            </AlertDialog.Header>
             {extra}
-            <AlertDialog.Close>Cancel</AlertDialog.Close>
-            <AlertDialog.Close>Delete</AlertDialog.Close>
+            <AlertDialog.Footer data-testid="footer">
+              <AlertDialog.Close>Cancel</AlertDialog.Close>
+              <AlertDialog.Close>Delete</AlertDialog.Close>
+            </AlertDialog.Footer>
           </AlertDialog.Popup>
         </AlertDialog.Viewport>
       </AlertDialog.Portal>
@@ -143,12 +149,27 @@ test('the popup is a card, and the description keeps its own rhythm', async () =
   expectCardSurface(screen.getByTestId('popup').element(), screen.getByTestId('description').element());
 });
 
+test('a short alert dialog keeps the panel width and rhythm Dialog has', async () => {
+  const screen = await render(
+    <SampleAlertDialog open title="Hi" extra={<Button data-testid="inside">Continue</Button>} />,
+  );
+  await expect.element(screen.getByRole('alertdialog')).toBeVisible();
+  expectModalRhythm(
+    screen.getByTestId('viewport').element(),
+    screen.getByTestId('popup').element(),
+    screen.getByTestId('header').element(),
+    screen.getByTestId('footer').element(),
+  );
+});
+
 test('public prop types drop className on styled parts and omit modal and disablePointerDismissal', () => {
   expectTypeOf<AlertDialogPopupProps>().not.toHaveProperty('className');
   expectTypeOf<AlertDialogViewportProps>().not.toHaveProperty('className');
   expectTypeOf<AlertDialogBackdropProps>().not.toHaveProperty('className');
   expectTypeOf<AlertDialogTitleProps>().not.toHaveProperty('className');
   expectTypeOf<AlertDialogDescriptionProps>().not.toHaveProperty('className');
+  expectTypeOf<AlertDialogHeaderProps>().not.toHaveProperty('className');
+  expectTypeOf<AlertDialogFooterProps>().not.toHaveProperty('className');
   expectTypeOf<AlertDialogPopupProps>().toHaveProperty('style');
   expectTypeOf<ComponentProps<typeof AlertDialog.Root>>().not.toHaveProperty('modal');
   expectTypeOf<ComponentProps<typeof AlertDialog.Root>>().not.toHaveProperty('disablePointerDismissal');

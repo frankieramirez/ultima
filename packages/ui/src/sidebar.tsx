@@ -201,7 +201,6 @@ const mobile = stylex.create({
     borderInlineEndWidth: border.fine,
     borderRadius: 0,
     borderWidth: 0,
-    inlineSize: `min(calc(4 * ${space["--ult-space-12"]}), 100%)`,
     maxWidth: "none",
     padding: 0,
     transform: {
@@ -211,6 +210,8 @@ const mobile = stylex.create({
     },
     transitionDuration: motion["--ult-motion-base"],
     transitionProperty: "opacity, transform",
+    // `width`, not `inlineSize`, so it replaces Dialog's own `width: 100%` rather than racing it.
+    width: `min(calc(4 * ${space["--ult-space-12"]}), 100%)`,
   },
   panel: {
     blockSize: "100%",

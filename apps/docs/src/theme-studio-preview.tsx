@@ -796,9 +796,13 @@ function OverlaysScene({
           <Dialog.Backdrop forceRender />
           <Dialog.Viewport>
             <Dialog.Popup>
-              <Dialog.Title>Seal the bargain?</Dialog.Title>
-              <Dialog.Description>Popups render inside the pane's theme boundary.</Dialog.Description>
-              <Dialog.Close render={<Button variant="ghost" />}>Close</Dialog.Close>
+              <Dialog.Header>
+                <Dialog.Title>Seal the bargain?</Dialog.Title>
+                <Dialog.Description>Popups render inside the pane's theme boundary.</Dialog.Description>
+              </Dialog.Header>
+              <Dialog.Footer>
+                <Dialog.Close render={<Button variant="ghost" />}>Close</Dialog.Close>
+              </Dialog.Footer>
             </Dialog.Popup>
           </Dialog.Viewport>
         </Dialog.Portal>

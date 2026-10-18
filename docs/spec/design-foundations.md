@@ -211,6 +211,8 @@ A theme may drop the blur and keep the wash, so the scrim never depends on blur 
 
 Padding smaller than the corner lets content crowd the curve. Padding much bigger than the corner makes the box feel empty.
 
+**A modal's parts sit as far apart as its padding.** Dialog and Alert Dialog stack Header, content and Footer 24px apart (step 8), the step a Card puts between its header and body. Inside the Header, Title and Description sit 8px apart, and the Footer's actions sit 8px apart at the end edge, primary last. The jump from 8px to 24px is what keeps a description from reading as the first field's label.
+
 **Adjust for what the eye sees.** An icon is lighter than a word, so the side of a Button that holds an icon takes one step less padding (16 → 12px) to look balanced. A Badge holding a leading icon or status dot does the same (8 → 6px), with the mark 4px from its label, the badge's block padding, so the mark groups with the word rather than the edge. A status dot is the label's x-height (6px on 12px text), so it reads as a glyph in the line. It takes the tone's solid step, or the label's ink on a solid fill, where the solid step would vanish. A field holding chips drops its start padding to the gap above the chips, so the first chip sits evenly in the corner. Uppercase micro-labels get wide tracking because capitals set tight look cramped.
 
 **Components carry no outer margin.** A component sets `margin: 0` on its root, and the layout around it sets the space between components with `gap`. Space between things belongs to whatever contains them. That keeps a component reusable in any layout.
@@ -230,9 +232,11 @@ Padding smaller than the corner lets content crowd the curve. Padding much bigge
 | Sidebar, side Drawer | 256px (4 × step 12) |
 | Popover, Hover Card, anchored Toast, at most | 320px (5 ×) |
 | Toast stack | 384px (6 ×) |
-| Dialog, Alert Dialog, at most | 448px (7 ×) |
+| Dialog, Alert Dialog | 448px (7 ×) |
 
 A dialog is the widest panel built for reading. Inside its 24px padding it leaves 400px of 14px text. An average Figtree character is about half an em wide, so that's roughly 57 characters a line.
+
+**A dialog takes its full width whatever it holds,** capped at the space available. Sized to its content, a short form shrinks it to a popover's width, and a run of dialogs jumps between widths. It has no size axis: content that needs more than 448px belongs on a page or in a Drawer, or sets its width through the `style` slot.
 
 An anchored Toast takes the popup cap, not the stack's 384px. It is a popup tied to its trigger, often a one-word confirmation, so it sizes to its message (`max-content`) and wraps only past 320px or `--available-width`. A stacked toast is a row in a column of others, so it keeps the stack's width.
 

@@ -1,13 +1,8 @@
 import * as stylex from '@stylexjs/stylex';
-import { space } from '@ultima/tokens/tokens.stylex';
 import { Button, Dialog } from '@ultima/ui';
 
 const styles = stylex.create({
-  footer: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    marginBlockStart: space['--ult-space-6'],
-  },
+  body: { margin: 0 },
 });
 
 export default function BasicDialog() {
@@ -18,14 +13,16 @@ export default function BasicDialog() {
         <Dialog.Backdrop forceRender />
         <Dialog.Viewport>
           <Dialog.Popup>
-            <Dialog.Title>Archive report</Dialog.Title>
-            <Dialog.Description>
-              The report stays available in the archive and can be restored later.
-            </Dialog.Description>
-            <p>Archive the quarterly accessibility report?</p>
-            <footer {...stylex.props(styles.footer)}>
+            <Dialog.Header>
+              <Dialog.Title>Archive report</Dialog.Title>
+              <Dialog.Description>
+                The report stays available in the archive and can be restored later.
+              </Dialog.Description>
+            </Dialog.Header>
+            <p {...stylex.props(styles.body)}>Archive the quarterly accessibility report?</p>
+            <Dialog.Footer>
               <Dialog.Close render={<Button variant="ghost" />}>Close</Dialog.Close>
-            </footer>
+            </Dialog.Footer>
           </Dialog.Popup>
         </Dialog.Viewport>
       </Dialog.Portal>

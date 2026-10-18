@@ -94,10 +94,12 @@ function RevokeInvites({ container, count, onRevoke }: { container?: Container; 
         <Dialog.Backdrop />
         <Dialog.Viewport>
           <Dialog.Popup>
-            <Dialog.Title>Pending invites</Dialog.Title>
-            <Dialog.Description>
-              {count === 0 ? 'No invites are waiting for an answer.' : `${count} ${count === 1 ? 'invite is' : 'invites are'} waiting for an answer.`}
-            </Dialog.Description>
+            <Dialog.Header>
+              <Dialog.Title>Pending invites</Dialog.Title>
+              <Dialog.Description>
+                {count === 0 ? 'No invites are waiting for an answer.' : `${count} ${count === 1 ? 'invite is' : 'invites are'} waiting for an answer.`}
+              </Dialog.Description>
+            </Dialog.Header>
             <div {...stylex.props(styles.actions)}>
               <Button
                 tone="danger"

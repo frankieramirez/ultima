@@ -1,5 +1,4 @@
 import * as stylex from '@stylexjs/stylex';
-import { space } from '@ultima/tokens/tokens.stylex';
 import { AlertDialog, Button, Dialog } from '@ultima/ui';
 import { useRef } from 'react';
 
@@ -11,12 +10,6 @@ const styles = stylex.create({
     position: 'relative',
   },
   contained: { position: 'absolute' },
-  footer: {
-    display: 'flex',
-    gap: space['--ult-space-3'],
-    justifyContent: 'flex-end',
-    marginBlockStart: space['--ult-space-6'],
-  },
 });
 
 /** AlertDialog.Root is always modal, so Dialog's root, which its parts share, holds them open without trapping focus. */
@@ -29,12 +22,14 @@ export default function AlertDialogAnatomy() {
           <AlertDialog.Backdrop forceRender style={styles.contained} />
           <AlertDialog.Viewport style={styles.contained}>
             <AlertDialog.Popup initialFocus={false} finalFocus={false}>
-              <AlertDialog.Title>Delete report</AlertDialog.Title>
-              <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>
-              <footer {...stylex.props(styles.footer)}>
+              <AlertDialog.Header>
+                <AlertDialog.Title>Delete report</AlertDialog.Title>
+                <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>
+              </AlertDialog.Header>
+              <AlertDialog.Footer>
                 <AlertDialog.Close render={<Button variant="ghost" />}>Cancel</AlertDialog.Close>
                 <AlertDialog.Close render={<Button tone="danger" />}>Delete</AlertDialog.Close>
-              </footer>
+              </AlertDialog.Footer>
             </AlertDialog.Popup>
           </AlertDialog.Viewport>
         </AlertDialog.Portal>

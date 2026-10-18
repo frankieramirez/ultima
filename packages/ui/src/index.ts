@@ -22,8 +22,10 @@ export {
   type AlertDialogViewportProps,
   type AlertDialogBackdropProps,
   type AlertDialogPopupProps,
+  type AlertDialogHeaderProps,
   type AlertDialogTitleProps,
   type AlertDialogDescriptionProps,
+  type AlertDialogFooterProps,
 } from './alert-dialog';
 export {
   AspectRatio,
@@ -232,8 +234,10 @@ export {
   type DialogViewportProps,
   type DialogBackdropProps,
   type DialogPopupProps,
+  type DialogHeaderProps,
   type DialogTitleProps,
   type DialogDescriptionProps,
+  type DialogFooterProps,
 } from './dialog';
 export {
   type DrawerRootProps,
