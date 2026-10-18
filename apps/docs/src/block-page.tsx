@@ -91,6 +91,7 @@ const styles = stylex.create({
   figure: {
     backgroundColor: 'transparent',
     borderRadius: 0,
+    boxShadow: 'none',
     marginBlock: { default: space['--ult-space-9'], [breakpoints.DESKTOP]: space['--ult-space-10'] },
     marginInline: 0,
     minInlineSize: 0,

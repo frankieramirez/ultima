@@ -14,6 +14,7 @@ const styles = stylex.create({
   figure: {
     backgroundColor: 'transparent',
     borderRadius: 0,
+    boxShadow: 'none',
     display: 'flex',
     flexDirection: 'column',
     marginBlock: space['--ult-space-6'],

@@ -46,7 +46,7 @@ const styles = stylex.create({
   },
   li: { marginBlock: space['--ult-space-3'] },
   fence: { marginBlock: space['--ult-space-6'], position: 'relative' },
-  labelled: { marginBlock: space['--ult-space-6'], minInlineSize: 0 },
+  labelled: { boxShadow: 'none', marginBlock: space['--ult-space-6'], minInlineSize: 0 },
   head: {
     alignItems: 'center',
     display: 'flex',
