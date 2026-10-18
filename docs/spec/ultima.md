@@ -3132,7 +3132,7 @@ behind    npx shadcn@4.21.4 add @ultima/dialog --overwrite
 diverged  npx ultima-design diff sidebar  (reinstalling discards your edits)
 ```
 
-One row per installed file, sorted by item then path, with paths relative to the project root. `installed` is the stamp's revision, `-` when there is none. The served revision is printed once, because one deploy serves one revision. The closing lines appear only for states that have files in them: `behind` lists one reinstall command naming every behind item, `diverged` points at `diff`, and `retired` and an unknown scheme each get one explanatory line. Nothing is printed for `current` or `edited` beyond their rows. With `--json` the same report is one object: `{ "registry", "revision", "files": [{ "item", "file", "state", "installed": { "revision", "hash" } | null, "local", "served" }] }`.
+One row per installed file, sorted by item then path, with paths relative to the project root. `installed` is the stamp's revision, `-` when there is none. The served revision is printed once, because one deploy serves one revision. The closing lines appear only for states that have files in them: `behind` lists one reinstall command naming every behind item, `diverged` points at `diff`, and `retired` and an unknown scheme each get one explanatory line. Nothing is printed for `current` or `edited` beyond their rows. With `--json` the same report is one object: `{ "registry", "revision", "files": [{ "item", "file", "state", "installed": { "revision", "hash" } | null, "local", "served" }] }`. A file that no longer parses has `local: null` and an `unparsed` reason.
 
 Exit 0 whenever the report completes, whatever it contains: drift is information, and a consumer's CI should not fail because Ultima deployed. The run is incomplete (exit 3) when it cannot produce a report: the consumer scope's own conditions under **Package and engine**, no `@ultima` registry in `components.json`, a catalogue that cannot be fetched, or a registry outside the CLI's format range. `status` never exits 1, which `check` and `doctor` keep for findings.
 
@@ -3152,7 +3152,7 @@ $ npx ultima-design diff sidebar
 
 ### Update
 
-Charted on [Map: The consumer CLI's update command](https://github.com/frankieramirez/ultima/issues/890). Decided on [Where can update get the exact content a consumer installed?](https://github.com/frankieramirez/ultima/issues/891), [Which files does update cover?](https://github.com/frankieramirez/ultima/issues/892), [Does update merge or overwrite a file the consumer edited?](https://github.com/frankieramirez/ultima/issues/893), [Does update need a lockfile, or are the in-file stamps enough?](https://github.com/frankieramirez/ultima/issues/894), [How does update treat the base theme change and frozen presets?](https://github.com/frankieramirez/ultima/issues/895) and [How does update write, get review and roll back?](https://github.com/frankieramirez/ultima/issues/896). Status: specified, not built.
+Charted on [Map: The consumer CLI's update command](https://github.com/frankieramirez/ultima/issues/890). Decided on [Where can update get the exact content a consumer installed?](https://github.com/frankieramirez/ultima/issues/891), [Which files does update cover?](https://github.com/frankieramirez/ultima/issues/892), [Does update merge or overwrite a file the consumer edited?](https://github.com/frankieramirez/ultima/issues/893), [Does update need a lockfile, or are the in-file stamps enough?](https://github.com/frankieramirez/ultima/issues/894), [How does update treat the base theme change and frozen presets?](https://github.com/frankieramirez/ultima/issues/895) and [How does update write, get review and roll back?](https://github.com/frankieramirez/ultima/issues/896). Status: built on [Build: The consumer CLI's update command](https://github.com/frankieramirez/ultima/issues/929).
 
 `update` brings installed Ultima files up to what the registry serves and keeps the consumer's edits wherever a three-way merge can. It is the only Ultima command that rewrites an installed item. It writes only a plan the consumer has seen, and it journals every write so the run can be rolled back. ADR 0003's amendment of 2026-10-17 records why this leaves registry-first distribution in place.
 
@@ -3160,15 +3160,16 @@ Charted on [Map: The consumer CLI's update command](https://github.com/frankiera
 $ npx ultima-design update
 Registry  https://ultima.systems/r  revision 3f9c2ab04e1d
 
-item      file                           state      action
-dialog    src/components/ui/dialog.tsx   behind     replace
-sidebar   src/components/ui/sidebar.tsx  diverged   merge
-select    src/components/ui/select.tsx   diverged   conflict  2 hunks
-tokens    src/lib/tokens.stylex.ts       behind     hold      base theme changes to neutral-tight
-lib       src/lib/component.ts           unstamped  report    no installed base
-skill     .claude/skills/ultima-design   stale      refresh
+item      file                                   state      action
+dialog    src/components/ui/dialog.tsx           behind     replace
+sidebar   src/components/ui/sidebar.tsx          diverged   merge
+select    src/components/ui/select.tsx           diverged   conflict  2 hunks
+tokens    src/lib/tokens.stylex.ts               behind     hold      base theme changes to neutral-tight
+lib       src/lib/component.ts                   unstamped  report    no installed base
+skill     .claude/skills/ultima-design/SKILL.md  stale      refresh
 
 hold      npx ultima-design update --accept-base-theme  (https://ultima.systems/install/update)
+keep      npx shadcn@4.21.4 add "https://ultima.systems/r/theme.json?theme=…"  installs the Ultima preset, which keeps the previous look
 conflict  npx ultima-design update --write-conflicts  or  --replace select
 apply     npx ultima-design update --yes
 ```
@@ -3203,8 +3204,8 @@ The merge is line based. Its three inputs are the installed base, the local file
 
 Two flags change the default, each per run:
 
-- `--write-conflicts` writes a conflicting file with diff3 markers: `<<<<<<< local`, `||||||| @ultima/<item> <installed revision>`, `=======` and `>>>>>>> @ultima/<item> <served revision>`. The file then fails to compile until someone resolves it, which is why markers are never written by default. A run should leave a project that still builds unless the consumer asks otherwise.
-- `--replace <item>`, repeatable, takes the registry's file for every file of the item that is not `current`, whatever its state, apart from `retired`. The local edits survive only in the run's journal.
+- `--write-conflicts` writes a conflicting file with diff3 markers: `<<<<<<< local`, `||||||| @ultima/<item> <installed revision>`, `=======` and `>>>>>>> @ultima/<item> <served revision>`. The file then fails to compile until someone resolves it, which is why markers are never written by default. Until then it has no local hash: `status` shows it `edited` or `diverged` with `does not parse` and the parser's first line, and `update` reports it with `resolve any conflict markers first` and never merges it, though `--replace` still takes the served file. A run should leave a project that still builds unless the consumer asks otherwise.
+- `--replace <item>`, repeatable, takes the registry's file for every file of the item that is not `current`, whatever its state, apart from `retired`. It does not lift a hold, for a base theme or a missing dependency. The local edits survive only in the run's journal.
 
 **The installed base.** For a `diverged` `c1` file, the base is the item's authored source at the stamp's revision. It is fetched from the public repository the catalogue names, rebuilt with the registry build's rules (the `@ultima/*` import rewrite, and the base-theme marker for `tokens`), and rendered as installed. It is accepted only when its `c1` hash equals the stamp's hash. `docs/research/2026-10-17-update-baseline-source.md` holds the evidence: every stamped file reproduced at three revisions. The fetch is one unauthenticated `raw.githubusercontent.com` request per `diverged` file, cached for the run. The catalogue names the source with two keys the registry build adds:
 
@@ -3238,6 +3239,7 @@ Both keys are additive, so an older CLI does not misread them and the format sta
   "registry": "https://ultima.systems/r",
   "revision": "3f9c2ab04e1d",
   "planHash": "sha256:…",
+  "writeConflicts": false,
   "files": [{ "item": "select", "file": "src/components/ui/select.tsx", "state": "diverged", "action": "conflict", "reason": null, "installed": { "revision": "1a2b3c4d5e6f", "hash": "c1:…" }, "local": "c1:…", "served": "c1:…", "base": "verified", "hunks": 2, "requires": [] }],
   "managed": [{ "file": ".claude/skills/ultima-design/SKILL.md", "state": "stale", "action": "refresh" }],
   "notices": [],
@@ -3245,9 +3247,9 @@ Both keys are additive, so an older CLI does not misread them and the format sta
 }
 ```
 
-`action` is one of `none`, `replace`, `merge`, `conflict`, `hold`, `report` and `refresh`. `base` is `verified`, `unavailable` with a `reason`, or `null` when the action needs none. `notices` is `status`'s list. Each file row also carries `sha256`, the digest of the local file's bytes, so an edit of any kind after planning makes the plan stale, and `uncommitted`, true when git holds uncommitted changes to the file. `planHash` is the `sha256:` digest of the plan's `registry`, `revision`, `files` and `managed`, with keys and rows sorted and `uncommitted` left out. `--apply` refuses with exit 2 a plan whose fields no longer give its `planHash`. An apply prints `{ "kind": "ultima-update-run", "schemaVersion": 1, "runId", "planHash", "written", "conflicts", "held", "reported", "next", "failed" }`, where `failed` is the write that stopped the run, as `{ "file", "error" }`, or `null`, and a rollback prints `{ "kind": "ultima-update-rollback", "schemaVersion": 1, "runId", "restored", "left" }`.
+`action` is one of `none`, `replace`, `merge`, `conflict`, `hold`, `report` and `refresh`. `base` is `verified`, `unavailable` with a `reason`, or `null` when the action needs none. `hunks` counts the hunks that conflict: `0` for a `merge`, the count for a `conflict`, `null` for every other action. `writeConflicts` records `--write-conflicts`, so `--apply` writes a `conflict` row with markers only when the plan it applies says so. `notices` is `status`'s list. Each file row also carries `sha256`, the digest of the local file's bytes, so an edit of any kind after planning makes the plan stale, and `uncommitted`, true when git holds uncommitted changes to the file. `planHash` is the `sha256:` digest of the plan's `registry`, `revision`, `writeConflicts`, `files` and `managed`, with keys and rows sorted and `uncommitted` left out. `--apply` refuses with exit 2 a plan whose fields no longer give its `planHash`. An apply prints `{ "kind": "ultima-update-run", "schemaVersion": 1, "runId", "planHash", "written", "conflicts", "held", "reported", "next", "failed" }`, where `failed` is the write that stopped the run, as `{ "file", "error" }`, or `null`, and a rollback prints `{ "kind": "ultima-update-rollback", "schemaVersion": 1, "runId", "restored", "left" }`.
 
-**Exits.** By the table under [Package and engine](#package-and-engine). 0 when the plan, the apply or the rollback completes, held, conflicted and reported files included, since each is a decision left to the consumer and not a failure. `update` never exits 1. 2 for an invalid invocation: an item the registry neither serves nor has installed, `--replace` naming an item that is not installed, `--apply` with a file that is not a plan, or `--apply` combined with item names or `--replace`. 3 for the conditions `status` names, a stale plan, a write that failed, or `--rollback` with no run to undo.
+**Exits.** By the table under [Package and engine](#package-and-engine). 0 when the plan, the apply or the rollback completes, held, conflicted and reported files included, since each is a decision left to the consumer and not a failure. `update` never exits 1. 2 for an invalid invocation: an item the registry neither serves nor has installed, `--replace` naming an item that is not installed, `--apply` with a file that is not a plan, or `--apply` combined with item names, `--yes`, `--plan`, `--replace`, `--write-conflicts` or `--accept-base-theme`. 3 for the conditions `status` names, a stale plan, a write that failed, or `--rollback` with no run to undo.
 
 **The docs page.** `/install/update` becomes the update page. It opens with the loop: `status`, `update`, review the plan, `update --yes`, `check`, and `--rollback` if needed. It then names the two refresh steps for the CLI and the skill. Its base-theme sections stay as they are. The build ticket writes that section with the command, and the agent guide's install pointer links it.
 
