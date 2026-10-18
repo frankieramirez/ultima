@@ -10,6 +10,7 @@ export {
   type TooltipPositionerProps,
   type TooltipPopupProps,
   type TooltipArrowProps,
+  type TooltipShortcutProps,
 } from '@ultima/ui/tooltip';
 
 export const Tooltip = {
@@ -18,5 +19,6 @@ export const Tooltip = {
   Positioner: mark(Source.Positioner, 'tooltip', 'Positioner'),
   Popup: mark(Source.Popup, 'tooltip', 'Popup'),
   Arrow: mark(Source.Arrow, 'tooltip', 'Arrow'),
+  Shortcut: mark(Source.Shortcut, 'tooltip', 'Shortcut'),
   Viewport: mark(Source.Viewport, 'tooltip', 'Viewport'),
 };

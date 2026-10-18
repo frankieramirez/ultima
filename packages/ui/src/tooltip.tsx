@@ -13,8 +13,16 @@ const RIGHTWARD = ':is([data-side="left"], [data-side="inline-start"]:not([dir="
 const LEFTWARD = ':is([data-side="right"], [data-side="inline-end"]:not([dir="rtl"] *), [data-side="inline-start"]:is([dir="rtl"] *))';
 
 const styles = stylex.create({
+  /**
+   * A Viewport measures the popup and writes its size here, then pins the popup to the far edge on
+   * a top or left side. Unread, the positioner has no size, so the pinned popup shrinks to nothing
+   * and wraps a word per line, and the positioner is placed as a point off the trigger's center.
+   * Without a Viewport the variables are unset and both sizes stay auto.
+   */
   positioner: {
+    height: 'var(--positioner-height)',
     outline: '0',
+    width: 'var(--positioner-width)',
   },
   popup: {
     backgroundColor: color['--ult-color-surface-raised'],
@@ -51,6 +59,19 @@ const styles = stylex.create({
     zIndex: z.popup,
   },
   /**
+   * The keys that run the trigger's action, after the label: the subtle ink, and the wide tracking
+   * that capitals and modifier glyphs take, so they read as keys rather than as a word.
+   */
+  shortcut: {
+    color: color['--ult-color-text-subtle'],
+    fontFamily: font['--ult-font-sans'],
+    fontSize: text['--ult-text-2'],
+    letterSpacing: font['--ult-font-tracking-wide'],
+    lineHeight: font['--ult-font-leading-snug'],
+    marginInlineStart: space['--ult-space-4'],
+    whiteSpace: 'nowrap',
+  },
+  /**
    * A square turned 45deg, half outside the popup's edge on the side that faces the anchor.
    * Base UI places only the cross axis; the side offset and the two outward hairlines are set
    * here, so the arrow continues the popup's border and covers it where they meet.
@@ -78,6 +99,7 @@ type TooltipTriggerProps = PartProps<ComponentProps<typeof BaseTooltip.Trigger>>
 type TooltipPositionerProps = PartProps<ComponentProps<typeof BaseTooltip.Positioner>>;
 type TooltipPopupProps = PartProps<ComponentProps<typeof BaseTooltip.Popup>>;
 type TooltipArrowProps = PartProps<ComponentProps<typeof BaseTooltip.Arrow>>;
+type TooltipShortcutProps = PartProps<ComponentProps<'span'>>;
 
 function Trigger({ style, ...props }: TooltipTriggerProps) {
   return <BaseTooltip.Trigger {...props} {...stylex.props(style)} />;
@@ -95,6 +117,11 @@ function Arrow({ style, ...props }: TooltipArrowProps) {
   return <BaseTooltip.Arrow {...props} {...stylex.props(styles.arrow, style)} />;
 }
 
+/** The keys that run the trigger's action, as text: `Search <Tooltip.Shortcut>⌘K</Tooltip.Shortcut>`. */
+function Shortcut({ style, ...props }: TooltipShortcutProps) {
+  return <span {...props} {...stylex.props(styles.shortcut, style)} />;
+}
+
 const Tooltip = {
   Provider: BaseTooltip.Provider,
   Root: BaseTooltip.Root,
@@ -103,7 +130,8 @@ const Tooltip = {
   Positioner,
   Popup,
   Arrow,
+  Shortcut,
   Viewport: BaseTooltip.Viewport,
 };
 
-export { Tooltip, type TooltipTriggerProps, type TooltipPositionerProps, type TooltipPopupProps, type TooltipArrowProps };
+export { Tooltip, type TooltipTriggerProps, type TooltipPositionerProps, type TooltipPopupProps, type TooltipArrowProps, type TooltipShortcutProps };

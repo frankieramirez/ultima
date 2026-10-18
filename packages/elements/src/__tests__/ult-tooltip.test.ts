@@ -299,6 +299,36 @@ test('data-ending-style holds through the closing window and drops with the popu
   expect(popup!.hasAttribute('data-ending-style')).toBe(false);
 });
 
+test('a shortcut paints as the React Shortcut: subtle tracked text a space step 4 after the label, on one line', async () => {
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = TOOLTIP_MARKUP.replace('<ult-tooltip>', '<ult-tooltip open>').replace(
+    'Copied to clipboard<ult-tooltip-arrow>',
+    'Search<ult-tooltip-shortcut>⌘K</ult-tooltip-shortcut><ult-tooltip-arrow>',
+  );
+  const root = wrapper.querySelector('ult-tooltip') as HTMLElement;
+  document.body.appendChild(root);
+  const { popup } = parts(root);
+  await vi.waitFor(() => expect(popup!.hasAttribute('hidden')).toBe(false), { timeout: 2000 });
+  const shortcut = root.querySelector('ult-tooltip-shortcut')!.firstElementChild as HTMLElement;
+  expect(shortcut.tagName).toBe('SPAN');
+  expect(shortcut.getAttribute('part')).toBe('shortcut');
+  expect(shortcut.textContent).toBe('⌘K');
+  const probe = document.createElement('span');
+  probe.style.color = 'var(--ult-color-text-subtle)';
+  probe.style.marginInlineStart = 'var(--ult-space-4)';
+  probe.style.fontSize = 'var(--ult-text-2)';
+  probe.style.letterSpacing = 'var(--ult-font-tracking-wide)';
+  document.body.appendChild(probe);
+  const want = getComputedStyle(probe);
+  const got = getComputedStyle(shortcut);
+  expect(got.color).toBe(want.color);
+  expect(got.marginInlineStart).toBe(want.marginInlineStart);
+  expect(got.fontSize).toBe(want.fontSize);
+  expect(got.letterSpacing).toBe(want.letterSpacing);
+  expect(got.whiteSpace).toBe('nowrap');
+  probe.remove();
+});
+
 test('a consumer [part] selector reaches the popup through the light DOM', async () => {
   const probe = document.createElement('style');
   probe.textContent = 'ult-tooltip-popup [part="popup"] { text-decoration: underline; }';
@@ -360,6 +390,7 @@ test('the emitted bundles carry every tag and no runtime stylex or external impo
       'ult-tooltip-positioner',
       'ult-tooltip-popup',
       'ult-tooltip-arrow',
+      'ult-tooltip-shortcut',
     ]) {
       expect(bundle).toMatch(new RegExp(`customElements\\.define\\(["']${tag}["']`));
     }

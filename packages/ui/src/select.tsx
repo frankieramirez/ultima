@@ -91,8 +91,9 @@ const styles = stylex.create({
     color: color['--ult-color-text'],
     fontFamily: font['--ult-font-sans'],
     lineHeight: font['--ult-font-leading-normal'],
-    // Never narrower than the trigger it opens from.
-    minWidth: 'var(--anchor-width)',
+    // Never narrower than the trigger it opens from, nor than the 128px (2 × step 12) every menu
+    // popup keeps, so a short trigger's list still has room for a label and its trailing check.
+    minWidth: `max(var(--anchor-width), calc(${space['--ult-space-12']} * 2))`,
     opacity: {
       default: 1,
       ':is([data-starting-style])': 0,
@@ -118,7 +119,7 @@ const styles = stylex.create({
   },
   // Items are 32px rows with the small radius, so the popup's 8px corner nests around them. The
   // check sits at the trailing edge, leaving the leading edge to an icon the item carries itself, so
-  // a label without one starts at the item's padding.
+  // a label without one starts at the item's padding. The 12px gap keeps the check off the label.
   item: {
     alignItems: 'center',
     backgroundColor: { ':is([data-highlighted])': color['--ult-color-surface-hover'] },
@@ -130,7 +131,7 @@ const styles = stylex.create({
     fontFamily: font['--ult-font-sans'],
     fontSize: text['--ult-text-4'],
     fontWeight: font['--ult-font-weight-regular'],
-    gap: space['--ult-space-4'],
+    gap: space['--ult-space-5'],
     minHeight: space['--ult-space-9'],
     outline: 'none',
     paddingBlock: space['--ult-space-2'],
@@ -292,8 +293,10 @@ function Backdrop({ style, ...props }: SelectBackdropProps) {
   return <BaseSelect.Backdrop {...props} {...stylex.props(style)} />;
 }
 
-function Positioner({ style, ...props }: SelectPositionerProps) {
-  return <BaseSelect.Positioner {...props} {...stylex.props(styles.positioner, style)} />;
+// Placed below its trigger, the list starts on the trigger's start edge rather than centering on
+// it, so its labels share the value's start edge when the popup is wider than a short trigger.
+function Positioner({ align = 'start', style, ...props }: SelectPositionerProps) {
+  return <BaseSelect.Positioner align={align} {...props} {...stylex.props(styles.positioner, style)} />;
 }
 
 function Popup({ style, ...props }: SelectPopupProps) {

@@ -268,7 +268,8 @@ export const elements: readonly ElementEntry[] = [
       "ult-tooltip-trigger",
       "ult-tooltip-positioner",
       "ult-tooltip-popup",
-      "ult-tooltip-arrow"
+      "ult-tooltip-arrow",
+      "ult-tooltip-shortcut"
     ],
     "attributes": [
       {
