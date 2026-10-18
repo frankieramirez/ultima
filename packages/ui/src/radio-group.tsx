@@ -20,17 +20,18 @@ const styles = stylex.create({
     margin: 0,
   },
   // Checkbox's treatment on a round box: each key names its whole state, disabled is muted rather
-  // than faded, and the checked item is the accent fill with a 6px dot in its contrast ink.
+  // than faded, read-only keeps its look and drops hover and press, and the checked item is the
+  // accent fill with a 6px dot in its contrast ink.
   item: {
     alignItems: 'center',
     appearance: 'none',
     backgroundColor: {
       default: color['--ult-color-field'],
       ':is([data-disabled])': color['--ult-color-surface-sunken'],
-      ':is([data-checked]):not([data-disabled], :active)': color['--ult-color-accent'],
-      ':is([data-checked]):active:not([data-disabled])': color['--ult-color-accent-active'],
+      ':is([data-checked]):is([data-readonly], :not(:active)):not([data-disabled])': color['--ult-color-accent'],
+      ':is([data-checked]):active:not([data-disabled], [data-readonly])': color['--ult-color-accent-active'],
       [HOVER]: {
-        ':is([data-checked]):hover:not([data-disabled], :active)': color['--ult-color-accent-hover'],
+        ':is([data-checked]):hover:not([data-disabled], [data-readonly], :active)': color['--ult-color-accent-hover'],
       },
     },
     borderColor: {
@@ -39,7 +40,7 @@ const styles = stylex.create({
       ':is([aria-invalid="true"], [data-invalid])': color['--ult-color-danger'],
       ':is([data-checked]):not([aria-invalid="true"], [data-invalid], [data-disabled])': 'transparent',
       [HOVER]: {
-        ':hover:not([data-checked], [aria-invalid="true"], [data-invalid], [data-disabled])': color['--ult-color-border-hover'],
+        ':hover:not([data-checked], [aria-invalid="true"], [data-invalid], [data-disabled], [data-readonly])': color['--ult-color-border-hover'],
       },
     },
     borderRadius: radius['--ult-radius-full'],

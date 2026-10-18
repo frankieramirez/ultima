@@ -135,7 +135,7 @@ Corners are set by role, in `px` so they don't grow with the font size:
 
 Don't use opacity for:
 
-- **Disabled.** A disabled control takes the `surface-sunken` fill, the quiet `border` and `--ult-color-text-disabled` ink. Its placeholder and the glyphs inside it (chevrons, clear marks, addon text, separators) take the disabled ink too, or an empty disabled field looks editable. Read-only isn't disabled and keeps them in `text-subtle`. Transparency lets whatever is behind the control show through and makes its value hard to read. The color is gated against its fill; an alpha isn't.
+- **Disabled.** A disabled control takes the `surface-sunken` fill, the quiet `border` and `--ult-color-text-disabled` ink. Its placeholder and the glyphs inside it (chevrons, clear marks, addon text, separators) take the disabled ink too, or an empty disabled field looks editable. Transparency lets whatever is behind the control show through and makes its value hard to read. The color is gated against its fill; an alpha isn't.
 - **Secondary text.** Use `text-muted` or `text-subtle`. Alpha text changes contrast with every background it sits on, so the contrast gate can't vouch for it.
 - **Hover and press.** Move one palette step. An alpha hover on a solid fill gives a different color over every background.
 - **Borders.** A translucent border doubles up where two surfaces meet and disappears on busy content.
@@ -177,7 +177,9 @@ A theme may drop the blur and keep the wash, so the scrim never depends on blur 
 
 **One solid accent per region.** The solid accent fill is the loudest thing on a screen. Spend it on the primary action, and use soft, outline or ghost for the actions beside it. Two solid accents next to each other leave the reader to guess which one matters.
 
-**A grey fill means "you can't use this".** Fields are the brightest surface (ink on paper), so `surface-sunken` grey is kept for disabled and read-only. Don't grey-fill a live surface. Empty marks a gap with a dashed edge rather than a grey fill for this reason.
+**A grey fill means "you can't use this".** Fields are the brightest surface (ink on paper), so `surface-sunken` grey is kept for disabled. Don't grey-fill a live surface. Empty marks a gap with a dashed edge rather than a grey fill for this reason.
+
+**Read-only is live, so it keeps the paper.** A read-only field still takes focus and the ring, lets its value be selected and copied, and submits it. It keeps the `field` fill, `text` for the value and `text-subtle` for placeholder and glyphs, and gives up only what says "type here": the 3:1 edge drops to the quiet `border`, hover stays off, the caret is hidden, and a control that would change the value leaves (a clear mark, a chip's remove). A glyph that names the kind of value (a chevron, a calendar) stays, without hover. The quiet edge is outside the gate: the label and the 4.5:1 value find the field, and the ring meets 3:1 on focus. Editable and read-only share the paper, read-only and disabled share the quiet edge, and only disabled is grey. A choice control's box is its value, so a read-only Checkbox, Radio or Switch keeps its whole resting look, 3:1 edge included, and drops only hover and press. The fill, not the ink, separates read-only from disabled, so `text-disabled` and `text-subtle` stay one step apart (mithril 9 and 10) and neither token moves.
 
 **Dark mode is designed, not inverted.** The palette is generated per mode, surfaces get lighter as they rise, and neither mode uses pure black or white (`#0e0e0e` and `#fdfdfd` in the default theme), which cuts glare and leaves room for a shadow or a lighter step.
 

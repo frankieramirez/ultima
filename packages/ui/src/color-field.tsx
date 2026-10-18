@@ -52,11 +52,12 @@ const styles = stylex.create({
       outlineOffset: border.focusOffset,
     },
   },
-  // Input's field recipe, restated. `:read-only` also matches a disabled input, so one key gives the
-  // sunken fill and the quiet edge, and an invalid field keeps its danger edge through every state.
+  // Input's field recipe, restated. Read-only keeps the field fill and gives up the 3:1 edge, hover
+  // and the caret; `:read-only` also matches a disabled input, and disabled alone adds the sunken
+  // fill and the disabled ink. An invalid field keeps its danger edge through every state.
   input: {
     appearance: 'none',
-    backgroundColor: { default: color['--ult-color-field'], ':read-only': color['--ult-color-surface-sunken'] },
+    backgroundColor: { default: color['--ult-color-field'], ':disabled': color['--ult-color-surface-sunken'] },
     borderColor: {
       default: color['--ult-color-border-strong'],
       ':read-only:not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
@@ -69,6 +70,7 @@ const styles = stylex.create({
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
+    caretColor: { default: null, ':read-only': 'transparent' },
     color: { default: color['--ult-color-text'], ':disabled': color['--ult-color-text-disabled'] },
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
@@ -177,7 +179,7 @@ const styles = stylex.create({
   // The field recipe at the compact 32px height, in mono so the figures line up.
   channelInput: {
     appearance: 'none',
-    backgroundColor: { default: color['--ult-color-field'], ':read-only': color['--ult-color-surface-sunken'] },
+    backgroundColor: { default: color['--ult-color-field'], ':disabled': color['--ult-color-surface-sunken'] },
     borderColor: {
       default: color['--ult-color-border-strong'],
       ':read-only:not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
@@ -190,6 +192,7 @@ const styles = stylex.create({
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
+    caretColor: { default: null, ':read-only': 'transparent' },
     color: { default: color['--ult-color-text'], ':disabled': color['--ult-color-text-disabled'] },
     lineHeight: font['--ult-font-leading-none'],
     margin: 0,
