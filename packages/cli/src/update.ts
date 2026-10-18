@@ -111,7 +111,7 @@ export type UpdateOptions = {
   write?: (path: string, content: string) => void;
 };
 
-const needsBase = (row: Row) => row.state === 'diverged' && row.installed?.hash.startsWith('c1:') === true;
+const needsBase = (row: Row) => row.state === 'diverged' && !row.unparsed && row.installed?.hash.startsWith('c1:') === true;
 
 /** A `diverged` file merged over its installed base: the text to write, with conflict markers when `conflicts` is not 0. */
 type Merged = { conflicts: number; text: string } | { reason: string };
@@ -124,6 +124,7 @@ type Planned = Pick<PlanRow, 'action' | 'reason' | 'base' | 'hunks'>;
  */
 export function planAction(row: Row, base?: Base, merged?: Merged): Planned {
   const plain = (action: Action, reason: string | null = null): Planned => ({ action, reason, base: null, hunks: null });
+  if (row.unparsed) return plain('report', 'does not parse, so resolve any conflict markers first');
   switch (row.state) {
     case 'current':
     case 'edited':

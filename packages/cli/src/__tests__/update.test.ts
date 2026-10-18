@@ -136,6 +136,13 @@ describe('planAction', () => {
   it('reports a diverged b1 file, which cannot be merged, without a base', () => {
     expect(planAction(row('diverged', 'b1'))).toEqual({ action: 'report', reason: 'built file, which cannot be merged', base: null, hunks: null });
   });
+
+  it('reports a file that no longer parses in any state, even with a base', () => {
+    const unparsed = (state: string) => ({ ...row(state), local: null, unparsed: 'does not parse: Expression expected. (4:15)' });
+    const report = { action: 'report', reason: 'does not parse, so resolve any conflict markers first', base: null, hunks: null };
+    expect(planAction(unparsed('edited'))).toEqual(report);
+    expect(planAction(unparsed('diverged'), { text: 'base' }, { conflicts: 0, text: 'merged' })).toEqual(report);
+  });
 });
 
 describe('update', () => {
@@ -784,6 +791,22 @@ describe('update merges a diverged file three ways', () => {
       ['<<<<<<< local', '  return <Spinner label="ours" />;', `||||||| @ultima/select ${OLD}`, '  return <Spinner label="one" />;', '=======', '  return <Spinner label="theirs" />;', `>>>>>>> @ultima/select ${NEW}`].join('\n'),
     );
     expect(marked.trimEnd().split('\n').at(-1)).toBe(await servedStamp(['theirs', 2]));
+  });
+
+  it('reports a file left with conflict markers instead of failing, and --replace still takes the served file', async () => {
+    const { root } = await selectFixture(['one', 1], ['ours', 3], ['theirs', 2]);
+    expect((await run(['update', '--write-conflicts', '--yes', '--cwd', root])).code).toBe(0);
+
+    const status = await run(['status', '--cwd', root]);
+    expect(status.code).toBe(0);
+    expect(status.stdout).toMatch(new RegExp(`^select +${SELECT} +edited +${NEW}  does not parse: .+$`, 'm'));
+    const planned = await run(['update', '--cwd', root]);
+    expect(planned.code).toBe(0);
+    expect(planned.stdout).toMatch(new RegExp(`^select +${SELECT} +edited +report +does not parse, so resolve any conflict markers first$`, 'm'));
+    expect(planned.stdout).not.toContain('apply');
+
+    expect((await run(['update', '--replace', 'select', '--yes', '--cwd', root])).code).toBe(0);
+    expect(await statusOf(root)).toEqual({ [SELECT]: 'current' });
   });
 
   it('applies a plan made with --write-conflicts as it was made, and refuses one whose base is gone since', async () => {

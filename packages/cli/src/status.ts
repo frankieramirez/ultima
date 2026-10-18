@@ -25,6 +25,8 @@ export type Row = {
   installed: { revision: string; hash: string } | null;
   local: string | null;
   served: string | null;
+  /** Why the local file has no hash: it no longer parses, as with unresolved conflict markers. */
+  unparsed?: string;
 };
 
 export type StatusReport = {
@@ -186,7 +188,13 @@ async function rowFor(
   const installed = stamp && `${stamp.scheme}:${stamp.hash}`;
   const servedScheme = match?.hash.split(':')[0];
   const scheme = [servedScheme, stamp?.scheme].find((candidate) => candidate && SCHEMES.includes(candidate)) as Scheme | undefined;
-  const local = scheme ? await contentHash(text, scheme, scope.aliases) : null;
+  let local: string | null = null;
+  let unparsed: string | undefined;
+  try {
+    if (scheme) local = await contentHash(text, scheme, scope.aliases);
+  } catch (error) {
+    unparsed = `does not parse: ${(error as Error).message.split('\n')[0]}`;
+  }
   const servedHash = match && scheme && scheme !== servedScheme ? await servedHashInScheme(url, match, scheme) : (match?.hash ?? null);
 
   const row = {
@@ -196,6 +204,8 @@ async function rowFor(
     local,
     served: servedHash,
   };
+  // A file that no longer parses matches neither hash, so it reads as edited or diverged.
+  if (unparsed) return { ...row, unparsed, state: fileState(installed, '', servedHash) };
   if (local === null || (stamp && !SCHEMES.includes(stamp.scheme) && local !== servedHash)) {
     return { ...row, state: 'unknown-scheme' };
   }
@@ -238,7 +248,7 @@ export function printStatus({ registry, revision, files, managed, notices }: Sta
   if (managed.some(({ state }) => state === 'stale')) closing.push(['stale', 'npx ultima-design install']);
   if (files.some(({ state }) => state === 'behind' || state === 'diverged')) closing.push(['update', 'npx ultima-design update']);
   const skills = managed.map(({ file, state, version }) => ['skill', file, state, version]);
-  const table = [['item', 'file', 'state', 'installed'], ...files.map((row) => [row.item, row.file, row.state, row.installed?.revision ?? '-']), ...skills];
+  const table = [['item', 'file', 'state', 'installed'], ...files.map((row) => [row.item, row.file, row.state, [row.installed?.revision ?? '-', row.unparsed].filter(Boolean).join('  ')]), ...skills];
   const width = (column: string[]) => Math.max(...column.map((cell) => cell.length)) + 2;
   const first = width([...table.map(([item]) => item as string), ...closing.map(([state]) => state as string)]);
   const widths = [first, width(table.map((row) => row[1] as string)), width(table.map((row) => row[2] as string))];
