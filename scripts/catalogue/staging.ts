@@ -1,7 +1,10 @@
 // What the registry build stages and which items it describes, as pure data over a checkout. The
 // builder copies these files; `ULT-REGISTRY-001` checks the same plan statically, so neither keeps a
 // second list. docs/spec/agent-infrastructure.md, Import and registry boundaries.
+import { stagedSpecifier } from '../../packages/cli/src/rebuild.ts';
 import type { Files } from './files.ts';
+
+export { stagedSpecifier };
 
 /** Names never staged, at any depth: the UI barrel, a throwaway prototype and tests. */
 export const NEVER_STAGE = new Set(['index.ts', 'prototype', '__tests__']);
@@ -74,17 +77,6 @@ export function stagedSources(files: Files): { sources: StagedSource[]; collisio
     }
   }
   return { sources, collisions };
-}
-
-/**
- * The `@/registry` specifier a workspace import becomes, which shadcn rewrites to the consumer's
- * aliases on install; undefined for a specifier the build cannot stage, such as a barrel.
- */
-export function stagedSpecifier(specifier: string): string | undefined {
-  if (specifier.startsWith('@ultima/tokens/')) return `@/registry/ultima/lib/${specifier.slice('@ultima/tokens/'.length)}`;
-  if (specifier.startsWith('@ultima/ui/lib/')) return `@/registry/ultima/lib/${specifier.slice('@ultima/ui/lib/'.length)}`;
-  if (specifier.startsWith('@ultima/ui/')) return `@/registry/ultima/ui/${specifier.slice('@ultima/ui/'.length)}`;
-  return undefined;
 }
 
 /** The staged file a rewritten specifier reaches, if the plan stages one. */

@@ -4,6 +4,8 @@ import ButtonTrigger from '../../demos/tooltip/button';
 import buttonTriggerSource from '../../demos/tooltip/button?raw';
 import IconOnly from '../../demos/tooltip/icon-only';
 import iconOnlySource from '../../demos/tooltip/icon-only?raw';
+import Shortcut from '../../demos/tooltip/shortcut';
+import shortcutSource from '../../demos/tooltip/shortcut?raw';
 
 # Tooltip
 
@@ -31,6 +33,12 @@ An icon-only Button still follows the Button recipe: an `aria-label`, one glyph,
 
 The trigger slot must hold an Ultima Button or an element carrying its own focus ring. `aria-label` is required by the `Tooltip.Trigger` types and must match the tooltip text.
 
+## Keyboard shortcut
+
+`Tooltip.Shortcut` sets the keys after the label in muted text, the way a menu item's shortcut reads. The trigger's `aria-label` stays the label alone, and `aria-keyshortcuts` names the keys, because a tooltip is never read as the trigger's name.
+
+<Demo component={Shortcut} source={shortcutSource} />
+
 ## Props
 
 Only what Ultima adds. Everything else is Base UI's; see [Base UI's Tooltip](https://base-ui.com/react/components/tooltip) for the inherited surface.
@@ -38,7 +46,8 @@ Only what Ultima adds. Everything else is Base UI's; see [Base UI's Tooltip](htt
 | Part | Prop | Type | Default | Notes |
 | --- | --- | --- | --- | --- |
 | `Trigger` | `aria-label` | `string` | — | Required. Matches the tooltip text and names the trigger. |
-| Styled parts | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
+| `Trigger` | `aria-keyshortcuts` | `string` | — | The keys a `Shortcut` shows, such as `Meta+K`. |
+| Styled parts | `style` | `StyleXStyles` | — | The style slot, merged last. `Shortcut` is a styled `<span>`. There is no `className`. |
 | Every part | `render` | `ReactElement \| function` | — | Base UI's render prop; use it to supply the trigger element. |
 
 ## Accessibility

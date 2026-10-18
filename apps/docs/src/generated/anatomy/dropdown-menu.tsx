@@ -14,6 +14,7 @@ export {
   type DropdownMenuPopupProps,
   type DropdownMenuViewportProps,
   type DropdownMenuArrowProps,
+  type DropdownMenuItemTone,
   type DropdownMenuItemProps,
   type DropdownMenuLinkItemProps,
   type DropdownMenuGroupProps,
@@ -26,6 +27,7 @@ export {
   type DropdownMenuRadioItemIndicatorProps,
   type DropdownMenuSubmenuRootProps,
   type DropdownMenuSubmenuTriggerProps,
+  type DropdownMenuShortcutProps,
 } from '@ultima/ui/dropdown-menu';
 
 export const DropdownMenu = {
@@ -47,4 +49,5 @@ export const DropdownMenu = {
   RadioItem: mark(Source.RadioItem, 'dropdown-menu', 'RadioItem'),
   RadioItemIndicator: mark(Source.RadioItemIndicator, 'dropdown-menu', 'RadioItemIndicator'),
   SubmenuTrigger: mark(Source.SubmenuTrigger, 'dropdown-menu', 'SubmenuTrigger'),
+  Shortcut: mark(Source.Shortcut, 'dropdown-menu', 'Shortcut'),
 };

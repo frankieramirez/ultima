@@ -25,6 +25,7 @@ export {
   type CommandSeparatorProps,
   type CommandStatusProps,
   type CommandEmptyProps,
+  type CommandShortcutProps,
 } from '@ultima/ui/command';
 
 export const Command = {
@@ -43,6 +44,7 @@ export const Command = {
   Group: mark(Source.Group, 'command', 'Group'),
   GroupLabel: mark(Source.GroupLabel, 'command', 'GroupLabel'),
   Item: mark(Source.Item, 'command', 'Item'),
+  Shortcut: mark(Source.Shortcut, 'command', 'Shortcut'),
   Row: mark(Source.Row, 'command', 'Row'),
   Empty: mark(Source.Empty, 'command', 'Empty'),
   Separator: mark(Source.Separator, 'command', 'Separator'),

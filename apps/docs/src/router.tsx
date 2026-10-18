@@ -55,7 +55,7 @@ const installUpdateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/install/update',
   component: InstallUpdatePage,
-  staticData: { title: 'Update the base theme' },
+  staticData: { title: 'Update' },
 });
 
 const buildAScreenRoute = createRoute({

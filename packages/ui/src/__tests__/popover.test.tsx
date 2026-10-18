@@ -63,6 +63,35 @@ test('every part renders, and the Title names the popup', async () => {
   }
 });
 
+// #944: a Viewport pins the popup to the positioner's far edge on a top side; the positioner
+// reads the size the Viewport measures, or the popup collapses and sits off its trigger.
+test('a top-side popover with a Viewport keeps its measured width and centres on its trigger', async () => {
+  const screen = await render(
+    <div style={{ paddingBlockStart: 320, paddingInline: 400 }}>
+      <Popover.Root defaultOpen>
+        <Popover.Trigger render={<Button />}>Share</Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Positioner side="top" sideOffset={8}>
+            <Popover.Popup data-testid="popup" aria-label="Share">
+              <Popover.Viewport>
+                <span data-testid="line">Anyone with the link can read it.</span>
+              </Popover.Viewport>
+            </Popover.Popup>
+          </Popover.Positioner>
+        </Popover.Portal>
+      </Popover.Root>
+    </div>,
+  );
+  const popup = page.getByTestId('popup').element();
+  await expect.poll(() => getComputedStyle(popup).opacity).toBe('1');
+  const line = page.getByTestId('line').element();
+  expect(line.getClientRects()).toHaveLength(1);
+  const trigger = screen.getByRole('button', { name: 'Share' }).element().getBoundingClientRect();
+  const box = popup.getBoundingClientRect();
+  expect(Math.abs((box.left + box.right) / 2 - (trigger.left + trigger.right) / 2)).toBeLessThan(1);
+  expect(box.bottom).toBeLessThanOrEqual(trigger.top);
+});
+
 test('a popover with no Title is named by aria-label on the Popup instead', async () => {
   const screen = await render(
     <Popover.Root>

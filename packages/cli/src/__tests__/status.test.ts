@@ -335,9 +335,19 @@ describe('status', () => {
         '',
         'behind    npx shadcn@4.21.4 add @ultima/dialog --overwrite',
         'diverged  npx ultima-design diff sidebar  (reinstalling discards your edits)',
+        'update    npx ultima-design update',
         '',
       ].join('\n'),
     );
+  });
+
+  it('ends with the update command when a file is behind, and keeps its reinstall command', async () => {
+    const registry = await serve([{ name: 'dialog', files: { 'dialog.tsx': await contentHash(staged('Dialog', 'two'), 'c1') } }]);
+    const root = consumer(registry, { 'src/components/ui/dialog.tsx': await stamped('dialog', staged('Dialog', 'one'), OLD) });
+    expect((await status(root)).stdout.trimEnd().split('\n').slice(-2)).toEqual([
+      'behind  npx shadcn@4.21.4 add @ultima/dialog --overwrite',
+      'update  npx ultima-design update',
+    ]);
   });
 
   it('closes with one line each for retired files and unknown schemes', async () => {
@@ -422,6 +432,17 @@ describe('renderAsInstalled', () => {
   it('keeps the directive with rsc', () => {
     expect(renderAsInstalled(served, aliases, true)).toMatch(/^'use client';\n\nimport \{ Spinner \} from '@\/components\/ui\/spinner';/);
   });
+
+  it("drops the file's leading comments, as shadcn does, and then the directive without rsc", () => {
+    const commented = `// Header.\n/* More. */\n\n${served}`;
+    expect(renderAsInstalled(commented, aliases, true)).toBe(renderAsInstalled(served, aliases, true));
+    expect(renderAsInstalled(commented.replace("'use client';", "'use client'"), aliases, false)).toMatch(/^import \{ Spinner \}/);
+  });
+
+  it('leaves a b1 file as served, since shadcn copies a registry:file byte for byte', () => {
+    const bundle = withStamp('/* Bundle. */\nimport "@/registry/ultima/ui/x";\n', '/* @ultima/tokens-css aaaaaaaaaaaa b1:0123456789abcdef */');
+    expect(renderAsInstalled(bundle, aliases, false)).toBe(bundle);
+  });
 });
 
 describe('diff', () => {
@@ -449,6 +470,16 @@ describe('diff', () => {
         '',
       ].join('\n'),
     );
+  });
+
+  it("leaves out the served file's leading comments, which shadcn never installed", async () => {
+    const served = await servedCopy('button', `// The button, as authored.\n${staged('Button', 'two')}`);
+    const registry = await serve([{ name: 'button', files: { 'button.tsx': served.hash }, content: served.content }]);
+    const local = `${staged('Button', 'mine').replaceAll('@/registry/ultima/ui/', '@/components/ui/')}${stampLine('button', NEW, served.hash, 'ts')}\n`;
+    const { code, stdout } = await diff(consumer(registry, { 'src/components/ui/button.tsx': local }), 'button');
+    expect(code).toBe(0);
+    expect(stdout).not.toContain('The button, as authored.');
+    expect(stdout.split('\n').filter((line) => /^[-+](?![-+])/.test(line))).toEqual(['-  return <Spinner label="mine" />;', '+  return <Spinner label="two" />;']);
   });
 
   it('prints a named item that differs only by formatting and comments as current', async () => {

@@ -375,7 +375,7 @@ test('the catalogue follows the page links in keyboard order', async () => {
   await expect.element(menuLink('Install')).toBeVisible();
   (menuLink('Tokens').element() as HTMLElement).focus();
   await userEvent.keyboard('{Tab}');
-  expect(document.activeElement).toBe(menuLink('Update the base theme').element());
+  expect(document.activeElement).toBe(menuLink('Update').element());
   await userEvent.keyboard('{Tab}');
   expect(document.activeElement).toBe(menuLink('Accordion').element());
 });

@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -8,10 +9,11 @@ import { describe, expect, it } from 'vitest';
 
 import { ultimaPresetUrl } from '../../../../apps/docs/src/ultima-preset.ts';
 import { UNMARKED_NEUTRAL_HASHES, fileBaseTheme } from '../base-theme.ts';
+import { CLI_VERSION, mergeHooks, skillStamp } from '../install.ts';
 import { run } from '../run.ts';
 import { contentHash, stampLine, withStamp } from '../stamp.ts';
-import { planAction, printUpdate, update, updateExit } from '../update.ts';
-import { project, snapshot } from './fixtures.ts';
+import { type UpdateReport, planAction, planHash, printUpdate, update, updateExit } from '../update.ts';
+import { edit, project, snapshot, write } from './fixtures.ts';
 
 const OLD = 'aaaaaaaaaaaa';
 const NEW = 'bbbbbbbbbbbb';
@@ -28,46 +30,80 @@ async function stamped(item: string, source: string, revision: string, local = v
   return withStamp(local, stampLine(item, revision, await contentHash(source, 'c1'), 'ts'));
 }
 
+/** The authored source the registry build stages as `staged(name, label)`. */
+function authored(name: string, label: string): string {
+  return staged(name, label).replace('@/registry/ultima/ui/', '@ultima/ui/');
+}
+
+type Source = 'named' | 'older' | 'none';
+
+/**
+ * A registry at revision NEW serving each item's one file, with its stamped content, and a raw host serving `raw` at
+ * `/raw/<revision>/<path>`. `named` catalogues name that host and each file's source path, `older` ones carry neither
+ * key, and `none` ones list the paths but no source.
+ */
 type Needs = { registryDependencies?: string[]; dependencies?: string[] };
 
-/** A registry at revision NEW serving each item's one file, with its stamped content. */
-async function serve(items: ({ name: string; file: string; source: string; type?: string; baseTheme?: string } & Needs)[]): Promise<string> {
+async function serve(
+  items: ({ name: string; file: string; source: string; type?: string; scheme?: 'c1' | 'b1'; baseTheme?: string } & Needs)[],
+  { raw = {}, source = 'named' }: { raw?: Record<string, string>; source?: Source } = {},
+) {
   const served: Record<string, unknown> = {};
-  const catalogue = { name: 'ultima', meta: { ultima: { format: 1 } }, items: [] as unknown[] };
-  for (const { name, file, source, type = 'registry:ui', baseTheme, ...needs } of items) {
-    const hash = await contentHash(source, 'c1');
-    const path = `ultima/${type === 'registry:lib' ? 'lib' : 'ui'}/${file}`;
-    catalogue.items.push({ name, type, ...needs, files: [{ path, type }], meta: { ultima: { revision: NEW, files: { [file]: hash }, ...(baseTheme && { baseTheme }) } } });
-    served[`/r/${name}.json`] = { name, files: [{ path, type, content: withStamp(source, stampLine(name, NEW, hash, 'ts')) }] };
-  }
-  served['/r/registry.json'] = catalogue;
+  const requests: string[] = [];
   const server = createServer((request, response) => {
-    const body = served[request.url ?? ''];
-    if (!body) response.writeHead(404).end();
+    const url = request.url ?? '';
+    if (url.startsWith('/raw/')) requests.push(url);
+    const body = url.startsWith('/raw/') ? raw[url.slice('/raw/'.length)] : served[url];
+    if (body === undefined) response.writeHead(404).end();
+    else if (typeof body === 'string') response.writeHead(200, { 'content-type': 'text/plain' }).end(body);
     else response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(body));
   });
   await new Promise<void>((listening) => server.listen(0, '127.0.0.1', listening));
   server.unref();
-  return `http://127.0.0.1:${(server.address() as AddressInfo).port}/r/{name}.json`;
+  const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  const template = `${origin}/raw/{revision}/{path}`;
+
+  const catalogue = {
+    name: 'ultima',
+    meta: { ultima: { format: 1, ...(source === 'named' && { source: { repository: 'https://example.test/ultima', raw: template } }) } },
+    items: [] as unknown[],
+  };
+  for (const { name, file, source: text, type = 'registry:ui', scheme = 'c1', baseTheme, ...needs } of items) {
+    const hash = await contentHash(text, scheme);
+    const path = `ultima/${type === 'registry:lib' ? 'lib' : 'ui'}/${file}`;
+    const sources = source === 'older' ? {} : { sources: { [file]: `packages/ui/src/${type === 'registry:lib' ? 'lib/' : ''}${file}` } };
+    catalogue.items.push({ name, type, ...needs, files: [{ path, type }], meta: { ultima: { revision: NEW, files: { [file]: hash }, ...sources, ...(baseTheme && { baseTheme }) } } });
+    served[`/r/${name}.json`] = { name, files: [{ path, type, content: withStamp(text, stampLine(name, NEW, hash, 'ts')) }] };
+  }
+  served['/r/registry.json'] = catalogue;
+  return { registry: `${origin}/r/{name}.json`, raw: template, requests };
 }
 
-/** One file in each of the states behind, current, unstamped and diverged. */
-async function fixture() {
-  const registry = await serve([
-    { name: 'button', file: 'button.tsx', source: staged('Button', 'two') },
-    { name: 'dialog', file: 'dialog.tsx', source: staged('Dialog', 'two') },
-    { name: 'lib', file: 'component.ts', source: 'export type StyleSlot = unknown;\n', type: 'registry:lib' },
-    { name: 'sidebar', file: 'sidebar.tsx', source: staged('Sidebar', 'two') },
-  ]);
+const SIDEBAR = `${OLD}/packages/ui/src/sidebar.tsx`;
+
+/**
+ * One file in each of the states behind, current, unstamped and diverged. The raw host serves the diverged sidebar's
+ * authored source at its installed revision unless `raw` says otherwise.
+ */
+async function fixture({ raw = { [SIDEBAR]: authored('Sidebar', 'one') }, source = 'named', sidebarRevision = OLD }: { raw?: Record<string, string>; source?: Source; sidebarRevision?: string } = {}) {
+  const served = await serve(
+    [
+      { name: 'button', file: 'button.tsx', source: staged('Button', 'two') },
+      { name: 'dialog', file: 'dialog.tsx', source: staged('Dialog', 'two') },
+      { name: 'lib', file: 'component.ts', source: 'export type StyleSlot = unknown;\n', type: 'registry:lib' },
+      { name: 'sidebar', file: 'sidebar.tsx', source: staged('Sidebar', 'two') },
+    ],
+    { raw, source },
+  );
   const root = project({
-    'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }),
+    'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': served.registry } }),
     'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
     'src/components/ui/button.tsx': await stamped('button', staged('Button', 'two'), NEW),
     'src/components/ui/dialog.tsx': await stamped('dialog', staged('Dialog', 'one'), OLD),
     'src/lib/component.ts': 'export type StyleSlot = string;\n',
-    'src/components/ui/sidebar.tsx': await stamped('sidebar', staged('Sidebar', 'one'), OLD, viteCopy(staged('Sidebar', 'three'))),
+    'src/components/ui/sidebar.tsx': await stamped('sidebar', staged('Sidebar', 'one'), sidebarRevision, viteCopy(staged('Sidebar', 'three'))),
   });
-  return { root, registry: registry.replace('/{name}.json', '') };
+  return { root, registry: served.registry.replace('/{name}.json', ''), raw: served.raw, requests: served.requests };
 }
 
 const runs = (root: string) => readdirSync(join(root, '.ultima-update')).filter((name) => name !== '.gitignore').sort();
@@ -78,20 +114,25 @@ async function statusOf(root: string) {
 }
 
 describe('planAction', () => {
-  const row = (state: string, local = 'c1:1111') => ({ item: 'x', file: 'x.tsx', state, installed: null, local, served: 'c1:2222' }) as Parameters<typeof planAction>[0];
+  const row = (state: string, scheme = 'c1') =>
+    ({ item: 'x', file: 'x.tsx', state, installed: { revision: OLD, hash: `${scheme}:1111` }, local: `${scheme}:3333`, served: `${scheme}:2222` }) as Parameters<typeof planAction>[0];
 
   it('gives each state its action from the spec table', () => {
-    expect(planAction(row('current'))).toEqual({ action: 'none', reason: null });
-    expect(planAction(row('edited'))).toEqual({ action: 'none', reason: null });
-    expect(planAction(row('behind'))).toEqual({ action: 'replace', reason: null });
-    expect(planAction(row('diverged'))).toEqual({ action: 'report', reason: 'no installed base' });
-    expect(planAction(row('unstamped'))).toEqual({ action: 'report', reason: 'no installed base' });
+    expect(planAction(row('current'))).toEqual({ action: 'none', reason: null, base: null });
+    expect(planAction(row('edited'))).toEqual({ action: 'none', reason: null, base: null });
+    expect(planAction(row('behind'))).toEqual({ action: 'replace', reason: null, base: null });
+    expect(planAction({ ...row('unstamped'), installed: null })).toEqual({ action: 'report', reason: 'no installed base', base: null });
     expect(planAction(row('retired')).action).toBe('report');
     expect(planAction(row('unknown-scheme')).action).toBe('report');
   });
 
-  it('reports a diverged b1 file, which cannot be merged', () => {
-    expect(planAction(row('diverged', 'b1:1111'))).toEqual({ action: 'report', reason: 'built file, which cannot be merged' });
+  it('reports a diverged c1 file with its base, verified or not, until merging is built', () => {
+    expect(planAction(row('diverged'), { text: 'base' })).toEqual({ action: 'report', reason: 'installed base verified; merging is not built yet', base: 'verified' });
+    expect(planAction(row('diverged'), { reason: 'why' })).toEqual({ action: 'report', reason: 'no installed base: why', base: 'unavailable' });
+  });
+
+  it('reports a diverged b1 file, which cannot be merged, without a base', () => {
+    expect(planAction(row('diverged', 'b1'))).toEqual({ action: 'report', reason: 'built file, which cannot be merged', base: null });
   });
 });
 
@@ -108,7 +149,7 @@ describe('update', () => {
         'item     file                           state      action',
         'dialog   src/components/ui/dialog.tsx   behind     replace',
         'lib      src/lib/component.ts           unstamped  report   no installed base',
-        'sidebar  src/components/ui/sidebar.tsx  diverged   report   no installed base',
+        'sidebar  src/components/ui/sidebar.tsx  diverged   report   installed base verified; merging is not built yet',
         '',
         'apply    npx ultima-design update --yes',
         '',
@@ -260,12 +301,72 @@ describe('update', () => {
   });
 });
 
+/** A loopback port nothing listens on, so a request to it is refused. */
+const CLOSED = await new Promise<number>((closed) => {
+  const server = createServer().listen(0, '127.0.0.1', () => {
+    const { port } = server.address() as AddressInfo;
+    server.close(() => closed(port));
+  });
+});
+
+describe('installed base', () => {
+  async function sidebar(options: Parameters<typeof fixture>[0], raw?: (fixtureRaw: string) => string) {
+    const built = await fixture(options);
+    const result = (await update(built.root, ['sidebar'], { raw: raw?.(built.raw) })) as UpdateReport;
+    return { row: result.plan.files.find(({ item }) => item === 'sidebar'), requests: built.requests };
+  }
+
+  it('verifies a diverged c1 file against the authored source the raw host serves, with one request', async () => {
+    const { root, requests } = await fixture();
+    const { plan } = (await update(root, [], {})) as UpdateReport;
+    expect(plan.files.map(({ item, action, base }) => [item, action, base])).toEqual([
+      ['dialog', 'replace', null],
+      ['lib', 'report', null],
+      ['sidebar', 'report', 'verified'],
+    ]);
+    expect(requests).toEqual([`/raw/${SIDEBAR}`]);
+  });
+
+  it('falls back to the built-in address and the authored layout for a catalogue served before the source keys', async () => {
+    const { row, requests } = await sidebar({ source: 'older' }, (raw) => raw);
+    expect(row).toMatchObject({ action: 'report', base: 'verified' });
+    expect(requests).toEqual([`/raw/${SIDEBAR}`]);
+  });
+
+  it.each([
+    ['a served base whose hash differs', { raw: { [SIDEBAR]: authored('Sidebar', 'two') } }, undefined, /^no installed base: packages\/ui\/src\/sidebar\.tsx at aaaaaaaaaaaa rebuilds to c1:[0-9a-f]{16}, not the stamp's c1:[0-9a-f]{16}$/],
+    ['a 404', { raw: {} }, undefined, /^no installed base: http:\/\/127\.0\.0\.1:\d+\/raw\/aaaaaaaaaaaa\/packages\/ui\/src\/sidebar\.tsx answered 404, so the file is not in the repository at that revision$/],
+    ['a network error', { source: 'older' as const }, () => `http://127.0.0.1:${CLOSED}/{revision}/{path}`, /^no installed base: http:\/\/127\.0\.0\.1:\d+\/aaaaaaaaaaaa\/packages\/ui\/src\/sidebar\.tsx could not be fetched: ECONNREFUSED$/],
+    ['a local revision', { sidebarRevision: 'local' }, undefined, /^no installed base: installed from a build outside a git checkout \(revision local\)$/],
+    ['a registry that names no source', { source: 'none' as const }, undefined, /^no installed base: the registry names no source repository$/],
+    ['a source that imports a barrel', { raw: { [SIDEBAR]: `import { Spinner } from '@ultima/ui';\n${authored('Sidebar', 'one')}` } }, undefined, /^no installed base: packages\/ui\/src\/sidebar\.tsx at aaaaaaaaaaaa does not rebuild: .*imports "@ultima\/ui", a barrel/],
+  ])('reports %s with its own reason, and the run still completes', async (_, options, raw, reason) => {
+    const { row } = await sidebar(options, raw);
+    expect(row).toMatchObject({ action: 'report', base: 'unavailable' });
+    expect(row?.reason).toMatch(reason);
+  });
+
+  it('never fetches a base for a diverged b1 file', async () => {
+    const body = (label: string) => `export const ultima = "${label}";\n`;
+    const served = await serve([{ name: 'ultima', file: 'ultima.js', source: body('two'), type: 'registry:lib', scheme: 'b1' }]);
+    const root = project({
+      'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': served.registry } }),
+      'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
+      'src/lib/ultima.js': withStamp(body('three'), stampLine('ultima', OLD, await contentHash(body('one'), 'b1'), 'ts')),
+    });
+    const result = await run(['update', '--cwd', root]);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('ultima  src/lib/ultima.js  diverged  report  built file, which cannot be merged\n');
+    expect(served.requests).toEqual([]);
+  });
+});
+
 const LEGACY_TOKENS = 'export const radius = { md: 10 };\n';
 const NEUTRAL_TOKENS = 'export const radius = { md: 4 };\n// @ultima-base neutral-tight\n';
 
 /** A project whose `tokens` file holds `local` at revision OLD, served on Neutral with Tight radius. */
 async function tokensFixture(local: string) {
-  const registry = await serve([{ name: 'tokens', file: 'tokens.stylex.ts', source: NEUTRAL_TOKENS, type: 'registry:lib', baseTheme: 'neutral-tight' }]);
+  const { registry } = await serve([{ name: 'tokens', file: 'tokens.stylex.ts', source: NEUTRAL_TOKENS, type: 'registry:lib', baseTheme: 'neutral-tight' }]);
   return project({
     'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }),
     'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
@@ -342,7 +443,7 @@ describe('update holds an item that needs a dependency', () => {
 
   /** dialog needs an uninstalled registry item, select an npm package the project lacks, and sidebar what it has. */
   async function needsFixture(extra: Record<string, string> = {}) {
-    const registry = await serve([
+    const { registry } = await serve([
       { name: 'button', file: 'button.tsx', source: staged('Button', 'two') },
       { name: 'dialog', file: 'dialog.tsx', source: staged('Dialog', 'two'), registryDependencies: ['@ultima/spinner', '@ultima/button'] },
       { name: 'select', file: 'select.tsx', source: staged('Select', 'two'), dependencies: ['@base-ui/react', 'clsx'] },
@@ -397,5 +498,319 @@ describe('update holds an item that needs a dependency', () => {
     expect(rerun.stdout).toContain('dialog   src/components/ui/dialog.tsx   behind  replace\n');
     expect(rerun.stdout).toContain('select   src/components/ui/select.tsx   behind  replace\n');
     expect(rerun.stdout).not.toContain('needs');
+  });
+
+  it('prints what each hold requires in its JSON row, and the add commands as needs', async () => {
+    const root = await needsFixture();
+    const { stdout } = await run(['update', '--plan', '--json', '--cwd', root]);
+    const plan = JSON.parse(stdout);
+    expect(plan.files.map(({ item, action, requires }: { item: string; action: string; requires: string[] }) => [item, action, requires])).toEqual([
+      ['sidebar', 'replace', []],
+      ['dialog', 'hold', ['@ultima/spinner']],
+      ['select', 'hold', ['@base-ui/react']],
+    ]);
+    expect(plan.commands).toEqual([
+      { for: 'needs', command: 'npx shadcn@4.21.4 add @ultima/spinner' },
+      { for: 'needs', command: 'pnpm add @base-ui/react' },
+      { for: 'apply', command: 'npx ultima-design update --yes' },
+    ]);
+  });
+});
+
+const sha256 = (text: string) => createHash('sha256').update(text).digest('hex');
+const projectFiles = (root: string) => Object.fromEntries(Object.entries(snapshot(root)).filter(([path]) => !path.startsWith('.ultima-update')));
+
+async function planFile(root: string, ...args: string[]) {
+  const { code, stdout, stderr } = await run(['update', ...args, '--plan', '--json', '--cwd', root]);
+  expect({ code, stderr }).toEqual({ code: 0, stderr: '' });
+  const path = join(root, '..', `${root.split('/').at(-1)}-plan.json`);
+  writeFileSync(path, stdout);
+  return { path, plan: JSON.parse(stdout) };
+}
+
+describe('update --plan --json and --apply', () => {
+  it('prints one ultima-update-plan object, and planning twice gives the same planHash', async () => {
+    const { root, registry } = await fixture();
+    const before = snapshot(root);
+    const { plan } = await planFile(root);
+    const dialog = await stamped('dialog', staged('Dialog', 'one'), OLD);
+    expect(plan).toEqual({
+      kind: 'ultima-update-plan',
+      schemaVersion: 1,
+      registry,
+      revision: NEW,
+      planHash: expect.stringMatching(/^sha256:[0-9a-f]{64}$/),
+      files: [
+        {
+          item: 'dialog',
+          file: 'src/components/ui/dialog.tsx',
+          state: 'behind',
+          action: 'replace',
+          reason: null,
+          installed: { revision: OLD, hash: await contentHash(staged('Dialog', 'one'), 'c1') },
+          local: await contentHash(staged('Dialog', 'one'), 'c1'),
+          served: await contentHash(staged('Dialog', 'two'), 'c1'),
+          base: null,
+          hunks: null,
+          requires: [],
+          sha256: sha256(dialog),
+          uncommitted: false,
+        },
+        expect.objectContaining({ item: 'lib', file: 'src/lib/component.ts', state: 'unstamped', action: 'report', reason: 'no installed base', installed: null }),
+        expect.objectContaining({ item: 'sidebar', state: 'diverged', action: 'report', reason: 'installed base verified; merging is not built yet', base: 'verified' }),
+      ],
+      managed: [],
+      notices: [],
+      commands: [{ for: 'apply', command: 'npx ultima-design update --yes' }],
+    });
+    expect((await planFile(root)).plan.planHash).toBe(plan.planHash);
+    expect(snapshot(root)).toEqual(before);
+  });
+
+  it('hashes the plan independently of key order and of row order', async () => {
+    const { root } = await fixture();
+    const { plan } = await planFile(root);
+    const reordered = { ...plan, files: [...plan.files].reverse().map((row: Record<string, unknown>) => Object.fromEntries(Object.entries(row).reverse())) };
+    expect(planHash(Object.fromEntries(Object.entries(reordered).reverse()) as never)).toBe(plan.planHash);
+    expect(planHash({ ...plan, revision: 'cccccccccccc' })).not.toBe(plan.planHash);
+  });
+
+  it('--apply writes the same bytes --yes writes, and prints the run object under --json', async () => {
+    const { root } = await fixture();
+    const { path, plan } = await planFile(root);
+    const applied = await run(['update', '--apply', path, '--json', '--cwd', root]);
+    expect(applied.code).toBe(0);
+    const viaApply = projectFiles(root);
+    const [runId] = runs(root);
+    expect(JSON.parse(applied.stdout)).toEqual({
+      kind: 'ultima-update-run',
+      schemaVersion: 1,
+      runId,
+      planHash: plan.planHash,
+      written: ['src/components/ui/dialog.tsx'],
+      conflicts: [],
+      held: [],
+      reported: ['src/lib/component.ts', 'src/components/ui/sidebar.tsx'],
+      next: ['npx ultima-design check --files src/components/ui/dialog.tsx', 'npx tsc --noEmit'],
+      failed: null,
+    });
+
+    const undone = await run(['update', '--rollback', '--json', '--cwd', root]);
+    expect(undone.code).toBe(0);
+    expect(JSON.parse(undone.stdout)).toEqual({ kind: 'ultima-update-rollback', schemaVersion: 1, runId, restored: ['src/components/ui/dialog.tsx'], left: [] });
+
+    const yes = await run(['update', '--yes', '--json', '--cwd', root]);
+    expect(JSON.parse(yes.stdout)).toMatchObject({ kind: 'ultima-update-run', planHash: plan.planHash, written: ['src/components/ui/dialog.tsx'] });
+    expect(projectFiles(root)).toEqual(viaApply);
+  });
+
+  it('applies the plan it recorded and leaves a file that drifted after planning but was not in it', async () => {
+    const { root } = await fixture();
+    const { path } = await planFile(root, 'dialog');
+    const button = join(root, 'src/components/ui/button.tsx');
+    writeFileSync(button, await stamped('button', staged('Button', 'one'), OLD));
+    const before = readFileSync(button, 'utf8');
+    const { code, stdout } = await run(['update', '--apply', path, '--cwd', root]);
+    expect(code).toBe(0);
+    expect(stdout).toMatch(/^wrote +src\/components\/ui\/dialog\.tsx$/m);
+    expect(stdout).not.toContain('button');
+    expect(readFileSync(button, 'utf8')).toBe(before);
+  });
+
+  it('refuses with exit 3 and writes nothing when a planned file changed after planning', async () => {
+    const { root } = await fixture();
+    const { path } = await planFile(root);
+    const dialog = join(root, 'src/components/ui/dialog.tsx');
+    writeFileSync(dialog, `// Our note.\n${readFileSync(dialog, 'utf8')}`);
+    const before = snapshot(root);
+    const { code, stdout } = await run(['update', '--apply', path, '--cwd', root]);
+    expect(code).toBe(3);
+    expect(stdout).toContain('ULT-UPDATE-003');
+    expect(stdout).toContain('src/components/ui/dialog.tsx changed since it was planned');
+    expect(snapshot(root)).toEqual(before);
+    expect(existsSync(join(root, '.ultima-update'))).toBe(false);
+  });
+
+  it('refuses with exit 3 when the served revision moved since planning', async () => {
+    const { root } = await fixture();
+    const { path, plan } = await planFile(root);
+    const moved = { ...plan, revision: OLD };
+    writeFileSync(path, JSON.stringify({ ...moved, planHash: planHash(moved) }));
+    const { code, stdout } = await run(['update', '--apply', path, '--json', '--cwd', root]);
+    expect(code).toBe(3);
+    expect(JSON.parse(stdout).diagnostics).toMatchObject([{ ruleId: 'ULT-UPDATE-003', message: expect.stringContaining(`revision ${OLD}`) }]);
+    expect(existsSync(join(root, '.ultima-update'))).toBe(false);
+  });
+
+  it('prints a base-theme hold with its commands, and --apply holds it as planned', async () => {
+    const root = await tokensFixture(LEGACY_TOKENS);
+    const before = snapshot(root);
+    const { path, plan } = await planFile(root);
+    expect(plan.files).toMatchObject([{ item: 'tokens', state: 'behind', action: 'hold', reason: 'base theme changes to neutral-tight', requires: [] }]);
+    expect(plan.commands).toEqual([
+      { for: 'hold', command: 'npx ultima-design update --accept-base-theme' },
+      { for: 'keep', command: `npx shadcn@4.21.4 add "${(await ultimaPresetUrl()).url}"` },
+    ]);
+    const applied = await run(['update', '--apply', path, '--json', '--cwd', root]);
+    expect(JSON.parse(applied.stdout)).toMatchObject({ runId: null, written: [], held: ['src/lib/tokens.stylex.ts'] });
+    expect(snapshot(root)).toEqual(before);
+  });
+
+  it('applies a plan made with --accept-base-theme as it was made, and refuses the flag beside --apply', async () => {
+    const root = await tokensFixture(LEGACY_TOKENS);
+    const { path, plan } = await planFile(root, '--accept-base-theme');
+    expect(plan.files).toMatchObject([{ item: 'tokens', action: 'replace' }]);
+    expect(plan.commands).toEqual([{ for: 'apply', command: 'npx ultima-design update --accept-base-theme --yes' }]);
+    expect((await run(['update', '--apply', path, '--accept-base-theme', '--cwd', root])).code).toBe(2);
+
+    const applied = await run(['update', '--apply', path, '--cwd', root]);
+    expect(applied.code).toBe(0);
+    expect(readFileSync(join(root, 'src/lib/tokens.stylex.ts'), 'utf8')).toBe(withStamp(NEUTRAL_TOKENS, stampLine('tokens', NEW, await contentHash(NEUTRAL_TOKENS, 'c1'), 'ts')));
+  });
+
+  it('exits 2 for --apply of a file that is not a plan, an edited plan, or with item names, --yes or --plan', async () => {
+    const { root } = await fixture();
+    const { path, plan } = await planFile(root);
+    const notaplan = join(root, '..', 'notaplan.json');
+    writeFileSync(notaplan, JSON.stringify({ kind: 'ultima-status', files: [] }));
+    const garbled = join(root, '..', 'garbled.json');
+    writeFileSync(garbled, 'not json');
+    const edited = join(root, '..', 'edited.json');
+    writeFileSync(edited, JSON.stringify({ ...plan, files: plan.files.map((row: { action: string }) => ({ ...row, action: 'replace' })) }));
+    for (const args of [['--apply', notaplan], ['--apply', garbled], ['--apply', join(root, 'missing.json')], ['--apply', edited], ['--apply', path, 'dialog'], ['--apply', path, '--yes'], ['--apply', path, '--plan'], ['--plan', '--yes'], ['--rollback', '--apply', path]]) {
+      const result = await run(['update', ...args, '--cwd', root]);
+      expect({ args, code: result.code, stdout: result.stdout }).toEqual({ args, code: 2, stdout: '' });
+    }
+    expect(existsSync(join(root, '.ultima-update'))).toBe(false);
+  });
+});
+
+const SKILL = '.claude/skills/ultima-design/SKILL.md';
+const SETTINGS = '.claude/settings.json';
+const SKILL_SOURCE = readFileSync(new URL('../../skill/ultima-design/SKILL.md', import.meta.url), 'utf8');
+const CLAUDE_HOOKS = `${JSON.stringify(mergeHooks(null, 'claude'), null, 2)}\n`;
+
+/** The drift fixture with a managed skill for Claude Code, and its hook entry unless `hooks` is false. */
+async function skillFixture(skill: string, { hooks = true } = {}) {
+  const { root, registry } = await fixture();
+  write(root, SKILL, skill);
+  if (hooks) write(root, SETTINGS, CLAUDE_HOOKS);
+  return { root, registry };
+}
+
+async function managedOf(root: string) {
+  const { managed } = JSON.parse((await run(['status', '--cwd', root, '--json'])).stdout) as { managed: { file: string; state: string }[] };
+  return Object.fromEntries(managed.map(({ file, state }) => [file, state]));
+}
+
+describe('update refreshes the managed skill', () => {
+  it('plans a stale skill as refresh, and --yes writes what install writes, which status then calls current', async () => {
+    const { root } = await skillFixture(skillStamp(SKILL_SOURCE, '0.0.0-old'));
+    const plan = await run(['update', '--cwd', root]);
+    expect(plan.stdout.split('\n').slice(2, 7)).toEqual([
+      'item     file                                   state      action',
+      'dialog   src/components/ui/dialog.tsx           behind     replace',
+      'lib      src/lib/component.ts                   unstamped  report   no installed base',
+      'sidebar  src/components/ui/sidebar.tsx          diverged   report   installed base verified; merging is not built yet',
+      `skill    ${SKILL}  stale      refresh`,
+    ]);
+    expect((await planFile(root)).plan.managed).toEqual([{ file: SKILL, state: 'stale', action: 'refresh' }]);
+
+    const before = snapshot(root);
+    const applied = await run(['update', '--yes', '--cwd', root]);
+    expect(applied.code).toBe(0);
+    expect(readFileSync(join(root, SKILL), 'utf8')).toBe(skillStamp(SKILL_SOURCE, CLI_VERSION));
+    expect(readFileSync(join(root, SETTINGS), 'utf8')).toBe(CLAUDE_HOOKS);
+    expect(await managedOf(root)).toEqual({ [SKILL]: 'current' });
+    expect(applied.stdout).toContain(`wrote     src/components/ui/dialog.tsx, ${SKILL}\n`);
+    expect(applied.stdout).toContain('next      npx ultima-design check --files src/components/ui/dialog.tsx\n');
+
+    const installed = project({ [SKILL]: skillStamp(SKILL_SOURCE, '0.0.0-old'), [SETTINGS]: CLAUDE_HOOKS });
+    await run(['install', '--cwd', installed]);
+    expect(readFileSync(join(installed, SKILL), 'utf8')).toBe(readFileSync(join(root, SKILL), 'utf8'));
+
+    expect((await run(['update', '--rollback', '--cwd', root])).code).toBe(0);
+    expect(projectFiles(root)).toEqual(before);
+  });
+
+  it('refreshes the hook entry only when install would rewrite it, and adds nothing beside a current skill', async () => {
+    const { root } = await skillFixture(skillStamp(SKILL_SOURCE, '0.0.0-old'), { hooks: false });
+    const { plan } = await planFile(root);
+    expect(plan.managed).toEqual([
+      { file: SKILL, state: 'stale', action: 'refresh' },
+      { file: SETTINGS, state: 'stale', action: 'refresh' },
+    ]);
+    expect((await run(['update', '--yes', '--cwd', root])).code).toBe(0);
+    expect(readFileSync(join(root, SETTINGS), 'utf8')).toBe(CLAUDE_HOOKS);
+
+    const current = (await skillFixture(skillStamp(SKILL_SOURCE, CLI_VERSION), { hooks: false })).root;
+    expect((await planFile(current)).plan.managed).toEqual([]);
+    await run(['update', '--yes', '--cwd', current]);
+    expect(existsSync(join(current, SETTINGS))).toBe(false);
+  });
+
+  it('refreshes a stale skill alone under --yes when no installed file drifted', async () => {
+    const root = project({ 'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': (await serve([])).registry } }), 'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }), [SKILL]: skillStamp(SKILL_SOURCE, '0.0.0-old'), [SETTINGS]: CLAUDE_HOOKS });
+    const plan = await run(['update', '--cwd', root]);
+    expect(plan.stdout).toContain('apply  npx ultima-design update --yes\n');
+    const applied = await run(['update', '--yes', '--json', '--cwd', root]);
+    expect(JSON.parse(applied.stdout)).toMatchObject({ written: [SKILL], next: [], failed: null });
+    expect(await managedOf(root)).toEqual({ [SKILL]: 'current' });
+  });
+
+  it('reports an edited skill, names install --force, and leaves it untouched', async () => {
+    const edited = `${skillStamp(SKILL_SOURCE, '0.0.0-old')}Our own line.\n`;
+    const { root } = await skillFixture(edited);
+    const printed = await run(['update', '--cwd', root]);
+    expect(printed.stdout).toContain(`skill    ${SKILL}  edited     report   edited since install\n`);
+    expect(printed.stdout).toContain('skill    npx ultima-design install --force  replaces the edited skill, discarding its edits\n');
+    const { plan } = await planFile(root);
+    expect(plan.managed).toEqual([{ file: SKILL, state: 'edited', action: 'report' }]);
+    expect(plan.commands).toContainEqual({ for: 'skill', command: 'npx ultima-design install --force' });
+
+    const applied = await run(['update', '--yes', '--json', '--cwd', root]);
+    expect(JSON.parse(applied.stdout)).toMatchObject({ written: ['src/components/ui/dialog.tsx'], reported: ['src/lib/component.ts', 'src/components/ui/sidebar.tsx', SKILL] });
+    expect(readFileSync(join(root, SKILL), 'utf8')).toBe(edited);
+  });
+
+  it('--apply refreshes the skill as planned, and refuses with exit 3 a plan whose skill changed since', async () => {
+    const { root } = await skillFixture(skillStamp(SKILL_SOURCE, '0.0.0-old'));
+    const { path } = await planFile(root);
+    edit(root, SKILL, (text) => `${text}Our own line.\n`);
+    const stale = await run(['update', '--apply', path, '--cwd', root]);
+    expect(stale.code).toBe(3);
+    expect(stale.stdout).toContain(`${SKILL} changed since it was planned`);
+    expect(existsSync(join(root, '.ultima-update'))).toBe(false);
+
+    write(root, SKILL, skillStamp(SKILL_SOURCE, '0.0.0-old'));
+    expect((await run(['update', '--apply', path, '--cwd', root])).code).toBe(0);
+    expect(await managedOf(root)).toEqual({ [SKILL]: 'current' });
+  });
+
+  it('reports a stale skill that no detected harness owns, since install would not write it', async () => {
+    const { root } = await fixture();
+    write(root, '.agents/skills/ultima-design/SKILL.md', skillStamp(SKILL_SOURCE, '0.0.0-old'));
+    const printed = await run(['update', '--cwd', root]);
+    expect(printed.stdout).toContain('skill    .agents/skills/ultima-design/SKILL.md  stale      report   no harness detected for it; install --harness <name> refreshes it\n');
+    expect((await planFile(root)).plan.managed).toEqual([{ file: '.agents/skills/ultima-design/SKILL.md', state: 'stale', action: 'report' }]);
+  });
+
+  it('leaves the skill out of a plan for named items', async () => {
+    const { root } = await skillFixture(skillStamp(SKILL_SOURCE, '0.0.0-old'));
+    expect((await planFile(root, 'dialog')).plan.managed).toEqual([]);
+  });
+
+  it('never upgrades the CLI: a registry outside its formats makes the run incomplete and prints the upgrade command', async () => {
+    const server = createServer((_, response) => response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ name: 'ultima', meta: { ultima: { format: 2 } }, items: [] })));
+    await new Promise<void>((listening) => server.listen(0, '127.0.0.1', listening));
+    server.unref();
+    const registry = `http://127.0.0.1:${(server.address() as AddressInfo).port}/r/{name}.json`;
+    const root = project({ 'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }), 'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }), [SKILL]: skillStamp(SKILL_SOURCE, '0.0.0-old') });
+    const before = snapshot(root);
+    const { code, stdout } = await run(['update', '--yes', '--cwd', root]);
+    expect(code).toBe(3);
+    expect(stdout).toContain('ULT-STATUS-003');
+    expect(stdout).toContain('npm install -D ultima-design@latest');
+    expect(snapshot(root)).toEqual(before);
   });
 });

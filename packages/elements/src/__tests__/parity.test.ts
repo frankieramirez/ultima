@@ -114,7 +114,7 @@ const ELEMENTS: ElementParity[] = [
     element: elementTooltip,
     react: reactTooltip,
     axes: {},
-    parts: ['arrow', 'popup', 'positioner'],
+    parts: ['arrow', 'popup', 'positioner', 'shortcut'],
     stateMap: {
       'data-starting-style': 'data-starting-style',
       'data-ending-style': 'data-ending-style',
