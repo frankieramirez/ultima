@@ -3300,10 +3300,11 @@ Decided on [What the consumer skill says and how it is versioned](https://github
 1. **When it applies.** The description triggers on UI work in a repository whose `components.json` has an `@ultima` registry: adding or editing a component, styling, theming, or replacing a native control.
 2. **Read first.** Fetch `/llms.txt` from the host that `registries["@ultima"]` names, normally `https://ultima.systems/llms.txt`, before the first UI edit of a task.
 3. **Learn what is installed.** Run `npx ultima-design status` before adding an item or editing an installed one.
-4. **Reach for the kit.** Before writing a native control or importing `@base-ui/react`, add the item with `npx shadcn@4.21.4 add @ultima/<item>`. This line points at `ULT-APP-CONTROL-001` and `ULT-APP-PRIMITIVE-001`.
-5. **Paint from tokens.** A color, shadow, radius, border width, or type value reads a semantic token, and a new need becomes a token override. This line points at `ULT-APP-PAINT-001` and `ULT-APP-PALETTE-001`.
-6. **Check after edits.** Run `npx ultima-design check --files <changed files>` after editing, and `check` without `--files` before handing work back. Run `doctor` when styles do not apply at all.
-7. **Reading results.** Exits 0, 1, 2 and 3 as the output contract under [Package and engine](#package-and-engine) defines them: 1 means fix the findings, 2 means fix the command, 3 means fix the project, and that a finding's repair and link are the next thing to read.
+4. **Update on request.** When the user asks to update Ultima, run `npx ultima-design update --plan --json`, show the plan, and apply it with `--apply` only on the user's word, as under [Update](#update).
+5. **Reach for the kit.** Before writing a native control or importing `@base-ui/react`, add the item with `npx shadcn@4.21.4 add @ultima/<item>`. This line points at `ULT-APP-CONTROL-001` and `ULT-APP-PRIMITIVE-001`.
+6. **Paint from tokens.** A color, shadow, radius, border width, or type value reads a semantic token, and a new need becomes a token override. This line points at `ULT-APP-PAINT-001` and `ULT-APP-PALETTE-001`.
+7. **Check after edits.** Run `npx ultima-design check --files <changed files>` after editing, and `check` without `--files` before handing work back. Run `doctor` when styles do not apply at all.
+8. **Reading results.** Exits 0, 1, 2 and 3 as the output contract under [Package and engine](#package-and-engine) defines them: 1 means fix the findings, 2 means fix the command, 3 means fix the project, and that a finding's repair and link are the next thing to read.
 
 **What may be prose.** A line in the skill is allowed only when it is one of: the trigger description, the order of steps, a CLI command line, the meaning of an exit code, or a one-sentence imperative that names the `check` rule IDs enforcing it and links its docs anchor. Every imperative is therefore something `check` already enforces, and the skill states nothing the CLI cannot verify. Token names, component names, prop names, and values stay on `/llms.txt`. A test in `packages/cli` fails the build when the skill contains an `--ult-` token name, a catalogue item name other than inside `@ultima/<item>`, a color literal, or more than 80 lines.
 
@@ -3357,13 +3358,14 @@ Both commands gate. Any nonzero exit fails the job, including an incomplete run,
 Settled on [Whether the CLI needs a docs page at launch](https://github.com/frankieramirez/ultima/issues/572): `/llms.txt` carries a compact CLI section generated from this subsection's body by the same build step as every other section, so the guide is its only other home. It names the package, gives one line per command, the exit-code contract, and the CI two-step, and it changes only when this subsection does.
 </details>
 
-The `ultima-design` package is the consumer CLI. It verifies a project's setup, checks edits against the consumer rules, and reports installed items' drift against the hosted registry. Install it with `npm i -D ultima-design`, then run `npx ultima-design install` to write the consumer skill and the post-edit hooks into the repository.
+The `ultima-design` package is the consumer CLI. It verifies a project's setup, checks edits against the consumer rules, and reports installed items' drift against the hosted registry. Install it with `npm i -D ultima-design`, then run `npx ultima-design install` to write the consumer skill and the post-edit hooks into the repository. Update installed files with the loop at [/install/update](https://ultima.systems/install/update).
 
 - `npx ultima-design install` — writes the managed skill and hook entries; idempotent.
 - `npx ultima-design doctor` — verifies the setup a target's hand steps require; reports, never writes.
 - `npx ultima-design check` — reports consumer-rule findings; `--files <path>...` scopes the run.
 - `npx ultima-design status` — lists each installed file's state against the served registry.
 - `npx ultima-design diff <item>` — prints the unified diff from the local file to the served one.
+- `npx ultima-design update` — plans updates to installed files; `--yes` applies the plan.
 - `npx ultima-design uninstall` — removes the managed files `install` wrote.
 
-Every command exits 0 on a completed run with no blocking finding, 1 on a blocking finding, 2 on an invalid invocation, and 3 on an incomplete run; `status` and `diff` never exit 1. In CI, gate on `doctor` then `check` (`--strict` makes advisories block); `status` is informational and `diff` does not belong there.
+Every command exits 0 on a completed run with no blocking finding, 1 on a blocking finding, 2 on an invalid invocation, and 3 on an incomplete run; `status`, `diff` and `update` never exit 1. In CI, gate on `doctor` then `check` (`--strict` makes advisories block); `status` is informational and `diff` does not belong there.

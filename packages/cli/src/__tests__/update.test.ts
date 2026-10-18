@@ -9,10 +9,11 @@ import { describe, expect, it } from 'vitest';
 
 import { ultimaPresetUrl } from '../../../../apps/docs/src/ultima-preset.ts';
 import { UNMARKED_NEUTRAL_HASHES, fileBaseTheme } from '../base-theme.ts';
+import { CLI_VERSION, mergeHooks, skillStamp } from '../install.ts';
 import { run } from '../run.ts';
 import { contentHash, stampLine, withStamp } from '../stamp.ts';
 import { planAction, planHash, printUpdate, update, updateExit } from '../update.ts';
-import { project, snapshot } from './fixtures.ts';
+import { edit, project, snapshot, write } from './fixtures.ts';
 
 const OLD = 'aaaaaaaaaaaa';
 const NEW = 'bbbbbbbbbbbb';
@@ -582,5 +583,135 @@ describe('update --plan --json and --apply', () => {
       expect({ args, code: result.code, stdout: result.stdout }).toEqual({ args, code: 2, stdout: '' });
     }
     expect(existsSync(join(root, '.ultima-update'))).toBe(false);
+  });
+});
+
+const SKILL = '.claude/skills/ultima-design/SKILL.md';
+const SETTINGS = '.claude/settings.json';
+const SKILL_SOURCE = readFileSync(new URL('../../skill/ultima-design/SKILL.md', import.meta.url), 'utf8');
+const CLAUDE_HOOKS = `${JSON.stringify(mergeHooks(null, 'claude'), null, 2)}\n`;
+
+/** The drift fixture with a managed skill for Claude Code, and its hook entry unless `hooks` is false. */
+async function skillFixture(skill: string, { hooks = true } = {}) {
+  const { root, registry } = await fixture();
+  write(root, SKILL, skill);
+  if (hooks) write(root, SETTINGS, CLAUDE_HOOKS);
+  return { root, registry };
+}
+
+async function managedOf(root: string) {
+  const { managed } = JSON.parse((await run(['status', '--cwd', root, '--json'])).stdout) as { managed: { file: string; state: string }[] };
+  return Object.fromEntries(managed.map(({ file, state }) => [file, state]));
+}
+
+describe('update refreshes the managed skill', () => {
+  it('plans a stale skill as refresh, and --yes writes what install writes, which status then calls current', async () => {
+    const { root } = await skillFixture(skillStamp(SKILL_SOURCE, '0.0.0-old'));
+    const plan = await run(['update', '--cwd', root]);
+    expect(plan.stdout.split('\n').slice(2, 7)).toEqual([
+      'item     file                                   state      action',
+      'dialog   src/components/ui/dialog.tsx           behind     replace',
+      'lib      src/lib/component.ts                   unstamped  report   no installed base',
+      'sidebar  src/components/ui/sidebar.tsx          diverged   report   no installed base',
+      `skill    ${SKILL}  stale      refresh`,
+    ]);
+    expect((await planFile(root)).plan.managed).toEqual([{ file: SKILL, state: 'stale', action: 'refresh' }]);
+
+    const before = snapshot(root);
+    const applied = await run(['update', '--yes', '--cwd', root]);
+    expect(applied.code).toBe(0);
+    expect(readFileSync(join(root, SKILL), 'utf8')).toBe(skillStamp(SKILL_SOURCE, CLI_VERSION));
+    expect(readFileSync(join(root, SETTINGS), 'utf8')).toBe(CLAUDE_HOOKS);
+    expect(await managedOf(root)).toEqual({ [SKILL]: 'current' });
+    expect(applied.stdout).toContain(`wrote     src/components/ui/dialog.tsx, ${SKILL}\n`);
+    expect(applied.stdout).toContain('next      npx ultima-design check --files src/components/ui/dialog.tsx\n');
+
+    const installed = project({ [SKILL]: skillStamp(SKILL_SOURCE, '0.0.0-old'), [SETTINGS]: CLAUDE_HOOKS });
+    await run(['install', '--cwd', installed]);
+    expect(readFileSync(join(installed, SKILL), 'utf8')).toBe(readFileSync(join(root, SKILL), 'utf8'));
+
+    expect((await run(['update', '--rollback', '--cwd', root])).code).toBe(0);
+    expect(projectFiles(root)).toEqual(before);
+  });
+
+  it('refreshes the hook entry only when install would rewrite it, and adds nothing beside a current skill', async () => {
+    const { root } = await skillFixture(skillStamp(SKILL_SOURCE, '0.0.0-old'), { hooks: false });
+    const { plan } = await planFile(root);
+    expect(plan.managed).toEqual([
+      { file: SKILL, state: 'stale', action: 'refresh' },
+      { file: SETTINGS, state: 'stale', action: 'refresh' },
+    ]);
+    expect((await run(['update', '--yes', '--cwd', root])).code).toBe(0);
+    expect(readFileSync(join(root, SETTINGS), 'utf8')).toBe(CLAUDE_HOOKS);
+
+    const current = (await skillFixture(skillStamp(SKILL_SOURCE, CLI_VERSION), { hooks: false })).root;
+    expect((await planFile(current)).plan.managed).toEqual([]);
+    await run(['update', '--yes', '--cwd', current]);
+    expect(existsSync(join(current, SETTINGS))).toBe(false);
+  });
+
+  it('refreshes a stale skill alone under --yes when no installed file drifted', async () => {
+    const root = project({ 'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': await serve([]) } }), 'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }), [SKILL]: skillStamp(SKILL_SOURCE, '0.0.0-old'), [SETTINGS]: CLAUDE_HOOKS });
+    const plan = await run(['update', '--cwd', root]);
+    expect(plan.stdout).toContain('apply  npx ultima-design update --yes\n');
+    const applied = await run(['update', '--yes', '--json', '--cwd', root]);
+    expect(JSON.parse(applied.stdout)).toMatchObject({ written: [SKILL], next: [], failed: null });
+    expect(await managedOf(root)).toEqual({ [SKILL]: 'current' });
+  });
+
+  it('reports an edited skill, names install --force, and leaves it untouched', async () => {
+    const edited = `${skillStamp(SKILL_SOURCE, '0.0.0-old')}Our own line.\n`;
+    const { root } = await skillFixture(edited);
+    const printed = await run(['update', '--cwd', root]);
+    expect(printed.stdout).toContain(`skill    ${SKILL}  edited     report   edited since install\n`);
+    expect(printed.stdout).toContain('skill    npx ultima-design install --force  replaces the edited skill, discarding its edits\n');
+    const { plan } = await planFile(root);
+    expect(plan.managed).toEqual([{ file: SKILL, state: 'edited', action: 'report' }]);
+    expect(plan.commands).toContainEqual({ for: 'skill', command: 'npx ultima-design install --force' });
+
+    const applied = await run(['update', '--yes', '--json', '--cwd', root]);
+    expect(JSON.parse(applied.stdout)).toMatchObject({ written: ['src/components/ui/dialog.tsx'], reported: ['src/lib/component.ts', 'src/components/ui/sidebar.tsx', SKILL] });
+    expect(readFileSync(join(root, SKILL), 'utf8')).toBe(edited);
+  });
+
+  it('--apply refreshes the skill as planned, and refuses with exit 3 a plan whose skill changed since', async () => {
+    const { root } = await skillFixture(skillStamp(SKILL_SOURCE, '0.0.0-old'));
+    const { path } = await planFile(root);
+    edit(root, SKILL, (text) => `${text}Our own line.\n`);
+    const stale = await run(['update', '--apply', path, '--cwd', root]);
+    expect(stale.code).toBe(3);
+    expect(stale.stdout).toContain(`${SKILL} changed since it was planned`);
+    expect(existsSync(join(root, '.ultima-update'))).toBe(false);
+
+    write(root, SKILL, skillStamp(SKILL_SOURCE, '0.0.0-old'));
+    expect((await run(['update', '--apply', path, '--cwd', root])).code).toBe(0);
+    expect(await managedOf(root)).toEqual({ [SKILL]: 'current' });
+  });
+
+  it('reports a stale skill that no detected harness owns, since install would not write it', async () => {
+    const { root } = await fixture();
+    write(root, '.agents/skills/ultima-design/SKILL.md', skillStamp(SKILL_SOURCE, '0.0.0-old'));
+    const printed = await run(['update', '--cwd', root]);
+    expect(printed.stdout).toContain('skill    .agents/skills/ultima-design/SKILL.md  stale      report   no harness detected for it; install --harness <name> refreshes it\n');
+    expect((await planFile(root)).plan.managed).toEqual([{ file: '.agents/skills/ultima-design/SKILL.md', state: 'stale', action: 'report' }]);
+  });
+
+  it('leaves the skill out of a plan for named items', async () => {
+    const { root } = await skillFixture(skillStamp(SKILL_SOURCE, '0.0.0-old'));
+    expect((await planFile(root, 'dialog')).plan.managed).toEqual([]);
+  });
+
+  it('never upgrades the CLI: a registry outside its formats makes the run incomplete and prints the upgrade command', async () => {
+    const server = createServer((_, response) => response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ name: 'ultima', meta: { ultima: { format: 2 } }, items: [] })));
+    await new Promise<void>((listening) => server.listen(0, '127.0.0.1', listening));
+    server.unref();
+    const registry = `http://127.0.0.1:${(server.address() as AddressInfo).port}/r/{name}.json`;
+    const root = project({ 'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }), 'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }), [SKILL]: skillStamp(SKILL_SOURCE, '0.0.0-old') });
+    const before = snapshot(root);
+    const { code, stdout } = await run(['update', '--yes', '--cwd', root]);
+    expect(code).toBe(3);
+    expect(stdout).toContain('ULT-STATUS-003');
+    expect(stdout).toContain('npm install -D ultima-design@latest');
+    expect(snapshot(root)).toEqual(before);
   });
 });

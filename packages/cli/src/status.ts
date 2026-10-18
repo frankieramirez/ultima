@@ -227,6 +227,7 @@ export function printStatus({ registry, revision, files, managed, notices }: Sta
     return items.length > 0 ? [[state, (line as (items: string[]) => string)(items)]] : [];
   });
   if (managed.some(({ state }) => state === 'stale')) closing.push(['stale', 'npx ultima-design install']);
+  if (files.some(({ state }) => state === 'behind' || state === 'diverged')) closing.push(['update', 'npx ultima-design update']);
   const skills = managed.map(({ file, state, version }) => ['skill', file, state, version]);
   const table = [['item', 'file', 'state', 'installed'], ...files.map((row) => [row.item, row.file, row.state, row.installed?.revision ?? '-']), ...skills];
   const width = (column: string[]) => Math.max(...column.map((cell) => cell.length)) + 2;

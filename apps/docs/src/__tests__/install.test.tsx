@@ -64,7 +64,7 @@ test('install links to update guidance with a working frozen Ultima preset comma
   await expect.element(install.getByRole('link', { name: 'Update the base theme', exact: true }).last()).toHaveAttribute('href', '/install/update');
   await install.unmount();
   const screen = await mount('/install/update');
-  await expect.element(screen.getByRole('heading', { name: 'Update the base theme', level: 1 })).toBeVisible();
+  await expect.element(screen.getByRole('heading', { name: 'Update', exact: true, level: 1 })).toBeVisible();
   await expect.poll(() => document.querySelector('main pre code')?.textContent).toMatch(/^npx shadcn@4.21.4 add "https:\/\/ultima.systems\/r\/theme.json\?theme=/);
   const command = document.querySelector('main pre code')?.textContent ?? '';
   const publicUrl = new URL(command.match(/"([^"]+)"/)![1]!);
