@@ -15,6 +15,15 @@ export type Stamp = { item: string; revision: string; scheme: string; hash: stri
 /** The catalogue's format version, at `meta.ultima.format` in `/r/registry.json`. */
 export const REGISTRY_FORMAT = 1;
 
+/**
+ * Where `update` reads an item's authored source at a stamp's revision. The build serves it at `meta.ultima.source`,
+ * and `update` falls back to it for a catalogue served before that key: Update, The installed base.
+ */
+export const SOURCE = {
+  repository: 'https://github.com/frankieramirez/ultima',
+  raw: 'https://raw.githubusercontent.com/frankieramirez/ultima/{revision}/{path}',
+};
+
 const STAMP = /^(?:\/\/ (.+)|\/\* (.+) \*\/)$/;
 const STAMP_BODY = /^@ultima\/(\S+) (\S+) ([a-z][a-z0-9]*):([0-9a-f]{16})$/;
 

@@ -9,6 +9,7 @@ import ts from 'typescript';
 
 import { ultimaPresetUrl } from '../../../apps/docs/src/ultima-preset.ts';
 import { LEGACY_BASE_THEME, fileBaseTheme } from './base-theme.ts';
+import { type Base, installedBase } from './base.ts';
 import { LOCKFILES } from './detect.ts';
 import { type Diagnostic, SPEC } from './diagnostic.ts';
 import { type ServedPayloads, renderAsInstalled, servedContent } from './diff.ts';
@@ -29,7 +30,7 @@ export type PlanRow = {
   installed: Row['installed'];
   local: string | null;
   served: string | null;
-  /** Whether the installed base a merge needs was found; null while the action needs none. */
+  /** Whether a `diverged` `c1` file's installed base was rebuilt and matched its stamp; null for every other row. */
   base: 'verified' | 'unavailable' | null;
   /** The hunks a merge holds; null for every other action. */
   hunks: number | null;
@@ -87,6 +88,8 @@ export type UpdateReport = { plan: UpdatePlan; run: UpdateRun | null };
 export type UpdateOptions = {
   project?: string;
   yes?: boolean;
+  /** The raw URL template a catalogue served before the source keys falls back to: `SOURCE.raw`, or a test's loopback host. */
+  raw?: string;
   /** Plans a held base theme change by the file's state. Neither `yes` nor an applied plan implies it. */
   acceptBaseTheme?: boolean;
   /** The path of a plan `--plan --json` printed, to apply exactly as it was made. */
@@ -95,22 +98,26 @@ export type UpdateOptions = {
   write?: (path: string, content: string) => void;
 };
 
-/** The action a file's state gives it, with the reason for a `report`. */
-export function planAction(row: Row): { action: Action; reason: string | null } {
+const needsBase = (row: Row) => row.state === 'diverged' && row.installed?.hash.startsWith('c1:') === true;
+
+/** The action a file's state, and for a `diverged` `c1` file its installed base, gives it, with the reason for a `report`. */
+export function planAction(row: Row, base?: Base): { action: Action; reason: string | null; base: PlanRow['base'] } {
   switch (row.state) {
     case 'current':
     case 'edited':
-      return { action: 'none', reason: null };
+      return { action: 'none', reason: null, base: null };
     case 'behind':
-      return { action: 'replace', reason: null };
+      return { action: 'replace', reason: null, base: null };
     case 'diverged':
-      return { action: 'report', reason: row.local?.startsWith('b1:') ? 'built file, which cannot be merged' : 'no installed base' };
+      if (!needsBase(row)) return { action: 'report', reason: 'built file, which cannot be merged', base: null };
+      if (base && 'text' in base) return { action: 'report', reason: 'installed base verified; merging is not built yet', base: 'verified' };
+      return { action: 'report', reason: `no installed base: ${base?.reason ?? 'none was looked for'}`, base: 'unavailable' };
     case 'unstamped':
-      return { action: 'report', reason: 'no installed base' };
+      return { action: 'report', reason: 'no installed base', base: null };
     case 'retired':
-      return { action: 'report', reason: 'the registry no longer serves it' };
+      return { action: 'report', reason: 'the registry no longer serves it', base: null };
     case 'unknown-scheme':
-      return { action: 'report', reason: 'a hash scheme this CLI does not know' };
+      return { action: 'report', reason: 'a hash scheme this CLI does not know', base: null };
   }
 }
 
@@ -119,11 +126,19 @@ export async function update(root: string, names: string[], options: UpdateOptio
   if (recorded && 'usage' in recorded) return recorded;
   const surveyed = await survey(root, options);
   if ('diagnostics' in surveyed) return surveyed;
-  const { report, scope, url, items } = surveyed;
+  const { report, scope, url, items, source } = surveyed;
   const context = { scope, url, write: options.write ?? writeInPlace };
+  const catalogue = { source, items, fetched: new Map() };
+  const baseOf = async (rows: Row[]) => {
+    const bases = new Map<Row, Base>();
+    for (const row of rows.filter(needsBase)) bases.set(row, await installedBase(row, catalogue, scope));
+    return bases;
+  };
 
   if (recorded && options.apply !== undefined) {
-    const stale = staleness(root, options.apply, recorded, report);
+    const now = report.files.filter(({ file }) => recorded.files.some((row) => row.file === file));
+    const bases = await baseOf(now);
+    const stale = staleness(root, options.apply, recorded, report, (row) => planAction(row, bases.get(row)));
     if (stale) return stale;
     const run = await applyPlan(root, recorded, context);
     return 'diagnostics' in run ? run : { plan: recorded, run };
@@ -146,18 +161,19 @@ export async function update(root: string, names: string[], options: UpdateOptio
       .map((name) => `@ultima/${name}`),
     ...(item?.dependencies ?? []).map((dependency) => dependency.replace(/(?!^)@.*$/, '')).filter((name) => !(name in declared)),
   ];
-  const held = (row: Row): Pick<PlanRow, 'action' | 'reason' | 'requires'> => {
+  const covered = report.files.filter((row) => names.length === 0 || named.has(row.item));
+  const bases = await baseOf(covered);
+  const held = (row: Row): Pick<PlanRow, 'action' | 'reason' | 'base' | 'requires'> => {
     const served = items.find(({ name }) => name === row.item);
     const base = served?.meta?.ultima?.baseTheme ?? LEGACY_BASE_THEME;
     if (!options.acceptBaseTheme && served && ['tokens', 'tokens-css'].includes(row.item) && fileBaseTheme(readFileSync(join(root, row.file), 'utf8'), row.local) !== base) {
-      return { action: 'hold', reason: `base theme changes to ${base}`, requires: [] };
+      return { action: 'hold', reason: `base theme changes to ${base}`, base: null, requires: [] };
     }
-    const planned = planAction(row);
+    const planned = planAction(row, bases.get(row));
     const requires = ['replace', 'merge', 'conflict'].includes(planned.action) ? missing(served) : [];
-    return requires.length > 0 ? { action: 'hold', reason: `needs ${requires.join(', ')}`, requires } : { ...planned, requires };
+    return requires.length > 0 ? { action: 'hold', reason: `needs ${requires.join(', ')}`, base: null, requires } : { ...planned, requires };
   };
-  const files = report.files
-    .filter((row) => names.length === 0 || named.has(row.item))
+  const files = covered
     .map((row) => planRow(root, row, held))
     .filter((row) => row.action !== 'none' || named.has(row.item))
     .map((row) => ({ ...row, uncommitted: row.action === 'replace' && uncommitted(root, row.file) }))
@@ -227,8 +243,8 @@ export async function applyPlan(
   return { runId: journal.runId, written, failed: null, next: [`npx ultima-design check --files ${written.join(' ')}`, typecheck(root, scope.tsconfig)] };
 }
 
-function planRow(root: string, row: Row, decide: (row: Row) => Pick<PlanRow, 'action' | 'reason'> & Partial<Pick<PlanRow, 'requires'>> = planAction): Omit<PlanRow, 'uncommitted'> {
-  const { action, reason, requires = [] } = decide(row);
+function planRow(root: string, row: Row, decide: (row: Row) => Pick<PlanRow, 'action' | 'reason' | 'base'> & Partial<Pick<PlanRow, 'requires'>> = planAction): Omit<PlanRow, 'uncommitted'> {
+  const { action, reason, base, requires = [] } = decide(row);
   return {
     item: row.item,
     file: row.file,
@@ -238,7 +254,7 @@ function planRow(root: string, row: Row, decide: (row: Row) => Pick<PlanRow, 'ac
     installed: row.installed,
     local: row.local,
     served: row.served,
-    base: null,
+    base,
     hunks: null,
     requires,
     sha256: fileHash(join(root, row.file)),
@@ -297,16 +313,16 @@ function readPlan(path: string): { usage: string } | UpdatePlan {
   };
 }
 
-const INPUTS = ['item', 'state', 'installed', 'local', 'served', 'sha256'] as const;
+const INPUTS = ['item', 'state', 'installed', 'local', 'served', 'base', 'sha256'] as const;
 
-function staleness(root: string, path: string, plan: UpdatePlan, report: StatusReport): { diagnostics: Diagnostic[] } | null {
+function staleness(root: string, path: string, plan: UpdatePlan, report: StatusReport, decide: (row: Row) => ReturnType<typeof planAction>): { diagnostics: Diagnostic[] } | null {
   const changed: string[] = [];
   if (plan.registry !== report.registry || plan.revision !== report.revision) {
     changed.push(`the registry, planned at ${plan.registry} revision ${plan.revision ?? 'none'} and now ${report.registry} revision ${report.revision ?? 'none'},`);
   }
   for (const row of plan.files) {
     const now = report.files.find(({ file }) => file === row.file);
-    const fresh = now && planRow(root, now);
+    const fresh = now && planRow(root, now, decide);
     if (!fresh || INPUTS.some((key) => canonical(fresh[key]) !== canonical(row[key]))) changed.push(row.file);
   }
   if (changed.length === 0) return null;

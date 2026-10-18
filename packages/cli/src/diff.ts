@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
 import { OMIT_HEADERS, formatPatch, structuredPatch } from 'diff';
+import ts from 'typescript';
 
 import { type Diagnostic, SPEC } from './diagnostic.ts';
 import type { ConsumerScope } from './scope.ts';
@@ -10,12 +11,16 @@ import { readStamp } from './stamp.ts';
 import { type Row, fetchJson, survey } from './status.ts';
 
 /**
- * A served file as shadcn writes it into this project: the aliases rewritten, and `"use client"` dropped when `rsc`
- * is off. shadcn matches the directive with `/^["']use client["']$/` against the statement's text, which carries its
- * semicolon, so a terminated directive survives.
+ * A served file as shadcn writes it into this project: its leading comments dropped, the aliases rewritten, and
+ * `"use client"` dropped when `rsc` is off. shadcn returns ts-morph's `getText()`, which starts at the first token, and
+ * matches the directive with `/^["']use client["']$/` against the statement's text, which carries its semicolon, so a
+ * terminated directive survives. A `b1` file is a `registry:file`, which shadcn copies byte for byte.
  */
 export function renderAsInstalled(servedFile: string, aliases: ConsumerScope['aliases'], rsc: boolean): string {
-  const text = servedFile.replace(
+  if (readStamp(servedFile)?.scheme === 'b1') return servedFile;
+  const scanner = ts.createScanner(ts.ScriptTarget.Latest, true, ts.LanguageVariant.JSX, servedFile);
+  scanner.scan();
+  const text = servedFile.slice(scanner.getTokenStart()).replace(
     /(['"])@\/registry\/ultima\/(ui|lib)\//g,
     (_match, quote: string, kind: 'ui' | 'lib') => `${quote}${aliases[kind]}/`,
   );
