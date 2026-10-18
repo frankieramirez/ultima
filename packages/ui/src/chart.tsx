@@ -25,6 +25,7 @@ import {
   type KeyboardEvent,
   type PointerEvent,
   type ReactNode,
+  type RefObject,
   use,
   useCallback,
   useId,
@@ -68,10 +69,17 @@ const styles = stylex.create({
   },
   /** The active point's ring: the focus color around a page-colored disc, so it reads over any mark. */
   marker: {
-    fill: color['--ult-color-surface'],
-    r: space['--ult-space-2'],
-    stroke: color['--ult-color-border-focus'],
-    strokeWidth: border.focus,
+    backgroundColor: color['--ult-color-surface'],
+    blockSize: `calc(2 * ${space['--ult-space-2']} + ${border.focus})`,
+    borderColor: color['--ult-color-border-focus'],
+    borderRadius: radius['--ult-radius-full'],
+    borderStyle: 'solid',
+    borderWidth: border.focus,
+    boxSizing: 'border-box',
+    inlineSize: `calc(2 * ${space['--ult-space-2']} + ${border.focus})`,
+    pointerEvents: 'none',
+    position: 'absolute',
+    translate: '-50% -50%',
   },
   /** Tooltip's popup, without its motion: its edge sits 12px above the active point, clear of the marker. */
   tooltip: {
@@ -401,8 +409,8 @@ function Plot({ ref, style, ...props }: ChartPlotProps) {
         style={{ ...injected, aspectRatio, height }}
       >
         {scene?.nodes.map((node) => draw(scene, node))}
-        {active && <circle cx={active.x} cy={active.y} {...stylex.props(styles.marker)} />}
       </svg>
+      {active && <Marker />}
       <span aria-atomic="true" role="status" {...stylex.props(visuallyHidden)}>
         {status.text}
       </span>
@@ -410,11 +418,9 @@ function Plot({ ref, style, ...props }: ChartPlotProps) {
   );
 }
 
-/** The visual readout of the active point, `aria-hidden` because the plot's status region speaks it. */
-function Tooltip({ ref, render, style, ...props }: ChartTooltipProps) {
-  const { active, formatPoint, plot, scene } = useChartContext('Tooltip');
-  const own = useRef<HTMLDivElement>(null);
-  // The active point as percentages of the box the tooltip is positioned in, measured once it is laid out.
+/** The active point as percentages of the box `own` is positioned in, measured once it is laid out. */
+function usePlace(own: RefObject<HTMLElement | null>, part: string) {
+  const { active, plot, scene } = useChartContext(part);
   const [place, setPlace] = useState({ left: 0, top: 0, shift: 0 });
   useLayoutEffect(() => {
     const parent = own.current?.offsetParent;
@@ -428,6 +434,21 @@ function Tooltip({ ref, render, style, ...props }: ChartTooltipProps) {
       shift: (active.x / scene.width) * -100,
     });
   }, [plot, scene, active]);
+  return place;
+}
+
+/** The active point's ring, drawn over the plot so its size follows the space scale. */
+function Marker() {
+  const own = useRef<HTMLSpanElement>(null);
+  const place = usePlace(own, 'Plot');
+  return <span aria-hidden="true" ref={own} {...stylex.props(styles.marker)} style={{ left: `${place.left}%`, top: `${place.top}%` }} />;
+}
+
+/** The visual readout of the active point, `aria-hidden` because the plot's status region speaks it. */
+function Tooltip({ ref, render, style, ...props }: ChartTooltipProps) {
+  const { active, formatPoint } = useChartContext('Tooltip');
+  const own = useRef<HTMLDivElement>(null);
+  const place = usePlace(own, 'Tooltip');
 
   const { style: injected, ...stylexProps } = stylex.props(styles.tooltip, style);
   return useRender({

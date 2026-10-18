@@ -28,6 +28,17 @@ export default [
     authority: 'docs/spec/design-foundations.md#outlines-and-borders',
   },
   {
+    id: 'chart-active-point-ring',
+    rule: 'ULT-VISUAL-001',
+    path: 'packages/ui/src/chart.tsx',
+    symbol: 'styles.marker',
+    target: 'borderWidth',
+    expression: 'border.focus',
+    count: 1,
+    reason: "The chart's active-point ring does the focus outline's job inside the plot, so it takes the focus width.",
+    authority: 'docs/spec/design-foundations.md#outlines-and-borders',
+  },
+  {
     id: 'drawer-backdrop-swiping-cancels-transition',
     rule: 'ULT-TOKEN-001',
     path: 'packages/ui/src/drawer.tsx',

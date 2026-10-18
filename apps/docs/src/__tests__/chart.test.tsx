@@ -10,6 +10,7 @@ import BarChart from '../demos/chart/bar';
 
 const bars = (container: Element) => [...container.querySelectorAll('svg rect')];
 const tooltip = (container: Element) => container.querySelector('figure > div[aria-hidden="true"]');
+const marker = (container: Element) => container.querySelector('figure > span[aria-hidden="true"]');
 
 test('hovering a bar shows its tooltip and marker, and leaving the plot clears both', async () => {
   const screen = await render(
@@ -18,14 +19,13 @@ test('hovering a bar shows its tooltip and marker, and leaving the plot clears b
     </StrictMode>,
   );
   await expect.poll(() => bars(screen.container).length).toBe(7);
-  const plot = screen.container.querySelector('svg') as SVGSVGElement;
   expect(tooltip(screen.container)).toBeNull();
-  expect(plot.querySelector('circle')).toBeNull();
+  expect(marker(screen.container)).toBeNull();
 
   const tuesday = bars(screen.container)[1] as SVGRectElement;
   await userEvent.hover(tuesday);
   await expect.poll(() => tooltip(screen.container)?.textContent).toBe('Tue, 91,700 requests');
-  const ring = (plot.querySelector('circle') as SVGCircleElement).getBoundingClientRect();
+  const ring = (marker(screen.container) as HTMLElement).getBoundingClientRect();
   const bar = tuesday.getBoundingClientRect();
   expect(ring.left + ring.width / 2).toBeCloseTo(bar.left + bar.width / 2, 0);
   expect(ring.top + ring.height / 2).toBeCloseTo(bar.top, 0);
@@ -36,5 +36,5 @@ test('hovering a bar shows its tooltip and marker, and leaving the plot clears b
 
   await userEvent.hover(screen.getByRole('table').element());
   await expect.poll(() => tooltip(screen.container)).toBeNull();
-  expect(plot.querySelector('circle')).toBeNull();
+  expect(marker(screen.container)).toBeNull();
 });

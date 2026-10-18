@@ -192,7 +192,7 @@ test('aspectRatio sizes the plot from its width, and a resize compiles the scene
 });
 
 const status = (container: Element) => container.querySelector('[role="status"]') as HTMLElement;
-const marker = (plot: SVGSVGElement) => plot.querySelector('circle');
+const marker = (plot: SVGSVGElement) => plot.parentElement?.querySelector(':scope > span[aria-hidden="true"]') as HTMLElement | null;
 const press = async (...keys: string[]) => {
   for (const key of keys) await userEvent.keyboard(`{${key}}`);
 };
@@ -355,15 +355,19 @@ test('the active point carries a border-focus ring over a page-colored disc, at 
   const plot = await focusPlot(screen.container);
   await press('ArrowRight', 'ArrowRight');
   const point = onActiveChange.mock.lastCall?.[0] as ChartPoint;
-  const ring = marker(plot) as SVGCircleElement;
-  expect(plot.querySelectorAll('circle')).toHaveLength(1);
-  expect(Number(ring.getAttribute('cx'))).toBe(point.x);
-  expect(Number(ring.getAttribute('cy'))).toBe(point.y);
+  const ring = marker(plot) as HTMLElement;
+  const box = ring.getBoundingClientRect();
+  const origin = plot.getBoundingClientRect();
+  expect(box.left + box.width / 2 - origin.left).toBeCloseTo(point.x, 0);
+  expect(box.top + box.height / 2 - origin.top).toBeCloseTo(point.y, 0);
+  expect(box.width).toBe(10);
+  expect(box.height).toBe(10);
   const paint = getComputedStyle(ring);
-  expect(paint.stroke).toBe(tokenValue('stroke', 'var(--ult-color-border-focus)'));
-  expect(paint.fill).toBe(tokenValue('fill', 'var(--ult-color-surface)'));
-  expect(paint.strokeWidth).toBe('2px');
-  expect(paint.r).toBe(tokenValue('r', 'var(--ult-space-2)'));
+  expect(paint.borderTopColor).toBe(tokenValue('border-color', 'var(--ult-color-border-focus)'));
+  expect(paint.backgroundColor).toBe(tokenValue('background-color', 'var(--ult-color-surface)'));
+  expect(paint.borderTopWidth).toBe('2px');
+  expect(paint.borderRadius).toBe(tokenValue('border-radius', 'var(--ult-radius-full)'));
+  expect(paint.pointerEvents).toBe('none');
 });
 
 function Controlled({ onActiveChange }: { onActiveChange: (point: ChartPoint | null) => void }) {
@@ -467,7 +471,7 @@ test('the tooltip shows the active point’s text above it, hidden from assistiv
   expect(paint.fontSize).toBe(tokenValue('font-size', 'var(--ult-text-2)'));
   expect(paint.pointerEvents).toBe('none');
 
-  const ring = (marker(plot) as SVGCircleElement).getBoundingClientRect();
+  const ring = (marker(plot) as HTMLElement).getBoundingClientRect();
   const box = tooltip.getBoundingClientRect();
   const center = ring.left + ring.width / 2;
   expect(box.left).toBeLessThan(center);
