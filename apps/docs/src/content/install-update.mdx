@@ -1,6 +1,26 @@
 import { UltimaPresetInstall } from '../ultima-preset-install';
 
-# Update the base theme
+# Update
+
+`npx ultima-design update` brings your installed Ultima files up to what the registry serves. It writes only a plan you have seen, and it journals every write so you can undo the run.
+
+## The update loop
+
+1. Run `npx ultima-design status`. It lists each installed file's state, and ends with `npx ultima-design update` when a file is behind or diverged.
+2. Run `npx ultima-design update`. It prints the plan and writes nothing. An agent runs `npx ultima-design update --plan --json > plan.json` instead and shows you that plan.
+3. Review the plan. Each row names a file, its state and the action. A `hold` waits on a decision of yours, such as a base theme change, and a `report` is a file `update` leaves for you, with the command that would change it.
+4. Run `npx ultima-design update --yes` to apply the plan it prints. An agent applies its saved plan with `npx ultima-design update --apply plan.json`, and only when you say so.
+5. Run `npx ultima-design check --files <written files>` and your typecheck. The run prints both as its next steps; `update` does not run them.
+6. If you need to undo it, run `npx ultima-design update --rollback`. It restores only the files that still hold what the run wrote, and lists the rest.
+
+## Refresh the CLI and the skill
+
+`update` never upgrades the CLI. The CLI is your project's devDependency, so refreshing everything takes two steps:
+
+1. Upgrade the pinned CLI with your package manager, for example `npm install -D ultima-design@latest` or `pnpm add -D ultima-design@latest`.
+2. Run `npx ultima-design update --yes`. It refreshes the managed skill and its hook entries the way `npx ultima-design install` would. An edited skill is reported instead, and `npx ultima-design install --force` replaces it.
+
+## The base theme change
 
 Reinstalling Ultima's base tokens now gives you **Neutral with Tight radius**. The indigo accent and cyan action/highlight become achromatic, including the focus ring. The radius scale changes from 2/4/10/12 to 2/4/6/8 pixels. Success, warning and danger keep their green, amber and red roles. Mode selection stays the same: dark and light are full peers, with the system preference used unless you set a mode.
 
