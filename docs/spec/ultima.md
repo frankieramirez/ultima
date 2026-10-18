@@ -884,7 +884,7 @@ Defaults, declared in the destructure: Textarea `md`; Combobox `md` on `InputGro
 | Combobox | `Label`, `InputGroup`, `Input`, `Trigger`, `Icon`, `Clear`, `Chips`, `Chip`, `ChipRemove`, `Popup`, `Arrow`, `Status`, `Empty`, `List`, `Item`, `ItemIndicator`, `Separator`, `GroupLabel` | `Root`, `Value`, `Collection`, `Portal`, `Backdrop`, `Group`, `Row`. `Positioner` (`outline: 0`) |
 | Slider | `Label`, `Value`, `Control`, `Track`, `Indicator`, `Thumb` | `Root` |
 | Alert | `Root`, `Title`, `Description`, `Icon` | none |
-| Alert Dialog | `Viewport`, `Backdrop`, `Popup`, `Title`, `Description` | `Root`, `Trigger`, `Portal`, `Close` |
+| Alert Dialog | `Viewport`, `Backdrop`, `Popup`, `Header`, `Title`, `Description`, `Footer` | `Root`, `Trigger`, `Portal`, `Close` |
 | Toast | `Viewport`, `Root`, `Content`, `Icon`, `Title`, `Description`, `Arrow` | `Provider`, `Portal`, `Positioner` (`outline: 0`), `Action`, `Close` |
 | Progress | `Root`, `Label`, `Track`, `Indicator`, `Value` | none |
 | Empty | `Root`, `Title`, `Description`, `Icon` | none |
@@ -1282,7 +1282,7 @@ This qualifies the focus-ring rows in the accessibility contract below: on Dropd
 | --- | --- | --- |
 | Dropdown Menu | `Positioner` (the Viewport's size), `Popup`, `Item`, `LinkItem`, `CheckboxItem`, `RadioItem`, `SubmenuTrigger`, `CheckboxItemIndicator`, `RadioItemIndicator`, `Separator`, `GroupLabel`, `Arrow`, `Shortcut` | `Root`, `Trigger`, `Portal`, `Backdrop`, `Group`, `RadioGroup`, `SubmenuRoot`, `Viewport` |
 | Select | `Label`, `Trigger`, `Value`, `Icon`, `Popup`, `Item`, `ItemText`, `ItemIndicator`, `ScrollUpArrow`, `ScrollDownArrow`, `Separator`, `GroupLabel` | `Root`, `Portal`, `Backdrop`, `Positioner` (`outline: 0`), `List`, `Group`, `Arrow` |
-| Dialog | `Viewport`, `Backdrop`, `Popup`, `Title`, `Description` | `Root`, `Trigger`, `Portal`, `Close` |
+| Dialog | `Viewport`, `Backdrop`, `Popup`, `Header`, `Title`, `Description`, `Footer` | `Root`, `Trigger`, `Portal`, `Close` |
 | Tooltip | `Positioner` (the Viewport's size), `Popup`, `Arrow`, `Shortcut` | `Provider`, `Root`, `Trigger`, `Portal`, `Viewport` |
 | Tabs | `Root`, `List`, `Tab`, `Indicator`, `Panel` | none |
 | Meter | `Root`, `Label`, `Track`, `Indicator`, `Value` | none |

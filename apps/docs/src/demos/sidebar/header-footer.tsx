@@ -13,6 +13,7 @@ const styles = stylex.create({
     color: color['--ult-color-text-subtle'],
     fontSize: text['--ult-text-2'],
     lineHeight: font['--ult-font-leading-snug'],
+    overflowWrap: 'anywhere',
   },
 });
 

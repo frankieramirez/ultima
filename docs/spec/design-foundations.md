@@ -236,7 +236,7 @@ Padding smaller than the corner lets content crowd the curve. Padding much bigge
 
 A dialog is the widest panel built for reading. Inside its 24px padding it leaves 400px of 14px text. An average Figtree character is about half an em wide, so that's roughly 57 characters a line.
 
-**A dialog takes its full width whatever it holds,** capped at the space available. Sized to its content, a short form shrinks it to a popover's width, and a run of dialogs jumps between widths. It has no size axis: content that needs more than 448px belongs on a page or in a Drawer, or sets its width through the `style` slot.
+**A dialog takes its full width whatever it holds,** capped at the space available. Sized to its content, a short form shrinks it to a popover's width, and a run of dialogs jumps between widths. It has no size axis: content that needs more than 448px belongs on a page or in a Drawer. A wider popup sets both `width` and `maxWidth` through the `style` slot.
 
 An anchored Toast takes the popup cap, not the stack's 384px. It is a popup tied to its trigger, often a one-word confirmation, so it sizes to its message (`max-content`) and wraps only past 320px or `--available-width`. A stacked toast is a row in a column of others, so it keeps the stack's width.
 
