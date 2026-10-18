@@ -32,7 +32,7 @@ import {
   validHarnesses,
 } from './init.ts';
 import { CLI_VERSION, type Harness } from './install.ts';
-import { type Journal, createJournal, initCli, loadJournal, hashes, newRunId, recordOutputs, recoveryDirectory, rememberOriginals, saveJournal, unfinishedJournal, writeInPlace } from './journal.ts';
+import { INIT, type Journal, createJournal, initCli, loadJournal, hashes, newRunId, recordOutputs, recoveryDirectory, rememberOriginals, saveJournal, unfinishedJournal, writeInPlace } from './journal.ts';
 import { MANAGERS, type Manager, type ManualStep, VITE, VITE_PREVIEW, sha256 } from './recipe.ts';
 import { checkStep, compareVersions, resolveInstalledVersion } from './setup.ts';
 import { contentHash, readStamp } from './stamp.ts';
@@ -834,13 +834,13 @@ async function applyExisting(plan: ExistingPlan, json: boolean, io: InitIO, deps
   const inventory = [...new Set(plan.operations.flatMap((operation) => touches(operation, plan.items.creates)))];
   let journal: Journal | null = null;
   if (plan.resume) {
-    journal = loadJournal(root, plan.resume.runId);
+    journal = loadJournal(root, INIT, plan.resume.runId);
     if (!journal) return report(io, fail(1, `the run ${plan.resume.runId} this plan resumes has no readable journal; nothing was written. Plan again`), json);
   } else if (inventory.length > 0) {
     journal = createJournal(root, newRunId(), pm, lockfile);
   }
   const runId = journal?.runId ?? newRunId();
-  const logs = journal ? recoveryDirectory(root, runId) : join(root, 'node_modules', '.ultima-init', runId);
+  const logs = journal ? recoveryDirectory(root, INIT, runId) : join(root, 'node_modules', '.ultima-init', runId);
   mkdirSync(logs, { recursive: true });
   const attempt = journal ? journal.plans.length + 1 : 1;
   const attemptPrefix = attempt > 1 ? `${attempt}.` : '';
