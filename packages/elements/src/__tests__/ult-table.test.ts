@@ -381,8 +381,39 @@ test('the emitted bundles carry no runtime stylex or external imports', () => {
       'ult-table-sort-button',
       'ult-table-cell',
       'ult-table-caption',
+      'ult-table-foot',
     ]) {
       expect(bundle).toMatch(new RegExp(`customElements\\.define\\(["']${tag}["']`));
     }
   }
+});
+
+test('a foot, a selected row, and numeric cells mirror the React props', async () => {
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = `
+    <ult-table>
+      <ult-table-head>
+        <ult-table-row><ult-table-head-cell numeric>Amount</ult-table-head-cell></ult-table-row>
+      </ult-table-head>
+      <ult-table-body>
+        <ult-table-row selected><ult-table-cell numeric>$250.00</ult-table-cell></ult-table-row>
+      </ult-table-body>
+      <ult-table-foot>
+        <ult-table-row><ult-table-cell numeric>$250.00</ult-table-cell></ult-table-row>
+      </ult-table-foot>
+    </ult-table>`;
+  document.body.appendChild(wrapper);
+  await flush();
+  const table = innerTable(wrapper);
+  const foot = table.querySelector('tfoot') as HTMLElement;
+  expect(foot.getAttribute('part')).toBe('foot');
+  const row = table.querySelector('tbody tr') as HTMLElement;
+  expect(row.hasAttribute('data-selected')).toBe(true);
+  for (const cell of Array.from(table.querySelectorAll('th, td'))) {
+    expect(getComputedStyle(cell).textAlign).toBe('end');
+    expect(getComputedStyle(cell).fontVariantNumeric).toBe('tabular-nums');
+  }
+  const host = wrapper.querySelector('ult-table-body ult-table-row') as HTMLElement;
+  host.removeAttribute('selected');
+  expect(row.hasAttribute('data-selected')).toBe(false);
 });

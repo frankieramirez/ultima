@@ -495,6 +495,9 @@ export {
   type StatRootProps,
   type StatLabelProps,
   type StatValueProps,
+  type StatDeltaProps,
+  type StatDeltaTone,
+  type StatDeltaTrend,
 } from './stat';
 export {
   Switch,
@@ -507,6 +510,7 @@ export {
   type TableRootProps,
   type TableHeadProps,
   type TableBodyProps,
+  type TableFootProps,
   type TableRowProps,
   type TableHeadCellProps,
   type TableSortButtonProps,

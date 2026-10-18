@@ -2,6 +2,8 @@ import { Demo } from '../../demo';
 import { WebComponent } from '../../web-component';
 import Summary from '../../demos/stat/summary';
 import summarySource from '../../demos/stat/summary?raw';
+import Delta from '../../demos/stat/delta';
+import deltaSource from '../../demos/stat/delta?raw';
 
 # Stat
 
@@ -19,6 +21,12 @@ Stats can sit in a row, and supporting status text can share the value line.
 
 <Demo component={Summary} source={summarySource} />
 
+## Change over time
+
+`Stat.Delta` goes after the value and says how it moved. Its `tone` follows what the change means, not which way it went: a rising refund rate is `warning`. `trend` draws an up or down trend line before the text. Write the sign in the text itself, such as `+12.4%`, so the direction never depends on the color or the glyph.
+
+<Demo component={Delta} source={deltaSource} />
+
 ## Props
 
 Only what Ultima adds. The parts otherwise accept native [`div`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div) and [`span`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/span) props.
@@ -27,11 +35,14 @@ Only what Ultima adds. The parts otherwise accept native [`div`](https://develop
 | --- | --- | --- | --- | --- |
 | Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
 | `Root` | `render` | `ReactElement \| function` | — | Changes the root from its default `div`. |
+| `Delta` | `tone` | `'neutral' \| 'success' \| 'warning' \| 'danger'` | `'neutral'` | Color by meaning: good, bad, or needs action. |
+| `Delta` | `trend` | `'up' \| 'down'` | — | Draws a trend glyph before the text. Omitted, no glyph. |
 
 ## Accessibility
 
-- **Elements.** A `div` root with `span` label and value parts.
-- **Reading order.** Put `Stat.Label` before `Stat.Value` in DOM order, as the example does.
+- **Elements.** A `div` root with `span` label, value, and delta parts.
+- **Reading order.** Put `Stat.Label` before `Stat.Value`, and `Stat.Delta` after it, in DOM order, as the examples do.
+- **Meaning.** The trend glyph is `aria-hidden`. The delta's text carries the sign, and its tone is never the only signal.
 - **Focus and keyboard.** None. Stat is static and uses native reading order.
 
 <WebComponent item="stat" />

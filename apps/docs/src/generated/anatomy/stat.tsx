@@ -9,6 +9,9 @@ export {
   type StatRootProps,
   type StatLabelProps,
   type StatValueProps,
+  type StatDeltaProps,
+  type StatDeltaTone,
+  type StatDeltaTrend,
 } from '@ultima/ui/stat';
 
 export const Stat = {
@@ -16,4 +19,5 @@ export const Stat = {
   Root: mark(Source.Root, 'stat', 'Root'),
   Label: mark(Source.Label, 'stat', 'Label'),
   Value: mark(Source.Value, 'stat', 'Value'),
+  Delta: mark(Source.Delta, 'stat', 'Delta'),
 };

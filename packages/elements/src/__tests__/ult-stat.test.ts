@@ -148,8 +148,28 @@ test('the emitted bundles carry no runtime stylex or external imports', () => {
   for (const bundle of [perElementBundle, ultimaBundle]) {
     expect(bundle).not.toMatch(/^import |^export |stylex\.(create|attrs|props)/m);
     expect(bundle).toContain('data-ultima-elements');
-    for (const tag of ['ult-stat', 'ult-stat-label', 'ult-stat-value']) {
+    for (const tag of ['ult-stat', 'ult-stat-label', 'ult-stat-value', 'ult-stat-delta']) {
       expect(bundle).toMatch(new RegExp(`customElements\\.define\\(["']${tag}["']`));
     }
   }
+});
+
+test('the delta mounts as a span part, takes its tone, and draws the trend glyph from its attribute', () => {
+  const host = mount();
+  const delta = document.createElement('ult-stat-delta');
+  delta.setAttribute('tone', 'success');
+  delta.setAttribute('trend', 'up');
+  delta.textContent = '+12%';
+  host.appendChild(delta);
+  const inner = part(host, 'delta');
+  expect(inner.tagName).toBe('SPAN');
+  expect(inner.textContent).toBe('+12%');
+  const glyph = inner.firstElementChild as SVGSVGElement;
+  expect(glyph.tagName).toBe('svg');
+  expect(glyph.getAttribute('aria-hidden')).toBe('true');
+  const success = inner.className;
+  delta.setAttribute('tone', 'warning');
+  expect(inner.className).not.toBe(success);
+  delta.removeAttribute('trend');
+  expect(inner.querySelector('svg')).toBeNull();
 });

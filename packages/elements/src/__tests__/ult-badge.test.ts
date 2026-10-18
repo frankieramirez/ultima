@@ -157,3 +157,25 @@ test('the emitted bundles carry no runtime stylex or external imports', () => {
     expect(bundle).toMatch(/customElements\.define\(["']ult-badge["']/);
   }
 });
+
+test('the outline variant mounts with a transparent fill and a toned edge', () => {
+  const badge = inner(mount({ variant: 'outline', tone: 'success' }, 'Outline'));
+  const style = getComputedStyle(badge);
+  expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(style.borderTopColor).not.toBe('rgba(0, 0, 0, 0)');
+  expect(badge.className).not.toBe(inner(mount({ variant: 'subtle', tone: 'success' }, 'Subtle')).className);
+});
+
+test('a dot attribute puts a decorative dot part before the label, and removing it takes the dot away', () => {
+  const host = mount({ tone: 'success', dot: '' }, 'Active');
+  const badge = inner(host);
+  const dot = badge.firstElementChild as HTMLElement;
+  expect(dot.getAttribute('part')).toBe('dot');
+  expect(dot.getAttribute('aria-hidden')).toBe('true');
+  expect(badge.textContent).toBe('Active');
+  const subtleDot = dot.className;
+  host.setAttribute('variant', 'solid');
+  expect(dot.className).not.toBe(subtleDot);
+  host.removeAttribute('dot');
+  expect(badge.querySelector('[part="dot"]')).toBeNull();
+});

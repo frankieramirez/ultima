@@ -10,6 +10,7 @@ import {
   Table,
   type TableCaptionProps,
   type TableCellProps,
+  type TableFootProps,
   type TableHeadCellProps,
   type TableRootProps,
   type TableRowProps,
@@ -29,7 +30,8 @@ import { TRANSPARENT, tokenValue } from './token-value';
  *    Table.Root and Table.HeadCell, and its state mapping is what emits aria-sort.
  * 5. Documented state drives its style: `sort` on Table.HeadCell emits aria-sort and data-sort, and
  *    a style keyed off data-sort resolves per value. Table paints nothing off it; the glyph is the
- *    consumer's, so the style under test is the one the docs demo writes.
+ *    consumer's, so the style under test is the one the docs demo writes. `selected` on Table.Row
+ *    emits data-selected, and Table paints the selected fill off it.
  * 6. Typecheck passes: className is rejected, TableSort is exactly the three aria-sort tokens.
  * 7. Behavior this component wires itself: Table.Scroll measuring its own overflow, a tab stop
  *    only while it overflows, and scrolling that overflow once focused.
@@ -410,4 +412,91 @@ test('a body row answers the pointer over motion-fast, and the head row does not
   expect(getComputedStyle(headRow).backgroundColor).toBe(TRANSPARENT);
   await userEvent.hover(bodyRow);
   await expect.poll(() => getComputedStyle(bodyRow).backgroundColor).toBe(tokenValue('background-color', 'var(--ult-color-surface-hover)'));
+});
+
+function InvoiceTable() {
+  return (
+    <Table.Root>
+      <Table.Caption>Recent invoices</Table.Caption>
+      <Table.Head>
+        <Table.Row>
+          <Table.HeadCell>Invoice</Table.HeadCell>
+          <Table.HeadCell numeric>Amount</Table.HeadCell>
+        </Table.Row>
+      </Table.Head>
+      <Table.Body>
+        <Table.Row data-testid="plain">
+          <Table.Cell>INV001</Table.Cell>
+          <Table.Cell numeric>$250.00</Table.Cell>
+        </Table.Row>
+        <Table.Row selected data-testid="selected">
+          <Table.Cell>INV002</Table.Cell>
+          <Table.Cell numeric>$1,150.00</Table.Cell>
+        </Table.Row>
+      </Table.Body>
+      <Table.Foot data-testid="foot">
+        <Table.Row data-testid="foot-row">
+          <Table.Cell>Total</Table.Cell>
+          <Table.Cell numeric>$1,400.00</Table.Cell>
+        </Table.Row>
+      </Table.Foot>
+    </Table.Root>
+  );
+}
+
+test('a selected row emits data-selected, and an unselected row emits nothing', async () => {
+  const screen = await render(<InvoiceTable />);
+  expect(screen.getByTestId('selected').element()).toHaveAttribute('data-selected', '');
+  expect(screen.getByTestId('plain').element()).not.toHaveAttribute('data-selected');
+  expect(screen.getByTestId('selected').element()).not.toHaveAttribute('aria-selected');
+});
+
+test("a selected row takes the accent's step 5, which differs from a hovered row's fill and holds under the pointer", async () => {
+  const screen = await render(<InvoiceTable />);
+  const selected = screen.getByTestId('selected').element() as HTMLElement;
+  const plain = screen.getByTestId('plain').element() as HTMLElement;
+  const fill = tokenValue('background-color', 'var(--ult-color-accent-subtle-active)');
+  expect(getComputedStyle(selected).backgroundColor).toBe(fill);
+  await userEvent.hover(plain);
+  await expect.poll(() => getComputedStyle(plain).backgroundColor).toBe(tokenValue('background-color', 'var(--ult-color-surface-hover)'));
+  expect(getComputedStyle(plain).backgroundColor).not.toBe(getComputedStyle(selected).backgroundColor);
+  await userEvent.hover(selected);
+  await expect.poll(() => getComputedStyle(selected).backgroundColor).toBe(fill);
+});
+
+test('Table.Foot is a tfoot whose row takes medium weight, answers no hover, and draws no closing rule', async () => {
+  const screen = await render(<InvoiceTable />);
+  expect(screen.getByTestId('foot').element().tagName).toBe('TFOOT');
+  const row = screen.getByTestId('foot-row').element() as HTMLElement;
+  const total = getComputedStyle(screen.getByRole('cell', { name: 'Total' }).element());
+  expect(total.fontWeight).toBe(tokenValue('font-weight', 'var(--ult-font-weight-medium)'));
+  expect(total.borderBottomStyle).toBe('none');
+  const body = getComputedStyle(screen.getByRole('cell', { name: 'INV001' }).element());
+  expect(body.fontWeight).toBe(tokenValue('font-weight', 'var(--ult-font-weight-regular)'));
+  expect(body.borderBottomStyle).toBe('solid');
+  await userEvent.hover(row);
+  expect(getComputedStyle(row).backgroundColor).toBe(TRANSPARENT);
+});
+
+test('numeric cells and their head align on the end edge in tabular figures', async () => {
+  const screen = await render(<InvoiceTable />);
+  const head = getComputedStyle(screen.getByRole('columnheader', { name: 'Amount' }).element());
+  expect(head.textAlign).toBe('end');
+  expect(head.fontVariantNumeric).toBe('tabular-nums');
+  for (const name of ['$250.00', '$1,150.00', '$1,400.00']) {
+    const cell = getComputedStyle(screen.getByRole('cell', { name }).element());
+    expect(cell.textAlign, name).toBe('end');
+    expect(cell.fontVariantNumeric, name).toBe('tabular-nums');
+  }
+  const text = getComputedStyle(screen.getByRole('cell', { name: 'INV001' }).element());
+  expect(text.textAlign).not.toBe('end');
+  expect(text.fontVariantNumeric).toBe('normal');
+});
+
+test('the new props are typed and Foot carries the style slot', () => {
+  expectTypeOf<TableRowProps>().toHaveProperty('selected');
+  expectTypeOf<TableCellProps>().toHaveProperty('numeric');
+  expectTypeOf<TableHeadCellProps>().toHaveProperty('numeric');
+  expectTypeOf<TableFootProps>().toHaveProperty('style');
+  expectTypeOf<TableFootProps>().not.toHaveProperty('className');
 });

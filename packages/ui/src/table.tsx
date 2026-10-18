@@ -19,11 +19,19 @@ const styles = stylex.create({
     margin: 0,
     width: '100%',
   },
-  /** Body rows answer the pointer; the header row is not a row of data. */
+  /**
+   * Body rows answer the pointer; head and foot rows are not rows of data. A selected row takes the
+   * accent's step 5, the step for a held selection, so it reads stronger than a hovered row's step 4
+   * and keeps its fill under the pointer: a hover that repainted it would hide the selection.
+   */
   row: {
     backgroundColor: {
       default: 'transparent',
-      [HOVER]: { ':hover:not(thead *)': color['--ult-color-surface-hover'] },
+      ':is([data-selected])': color['--ult-color-accent-subtle-active'],
+      [HOVER]: {
+        ':hover:not(thead *, tfoot *)': color['--ult-color-surface-hover'],
+        ':is([data-selected]):hover:not(thead *, tfoot *)': color['--ult-color-accent-subtle-active'],
+      },
     },
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color',
@@ -42,12 +50,17 @@ const styles = stylex.create({
     textAlign: 'left',
     textTransform: 'uppercase',
   },
+  /** The foot is the table's last line, so its cells drop the rule a body row draws under itself. */
   cell: {
     borderBlockEndColor: color['--ult-color-border'],
-    borderBlockEndStyle: 'solid',
+    borderBlockEndStyle: { default: 'solid', ':is(tfoot *)': 'none' },
     borderBlockEndWidth: border.fine,
     paddingBlock: space['--ult-space-3'],
     paddingInline: space['--ult-space-4'],
+  },
+  /** A summary of the rows above it: the last body row's rule sets it apart, medium weight says what it is. */
+  foot: {
+    fontWeight: font['--ult-font-weight-medium'],
   },
   scroll: {
     boxSizing: 'border-box',
@@ -66,16 +79,35 @@ const styles = stylex.create({
   },
 });
 
+/** Digits of one width, aligned on the end edge, so place values line up down the column. */
+const numeric = stylex.create({
+  numeric: {
+    fontVariantNumeric: 'tabular-nums',
+    textAlign: 'end',
+  },
+});
+
 type TableSort = 'ascending' | 'descending' | 'none';
 
 type TableScrollProps = PlainProps<'div'>;
 type TableRootProps = PartProps<useRender.ComponentProps<'table'>>;
 type TableHeadProps = PlainProps<'thead'>;
 type TableBodyProps = PlainProps<'tbody'>;
-type TableRowProps = PlainProps<'tr'>;
-type TableHeadCellProps = PartProps<useRender.ComponentProps<'th'>> & { sort?: TableSort };
+type TableFootProps = PlainProps<'tfoot'>;
+type TableRowProps = PlainProps<'tr'> & {
+  /** Paints the row as selected and emits `data-selected`. The row's checkbox stays the accessible signal. */
+  selected?: boolean;
+};
+type TableHeadCellProps = PartProps<useRender.ComponentProps<'th'>> & {
+  sort?: TableSort;
+  /** Aligns the head of a numeric column with its cells. */
+  numeric?: boolean;
+};
 type TableSortButtonProps = PartProps<useRender.ComponentProps<'button'>>;
-type TableCellProps = PlainProps<'td'>;
+type TableCellProps = PlainProps<'td'> & {
+  /** End-aligned tabular figures, for a column of numbers. */
+  numeric?: boolean;
+};
 type TableCaptionProps = PlainProps<'caption'>;
 
 function useOverflows(element: HTMLDivElement | null): boolean {
@@ -125,11 +157,15 @@ function Body({ style, ...props }: TableBodyProps) {
   return <tbody {...props} {...stylex.props(style)} />;
 }
 
-function Row({ style, ...props }: TableRowProps) {
-  return <tr {...props} {...stylex.props(styles.row, style)} />;
+function Foot({ style, ...props }: TableFootProps) {
+  return <tfoot {...props} {...stylex.props(styles.foot, style)} />;
 }
 
-function HeadCell({ ref, render, scope = 'col', sort, style, ...props }: TableHeadCellProps) {
+function Row({ selected = false, style, ...props }: TableRowProps) {
+  return <tr data-selected={selected ? '' : undefined} {...props} {...stylex.props(styles.row, style)} />;
+}
+
+function HeadCell({ ref, render, scope = 'col', sort, numeric: isNumeric = false, style, ...props }: TableHeadCellProps) {
   return useRender({
     defaultTagName: 'th',
     ref,
@@ -139,7 +175,7 @@ function HeadCell({ ref, render, scope = 'col', sort, style, ...props }: TableHe
       sort: (value: TableSort | undefined): Record<string, string> | null =>
         value ? { 'aria-sort': value, 'data-sort': value } : null,
     },
-    props: { scope, ...props, ...stylex.props(styles.headCell, style) },
+    props: { scope, ...props, ...stylex.props(styles.headCell, isNumeric && numeric.numeric, style) },
   });
 }
 
@@ -152,15 +188,15 @@ function SortButton({ ref, render, style, ...props }: TableSortButtonProps) {
   });
 }
 
-function Cell({ style, ...props }: TableCellProps) {
-  return <td {...props} {...stylex.props(styles.cell, style)} />;
+function Cell({ numeric: isNumeric = false, style, ...props }: TableCellProps) {
+  return <td {...props} {...stylex.props(styles.cell, isNumeric && numeric.numeric, style)} />;
 }
 
 function Caption({ style, ...props }: TableCaptionProps) {
   return <caption {...props} {...stylex.props(styles.caption, style)} />;
 }
 
-const Table = { Scroll, Root, Head, Body, Row, HeadCell, SortButton, Cell, Caption };
+const Table = { Scroll, Root, Head, Body, Foot, Row, HeadCell, SortButton, Cell, Caption };
 
 export {
   Table,
@@ -168,6 +204,7 @@ export {
   type TableRootProps,
   type TableHeadProps,
   type TableBodyProps,
+  type TableFootProps,
   type TableRowProps,
   type TableHeadCellProps,
   type TableSortButtonProps,

@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Badge, type BadgeTone, type BadgeVariant } from '@ultima/ui';
 
-const variants: BadgeVariant[] = ['subtle', 'solid'];
+const variants: BadgeVariant[] = ['subtle', 'outline', 'solid'];
 const tones: BadgeTone[] = ['neutral', 'accent', 'highlight', 'success', 'warning', 'danger'];
 const styles = stylex.create({
   grid: { display: 'grid', gap: space['--ult-space-4'] },

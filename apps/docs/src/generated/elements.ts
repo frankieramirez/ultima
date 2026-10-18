@@ -58,7 +58,8 @@ export const elements: readonly ElementEntry[] = [
         "on": "ult-badge",
         "values": [
           "subtle",
-          "solid"
+          "solid",
+          "outline"
         ]
       },
       {
@@ -72,9 +73,14 @@ export const elements: readonly ElementEntry[] = [
           "warning",
           "danger"
         ]
+      },
+      {
+        "name": "dot",
+        "on": "ult-badge",
+        "values": "Boolean. A leading status dot in the tone's color."
       }
     ],
-    "example": "<ult-badge tone=\"neutral\">Draft</ult-badge>\n<ult-badge tone=\"success\">Passing</ult-badge>\n<ult-badge variant=\"solid\" tone=\"danger\">Failing</ult-badge>"
+    "example": "<ult-badge tone=\"neutral\">Draft</ult-badge>\n<ult-badge tone=\"success\">Passing</ult-badge>\n<ult-badge variant=\"outline\" tone=\"warning\" dot>Degraded</ult-badge>\n<ult-badge variant=\"solid\" tone=\"danger\">Failing</ult-badge>"
   },
   {
     "item": "card",
@@ -99,6 +105,7 @@ export const elements: readonly ElementEntry[] = [
       "ult-table-caption",
       "ult-table-head",
       "ult-table-body",
+      "ult-table-foot",
       "ult-table-row",
       "ult-table-head-cell",
       "ult-table-sort-button",
@@ -124,6 +131,21 @@ export const elements: readonly ElementEntry[] = [
         "name": "colspan, rowspan, headers",
         "on": "ult-table-cell",
         "values": "Forwarded to the cell."
+      },
+      {
+        "name": "selected",
+        "on": "ult-table-row",
+        "values": "Boolean. Paints the row as selected, mirrored to `data-selected` on the row."
+      },
+      {
+        "name": "numeric",
+        "on": "ult-table-cell",
+        "values": "Boolean. End-aligned tabular figures for a column of numbers."
+      },
+      {
+        "name": "numeric",
+        "on": "ult-table-head-cell",
+        "values": "Boolean. Aligns a numeric column's head with its cells."
       }
     ],
     "example": "<ult-table-scroll aria-labelledby=\"latency\">\n  <ult-table>\n    <ult-table-caption id=\"latency\">Latency by region</ult-table-caption>\n    <ult-table-head>\n      <ult-table-row>\n        <ult-table-head-cell>Region</ult-table-head-cell>\n        <ult-table-head-cell sort=\"descending\">p95</ult-table-head-cell>\n      </ult-table-row>\n    </ult-table-head>\n    <ult-table-body>\n      <ult-table-row>\n        <ult-table-cell>us-east-1</ult-table-cell>\n        <ult-table-cell>184ms</ult-table-cell>\n      </ult-table-row>\n      <ult-table-row>\n        <ult-table-cell>eu-west-1</ult-table-cell>\n        <ult-table-cell>240ms</ult-table-cell>\n      </ult-table-row>\n    </ult-table-body>\n  </ult-table>\n</ult-table-scroll>"
@@ -237,10 +259,30 @@ export const elements: readonly ElementEntry[] = [
     "tags": [
       "ult-stat",
       "ult-stat-label",
-      "ult-stat-value"
+      "ult-stat-value",
+      "ult-stat-delta"
     ],
-    "attributes": [],
-    "example": "<ult-stat>\n  <ult-stat-label>Pairings pass</ult-stat-label>\n  <ult-stat-value>49</ult-stat-value>\n</ult-stat>"
+    "attributes": [
+      {
+        "name": "tone",
+        "on": "ult-stat-delta",
+        "values": [
+          "neutral",
+          "success",
+          "warning",
+          "danger"
+        ]
+      },
+      {
+        "name": "trend",
+        "on": "ult-stat-delta",
+        "values": [
+          "up",
+          "down"
+        ]
+      }
+    ],
+    "example": "<ult-stat>\n  <ult-stat-label>Pairings pass</ult-stat-label>\n  <ult-stat-value>49</ult-stat-value>\n  <ult-stat-delta tone=\"success\" trend=\"up\">+2 this week</ult-stat-delta>\n</ult-stat>"
   },
   {
     "item": "code",

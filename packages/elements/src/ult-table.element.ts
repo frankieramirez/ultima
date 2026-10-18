@@ -14,11 +14,19 @@ const styles = stylex.create({
     margin: 0,
     width: '100%',
   },
-  /** Body rows answer the pointer; the header row is not a row of data. */
+  /**
+   * Body rows answer the pointer; head and foot rows are not rows of data. A selected row takes the
+   * accent's step 5, the step for a held selection, so it reads stronger than a hovered row's step 4
+   * and keeps its fill under the pointer: a hover that repainted it would hide the selection.
+   */
   row: {
     backgroundColor: {
       default: 'transparent',
-      [HOVER]: { ':hover:not(thead *)': color['--ult-color-surface-hover'] },
+      ':is([data-selected])': color['--ult-color-accent-subtle-active'],
+      [HOVER]: {
+        ':hover:not(thead *, tfoot *)': color['--ult-color-surface-hover'],
+        ':is([data-selected]):hover:not(thead *, tfoot *)': color['--ult-color-accent-subtle-active'],
+      },
     },
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'background-color',
@@ -37,12 +45,17 @@ const styles = stylex.create({
     textAlign: 'left',
     textTransform: 'uppercase',
   },
+  /** The foot is the table's last line, so its cells drop the rule a body row draws under itself. */
   cell: {
     borderBlockEndColor: color['--ult-color-border'],
-    borderBlockEndStyle: 'solid',
+    borderBlockEndStyle: { default: 'solid', ':is(tfoot *)': 'none' },
     borderBlockEndWidth: border.fine,
     paddingBlock: space['--ult-space-3'],
     paddingInline: space['--ult-space-4'],
+  },
+  /** A summary of the rows above it: the last body row's rule sets it apart, medium weight says what it is. */
+  foot: {
+    fontWeight: font['--ult-font-weight-medium'],
   },
   scroll: {
     boxSizing: 'border-box',
@@ -58,6 +71,14 @@ const styles = stylex.create({
     fontSize: text['--ult-text-3'],
     lineHeight: font['--ult-font-leading-snug'],
     padding: space['--ult-space-3'],
+  },
+});
+
+/** Digits of one width, aligned on the end edge, so place values line up down the column. */
+const numeric = stylex.create({
+  numeric: {
+    fontVariantNumeric: 'tabular-nums',
+    textAlign: 'end',
   },
 });
 
@@ -210,28 +231,45 @@ class UltTableBody extends UltTablePart {
   }
 }
 
+class UltTableFoot extends UltTablePart {
+  protected build(): HTMLElement {
+    const foot = document.createElement('tfoot');
+    foot.setAttribute('part', 'foot');
+    foot.className = mergeStyles(styles.foot);
+    return foot;
+  }
+}
+
+// A boolean `selected` attribute mirrors React's `selected` prop as `data-selected` on the row.
 class UltTableRow extends UltTablePart {
+  static observedAttributes = ['selected'];
+
   protected build(): HTMLElement {
     const row = document.createElement('tr');
     row.setAttribute('part', 'row');
     row.className = mergeStyles(styles.row);
     return row;
   }
+
+  protected override sync(row: HTMLElement): void {
+    if (this.hasAttribute('selected')) row.setAttribute('data-selected', '');
+    else row.removeAttribute('data-selected');
+  }
 }
 
 const HEAD_CELL_FORWARDED = ['scope', 'colspan', 'rowspan', 'headers', 'abbr'] as const;
 
 class UltTableHeadCell extends UltTablePart {
-  static observedAttributes = [...HEAD_CELL_FORWARDED, 'sort'];
+  static observedAttributes = [...HEAD_CELL_FORWARDED, 'sort', 'numeric'];
 
   protected build(): HTMLElement {
     const cell = document.createElement('th');
     cell.setAttribute('part', 'head-cell');
-    cell.className = mergeStyles(styles.headCell);
     return cell;
   }
 
   protected override sync(cell: HTMLElement): void {
+    cell.className = mergeStyles(styles.headCell, this.hasAttribute('numeric') ? numeric.numeric : undefined);
     for (const name of HEAD_CELL_FORWARDED) forward(this, cell, name);
     if (!cell.hasAttribute('scope')) cell.setAttribute('scope', 'col');
     const sort = this.getAttribute('sort');
@@ -260,16 +298,16 @@ class UltTableSortButton extends UltTablePart {
 const CELL_FORWARDED = ['colspan', 'rowspan', 'headers'] as const;
 
 class UltTableCell extends UltTablePart {
-  static observedAttributes = CELL_FORWARDED;
+  static observedAttributes = [...CELL_FORWARDED, 'numeric'];
 
   protected build(): HTMLElement {
     const cell = document.createElement('td');
     cell.setAttribute('part', 'cell');
-    cell.className = mergeStyles(styles.cell);
     return cell;
   }
 
   protected override sync(cell: HTMLElement): void {
+    cell.className = mergeStyles(styles.cell, this.hasAttribute('numeric') ? numeric.numeric : undefined);
     for (const name of CELL_FORWARDED) forward(this, cell, name);
   }
 }
@@ -315,6 +353,7 @@ if (!customElements.get('ult-table-scroll'))
   customElements.define('ult-table-scroll', UltTableScroll);
 if (!customElements.get('ult-table-head')) customElements.define('ult-table-head', UltTableHead);
 if (!customElements.get('ult-table-body')) customElements.define('ult-table-body', UltTableBody);
+if (!customElements.get('ult-table-foot')) customElements.define('ult-table-foot', UltTableFoot);
 if (!customElements.get('ult-table-row')) customElements.define('ult-table-row', UltTableRow);
 if (!customElements.get('ult-table-head-cell'))
   customElements.define('ult-table-head-cell', UltTableHeadCell);
