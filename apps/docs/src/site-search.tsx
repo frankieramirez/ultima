@@ -67,6 +67,7 @@ const styles = stylex.create({
   popup: {
     display: 'flex',
     flexDirection: 'column',
+    gap: 0,
     overflow: 'hidden',
     padding: 0,
     width: '100%',

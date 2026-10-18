@@ -49,7 +49,7 @@ export const items: Record<string, RegistryItemDescription> = {
   "alert-dialog": {
     "title": "Alert Dialog",
     "description": "A confirmation overlay that Escape closes and a backdrop click does not, on Base UI.",
-    "docs": "import { AlertDialog } from '@/components/ui/alert-dialog';\nimport { Button } from '@/components/ui/button';\n\n<AlertDialog.Root>\n  <AlertDialog.Trigger render={<Button />}>Delete report</AlertDialog.Trigger>\n  <AlertDialog.Portal>\n    <AlertDialog.Backdrop />\n    <AlertDialog.Viewport>\n      <AlertDialog.Popup>\n        <AlertDialog.Title>Delete report</AlertDialog.Title>\n        <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>\n        <AlertDialog.Close render={<Button variant=\"ghost\" />}>Cancel</AlertDialog.Close>\n        <AlertDialog.Close render={<Button tone=\"danger\" />}>Delete</AlertDialog.Close>\n      </AlertDialog.Popup>\n    </AlertDialog.Viewport>\n  </AlertDialog.Portal>\n</AlertDialog.Root>"
+    "docs": "import { AlertDialog } from '@/components/ui/alert-dialog';\nimport { Button } from '@/components/ui/button';\n\n<AlertDialog.Root>\n  <AlertDialog.Trigger render={<Button />}>Delete report</AlertDialog.Trigger>\n  <AlertDialog.Portal>\n    <AlertDialog.Backdrop />\n    <AlertDialog.Viewport>\n      <AlertDialog.Popup>\n        <AlertDialog.Header>\n          <AlertDialog.Title>Delete report</AlertDialog.Title>\n          <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>\n        </AlertDialog.Header>\n        <AlertDialog.Footer>\n          <AlertDialog.Close render={<Button variant=\"ghost\" />}>Cancel</AlertDialog.Close>\n          <AlertDialog.Close render={<Button tone=\"danger\" />}>Delete</AlertDialog.Close>\n        </AlertDialog.Footer>\n      </AlertDialog.Popup>\n    </AlertDialog.Viewport>\n  </AlertDialog.Portal>\n</AlertDialog.Root>"
   },
   "aspect-ratio": {
     "title": "Aspect Ratio",
@@ -134,7 +134,7 @@ export const items: Record<string, RegistryItemDescription> = {
   "dialog": {
     "title": "Dialog",
     "description": "A modal overlay with a title, a description, and a close slot rendered by the caller.",
-    "docs": "import { Dialog } from '@/components/ui/dialog';\n\n<Dialog.Root>\n  <Dialog.Trigger render={<Button />}>Open</Dialog.Trigger>\n  <Dialog.Portal>\n    <Dialog.Backdrop />\n    <Dialog.Viewport>\n      <Dialog.Popup>\n        <Dialog.Title>Title</Dialog.Title>\n        <Dialog.Description>Description</Dialog.Description>\n        <Dialog.Close render={<Button variant=\"ghost\">Close</Button>} />\n      </Dialog.Popup>\n    </Dialog.Viewport>\n  </Dialog.Portal>\n</Dialog.Root>"
+    "docs": "import { Dialog } from '@/components/ui/dialog';\n\n<Dialog.Root>\n  <Dialog.Trigger render={<Button />}>Open</Dialog.Trigger>\n  <Dialog.Portal>\n    <Dialog.Backdrop />\n    <Dialog.Viewport>\n      <Dialog.Popup>\n        <Dialog.Header>\n          <Dialog.Title>Title</Dialog.Title>\n          <Dialog.Description>Description</Dialog.Description>\n        </Dialog.Header>\n        <Dialog.Footer>\n          <Dialog.Close render={<Button variant=\"ghost\">Close</Button>} />\n        </Dialog.Footer>\n      </Dialog.Popup>\n    </Dialog.Viewport>\n  </Dialog.Portal>\n</Dialog.Root>"
   },
   "drawer": {
     "title": "Drawer",

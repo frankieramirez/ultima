@@ -8,11 +8,13 @@ import nestedSource from '../../demos/sidebar/nested?raw';
 import Collapse from '../../demos/sidebar/collapse';
 import collapseSource from '../../demos/sidebar/collapse?raw';
 import Scroll from '../../demos/sidebar/scroll';
+import HeaderFooter from '../../demos/sidebar/header-footer';
+import headerFooterSource from '../../demos/sidebar/header-footer?raw';
 import scrollSource from '../../demos/sidebar/scroll?raw';
 
 # Sidebar
 
-Application navigation as ten plain parts: a `Root` that holds the state, a `Panel` that is the `nav` landmark and the scroll container, and the groups, lists, links, and buttons inside it. Ultima paints the panel and the rows; routing stays yours, because `Sidebar.Link` takes your router's link through `render`.
+Application navigation as twelve plain parts: a `Root` that holds the state, a `Panel` that is the `nav` landmark and the scroll container, its `Header` and `Footer`, and the groups, lists, links, and buttons between them. Ultima paints the panel and the rows; routing stays yours, because `Sidebar.Link` takes your router's link through `render`.
 
 Above `48rem` the panel sits inline and collapses in place. Below it, the same children become a menu that slides in over the page. You write them once.
 
@@ -36,11 +38,17 @@ Installing Sidebar installs Dialog with it. `Sidebar.Root` composes `Dialog.Root
 
 ## The current page
 
-`Sidebar.Link` takes `active`, and Base UI emits `aria-current="page"` and `data-active` when it is true. The current row differs from a resting one by its accent fill, its ink and its medium weight, so it never depends on hue alone.
+`Sidebar.Link` takes `active`, and Base UI emits `aria-current="page"` and `data-active` when it is true. The current row takes the accent's subtle fill, the full ink, and a 2px accent bar on its start edge. Hover moves only the fill, so the bar is what tells the current page from a hovered row, and it never depends on hue alone. The weight stays regular: heavier text is wider and would shift the label.
 
 The style reads `aria-current` as well as `data-active`, which means a router link that sets the attribute itself, as TanStack Router's does, is styled with no `active` prop at all.
 
 <Demo component={Current} source={currentSource} />
+
+## Header and footer
+
+`Sidebar.Header` and `Sidebar.Footer` are the panel's two ends: a workspace switcher at the top and an account menu at the bottom, each a `Sidebar.Button` you can hand to a [Dropdown Menu](/components/dropdown-menu) trigger. They stay in view while the groups between them scroll, and a short panel puts its footer at the end.
+
+<Demo component={HeaderFooter} source={headerFooterSource} />
 
 ## A nested group
 

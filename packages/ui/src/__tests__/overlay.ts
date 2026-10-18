@@ -53,6 +53,11 @@ export function resolved(property: string, value: string): string {
   return out;
 }
 
+/** A token's length in pixels, read off a probe. */
+export function px(value: string): number {
+  return parseFloat(resolved('width', value));
+}
+
 /**
  * Dialogs are cards: the larger corner and shadow, card padding, and a description that sits a
  * fixed step under the title instead of on the UA's paragraph margins.
@@ -64,8 +69,33 @@ export function expectCardSurface(popup: Element, description: Element): void {
   expect(style.paddingTop).toBe(resolved('padding-top', 'var(--ult-space-8)'));
 
   const text = getComputedStyle(description);
-  expect(text.marginTop).toBe(resolved('margin-top', 'var(--ult-space-4)'));
+  const title = description.previousElementSibling as Element;
+  const step = description.getBoundingClientRect().top - title.getBoundingClientRect().bottom;
+  expect(step, 'title to description').toBeCloseTo(px('var(--ult-space-4)'), 0);
   expect(text.marginBottom).toBe('0px');
   const leading = parseFloat(getComputedStyle(description).getPropertyValue('--ult-font-leading-normal'));
   expect(parseFloat(text.lineHeight)).toBeCloseTo(leading * parseFloat(text.fontSize), 1);
+}
+
+/**
+ * A modal holds its panel width whatever it carries (7 space step 12s, or the viewport's content
+ * box when that is narrower), stacks its parts a padding apart, and ends its actions on the end
+ * edge a step apart.
+ */
+export function expectModalRhythm(viewport: Element, popup: Element, header: Element, footer: Element): void {
+  const frame = getComputedStyle(viewport);
+  const room = viewport.clientWidth - parseFloat(frame.paddingLeft) - parseFloat(frame.paddingRight);
+  const width = popup.getBoundingClientRect().width;
+  expect(width, 'panel width').toBeCloseTo(Math.min(7 * px('var(--ult-space-12)'), room), 0);
+
+  const next = header.nextElementSibling as Element;
+  const below = next.getBoundingClientRect().top - header.getBoundingClientRect().bottom;
+  expect(below, 'header to body').toBeCloseTo(px('var(--ult-space-8)'), 0);
+  const above = footer.getBoundingClientRect().top - (footer.previousElementSibling as Element).getBoundingClientRect().bottom;
+  expect(above, 'body to footer').toBeCloseTo(px('var(--ult-space-8)'), 0);
+
+  const actions = [...footer.children].map((child) => child.getBoundingClientRect());
+  const last = actions.at(-1) as DOMRect;
+  expect(last.right, 'actions end on the end edge').toBeCloseTo(footer.getBoundingClientRect().right, 0);
+  if (actions.length > 1) expect(last.left - (actions.at(-2) as DOMRect).right, 'between actions').toBeCloseTo(px('var(--ult-space-4)'), 0);
 }
