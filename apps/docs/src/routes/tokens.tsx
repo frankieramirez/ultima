@@ -1,9 +1,9 @@
-import { MagnifyingGlassIcon } from '@phosphor-icons/react';
+import { SearchIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Card, Code, InputGroup, Separator, Table } from '@ultima/ui';
+import { Card, Code, Icon, InputGroup, Separator, Table } from '@ultima/ui';
 import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
 import { APCAcontrast, sRGBtoY } from 'apca-w3';
 
@@ -252,7 +252,7 @@ export function TokensPage() {
       <div {...stylex.props(styles.controls)}>
         <InputGroup.Root style={styles.search}>
           <InputGroup.Addon>
-            <MagnifyingGlassIcon aria-hidden />
+            <Icon><SearchIcon /></Icon>
           </InputGroup.Addon>
           <InputGroup.Input
             aria-label="Search tokens"

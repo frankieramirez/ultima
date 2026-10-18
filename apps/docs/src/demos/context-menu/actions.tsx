@@ -1,4 +1,4 @@
-import { ArchiveIcon, DotsThreeIcon, LinkSimpleIcon, PencilSimpleIcon } from '@phosphor-icons/react';
+import { ArchiveIcon, EllipsisIcon, LinkIcon, PencilIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { color, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, ContextMenu, DropdownMenu, Icon } from '@ultima/ui';
@@ -33,11 +33,11 @@ export default function ContextMenuActions() {
           <ContextMenu.Positioner>
             <ContextMenu.Popup aria-label="Quarterly report">
               <ContextMenu.Item>
-                <Icon><PencilSimpleIcon /></Icon>
+                <Icon><PencilIcon /></Icon>
                 Rename
               </ContextMenu.Item>
               <ContextMenu.LinkItem href="https://base-ui.com/react/components/context-menu">
-                <Icon><LinkSimpleIcon /></Icon>
+                <Icon><LinkIcon /></Icon>
                 Base UI docs
               </ContextMenu.LinkItem>
               <ContextMenu.Separator />
@@ -51,17 +51,17 @@ export default function ContextMenuActions() {
       </ContextMenu.Root>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger render={<Button variant="ghost" size="sm" aria-label="Quarterly report actions" />}>
-          <Icon><DotsThreeIcon /></Icon>
+          <Icon><EllipsisIcon /></Icon>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
           <DropdownMenu.Positioner sideOffset={8}>
             <DropdownMenu.Popup>
               <DropdownMenu.Item>
-                <Icon><PencilSimpleIcon /></Icon>
+                <Icon><PencilIcon /></Icon>
                 Rename
               </DropdownMenu.Item>
               <DropdownMenu.LinkItem href="https://base-ui.com/react/components/context-menu">
-                <Icon><LinkSimpleIcon /></Icon>
+                <Icon><LinkIcon /></Icon>
                 Base UI docs
               </DropdownMenu.LinkItem>
               <DropdownMenu.Separator />

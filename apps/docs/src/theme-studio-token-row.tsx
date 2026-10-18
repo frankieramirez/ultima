@@ -1,15 +1,11 @@
 import { docsStyles } from './docs-style';
 import { StudioPortalContext } from './theme-studio-context';
 import { breakpoints } from './breakpoints.stylex';
-import {
-  ArrowCounterClockwiseIcon,
-  LinkSimpleHorizontalBreakIcon,
-  LinkSimpleHorizontalIcon,
-} from '@phosphor-icons/react';
+import { Link2Icon, Link2OffIcon, RotateCcwIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import type { ColorMode, GuidedGroup, ResolvedDraft, ThemeDraft } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, ColorField, Field, Input, Toggle } from '@ultima/ui';
+import { Button, ColorField, Field, Icon, Input, Toggle } from '@ultima/ui';
 import { useContext, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { groupTokens, linkTokenOverride, resetTokenOverride, setTokenOverride } from './theme-studio-draft';
@@ -223,7 +219,7 @@ function TokenRow({
           style={[styles.icon, styles.touch]}
           variant="ghost"
         >
-          {unlinked ? <LinkSimpleHorizontalBreakIcon aria-hidden /> : <LinkSimpleHorizontalIcon aria-hidden />}
+          {unlinked ? <Icon><Link2OffIcon /></Icon> : <Icon><Link2Icon /></Icon>}
         </Toggle>
         <Button
           aria-label={`Reset ${token}`}
@@ -233,7 +229,7 @@ function TokenRow({
           style={[docsStyles.square, styles.icon, styles.touch]}
           variant="ghost"
         >
-          <ArrowCounterClockwiseIcon aria-hidden />
+          <Icon><RotateCcwIcon /></Icon>
         </Button>
       </div>
       <div {...stylex.props(styles.fields)}>

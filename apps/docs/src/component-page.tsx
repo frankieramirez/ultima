@@ -2,16 +2,16 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArrowUpRightIcon,
-  CaretDownIcon,
-  CaretUpIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
   CopyIcon,
-  GithubLogoIcon,
-  SidebarSimpleIcon,
-} from '@phosphor-icons/react';
+  PanelLeftIcon,
+} from 'lucide-react';
+import { GithubMarkIcon } from './github-mark';
 import { Link, useLocation } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Breadcrumb, Button, Card, DropdownMenu, Separator, Tabs } from '@ultima/ui';
+import { Breadcrumb, Button, Card, DropdownMenu, Icon, Separator, Tabs } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import {
   Children,
@@ -441,7 +441,7 @@ function DocsBar({ entry, sections }: { entry: ComponentEntry; sections: Entry[]
           <Breadcrumb.List>
             <Breadcrumb.Item>
               <span aria-hidden {...stylex.props(styles.trailMark)}>
-                <SidebarSimpleIcon />
+                <Icon><PanelLeftIcon /></Icon>
               </span>
               <Breadcrumb.Link style={styles.trailLink} render={<Link to="/components" />}>
                 Components
@@ -458,7 +458,7 @@ function DocsBar({ entry, sections }: { entry: ComponentEntry; sections: Entry[]
         <DropdownMenu.Root>
           <DropdownMenu.Trigger render={<Button variant="ghost" size="sm" style={styles.contents} />}>
             On this page
-            <CaretDownIcon aria-hidden />
+            <Icon><ChevronDownIcon /></Icon>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Positioner align="end" sideOffset={4}>
@@ -487,7 +487,7 @@ function TitleBlock({ entry, title, lede }: { entry: ComponentEntry; title: Reac
       value: (
         <TextLink variant="muted" href={`${SOURCE_ROOT}/${entry.item}.tsx`} style={[styles.metaValue, styles.mono]}>
           {entry.item}.tsx
-          <GithubLogoIcon aria-hidden {...stylex.props(styles.metaIcon)} />
+          <Icon style={styles.metaIcon}><GithubMarkIcon /></Icon>
         </TextLink>
       ),
     },
@@ -496,7 +496,7 @@ function TitleBlock({ entry, title, lede }: { entry: ComponentEntry; title: Reac
       value: (
         <TextLink variant="muted" href={primitive.href} style={styles.metaValue}>
           {primitive.library} {primitive.name}
-          <ArrowUpRightIcon aria-hidden {...stylex.props(styles.metaIcon)} />
+          <Icon style={styles.metaIcon}><ArrowUpRightIcon /></Icon>
         </TextLink>
       ),
     },
@@ -505,7 +505,7 @@ function TitleBlock({ entry, title, lede }: { entry: ComponentEntry; title: Reac
       value: (
         <TextLink variant="muted" href="#web-component" style={[styles.metaValue, styles.mono]}>
           {`<${element.tag}>`}
-          <ArrowUpRightIcon aria-hidden {...stylex.props(styles.metaIcon)} />
+          <Icon style={styles.metaIcon}><ArrowUpRightIcon /></Icon>
         </TextLink>
       ),
     },
@@ -555,7 +555,7 @@ function InstallCommand({ command }: { command: string }) {
       <CopyButton text={current} ariaLabel="Copy install command" style={[styles.copyWide, styles.copyLabel]}>
         {(status) => (
           <>
-            <CopyIcon aria-hidden />
+            <Icon><CopyIcon /></Icon>
             {status || 'Copy'}
           </>
         )}
@@ -746,7 +746,7 @@ function Examples({ sections, value }: { sections: Section[]; value: string }) {
       {more > 0 && (
         <Button variant="outline" aria-expanded={open} onClick={() => setOpen(!open)} style={styles.more}>
           {open ? 'Fewer examples' : `${more} more ${more === 1 ? 'example' : 'examples'}`}
-          {open ? <CaretUpIcon aria-hidden /> : <CaretDownIcon aria-hidden />}
+          {open ? <Icon><ChevronUpIcon /></Icon> : <Icon><ChevronDownIcon /></Icon>}
         </Button>
       )}
     </section>
@@ -840,7 +840,7 @@ function Pager({ entry }: { entry: ComponentEntry }) {
             render={<Link to="/components/$name" params={{ name: previous.item }} />}
             style={[styles.pagerLink, styles.pagerPrevious]}
           >
-            <ArrowLeftIcon aria-hidden {...stylex.props(styles.pagerArrow)} />
+            <Icon style={styles.pagerArrow}><ArrowLeftIcon /></Icon>
             <span {...stylex.props(styles.pagerCopy)}>
               <span {...stylex.props(styles.pagerLabel)}>Previous · {previous.number}</span>
               <span {...stylex.props(styles.pagerName)}>{previous.name}</span>
@@ -863,7 +863,7 @@ function Pager({ entry }: { entry: ComponentEntry }) {
               <span {...stylex.props(styles.pagerLabel)}>Next · {next.number}</span>
               <span {...stylex.props(styles.pagerName)}>{next.name}</span>
             </span>
-            <ArrowRightIcon aria-hidden {...stylex.props(styles.pagerArrow)} />
+            <Icon style={styles.pagerArrow}><ArrowRightIcon /></Icon>
           </TextLink>
         )}
       </div>

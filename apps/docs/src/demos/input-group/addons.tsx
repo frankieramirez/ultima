@@ -1,4 +1,4 @@
-import { MagnifyingGlassIcon } from '@phosphor-icons/react';
+import { SearchIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Button, Icon, InputGroup } from '@ultima/ui';
@@ -16,7 +16,7 @@ export default function Addons() {
     <div {...stylex.props(styles.stack)}>
       <InputGroup.Root>
         <InputGroup.Addon>
-          <Icon><MagnifyingGlassIcon /></Icon>
+          <Icon><SearchIcon /></Icon>
         </InputGroup.Addon>
         <InputGroup.Input aria-label="Search components" placeholder="Search components" />
         <InputGroup.Addon align="end">⌘K</InputGroup.Addon>

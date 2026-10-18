@@ -2,16 +2,16 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArrowUpRightIcon,
-  DesktopIcon,
-  DeviceMobileIcon,
   FileIcon,
-  FolderSimpleIcon,
-  GithubLogoIcon,
-} from '@phosphor-icons/react';
+  FolderIcon,
+  MonitorIcon,
+  SmartphoneIcon,
+} from 'lucide-react';
+import { GithubMarkIcon } from './github-mark';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Card, Separator, Tabs, ToggleGroup } from '@ultima/ui';
+import { Card, Icon, Separator, Tabs, ToggleGroup } from '@ultima/ui';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { BlockAnatomy } from './block-anatomy';
@@ -301,10 +301,10 @@ function Preview({ block }: { block: BlockEntry }) {
             }}
           >
             <ToggleGroup.Item value="desktop" aria-label="Desktop">
-              <DesktopIcon aria-hidden />
+              <Icon><MonitorIcon /></Icon>
             </ToggleGroup.Item>
             <ToggleGroup.Item value="narrow" aria-label="Narrow">
-              <DeviceMobileIcon aria-hidden />
+              <Icon><SmartphoneIcon /></Icon>
             </ToggleGroup.Item>
           </ToggleGroup.Root>
           <span {...stylex.props(styles.size)}>
@@ -366,13 +366,13 @@ function Details({ block }: { block: BlockEntry }) {
         <ul {...stylex.props(styles.list, styles.tree)}>
           <li>
             <span {...stylex.props(styles.treeRow, styles.folder)}>
-              <FolderSimpleIcon aria-hidden {...stylex.props(styles.treeIcon)} />
+              <Icon style={styles.treeIcon}><FolderIcon /></Icon>
               components/{block.id}/
             </span>
             <ul {...stylex.props(styles.list, styles.nested)}>
               {block.files.map((file) => (
                 <li key={file} {...stylex.props(styles.treeRow, styles.file)}>
-                  <FileIcon aria-hidden {...stylex.props(styles.treeIcon)} />
+                  <Icon style={styles.treeIcon}><FileIcon /></Icon>
                   {file}
                 </li>
               ))}
@@ -396,7 +396,7 @@ function Details({ block }: { block: BlockEntry }) {
                     style={styles.ingredientName}
                   >
                     {entry.title}
-                    <ArrowUpRightIcon aria-hidden />
+                    <Icon><ArrowUpRightIcon /></Icon>
                   </TextLink>
                 ) : (
                   <>
@@ -421,7 +421,7 @@ function Pager({ block }: { block: BlockEntry }) {
       <Separator />
       <div {...stylex.props(styles.pagerRow)}>
         <TextLink variant="muted" render={<Link to="/blocks" />} style={styles.pagerLink}>
-          <ArrowLeftIcon aria-hidden {...stylex.props(styles.pagerArrow)} />
+          <Icon style={styles.pagerArrow}><ArrowLeftIcon /></Icon>
           <span {...stylex.props(styles.pagerCopy)}>
             <span {...stylex.props(styles.pagerLabel)}>All blocks</span>
             <span {...stylex.props(styles.pagerName)}>Back to Blocks</span>
@@ -436,7 +436,7 @@ function Pager({ block }: { block: BlockEntry }) {
                 <span {...stylex.props(styles.pagerLabel)}>Next · {next.number}</span>
                 <span {...stylex.props(styles.pagerName)}>{next.title}</span>
               </span>
-              <ArrowRightIcon aria-hidden {...stylex.props(styles.pagerArrow)} />
+              <Icon style={styles.pagerArrow}><ArrowRightIcon /></Icon>
             </TextLink>
           </>
         )}
@@ -466,11 +466,11 @@ export function BlockPage({ block }: { block: BlockEntry }) {
           <LandingCommand commands={[block.install]} label="Copy install command" />
           <div {...stylex.props(styles.links)}>
             <TextLink variant="muted" href={`${SOURCE_ROOT}/${block.id}`} style={styles.link}>
-              <GithubLogoIcon aria-hidden />
+              <Icon><GithubMarkIcon /></Icon>
               View source
             </TextLink>
             <TextLink variant="muted" href={`/blocks/${block.id}/preview`} target="_blank" style={styles.link}>
-              <ArrowUpRightIcon aria-hidden />
+              <Icon><ArrowUpRightIcon /></Icon>
               Open in a new tab
             </TextLink>
           </div>

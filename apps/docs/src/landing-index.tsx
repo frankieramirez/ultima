@@ -1,9 +1,9 @@
-import { ArrowDownIcon, ArrowRightIcon } from '@phosphor-icons/react';
+import { ArrowDownIcon, ArrowRightIcon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { colorScheme, presetDraft, resolveDraft } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Card, Separator, ToggleGroup } from '@ultima/ui';
+import { Button, Card, Icon, Separator, ToggleGroup } from '@ultima/ui';
 import { useMemo, useState, type CSSProperties } from 'react';
 
 import { breakpoints } from './breakpoints.stylex';
@@ -128,7 +128,7 @@ function Plate({ entry, preset }: { entry: ComponentEntry; preset: Preset }) {
           render={<Link to="/components/$name" params={{ name: entry.item }} />}
           style={styles.open}
         >
-          Open {entry.name} <ArrowRightIcon aria-hidden />
+          Open {entry.name} <Icon><ArrowRightIcon /></Icon>
         </TextLink>
       </div>
     </Card.Root>
@@ -182,7 +182,7 @@ export function LandingIndex({ preset }: { preset: Preset }) {
               >
                 <span {...stylex.props(styles.number)}>{entry.number}</span>
                 <span {...stylex.props(styles.name)}>{entry.name}</span>
-                {entry.item === shown.item ? <ArrowRightIcon aria-hidden /> : null}
+                {entry.item === shown.item ? <Icon><ArrowRightIcon /></Icon> : null}
               </TextLink>
               <Separator />
             </li>
@@ -192,7 +192,7 @@ export function LandingIndex({ preset }: { preset: Preset }) {
       </div>
       {!unfolded && entries.length > NARROW_ROWS ? (
         <Button variant="outline" size="lg" onClick={() => setUnfolded(true)} style={styles.more}>
-          Show all {entries.length} components <ArrowDownIcon aria-hidden />
+          Show all {entries.length} components <Icon><ArrowDownIcon /></Icon>
         </Button>
       ) : null}
     </>

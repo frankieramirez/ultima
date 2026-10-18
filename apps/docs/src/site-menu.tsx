@@ -1,9 +1,9 @@
 import { docsStyles } from './docs-style';
-import { XIcon } from '@phosphor-icons/react';
+import { XIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { Link } from '@tanstack/react-router';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, ScrollArea, Separator, Sidebar } from '@ultima/ui';
+import { Button, Icon, ScrollArea, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
 import { breakpoints } from './breakpoints.stylex';
@@ -66,7 +66,7 @@ export function SiteMenu() {
             <Sidebar.Close
               render={<Button variant="ghost" aria-label="Close navigation" style={[docsStyles.square, styles.close]} />}
             >
-              <XIcon />
+              <Icon><XIcon /></Icon>
             </Sidebar.Close>
           </div>
           <Separator />

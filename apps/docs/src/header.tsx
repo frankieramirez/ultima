@@ -1,9 +1,10 @@
 import { docsStyles } from './docs-style';
-import { ArrowUpRightIcon, GithubLogoIcon, ListIcon } from '@phosphor-icons/react';
+import { ArrowUpRightIcon, MenuIcon } from 'lucide-react';
+import { GithubMarkIcon } from './github-mark';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, NavigationMenu, Separator, Sidebar } from '@ultima/ui';
+import { Button, Icon, NavigationMenu, Separator, Sidebar } from '@ultima/ui';
 
 import { BrandLogo } from './brand-logo';
 import { breakpoints } from './breakpoints.stylex';
@@ -104,13 +105,13 @@ export function Header({ footer }: { footer: boolean }) {
           style={[styles.github, !footer && styles.githubAlways]}
           href="https://github.com/frankieramirez/ultima"
         >
-          <GithubLogoIcon aria-hidden {...stylex.props(styles.githubMark)} />
+          <Icon style={styles.githubMark}><GithubMarkIcon /></Icon>
           <span {...stylex.props(styles.githubLabel)}>
-            GitHub <ArrowUpRightIcon aria-hidden />
+            GitHub <Icon><ArrowUpRightIcon /></Icon>
           </span>
         </TextLink>
         <Sidebar.Trigger render={<Button variant="ghost" aria-label="Toggle navigation" style={[docsStyles.square, styles.trigger]} />}>
-          <ListIcon aria-hidden />
+          <Icon><MenuIcon /></Icon>
         </Sidebar.Trigger>
       </div>
       <Separator />

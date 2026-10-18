@@ -1,8 +1,8 @@
-import { ArrowUpRightIcon } from '@phosphor-icons/react';
+import { ArrowUpRightIcon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Badge, Card, Separator } from '@ultima/ui';
+import { Badge, Card, Icon, Separator } from '@ultima/ui';
 import type { ReactNode } from 'react';
 
 import { breakpoints } from './breakpoints.stylex';
@@ -110,7 +110,7 @@ export function ElementIndex() {
                   {entry && <span {...stylex.props(styles.number)}>{entry.number}</span>}
                   <span {...stylex.props(styles.tag)}>{`<${element.tag}>`}</span>
                 </span>
-                <ArrowUpRightIcon aria-hidden {...stylex.props(styles.arrow)} />
+                <Icon style={styles.arrow}><ArrowUpRightIcon /></Icon>
               </TextLink>
             </Card.Root>
           </li>

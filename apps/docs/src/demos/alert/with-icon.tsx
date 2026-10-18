@@ -1,4 +1,4 @@
-import { WarningIcon } from '@phosphor-icons/react';
+import { TriangleAlertIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Alert, Icon } from '@ultima/ui';
@@ -15,7 +15,7 @@ export default function WithIcon() {
   return (
     <Alert.Root tone="warning">
       <Alert.Icon>
-        <Icon><WarningIcon /></Icon>
+        <Icon><TriangleAlertIcon /></Icon>
       </Alert.Icon>
       <div {...stylex.props(styles.copy)}>
         <Alert.Title>Disk almost full</Alert.Title>

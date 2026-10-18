@@ -8,7 +8,7 @@ import namedSource from '../../demos/icon/named?raw';
 
 # Icon
 
-Sizes an icon from any set to the text around it. Ultima ships no icon set: you bring your own, and `Icon` makes it fit. It puts its props on the set's own `<svg>` and sizes it to `1em`, so a Button's icon matches its label at `sm`, `md` and `lg` whatever size the set defaults to. One function, no axes.
+Sizes an icon from any set to the text around it. Lucide is Ultima's default set, and Ultima's components carry no icon dependency, so you can bring any other. `Icon` puts its props on the set's own `<svg>` and sizes it to `1em`, so a Button's icon matches its label at `sm`, `md` and `lg` whatever size the set defaults to. One function, no axes.
 
 ## Install
 
@@ -18,13 +18,13 @@ npx shadcn@4.21.4 add @ultima/icon
 
 ## Usage
 
-Wrap each icon in `Icon`. The icon is the element `Icon` renders, so there is no extra wrapper and a Button still sees an icon as its direct child. These demos use [Phosphor](https://phosphoricons.com), which the docs site carries as its own devDependency; Lucide, Tabler, Heroicons, Radix Icons and your own SVGs work the same way.
+Wrap each icon in `Icon`. The icon is the element `Icon` renders, so there is no extra wrapper and a Button still sees an icon as its direct child. These demos use [Lucide](https://lucide.dev), Ultima's default set; Phosphor, Tabler, Heroicons, Radix Icons and your own SVGs work the same way.
 
 <Demo component={Basic} source={basicSource} />
 
 ## Any set
 
-Sets disagree about size. Lucide and Tabler draw a 24px box, Heroicons sets no size at all and can collapse to nothing in a flex row, and Radix Icons stays 15px at every size. A class's width and height beat the attributes a set writes on its `<svg>`, so every one of them comes out at `1em`. The weight stays the set's: to match Ultima's own 1.5 stroke, pass the set's own `strokeWidth={1.5}`.
+Sets disagree about size. Lucide and Tabler draw a 24px box, Heroicons sets no size at all and can collapse to nothing in a flex row, and Radix Icons stays 15px at every size. A class's width and height beat the attributes a set writes on its `<svg>`, so every one of them comes out at `1em`. A stroked set such as Lucide or Tabler also draws at Ultima's 1.5 stroke, the weight of its own chevrons and checks. To keep a different weight, set `strokeWidth` on the icon itself.
 
 <Demo component={AnySet} source={anySetSource} />
 

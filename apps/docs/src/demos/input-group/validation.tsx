@@ -1,4 +1,4 @@
-import { EnvelopeIcon } from '@phosphor-icons/react';
+import { MailIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Field, Icon, InputGroup } from '@ultima/ui';
@@ -17,7 +17,7 @@ export default function Validation() {
         <Field.Label>Email</Field.Label>
         <InputGroup.Root>
           <InputGroup.Addon>
-            <Icon><EnvelopeIcon /></Icon>
+            <Icon><MailIcon /></Icon>
           </InputGroup.Addon>
           <InputGroup.Input type="email" defaultValue="not-an-email" />
         </InputGroup.Root>

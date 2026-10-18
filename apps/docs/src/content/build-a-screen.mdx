@@ -1,4 +1,5 @@
-import { InfoIcon } from '@phosphor-icons/react';
+import { InfoIcon } from 'lucide-react';
+import { Icon } from '@ultima/ui';
 
 import {
   CompleteScreens,
@@ -116,7 +117,7 @@ Install this theme the way you would install your own Studio export:
 
 Import `ultima-theme.css` after your StyleX output, as [Install](/install#theme-adoption) shows. Fonts are your responsibility; the theme exports font stacks and loads no font faces. A root CSS theme reaches the document and the popups that portal to `document.body`. For a theme on one subtree, see [Theme Scope](/components/theme-scope).
 
-<Callout title="Application tokens" icon={<InfoIcon />}>
+<Callout title="Application tokens" icon={<Icon><InfoIcon /></Icon>}>
   Use Ultima's space tokens for ordinary spacing and its semantic roles for color. A new application color role needs its own dark, light, state and contrast contract, so keep application tokens to sizes your layout needs.
 </Callout>
 

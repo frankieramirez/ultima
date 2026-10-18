@@ -1,10 +1,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, shadow, space, text } from '@ultima/tokens/tokens.stylex';
-import {
-  Alert, Avatar, Badge, Button, Calendar, Card, Checkbox, Command, Empty,
-  Field, Input, Popover, Progress, Select, Separator, Spinner, Switch, Table, Textarea,
-} from '@ultima/ui';
-import { ArrowRightIcon, FilePlusIcon, PaperPlaneTiltIcon } from '@phosphor-icons/react';
+import { Alert, Avatar, Badge, Button, Calendar, Card, Checkbox, Command, Empty, Field, Icon, Input, Popover, Progress, Select, Separator, Spinner, Switch, Table, Textarea } from '@ultima/ui';
+import { ArrowRightIcon, FilePlusIcon, SendIcon } from 'lucide-react';
 import { useContext, useState, type ReactNode, type RefObject } from 'react';
 import { StudioInspectionContext } from './theme-studio-context';
 
@@ -88,7 +85,7 @@ export function ThemeStudioGallery({ container, inspect, mode }: {
           <Table.Body>{projects.map(([name, status, tone]) => <Table.Row key={name}><Table.Cell>{name}</Table.Cell><Table.Cell><Badge tone={tone}>{status}</Badge></Table.Cell></Table.Row>)}</Table.Body>
         </Table.Root>
         <Popover.Root>
-          <Popover.Trigger render={<Button variant="outline" style={styles.fill} />}>View all projects <ArrowRightIcon aria-hidden /></Popover.Trigger>
+          <Popover.Trigger render={<Button variant="outline" style={styles.fill} />}>View all projects <Icon><ArrowRightIcon /></Icon></Popover.Trigger>
           <Popover.Portal container={container}><Popover.Positioner><Popover.Popup><Popover.Title>All projects</Popover.Title><Popover.Description>Four example projects. This popup uses the same theme as the gallery.</Popover.Description></Popover.Popup></Popover.Positioner></Popover.Portal>
         </Popover.Root>
       </Example>
@@ -118,7 +115,7 @@ export function ThemeStudioGallery({ container, inspect, mode }: {
         <p {...stylex.props(styles.muted)}>Taylor · The updated components are ready for review.</p>
         {messages.map((message, index) => <p key={index} {...stylex.props(styles.message)}>{message}</p>)}
         <Field.Root name={`${mode}-reply`}><Field.Label>Reply to the team</Field.Label><Textarea value={reply} onValueChange={setReply} placeholder="Write a message…" /></Field.Root>
-        <Button disabled={!reply.trim()} onClick={() => { setMessages((current) => [...current, reply.trim()]); setReply(''); }}><PaperPlaneTiltIcon aria-hidden /> Send message</Button>
+        <Button disabled={!reply.trim()} onClick={() => { setMessages((current) => [...current, reply.trim()]); setReply(''); }}><Icon><SendIcon /></Icon> Send message</Button>
         <span role="status" {...stylex.props(styles.muted)}>{messages.length ? 'Message added to this preview.' : ''}</span>
       </Example>
 
@@ -135,7 +132,7 @@ export function ThemeStudioGallery({ container, inspect, mode }: {
       </Example>
 
       <Empty.Root style={styles.tile}>
-        <Empty.Icon><FilePlusIcon /></Empty.Icon><Empty.Title>{file ? 'First file added' : 'Add your first file'}</Empty.Title><Empty.Description>{file ? 'The empty state now has example content.' : 'Keep the things you need in one place.'}</Empty.Description><Button onClick={() => setFile(!file)} variant="outline">{file ? 'Reset example' : 'Choose a file'}</Button>
+        <Empty.Icon><Icon><FilePlusIcon /></Icon></Empty.Icon><Empty.Title>{file ? 'First file added' : 'Add your first file'}</Empty.Title><Empty.Description>{file ? 'The empty state now has example content.' : 'Keep the things you need in one place.'}</Empty.Description><Button onClick={() => setFile(!file)} variant="outline">{file ? 'Reset example' : 'Choose a file'}</Button>
       </Empty.Root>
 
       <Example title="Quick actions" inspect={inspect}>

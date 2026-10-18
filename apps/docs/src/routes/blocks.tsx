@@ -1,8 +1,8 @@
-import { ArrowRightIcon } from '@phosphor-icons/react';
+import { ArrowRightIcon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Card, Separator } from '@ultima/ui';
+import { Card, Icon, Separator } from '@ultima/ui';
 import { Fragment } from 'react';
 
 import { BlockFrame } from '../block-frame';
@@ -174,7 +174,7 @@ function BlockCard({ block }: { block: BlockEntry }) {
             </h2>
             <span aria-hidden {...stylex.props(styles.open)}>
               Open
-              <ArrowRightIcon />
+              <Icon><ArrowRightIcon /></Icon>
             </span>
           </div>
           <p {...stylex.props(styles.description)}>{block.description}</p>

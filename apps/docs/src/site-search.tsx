@@ -1,22 +1,22 @@
 import {
-  BracketsAngleIcon,
-  DesktopIcon,
-  DownloadSimpleIcon,
+  CodeIcon,
+  DownloadIcon,
   FileTextIcon,
-  MagnifyingGlassIcon,
+  LayersIcon,
+  LayoutGridIcon,
+  MonitorIcon,
   MoonIcon,
-  PaintBrushIcon,
-  SquaresFourIcon,
-  StackIcon,
+  PaintbrushIcon,
+  SearchIcon,
+  SquareTerminalIcon,
   SunIcon,
-  SwatchesIcon,
-  TerminalWindowIcon,
-} from '@phosphor-icons/react';
+  SwatchBookIcon,
+} from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import type { StyleXStyles } from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Badge, Button, Card, Command, Dialog, ScrollArea, Separator } from '@ultima/ui';
+import { Badge, Button, Card, Command, Dialog, Icon, ScrollArea, Separator } from '@ultima/ui';
 import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
 import { useEffect, useMemo, useState, useSyncExternalStore, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 
@@ -180,15 +180,15 @@ function useMedia(query: string) {
 }
 
 const PAGE_ICONS: Record<string, ReactNode> = {
-  '/components': <SquaresFourIcon aria-hidden />,
-  '/blocks': <StackIcon aria-hidden />,
-  '/install': <DownloadSimpleIcon aria-hidden />,
-  '/cli': <TerminalWindowIcon aria-hidden />,
-  '/tokens': <SwatchesIcon aria-hidden />,
-  '/theme-studio': <PaintBrushIcon aria-hidden />,
+  '/components': <Icon><LayoutGridIcon /></Icon>,
+  '/blocks': <Icon><LayersIcon /></Icon>,
+  '/install': <Icon><DownloadIcon /></Icon>,
+  '/cli': <Icon><SquareTerminalIcon /></Icon>,
+  '/tokens': <Icon><SwatchBookIcon /></Icon>,
+  '/theme-studio': <Icon><PaintbrushIcon /></Icon>,
 };
 
-const ACTION_ICONS = { dark: <MoonIcon aria-hidden />, light: <SunIcon aria-hidden />, system: <DesktopIcon aria-hidden /> };
+const ACTION_ICONS = { dark: <Icon><MoonIcon /></Icon>, light: <Icon><SunIcon /></Icon>, system: <Icon><MonitorIcon /></Icon> };
 
 const PAGE_COUNTS: Record<string, number> = { '/components': components.length, '/blocks': blocks.length };
 
@@ -212,9 +212,9 @@ function glyph(result: SearchResult) {
     case 'block':
       return result.number;
     case 'element':
-      return <BracketsAngleIcon aria-hidden />;
+      return <Icon><CodeIcon /></Icon>;
     case 'page':
-      return PAGE_ICONS[result.id] ?? <FileTextIcon aria-hidden />;
+      return PAGE_ICONS[result.id] ?? <Icon><FileTextIcon /></Icon>;
     case 'action':
       return ACTION_ICONS[result.id];
   }
@@ -387,7 +387,7 @@ export function SiteSearch({ style }: { style?: StyleXStyles }) {
   return (
     <Dialog.Root open={open} onOpenChange={changeOpen}>
       <Dialog.Trigger render={<Button aria-label="Search Ultima" variant="outline" size="sm" style={[styles.trigger, style]} />}>
-        <MagnifyingGlassIcon aria-hidden {...stylex.props(styles.searchIcon)} />
+        <Icon style={styles.searchIcon}><SearchIcon /></Icon>
         <span {...stylex.props(styles.label)}>Search Ultima…</span>
         <kbd {...stylex.props(styles.shortcut)}>{`${MOD} K`}</kbd>
       </Dialog.Trigger>
@@ -409,7 +409,7 @@ export function SiteSearch({ style }: { style?: StyleXStyles }) {
               keepHighlight
             >
               <Command.InputGroup style={styles.inputGroup}>
-                <MagnifyingGlassIcon aria-hidden />
+                <Icon><SearchIcon /></Icon>
                 <Command.Input
                   aria-label="Search components, blocks and docs"
                   placeholder="Search components, blocks and docs"
@@ -437,7 +437,7 @@ export function SiteSearch({ style }: { style?: StyleXStyles }) {
                                   {(result: SearchResult) => (
                                     <Command.Item key={result.id} value={result} style={styles.chip} onClick={() => run(result)}>
                                       <Badge style={styles.chipBadge}>
-                                        <StackIcon aria-hidden />
+                                        <Icon><LayersIcon /></Icon>
                                         {result.title}
                                       </Badge>
                                     </Command.Item>

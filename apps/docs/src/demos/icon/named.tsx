@@ -1,4 +1,4 @@
-import { CheckCircleIcon, CloudArrowUpIcon } from '@phosphor-icons/react';
+import { CircleCheckIcon, CloudUploadIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { color, space, text } from '@ultima/tokens/tokens.stylex';
 import { Icon } from '@ultima/ui';
@@ -26,9 +26,9 @@ export default function Named() {
     <div {...stylex.props(styles.stack)}>
       <span {...stylex.props(styles.line)}>
         quarterly-report.pdf
-        <Icon aria-label="Synced" style={styles.synced}><CheckCircleIcon /></Icon>
+        <Icon aria-label="Synced" style={styles.synced}><CircleCheckIcon /></Icon>
       </span>
-      <Icon style={styles.large}><CloudArrowUpIcon /></Icon>
+      <Icon style={styles.large}><CloudUploadIcon /></Icon>
     </div>
   );
 }

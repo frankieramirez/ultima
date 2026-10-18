@@ -1,7 +1,7 @@
-import { BookOpenIcon, CheckIcon, WebhooksLogoIcon, XIcon } from '@phosphor-icons/react';
+import { BookOpenIcon, CheckIcon, WebhookIcon, XIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Card } from '@ultima/ui';
+import { Card, Icon } from '@ultima/ui';
 import type { ReactNode } from 'react';
 
 import { breakpoints } from './breakpoints.stylex';
@@ -54,7 +54,7 @@ const styles = stylex.create({
 export const INSTALL_WRITES = [
   {
     title: 'The ultima-design skill',
-    icon: <BookOpenIcon />,
+    icon: <Icon><BookOpenIcon /></Icon>,
     description: 'What your agent reads before UI work: where the hosted guide lives and which command to run at each step.',
     files: [
       { harness: 'Claude Code', path: '.claude/skills/ultima-design/SKILL.md' },
@@ -63,7 +63,7 @@ export const INSTALL_WRITES = [
   },
   {
     title: 'One post-edit hook per harness',
-    icon: <WebhooksLogoIcon />,
+    icon: <Icon><WebhookIcon /></Icon>,
     description: 'Each hook runs check on the file your agent just edited and hands the findings back in the same turn.',
     files: [
       { harness: 'Claude Code', path: '.claude/settings.json' },
@@ -124,7 +124,7 @@ export function SkillRoutes() {
                   const Mark = included ? CheckIcon : XIcon;
                   return (
                     <li key={feature} {...stylex.props(styles.feature, included ? styles.has : styles.lacks)}>
-                      <Mark role="img" aria-label={included ? 'Included:' : 'Not included:'} {...stylex.props(styles.mark)} />
+                      <Icon aria-label={included ? 'Included:' : 'Not included:'} style={styles.mark}><Mark /></Icon>
                       {feature}
                     </li>
                   );

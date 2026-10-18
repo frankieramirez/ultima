@@ -1,4 +1,4 @@
-import { StarIcon } from '@phosphor-icons/react';
+import { StarIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { Icon, Toggle } from '@ultima/ui';
 

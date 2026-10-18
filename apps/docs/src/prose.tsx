@@ -1,8 +1,8 @@
-import { FileCodeIcon, TerminalIcon } from '@phosphor-icons/react';
+import { FileCodeIcon, TerminalIcon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Card, Code as UltimaCode, ScrollArea, Separator, Table } from '@ultima/ui';
+import { Card, Code as UltimaCode, Icon, ScrollArea, Separator, Table } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import {
   createContext,
@@ -161,7 +161,7 @@ export function Fence({
         <div {...stylex.props(styles.head)}>
           <span {...stylex.props(styles.label)}>
             <span aria-hidden {...stylex.props(styles.glyph)}>
-              <Glyph />
+              <Icon><Glyph /></Icon>
             </span>
             {title}
           </span>

@@ -1,6 +1,6 @@
 import { docsStyles } from '../docs-style';
 import { StudioPortalContext } from '../theme-studio-context';
-import { XIcon } from '@phosphor-icons/react';
+import { XIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import {
   gate,
@@ -12,7 +12,7 @@ import {
   type ShuffleExhaustion,
 } from '@ultima/tokens';
 import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Alert, Button, Dialog, Separator } from '@ultima/ui';
+import { Alert, Button, Dialog, Icon, Separator } from '@ultima/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { breakpoints } from '../breakpoints.stylex';
@@ -266,7 +266,7 @@ export function ThemeStudio() {
             <Dialog.Trigger render={<Button style={styles.edit} />}>Edit theme</Dialog.Trigger>
           </div>
           <Dialog.Portal container={shell}><Dialog.Backdrop forceRender /><Dialog.Viewport style={styles.drawerViewport}><Dialog.Popup style={styles.drawer}>
-            <div {...stylex.props(styles.dialogHeader)}><Dialog.Title>Edit theme</Dialog.Title><Dialog.Close render={<Button aria-label="Close editor" variant="ghost" style={styles.close} />}><XIcon aria-hidden /></Dialog.Close></div>
+            <div {...stylex.props(styles.dialogHeader)}><Dialog.Title>Edit theme</Dialog.Title><Dialog.Close render={<Button aria-label="Close editor" variant="ghost" style={styles.close} />}><Icon><XIcon /></Icon></Dialog.Close></div>
             <Dialog.Description style={styles.announce}>Generate and customize your theme. Every edit updates both preview modes.</Dialog.Description>
             {editor}{status}
           </Dialog.Popup></Dialog.Viewport></Dialog.Portal>
@@ -274,7 +274,7 @@ export function ThemeStudio() {
       )}
       <Dialog.Root open={reportOpen} onOpenChange={(open) => { setReportOpen(open); if (!open) setRepair(null); }}>
         <Dialog.Portal container={shell}><Dialog.Backdrop forceRender /><Dialog.Viewport style={styles.sheetViewport}><Dialog.Popup style={[docsStyles.square, styles.report]} finalFocus={reportTrigger}>
-          <div {...stylex.props(styles.dialogHeader)}><Dialog.Title>Draft report</Dialog.Title><Dialog.Close render={<Button aria-label="Close draft report" variant="ghost" style={styles.close} />}><XIcon aria-hidden /></Dialog.Close></div>
+          <div {...stylex.props(styles.dialogHeader)}><Dialog.Title>Draft report</Dialog.Title><Dialog.Close render={<Button aria-label="Close draft report" variant="ghost" style={styles.close} />}><Icon><XIcon /></Icon></Dialog.Close></div>
           <div {...stylex.props(styles.reportBody)}>
             <Dialog.Description style={styles.reportNote}>{identity} · token contrast, WCAG 2.2 AA. Declared token pairings in both modes; check your rendered components too.</Dialog.Description>
             {repair ? <section aria-label="Repair token"><h2>Edit {repair.token.replace('--ult-color-', '')}</h2><TokenRows draft={draft} group="color" offenders={checks.offenders} resolved={resolved} setDraft={(action) => store.commit(typeof action === 'function' ? action : () => action)} onlyToken={repair.token} focusToken={repair.token} focusRequest={repair.serial} /><Separator /></section> : null}

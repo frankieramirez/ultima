@@ -1,9 +1,9 @@
-import { ArrowDownIcon, ArrowUpRightIcon } from '@phosphor-icons/react';
+import { ArrowDownIcon, ArrowUpRightIcon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { palette, presetDraft, resolveDraft } from '@ultima/tokens';
 import { color, easing, font, motion, space, text } from '@ultima/tokens/tokens.stylex';
-import { Card, Separator, ToggleGroup } from '@ultima/ui';
+import { Card, Icon, Separator, ToggleGroup } from '@ultima/ui';
 import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
 import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
 
@@ -328,7 +328,7 @@ function PresetPreview({ preset, onChange }: { preset: Preset; onChange: (preset
         ))}
       </ToggleGroup.Root>
       <TextLink render={<Link to="/theme-studio" />} style={styles.studioLink}>
-        Any color in Theme Studio <ArrowUpRightIcon aria-hidden />
+        Any color in Theme Studio <Icon><ArrowUpRightIcon /></Icon>
       </TextLink>
     </div>
   );
@@ -383,15 +383,15 @@ export function Home() {
               <div {...stylex.props(styles.actions)}>
                 <Separator />
                 <TextLink variant="muted" render={<Link to="/" hash="index" />} style={[styles.action, styles.primaryAction]}>
-                  Read the index <ArrowDownIcon aria-hidden />
+                  Read the index <Icon><ArrowDownIcon /></Icon>
                 </TextLink>
                 <Separator />
                 <TextLink variant="muted" render={<Link to="/theme-studio" />} style={styles.action}>
-                  Open Theme Studio <ArrowUpRightIcon aria-hidden />
+                  Open Theme Studio <Icon><ArrowUpRightIcon /></Icon>
                 </TextLink>
                 <Separator />
                 <TextLink variant="muted" render={<Link to="/install" />} style={styles.action}>
-                  Installation guide <ArrowUpRightIcon aria-hidden />
+                  Installation guide <Icon><ArrowUpRightIcon /></Icon>
                 </TextLink>
                 <Separator />
               </div>

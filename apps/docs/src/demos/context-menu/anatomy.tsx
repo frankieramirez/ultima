@@ -1,4 +1,4 @@
-import { ArchiveIcon, LinkSimpleIcon, PencilSimpleIcon } from '@phosphor-icons/react';
+import { ArchiveIcon, LinkIcon, PencilIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { text } from '@ultima/tokens/tokens.stylex';
 import { ContextMenu, DropdownMenu, Icon } from '@ultima/ui';
@@ -43,11 +43,11 @@ export default function ContextMenuAnatomy() {
           >
             <ContextMenu.Popup aria-label="Quarterly report" finalFocus={false}>
               <ContextMenu.Item>
-                <Icon><PencilSimpleIcon /></Icon>
+                <Icon><PencilIcon /></Icon>
                 Rename
               </ContextMenu.Item>
               <ContextMenu.LinkItem href="https://base-ui.com/react/components/context-menu">
-                <Icon><LinkSimpleIcon /></Icon>
+                <Icon><LinkIcon /></Icon>
                 Base UI docs
               </ContextMenu.LinkItem>
               <ContextMenu.Separator />

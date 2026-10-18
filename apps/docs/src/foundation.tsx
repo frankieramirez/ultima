@@ -1,8 +1,8 @@
-import { ArrowLeftIcon, ArrowRightIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
 import { Link, useLocation } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Alert, Separator } from '@ultima/ui';
+import { Alert, Icon, Separator } from '@ultima/ui';
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentProps, ComponentType, ReactNode } from 'react';
 
@@ -155,7 +155,7 @@ export function FoundationPager() {
           <TextLink render={<Link to={previous.to} />} style={[foundationStyles.pagerLink, foundationStyles.previous]}>
             <span {...stylex.props(foundationStyles.label)}>Previous</span>
             <span {...stylex.props(foundationStyles.pagerTitle)}>
-              <ArrowLeftIcon aria-hidden {...stylex.props(foundationStyles.pagerArrow)} />
+              <Icon style={foundationStyles.pagerArrow}><ArrowLeftIcon /></Icon>
               {previous.label}
             </span>
           </TextLink>
@@ -166,7 +166,7 @@ export function FoundationPager() {
             <span {...stylex.props(foundationStyles.label)}>Next</span>
             <span {...stylex.props(foundationStyles.pagerTitle)}>
               {next.label}
-              <ArrowRightIcon aria-hidden {...stylex.props(foundationStyles.pagerArrow)} />
+              <Icon style={foundationStyles.pagerArrow}><ArrowRightIcon /></Icon>
             </span>
           </TextLink>
         )}
