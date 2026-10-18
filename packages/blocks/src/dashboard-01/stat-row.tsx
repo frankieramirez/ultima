@@ -1,12 +1,13 @@
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Badge } from '@ultima/ui/badge';
 import { Card } from '@ultima/ui/card';
 import { Stat } from '@ultima/ui/stat';
 
 import type { Range } from './dashboard-01';
 
-const DESKTOP = '@media (min-width: 48rem)';
+// Four cards share the content column beside the sidebar. At DESKTOP each would be under 100px of
+// content, too narrow for any headline number, so the row holds two-by-two until WIDE.
+const WIDE = '@media (min-width: 64rem)';
 
 type Metric = { label: string; value: string; delta: string; favorable: boolean };
 
@@ -31,27 +32,30 @@ const metrics: Record<Range, Metric[]> = {
   ],
 };
 
+// The sign picks the glyph's direction; `favorable` picks the tone, so a rising refund rate is warning.
+function trendOf(delta: string) {
+  if (delta.startsWith('+')) return 'up';
+  if (delta.startsWith('−') || delta.startsWith('-')) return 'down';
+  return undefined;
+}
+
 const styles = stylex.create({
   row: {
     display: 'grid',
     gap: space['--ult-space-6'],
-    gridTemplateColumns: { default: 'repeat(2, minmax(0, 1fr))', [DESKTOP]: 'repeat(4, minmax(0, 1fr))' },
+    gridTemplateColumns: { default: 'repeat(2, minmax(0, 1fr))', [WIDE]: 'repeat(4, minmax(0, 1fr))' },
   },
   body: {
     display: 'flex',
     flexDirection: 'column',
     gap: space['--ult-space-4'],
     paddingBlockStart: space['--ult-space-6'],
+    containerType: 'inline-size',
   },
-  head: {
-    alignItems: 'flex-start',
-    display: 'flex',
-    flexDirection: { default: 'column', [DESKTOP]: 'row' },
-    gap: space['--ult-space-3'],
-    justifyContent: 'space-between',
-  },
-  stat: {
-    flexGrow: 1,
+  // Just past WIDE a card's content is about 120px, and a six-figure value at 30px needs about 136px.
+  // No breakpoint sits there, so the number follows its card between Stat's own two steps instead.
+  value: {
+    fontSize: `clamp(${text['--ult-text-8']}, 20cqi, ${text['--ult-text-9']})`,
   },
   caption: {
     color: color['--ult-color-text-subtle'],
@@ -67,13 +71,13 @@ export function StatRow({ range }: { range: Range }) {
       {metrics[range].map((metric) => (
         <Card.Root key={metric.label}>
           <Card.Body style={styles.body}>
-            <div {...stylex.props(styles.head)}>
-              <Stat.Root style={styles.stat}>
-                <Stat.Label>{metric.label}</Stat.Label>
-                <Stat.Value>{metric.value}</Stat.Value>
-              </Stat.Root>
-              <Badge tone={metric.favorable ? 'success' : 'warning'}>{metric.delta}</Badge>
-            </div>
+            <Stat.Root>
+              <Stat.Label>{metric.label}</Stat.Label>
+              <Stat.Value style={styles.value}>{metric.value}</Stat.Value>
+              <Stat.Delta tone={metric.favorable ? 'success' : 'warning'} trend={trendOf(metric.delta)}>
+                {metric.delta}
+              </Stat.Delta>
+            </Stat.Root>
             <p {...stylex.props(styles.caption)}>vs. previous {range} days</p>
           </Card.Body>
         </Card.Root>

@@ -95,10 +95,12 @@ describe('ULT-TEST-001', () => {
     assert.deepEqual(
       located(run({ [path]: mutated })).map(({ ruleId, file, line }) => ({ ruleId, file, line })),
       [
-        { ruleId: 'ULT-TEST-001', file: 'packages/ui/src/__tests__/badge.test.tsx', line: 107 },
         { ruleId: 'ULT-TEST-001', file: 'packages/ui/src/__tests__/badge.test.tsx', line: 108 },
+        { ruleId: 'ULT-TEST-001', file: 'packages/ui/src/__tests__/badge.test.tsx', line: 109 },
+        { ruleId: 'ULT-TEST-001', file: 'packages/ui/src/__tests__/badge.test.tsx', line: 127 },
         { ruleId: 'ULT-TEST-001', file: 'packages/ui/src/__tests__/empty.test.tsx', line: 45 },
-        { ruleId: 'ULT-TEST-001', file: 'packages/ui/src/__tests__/table.test.tsx', line: 410 },
+        { ruleId: 'ULT-TEST-001', file: 'packages/ui/src/__tests__/table.test.tsx', line: 412 },
+        { ruleId: 'ULT-TEST-001', file: 'packages/ui/src/__tests__/table.test.tsx', line: 478 },
       ],
     );
   });

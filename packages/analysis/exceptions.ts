@@ -109,6 +109,17 @@ export default [
     authority: 'docs/spec/design-foundations.md#layout',
   },
   {
+    id: 'dashboard-stat-value-tracks-its-card',
+    rule: 'ULT-TOKEN-001',
+    path: 'packages/blocks/src/dashboard-01/stat-row.tsx',
+    symbol: 'styles.value',
+    target: 'fontSize',
+    expression: "`clamp(${text['--ult-text-8']}, 20cqi, ${text['--ult-text-9']})`",
+    count: 1,
+    reason: 'Four stat cards just past WIDE are narrower than a 30px six-figure value, so it tracks its card between Stat\'s two steps.',
+    authority: 'docs/spec/design-foundations.md#type',
+  },
+  {
     id: 'native-select-chevron-room',
     rule: 'ULT-TOKEN-001',
     path: 'packages/ui/src/native-select.tsx',
