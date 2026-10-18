@@ -17,3 +17,9 @@ and that `check --files <file>` returns exactly what the full run returns for th
 directory: `invalid.test.tsx` pins palette values in place and through constants, `palette-values.ts` is the
 sibling helper it imports from, `valid.test.tsx` holds the comparisons that pass, and `unresolved.test.tsx`
 holds values the rule reports as incomplete analysis.
+
+`chart/` holds the chart-engine allowance from both sides. `item.tsx` imports allowed `@tanstack/charts`
+entries and `item-denied.tsx` the root, `/react` and `/tooltip`, both mounted as the `chart` item;
+`block.tsx` imports `@ultima/ui/chart` and `block-entry.tsx` imports entries without it, mounted in a
+block; `demo.tsx` and `demo-denied.tsx` are mounted as a demo; `installed.tsx` and `page.tsx` are an
+installed `chart.tsx` and a consumer's own file in a consumer scope.
