@@ -66,6 +66,6 @@ The registry serves a moving latest with no versioned URLs: every served file ca
 
 Light-first would have made the palette a translation of a light scale, which is how most ramps go wrong in dark. Best-effort light would have shipped pairings that fail AA the first time someone flipped the OS setting.
 
-Dark values are the `default` on every color token. Light values sit under `@media (prefers-color-scheme: light)`. `darkTheme` and `lightTheme` force a mode on a subtree. The header control on this site is the demonstration: dark, light, and system, persisted, with native controls following through `color-scheme`.
+Dark values are the `default` on every color token. Light values sit under `@media (prefers-color-scheme: light)`. `darkTheme` and `lightTheme`, each applied with its mode's shadow theme, `darkShadow` or `lightShadow`, force a mode on a subtree. The header control on this site is the demonstration: dark, light, and system, persisted, with native controls following through `color-scheme`.
 
 <Records />

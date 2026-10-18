@@ -90,3 +90,19 @@ test('the Python Neutral reference and generated installed sources match the bas
   }
   for (const [path, expected] of baseTokenSources()) expect(readFileSync(path, 'utf8')).toBe(expected);
 });
+
+test('the stock mode themes pin the shadow group to the values the base tokens give that mode', () => {
+  const tokens = readFileSync(new URL('../tokens.stylex.ts', import.meta.url), 'utf8');
+  const group = tokens.match(/export const shadow = stylex\.defineVars\(\{([\s\S]*?)\n\}\);/)?.[1] ?? '';
+  const base = { dark: {} as Record<string, string>, light: {} as Record<string, string> };
+  for (const [, name, dark, light] of group.matchAll(/'(--ult-shadow-\w+)': \{\s*default: '([^']+)',\s*\[LIGHT\]: '([^']+)',/g)) {
+    base.dark[name as string] = dark as string;
+    base.light[name as string] = light as string;
+  }
+  expect(Object.keys(base.dark)).toEqual(['--ult-shadow-xs', '--ult-shadow-sm', '--ult-shadow-md', '--ult-shadow-lg']);
+  const themes = readFileSync(new URL('../themes.ts', import.meta.url), 'utf8');
+  for (const mode of ['dark', 'light'] as const) {
+    const table = themes.match(new RegExp(`export const ${mode}Shadow = stylex\\.createTheme\\(shadow, \\{([\\s\\S]*?)\\n\\}\\);`))?.[1] ?? '';
+    expect(Object.fromEntries([...table.matchAll(/'(--ult-shadow-\w+)': '([^']+)'/g)].map(([, name, value]) => [name, value])), mode).toEqual(base[mode]);
+  }
+});

@@ -62,10 +62,14 @@ export function baseTokenSources(): Map<string, string> {
   const themePath = join(packageDir, 'src/themes.ts');
   const colorScheme = readFileSync(themePath, 'utf8').match(/export const colorScheme = stylex\.create\(\{[\s\S]*?\n\}\);/)?.[0];
   if (!colorScheme) throw new Error('Missing colorScheme styles.');
-  const themes = [banner, "import * as stylex from '@stylexjs/stylex';", "import { color } from './tokens.stylex';", '', colorScheme];
+  const shadows = Object.keys(resolved.dark).filter((name) => name.startsWith('--ult-shadow-'));
+  const themes = [banner, "import * as stylex from '@stylexjs/stylex';", "import { color, shadow } from './tokens.stylex';", '', colorScheme];
   for (const mode of ['dark', 'light'] as const) {
     themes.push('', `export const ${mode}Theme = stylex.createTheme(color, {`);
     for (const name of colors) themes.push(`  '${name}': '${resolved[mode][name]}',`);
+    themes.push('});');
+    themes.push('', `export const ${mode}Shadow = stylex.createTheme(shadow, {`);
+    for (const name of shadows) themes.push(`  '${name}': '${resolved[mode][name]}',`);
     themes.push('});');
   }
   return new Map([[tokenPath, tokens], [themePath, `${themes.join('\n')}\n`]]);

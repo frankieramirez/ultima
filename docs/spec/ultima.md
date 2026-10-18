@@ -203,7 +203,7 @@ Base UI portals its popups to the end of `<body>`, but a consumer with its own s
 
 Dark is the default. Each color token's default value is the dark value with the light value under `@media (prefers-color-scheme: light)`, so an untouched install follows the operating system.
 
-`packages/tokens` also exports `darkTheme` and `lightTheme` built with `stylex.createTheme` over the `color` group. Applying one with `stylex.props(theme)` forces that mode on `<html>` or on any subtree. Each theme also sets `color-scheme` so native controls match.
+`packages/tokens` also exports `darkTheme` and `lightTheme` built with `stylex.createTheme` over the `color` group, and `darkShadow` and `lightShadow` over the `shadow` group, whose base values also switch on the system's mode. Applying a mode's pair with `stylex.props(lightTheme, lightShadow)` forces that mode on `<html>` or on any subtree, so a pinned mode casts its own shadows whatever the system's mode. `colorScheme.dark` and `colorScheme.light` set `color-scheme` beside them so native controls match.
 
 ### Overriding
 

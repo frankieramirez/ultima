@@ -34,7 +34,7 @@ export const items: Record<string, RegistryItemDescription> = {
   "tokens": {
     "title": "Ultima tokens",
     "description": "Ultima's design tokens and the dark and light themes, as StyleX variables.",
-    "docs": "import { color, space, text } from '@/lib/tokens.stylex';\nimport { colorScheme, darkTheme, lightTheme } from '@/lib/themes';\n\nApply colorScheme to <html> and a theme to any subtree to pin it."
+    "docs": "import { color, space, text } from '@/lib/tokens.stylex';\nimport { colorScheme, darkShadow, darkTheme, lightShadow, lightTheme } from '@/lib/themes';\n\nApply colorScheme to <html>. To pin a subtree to one mode, apply that mode's theme and shadow together: stylex.props(lightTheme, lightShadow, colorScheme.light)."
   },
   "accordion": {
     "title": "Accordion",

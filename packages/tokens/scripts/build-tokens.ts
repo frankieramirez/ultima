@@ -270,23 +270,23 @@ function themesByMode(
 ): Record<Mode, Map<string, string>> {
   const anchor = colorTokens[0];
   if (!anchor) fail('the token source declares no color tokens');
-  const anchorValues = values.get(anchor);
-  if (!anchorValues) fail(`${anchor} has no resolved value`);
 
-  const byMode: Partial<Record<Mode, Map<string, string>>> = {};
+  // Each mode's color and shadow themes merge into one table: a theme belongs to the mode whose
+  // value it gives every token it sets.
+  const byMode: Record<Mode, Map<string, string>> = { dark: new Map(), light: new Map() };
   for (const theme of compiled.themes) {
-    const value = theme.get(anchor);
-    const mode = MODES.find((candidate) => anchorValues[candidate] === value);
-    if (!mode) {
-      fail(`a createTheme sets ${anchor} to ${value}, which is neither mode's value`);
+    const mode = MODES.find((candidate) =>
+      [...theme].every(([name, value]) => values.get(name)?.[candidate] === value));
+    if (!mode) fail(`a createTheme over ${[...theme.keys()][0]} sets values that no single mode gives`);
+    for (const [name, value] of theme) {
+      if (byMode[mode].has(name)) fail(`two createTheme calls both set ${name} in the ${mode} mode`);
+      byMode[mode].set(name, value);
     }
-    if (byMode[mode]) fail(`two createTheme calls both resolve to the ${mode} mode`);
-    byMode[mode] = theme;
   }
   for (const mode of MODES) {
-    if (!byMode[mode]) fail(`${THEME_SOURCE} has no createTheme for the ${mode} mode`);
+    if (!byMode[mode].has(anchor)) fail(`${THEME_SOURCE} has no createTheme for the ${mode} mode`);
   }
-  return byMode as Record<Mode, Map<string, string>>;
+  return byMode;
 }
 
 /**
@@ -324,8 +324,8 @@ function buildCss(
   const declarations = (mode: Mode): string[] =>
     tokens.map((token) => `${token.name}: ${values.get(token.name)?.[mode]};`);
 
-  // The [data-theme] blocks carry the compiled themes. A theme only overrides the color
-  // group, so every other token falls back to that mode's value.
+  // The [data-theme] blocks carry the compiled themes. The themes override the color and
+  // shadow groups, so every other token falls back to that mode's value.
   const themed = (mode: Mode): string[] =>
     tokens.map((token) => {
       const value = themes[mode].get(token.name) ?? values.get(token.name)?.[mode];

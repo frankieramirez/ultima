@@ -291,9 +291,7 @@ The specification's [Motion](https://github.com/frankieramirez/ultima/blob/main/
 
 ## Where the code doesn't follow these rules yet
 
-A rule that lands before the code follows it lists each gap here, with the issue that owns the fix, so nobody copies the gap as precedent.
-
-- **A pinned mode pins its shadows.** The stock `darkTheme` and `lightTheme` from `@ultima/tokens` theme the `color` group only, so a subtree pinned with one still takes its shadows from the system's mode. The docs' generated themes and both theme exports already carry shadows. Owner: #919.
+None at present. A rule that lands before the code follows it lists each gap here, with the issue that owns the fix, so nobody copies the gap as precedent.
 
 ## Sources
 
