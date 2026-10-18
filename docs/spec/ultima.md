@@ -3359,14 +3359,13 @@ Both commands gate. Any nonzero exit fails the job, including an incomplete run,
 Settled on [Whether the CLI needs a docs page at launch](https://github.com/frankieramirez/ultima/issues/572): `/llms.txt` carries a compact CLI section generated from this subsection's body by the same build step as every other section, so the guide is its only other home. It names the package, gives one line per command, the exit-code contract, and the CI two-step, and it changes only when this subsection does.
 </details>
 
-The `ultima-design` package is the consumer CLI. It verifies a project's setup, checks edits against the consumer rules, and reports installed items' drift against the hosted registry. Install it with `npm i -D ultima-design`, then run `npx ultima-design install` to write the consumer skill and the post-edit hooks into the repository. Update installed files with the loop at [/install/update](https://ultima.systems/install/update).
+The `ultima-design` package is the consumer CLI. It verifies a project's setup, checks edits against the consumer rules, and reports installed items' drift against the hosted registry. Install it with `npm i -D ultima-design`, then run `npx ultima-design install` to write the consumer skill and the post-edit hooks into the repository. `npx ultima-design update` keeps installed files current ([update loop](https://ultima.systems/install/update)).
 
 - `npx ultima-design install` — writes the managed skill and hook entries; idempotent.
 - `npx ultima-design doctor` — verifies the setup a target's hand steps require; reports, never writes.
 - `npx ultima-design check` — reports consumer-rule findings; `--files <path>...` scopes the run.
 - `npx ultima-design status` — lists each installed file's state against the served registry.
 - `npx ultima-design diff <item>` — prints the unified diff from the local file to the served one.
-- `npx ultima-design update` — plans updates to installed files; `--yes` applies the plan.
 - `npx ultima-design uninstall` — removes the managed files `install` wrote.
 
 Every command exits 0 on a completed run with no blocking finding, 1 on a blocking finding, 2 on an invalid invocation, and 3 on an incomplete run; `status`, `diff` and `update` never exit 1. In CI, gate on `doctor` then `check` (`--strict` makes advisories block); `status` is informational and `diff` does not belong there.
