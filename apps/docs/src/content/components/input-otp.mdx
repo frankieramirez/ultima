@@ -49,7 +49,7 @@ npx shadcn@4.21.4 add @ultima/input-otp
 
 ## Completion and masking
 
-`onValueComplete` fires when all `length` slots are filled. `mask` renders the slots as password inputs for codes that should not stay on screen. Everything else on `Root` is Base UI's at its defaults: `autoSubmit`, `validationType`, `normalizeValue`, `onValueChange`, `onValueInvalid`, `inputMode`, `autoComplete` (`'one-time-code'`), `name`, `form`, `disabled`, `readOnly`, `required`, and `id`, which seeds the slot ids.
+`onValueComplete` fires when all `length` slots are filled. `mask` renders the slots as password inputs for codes that should not stay on screen. Everything else on `Root` is Base UI's at its defaults: `autoSubmit`, `validationType`, `normalizeValue`, `onValueChange`, `onValueInvalid`, `inputMode`, `autoComplete` (`'one-time-code'`), `name`, `form`, `disabled`, `readOnly`, `required`, and `id`, which seeds the slot ids. A `readOnly` code keeps the bright slots and the digits' ink and gives up the 3:1 edges, hover and the caret; `disabled` also sinks the slots to the sunken fill and the disabled ink.
 
 <Demo component={Complete} source={completeSource} />
 

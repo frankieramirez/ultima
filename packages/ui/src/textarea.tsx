@@ -10,12 +10,13 @@ const HOVER = '@media (hover: hover)';
 const COARSE = '@media (pointer: coarse)';
 
 // Textarea is Input's field recipe on a multi-line box: the brightest fill, a 3:1 edge that
-// darkens on hover, and the focus outline outside the edge. `:read-only` also matches a
-// disabled textarea, so one key gives both the sunken fill and the quiet edge.
+// darkens on hover, and the focus outline outside the edge. Read-only keeps the fill and the
+// value's ink and gives up the 3:1 edge, hover and the caret; `:read-only` also matches a disabled
+// textarea, and disabled alone adds the sunken fill and the disabled ink.
 const styles = stylex.create({
   root: {
     appearance: 'none',
-    backgroundColor: { default: color['--ult-color-field'], ':read-only': color['--ult-color-surface-sunken'] },
+    backgroundColor: { default: color['--ult-color-field'], ':disabled': color['--ult-color-surface-sunken'] },
     borderColor: {
       default: color['--ult-color-border-strong'],
       ':read-only:not([aria-invalid="true"], [data-invalid])': color['--ult-color-border'],
@@ -28,6 +29,7 @@ const styles = stylex.create({
     borderStyle: 'solid',
     borderWidth: border.hairline,
     boxSizing: 'border-box',
+    caretColor: { default: null, ':read-only': 'transparent' },
     color: { default: color['--ult-color-text'], ':disabled': color['--ult-color-text-disabled'] },
     fontFamily: font['--ult-font-sans'],
     lineHeight: font['--ult-font-leading-normal'],

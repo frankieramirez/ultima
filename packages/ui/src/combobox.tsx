@@ -27,13 +27,14 @@ const styles = stylex.create({
     fontWeight: font['--ult-font-weight-medium'],
   },
   // Input Group's field recipe, restated. Its own `:read-only` would match the div, so the keys
-  // ask whether the input inside is read-only, which a disabled input also is. Invalid is read on
+  // ask about the input inside: a read-only one (which a disabled one also is) quiets the edge and
+  // turns hover off, and only a disabled one sinks the fill. Invalid is read on
   // the group itself as well as inside it, since a caller or Field may mark either.
   inputGroup: {
     alignItems: 'center',
     backgroundColor: {
       default: color['--ult-color-field'],
-      ':has(:is(input, textarea):read-only)': color['--ult-color-surface-sunken'],
+      ':has(:is(input, textarea):disabled)': color['--ult-color-surface-sunken'],
     },
     borderColor: {
       default: color['--ult-color-border-strong'],
@@ -71,6 +72,7 @@ const styles = stylex.create({
     borderStyle: 'none',
     borderWidth: 0,
     borderRadius: 0,
+    caretColor: { default: null, ':read-only': 'transparent' },
     color: 'inherit',
     // Inside Chips the input wraps to a row of its own only when fewer than 64px are left.
     flexBasis: space['--ult-space-12'],
@@ -132,8 +134,9 @@ const styles = stylex.create({
     color: { default: color['--ult-color-text-subtle'], ':is(:disabled, [data-disabled], [data-disabled] *)': color['--ult-color-text-disabled'] },
     cursor: 'default',
     // Base UI unmounts Clear after its exit transition, so the button is still in the DOM
-    // without `data-visible` during that window and must not paint there.
-    display: { default: 'none', ':is([data-visible])': 'inline-flex' },
+    // without `data-visible` during that window and must not paint there. A read-only field
+    // can't be cleared, so the mark leaves it.
+    display: { default: 'none', ':is([data-visible]):not([data-readonly] *)': 'inline-flex' },
     flexShrink: 0,
     justifyContent: 'center',
     lineHeight: font['--ult-font-leading-none'],
@@ -158,13 +161,14 @@ const styles = stylex.create({
   // no border, and it takes the small-inset corner. 24px tall, 8px of padding on the side that
   // holds text and 4px on the side that holds the remove button, which sits 4px in from the
   // chip's top, bottom and end alike. Keyboard focus moves between chips with the arrow keys
-  // and shows as the ring every control uses. A disabled or read-only field is already the
-  // sunken step the tint matches, so its chips move one step up to keep their shape.
+  // and shows as the ring every control uses. A disabled field is already the sunken step the
+  // tint matches, so its chips move one step up to keep their shape. A read-only field keeps its
+  // fill, so its chips keep the tint and drop the remove button, which no longer acts.
   chip: {
     alignItems: 'center',
     backgroundColor: {
       default: color['--ult-color-accent-subtle'],
-      ':is([data-disabled], [aria-readonly="true"])': color['--ult-color-surface-hover'],
+      ':is([data-disabled])': color['--ult-color-surface-hover'],
     },
     borderRadius: radius['--ult-radius-sm'],
     boxSizing: 'border-box',
@@ -180,7 +184,7 @@ const styles = stylex.create({
       ':focus-visible': `${border.focus} solid ${color['--ult-color-border-focus']}`,
     },
     outlineOffset: border.focusOffset,
-    paddingInlineEnd: { default: space['--ult-space-4'], ':has(> button)': space['--ult-space-2'] },
+    paddingInlineEnd: { default: space['--ult-space-4'], ':has(> button):not([aria-readonly="true"])': space['--ult-space-2'] },
     paddingInlineStart: space['--ult-space-4'],
     whiteSpace: 'nowrap',
   },
@@ -203,7 +207,7 @@ const styles = stylex.create({
       ':is(:disabled, [aria-disabled="true"])': color['--ult-color-text-disabled'],
     },
     cursor: 'default',
-    display: 'inline-flex',
+    display: { default: 'inline-flex', ':is([aria-readonly="true"] > *)': 'none' },
     flexShrink: 0,
     fontSize: text['--ult-text-4'],
     height: space['--ult-space-6'],
