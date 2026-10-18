@@ -124,7 +124,7 @@ export async function survey(
     managed: managedSkills(root),
     notices: legacyTokens.length ? [{
       id: 'base-theme-neutral-tight',
-      message: 'Base tokens now use Neutral with Tight radius. Reinstalling changes the indigo accent and cyan action/highlight to neutral values and the radius scale from 2/4/10/12 to 1/2/4/6. Installed sources and theme files remain yours; use the Ultima preset to keep the previous appearance.',
+      message: 'Base tokens now use Neutral with Tight radius. Reinstalling changes the indigo accent and cyan action/highlight to neutral values and the radius scale from 2/4/10/12 to 2/4/6/8. Installed sources and theme files remain yours; use the Ultima preset to keep the previous appearance.',
       link: 'https://ultima.systems/install/update',
       files: legacyTokens.map(({ file }) => file),
     }] : [],
