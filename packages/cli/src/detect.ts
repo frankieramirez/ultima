@@ -28,7 +28,7 @@ export type Detection = {
 
 export type DetectOptions = { framework: string | null; packageManager: Manager | null };
 
-const LOCKFILES: Record<string, string> = {
+export const LOCKFILES: Record<string, string> = {
   'package-lock.json': 'npm',
   'npm-shrinkwrap.json': 'npm',
   'pnpm-lock.yaml': 'pnpm',

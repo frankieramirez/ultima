@@ -29,6 +29,7 @@ import { compositionProjection } from './catalogue/compositions.ts';
 import { SHADCN } from '../packages/cli/src/shadcn.ts';
 import { formatDiagnostics, loadCatalogue } from './catalogue/model.ts';
 import { registryUrl } from './catalogue/projections.ts';
+import { sourcesFault } from './catalogue/served-sources.ts';
 import { type StagedSource, registryPlan, stagedSources, stagedSpecifier } from './catalogue/staging.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -47,11 +48,18 @@ const ELEMENTS_PUBLIC = join(PUBLIC_DIR, 'elements');
 
 const HOMEPAGE = 'https://ultima.systems';
 
+/** Where `update` reads an item's authored source at a stamp's revision: Update, The installed base. */
+const SOURCE = {
+  repository: 'https://github.com/frankieramirez/ultima',
+  raw: 'https://raw.githubusercontent.com/frankieramirez/ultima/{revision}/{path}',
+};
+
 type RegistryFile = { path: string; type: string; target?: string };
 
-type HashedFile = RegistryFile & { hash: string };
+/** `authored` is the repository path the served file is built from. */
+type HashedFile = RegistryFile & { hash: string; authored: string };
 
-type Meta = { ultima: { revision: string; files: Record<string, string>; baseTheme?: string } };
+type Meta = { ultima: { revision: string; files: Record<string, string>; sources: Record<string, string>; baseTheme?: string } };
 
 type RegistryItem = {
   name: string;
@@ -121,8 +129,15 @@ async function stamped(item: string, text: string, scheme: 'c1' | 'b1') {
   return { hash, text: withStamp(text, stampLine(item, revision, hash, scheme === 'c1' ? 'ts' : 'css')) };
 }
 
-function meta(files: { path: string; hash: string }[], baseTheme?: string): Meta {
-  return { ultima: { revision, files: Object.fromEntries(files.map(({ path, hash }) => [basename(path), hash])), ...(baseTheme && { baseTheme }) } };
+function meta(files: { path: string; hash: string; authored: string }[], baseTheme?: string): Meta {
+  return {
+    ultima: {
+      revision,
+      files: Object.fromEntries(files.map(({ path, hash }) => [basename(path), hash])),
+      sources: Object.fromEntries(files.map(({ path, authored }) => [basename(path), authored])),
+      ...(baseTheme && { baseTheme }),
+    },
+  };
 }
 
 async function stage(sources: StagedSource[]): Promise<Staged[]> {
@@ -133,7 +148,7 @@ async function stage(sources: StagedSource[]): Promise<Staged[]> {
     const { hash, text } = await stamped(item, rewriteImports(source, path), 'c1');
     mkdirSync(dirname(join(REGISTRY_DIR, to)), { recursive: true });
     writeFileSync(join(REGISTRY_DIR, to), text);
-    staged.push({ name, file: { path: to, type, ...(target && { target }), hash }, source });
+    staged.push({ name, file: { path: to, type, ...(target && { target }), hash, authored: path }, source });
   }
   return staged;
 }
@@ -175,7 +190,7 @@ function item(name: string, type: string, files: HashedFile[]): RegistryItem {
     ...(dependencies.length > 0 && { dependencies }),
     ...(devDependencies.length > 0 && { devDependencies }),
     ...(registryDependencies.length > 0 && { registryDependencies }),
-    files: files.map(({ hash: _, ...file }) => file),
+    files: files.map(({ hash: _, authored: __, ...file }) => file),
     docs,
     meta: meta(files, name === 'tokens' || name === 'tokens-css' ? BASE_THEME : undefined),
   };
@@ -191,7 +206,7 @@ function vendoredElementItem(name: string): RegistryItem {
     ...(registryDependencies.length > 0 && { registryDependencies }),
     files: [{ path: `ultima/elements/${name}.js`, type: 'registry:file', target: `~/${name}.js` }],
     docs,
-    meta: meta([{ path: `${name}.js`, hash: stampOf(join(ELEMENTS_DIST, `${name}.js`)) }]),
+    meta: meta([{ path: `${name}.js`, hash: stampOf(join(ELEMENTS_DIST, `${name}.js`)), authored: `packages/elements/src/${name}.element.ts` }]),
   };
 }
 
@@ -291,7 +306,7 @@ function describeRegistry({ sources, components, blocks, tokens, lib, elements, 
     homepage: HOMEPAGE,
     // Top-level `meta` is outside shadcn's registry schema, which tolerates it, and
     // `shadcn build` copies registry.json through verbatim when it has no `include`.
-    meta: { ultima: { format: REGISTRY_FORMAT } },
+    meta: { ultima: { format: REGISTRY_FORMAT, source: SOURCE } },
     items: registryPlan(sources, elements).map(({ name, from }) => {
       if (from === 'setup') return setupItem(name);
       if (from === 'block') return item(name, 'registry:block', staged.get(name) ?? []);
@@ -309,7 +324,7 @@ function describeRegistry({ sources, components, blocks, tokens, lib, elements, 
           };
         }
         return item(name, 'registry:item', [
-          { path: 'ultima/tokens.css', type: 'registry:file', target: '~/ultima-tokens.css', hash: tokensCss.hash },
+          { path: 'ultima/tokens.css', type: 'registry:file', target: '~/ultima-tokens.css', hash: tokensCss.hash, authored: 'packages/tokens/src/tokens.stylex.ts' },
         ]);
       }
       return item(name, name === 'tokens' || name === 'lib' ? 'registry:lib' : 'registry:ui', staged.get(name) ?? []);
@@ -395,9 +410,15 @@ async function verifyStamps() {
   };
   const catalogue = JSON.parse(readFileSync(join(OUTPUT_DIR, 'registry.json'), 'utf8'));
   if (catalogue.meta?.ultima?.format !== REGISTRY_FORMAT) throw new Error('/r/registry.json lost meta.ultima.format');
+  if (JSON.stringify(catalogue.meta?.ultima?.source) !== JSON.stringify(SOURCE)) throw new Error('/r/registry.json lost meta.ultima.source');
+  const inCheckout = (path: string) => existsSync(join(root, path));
   for (const { name, meta } of catalogue.items as RegistryItem[]) {
     if (!meta) continue;
     const served = JSON.parse(readFileSync(join(OUTPUT_DIR, `${name}.json`), 'utf8'));
+    for (const [label, ultima] of [[`/r/registry.json item ${name}`, meta.ultima], [`/r/${name}.json`, served.meta?.ultima]] as const) {
+      const fault = sourcesFault(ultima, inCheckout);
+      if (fault) throw new Error(`${label}: ${fault}`);
+    }
     for (const file of served.files as { path: string; content: string }[]) {
       const expected = meta.ultima.files[basename(file.path)];
       if (served.meta?.ultima?.files?.[basename(file.path)] !== expected) throw new Error(`/r/${name}.json lost meta.ultima`);

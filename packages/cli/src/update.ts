@@ -7,6 +7,9 @@ import { join, relative } from 'node:path';
 
 import ts from 'typescript';
 
+import { ultimaPresetUrl } from '../../../apps/docs/src/ultima-preset.ts';
+import { LEGACY_BASE_THEME, fileBaseTheme } from './base-theme.ts';
+import { LOCKFILES } from './detect.ts';
 import { type Diagnostic, SPEC } from './diagnostic.ts';
 import { type ServedPayloads, renderAsInstalled, servedContent } from './diff.ts';
 import { UPDATE, type JournalEntry, fileHash, hashes, loadJournal, newRunId, recordOutputs, recordedRuns, rememberOriginals, saveJournal, startJournal, undo, writeInPlace } from './journal.ts';
@@ -30,7 +33,7 @@ export type PlanRow = {
   base: 'verified' | 'unavailable' | null;
   /** The hunks a merge holds; null for every other action. */
   hunks: number | null;
-  /** What the served file needs that the project lacks. */
+  /** What a `hold` waits for the project to add: registry items as `@ultima/<name>`, npm packages by name. */
   requires: string[];
   /** The sha256 of the local file's bytes, so an edit of any kind after planning makes the plan stale. */
   sha256: string | null;
@@ -48,6 +51,11 @@ export type UpdatePlan = {
   notices: StatusReport['notices'];
   /** Named items the registry serves that this project has not installed. */
   notInstalled: string[];
+  acceptBaseTheme: boolean;
+  /** The frozen Ultima preset's install command, which keeps the previous look, when a base theme change is held. */
+  preset: string | null;
+  /** The commands that add what held items require. `update` never runs them, and never edits `package.json`. */
+  adds: string[];
 };
 
 const PLAN_KIND = 'ultima-update-plan';
@@ -79,6 +87,8 @@ export type UpdateReport = { plan: UpdatePlan; run: UpdateRun | null };
 export type UpdateOptions = {
   project?: string;
   yes?: boolean;
+  /** Plans a held base theme change by the file's state. Neither `yes` nor an applied plan implies it. */
+  acceptBaseTheme?: boolean;
   /** The path of a plan `--plan --json` printed, to apply exactly as it was made. */
   apply?: string;
   /** Writes one file in place; a test replaces it to simulate a failed write. */
@@ -126,12 +136,35 @@ export async function update(root: string, names: string[], options: UpdateOptio
   }
 
   const named = new Set(names);
+  const installedItems = new Set(report.files.map(({ item }) => item));
+  const manifest = packageJson(root);
+  const declared = { ...manifest?.dependencies, ...manifest?.devDependencies, ...manifest?.optionalDependencies, ...manifest?.peerDependencies };
+  const missing = (item: (typeof items)[number] | undefined) => [
+    ...(item?.registryDependencies ?? [])
+      .map((dependency) => /^@ultima\/(.+)$/.exec(dependency)?.[1] ?? /\/([^/]+)\.json$/.exec(dependency)?.[1])
+      .filter((name): name is string => name !== undefined && !installedItems.has(name))
+      .map((name) => `@ultima/${name}`),
+    ...(item?.dependencies ?? []).map((dependency) => dependency.replace(/(?!^)@.*$/, '')).filter((name) => !(name in declared)),
+  ];
+  const held = (row: Row): Pick<PlanRow, 'action' | 'reason' | 'requires'> => {
+    const served = items.find(({ name }) => name === row.item);
+    const base = served?.meta?.ultima?.baseTheme ?? LEGACY_BASE_THEME;
+    if (!options.acceptBaseTheme && served && ['tokens', 'tokens-css'].includes(row.item) && fileBaseTheme(readFileSync(join(root, row.file), 'utf8'), row.local) !== base) {
+      return { action: 'hold', reason: `base theme changes to ${base}`, requires: [] };
+    }
+    const planned = planAction(row);
+    const requires = ['replace', 'merge', 'conflict'].includes(planned.action) ? missing(served) : [];
+    return requires.length > 0 ? { action: 'hold', reason: `needs ${requires.join(', ')}`, requires } : { ...planned, requires };
+  };
   const files = report.files
     .filter((row) => names.length === 0 || named.has(row.item))
-    .map((row) => planRow(root, row))
+    .map((row) => planRow(root, row, held))
     .filter((row) => row.action !== 'none' || named.has(row.item))
     .map((row) => ({ ...row, uncommitted: row.action === 'replace' && uncommitted(root, row.file) }))
     .sort((a, b) => ORDER.indexOf(a.action) - ORDER.indexOf(b.action) || a.item.localeCompare(b.item) || a.file.localeCompare(b.file));
+  const requires = [...new Set(files.flatMap((row) => row.requires))];
+  const registryNeeds = requires.filter((name) => name.startsWith('@ultima/'));
+  const npmNeeds = requires.filter((name) => !name.startsWith('@ultima/'));
   const plan: UpdatePlan = {
     registry: report.registry,
     revision: report.revision,
@@ -140,6 +173,9 @@ export async function update(root: string, names: string[], options: UpdateOptio
     managed: [],
     notices: report.notices,
     notInstalled: [...named].filter((name) => rowsOf(name).length === 0),
+    acceptBaseTheme: options.acceptBaseTheme ?? false,
+    preset: files.some(({ action, requires }) => action === 'hold' && requires.length === 0) ? `${SHADCN_ADD} "${(await ultimaPresetUrl()).url}"` : null,
+    adds: [...(registryNeeds.length > 0 ? [`${SHADCN_ADD} ${registryNeeds.join(' ')}`] : []), ...(npmNeeds.length > 0 ? [addCommand(root, manifest, npmNeeds)] : [])],
   };
   if (!options.yes) return { plan, run: null };
   const run = await applyPlan(root, plan, context);
@@ -191,18 +227,20 @@ export async function applyPlan(
   return { runId: journal.runId, written, failed: null, next: [`npx ultima-design check --files ${written.join(' ')}`, typecheck(root, scope.tsconfig)] };
 }
 
-function planRow(root: string, row: Row): Omit<PlanRow, 'uncommitted'> {
+function planRow(root: string, row: Row, decide: (row: Row) => Pick<PlanRow, 'action' | 'reason'> & Partial<Pick<PlanRow, 'requires'>> = planAction): Omit<PlanRow, 'uncommitted'> {
+  const { action, reason, requires = [] } = decide(row);
   return {
     item: row.item,
     file: row.file,
     state: row.state,
-    ...planAction(row),
+    action,
+    reason,
     installed: row.installed,
     local: row.local,
     served: row.served,
     base: null,
     hunks: null,
-    requires: [],
+    requires,
     sha256: fileHash(join(root, row.file)),
   };
 }
@@ -236,14 +274,27 @@ function readPlan(path: string): { usage: string } | UpdatePlan {
     json?.kind !== PLAN_KIND ||
     json.schemaVersion !== SCHEMA_VERSION ||
     !Array.isArray(rows) ||
-    !rows.every((row) => typeof row?.file === 'string' && typeof row.item === 'string' && ORDER.includes(row.action)) ||
+    !rows.every((row) => typeof row?.file === 'string' && typeof row.item === 'string' && ORDER.includes(row.action) && Array.isArray(row.requires)) ||
     !Array.isArray(json.managed) ||
-    !Array.isArray(json.notices)
+    !Array.isArray(json.notices) ||
+    !Array.isArray(json.commands)
   ) {
     return { usage: `${path} is not a version ${SCHEMA_VERSION} ${PLAN_KIND}; make one with \`npx ultima-design update --plan --json\`` };
   }
   if (planHash(json) !== json.planHash) return { usage: `${path} was edited after it was planned; plan again and apply the new plan unchanged` };
-  return { registry: json.registry, revision: json.revision, names: [], files: rows, managed: json.managed, notices: json.notices, notInstalled: [] };
+  const commands = (label: string) => json.commands.filter((command) => command?.for === label).map(({ command }) => command);
+  return {
+    registry: json.registry,
+    revision: json.revision,
+    names: [],
+    files: rows,
+    managed: json.managed,
+    notices: json.notices,
+    notInstalled: [],
+    acceptBaseTheme: false,
+    preset: commands('keep')[0] ?? null,
+    adds: commands('needs'),
+  };
 }
 
 const INPUTS = ['item', 'state', 'installed', 'local', 'served', 'sha256'] as const;
@@ -273,7 +324,8 @@ function staleness(root: string, path: string, plan: UpdatePlan, report: StatusR
   };
 }
 
-const applyCommand = (plan: UpdatePlan) => ['npx ultima-design update', ...plan.names, '--yes'].join(' ');
+const acceptCommand = (plan: UpdatePlan) => ['npx ultima-design update', ...plan.names, '--accept-base-theme'].join(' ');
+const applyCommand = (plan: UpdatePlan) => ['npx ultima-design update', ...plan.names, ...(plan.acceptBaseTheme ? ['--accept-base-theme'] : []), '--yes'].join(' ');
 
 /** The object `--json` prints: the plan before an apply, the run after one. */
 export function updateJson({ plan, run }: UpdateReport): PlanJson | Record<string, unknown> {
@@ -287,7 +339,11 @@ export function updateJson({ plan, run }: UpdateReport): PlanJson | Record<strin
       files: plan.files,
       managed: plan.managed,
       notices: plan.notices,
-      commands: plan.files.some(({ action }) => action === 'replace') ? [{ for: 'apply', command: applyCommand(plan) }] : [],
+      commands: [
+        ...(plan.preset ? [{ for: 'hold', command: acceptCommand(plan) }, { for: 'keep', command: plan.preset }] : []),
+        ...plan.adds.map((command) => ({ for: 'needs', command })),
+        ...(plan.files.some(({ action }) => action === 'replace') ? [{ for: 'apply', command: applyCommand(plan) }] : []),
+      ],
     };
   }
   const of = (action: Action) => plan.files.filter((row) => row.action === action).map(({ file }) => file);
@@ -355,12 +411,24 @@ export function printRollback({ runId, restored, left, notes }: { runId: string;
 export function printUpdate({ plan, run }: UpdateReport): string {
   const closing: [string, string][] = [];
   const reported = plan.files.filter(({ action }) => action === 'report').map(({ file }) => file);
+  const held = plan.files.filter(({ action }) => action === 'hold').map(({ file }) => file);
+  const holds: [string, string][] = [];
+  if (plan.preset) {
+    holds.push(['hold', `${acceptCommand(plan)}  (https://ultima.systems/install/update)`]);
+    holds.push(['keep', `${plan.preset}  installs the Ultima preset, which keeps the previous look`]);
+  }
+  plan.adds.forEach((command, index) => holds.push([index === 0 ? 'needs' : '', command]));
   if (run === null) {
-    if (plan.files.some(({ action }) => action === 'replace')) closing.push(['apply', applyCommand(plan)]);
+    closing.push(...holds);
+    if (plan.files.some(({ action }) => action === 'replace')) {
+      closing.push(['apply', applyCommand(plan)]);
+    }
   } else {
     closing.push(['wrote', run.written.join(', ') || 'none']);
     if (run.failed) closing.push(['failed', `${run.failed.file}: ${run.failed.error}`]);
+    if (held.length > 0) closing.push(['held', held.join(', ')]);
     if (reported.length > 0) closing.push(['reported', reported.join(', ')]);
+    closing.push(...holds);
     if (run.runId) closing.push(['undo', `npx ultima-design update --rollback ${run.runId}`]);
     run.next.forEach((command, index) => closing.push([index === 0 ? 'next' : '', command]));
   }
@@ -379,6 +447,23 @@ export function printUpdate({ plan, run }: UpdateReport): string {
   for (const name of plan.notInstalled) lines.push(`${name}: not installed; update adds nothing new: ${SHADCN_ADD} @ultima/${name}`);
   if (closing.length > 0) lines.push('', ...closing.map(([label, text]) => `${label.padEnd(first)}${text}`));
   return `${lines.join('\n')}\n`;
+}
+
+type Manifest = { dependencies?: Record<string, string>; devDependencies?: Record<string, string>; optionalDependencies?: Record<string, string>; peerDependencies?: Record<string, string>; packageManager?: unknown };
+
+function packageJson(root: string): Manifest | undefined {
+  try {
+    return JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+  } catch {
+    return undefined;
+  }
+}
+
+/** The add command of the package manager the lockfile names, else `packageManager`, else npm. */
+function addCommand(root: string, manifest: Manifest | undefined, packages: string[]): string {
+  const declared = typeof manifest?.packageManager === 'string' ? /^([a-z]+)@/.exec(manifest.packageManager)?.[1] : undefined;
+  const manager = Object.entries(LOCKFILES).find(([file]) => existsSync(join(root, file)))?.[1] ?? declared ?? 'npm';
+  return `${manager} ${manager === 'npm' ? 'install' : 'add'} ${packages.join(' ')}`;
 }
 
 /** Whether git holds uncommitted changes to the file. Outside a repository, or without git, it does not. */

@@ -7,6 +7,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { ultimaPresetUrl } from '../../../../apps/docs/src/ultima-preset.ts';
+import { UNMARKED_NEUTRAL_HASHES, fileBaseTheme } from '../base-theme.ts';
 import { run } from '../run.ts';
 import { contentHash, stampLine, withStamp } from '../stamp.ts';
 import { planAction, planHash, printUpdate, update, updateExit } from '../update.ts';
@@ -27,14 +29,16 @@ async function stamped(item: string, source: string, revision: string, local = v
   return withStamp(local, stampLine(item, revision, await contentHash(source, 'c1'), 'ts'));
 }
 
+type Needs = { registryDependencies?: string[]; dependencies?: string[] };
+
 /** A registry at revision NEW serving each item's one file, with its stamped content. */
-async function serve(items: { name: string; file: string; source: string; type?: string }[]): Promise<string> {
+async function serve(items: ({ name: string; file: string; source: string; type?: string; baseTheme?: string } & Needs)[]): Promise<string> {
   const served: Record<string, unknown> = {};
   const catalogue = { name: 'ultima', meta: { ultima: { format: 1 } }, items: [] as unknown[] };
-  for (const { name, file, source, type = 'registry:ui' } of items) {
+  for (const { name, file, source, type = 'registry:ui', baseTheme, ...needs } of items) {
     const hash = await contentHash(source, 'c1');
     const path = `ultima/${type === 'registry:lib' ? 'lib' : 'ui'}/${file}`;
-    catalogue.items.push({ name, type, files: [{ path, type }], meta: { ultima: { revision: NEW, files: { [file]: hash } } } });
+    catalogue.items.push({ name, type, ...needs, files: [{ path, type }], meta: { ultima: { revision: NEW, files: { [file]: hash }, ...(baseTheme && { baseTheme }) } } });
     served[`/r/${name}.json`] = { name, files: [{ path, type, content: withStamp(source, stampLine(name, NEW, hash, 'ts')) }] };
   }
   served['/r/registry.json'] = catalogue;
@@ -257,6 +261,162 @@ describe('update', () => {
   });
 });
 
+const LEGACY_TOKENS = 'export const radius = { md: 10 };\n';
+const NEUTRAL_TOKENS = 'export const radius = { md: 4 };\n// @ultima-base neutral-tight\n';
+
+/** A project whose `tokens` file holds `local` at revision OLD, served on Neutral with Tight radius. */
+async function tokensFixture(local: string) {
+  const registry = await serve([{ name: 'tokens', file: 'tokens.stylex.ts', source: NEUTRAL_TOKENS, type: 'registry:lib', baseTheme: 'neutral-tight' }]);
+  return project({
+    'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }),
+    'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
+    'src/lib/tokens.stylex.ts': await stamped('tokens', local, OLD),
+  });
+}
+
+describe('fileBaseTheme', () => {
+  it('reads the marker, else Neutral for a pre-marker Neutral hash, else the legacy base', () => {
+    expect(fileBaseTheme(NEUTRAL_TOKENS)).toBe('neutral-tight');
+    expect(fileBaseTheme(':root {}\n/* @ultima-base neutral-tight */\n')).toBe('neutral-tight');
+    expect(fileBaseTheme('export const a = 1;\n// @ultima-base later\n')).toBe('later');
+    expect(fileBaseTheme(withStamp(LEGACY_TOKENS, stampLine('tokens', OLD, UNMARKED_NEUTRAL_HASHES[0] as string, 'ts')))).toBe('neutral-tight');
+    expect(fileBaseTheme(LEGACY_TOKENS, UNMARKED_NEUTRAL_HASHES[1])).toBe('neutral-tight');
+    expect(fileBaseTheme(withStamp(LEGACY_TOKENS, stampLine('tokens', OLD, 'c1:0123456789abcdef', 'ts')))).toBe('ultima');
+  });
+});
+
+describe('update holds a base theme change', () => {
+  it('plans a legacy tokens file as hold, names the change, links the update page and prints the preset command', async () => {
+    const root = await tokensFixture(LEGACY_TOKENS);
+    const { code, stdout } = await run(['update', '--cwd', root]);
+    expect(code).toBe(0);
+    const { url } = await ultimaPresetUrl();
+    expect(url).toMatch(/^https:\/\/ultima\.systems\/r\/theme\.json\?theme=/);
+    expect(stdout.split('\n').slice(2)).toEqual([
+      'item    file                      state   action',
+      'tokens  src/lib/tokens.stylex.ts  behind  hold    base theme changes to neutral-tight',
+      '',
+      'hold    npx ultima-design update --accept-base-theme  (https://ultima.systems/install/update)',
+      `keep    npx shadcn@4.21.4 add "${url}"  installs the Ultima preset, which keeps the previous look`,
+      '',
+    ]);
+  });
+
+  it('leaves the held file untouched under --yes, and lists it as held', async () => {
+    const root = await tokensFixture(LEGACY_TOKENS);
+    const before = snapshot(root);
+    const { code, stdout } = await run(['update', '--yes', '--cwd', root]);
+    expect(code).toBe(0);
+    expect(snapshot(root)).toEqual(before);
+    expect(stdout).toContain('wrote   none\n');
+    expect(stdout).toContain('held    src/lib/tokens.stylex.ts\n');
+  });
+
+  it('with --accept-base-theme plans the action the state gives, and --yes then replaces the file', async () => {
+    const root = await tokensFixture(LEGACY_TOKENS);
+    const plan = await run(['update', '--accept-base-theme', '--cwd', root]);
+    expect(plan.stdout).toContain('tokens  src/lib/tokens.stylex.ts  behind  replace\n');
+    expect(plan.stdout).toContain('apply   npx ultima-design update --accept-base-theme --yes\n');
+    expect(plan.stdout).not.toContain('keep');
+
+    const applied = await run(['update', '--accept-base-theme', '--yes', '--cwd', root]);
+    expect(applied.code).toBe(0);
+    expect(readFileSync(join(root, 'src/lib/tokens.stylex.ts'), 'utf8')).toBe(withStamp(NEUTRAL_TOKENS, stampLine('tokens', NEW, await contentHash(NEUTRAL_TOKENS, 'c1'), 'ts')));
+    expect((await statusOf(root))['src/lib/tokens.stylex.ts']).toBe('current');
+  });
+
+  it('plans a tokens file already on the served base by its state', async () => {
+    const root = await tokensFixture('export const radius = { md: 2 };\n// @ultima-base neutral-tight\n');
+    const { stdout } = await run(['update', '--cwd', root]);
+    expect(stdout).toContain('tokens  src/lib/tokens.stylex.ts  behind  replace\n');
+    expect(stdout).not.toContain('--accept-base-theme');
+  });
+
+  it('refuses --accept-base-theme with --rollback', async () => {
+    const root = await tokensFixture(LEGACY_TOKENS);
+    expect((await run(['update', '--rollback', '--accept-base-theme', '--cwd', root])).code).toBe(2);
+  });
+});
+
+describe('update holds an item that needs a dependency', () => {
+  const SPINNER = 'export function Spinner() {}\n';
+
+  /** dialog needs an uninstalled registry item, select an npm package the project lacks, and sidebar what it has. */
+  async function needsFixture(extra: Record<string, string> = {}) {
+    const registry = await serve([
+      { name: 'button', file: 'button.tsx', source: staged('Button', 'two') },
+      { name: 'dialog', file: 'dialog.tsx', source: staged('Dialog', 'two'), registryDependencies: ['@ultima/spinner', '@ultima/button'] },
+      { name: 'select', file: 'select.tsx', source: staged('Select', 'two'), dependencies: ['@base-ui/react', 'clsx'] },
+      { name: 'sidebar', file: 'sidebar.tsx', source: staged('Sidebar', 'two'), registryDependencies: ['@ultima/button'], dependencies: ['clsx'] },
+      { name: 'spinner', file: 'spinner.tsx', source: SPINNER },
+    ]);
+    return project({
+      'package.json': JSON.stringify({ name: 'app', dependencies: { clsx: '^2.0.0' } }),
+      'pnpm-lock.yaml': '',
+      'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }),
+      'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
+      'src/components/ui/button.tsx': await stamped('button', staged('Button', 'two'), NEW),
+      'src/components/ui/dialog.tsx': await stamped('dialog', staged('Dialog', 'one'), OLD),
+      'src/components/ui/select.tsx': await stamped('select', staged('Select', 'one'), OLD),
+      'src/components/ui/sidebar.tsx': await stamped('sidebar', staged('Sidebar', 'one'), OLD),
+      ...extra,
+    });
+  }
+
+  it('holds each with the command that adds what it needs, and --yes writes only the rest and leaves package.json', async () => {
+    const root = await needsFixture();
+    const plan = await run(['update', '--cwd', root]);
+    expect(plan.stdout.split('\n').slice(2)).toEqual([
+      'item     file                           state   action',
+      'sidebar  src/components/ui/sidebar.tsx  behind  replace',
+      'dialog   src/components/ui/dialog.tsx   behind  hold     needs @ultima/spinner',
+      'select   src/components/ui/select.tsx   behind  hold     needs @base-ui/react',
+      '',
+      'needs    npx shadcn@4.21.4 add @ultima/spinner',
+      '         pnpm add @base-ui/react',
+      'apply    npx ultima-design update --yes',
+      '',
+    ]);
+
+    const before = snapshot(root);
+    const applied = await run(['update', '--yes', '--cwd', root]);
+    expect(applied.code).toBe(0);
+    const after = snapshot(root);
+    expect(Object.keys(after).filter((path) => after[path] !== before[path] && !path.startsWith('.ultima-update'))).toEqual(['src/components/ui/sidebar.tsx']);
+    expect(after['package.json']).toBe(before['package.json']);
+    expect(applied.stdout).toContain('held     src/components/ui/dialog.tsx, src/components/ui/select.tsx\n');
+  });
+
+  it("names npm's install command without a pnpm lockfile, and a rerun after adding them picks both up", async () => {
+    const root = await needsFixture();
+    execFileSync('rm', [join(root, 'pnpm-lock.yaml')]);
+    expect((await run(['update', '--cwd', root])).stdout).toContain('         npm install @base-ui/react\n');
+
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'app', dependencies: { clsx: '^2.0.0', '@base-ui/react': '^1.0.0' } }));
+    writeFileSync(join(root, 'src/components/ui/spinner.tsx'), await stamped('spinner', SPINNER, NEW));
+    const rerun = await run(['update', '--cwd', root]);
+    expect(rerun.stdout).toContain('dialog   src/components/ui/dialog.tsx   behind  replace\n');
+    expect(rerun.stdout).toContain('select   src/components/ui/select.tsx   behind  replace\n');
+    expect(rerun.stdout).not.toContain('needs');
+  });
+
+  it('prints what each hold requires in its JSON row, and the add commands as needs', async () => {
+    const root = await needsFixture();
+    const { stdout } = await run(['update', '--plan', '--json', '--cwd', root]);
+    const plan = JSON.parse(stdout);
+    expect(plan.files.map(({ item, action, requires }: { item: string; action: string; requires: string[] }) => [item, action, requires])).toEqual([
+      ['sidebar', 'replace', []],
+      ['dialog', 'hold', ['@ultima/spinner']],
+      ['select', 'hold', ['@base-ui/react']],
+    ]);
+    expect(plan.commands).toEqual([
+      { for: 'needs', command: 'npx shadcn@4.21.4 add @ultima/spinner' },
+      { for: 'needs', command: 'pnpm add @base-ui/react' },
+      { for: 'apply', command: 'npx ultima-design update --yes' },
+    ]);
+  });
+});
+
 const sha256 = (text: string) => createHash('sha256').update(text).digest('hex');
 const projectFiles = (root: string) => Object.fromEntries(Object.entries(snapshot(root)).filter(([path]) => !path.startsWith('.ultima-update')));
 
@@ -380,6 +540,32 @@ describe('update --plan --json and --apply', () => {
     expect(code).toBe(3);
     expect(JSON.parse(stdout).diagnostics).toMatchObject([{ ruleId: 'ULT-UPDATE-003', message: expect.stringContaining(`revision ${OLD}`) }]);
     expect(existsSync(join(root, '.ultima-update'))).toBe(false);
+  });
+
+  it('prints a base-theme hold with its commands, and --apply holds it as planned', async () => {
+    const root = await tokensFixture(LEGACY_TOKENS);
+    const before = snapshot(root);
+    const { path, plan } = await planFile(root);
+    expect(plan.files).toMatchObject([{ item: 'tokens', state: 'behind', action: 'hold', reason: 'base theme changes to neutral-tight', requires: [] }]);
+    expect(plan.commands).toEqual([
+      { for: 'hold', command: 'npx ultima-design update --accept-base-theme' },
+      { for: 'keep', command: `npx shadcn@4.21.4 add "${(await ultimaPresetUrl()).url}"` },
+    ]);
+    const applied = await run(['update', '--apply', path, '--json', '--cwd', root]);
+    expect(JSON.parse(applied.stdout)).toMatchObject({ runId: null, written: [], held: ['src/lib/tokens.stylex.ts'] });
+    expect(snapshot(root)).toEqual(before);
+  });
+
+  it('applies a plan made with --accept-base-theme as it was made, and refuses the flag beside --apply', async () => {
+    const root = await tokensFixture(LEGACY_TOKENS);
+    const { path, plan } = await planFile(root, '--accept-base-theme');
+    expect(plan.files).toMatchObject([{ item: 'tokens', action: 'replace' }]);
+    expect(plan.commands).toEqual([{ for: 'apply', command: 'npx ultima-design update --accept-base-theme --yes' }]);
+    expect((await run(['update', '--apply', path, '--accept-base-theme', '--cwd', root])).code).toBe(2);
+
+    const applied = await run(['update', '--apply', path, '--cwd', root]);
+    expect(applied.code).toBe(0);
+    expect(readFileSync(join(root, 'src/lib/tokens.stylex.ts'), 'utf8')).toBe(withStamp(NEUTRAL_TOKENS, stampLine('tokens', NEW, await contentHash(NEUTRAL_TOKENS, 'c1'), 'ts')));
   });
 
   it('exits 2 for --apply of a file that is not a plan, an edited plan, or with item names, --yes or --plan', async () => {
