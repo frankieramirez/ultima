@@ -53,9 +53,10 @@ const styles = stylex.create({
     containerType: 'inline-size',
   },
   // Just past WIDE a card's content is about 120px, and a six-figure value at 30px needs about 136px.
-  // No breakpoint sits there, so the number follows its card between Stat's own two steps instead.
+  // No breakpoint sits there, so the number follows its card instead, at 18cqi: about 5.5em of card
+  // per em of type, a tenth more than a six-figure value's ink, which covers a fallback font's wider figures.
   value: {
-    fontSize: `clamp(${text['--ult-text-8']}, 20cqi, ${text['--ult-text-9']})`,
+    fontSize: `clamp(${text['--ult-text-7']}, 18cqi, ${text['--ult-text-9']})`,
   },
   caption: {
     color: color['--ult-color-text-subtle'],

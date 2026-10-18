@@ -160,7 +160,7 @@ describe('4. the behavior the block wires', () => {
     expect(getComputedStyle(keyMetrics.element()).gridTemplateColumns.split(' ')).toHaveLength(width >= 1024 ? 4 : 2);
     // The value follows its card between Stat's two steps: full size wherever the card has room.
     const size = Number.parseFloat(getComputedStyle(keyMetrics.getByText('$48,210').element()).fontSize);
-    expect(size).toBeGreaterThanOrEqual(24);
+    expect(size).toBeGreaterThanOrEqual(20);
     if (width !== 1024) expect(size).toBe(30);
     const ranges = [
       { option: null, values: ['$48,210', '1,284', '9,431', '0.8%', '+12.4%', '+0.2%'] },

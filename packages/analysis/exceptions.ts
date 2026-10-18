@@ -114,9 +114,9 @@ export default [
     path: 'packages/blocks/src/dashboard-01/stat-row.tsx',
     symbol: 'styles.value',
     target: 'fontSize',
-    expression: "`clamp(${text['--ult-text-8']}, 20cqi, ${text['--ult-text-9']})`",
+    expression: "`clamp(${text['--ult-text-7']}, 18cqi, ${text['--ult-text-9']})`",
     count: 1,
-    reason: 'Four stat cards just past WIDE are narrower than a 30px six-figure value, so it tracks its card between Stat\'s two steps.',
+    reason: 'Four stat cards just past WIDE are narrower than a 30px six-figure value, so it tracks its card between text steps 7 and 9.',
     authority: 'docs/spec/design-foundations.md#type',
   },
   {
