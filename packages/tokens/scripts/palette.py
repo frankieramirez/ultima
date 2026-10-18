@@ -102,6 +102,25 @@ def semantic(p,mode,neutral=False):
     t['surface-overlay']=t['surface-raised']+('b3' if mode=='dark' else 'cc')
     return t
 
+# ---------- series ----------
+# Chart series take one value per mode, the same in every preset: oklch(L, .16, H) clipped into sRGB, with
+# L stepped away from the surfaces by .01 until it clears 3:1 on each preset's surface and surface-raised.
+SERIES_HUE=[264,47,163,293,354,215]
+SERIES_L={'dark':0.74,'light':0.56}
+def series(palettes):
+    out={}
+    for mode in ('dark','light'):
+        grounds=[semantic(p,mode)[bg] for p in palettes for bg in ('surface','surface-raised')]
+        step=0.01 if mode=='dark' else -0.01
+        out[mode]={}
+        for i,h in enumerate(SERIES_HUE):
+            L=SERIES_L[mode]
+            while min(cr(oklch_to_hex(L,0.16,h),g) for g in grounds)<3:
+                L=round(L+step,2)
+                if not 0<=L<=1: sys.exit(f'series-{i+1} clears 3:1 on the surfaces at no lightness in {mode}')
+            out[mode][f'series-{i+1}']=oklch_to_hex(L,0.16,h)
+    return out
+
 def gate(t,mode):
     fails=[]; rows=[]
     def chk(fg,bg,minr,label):
@@ -115,6 +134,8 @@ def gate(t,mode):
         for bg in ('surface','surface-raised',role+'-subtle'): chk(role+'-text',bg,4.5,'hue text')
         for bg in (role,role+'-hover',role+'-active'): chk(role+'-contrast',bg,4.5,'on-color')
     for bg in ('action','action-hover','action-active'): chk('action-contrast',bg,4.5,'action')
+    for i in range(1,len(SERIES_HUE)+1):
+        for bg in ('surface','surface-raised'): chk(f'series-{i}',bg,3,'series')
     return rows,fails
 
 if __name__=='__main__':
@@ -123,21 +144,24 @@ if __name__=='__main__':
     for name in p:
         for mode in p[name]:
             print(f'{name:8}{mode:6}'+' '.join(p[name][mode]))
+    s=series((p,ultima))
+    tables={m:{**semantic(p,m,neutral=True),**s[m]} for m in ('dark','light')}
+    ultima_tables={m:{**semantic(ultima,m),**s[m]} for m in ('dark','light')}
     allfails=[]
     for mode in ('dark','light'):
-        t=semantic(p,mode,neutral=True); rows,fails=gate(t,mode); allfails+=fails
+        t=tables[mode]; rows,fails=gate(t,mode); allfails+=fails
         print(f'\n{mode} contrast tokens: '+', '.join(f"{r}-contrast={t[r+'-contrast@step']}" for r in ROLE))
         if '-v' in sys.argv:
             for r in rows: print('  ',r)
     for mode in ('dark','light'):
-        rows,fails=gate(semantic(ultima,mode),mode); allfails+=fails
+        rows,fails=gate(ultima_tables[mode],mode); allfails+=fails
         print(f'Ultima {mode}: {len(rows)} pairings, {len(fails)} failures')
         if '-v' in sys.argv:
             for r in rows: print('  ',r)
     print('\nFAILS:' if allfails else '\nALL PAIRINGS PASS')
     for mode,fg,bg,r,minr in allfails: print(f'  {mode}: {fg} on {bg} is {r}:1, minimum {minr}:1',file=sys.stderr)
-    fresh=json.dumps({'recipeVersion':3,'palette':p,'semantic':{m:semantic(p,m,neutral=True) for m in ('dark','light')},
-                     'ultima':{'palette':ultima,'semantic':{m:semantic(ultima,m) for m in ('dark','light')}}},indent=1)
+    fresh=json.dumps({'recipeVersion':3,'palette':p,'semantic':tables,
+                     'ultima':{'palette':ultima,'semantic':ultima_tables}},indent=1)
     path=os.path.join(os.path.dirname(os.path.abspath(__file__)),'palette.json')
     if '--check' in sys.argv:
         committed=open(path).read() if os.path.exists(path) else ''

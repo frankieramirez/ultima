@@ -3,7 +3,7 @@
 import { Toast as BaseToast } from '@base-ui/react/toast';
 import * as stylex from '@stylexjs/stylex';
 import { border, color, easing, font, motion, radius, shadow, space, text, z } from '@ultima/tokens/tokens.stylex';
-import type { PartProps } from '@ultima/ui/lib/component';
+import type { PartProps, PlainProps } from '@ultima/ui/lib/component';
 import type { ComponentProps } from 'react';
 
 const UP = ':is([data-side="bottom"])';
@@ -23,6 +23,22 @@ const ANCHORED = ':is([data-side] > *)';
 const ANCHORED_MOTION = ':is([data-side] > *):is([data-starting-style], [data-ending-style])';
 /** Popover's cap: an anchored toast is a popup tied to its trigger. */
 const popupWidth = `min(calc(5 * ${space['--ult-space-12']}), var(--available-width))`;
+
+/**
+ * Inside a Root of each status `type`. Icon reads the type from the Root's `data-type`, so it needs
+ * no prop and Ultima writes no context: CSS picks the glyph, as it picks the tone.
+ */
+const SUCCESS = ':is([data-type="success"] *)';
+const WARNING = ':is([data-type="warning"] *)';
+const DANGER = ':is([data-type="danger"] *, [data-type="error"] *)';
+const LOADING = ':is([data-type="loading"] *)';
+const STATUS = ':is([data-type="success"] *, [data-type="warning"] *, [data-type="danger"] *, [data-type="error"] *, [data-type="loading"] *)';
+const REDUCED_MOTION = '@media (prefers-reduced-motion: reduce)';
+
+const rotate = stylex.keyframes({
+  from: { transform: 'rotate(0deg)' },
+  to: { transform: 'rotate(360deg)' },
+});
 
 const scaleStep = 0.1;
 const slideDistance = '150%';
@@ -117,16 +133,49 @@ const styles = stylex.create({
     boxSizing: 'border-box',
     display: 'flex',
     gap: space['--ult-space-5'],
+    // Only the collapsed stack hides what is behind its front. Anchored toasts sit at their own
+    // anchors, so one behind another in the index is not under it and keeps its text.
     opacity: {
       default: 1,
-      ':is([data-behind])': 0,
-      ':is([data-behind][data-expanded])': 1,
+      ':is([data-behind]):not([data-expanded], [data-side] *)': 0,
     },
     overflow: 'hidden',
     padding: space['--ult-space-6'],
     transitionDuration: motion['--ult-motion-fast'],
     transitionProperty: 'opacity',
     transitionTimingFunction: easing.standard,
+  },
+  /**
+   * The leading status mark: a glyph per status `type` in the tone's ink, and nothing at all for a
+   * type that reports no status, so a neutral toast's text stays on the start edge.
+   */
+  icon: {
+    alignItems: 'center',
+    display: { default: 'none', [STATUS]: 'flex' },
+    flexShrink: 0,
+    // The text step nearest the Title's line box (14px at snug leading, about 19px), so the mark
+    // carries the weight of the title it stands beside rather than of one 14px word.
+    fontSize: text['--ult-text-6'],
+    height: '1em',
+    justifyContent: 'center',
+    width: '1em',
+  },
+  /** A caller's own mark shows on every type. */
+  iconFilled: {
+    display: 'flex',
+  },
+  glyph: {
+    flexShrink: 0,
+  },
+  success: { display: { default: 'none', [SUCCESS]: 'block' } },
+  warning: { display: { default: 'none', [WARNING]: 'block' } },
+  danger: { display: { default: 'none', [DANGER]: 'block' } },
+  loading: {
+    animationDuration: motion['--ult-motion-loop'],
+    animationIterationCount: 'infinite',
+    animationName: { default: rotate, [REDUCED_MOTION]: 'none' },
+    animationTimingFunction: 'linear',
+    display: { default: 'none', [LOADING]: 'block' },
   },
   title: {
     fontSize: text['--ult-text-4'],
@@ -170,6 +219,29 @@ type ToastTitleProps = PartProps<ComponentProps<typeof BaseToast.Title>>;
 type ToastDescriptionProps = PartProps<ComponentProps<typeof BaseToast.Description>>;
 type ToastPositionerProps = PartProps<ComponentProps<typeof BaseToast.Positioner>>;
 type ToastArrowProps = PartProps<ComponentProps<typeof BaseToast.Arrow>>;
+type ToastIconProps = PlainProps<'span'>;
+
+const glyph = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', width: '1em', height: '1em', 'aria-hidden': true } as const;
+
+/** Lucide's circle-check. */
+function SuccessGlyph() {
+  return <svg {...glyph} {...stylex.props(styles.glyph, styles.success)}><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>;
+}
+
+/** Lucide's triangle-alert: a triangle, so warning differs from danger in shape as well as hue. */
+function WarningGlyph() {
+  return <svg {...glyph} {...stylex.props(styles.glyph, styles.warning)}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>;
+}
+
+/** Lucide's circle-alert. Not an x, which beside a Close would read as a second dismiss. */
+function DangerGlyph() {
+  return <svg {...glyph} {...stylex.props(styles.glyph, styles.danger)}><circle cx="12" cy="12" r="10" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>;
+}
+
+/** Lucide's loader-circle, turning. It holds the slot the result's mark takes when the promise settles. */
+function LoadingGlyph() {
+  return <svg {...glyph} {...stylex.props(styles.glyph, styles.loading)}><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>;
+}
 
 function Viewport({ style, ...props }: ToastViewportProps) {
   return <BaseToast.Viewport {...props} {...stylex.props(styles.viewport, style)} />;
@@ -191,6 +263,22 @@ function Description({ style, ...props }: ToastDescriptionProps) {
   return <BaseToast.Description {...props} {...stylex.props(styles.description, style)} />;
 }
 
+/** Decorative: the Title says the status in words, and colour and mark only repeat it. */
+function Icon({ style, children, ...props }: ToastIconProps) {
+  return (
+    <span {...props} {...stylex.props(styles.icon, children != null && styles.iconFilled, style)} aria-hidden="true">
+      {children ?? (
+        <>
+          <SuccessGlyph />
+          <WarningGlyph />
+          <DangerGlyph />
+          <LoadingGlyph />
+        </>
+      )}
+    </span>
+  );
+}
+
 function Positioner({ style, ...props }: ToastPositionerProps) {
   return <BaseToast.Positioner {...props} {...stylex.props(styles.positioner, style)} />;
 }
@@ -206,6 +294,7 @@ const Toast = {
   Positioner,
   Root,
   Content,
+  Icon,
   Title,
   Description,
   Action: BaseToast.Action,
@@ -224,4 +313,5 @@ export {
   type ToastDescriptionProps,
   type ToastPositionerProps,
   type ToastArrowProps,
+  type ToastIconProps,
 };

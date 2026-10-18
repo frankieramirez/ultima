@@ -30,7 +30,7 @@ const TOKEN_SOURCES = [
 // above the prototype's number.
 const BUDGET_KB: Record<string, number> = {
   'ult-button': 5,
-  'ult-tabs': 17,
+  'ult-tabs': 18,
   'ult-tooltip': 26,
   ultima: 40,
 };

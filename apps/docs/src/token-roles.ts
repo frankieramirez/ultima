@@ -29,6 +29,15 @@ const HUE: Record<string, string> = {
   contrast: 'text on the solid fills',
 };
 
+const SERIES: Record<string, string> = {
+  '1': 'first color group in a chart',
+  '2': 'second color group in a chart',
+  '3': 'third color group in a chart',
+  '4': 'fourth color group in a chart',
+  '5': 'fifth color group in a chart',
+  '6': 'sixth color group in a chart',
+};
+
 const FILTER: Record<string, string> = {
   backdrop: 'scrim blur behind modal overlays',
 };
@@ -113,6 +122,7 @@ const GROUPS: [RegExp, Record<string, string>][] = [
   [/^--ult-shadow-(.+)$/, SHADOW],
   [/^--ult-filter-(.+)$/, FILTER],
   [/^--ult-motion-(.+)$/, MOTION],
+  [/^--ult-color-series-(.+)$/, SERIES],
 ];
 
 function hueSuffix(role: string): string {
