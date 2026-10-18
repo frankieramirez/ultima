@@ -1,8 +1,8 @@
-import { ArrowUpRightIcon, ListIcon, MagnifyingGlassIcon, SquaresFourIcon } from '@phosphor-icons/react';
+import { ArrowUpRightIcon, LayoutGridIcon, MenuIcon, SearchIcon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Badge, Button, Card, Empty, Field, InputGroup, Separator, Switch, ToggleGroup } from '@ultima/ui';
+import { Badge, Button, Card, Empty, Field, Icon, InputGroup, Separator, Switch, ToggleGroup } from '@ultima/ui';
 import { useEffect, useRef, useState, type FocusEvent } from 'react';
 
 import { breakpoints } from '../breakpoints.stylex';
@@ -344,7 +344,7 @@ export function ComponentsPage() {
                     <span {...stylex.props(styles.resourceTitle)}>{resource.title}</span>
                     <span {...stylex.props(styles.resourceDescription)}>{resource.description}</span>
                   </span>
-                  <ArrowUpRightIcon aria-hidden />
+                  <Icon><ArrowUpRightIcon /></Icon>
                 </TextLink>
               </li>
             ))}
@@ -357,7 +357,7 @@ export function ComponentsPage() {
           <Field.Root name="filter" style={styles.search}>
             <InputGroup.Root>
               <InputGroup.Addon>
-                <MagnifyingGlassIcon aria-hidden />
+                <Icon><SearchIcon /></Icon>
               </InputGroup.Addon>
               <InputGroup.Input
                 aria-label="Filter components"
@@ -394,10 +394,10 @@ export function ComponentsPage() {
               }}
             >
               <ToggleGroup.Item value="grid" aria-label="Grid">
-                <SquaresFourIcon aria-hidden />
+                <Icon><LayoutGridIcon /></Icon>
               </ToggleGroup.Item>
               <ToggleGroup.Item value="list" aria-label="List">
-                <ListIcon aria-hidden />
+                <Icon><MenuIcon /></Icon>
               </ToggleGroup.Item>
             </ToggleGroup.Root>
           </div>

@@ -1,10 +1,10 @@
 import { docsStyles } from './docs-style';
 import { breakpoints } from './breakpoints.stylex';
-import { CheckCircleIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import { CircleAlertIcon, CircleCheckIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import type { ColorMode, PairingResult } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button } from '@ultima/ui';
+import { Button, Icon } from '@ultima/ui';
 import { useId, type Ref } from 'react';
 
 import { Kicker } from './page';
@@ -97,12 +97,12 @@ export function ThemeStudioChecks({
 }) {
   const countId = useId();
   const failing = checks.passedChecks < checks.totalChecks;
-  const Icon = failing ? WarningCircleIcon : CheckCircleIcon;
+  const StatusIcon = failing ? CircleAlertIcon : CircleCheckIcon;
   return (
     <section aria-label="Token checks" {...stylex.props(styles.root)}>
       <div {...stylex.props(styles.label)}>
         <p id={countId} {...stylex.props(styles.count)}>
-          <Icon aria-hidden weight="fill" {...stylex.props(failing ? styles.fail : styles.pass)} />
+          <Icon style={failing ? styles.fail : styles.pass}><StatusIcon /></Icon>
           {checksCount(checks)}
         </p>
         <Kicker style={styles.kicker}>Token contrast · WCAG 2.2 AA</Kicker>

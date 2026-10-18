@@ -1,4 +1,4 @@
-import { ArchiveIcon, LinkSimpleIcon, PencilSimpleIcon } from '@phosphor-icons/react';
+import { ArchiveIcon, LinkIcon, PencilIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { Button, DropdownMenu, Icon } from '@ultima/ui';
 import { useRef } from 'react';
@@ -28,11 +28,11 @@ export default function DropdownMenuAnatomy() {
                 <DropdownMenu.Group>
                   <DropdownMenu.GroupLabel>Document</DropdownMenu.GroupLabel>
                   <DropdownMenu.Item>
-                    <Icon><PencilSimpleIcon /></Icon>
+                    <Icon><PencilIcon /></Icon>
                     Rename
                   </DropdownMenu.Item>
                   <DropdownMenu.LinkItem href="https://base-ui.com/react/components/menu">
-                    <Icon><LinkSimpleIcon /></Icon>
+                    <Icon><LinkIcon /></Icon>
                     Base UI docs
                   </DropdownMenu.LinkItem>
                 </DropdownMenu.Group>

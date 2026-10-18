@@ -1,7 +1,7 @@
 import { docsStyles } from './docs-style';
 import { StudioPortalContext } from './theme-studio-context';
 import { breakpoints } from './breakpoints.stylex';
-import { CheckIcon, CopyIcon, DownloadSimpleIcon } from '@phosphor-icons/react';
+import { CheckIcon, CopyIcon, DownloadIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import {
   AUTOSAVE_KEY,
@@ -24,7 +24,7 @@ import {
   type ThemeDraft,
 } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Accordion, Alert, AlertDialog, Button, Checkbox, Code, Dialog, Field, Input, Separator, Spinner, Tabs, ToggleGroup } from '@ultima/ui';
+import { Accordion, Alert, AlertDialog, Button, Checkbox, Code, Dialog, Field, Icon, Input, Separator, Spinner, Tabs, ToggleGroup } from '@ultima/ui';
 import { useContext, useEffect, useRef, useState } from 'react';
 
 import { CopyButton } from './copy-button';
@@ -517,7 +517,7 @@ function ExportDialog({
                       <Fence code={installCommand} lang="shell" wrap={false} />
                     </> : gated ? <Button disabled style={[docsStyles.square, styles.touch, styles.action]}>Copy install command</Button> : currentInstall?.reason ? <>
                       <p {...stylex.props(styles.note, styles.exportCopy)}>{currentInstall.reason === 'too-long' ? 'This theme is too large for an install URL.' : 'An install URL could not be created.'} Download the registry file, then run this command.</p>
-                      <Button onClick={registryDownload} style={[docsStyles.square, styles.touch, styles.action]}><DownloadSimpleIcon aria-hidden /> Download registry file</Button>
+                      <Button onClick={registryDownload} style={[docsStyles.square, styles.touch, styles.action]}><Icon><DownloadIcon /></Icon> Download registry file</Button>
                       <Fence code="npx shadcn@4.21.4 add ./ultima-theme.registry.json" lang="shell" />
                     </> : <p role="status" {...stylex.props(styles.note, styles.exportCopy)}>Creating install command…</p>}
                   </section>
@@ -549,7 +549,7 @@ function ExportDialog({
                     <ul {...stylex.props(styles.downloads)}>
                       {downloads.map((item) => (
                         <li key={item.name} {...stylex.props(styles.download)}>
-                          <Button disabled={gated} onClick={item.save} variant="outline" style={[docsStyles.square, styles.touch]}><DownloadSimpleIcon aria-hidden /> {item.name}</Button>
+                          <Button disabled={gated} onClick={item.save} variant="outline" style={[docsStyles.square, styles.touch]}><Icon><DownloadIcon /></Icon> {item.name}</Button>
                           <span {...stylex.props(styles.detail, styles.exportCopy)}>{item.detail}</span>
                         </li>
                       ))}
@@ -633,7 +633,7 @@ function ShareDialog({
                 <>
                   <p {...stylex.props(styles.note)}>A share link could not be created. Share the draft file instead.</p>
                   <Button onClick={() => downloadDraft(draft)} size="sm" variant="outline" style={[docsStyles.square, styles.touch]}>
-                    <DownloadSimpleIcon aria-hidden /> ultima-theme.json
+                    <Icon><DownloadIcon /></Icon> ultima-theme.json
                   </Button>
                 </>
               ) : result === null ? (
@@ -647,7 +647,7 @@ function ShareDialog({
                     This draft is too large for a share link. Share the draft file instead.
                   </p>
                   <Button onClick={() => downloadDraft(draft)} size="sm" variant="outline" style={[docsStyles.square, styles.touch]}>
-                    <DownloadSimpleIcon aria-hidden /> ultima-theme.json
+                    <Icon><DownloadIcon /></Icon> ultima-theme.json
                   </Button>
                 </>
               ) : (
@@ -664,9 +664,9 @@ function ShareDialog({
                     {(status) => (
                       <>
                         {status === 'Copied' ? (
-                          <CheckIcon aria-hidden />
+                          <Icon><CheckIcon /></Icon>
                         ) : (
-                          <CopyIcon aria-hidden />
+                          <Icon><CopyIcon /></Icon>
                         )}{' '}
                         {status || 'Copy link'}
                       </>

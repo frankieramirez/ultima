@@ -1,10 +1,10 @@
 import { docsStyles } from './docs-style';
 import { breakpoints } from './breakpoints.stylex';
-import { ArrowUUpLeftIcon, ArrowUUpRightIcon } from '@phosphor-icons/react';
+import { Redo2Icon, Undo2Icon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import type { ShuffleVariation } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, ToggleGroup } from '@ultima/ui';
+import { Button, Icon, ToggleGroup } from '@ultima/ui';
 import { useId } from 'react';
 
 import { Kicker } from './page';
@@ -69,8 +69,8 @@ export function ThemeStudioShuffleBar({
       <p id={hintId} {...stylex.props(styles.railOnlyHint)}>{OPTIONS.find((option) => option.value === variation)?.description}</p>
       <div {...stylex.props(styles.row)}>
         <div {...stylex.props(styles.history)}>
-          <Button aria-label="Undo" disabled={!canUndo} onClick={onUndo} size="sm" style={[docsStyles.square, styles.icon, styles.touch]} variant="ghost"><ArrowUUpLeftIcon aria-hidden /></Button>
-          <Button aria-label="Redo" disabled={!canRedo} onClick={onRedo} size="sm" style={[docsStyles.square, styles.icon, styles.touch]} variant="ghost"><ArrowUUpRightIcon aria-hidden /></Button>
+          <Button aria-label="Undo" disabled={!canUndo} onClick={onUndo} size="sm" style={[docsStyles.square, styles.icon, styles.touch]} variant="ghost"><Icon><Undo2Icon /></Icon></Button>
+          <Button aria-label="Redo" disabled={!canRedo} onClick={onRedo} size="sm" style={[docsStyles.square, styles.icon, styles.touch]} variant="ghost"><Icon><Redo2Icon /></Icon></Button>
         </div>
         <Kicker title="Theme state fingerprint" style={styles.fingerprint}>seed {fingerprint}</Kicker>
       </div>

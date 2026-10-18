@@ -1,7 +1,7 @@
-import { EyeSlashIcon, ShieldCheckIcon } from '@phosphor-icons/react';
+import { EyeOffIcon, ShieldCheckIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Badge, Separator } from '@ultima/ui';
+import { Badge, Icon, Separator } from '@ultima/ui';
 
 import { setupItems } from '../../../registry/items.config';
 import { breakpoints } from './breakpoints.stylex';
@@ -49,11 +49,11 @@ export function HandSteps({ item }: { item: keyof typeof setupItems }) {
             </span>
             {step.assertion ? (
               <Badge tone="success" style={styles.badge}>
-                <ShieldCheckIcon aria-hidden /> doctor checks this
+                <Icon><ShieldCheckIcon /></Icon> doctor checks this
               </Badge>
             ) : (
               <Badge style={styles.badge}>
-                <EyeSlashIcon aria-hidden /> can't be checked
+                <Icon><EyeOffIcon /></Icon> can't be checked
               </Badge>
             )}
           </div>

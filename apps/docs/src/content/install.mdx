@@ -1,5 +1,5 @@
-import { InfoIcon } from '@phosphor-icons/react';
-import { Card, Code } from '@ultima/ui';
+import { InfoIcon } from 'lucide-react';
+import { Card, Code, Icon } from '@ultima/ui';
 
 import { Callout, Columns } from '../foundation';
 import { HandSteps } from '../hand-steps';
@@ -18,7 +18,7 @@ Already using Ultima? Read [Update the base theme](/install/update) before reins
 
 Every command on this site runs `shadcn@4.21.4`, the version `init` pins for its own installs and the version Ultima tests. Keep using it after `init`, so every item in the project is installed by the same CLI.
 
-<Callout icon={<InfoIcon />} title={<><Code>npx shadcn init</Code> is not supported.</>}>Its preflight requires Tailwind on disk, and Ultima does not use Tailwind. The entry is a per-target setup item, which is a universal `registry:item` and installs into a project that has no `components.json` yet.</Callout>
+<Callout icon={<Icon><InfoIcon /></Icon>} title={<><Code>npx shadcn init</Code> is not supported.</>}>Its preflight requires Tailwind on disk, and Ultima does not use Tailwind. The entry is a per-target setup item, which is a universal `registry:item` and installs into a project that has no `components.json` yet.</Callout>
 
 ## Set up with init
 

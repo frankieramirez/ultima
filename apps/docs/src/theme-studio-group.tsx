@@ -1,9 +1,9 @@
 import { docsStyles } from './docs-style';
 import { breakpoints } from './breakpoints.stylex';
-import { ArrowCounterClockwiseIcon, CaretDownIcon, LockSimpleIcon, ShuffleIcon } from '@phosphor-icons/react';
+import { ChevronDownIcon, LockIcon, RotateCcwIcon, ShuffleIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Button, Collapsible, Toggle } from '@ultima/ui';
+import { Button, Collapsible, Icon, Toggle } from '@ultima/ui';
 import { useEffect, useState, type ReactNode } from 'react';
 
 const styles = stylex.create({
@@ -97,7 +97,7 @@ export function ThemeStudioGroup({
             style={[styles.icon, styles.touch]}
             variant="ghost"
           >
-            <LockSimpleIcon aria-hidden />
+            <Icon><LockIcon /></Icon>
           </Toggle>
           <Button
             aria-label={`Shuffle ${label}`}
@@ -106,7 +106,7 @@ export function ThemeStudioGroup({
             style={[docsStyles.square, styles.icon, styles.touch]}
             variant="ghost"
           >
-            <ShuffleIcon aria-hidden />
+            <Icon><ShuffleIcon /></Icon>
           </Button>
           <Button
             aria-label={`Reset ${label}`}
@@ -115,18 +115,18 @@ export function ThemeStudioGroup({
             style={[docsStyles.square, styles.icon, styles.touch]}
             variant="ghost"
           >
-            <ArrowCounterClockwiseIcon aria-hidden />
+            <Icon><RotateCcwIcon /></Icon>
           </Button>
           <Collapsible.Trigger
             render={<Button aria-label={`Edit ${label}`} size="sm" style={[docsStyles.square, styles.icon, styles.touch]} variant="ghost" />}
           >
-            <CaretDownIcon aria-hidden />
+            <Icon><ChevronDownIcon /></Icon>
           </Collapsible.Trigger>
         </header>
         <Collapsible.Panel>
           <div {...stylex.props(styles.root)}>{children}
             <Collapsible.Root open={overridesOpen} onOpenChange={setOverridesOpen}>
-              <Collapsible.Trigger render={<Button variant="outline" size="sm" style={[docsStyles.square, styles.touch]} />}>{label} token overrides <CaretDownIcon aria-hidden /></Collapsible.Trigger>
+              <Collapsible.Trigger render={<Button variant="outline" size="sm" style={[docsStyles.square, styles.touch]} />}>{label} token overrides <Icon><ChevronDownIcon /></Icon></Collapsible.Trigger>
               <Collapsible.Panel>{panel}</Collapsible.Panel>
             </Collapsible.Root>
           </div>

@@ -1,8 +1,8 @@
-import { ArrowRightIcon } from '@phosphor-icons/react';
+import { ArrowRightIcon } from 'lucide-react';
 import { Link, type LinkProps } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Card } from '@ultima/ui';
+import { Card, Icon } from '@ultima/ui';
 
 import { GROUPS, components } from './components';
 import { blocks } from './generated/blocks';
@@ -91,7 +91,7 @@ export function WhereNext() {
                 <TextLink render={<Link to={to} />} style={styles.link}>
                   {title}
                 </TextLink>
-                <ArrowRightIcon aria-hidden {...stylex.props(styles.arrow)} />
+                <Icon style={styles.arrow}><ArrowRightIcon /></Icon>
               </h3>
               <p {...stylex.props(styles.description)}>{description}</p>
             </Card.Body>

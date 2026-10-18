@@ -1,7 +1,7 @@
-import { ArrowDownIcon, ArrowUpRightIcon, CheckIcon, FileTextIcon, XIcon } from '@phosphor-icons/react';
+import { ArrowDownIcon, ArrowUpRightIcon, CheckIcon, FileTextIcon, XIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Badge, Card, Separator, Table } from '@ultima/ui';
+import { Badge, Card, Icon, Separator, Table } from '@ultima/ui';
 import type { ReactNode } from 'react';
 
 import { breakpoints } from './breakpoints.stylex';
@@ -165,9 +165,9 @@ export function Decision({ title }: { title: string }) {
           </h2>
           {record ? (
             <TextLink href={record.href} style={styles.record}>
-              <FileTextIcon aria-hidden {...stylex.props(styles.recordIcon, styles.recordLead)} />
+              <Icon style={[styles.recordIcon, styles.recordLead]}><FileTextIcon /></Icon>
               ADR {record.number} · {record.title}
-              <ArrowUpRightIcon aria-hidden {...stylex.props(styles.recordIcon, styles.recordTrail)} />
+              <Icon style={[styles.recordIcon, styles.recordTrail]}><ArrowUpRightIcon /></Icon>
             </TextLink>
           ) : (
             <p {...stylex.props(styles.source)}>A principle in the spec</p>
@@ -187,7 +187,7 @@ export function Tradeoff({ chose, over }: { chose: ReactNode[]; over: ReactNode[
         <ul {...stylex.props(styles.options)}>
           {chose.map((option, index) => (
             <li key={index} {...stylex.props(styles.option, styles.chosen)}>
-              <CheckIcon aria-hidden {...stylex.props(styles.mark)} />
+              <Icon style={styles.mark}><CheckIcon /></Icon>
               <span>{option}</span>
             </li>
           ))}
@@ -200,7 +200,7 @@ export function Tradeoff({ chose, over }: { chose: ReactNode[]; over: ReactNode[
         <ul {...stylex.props(styles.options)}>
           {over.map((option, index) => (
             <li key={index} {...stylex.props(styles.option, styles.passed)}>
-              <XIcon aria-hidden {...stylex.props(styles.mark)} />
+              <Icon style={styles.mark}><XIcon /></Icon>
               <span>{option}</span>
             </li>
           ))}
@@ -228,7 +228,7 @@ export function DecisionIndex() {
                 </TextLink>
                 <span {...stylex.props(styles.entrySummary)}>{record ? record.title : 'A principle in the spec'}</span>
                 <Badge style={styles.entryRecord}>{record ? `ADR ${record.number}` : 'Principle'}</Badge>
-                <ArrowDownIcon aria-hidden {...stylex.props(styles.entryArrow)} />
+                <Icon style={styles.entryArrow}><ArrowDownIcon /></Icon>
               </div>
               <Separator />
             </li>
@@ -274,7 +274,7 @@ function RecordTable() {
               <Table.Cell>
                 <TextLink href={record.href} style={styles.recordLink}>
                   {record.title}
-                  <ArrowUpRightIcon aria-hidden {...stylex.props(styles.recordIcon, styles.recordTrail)} />
+                  <Icon style={[styles.recordIcon, styles.recordTrail]}><ArrowUpRightIcon /></Icon>
                 </TextLink>
               </Table.Cell>
               <Table.Cell>{record.status}</Table.Cell>

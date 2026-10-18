@@ -1,8 +1,8 @@
 import { docsStyles } from './docs-style';
-import { CheckIcon, CopyIcon, WarningIcon } from '@phosphor-icons/react';
+import { CheckIcon, CopyIcon, TriangleAlertIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { color, space } from '@ultima/tokens/tokens.stylex';
-import { Button, type ButtonVariant } from '@ultima/ui';
+import { Button, Icon, type ButtonVariant } from '@ultima/ui';
 import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
@@ -38,9 +38,9 @@ const styles = stylex.create({
 });
 
 function glyph(status: CopyStatus) {
-  if (status === 'Copied') return <CheckIcon aria-hidden />;
-  if (status === 'Copy failed') return <WarningIcon aria-hidden />;
-  return <CopyIcon aria-hidden />;
+  if (status === 'Copied') return <Icon><CheckIcon /></Icon>;
+  if (status === 'Copy failed') return <Icon><TriangleAlertIcon /></Icon>;
+  return <Icon><CopyIcon /></Icon>;
 }
 
 /**

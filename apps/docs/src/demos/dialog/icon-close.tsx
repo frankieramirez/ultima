@@ -1,4 +1,4 @@
-import { XIcon } from '@phosphor-icons/react';
+import { XIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Button, Dialog, Icon } from '@ultima/ui';

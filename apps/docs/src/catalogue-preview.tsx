@@ -1,9 +1,9 @@
-import { InfoIcon } from '@phosphor-icons/react';
+import { InfoIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import type { StyleXStyles } from '@stylexjs/stylex';
 import type { ThemePresetId } from '@ultima/tokens';
 import { space } from '@ultima/tokens/tokens.stylex';
-import { Accordion, Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card } from '@ultima/ui';
+import { Accordion, Alert, AspectRatio, Avatar, Badge, Breadcrumb, Button, Card, Icon } from '@ultima/ui';
 import type { ComponentType } from 'react';
 
 import ButtonGroupPreview from './demos/button-group/basic';
@@ -140,7 +140,7 @@ function compactSample(item: string) {
       return (
         <Alert.Root>
           <Alert.Icon>
-            <InfoIcon />
+            <Icon><InfoIcon /></Icon>
           </Alert.Icon>
           <Alert.Description>A useful heads-up.</Alert.Description>
         </Alert.Root>

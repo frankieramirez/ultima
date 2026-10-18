@@ -1,5 +1,5 @@
-import { InfoIcon, ScalesIcon } from '@phosphor-icons/react';
-import { Code } from '@ultima/ui';
+import { InfoIcon, ScaleIcon } from 'lucide-react';
+import { Code, Icon } from '@ultima/ui';
 
 import { Decision, DecisionIndex, Records, Tradeoff } from '../decision';
 import { Callout } from '../foundation';
@@ -24,7 +24,7 @@ Tailwind was the obvious other path. The author works in it daily, and shadcn's 
 
 One engine means one model to document.
 
-<Callout icon={<ScalesIcon />} title="What it costs">A StyleX compiler plugin in the consumer's bundler, which the setup item installs or explains. Tailwind-only projects can take the tokens CSS export. They cannot take the components.</Callout>
+<Callout icon={<Icon><ScaleIcon /></Icon>} title="What it costs">A StyleX compiler plugin in the consumer's bundler, which the setup item installs or explains. Tailwind-only projects can take the tokens CSS export. They cannot take the components.</Callout>
 
 <Decision title="Base UI" />
 
@@ -34,7 +34,7 @@ Interactive pieces need accessible, unstyled primitives for focus, keyboard beha
 
 One primitive vocabulary.
 
-<Callout icon={<ScalesIcon />} title="What it costs">v0's component list is bounded by what Base UI ships. Styling hooks have to compose with StyleX-generated props, which the Button and Card prototype verified before authoring conventions locked.</Callout>
+<Callout icon={<Icon><ScaleIcon /></Icon>} title="What it costs">v0's component list is bounded by what Base UI ships. Styling hooks have to compose with StyleX-generated props, which the Button and Card prototype verified before authoring conventions locked.</Callout>
 
 <Decision title="Registry-first" />
 
@@ -50,9 +50,9 @@ An npm package would have given an upgrade path and a version number. It would a
 
 The registry serves a moving latest with no versioned URLs: every served file carries an item stamp, and possession is the pin. Hosting the registry is why the docs site is a v0 deliverable.
 
-<Callout icon={<InfoIcon />} title={<><Code>npx shadcn init</Code> is not the entry.</>}>`init` refuses a project without Tailwind on disk. The command is `npx shadcn@4.21.4 add` of a per-target setup item. The decision in the ADR stands; only the command changed.</Callout>
+<Callout icon={<Icon><InfoIcon /></Icon>} title={<><Code>npx shadcn init</Code> is not the entry.</>}>`init` refuses a project without Tailwind on disk. The command is `npx shadcn@4.21.4 add` of a per-target setup item. The decision in the ADR stands; only the command changed.</Callout>
 
-<Callout icon={<ScalesIcon />} title="What it costs">There is no upgrade path beyond re-installing an item.</Callout>
+<Callout icon={<Icon><ScaleIcon /></Icon>} title="What it costs">There is no upgrade path beyond re-installing an item.</Callout>
 
 <Decision title="Dark-first" />
 

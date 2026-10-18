@@ -1,4 +1,5 @@
-import { WarningIcon } from '@phosphor-icons/react';
+import { TriangleAlertIcon } from 'lucide-react';
+import { Icon } from '@ultima/ui';
 
 import { InstallWrites, SkillRoutes } from '../cli-install';
 import { Callout } from '../foundation';
@@ -83,4 +84,4 @@ These routes require access to the GitHub repository until it becomes public. Th
 
 Both install the same skill shipped with the CLI. They install no hooks or CLI dependency; add `ultima-design` to your project's dev dependencies with `npm i -D ultima-design` to run its checks.
 
-<Callout tone="warning" icon={<WarningIcon />} title="Pick one route per project.">The CLI preserves unstamped skill files, so rerunning `ultima-design install` does not refresh a skills.sh copy. Update or remove an externally installed skill through its installer.</Callout>
+<Callout tone="warning" icon={<Icon><TriangleAlertIcon /></Icon>} title="Pick one route per project.">The CLI preserves unstamped skill files, so rerunning `ultima-design install` does not refresh a skills.sh copy. Update or remove an externally installed skill through its installer.</Callout>

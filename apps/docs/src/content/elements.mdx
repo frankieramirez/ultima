@@ -1,4 +1,5 @@
-import { WarningIcon } from '@phosphor-icons/react';
+import { TriangleAlertIcon } from 'lucide-react';
+import { Icon } from '@ultima/ui';
 
 import { ElementIndex, InstallPath, UseCases } from '../element-index';
 import { elements } from '../elements';
@@ -41,7 +42,7 @@ A host that runs no tooling loads the served file from this site. One file per e
 
 </InstallPath>
 
-<Callout tone="warning" icon={<WarningIcon />} title="The file is a vendored artifact rather than copy-source.">A reinstall overwrites it and local edits are forfeit. The served URL always carries the latest build; pinning means vendoring the file.</Callout>
+<Callout tone="warning" icon={<Icon><TriangleAlertIcon /></Icon>} title="The file is a vendored artifact rather than copy-source.">A reinstall overwrites it and local edits are forfeit. The served URL always carries the latest build; pinning means vendoring the file.</Callout>
 
 ## How an element reads
 

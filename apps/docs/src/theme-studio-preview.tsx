@@ -1,30 +1,8 @@
 import * as stylex from '@stylexjs/stylex';
 import { colorScheme, presetDraft, resolveDraft, type ThemePresetId, type ResolvedDraft, type TokenTable } from '@ultima/tokens';
 import { border, color, font, radius, shadow, space, text } from '@ultima/tokens/tokens.stylex';
-import {
-  Alert,
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Code,
-  Dialog,
-  Field,
-  HoverCard,
-  Input,
-  Meter,
-  Popover,
-  Progress,
-  Separator,
-  Spinner,
-  Stat,
-  Switch,
-  Table,
-  Tabs,
-  Toggle,
-  ToggleGroup,
-} from '@ultima/ui';
-import { StackIcon, UsersIcon } from '@phosphor-icons/react';
+import { Alert, Avatar, Badge, Button, Card, Code, Dialog, Field, HoverCard, Icon, Input, Meter, Popover, Progress, Separator, Spinner, Stat, Switch, Table, Tabs, Toggle, ToggleGroup } from '@ultima/ui';
+import { LayersIcon, UsersIcon } from 'lucide-react';
 import {
   useLayoutEffect,
   useContext,
@@ -641,7 +619,7 @@ function WorkspaceScene({ inspect, mode }: { inspect: boolean; mode: PaneMode })
                   <Table.Cell>
                     <span {...stylex.props(styles.projectCell)}>
                       <span aria-hidden {...stylex.props(styles.projectIcon)}>
-                        <StackIcon />
+                        <Icon><LayersIcon /></Icon>
                       </span>
                       <span {...stylex.props(styles.projectCopy)}>
                         <span>{project.name}</span>
@@ -661,7 +639,7 @@ function WorkspaceScene({ inspect, mode }: { inspect: boolean; mode: PaneMode })
           <Card.Root style={[styles.raised, styles.invite]}>
             <Card.Header>
               <span aria-hidden {...stylex.props(styles.inviteIcon)}>
-                <UsersIcon />
+                <Icon><UsersIcon /></Icon>
               </span>
               <Card.Title>Better together.</Card.Title>
               <Card.Description>Invite your team and give every idea a place to grow.</Card.Description>

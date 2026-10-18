@@ -1,4 +1,3 @@
-import { IconContext, type IconProps } from '@phosphor-icons/react';
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { color, font, space } from '@ultima/tokens/tokens.stylex';
@@ -43,10 +42,6 @@ const styles = stylex.create({
   workbench: { display: 'flex', flexDirection: 'column', minBlockSize: 0 },
 });
 
-// Phosphor's provider replaces its context wholesale and IconBase has no
-// fallback for size, so a partial value renders every glyph at zero.
-const icons: IconProps = { color: 'currentColor', size: '1em', weight: 'regular', mirrored: false };
-
 /** The skip link's target: the region past the header and the menu, on every route. */
 const CONTENT_ID = 'main';
 
@@ -75,9 +70,7 @@ export function Root() {
 
   return (
     <ThemeRoot>
-      <IconContext.Provider value={icons}>
-        <Shell />
-      </IconContext.Provider>
+      <Shell />
     </ThemeRoot>
   );
 }

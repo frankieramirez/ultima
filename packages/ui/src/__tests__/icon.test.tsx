@@ -17,7 +17,8 @@ import { Button, Icon, type IconProps } from '@ultima/ui';
  *    takes the same path as `render`, with no wrapper.
  * 5. Documented state drives its style: none. Icon has no data-* state of its own.
  * 6. Typecheck passes: className is rejected and the style slot is accepted; no axis unions.
- * 7. Behavior this component wires itself: none; every declaration is a style.
+ * 7. Behavior this component wires itself: a `strokeWidth` of 1.5 by default on an icon element, which
+ *    the icon's own `strokeWidth` overrides and a plain host element never gets.
  * 8. CSS the primitive reads: no primitive; the contract's own declarations are the `1em` box that
  *    beats a set's width and height attributes, and `flex-shrink: 0`. `data-ult-icon` is what lets
  *    Button trim its padding for an icon that is not an `<svg>`.
@@ -32,6 +33,15 @@ const styles = stylex.create({
 function Fixed(props: React.ComponentProps<'svg'>) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" {...props}>
+      <path d="M12 5v14" />
+    </svg>
+  );
+}
+
+/** Drawn the way Lucide draws: a 2px stroke unless the caller passes `strokeWidth`. */
+function Stroked({ strokeWidth = 2, ...props }: React.ComponentProps<'svg'>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} {...props}>
       <path d="M12 5v14" />
     </svg>
   );
@@ -169,6 +179,25 @@ test('a Button trims its padding for an Icon that is not an svg', async () => {
   const plain = getComputedStyle(screen.getByRole('button', { name: 'Plain' }).element());
   const withIcon = getComputedStyle(screen.getByRole('button', { name: 'Starred' }).element());
   expect(parseFloat(withIcon.paddingInlineStart)).toBeLessThan(parseFloat(plain.paddingInlineStart));
+});
+
+test('a stroked set draws at 1.5 unless the icon names its own stroke', async () => {
+  const screen = await render(
+    <>
+      <Icon data-testid="default">
+        <Stroked />
+      </Icon>
+      <Icon data-testid="own">
+        <Stroked strokeWidth={3} />
+      </Icon>
+      <Icon data-testid="font" render={<span />}>
+        home
+      </Icon>
+    </>,
+  );
+  expect(screen.getByTestId('default').element()).toHaveAttribute('stroke-width', '1.5');
+  expect(screen.getByTestId('own').element()).toHaveAttribute('stroke-width', '3');
+  expect(screen.getByTestId('font').element()).not.toHaveAttribute('stroke-width');
 });
 
 test('className is rejected and the style slot is accepted', () => {

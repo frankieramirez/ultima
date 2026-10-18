@@ -1,4 +1,4 @@
-import { InfoIcon } from '@phosphor-icons/react';
+import { InfoIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { Button, Icon, Tooltip } from '@ultima/ui';
 

@@ -1,8 +1,8 @@
-import { CheckIcon, InfoIcon, XIcon } from '@phosphor-icons/react';
+import { CheckIcon, InfoIcon, XIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { palette } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Card, ScrollArea, Separator, Stat, Table } from '@ultima/ui';
+import { Card, Icon, ScrollArea, Separator, Stat, Table } from '@ultima/ui';
 import { Fragment } from 'react';
 
 import { breakpoints } from '../breakpoints.stylex';
@@ -248,7 +248,7 @@ export function PalettePage() {
             ))}
           </Table.Root>
         </Table.Scroll>
-        <Callout icon={<InfoIcon />} title="This deviates from Radix Colors on purpose.">
+        <Callout icon={<Icon><InfoIcon /></Icon>} title="This deviates from Radix Colors on purpose.">
           Ultima's interaction states are palette steps rather than colors derived at runtime, so step 11 is the active
           fill and the two text steps collapse into 12. The neutral has no solid fills, so its steps 9 to 11 serve as
           subtle, muted, and ordinary text weights.
@@ -308,7 +308,7 @@ export function PalettePage() {
                   ))}
                   <Table.Cell>
                     <span {...stylex.props(styles.result, pairing.pass ? styles.pass : styles.fail)}>
-                      {pairing.pass ? <CheckIcon aria-hidden /> : <XIcon aria-hidden />}
+                      {pairing.pass ? <Icon><CheckIcon /></Icon> : <Icon><XIcon /></Icon>}
                       {pairing.pass ? 'Pass' : 'Fail'}
                     </span>
                   </Table.Cell>

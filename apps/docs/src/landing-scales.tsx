@@ -1,8 +1,8 @@
-import { ArrowRightIcon } from '@phosphor-icons/react';
+import { ArrowRightIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { palette, type ColorMode, type ScaleName } from '@ultima/tokens';
 import { color, font, space, text } from '@ultima/tokens/tokens.stylex';
-import { Badge, Button, Card } from '@ultima/ui';
+import { Badge, Button, Card, Icon } from '@ultima/ui';
 import type { CSSProperties } from 'react';
 
 import { breakpoints } from './breakpoints.stylex';
@@ -126,7 +126,7 @@ export function ScaleBands({ onPreviewAccent }: { onPreviewAccent: () => void })
                   <Badge style={styles.tag}>{tag}</Badge>
                 ) : (
                   <Button size="sm" variant="ghost" onClick={onPreviewAccent} style={[styles.apply, ink.name(name)]}>
-                    Preview as accent <ArrowRightIcon aria-hidden />
+                    Preview as accent <Icon><ArrowRightIcon /></Icon>
                   </Button>
                 )}
               </div>

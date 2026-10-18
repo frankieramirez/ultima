@@ -1,4 +1,4 @@
-import { ArrowDownIcon } from '@phosphor-icons/react';
+import { ArrowDownIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { space } from '@ultima/tokens/tokens.stylex';
 import { Button, Icon } from '@ultima/ui';

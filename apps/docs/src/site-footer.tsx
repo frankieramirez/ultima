@@ -1,4 +1,5 @@
-import { ArrowUpRightIcon } from '@phosphor-icons/react';
+import { ArrowUpRightIcon } from 'lucide-react';
+import { Icon } from '@ultima/ui';
 import { Link } from '@tanstack/react-router';
 import * as stylex from '@stylexjs/stylex';
 import { font, space, text } from '@ultima/tokens/tokens.stylex';
@@ -43,10 +44,10 @@ export function SiteFooter({ wide = false }: { wide?: boolean }) {
       <div {...stylex.props(styles.cluster)}>
         <div {...stylex.props(styles.links)}>
           <TextLink variant="muted" render={<Link to="/install" />}>
-            Documentation <ArrowUpRightIcon aria-hidden />
+            Documentation <Icon><ArrowUpRightIcon /></Icon>
           </TextLink>
           <TextLink variant="muted" href="https://github.com/frankieramirez/ultima">
-            GitHub <ArrowUpRightIcon aria-hidden />
+            GitHub <Icon><ArrowUpRightIcon /></Icon>
           </TextLink>
           <TextLink variant="muted" href="https://github.com/frankieramirez/ultima/blob/main/LICENSE">
             MIT license
