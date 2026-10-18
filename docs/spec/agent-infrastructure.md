@@ -88,7 +88,7 @@ The grammar `ULT-TOKEN-001` applies, as delivered on [Enforce token and styling 
 | --- | --- | --- |
 | `color` | `color`, `backgroundColor`, the border and outline colors, `caretColor`, `accentColor` and similar | `color` tokens, `transparent`, `currentColor` |
 | `paint` | `fill`, `stroke` | as `color`, plus `none` |
-| `length` | box dimensions, insets, padding, margin, gaps, `flexBasis`, `textUnderlineOffset` | `space` tokens and `border` constants, zero, percentages, viewport units, `auto`, `none` and the content-sizing keywords, `fit-content()` |
+| `length` | box dimensions, insets, padding, margin, gaps, `flexBasis`, `textUnderlineOffset`, an SVG circle's `r` | `space` tokens and `border` constants, zero, percentages, viewport units, `auto`, `none` and the content-sizing keywords, `fit-content()` |
 | `radius` | `borderRadius` and its corners | `radius` tokens, zero |
 | `border-width` | border and outline widths, and an SVG `strokeWidth` | `border` constants, zero |
 | `outline-offset` | `outlineOffset` | `border` constants, zero |

@@ -495,6 +495,7 @@ set(
   'borderSpacing',
   'textUnderlineOffset',
   'containIntrinsicSize',
+  'r',
 );
 set('radius', ...CORNERS.map((corner) => `border${corner}Radius`));
 set('border-width', 'outlineWidth', 'columnRuleWidth', 'strokeWidth', ...SIDES.map((side) => `border${side}Width`));

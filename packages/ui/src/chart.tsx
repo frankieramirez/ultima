@@ -1,12 +1,38 @@
 'use client';
 
+import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import * as stylex from '@stylexjs/stylex';
 import { createChartRuntime } from '@tanstack/charts/runtime';
-import type { ChartDefinition, ChartLayoutOptions, ChartScene, ChartSize, SceneLabel, SceneNode, SceneRect } from '@tanstack/charts/types';
-import { border, color, font, space, text } from '@ultima/tokens/tokens.stylex';
+import { defaultChartTheme, findNearestPoint, viewportInteractionPoints } from '@tanstack/charts/scene';
+import type {
+  ChartDefinition,
+  ChartLayoutOptions,
+  ChartPoint,
+  ChartScene,
+  ChartSize,
+  ChartValue,
+  SceneLabel,
+  SceneNode,
+  SceneRect,
+} from '@tanstack/charts/types';
+import { border, color, font, radius, shadow, space, text, z } from '@ultima/tokens/tokens.stylex';
 import type { PartProps } from '@ultima/ui/lib/component';
-import { createContext, type ComponentProps, type ReactNode, use, useCallback, useId, useLayoutEffect, useMemo, useState } from 'react';
+import { visuallyHidden } from '@ultima/ui/lib/visually-hidden';
+import {
+  createContext,
+  type ComponentProps,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+  use,
+  useCallback,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 const styles = stylex.create({
   root: {
@@ -18,6 +44,7 @@ const styles = stylex.create({
     gap: space['--ult-space-3'],
     margin: 0,
     minWidth: 0,
+    position: 'relative',
   },
   caption: {
     color: color['--ult-color-text'],
@@ -34,6 +61,40 @@ const styles = stylex.create({
     fontWeight: font['--ult-font-weight-regular'],
     inlineSize: '100%',
     overflow: 'visible',
+    ':focus-visible': {
+      outline: `${border.focus} solid ${color['--ult-color-border-focus']}`,
+      outlineOffset: border.focusOffset,
+    },
+  },
+  /** The active point's ring: the focus color around a page-colored disc, so it reads over any mark. */
+  marker: {
+    fill: color['--ult-color-surface'],
+    r: space['--ult-space-2'],
+    stroke: color['--ult-color-border-focus'],
+    strokeWidth: border.focus,
+  },
+  /** Tooltip's popup, without its motion: its edge sits 12px above the active point, clear of the marker. */
+  tooltip: {
+    backgroundColor: color['--ult-color-surface-raised'],
+    borderColor: color['--ult-color-border'],
+    borderRadius: radius['--ult-radius-sm'],
+    borderStyle: 'solid',
+    borderWidth: border.fine,
+    boxShadow: shadow['--ult-shadow-sm'],
+    boxSizing: 'border-box',
+    color: color['--ult-color-text'],
+    fontFamily: font['--ult-font-sans'],
+    fontSize: text['--ult-text-2'],
+    lineHeight: font['--ult-font-leading-snug'],
+    margin: 0,
+    marginBlockStart: `calc(-1 * ${space['--ult-space-5']})`,
+    maxWidth: `calc(${space['--ult-space-12']} * 5)`,
+    paddingBlock: space['--ult-space-2'],
+    paddingInline: space['--ult-space-3'],
+    pointerEvents: 'none',
+    position: 'absolute',
+    width: 'max-content',
+    zIndex: z.popup,
   },
   rule: {
     fill: 'none',
@@ -64,7 +125,14 @@ type ChartContextValue = {
   scene: ChartScene | null;
   height: number | undefined;
   aspectRatio: number | undefined;
+  plot: SVGSVGElement | null;
   setPlot: (plot: SVGSVGElement | null) => void;
+  /** The points the keyboard and pointer reach, in `viewportInteractionPoints` order. */
+  points: readonly ChartPoint[];
+  /** The active point, resolved against the current scene by key. */
+  active: ChartPoint | null;
+  setActive: (point: ChartPoint | null) => void;
+  formatPoint: (point: ChartPoint) => string;
 };
 
 const ChartContext = createContext<ChartContextValue | null>(null);
@@ -75,6 +143,21 @@ function useChartContext(part: string): ChartContextValue {
   return context;
 }
 
+type ChartState = {
+  /** The compiled scene, or `null` until the plot has been measured. */
+  scene: ChartScene | null;
+  active: ChartPoint | null;
+  setActive: (point: ChartPoint | null) => void;
+};
+
+/** The scene and the active point, for a part of the consumer's own, such as a table row that marks the active point. */
+function useChart(): ChartState {
+  const context = use(ChartContext);
+  if (!context) throw new Error('useChart must be used inside Chart.Root.');
+  const { scene, active, setActive } = context;
+  return { scene, active, setActive };
+}
+
 /** Exactly one of `height`, in CSS pixels, or `aspectRatio`, width over height. Neither has a default. */
 type ChartSizeProps = { height: number; aspectRatio?: never } | { aspectRatio: number; height?: never };
 
@@ -82,9 +165,16 @@ type ChartRootProps = PartProps<useRender.ComponentProps<'figure'>> &
   ChartSizeProps & {
     /** A `defineChart({ marks })` result. Its `theme`, `tooltip`, `keyboard`, `focusRing` and `svgAnimation` are ignored. */
     definition: ChartDefinition;
+    /** The active point, controlled. `null` is no active point. */
+    active?: ChartPoint | null;
+    defaultActive?: ChartPoint | null;
+    onActiveChange?: (point: ChartPoint | null) => void;
+    /** The one text for the tooltip and the announcement. Defaults to the series label, then x and y through the axis formats. */
+    formatPoint?: (point: ChartPoint) => string;
   };
 type ChartCaptionProps = PartProps<useRender.ComponentProps<'figcaption'>>;
 type ChartPlotProps = PartProps<Omit<ComponentProps<'svg'>, 'children'>>;
+type ChartTooltipProps = PartProps<useRender.ComponentProps<'div'>>;
 
 /** Text layout with the plot's own computed font, so the scene's label boxes match the labels painted. */
 function measurer(plot: SVGSVGElement): ChartLayoutOptions {
@@ -107,7 +197,20 @@ function measurer(plot: SVGSVGElement): ChartLayoutOptions {
   };
 }
 
-function Root({ definition, height, aspectRatio, ref, render, style, ...props }: ChartRootProps) {
+/** The default `formatPoint`: the series label when the mark has color groups, then x and y through the axis formats. */
+function pointFormatter(definition: ChartDefinition, scene: ChartScene | null) {
+  const spec = 'chart' in definition ? scene && definition.chart({ width: scene.width, height: scene.height, defaultTheme: defaultChartTheme }) : definition;
+  const formatOf = (id: string) => {
+    const axis = spec?.scales[id]?.axis;
+    return (axis && axis.ticks && axis.ticks.format) || String;
+  };
+  const x = formatOf('x');
+  const y = formatOf('y');
+  return (point: ChartPoint) =>
+    [...(point.group === null ? [] : [point.groupLabel]), x(point.xValue as ChartValue), y(point.yValue as ChartValue)].join(', ');
+}
+
+function Root({ definition, height, aspectRatio, active, defaultActive = null, onActiveChange, formatPoint, ref, render, style, ...props }: ChartRootProps) {
   const captionId = useId();
   const [runtime] = useState(() => createChartRuntime());
   const [plot, setPlot] = useState<SVGSVGElement | null>(null);
@@ -126,13 +229,32 @@ function Root({ definition, height, aspectRatio, ref, render, style, ...props }:
   }, [plot]);
 
   const scene = useMemo(() => (frame ? runtime.render(definition, frame.size, frame.layout) : null), [runtime, definition, frame]);
+  const points = useMemo(() => (scene ? viewportInteractionPoints(scene) : []), [scene]);
+  const format = useMemo(() => formatPoint ?? pointFormatter(definition, scene), [formatPoint, definition, scene]);
+
+  const [uncontrolled, setUncontrolled] = useState(defaultActive);
+  const chosen = active === undefined ? uncontrolled : active;
+  const current = (chosen && points.find((point) => point.key === chosen.key)) || null;
+  const setActive = useCallback(
+    (point: ChartPoint | null) => {
+      if ((point?.key ?? null) === (current?.key ?? null)) return;
+      setUncontrolled(point);
+      onActiveChange?.(point);
+    },
+    [current, onActiveChange],
+  );
+
   const element = useRender({
     defaultTagName: 'figure',
     ref,
     render,
     props: { 'aria-labelledby': captionId, ...props, ...stylex.props(styles.root, style) },
   });
-  return <ChartContext value={{ aspectRatio, captionId, height, scene, setPlot }}>{element}</ChartContext>;
+  return (
+    <ChartContext value={{ active: current, aspectRatio, captionId, formatPoint: format, height, plot, points, scene, setActive, setPlot }}>
+      {element}
+    </ChartContext>
+  );
 }
 
 function Caption({ ref, render, style, ...props }: ChartCaptionProps) {
@@ -190,8 +312,50 @@ function draw(scene: ChartScene, node: SceneNode): ReactNode {
   }
 }
 
+/** Points grouped into series, one per mark and color group, in order of first appearance, each in x order. */
+function seriesOf(points: readonly ChartPoint[]) {
+  const series = new Map<string, ChartPoint[]>();
+  for (const point of points) {
+    const id = `${point.markId}\u0000${String(point.group)}`;
+    const list = series.get(id);
+    if (list) list.push(point);
+    else series.set(id, [point]);
+  }
+  return [...series.values()].map((list) => list.sort((a, b) => a.x - b.x));
+}
+
+/** The point a key moves to, or `undefined` when the key is not one the plot handles. */
+function pointAfter(points: readonly ChartPoint[], current: ChartPoint | null, key: string): ChartPoint | null | undefined {
+  if (key === 'Escape') return current ? null : undefined;
+  const series = seriesOf(points);
+  const index = current ? series.findIndex((list) => list.includes(current)) : 0;
+  const list = series[index];
+  if (!list) return undefined;
+  const at = current ? list.indexOf(current) : -1;
+  switch (key) {
+    case 'ArrowRight':
+      return list[Math.min(at + 1, list.length - 1)];
+    case 'ArrowLeft':
+      return list[Math.max(at - 1, 0)];
+    case 'Home':
+      return list[0];
+    case 'End':
+      return list.at(-1);
+    case 'ArrowUp':
+    case 'ArrowDown': {
+      if (!current) return list[0];
+      const next = series[index + (key === 'ArrowUp' ? 1 : -1)];
+      return next ? next.reduce((best, point) => (Math.abs(point.x - current.x) < Math.abs(best.x - current.x) ? point : best)) : current;
+    }
+    default:
+      return undefined;
+  }
+}
+
+const WORD_JOINER = '\u2060';
+
 function Plot({ ref, style, ...props }: ChartPlotProps) {
-  const { aspectRatio, captionId, height, scene, setPlot } = useChartContext('Plot');
+  const { active, aspectRatio, captionId, formatPoint, height, points, scene, setActive, setPlot } = useChartContext('Plot');
   const plotRef = useCallback(
     (plot: SVGSVGElement | null) => {
       setPlot(plot);
@@ -200,26 +364,92 @@ function Plot({ ref, style, ...props }: ChartPlotProps) {
     },
     [ref, setPlot],
   );
+
+  // Identical consecutive text is not a change to a live region, so a repeat gains a Word Joiner.
+  const said = active ? formatPoint(active) : '';
+  const [status, setStatus] = useState({ key: null as string | null, text: '' });
+  if (status.key !== (active?.key ?? null) || status.text.replace(WORD_JOINER, '') !== said) {
+    setStatus({ key: active?.key ?? null, text: said && said === status.text ? said + WORD_JOINER : said });
+  }
+
+  const interaction = {
+    tabIndex: 0,
+    onKeyDown(event: KeyboardEvent<SVGSVGElement>) {
+      const next = pointAfter(points, active, event.key);
+      if (next === undefined) return;
+      event.preventDefault();
+      setActive(next);
+    },
+    onPointerMove(event: PointerEvent<SVGSVGElement>) {
+      if (!scene) return;
+      const box = event.currentTarget.getBoundingClientRect();
+      setActive(findNearestPoint(scene, event.clientX - box.left, event.clientY - box.top, undefined, points));
+    },
+    onPointerLeave: () => setActive(null),
+    onBlur: () => setActive(null),
+  };
   const { style: injected, ...stylexProps } = stylex.props(styles.plot, style);
   return (
-    <svg
-      {...props}
-      ref={plotRef}
-      aria-labelledby={captionId}
-      aria-roledescription="chart"
-      role="img"
-      {...stylexProps}
-      style={{ ...injected, aspectRatio, height }}
-    >
-      {scene?.nodes.map((node) => draw(scene, node))}
-    </svg>
+    <>
+      <svg
+        {...mergeProps<'svg'>(interaction, props)}
+        ref={plotRef}
+        aria-labelledby={captionId}
+        aria-roledescription="chart"
+        role="img"
+        {...stylexProps}
+        style={{ ...injected, aspectRatio, height }}
+      >
+        {scene?.nodes.map((node) => draw(scene, node))}
+        {active && <circle cx={active.x} cy={active.y} {...stylex.props(styles.marker)} />}
+      </svg>
+      <span aria-atomic="true" role="status" {...stylex.props(visuallyHidden)}>
+        {status.text}
+      </span>
+    </>
   );
+}
+
+/** The visual readout of the active point, `aria-hidden` because the plot's status region speaks it. */
+function Tooltip({ ref, render, style, ...props }: ChartTooltipProps) {
+  const { active, formatPoint, plot, scene } = useChartContext('Tooltip');
+  const own = useRef<HTMLDivElement>(null);
+  // The active point as percentages of the box the tooltip is positioned in, measured once it is laid out.
+  const [place, setPlace] = useState({ left: 0, top: 0, shift: 0 });
+  useLayoutEffect(() => {
+    const parent = own.current?.offsetParent;
+    if (!plot || !parent || !active || !scene) return;
+    const from = parent.getBoundingClientRect();
+    const to = plot.getBoundingClientRect();
+    setPlace({
+      left: ((to.left - from.left - parent.clientLeft + active.x) / parent.clientWidth) * 100,
+      top: ((to.top - from.top - parent.clientTop + active.y) / parent.clientHeight) * 100,
+      // Left-aligned on the point at the plot's start, right-aligned at its end, so it stays within the plot's width.
+      shift: (active.x / scene.width) * -100,
+    });
+  }, [plot, scene, active]);
+
+  const { style: injected, ...stylexProps } = stylex.props(styles.tooltip, style);
+  return useRender({
+    defaultTagName: 'div',
+    enabled: Boolean(active),
+    ref: ref ? [ref, own] : own,
+    render,
+    props: {
+      'aria-hidden': true,
+      children: active && formatPoint(active),
+      ...props,
+      ...stylexProps,
+      style: { ...injected, left: `${place.left}%`, top: `${place.top}%`, translate: `${place.shift}% -100%` },
+    },
+  });
 }
 
 const Chart = {
   Root,
   Caption,
   Plot,
+  Tooltip,
 };
 
-export { Chart, type ChartRootProps, type ChartCaptionProps, type ChartPlotProps };
+export { Chart, useChart, type ChartRootProps, type ChartCaptionProps, type ChartPlotProps, type ChartTooltipProps, type ChartState };

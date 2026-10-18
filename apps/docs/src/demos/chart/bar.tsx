@@ -48,9 +48,15 @@ const styles = stylex.create({
 export default function BarChart() {
   return (
     <div {...stylex.props(styles.layout)}>
-      <Chart.Root aspectRatio={16 / 10} definition={definition} style={styles.chart}>
+      <Chart.Root
+        aspectRatio={16 / 10}
+        definition={definition}
+        formatPoint={(point) => `${String(point.xValue)}, ${thousands.format(point.yValue as number)} requests`}
+        style={styles.chart}
+      >
         <Chart.Caption>Requests per weekday</Chart.Caption>
         <Chart.Plot />
+        <Chart.Tooltip />
       </Chart.Root>
       <Table.Root style={styles.table}>
         <Table.Caption>Requests per weekday</Table.Caption>

@@ -199,6 +199,11 @@ describe('the value grammar', () => {
     assert.equal(check('padding', '1px', { clipHidden: true }).length, 1);
   });
 
+  test("checks an SVG circle's r as a length", () => {
+    assert.deepEqual(check('r', '50%'), []);
+    assert.equal(check('r', '4px').length, 1);
+  });
+
   test('keeps zero resets apart from zero durations', () => {
     assert.deepEqual(check('margin', '0'), []);
     assert.deepEqual(check('margin', '0px'), []);

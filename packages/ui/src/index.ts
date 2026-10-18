@@ -99,9 +99,12 @@ export {
 } from './card';
 export {
   Chart,
+  useChart,
   type ChartRootProps,
   type ChartCaptionProps,
   type ChartPlotProps,
+  type ChartTooltipProps,
+  type ChartState,
 } from './chart';
 export {
   Checkbox,
