@@ -50,19 +50,30 @@ function widen(value: string) {
   return context.fillStyle;
 }
 
-const THEMED = /^--ult-(color|radius)-/;
+const THEMED = /^--ult-(color|shadow|radius)-/;
+
+/** StyleX also writes a shadow's colors as hex, so a shadow is compared as the browser paints it. */
+function canonical(token: string, value: string) {
+  if (!token.startsWith('--ult-shadow-')) return widen(value);
+  const probe = document.createElement('div');
+  probe.style.boxShadow = value;
+  document.body.append(probe);
+  const painted = getComputedStyle(probe).boxShadow;
+  probe.remove();
+  return painted;
+}
 
 function computedTokens(theme: (typeof siteTheme)[Scheme] | (typeof neutralTheme)[Scheme]) {
   const probe = document.createElement('div');
   probe.className = stylex.props(theme).className ?? '';
   document.body.append(probe);
-  const table = Object.fromEntries(Object.keys(site.dark).filter((token) => THEMED.test(token)).map((token) => [token, widen(readToken(probe, token))]));
+  const table = Object.fromEntries(Object.keys(site.dark).filter((token) => THEMED.test(token)).map((token) => [token, canonical(token, readToken(probe, token))]));
   probe.remove();
   return table;
 }
 
 function themedOf(table: Record<string, string>) {
-  return Object.fromEntries(Object.entries(table).filter(([token]) => THEMED.test(token)));
+  return Object.fromEntries(Object.entries(table).filter(([token]) => THEMED.test(token)).map(([token, value]) => [token, canonical(token, value)]));
 }
 
 function colorsOf(table: Record<string, string>) {
@@ -91,7 +102,7 @@ test('site resolves Neutral with Ultima revision 1 mana and passes all 51 pairin
   expect(siteDraft().color.mana).toEqual(presetDraft({ id: 'ultima', revision: 1 }).color.mana);
 });
 
-test('the committed site and Neutral themes match the recipe, colors and Tight corners', () => {
+test('the committed site and Neutral themes match the recipe, colors, shadows and Tight corners', () => {
   expect(committed).toBe(renderSiteThemes());
   for (const mode of MODES) {
     expect(computedTokens(siteTheme[mode])).toEqual(themedOf(site[mode]));

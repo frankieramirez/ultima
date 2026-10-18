@@ -149,6 +149,7 @@ const styles = stylex.create({
   mono: { fontFamily: font['--ult-font-mono'] },
   metaIcon: { color: color['--ult-color-text-subtle'] },
   install: {
+    boxShadow: 'none',
     marginBlockStart: { default: space['--ult-space-7'], [breakpoints.DESKTOP]: space['--ult-space-9'] },
     overflow: 'hidden',
   },

@@ -15,13 +15,26 @@ import {
 
 import { readStored, writeStored } from './storage';
 import { shell } from './shell.stylex';
-import { neutralDark, neutralLight, neutralShape, siteDark, siteLight } from './site-themes';
+import {
+  neutralDark,
+  neutralDarkShadow,
+  neutralLight,
+  neutralLightShadow,
+  neutralShape,
+  siteDark,
+  siteDarkShadow,
+  siteLight,
+  siteLightShadow,
+} from './site-themes';
 
 export type Scheme = 'dark' | 'light';
 
-export const siteTheme = { dark: [siteDark], light: [siteLight] } as const;
+export const siteTheme = { dark: [siteDark, siteDarkShadow], light: [siteLight, siteLightShadow] } as const;
 
-export const neutralTheme = { dark: [neutralDark, neutralShape], light: [neutralLight, neutralShape] } as const;
+export const neutralTheme = {
+  dark: [neutralDark, neutralDarkShadow, neutralShape],
+  light: [neutralLight, neutralLightShadow, neutralShape],
+} as const;
 
 export const THEME_STORAGE_KEY = 'ultima-theme';
 export type ThemePreference = 'dark' | 'light' | 'system';

@@ -68,6 +68,10 @@ So the border is the structure and the shadow is the depth on top of it. A borde
 
 **Don't stack levels inside one another.** A Card inside a Card gives two shadows at the same level and no new information. Inside an object, group with space, a `Separator` or a `surface-sunken` well. A popup opened from inside a Card is still level 3, because level follows z-order, not nesting.
 
+**A frame around other content is level 0.** The docs frame a code sample, a live preview or an install command with a Card's hairline, fill and radius, and drop its shadow. A preview holds objects with their own level, so a raised frame would be a Card inside a Card, and a code sample is part of the text around it, the way a Table is. The frame is a region of the page, not an object on it.
+
+**A pinned mode pins its shadows.** The base `shadow` tokens switch on the system's `prefers-color-scheme`, like the colors. A theme that forces a mode on a subtree carries that mode's shadow values as well as its colors. Otherwise a page pinned to light on a system set to dark casts the dark mode's shadows, four to five times the light alpha, and every raised edge reads as a heavy grey line.
+
 **Only level 4 gets a scrim and blur.** See Blur.
 
 ## Borders
@@ -287,7 +291,9 @@ The specification's [Motion](https://github.com/frankieramirez/ultima/blob/main/
 
 ## Where the code doesn't follow these rules yet
 
-None at present. A rule that lands before the code follows it lists each gap here, with the issue that owns the fix, so nobody copies the gap as precedent.
+A rule that lands before the code follows it lists each gap here, with the issue that owns the fix, so nobody copies the gap as precedent.
+
+- **A pinned mode pins its shadows.** The stock `darkTheme` and `lightTheme` from `@ultima/tokens` theme the `color` group only, so a subtree pinned with one still takes its shadows from the system's mode. The docs' generated themes and both theme exports already carry shadows. Owner: #919.
 
 ## Sources
 
