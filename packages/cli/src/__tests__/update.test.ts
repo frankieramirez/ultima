@@ -117,21 +117,23 @@ describe('planAction', () => {
     ({ item: 'x', file: 'x.tsx', state, installed: { revision: OLD, hash: `${scheme}:1111` }, local: `${scheme}:3333`, served: `${scheme}:2222` }) as Parameters<typeof planAction>[0];
 
   it('gives each state its action from the spec table', () => {
-    expect(planAction(row('current'))).toEqual({ action: 'none', reason: null, base: null });
-    expect(planAction(row('edited'))).toEqual({ action: 'none', reason: null, base: null });
-    expect(planAction(row('behind'))).toEqual({ action: 'replace', reason: null, base: null });
-    expect(planAction({ ...row('unstamped'), installed: null })).toEqual({ action: 'report', reason: 'no installed base', base: null });
+    expect(planAction(row('current'))).toEqual({ action: 'none', reason: null, base: null, hunks: null });
+    expect(planAction(row('edited'))).toEqual({ action: 'none', reason: null, base: null, hunks: null });
+    expect(planAction(row('behind'))).toEqual({ action: 'replace', reason: null, base: null, hunks: null });
+    expect(planAction({ ...row('unstamped'), installed: null })).toEqual({ action: 'report', reason: 'no installed base', base: null, hunks: null });
     expect(planAction(row('retired')).action).toBe('report');
     expect(planAction(row('unknown-scheme')).action).toBe('report');
   });
 
-  it('reports a diverged c1 file with its base, verified or not, until merging is built', () => {
-    expect(planAction(row('diverged'), { text: 'base' })).toEqual({ action: 'report', reason: 'installed base verified; merging is not built yet', base: 'verified' });
-    expect(planAction(row('diverged'), { reason: 'why' })).toEqual({ action: 'report', reason: 'no installed base: why', base: 'unavailable' });
+  it('merges a diverged c1 file over its verified base, and reports it without one', () => {
+    expect(planAction(row('diverged'), { text: 'base' }, { conflicts: 0, text: 'merged' })).toEqual({ action: 'merge', reason: null, base: 'verified', hunks: 0 });
+    expect(planAction(row('diverged'), { text: 'base' }, { conflicts: 2, text: 'marked' })).toEqual({ action: 'conflict', reason: null, base: 'verified', hunks: 2 });
+    expect(planAction(row('diverged'), { text: 'base' }, { reason: 'why' })).toEqual({ action: 'report', reason: 'why', base: 'verified', hunks: null });
+    expect(planAction(row('diverged'), { reason: 'why' })).toEqual({ action: 'report', reason: 'no installed base: why', base: 'unavailable', hunks: null });
   });
 
   it('reports a diverged b1 file, which cannot be merged, without a base', () => {
-    expect(planAction(row('diverged', 'b1'))).toEqual({ action: 'report', reason: 'built file, which cannot be merged', base: null });
+    expect(planAction(row('diverged', 'b1'))).toEqual({ action: 'report', reason: 'built file, which cannot be merged', base: null, hunks: null });
   });
 });
 
@@ -145,12 +147,13 @@ describe('update', () => {
       [
         `Registry  ${registry}  revision ${NEW}`,
         '',
-        'item     file                           state      action',
-        'dialog   src/components/ui/dialog.tsx   behind     replace',
-        'lib      src/lib/component.ts           unstamped  report   no installed base',
-        'sidebar  src/components/ui/sidebar.tsx  diverged   report   installed base verified; merging is not built yet',
+        'item      file                           state      action',
+        'dialog    src/components/ui/dialog.tsx   behind     replace',
+        'sidebar   src/components/ui/sidebar.tsx  diverged   conflict  1 hunk',
+        'lib       src/lib/component.ts           unstamped  report    no installed base',
         '',
-        'apply    npx ultima-design update --yes',
+        'conflict  npx ultima-design update --write-conflicts  or  --replace sidebar',
+        'apply     npx ultima-design update --yes',
         '',
       ].join('\n'),
     );
@@ -194,7 +197,14 @@ describe('update', () => {
     expect(original).toBe(before['src/components/ui/dialog.tsx']);
 
     expect(stdout).toContain('wrote     src/components/ui/dialog.tsx\n');
-    expect(stdout).toContain('reported  src/lib/component.ts, src/components/ui/sidebar.tsx\n');
+    expect(stdout).toContain(
+      [
+        'conflict  src/components/ui/sidebar.tsx  left unwritten',
+        '          npx ultima-design update --write-conflicts  or  --replace sidebar',
+        'reported  src/lib/component.ts',
+        '',
+      ].join('\n'),
+    );
     expect(stdout).toContain(`undo      npx ultima-design update --rollback ${runId}\n`);
     expect(stdout.trimEnd().split('\n').slice(-2)).toEqual(['next      npx ultima-design check --files src/components/ui/dialog.tsx', '          npx tsc --noEmit']);
   });
@@ -217,7 +227,7 @@ describe('update', () => {
     writeFileSync(dialog, `// Our note.\n${readFileSync(dialog, 'utf8')}`);
 
     const plan = await run(['update', '--cwd', root]);
-    expect(plan.stdout).toContain('dialog   src/components/ui/dialog.tsx   behind     replace  uncommitted changes, kept in the journal\n');
+    expect(plan.stdout).toContain('dialog    src/components/ui/dialog.tsx   behind     replace   uncommitted changes, kept in the journal\n');
     expect((await run(['update', '--yes', '--cwd', root])).code).toBe(0);
     expect((await statusOf(root))['src/components/ui/dialog.tsx']).toBe('current');
   });
@@ -320,15 +330,15 @@ describe('installed base', () => {
     const { plan } = (await update(root, [], {})) as UpdateReport;
     expect(plan.files.map(({ item, action, base }) => [item, action, base])).toEqual([
       ['dialog', 'replace', null],
+      ['sidebar', 'conflict', 'verified'],
       ['lib', 'report', null],
-      ['sidebar', 'report', 'verified'],
     ]);
     expect(requests).toEqual([`/raw/${SIDEBAR}`]);
   });
 
   it('falls back to the built-in address and the authored layout for a catalogue served before the source keys', async () => {
     const { row, requests } = await sidebar({ source: 'older' }, (raw) => raw);
-    expect(row).toMatchObject({ action: 'report', base: 'verified' });
+    expect(row).toMatchObject({ action: 'conflict', base: 'verified', hunks: 1 });
     expect(requests).toEqual([`/raw/${SIDEBAR}`]);
   });
 
@@ -345,7 +355,7 @@ describe('installed base', () => {
     expect(row?.reason).toMatch(reason);
   });
 
-  it('never fetches a base for a diverged b1 file', async () => {
+  it('never fetches a base for a diverged b1 file, and --replace takes the served one', async () => {
     const body = (label: string) => `export const ultima = "${label}";\n`;
     const served = await serve([{ name: 'ultima', file: 'ultima.js', source: body('two'), type: 'registry:lib', scheme: 'b1' }]);
     const root = project({
@@ -357,6 +367,9 @@ describe('installed base', () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toContain('ultima  src/lib/ultima.js  diverged  report  built file, which cannot be merged\n');
     expect(served.requests).toEqual([]);
+
+    expect((await run(['update', '--replace', 'ultima', '--yes', '--cwd', root])).code).toBe(0);
+    expect(await statusOf(root)).toEqual({ 'src/lib/ultima.js': 'current' });
   });
 });
 
@@ -539,6 +552,7 @@ describe('update --plan --json and --apply', () => {
       registry,
       revision: NEW,
       planHash: expect.stringMatching(/^sha256:[0-9a-f]{64}$/),
+      writeConflicts: false,
       files: [
         {
           item: 'dialog',
@@ -555,12 +569,16 @@ describe('update --plan --json and --apply', () => {
           sha256: sha256(dialog),
           uncommitted: false,
         },
+        expect.objectContaining({ item: 'sidebar', state: 'diverged', action: 'conflict', reason: null, base: 'verified', hunks: 1 }),
         expect.objectContaining({ item: 'lib', file: 'src/lib/component.ts', state: 'unstamped', action: 'report', reason: 'no installed base', installed: null }),
-        expect.objectContaining({ item: 'sidebar', state: 'diverged', action: 'report', reason: 'installed base verified; merging is not built yet', base: 'verified' }),
       ],
       managed: [],
       notices: [],
-      commands: [{ for: 'apply', command: 'npx ultima-design update --yes' }],
+      commands: [
+        { for: 'conflict', command: 'npx ultima-design update --write-conflicts' },
+        { for: 'conflict', command: 'npx ultima-design update --replace sidebar' },
+        { for: 'apply', command: 'npx ultima-design update --yes' },
+      ],
     });
     expect((await planFile(root)).plan.planHash).toBe(plan.planHash);
     expect(snapshot(root)).toEqual(before);
@@ -587,9 +605,9 @@ describe('update --plan --json and --apply', () => {
       runId,
       planHash: plan.planHash,
       written: ['src/components/ui/dialog.tsx'],
-      conflicts: [],
+      conflicts: ['src/components/ui/sidebar.tsx'],
       held: [],
-      reported: ['src/lib/component.ts', 'src/components/ui/sidebar.tsx'],
+      reported: ['src/lib/component.ts'],
       next: ['npx ultima-design check --files src/components/ui/dialog.tsx', 'npx tsc --noEmit'],
       failed: null,
     });
@@ -676,10 +694,200 @@ describe('update --plan --json and --apply', () => {
     writeFileSync(garbled, 'not json');
     const edited = join(root, '..', 'edited.json');
     writeFileSync(edited, JSON.stringify({ ...plan, files: plan.files.map((row: { action: string }) => ({ ...row, action: 'replace' })) }));
-    for (const args of [['--apply', notaplan], ['--apply', garbled], ['--apply', join(root, 'missing.json')], ['--apply', edited], ['--apply', path, 'dialog'], ['--apply', path, '--yes'], ['--apply', path, '--plan'], ['--plan', '--yes'], ['--rollback', '--apply', path]]) {
+    for (const args of [['--apply', notaplan], ['--apply', garbled], ['--apply', join(root, 'missing.json')], ['--apply', edited], ['--apply', path, 'dialog'], ['--apply', path, '--yes'], ['--apply', path, '--plan'], ['--apply', path, '--replace', 'dialog'], ['--apply', path, '--write-conflicts'], ['--plan', '--yes'], ['--rollback', '--apply', path], ['--rollback', '--replace', 'dialog'], ['--rollback', '--write-conflicts']]) {
       const result = await run(['update', ...args, '--cwd', root]);
       expect({ args, code: result.code, stdout: result.stdout }).toEqual({ args, code: 2, stdout: '' });
     }
     expect(existsSync(join(root, '.ultima-update'))).toBe(false);
+  });
+});
+
+/** A `select` with a label line and a size line far enough apart to change one each without a conflict. */
+function selectSource(label: string, size: number): string {
+  return `'use client';\n\nimport { Spinner } from '@/registry/ultima/ui/spinner';\n\nexport function Select() {\n  return <Spinner label="${label}" />;\n}\n\nexport const size = ${size};\n`;
+}
+
+const SELECT = 'src/components/ui/select.tsx';
+
+/** `select` installed from `base` at OLD and edited to `local`, with the registry serving `served` at NEW. */
+async function selectFixture(base: [string, number], local: [string, number], served: [string, number]) {
+  const raw = { [`${OLD}/packages/ui/src/select.tsx`]: selectSource(...base).replace('@/registry/ultima/ui/', '@ultima/ui/') };
+  const { registry } = await serve([{ name: 'select', file: 'select.tsx', source: selectSource(...served) }], { raw });
+  const root = project({
+    'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }),
+    'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
+    [SELECT]: await stamped('select', selectSource(...base), OLD, viteCopy(selectSource(...local))),
+  });
+  return { root, raw };
+}
+
+const servedStamp = async (served: [string, number]) => stampLine('select', NEW, await contentHash(selectSource(...served), 'c1'), 'ts');
+
+describe('update merges a diverged file three ways', () => {
+  it('merges a consumer edit in one region with a registry change in another, and status then reports the file edited', async () => {
+    const { root } = await selectFixture(['one', 1], ['ours', 1], ['one', 2]);
+    expect(await statusOf(root)).toEqual({ [SELECT]: 'diverged' });
+    const planned = await run(['update', '--cwd', root]);
+    expect(planned.stdout).toContain(`select  ${SELECT}  diverged  merge\n`);
+    expect(planned.stdout).toContain('apply   npx ultima-design update --yes\n');
+
+    const applied = await run(['update', '--yes', '--cwd', root]);
+    expect(applied.code).toBe(0);
+    expect(applied.stdout).toMatch(new RegExp(`^wrote +${SELECT}$`, 'm'));
+    expect(readFileSync(join(root, SELECT), 'utf8')).toBe(withStamp(viteCopy(selectSource('ours', 2)), await servedStamp(['one', 2])));
+    expect(await statusOf(root)).toEqual({ [SELECT]: 'edited' });
+  });
+
+  it('takes a change made the same way on both sides once', async () => {
+    const { root } = await selectFixture(['one', 1], ['ours', 2], ['one', 2]);
+    expect((await run(['update', '--yes', '--cwd', root])).code).toBe(0);
+    const merged = readFileSync(join(root, SELECT), 'utf8');
+    expect(merged).toBe(withStamp(viteCopy(selectSource('ours', 2)), await servedStamp(['one', 2])));
+    expect(merged.match(/export const size/g)).toHaveLength(1);
+  });
+
+  it('plans overlapping different changes as a conflict with its hunk count, and leaves the file untouched', async () => {
+    const { root } = await selectFixture(['one', 1], ['ours', 3], ['theirs', 2]);
+    const before = snapshot(root);
+    const planned = await run(['update', '--cwd', root]);
+    expect(planned.stdout).toContain(`select    ${SELECT}  diverged  conflict  2 hunks\n`);
+    expect(planned.stdout).toContain('conflict  npx ultima-design update --write-conflicts  or  --replace select\n');
+    expect(planned.stdout).not.toContain('apply');
+
+    const applied = await run(['update', '--yes', '--json', '--cwd', root]);
+    expect(applied.code).toBe(0);
+    expect(JSON.parse(applied.stdout)).toMatchObject({ runId: null, written: [], conflicts: [SELECT] });
+    expect(snapshot(root)).toEqual(before);
+  });
+
+  it('with --write-conflicts writes the four diff3 marker lines per hunk, with the revisions filled in', async () => {
+    const { root } = await selectFixture(['one', 1], ['ours', 3], ['theirs', 2]);
+    const planned = await run(['update', '--write-conflicts', '--cwd', root]);
+    expect(planned.stdout).toContain('apply   npx ultima-design update --write-conflicts --yes\n');
+    const applied = await run(['update', '--write-conflicts', '--yes', '--cwd', root]);
+    expect(applied.code).toBe(0);
+    expect(applied.stdout).toContain(`conflict  ${SELECT}  written with conflict markers to resolve\n`);
+
+    const marked = readFileSync(join(root, SELECT), 'utf8');
+    expect(marked.split('\n').filter((line) => /^(<{7}|\|{7}|={7}|>{7})/.test(line))).toEqual([
+      '<<<<<<< local',
+      `||||||| @ultima/select ${OLD}`,
+      '=======',
+      `>>>>>>> @ultima/select ${NEW}`,
+      '<<<<<<< local',
+      `||||||| @ultima/select ${OLD}`,
+      '=======',
+      `>>>>>>> @ultima/select ${NEW}`,
+    ]);
+    expect(marked).toContain(
+      ['<<<<<<< local', '  return <Spinner label="ours" />;', `||||||| @ultima/select ${OLD}`, '  return <Spinner label="one" />;', '=======', '  return <Spinner label="theirs" />;', `>>>>>>> @ultima/select ${NEW}`].join('\n'),
+    );
+    expect(marked.trimEnd().split('\n').at(-1)).toBe(await servedStamp(['theirs', 2]));
+  });
+
+  it('applies a plan made with --write-conflicts as it was made, and refuses one whose base is gone since', async () => {
+    const { root, raw } = await selectFixture(['one', 1], ['ours', 3], ['theirs', 2]);
+    const { path, plan } = await planFile(root, '--write-conflicts');
+    expect(plan).toMatchObject({ writeConflicts: true, files: [{ item: 'select', action: 'conflict', base: 'verified', hunks: 2 }] });
+    expect(plan.commands).toEqual([{ for: 'apply', command: 'npx ultima-design update --write-conflicts --yes' }]);
+
+    const without = { ...plan, writeConflicts: false };
+    const tampered = join(root, '..', 'tampered.json');
+    writeFileSync(tampered, JSON.stringify(without));
+    expect((await run(['update', '--apply', tampered, '--cwd', root])).code).toBe(2);
+
+    const source = raw[`${OLD}/packages/ui/src/select.tsx`] as string;
+    raw[`${OLD}/packages/ui/src/select.tsx`] = 'export const other = 1;\n';
+    const stale = await run(['update', '--apply', path, '--cwd', root]);
+    expect(stale.code).toBe(3);
+    expect(stale.stdout).toContain(`${SELECT} changed since it was planned`);
+
+    raw[`${OLD}/packages/ui/src/select.tsx`] = source;
+    const applied = await run(['update', '--apply', path, '--json', '--cwd', root]);
+    expect(JSON.parse(applied.stdout)).toMatchObject({ written: [SELECT], conflicts: [SELECT] });
+    expect(readFileSync(join(root, SELECT), 'utf8')).toContain('<<<<<<< local\n');
+  });
+
+  it('--apply writes a merge exactly as --yes does', async () => {
+    const { root } = await selectFixture(['one', 1], ['ours', 1], ['one', 2]);
+    const { path } = await planFile(root);
+    expect((await run(['update', '--apply', path, '--cwd', root])).code).toBe(0);
+    expect(readFileSync(join(root, SELECT), 'utf8')).toBe(withStamp(viteCopy(selectSource('ours', 2)), await servedStamp(['one', 2])));
+  });
+});
+
+describe('update --replace', () => {
+  it('overwrites an edited file, keeps the original in the journal, and --rollback restores it', async () => {
+    const { registry } = await serve([{ name: 'select', file: 'select.tsx', source: selectSource('one', 2) }]);
+    const edited = await stamped('select', selectSource('one', 2), NEW, viteCopy(selectSource('ours', 2)));
+    const root = project({
+      'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }),
+      'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
+      [SELECT]: edited,
+    });
+    expect(await statusOf(root)).toEqual({ [SELECT]: 'edited' });
+    expect((await run(['update', '--cwd', root])).stdout).toContain('Nothing to update.');
+
+    const planned = await run(['update', '--replace', 'select', '--cwd', root]);
+    expect(planned.stdout).toContain(`select  ${SELECT}  edited  replace  --replace; the journal keeps the local file\n`);
+    expect(planned.stdout).toContain('apply   npx ultima-design update --replace select --yes\n');
+
+    expect((await run(['update', '--replace', 'select', '--yes', '--cwd', root])).code).toBe(0);
+    const installed = selectSource('one', 2).replace('@/registry/ultima/ui/', '@/components/ui/');
+    expect(readFileSync(join(root, SELECT), 'utf8')).toBe(withStamp(installed, await servedStamp(['one', 2])));
+    expect(await statusOf(root)).toEqual({ [SELECT]: 'current' });
+    const [runId] = runs(root);
+    const journal = JSON.parse(readFileSync(join(root, '.ultima-update', runId as string, 'journal.json'), 'utf8'));
+    expect(journal.operations).toMatchObject([{ id: `replace ${SELECT}`, status: 'done' }]);
+    expect(readFileSync(join(root, '.ultima-update', runId as string, 'files', journal.originals[SELECT].sha256), 'utf8')).toBe(edited);
+
+    expect((await run(['update', '--rollback', '--cwd', root])).code).toBe(0);
+    expect(readFileSync(join(root, SELECT), 'utf8')).toBe(edited);
+  });
+
+  it('takes the served file for a conflicting and an unstamped file, through a plan --apply applies as made', async () => {
+    const { root } = await fixture();
+    const { plan } = (await update(root, [], { replace: ['sidebar', 'lib'] })) as UpdateReport;
+    expect(plan.files.map(({ item, action }) => [item, action])).toEqual([
+      ['dialog', 'replace'],
+      ['lib', 'replace'],
+      ['sidebar', 'replace'],
+    ]);
+    const { path } = await planFile(root, '--replace', 'sidebar', '--replace', 'lib');
+    const applied = await run(['update', '--apply', path, '--json', '--cwd', root]);
+    expect(JSON.parse(applied.stdout)).toMatchObject({ written: ['src/components/ui/dialog.tsx', 'src/lib/component.ts', 'src/components/ui/sidebar.tsx'], conflicts: [] });
+    expect(await statusOf(root)).toMatchObject({ 'src/components/ui/sidebar.tsx': 'current', 'src/lib/component.ts': 'current', 'src/components/ui/dialog.tsx': 'current' });
+  });
+
+  it('exits 2 when --replace names an item that is not installed', async () => {
+    const { root } = await fixture();
+    const before = snapshot(root);
+    const result = await run(['update', '--replace', 'notinstalled', '--yes', '--cwd', root]);
+    expect(result).toMatchObject({ code: 2, stdout: '' });
+    expect(result.stderr).toContain('notinstalled');
+    expect(snapshot(root)).toEqual(before);
+  });
+});
+
+describe('update merges a tokens file', () => {
+  it('closes the merge with the served base-theme marker and stamp, though the local file predates the marker', async () => {
+    const tokens = (radius: number, space: number) => `export const radius = { md: ${radius} };\n\nexport const gap = 1;\n\nexport const space = { md: ${space} };\n`;
+    const served = `${tokens(4, 8)}// @ultima-base neutral-tight\n`;
+    const { registry } = await serve([{ name: 'tokens', file: 'tokens.stylex.ts', source: served, type: 'registry:lib', baseTheme: 'neutral-tight' }], {
+      raw: { [`${OLD}/packages/ui/src/lib/tokens.stylex.ts`]: tokens(10, 8) },
+    });
+    const root = project({
+      'components.json': JSON.stringify({ aliases: { ui: '@/components/ui', lib: '@/lib' }, registries: { '@ultima': registry } }),
+      'tsconfig.json': JSON.stringify({ compilerOptions: { paths: { '@/*': ['./src/*'] } } }),
+      'src/lib/tokens.stylex.ts': await stamped('tokens', tokens(10, 8), OLD, tokens(10, 12)),
+    });
+    const { plan } = (await update(root, [], { acceptBaseTheme: true })) as UpdateReport;
+    expect(plan.files).toMatchObject([{ item: 'tokens', state: 'diverged', action: 'merge', base: 'verified', hunks: 0 }]);
+
+    expect((await run(['update', '--accept-base-theme', '--yes', '--cwd', root])).code).toBe(0);
+    const merged = readFileSync(join(root, 'src/lib/tokens.stylex.ts'), 'utf8');
+    expect(merged).toBe(withStamp(`${tokens(4, 12)}// @ultima-base neutral-tight\n`, stampLine('tokens', NEW, await contentHash(served, 'c1'), 'ts')));
+    expect(fileBaseTheme(merged)).toBe('neutral-tight');
+    expect(await statusOf(root)).toEqual({ 'src/lib/tokens.stylex.ts': 'edited' });
   });
 });
