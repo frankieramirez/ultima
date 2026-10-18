@@ -58,7 +58,7 @@ export const anatomyTabs: Record<string, { parts: readonly string[]; demo?: Comp
   'scroll-area': { parts: ['Root', 'Viewport', 'Content', 'Scrollbar', 'Thumb', 'Corner'] },
   'select': { parts: ['Label', 'Trigger', 'Value', 'Icon', 'Backdrop', 'Positioner', 'Popup', 'List', 'Item', 'ItemText', 'ItemIndicator', 'Group', 'GroupLabel', 'Separator', 'ScrollUpArrow', 'ScrollDownArrow', 'Arrow'] },
   'separator': { parts: ['Separator'] },
-  'sidebar': { parts: ['Root', 'Panel', 'Trigger', 'Close', 'Group', 'GroupLabel', 'List', 'Item', 'Link', 'Button'] },
+  'sidebar': { parts: ['Root', 'Panel', 'Trigger', 'Close', 'Header', 'Group', 'GroupLabel', 'List', 'Item', 'Link', 'Button', 'Footer'] },
   'skeleton': { parts: ['Skeleton'] },
   'slider': { parts: ['Root', 'Label', 'Value', 'Control', 'Track', 'Indicator', 'Thumb'] },
   'spinner': { parts: ['Spinner'] },

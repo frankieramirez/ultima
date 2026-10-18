@@ -12,6 +12,7 @@ import { expectMicroLabel, resolved } from './overlay';
 
 const styles = stylex.create({
   scroll: { blockSize: '8rem' },
+  tall: { blockSize: '24rem' },
 });
 
 function Sample({ name = 'Docs', children }: { name?: string; children?: ReactNode }) {
@@ -237,10 +238,52 @@ for (const mode of themes) {
 
     const currentStyle = getComputedStyle(current);
     const restingStyle = getComputedStyle(resting);
-    expect(Number(currentStyle.fontWeight)).toBeGreaterThan(Number(restingStyle.fontWeight));
+    // Selection never changes weight: heavier text is wider and would shift the label.
+    expect(currentStyle.fontWeight).toBe(restingStyle.fontWeight);
     expect(currentStyle.color).not.toBe(restingStyle.color);
     expect(currentStyle.backgroundColor).not.toBe(restingStyle.backgroundColor);
+    expectBar(current, current);
+    expect(getComputedStyle(resting, '::before').display).toBe('none');
   });
+
+  test(`a hovered row takes a fill and never the current page's bar in ${mode.name}`, async () => {
+    const screen = await render(
+      <div {...stylex.props(mode.theme, mode.scheme)}>
+        <Sample />
+      </div>,
+    );
+    const resting = screen.getByRole('link', { name: 'Palette' }).element();
+    await userEvent.hover(resting);
+    const hover = resolvedAt(resting, 'background-color', 'var(--ult-color-surface-hover)');
+    await expect.poll(() => getComputedStyle(resting).backgroundColor).toBe(hover);
+    expect(getComputedStyle(resting, '::before').display).toBe('none');
+  });
+}
+
+/** What a token resolves to inside a themed subtree, read off a probe placed there. */
+function resolvedAt(host: Element, property: string, value: string): string {
+  const probe = document.createElement('span');
+  probe.style.setProperty(property, value);
+  host.append(probe);
+  const out = getComputedStyle(probe).getPropertyValue(property);
+  probe.remove();
+  return out;
+}
+
+/**
+ * The current page's mark: a 2px accent bar on the row's start edge, a step in from its top and
+ * bottom, drawn as a border so forced colors keeps it.
+ */
+function expectBar(link: Element, scope: Element = document.body) {
+  const bar = getComputedStyle(link, '::before');
+  expect(bar.display).toBe('block');
+  expect(bar.position).toBe('absolute');
+  expect(bar.borderInlineStartStyle).toBe('solid');
+  expect(bar.borderInlineStartWidth).toBe('2px');
+  expect(bar.borderInlineStartColor).toBe(resolvedAt(scope, 'border-left-color', 'var(--ult-color-accent)'));
+  expect(bar.insetInlineStart).toBe('0px');
+  expect(bar.top).toBe(resolved('top', 'var(--ult-space-4)'));
+  expect(bar.bottom).toBe(resolved('bottom', 'var(--ult-space-4)'));
 }
 
 test('a router-set aria-current styles the link with no active prop', async () => {
@@ -259,8 +302,8 @@ test('a router-set aria-current styles the link with no active prop', async () =
   const routed = screen.getByRole('link', { name: 'Routed' }).element();
   const resting = screen.getByRole('link', { name: 'Palette' }).element();
   expect(routed).not.toHaveAttribute('data-active');
-  expect(getComputedStyle(routed).fontWeight).not.toBe(getComputedStyle(resting).fontWeight);
   expect(getComputedStyle(routed).backgroundColor).not.toBe(getComputedStyle(resting).backgroundColor);
+  expectBar(routed, routed);
 });
 
 test('a row is a 32px ghost control at the control corner, on the accent when current', async () => {
@@ -273,6 +316,70 @@ test('a row is a 32px ghost control at the control corner, on the accent when cu
   expect(parseFloat(getComputedStyle(current).borderInlineStartWidth)).toBe(0);
   expect(getComputedStyle(current).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-accent-subtle)'));
   expect(hoversOnlyWhereHover(resting)).toBe(true);
+});
+
+test('Header and Footer hold the panel\'s two ends and stay in view while the groups scroll', async () => {
+  const screen = await render(
+    <Sidebar.Root>
+      <Sidebar.Panel aria-label="Workspace" data-testid="panel" style={styles.scroll}>
+        <Sidebar.Header data-testid="header">
+          <Sidebar.Button>Acme</Sidebar.Button>
+        </Sidebar.Header>
+        <Sidebar.List>
+          {['One', 'Two', 'Three', 'Four', 'Five', 'Six'].map((label) => (
+            <Sidebar.Item key={label}>
+              <Sidebar.Link href={`#${label}`}>{label}</Sidebar.Link>
+            </Sidebar.Item>
+          ))}
+        </Sidebar.List>
+        <Sidebar.Footer data-testid="footer">
+          <Sidebar.Button>Account</Sidebar.Button>
+        </Sidebar.Footer>
+      </Sidebar.Panel>
+    </Sidebar.Root>,
+  );
+  const panel = screen.getByTestId('panel').element();
+  const header = screen.getByTestId('header').element();
+  const footer = screen.getByTestId('footer').element();
+  expect(header.tagName).toBe('DIV');
+  for (const end of [header, footer]) {
+    const style = getComputedStyle(end);
+    expect(style.position).toBe('sticky');
+    expect(style.backgroundColor).toBe(resolved('background-color', 'var(--ult-color-surface)'));
+    expect(style.paddingTop).toBe(resolved('padding-top', 'var(--ult-space-4)'));
+  }
+  // A row inside an end spans the panel's content box, so its label shares the rows' start edge.
+  const row = screen.getByRole('button', { name: 'Acme' }).element().getBoundingClientRect();
+  const link = screen.getByRole('link', { name: 'One' }).element().getBoundingClientRect();
+  expect(row.left).toBe(link.left);
+  expect(row.width).toBe(link.width);
+
+  expect(panel.scrollHeight).toBeGreaterThan(panel.clientHeight);
+  const frame = panel.getBoundingClientRect();
+  expect(footer.getBoundingClientRect().bottom).toBeCloseTo(frame.bottom - parseFloat(getComputedStyle(panel).borderBottomWidth), 0);
+  panel.scrollTop = panel.scrollHeight;
+  await expect.poll(() => Math.round(header.getBoundingClientRect().top)).toBe(Math.round(frame.top));
+});
+
+test('a short panel puts its Footer at the end', async () => {
+  const screen = await render(
+    <Sidebar.Root>
+      <Sidebar.Panel aria-label="Workspace" data-testid="panel" style={styles.tall}>
+        <Sidebar.List>
+          <Sidebar.Item>
+            <Sidebar.Link href="#one">One</Sidebar.Link>
+          </Sidebar.Item>
+        </Sidebar.List>
+        <Sidebar.Footer data-testid="footer">
+          <Sidebar.Button>Account</Sidebar.Button>
+        </Sidebar.Footer>
+      </Sidebar.Panel>
+    </Sidebar.Root>,
+  );
+  const panel = screen.getByTestId('panel').element();
+  const footer = screen.getByTestId('footer').element();
+  const inset = parseFloat(getComputedStyle(panel).paddingBottom);
+  expect(footer.getBoundingClientRect().bottom).toBeCloseTo(panel.getBoundingClientRect().bottom - inset, 0);
 });
 
 test('the group label is a regular-weight micro-label with its own snug leading', async () => {
@@ -533,7 +640,7 @@ describe('below the breakpoint', () => {
 
     const panel = screen.getByTestId('panel').element();
     expect(panel).toHaveAttribute('data-closed');
-    expect(getComputedStyle(panel).display).toBe('block');
+    expect(getComputedStyle(panel).display).toBe('flex');
     expect(getComputedStyle(panel).visibility).toBe('visible');
     expect(parseFloat(getComputedStyle(panel).inlineSize)).toBeGreaterThan(0);
   });

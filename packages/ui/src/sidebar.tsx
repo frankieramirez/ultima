@@ -54,7 +54,8 @@ const styles = stylex.create({
     },
     boxSizing: "border-box",
     color: color["--ult-color-text"],
-    display: { default: "none", [DESKTOP]: "block" },
+    display: { default: "none", [DESKTOP]: "flex" },
+    flexDirection: "column",
     fontFamily: font["--ult-font-sans"],
     inlineSize: {
       default: `min(calc(4 * ${space["--ult-space-12"]}), 100%)`,
@@ -83,6 +84,35 @@ const styles = stylex.create({
       default: "visible",
       [DESKTOP]: { default: "visible", ":is([data-closed])": "hidden" },
     },
+  },
+  /**
+   * Header and Footer are the panel's fixed ends. They hold rows (a workspace switcher, an account
+   * menu) or a static identity, and stay in view while the groups between them scroll: sticky on
+   * the panel's surface, above the rows' own stacking for the current page's bar.
+   */
+  header: {
+    backgroundColor: color["--ult-color-surface"],
+    display: "flex",
+    flexDirection: "column",
+    flexShrink: 0,
+    gap: space["--ult-space-1"],
+    // Sticks over the panel's own block padding, so no row shows in a strip above it.
+    insetBlockStart: `calc(-1 * ${space["--ult-space-4"]})`,
+    paddingBlock: space["--ult-space-4"],
+    position: "sticky",
+    zIndex: 1,
+  },
+  footer: {
+    backgroundColor: color["--ult-color-surface"],
+    display: "flex",
+    flexDirection: "column",
+    flexShrink: 0,
+    gap: space["--ult-space-1"],
+    insetBlockEnd: `calc(-1 * ${space["--ult-space-4"]})`,
+    marginBlockStart: "auto",
+    paddingBlock: space["--ult-space-4"],
+    position: "sticky",
+    zIndex: 1,
   },
   group: {
     display: "flex",
@@ -158,8 +188,10 @@ const styles = stylex.create({
   },
   /**
    * Reading `aria-current` is what styles a router's own link, TanStack Router's included, with no
-   * `active` prop. The current page takes the accent's subtle fill, the ink and the medium weight,
-   * so it differs by more than hue, and its hover and press stay on the accent's steps.
+   * `active` prop. The current page takes the accent's subtle fill, the ink, and a 2px accent bar
+   * on its start edge. Hover moves only the fill, and in a neutral theme both fills are grey, so the
+   * bar is what tells the current page from a hovered row. The bar is a border, which forced colors
+   * keeps where it drops a fill. The weight stays regular: selection never changes weight.
    */
   link: {
     backgroundColor: {
@@ -179,9 +211,23 @@ const styles = stylex.create({
       ':is([data-active], [aria-current="page"])': color["--ult-color-text"],
       [HOVER]: { ":hover": color["--ult-color-text"] },
     },
-    fontWeight: {
-      default: font["--ult-font-weight-regular"],
-      ':is([data-active], [aria-current="page"])': font["--ult-font-weight-medium"],
+    position: "relative",
+    "::before": {
+      borderInlineStartColor: color["--ult-color-accent"],
+      borderInlineStartStyle: "solid",
+      borderInlineStartWidth: {
+        default: 0,
+        ':is([data-active], [aria-current="page"])': border.focus,
+      },
+      borderRadius: radius["--ult-radius-xs"],
+      content: '""',
+      display: {
+        default: "none",
+        ':is([data-active], [aria-current="page"])': "block",
+      },
+      insetBlock: space["--ult-space-4"],
+      insetInlineStart: 0,
+      position: "absolute",
     },
   },
 });
@@ -217,7 +263,7 @@ const mobile = stylex.create({
     blockSize: "100%",
     // A later plain value replaces the whole property, media query and all, so this lifts the
     // panel style's `display: none` rather than losing to it on StyleX's at-rule priority.
-    display: "block",
+    display: "flex",
   },
 });
 
@@ -289,6 +335,8 @@ type SidebarPanelName = { "aria-label"?: string; "aria-labelledby"?: string };
 
 type SidebarTriggerProps = PartProps<useRender.ComponentProps<"button">>;
 type SidebarCloseProps = PartProps<useRender.ComponentProps<"button">>;
+type SidebarHeaderProps = PartProps<useRender.ComponentProps<"div">>;
+type SidebarFooterProps = PartProps<useRender.ComponentProps<"div">>;
 type SidebarGroupProps = PartProps<useRender.ComponentProps<"div">>;
 type SidebarGroupLabelProps = PartProps<useRender.ComponentProps<"h3">>;
 type SidebarListProps = PartProps<useRender.ComponentProps<"ul">>;
@@ -464,6 +512,24 @@ function Close({ ref, render, style, ...props }: SidebarCloseProps) {
   );
 }
 
+function Header({ ref, render, style, ...props }: SidebarHeaderProps) {
+  return useRender({
+    defaultTagName: "div",
+    ref,
+    render,
+    props: { ...props, ...stylex.props(styles.header, style) },
+  });
+}
+
+function Footer({ ref, render, style, ...props }: SidebarFooterProps) {
+  return useRender({
+    defaultTagName: "div",
+    ref,
+    render,
+    props: { ...props, ...stylex.props(styles.footer, style) },
+  });
+}
+
 function Group({ ref, render, style, ...props }: SidebarGroupProps) {
   return useRender({
     defaultTagName: "div",
@@ -554,12 +620,14 @@ const Sidebar = {
   Panel,
   Trigger,
   Close,
+  Header,
   Group,
   GroupLabel,
   List,
   Item,
   Link,
   Button,
+  Footer,
 };
 
 export {
@@ -567,8 +635,10 @@ export {
   useSidebar,
   type SidebarButtonProps,
   type SidebarCloseProps,
+  type SidebarFooterProps,
   type SidebarGroupLabelProps,
   type SidebarGroupProps,
+  type SidebarHeaderProps,
   type SidebarItemProps,
   type SidebarLinkProps,
   type SidebarListProps,
