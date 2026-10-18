@@ -81,6 +81,27 @@ test('install links to update guidance with a working frozen Ultima preset comma
   }
 });
 
+test('the update page opens with the loop, then the refresh steps, ahead of the base theme sections', async () => {
+  const screen = await mount('/install/update');
+  await expect.element(screen.getByRole('heading', { name: 'The update loop', level: 2 })).toBeVisible();
+  const headings = [...document.querySelectorAll('main h2')].map((heading) => heading.textContent);
+  expect(headings.slice(0, 4)).toEqual(['The update loop', 'Refresh the CLI and the skill', 'The base theme change', 'What changes when you reinstall']);
+  const loop = [...document.querySelectorAll('main ol')][0]!;
+  expect([...loop.querySelectorAll(':scope > li')].map((step) => step.querySelector('code')?.textContent)).toEqual([
+    'npx ultima-design status',
+    'npx ultima-design update',
+    'hold',
+    'npx ultima-design update --yes',
+    'npx ultima-design check --files <written files>',
+    'npx ultima-design update --rollback',
+  ]);
+  expect(loop.textContent).toContain('npx ultima-design update --plan --json > plan.json');
+  expect(loop.textContent).toContain('npx ultima-design update --apply plan.json');
+  const refresh = [...document.querySelectorAll('main ol')][1]!;
+  expect(refresh.textContent).toContain('npm install -D ultima-design@latest');
+  expect(refresh.textContent).toContain('npx ultima-design install --force');
+});
+
 test('Commands is one tab list with a fence per target, Vite first', async () => {
   const screen = await mount('/install');
   const list = screen.getByRole('tablist', { name: 'Setup target' });
