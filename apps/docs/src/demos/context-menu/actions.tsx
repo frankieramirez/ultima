@@ -1,4 +1,4 @@
-import { ArchiveIcon, EllipsisIcon, LinkIcon, PencilIcon } from 'lucide-react';
+import { ArchiveIcon, EllipsisIcon, LinkIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import * as stylex from '@stylexjs/stylex';
 import { color, space, text } from '@ultima/tokens/tokens.stylex';
 import { Button, ContextMenu, DropdownMenu, Icon } from '@ultima/ui';
@@ -35,6 +35,7 @@ export default function ContextMenuActions() {
               <ContextMenu.Item>
                 <Icon><PencilIcon /></Icon>
                 Rename
+                <ContextMenu.Shortcut>F2</ContextMenu.Shortcut>
               </ContextMenu.Item>
               <ContextMenu.LinkItem href="https://base-ui.com/react/components/context-menu">
                 <Icon><LinkIcon /></Icon>
@@ -44,6 +45,11 @@ export default function ContextMenuActions() {
               <ContextMenu.Item>
                 <Icon><ArchiveIcon /></Icon>
                 Archive
+              </ContextMenu.Item>
+              <ContextMenu.Item tone="danger">
+                <Icon><TrashIcon /></Icon>
+                Delete
+                <ContextMenu.Shortcut>⌘⌫</ContextMenu.Shortcut>
               </ContextMenu.Item>
             </ContextMenu.Popup>
           </ContextMenu.Positioner>
@@ -59,6 +65,7 @@ export default function ContextMenuActions() {
               <DropdownMenu.Item>
                 <Icon><PencilIcon /></Icon>
                 Rename
+                <DropdownMenu.Shortcut>F2</DropdownMenu.Shortcut>
               </DropdownMenu.Item>
               <DropdownMenu.LinkItem href="https://base-ui.com/react/components/context-menu">
                 <Icon><LinkIcon /></Icon>
@@ -68,6 +75,11 @@ export default function ContextMenuActions() {
               <DropdownMenu.Item>
                 <Icon><ArchiveIcon /></Icon>
                 Archive
+              </DropdownMenu.Item>
+              <DropdownMenu.Item tone="danger">
+                <Icon><TrashIcon /></Icon>
+                Delete
+                <DropdownMenu.Shortcut>⌘⌫</DropdownMenu.Shortcut>
               </DropdownMenu.Item>
             </DropdownMenu.Popup>
           </DropdownMenu.Positioner>

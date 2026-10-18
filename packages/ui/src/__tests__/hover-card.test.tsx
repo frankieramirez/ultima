@@ -69,6 +69,33 @@ async function openCard() {
   return screen;
 }
 
+// #944: the same Viewport collapse as Tooltip's, on the side that pins the popup to the far edge.
+test('a top-side card with a Viewport keeps its measured width and centres on its trigger', async () => {
+  const screen = await render(
+    <p style={{ paddingBlockStart: 320, paddingInline: 400 }}>
+      <HoverCard.Root defaultOpen>
+        <HoverCard.Trigger href={DESTINATION} data-testid="trigger">semantic color</HoverCard.Trigger>
+        <HoverCard.Portal>
+          <HoverCard.Positioner side="top" sideOffset={8}>
+            <HoverCard.Popup data-testid="popup">
+              <HoverCard.Viewport>
+                <span data-testid="line">Twelve steps a scale.</span>
+              </HoverCard.Viewport>
+            </HoverCard.Popup>
+          </HoverCard.Positioner>
+        </HoverCard.Portal>
+      </HoverCard.Root>
+    </p>,
+  );
+  const popup = page.getByTestId('popup').element();
+  await expect.poll(() => getComputedStyle(popup).opacity).toBe('1');
+  expect(page.getByTestId('line').element().getClientRects()).toHaveLength(1);
+  const trigger = screen.getByTestId('trigger').element().getBoundingClientRect();
+  const box = popup.getBoundingClientRect();
+  expect(Math.abs((box.left + box.right) / 2 - (trigger.left + trigger.right) / 2)).toBeLessThan(1);
+  expect(box.bottom).toBeLessThanOrEqual(trigger.top);
+});
+
 test('every part renders, and no prop is needed to reach the declared default', async () => {
   const screen = await openCard();
 

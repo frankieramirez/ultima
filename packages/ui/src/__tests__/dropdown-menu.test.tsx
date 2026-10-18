@@ -1,7 +1,14 @@
 import { expect, expectTypeOf, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
-import { Button, DropdownMenu, type DropdownMenuItemProps, type DropdownMenuPopupProps } from '@ultima/ui';
+import {
+  Button,
+  DropdownMenu,
+  type DropdownMenuItemProps,
+  type DropdownMenuItemTone,
+  type DropdownMenuPopupProps,
+  type DropdownMenuShortcutProps,
+} from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
 import { expectArrowOnEdge, expectMicroLabel, resolved } from './overlay';
@@ -221,6 +228,106 @@ test('popup focus has no outline and an Ultima Button trigger retains its ring',
   await expect.element(popup).toHaveFocus();
   expect(getComputedStyle(popup.element()).outlineWidth).toBe('0px');
   expect(parseFloat(getComputedStyle(popup.element()).borderTopWidth)).toBeGreaterThan(0);
+});
+
+function ToneAndShortcutFixture() {
+  return (
+    <DropdownMenu.Root defaultOpen modal={false}>
+      <DropdownMenu.Trigger>Options</DropdownMenu.Trigger>
+      <DropdownMenu.Portal><DropdownMenu.Positioner><DropdownMenu.Popup>
+        <DropdownMenu.Item data-testid="plain">
+          <span data-testid="plain label">Profile</span>
+          <DropdownMenu.Shortcut data-testid="plain shortcut">⇧⌘P</DropdownMenu.Shortcut>
+        </DropdownMenu.Item>
+        <DropdownMenu.CheckboxItem defaultChecked>
+          <span data-testid="checked label">Show toolbar</span>
+          <DropdownMenu.Shortcut data-testid="checked shortcut">⇧⌘T</DropdownMenu.Shortcut>
+          <DropdownMenu.CheckboxItemIndicator data-testid="check" />
+        </DropdownMenu.CheckboxItem>
+        <DropdownMenu.SubmenuRoot>
+          <DropdownMenu.SubmenuTrigger data-testid="submenu">Move to</DropdownMenu.SubmenuTrigger>
+        </DropdownMenu.SubmenuRoot>
+        <DropdownMenu.Item tone="danger" data-testid="danger">
+          <svg data-testid="danger icon" width="1em" height="1em" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="8" /></svg>
+          Delete project
+          <DropdownMenu.Shortcut data-testid="danger shortcut">⌘⌫</DropdownMenu.Shortcut>
+        </DropdownMenu.Item>
+        <DropdownMenu.Item tone="danger" disabled data-testid="disabled danger">
+          Archive
+          <DropdownMenu.Shortcut data-testid="disabled danger shortcut">⌘E</DropdownMenu.Shortcut>
+        </DropdownMenu.Item>
+      </DropdownMenu.Popup></DropdownMenu.Positioner></DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
+
+test('a danger item inks its label, icon and shortcut with the danger text, and highlights with the danger tint', async () => {
+  await render(<ToneAndShortcutFixture />);
+  await expect.element(page.getByTestId('danger')).toBeVisible();
+  const danger = page.getByTestId('danger').element();
+  const ink = resolved('color', 'var(--ult-color-danger-text)');
+  expect(getComputedStyle(danger).color).toBe(ink);
+  expect(getComputedStyle(page.getByTestId('danger icon').element()).color).toBe(ink);
+  expect(getComputedStyle(page.getByTestId('danger shortcut').element()).color).toBe(ink);
+  expect(getComputedStyle(danger).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  await userEvent.hover(danger);
+  await expect.element(danger).toHaveAttribute('data-highlighted');
+  expect(getComputedStyle(danger).backgroundColor).toBe(resolved('background-color', 'var(--ult-color-danger-subtle)'));
+  const disabled = page.getByTestId('disabled danger').element();
+  expect(getComputedStyle(disabled).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+  expect(getComputedStyle(page.getByTestId('disabled danger shortcut').element()).color).toBe(resolved('color', 'var(--ult-color-text-disabled)'));
+  expect(getComputedStyle(page.getByTestId('plain').element()).color).toBe(resolved('color', 'var(--ult-color-text)'));
+});
+
+test('a shortcut is subtle 12px text that keeps 12px from its label, trails before the indicator, and lines up across rows', async () => {
+  await render(<ToneAndShortcutFixture />);
+  await expect.element(page.getByRole('menu')).toBeVisible();
+  const box = (id: string) => page.getByTestId(id).element().getBoundingClientRect();
+  const shortcut = getComputedStyle(page.getByTestId('plain shortcut').element());
+  expect(shortcut.color).toBe(resolved('color', 'var(--ult-color-text-subtle)'));
+  expect(shortcut.fontSize).toBe(resolved('font-size', 'var(--ult-text-2)'));
+  expect(shortcut.letterSpacing).not.toBe('normal');
+  const twelve = parseFloat(resolved('width', 'var(--ult-space-5)'));
+  expect(box('plain shortcut').left - box('plain label').right).toBeGreaterThanOrEqual(twelve - 0.5);
+  expect(box('check').left - box('checked shortcut').right).toBeGreaterThanOrEqual(twelve - 0.5);
+  expect(box('checked shortcut').left - box('checked label').right).toBeGreaterThanOrEqual(twelve - 0.5);
+  // Every row of a popup with indicators keeps their column, so the shortcuts share one end edge.
+  expect(Math.abs(box('plain shortcut').right - box('checked shortcut').right)).toBeLessThan(0.5);
+  // The submenu chevron holds the trailing edge with the indicators.
+  const chevron = page.getByTestId('submenu').element().querySelector('svg')!.getBoundingClientRect();
+  expect(Math.abs(chevron.right - box('check').right)).toBeLessThan(0.5);
+});
+
+test('tone is neutral or danger, and the shortcut takes the style slot rather than className', () => {
+  expectTypeOf<DropdownMenuItemTone>().toEqualTypeOf<'neutral' | 'danger'>();
+  expectTypeOf<DropdownMenuItemProps>().toHaveProperty('tone');
+  expectTypeOf<DropdownMenuShortcutProps>().not.toHaveProperty('className');
+  expectTypeOf<DropdownMenuShortcutProps>().toHaveProperty('style');
+});
+
+test('a top-side popup with a Viewport keeps its width and centres on its trigger', async () => {
+  const screen = await render(
+    <div style={{ paddingBlockStart: 240, paddingInlineStart: 240 }}>
+      <DropdownMenu.Root defaultOpen modal={false}>
+        <DropdownMenu.Trigger render={<button type="button" />}>Actions</DropdownMenu.Trigger>
+        <DropdownMenu.Portal><DropdownMenu.Positioner side="top" align="center">
+          <DropdownMenu.Popup data-testid="popup">
+            <DropdownMenu.Viewport>
+              <DropdownMenu.Item>Rename the selected document</DropdownMenu.Item>
+            </DropdownMenu.Viewport>
+          </DropdownMenu.Popup>
+        </DropdownMenu.Positioner></DropdownMenu.Portal>
+      </DropdownMenu.Root>
+    </div>,
+  );
+  const popup = page.getByTestId('popup').element();
+  await expect.poll(() => getComputedStyle(popup).opacity).toBe('1');
+  const item = page.getByRole('menuitem', { name: 'Rename the selected document' }).element();
+  expect(item.getBoundingClientRect().height).toBe(parseFloat(resolved('height', 'var(--ult-space-9)')));
+  const trigger = screen.getByRole('button', { name: 'Actions' }).element().getBoundingClientRect();
+  const box = popup.getBoundingClientRect();
+  expect(Math.abs((box.left + box.right) / 2 - (trigger.left + trigger.right) / 2)).toBeLessThan(1);
+  expect(box.bottom).toBeLessThanOrEqual(trigger.top);
 });
 
 test('styled parts reject className', () => {

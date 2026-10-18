@@ -13,6 +13,7 @@ import {
   type CommandListProps,
   type CommandPopupProps,
   type CommandSeparatorProps,
+  type CommandShortcutProps,
   type CommandSize,
   type CommandStatusProps,
   type CommandTriggerProps,
@@ -106,6 +107,44 @@ test('omitted size matches md', async () => {
   const explicit = screen.getByTestId('Explicit-group').element();
   expect(implicit.className).not.toBe('');
   expect(implicit.className).toBe(explicit.className);
+});
+
+test('a shortcut sits at the item\'s trailing edge in the subtle ink, 12px clear of the label', async () => {
+  const screen = await render(
+    <Command.Root items={['New file']} defaultOpen>
+      <label htmlFor="shortcut-input">Shortcuts</label>
+      <Command.InputGroup>
+        <Command.Input id="shortcut-input" />
+      </Command.InputGroup>
+      <Command.Portal>
+        <Command.Positioner>
+          <Command.Popup>
+            <Command.List>
+              {(action: string) => (
+                <Command.Item key={action} value={action} data-testid="item">
+                  <span data-testid="label">{action}</span>
+                  <Command.Shortcut data-testid="shortcut">⌘N</Command.Shortcut>
+                </Command.Item>
+              )}
+            </Command.List>
+          </Command.Popup>
+        </Command.Positioner>
+      </Command.Portal>
+    </Command.Root>,
+  );
+  await expect.element(screen.getByTestId('shortcut')).toBeVisible();
+  const shortcut = screen.getByTestId('shortcut').element();
+  const style = getComputedStyle(shortcut);
+  expect(style.color).toBe(resolved('color', 'var(--ult-color-text-subtle)'));
+  expect(style.fontSize).toBe(resolved('font-size', 'var(--ult-text-2)'));
+  expect(style.letterSpacing).not.toBe('normal');
+  const item = screen.getByTestId('item').element();
+  const keys = shortcut.getBoundingClientRect();
+  expect(item.getBoundingClientRect().right - keys.right).toBeCloseTo(parseFloat(getComputedStyle(item).paddingRight), 0);
+  expect(keys.left - screen.getByTestId('label').element().getBoundingClientRect().right).toBeGreaterThanOrEqual(
+    parseFloat(resolved('width', 'var(--ult-space-5)')) - 0.5,
+  );
+  expectTypeOf<CommandShortcutProps>().not.toHaveProperty('className');
 });
 
 test('a label names the input', async () => {

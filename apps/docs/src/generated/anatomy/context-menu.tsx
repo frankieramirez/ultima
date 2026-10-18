@@ -13,6 +13,7 @@ export {
   type ContextMenuPositionerProps,
   type ContextMenuPopupProps,
   type ContextMenuArrowProps,
+  type ContextMenuItemTone,
   type ContextMenuItemProps,
   type ContextMenuLinkItemProps,
   type ContextMenuGroupProps,
@@ -25,6 +26,7 @@ export {
   type ContextMenuRadioItemIndicatorProps,
   type ContextMenuSubmenuRootProps,
   type ContextMenuSubmenuTriggerProps,
+  type ContextMenuShortcutProps,
 } from '@ultima/ui/context-menu';
 
 export const ContextMenu = {
@@ -45,4 +47,5 @@ export const ContextMenu = {
   RadioItem: mark(Source.RadioItem, 'context-menu', 'RadioItem'),
   RadioItemIndicator: mark(Source.RadioItemIndicator, 'context-menu', 'RadioItemIndicator'),
   SubmenuTrigger: mark(Source.SubmenuTrigger, 'context-menu', 'SubmenuTrigger'),
+  Shortcut: mark(Source.Shortcut, 'context-menu', 'Shortcut'),
 };

@@ -172,6 +172,7 @@ export {
   type CommandSeparatorProps,
   type CommandStatusProps,
   type CommandEmptyProps,
+  type CommandShortcutProps,
 } from './command';
 export {
   type ContextMenuRootProps,
@@ -181,6 +182,7 @@ export {
   type ContextMenuPositionerProps,
   type ContextMenuPopupProps,
   type ContextMenuArrowProps,
+  type ContextMenuItemTone,
   type ContextMenuItemProps,
   type ContextMenuLinkItemProps,
   type ContextMenuGroupProps,
@@ -193,6 +195,7 @@ export {
   type ContextMenuRadioItemIndicatorProps,
   type ContextMenuSubmenuRootProps,
   type ContextMenuSubmenuTriggerProps,
+  type ContextMenuShortcutProps,
   ContextMenu,
 } from './context-menu';
 export {
@@ -259,6 +262,7 @@ export {
   type DropdownMenuPopupProps,
   type DropdownMenuViewportProps,
   type DropdownMenuArrowProps,
+  type DropdownMenuItemTone,
   type DropdownMenuItemProps,
   type DropdownMenuLinkItemProps,
   type DropdownMenuGroupProps,
@@ -271,6 +275,7 @@ export {
   type DropdownMenuRadioItemIndicatorProps,
   type DropdownMenuSubmenuRootProps,
   type DropdownMenuSubmenuTriggerProps,
+  type DropdownMenuShortcutProps,
   DropdownMenu,
 } from './dropdown-menu';
 export {
@@ -564,4 +569,5 @@ export {
   type TooltipPositionerProps,
   type TooltipPopupProps,
   type TooltipArrowProps,
+  type TooltipShortcutProps,
 } from './tooltip';

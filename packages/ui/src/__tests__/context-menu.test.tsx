@@ -4,7 +4,9 @@ import { render } from 'vitest-browser-react';
 import {
   ContextMenu,
   type ContextMenuItemProps,
+  type ContextMenuItemTone,
   type ContextMenuPopupProps,
+  type ContextMenuShortcutProps,
   DropdownMenu,
 } from '@ultima/ui';
 
@@ -184,6 +186,48 @@ test('an item paints exactly as a Dropdown Menu item does', async () => {
   };
   const dropdown = paint(page.getByTestId('dropdown-item').element());
   expect(paint(page.getByTestId('context-item').element())).toEqual(dropdown);
+});
+
+test('a danger item and a shortcut paint exactly as Dropdown Menu\'s do', async () => {
+  await render(
+    <>
+      <ContextMenu.Root>
+        <ContextMenu.Trigger data-testid="trigger">Report row</ContextMenu.Trigger>
+        <ContextMenu.Portal><ContextMenu.Positioner><ContextMenu.Popup aria-label="Row actions">
+          <ContextMenu.Item data-testid="context-plain">
+            Copy<ContextMenu.Shortcut data-testid="context-shortcut">⌘C</ContextMenu.Shortcut>
+          </ContextMenu.Item>
+          <ContextMenu.Item tone="danger" data-testid="context-danger">
+            Delete<ContextMenu.Shortcut data-testid="context-danger-shortcut">⌘⌫</ContextMenu.Shortcut>
+          </ContextMenu.Item>
+        </ContextMenu.Popup></ContextMenu.Positioner></ContextMenu.Portal>
+      </ContextMenu.Root>
+      <DropdownMenu.Root defaultOpen modal={false}>
+        <DropdownMenu.Trigger render={<button />}>Actions</DropdownMenu.Trigger>
+        <DropdownMenu.Portal><DropdownMenu.Positioner><DropdownMenu.Popup>
+          <DropdownMenu.Item>
+            Copy<DropdownMenu.Shortcut data-testid="dropdown-shortcut">⌘C</DropdownMenu.Shortcut>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item tone="danger" data-testid="dropdown-danger">
+            Delete<DropdownMenu.Shortcut data-testid="dropdown-danger-shortcut">⌘⌫</DropdownMenu.Shortcut>
+          </DropdownMenu.Item>
+        </DropdownMenu.Popup></DropdownMenu.Positioner></DropdownMenu.Portal>
+      </DropdownMenu.Root>
+    </>,
+  );
+  await openAt();
+  const shared = ['color', 'backgroundColor', 'fontSize', 'letterSpacing', 'lineHeight', 'paddingInlineStart', 'marginInlineStart', 'whiteSpace'] as const;
+  const paint = (id: string) => {
+    const computed = getComputedStyle(page.getByTestId(id).element());
+    return Object.fromEntries(shared.map((property) => [property, computed[property]]));
+  };
+  expect(paint('context-shortcut')).toEqual(paint('dropdown-shortcut'));
+  expect(paint('context-danger')).toEqual(paint('dropdown-danger'));
+  expect(paint('context-danger-shortcut')).toEqual(paint('dropdown-danger-shortcut'));
+  expect(getComputedStyle(page.getByTestId('context-danger').element()).color).toBe(resolved('color', 'var(--ult-color-danger-text)'));
+  expect(getComputedStyle(page.getByTestId('context-shortcut').element()).color).toBe(resolved('color', 'var(--ult-color-text-subtle)'));
+  expectTypeOf<ContextMenuItemTone>().toEqualTypeOf<'neutral' | 'danger'>();
+  expectTypeOf<ContextMenuShortcutProps>().not.toHaveProperty('className');
 });
 
 test('the group label is a micro-label that sets its own leading', async () => {

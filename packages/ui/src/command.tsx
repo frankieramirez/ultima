@@ -196,6 +196,21 @@ const styles = stylex.create({
     paddingInline: space['--ult-space-4'],
     userSelect: 'none',
   },
+  /**
+   * The keys that run an item, as muted 12px text at the trailing edge, in the wide tracking that
+   * capitals and modifier glyphs take. The item's 6px gap and this 6px keep 12px from the label.
+   */
+  shortcut: {
+    color: { default: color['--ult-color-text-subtle'], ':is([data-disabled] *)': color['--ult-color-text-disabled'] },
+    flexShrink: 0,
+    fontFamily: font['--ult-font-sans'],
+    fontSize: text['--ult-text-2'],
+    letterSpacing: font['--ult-font-tracking-wide'],
+    lineHeight: font['--ult-font-leading-none'],
+    marginInlineStart: 'auto',
+    paddingInlineStart: space['--ult-space-3'],
+    whiteSpace: 'nowrap',
+  },
   separator: {
     borderTopColor: color['--ult-color-border'],
     borderTopStyle: 'solid',
@@ -283,6 +298,7 @@ type CommandGroupLabelProps = PartProps<ComponentProps<typeof BaseAutocomplete.G
 type CommandSeparatorProps = PartProps<ComponentProps<typeof BaseAutocomplete.Separator>>;
 type CommandStatusProps = PartProps<ComponentProps<typeof BaseAutocomplete.Status>>;
 type CommandEmptyProps = PartProps<ComponentProps<typeof BaseAutocomplete.Empty>>;
+type CommandShortcutProps = PartProps<ComponentProps<'span'>>;
 
 function ChevronDown() {
   return (
@@ -401,6 +417,11 @@ function Empty({ style, ...props }: CommandEmptyProps) {
   return <BaseAutocomplete.Empty {...props} {...stylex.props(styles.message, style)} />;
 }
 
+/** The keys that run an item, as text: `<Command.Shortcut>⌘N</Command.Shortcut>`. */
+function Shortcut({ style, ...props }: CommandShortcutProps) {
+  return <span {...props} {...stylex.props(styles.shortcut, style)} />;
+}
+
 const Command = {
   Root: BaseAutocomplete.Root,
   Value: BaseAutocomplete.Value,
@@ -419,6 +440,7 @@ const Command = {
   Group,
   GroupLabel,
   Item,
+  Shortcut,
   Row,
   Collection: BaseAutocomplete.Collection,
   Empty,
@@ -448,4 +470,5 @@ export {
   type CommandSeparatorProps,
   type CommandStatusProps,
   type CommandEmptyProps,
+  type CommandShortcutProps,
 };
