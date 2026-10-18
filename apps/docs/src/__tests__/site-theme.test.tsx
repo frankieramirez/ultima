@@ -88,10 +88,10 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-test('site resolves Neutral with Ultima revision 1 mana and passes all 51 pairings in each mode', () => {
+test('site resolves Neutral with Ultima revision 1 mana and passes all 63 pairings in each mode', () => {
   const results = gate(site);
-  expect(results).toHaveLength(51);
-  expect(PAIRINGS).toHaveLength(51);
+  expect(results).toHaveLength(63);
+  expect(PAIRINGS).toHaveLength(63);
   for (const mode of MODES) {
     expect(results.filter((result) => !result[mode].pass).map((result) => `${result.foreground} on ${result.background}`)).toEqual([]);
   }

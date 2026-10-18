@@ -74,6 +74,12 @@ export const darkTheme = stylex.createTheme(color, {
   '--ult-color-danger-contrast': '#0e0e0e',
   '--ult-color-action-contrast': '#0e0e0e',
   '--ult-color-surface-overlay': '#151515b3',
+  '--ult-color-series-1': '#7fa9ff',
+  '--ult-color-series-2': '#fa8749',
+  '--ult-color-series-3': '#00c98d',
+  '--ult-color-series-4': '#af97ff',
+  '--ult-color-series-5': '#f67cb2',
+  '--ult-color-series-6': '#00bfde',
 });
 
 export const darkShadow = stylex.createTheme(shadow, {
@@ -149,6 +155,12 @@ export const lightTheme = stylex.createTheme(color, {
   '--ult-color-danger-contrast': '#fdfdfd',
   '--ult-color-action-contrast': '#fdfdfd',
   '--ult-color-surface-overlay': '#fdfdfdcc',
+  '--ult-color-series-1': '#436ed1',
+  '--ult-color-series-2': '#ba5000',
+  '--ult-color-series-3': '#008a60',
+  '--ult-color-series-4': '#7a5dc8',
+  '--ult-color-series-5': '#b8437b',
+  '--ult-color-series-6': '#008399',
 });
 
 export const lightShadow = stylex.createTheme(shadow, {

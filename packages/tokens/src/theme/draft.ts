@@ -7,6 +7,7 @@ import {
   RECIPE_VERSION,
   type InkStates,
   SCALE_NAMES,
+  SERIES,
   STOCK_SEEDS,
   type ScaleName,
   type ScaleSeeds,
@@ -179,9 +180,9 @@ function snapMs(ms: number): string {
 }
 
 /**
- * Version 4 adds the field fill, the hover edge, disabled ink and the subtle hover and
- * pressed steps, and lifts light `surface-raised` to step 1 so raised surfaces float on
- * their shadow. Earlier versions resolve without them, exactly as they were saved.
+ * Version 4 adds the field fill, the hover edge, disabled ink, the subtle hover and pressed
+ * steps and the chart series, and lifts light `surface-raised` to step 1 so raised surfaces
+ * float on their shadow. Earlier versions resolve without them, exactly as they were saved.
  */
 function colorTable(
   scales: ReturnType<typeof generateScales>,
@@ -240,6 +241,7 @@ function colorTable(
 
   assignContrast(table);
   table['--ult-color-surface-overlay'] = `${table['--ult-color-surface-raised']}${OVERLAY_ALPHA[mode]}`;
+  if (v4) SERIES[mode].forEach((value, i) => { table[`--ult-color-series-${i + 1}`] = value; });
   return table;
 }
 
