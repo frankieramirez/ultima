@@ -177,6 +177,8 @@ A theme may drop the blur and keep the wash, so the scrim never depends on blur 
 
 **Hue means status.** `success`, `warning` and `danger` say something about state and are kept for that. The accent is monochrome ink by default, so the one place color appears in a neutral screen is where something needs attention. Series colors are for charts only, and status roles never stand in for a chart series.
 
+**A destructive menu item wears the danger tone whole** (`tone="danger"` on Dropdown Menu's and Context Menu's `Item`, and so in a Menubar): its label, icon and shortcut take `danger-text`, and its highlight takes `danger-subtle`, the fill that ink is gated on, as a ghost danger Button's hover does. A neutral highlight under red ink would pair two colors the gate never checked. Disabled, it takes the disabled ink like any item. The tone warns before the click; the label still names the act, so color never works alone.
+
 **One solid accent per region.** The solid accent fill is the loudest thing on a screen. Spend it on the primary action, and use soft, outline or ghost for the actions beside it. Two solid accents next to each other leave the reader to guess which one matters. A toast is a region of its own, and its one action is a solid `sm` Button: it has seconds to be found, and a ghost Button reads as text. The action keeps Button's tone, because its color says what pressing it does, not what the toast reports.
 
 **A grey fill means "you can't use this".** Fields are the brightest surface (ink on paper), so `surface-sunken` grey is kept for disabled. Don't grey-fill a live surface. Empty marks a gap with a dashed edge rather than a grey fill for this reason.
@@ -236,9 +238,13 @@ One trigger holds one anchored toast: a repeat passes the trigger's fixed `id` a
 
 **A popup is at least as wide as its trigger,** through `--anchor-width` (Select, Combobox), and never wider than the space available (`--available-width`). A list as wide as its field reads as part of that field, and the cap keeps it on screen. When the space available is narrower than the trigger, the cap wins and the popup is narrower than its trigger.
 
+**A list opened from a trigger that can be short keeps a 128px floor** (2 × step 12): Select, as `max(var(--anchor-width), 128px)`, and every menu. Under a 64px trigger a list only as wide as its trigger leaves no room between a label and its trailing check. Combobox and Command match their text field exactly, because a field you type in is never that short. Placed below its trigger, the wider list starts on the trigger's start edge, so its labels share the value's start edge.
+
 **Flexible children can shrink.** A flex or grid child that holds text or a field sets `min-width: 0`. The platform default, `min-width: auto`, holds it at its content width and pushes it out of its container.
 
 **Content in a surface shares one start edge.** A group label, the items under it and the surface's title begin on the same inline line. An icon leads its label in a `1em` box, so every label that carries one starts on the same line. A selection indicator (a check or a radio dot) sits on the trailing edge, so the leading slot only ever holds icons. With no icon, text sits flush with the start edge. Aligned edges read as one group and let the eye scan straight down. A leading check would push selected items' text off the line every other item follows.
+
+**What trails a label keeps 12px from it** (step 5), one step more than the 8px between a leading icon and its label. The icon belongs to its label; a check, a shortcut or a chevron is a separate column, and the larger gap is what keeps a check from reading as a glyph of the last word. **The selection indicator owns the trailing edge and a shortcut sits just inside it**: state stays in one straight column whichever rows carry keys, and checking a row never moves its shortcut. Every row of a popup that holds a checkbox or radio item keeps the indicator's column, so labels end and shortcuts line up at one edge. A submenu chevron shares the indicators' edge.
 
 **Icons size with their text.** An icon inside a line of text or a control is `1em` square, so it follows the text from `sm` to `lg`. An icon that stands alone, such as Empty's, sets a `text` step as its font size and is `1em` within it. Icon sets are not consistent about size: Lucide and Tabler draw 24px, Heroicons sets no size, and Radix Icons draws 15px. So an icon from the consumer's set goes inside `Icon`, which makes it `1em` whatever the set wrote.
 
@@ -283,7 +289,9 @@ A title steps up in size as its container grows, in step with the padding and co
 
 **Tracking follows size.** Text from 12px to 20px keeps the face's own spacing (`tracking-normal`). From 24px up, use `tracking-tight`, because a face spaced for text sizes looks loose at display sizes. `tighter` and `tightest` are for the docs' display headings from 36px up. Uppercase micro-labels take `tracking-wide`: capitals set at text spacing look cramped.
 
-**Mono is for characters a reader compares or copies one at a time:** code, hex values, keys and identifiers. Everything else is sans.
+**Mono is for characters a reader compares or copies one at a time:** code, hex values, API keys and identifiers. Everything else is sans, a keyboard shortcut included: it is read as one chord at a glance.
+
+**A shortcut attached to an item is muted text, never a key cap,** the same in a menu, Command and Tooltip: 12px `text-subtle`, `tracking-wide`, on one line. Capitals and modifier glyphs at text spacing run together, the reason micro-labels are tracked. A cap draws a border on every row, and a popup's items are separated by space and a highlight, never lines; muted ink is the weakest cue that sets keys apart from a label. Each component carries its own `Shortcut` part rather than sharing an element, so every item still installs alone. In a menu row it trails at the edge; in a Tooltip it follows the label 8px away, the item gap, since there is no column to line up. The trigger also names the keys in `aria-keyshortcuts`, because a tooltip is never read as its name. A key cap is for keys standing alone in a sentence or a hint bar, such as the command dialog's footer, where nothing else sets them apart.
 
 **Numbers that line up or change in place set `tabular-nums`:** Stat, numeric table cells, Calendar days, Pagination, and Slider, Meter and Progress values. Proportional digits shift a column's alignment and make a changing value jitter.
 

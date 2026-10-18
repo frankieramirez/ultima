@@ -6,10 +6,11 @@ import {
   type TooltipArrowProps,
   type TooltipPopupProps,
   type TooltipPositionerProps,
+  type TooltipShortcutProps,
   type TooltipTriggerProps,
 } from '@ultima/ui';
 
-import { expectArrowOnEdge } from './overlay';
+import { expectArrowOnEdge, resolved } from './overlay';
 import { themeDocument, themes, violations } from './axe';
 import { parkPointer } from './setup';
 
@@ -80,6 +81,81 @@ test('the arrow straddles the edge facing the trigger', async () => {
   expectArrowOnEdge(screen.getByTestId('arrow').element(), screen.getByTestId('popup').element(), 'down');
 });
 
+// #944: a Viewport pins the popup to the positioner's far edge on a top or left side, so a
+// positioner that ignores the size the Viewport measures collapses the popup to nothing.
+for (const side of ['top', 'left', 'bottom'] as const) {
+  test(`a ${side}-side tooltip inside a Viewport stays on one line and centres on its trigger`, async () => {
+    const screen = await render(
+      <div style={{ paddingBlock: 160, paddingInline: 320 }}>
+        <Tooltip.Provider delay={0}>
+          <Tooltip.Root defaultOpen>
+            <Tooltip.Trigger aria-label="Add to library" render={<button type="button" />}>
+              Add
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Positioner side={side} sideOffset={8}>
+                <Tooltip.Popup data-testid="popup">
+                  <Tooltip.Arrow />
+                  <Tooltip.Viewport>Add to library</Tooltip.Viewport>
+                </Tooltip.Popup>
+              </Tooltip.Positioner>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
+      </div>,
+    );
+    const popup = screen.getByTestId('popup').element();
+    await expect.poll(() => getComputedStyle(popup).opacity).toBe('1');
+    const style = getComputedStyle(popup);
+    const oneLine =
+      parseFloat(style.lineHeight) + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + parseFloat(style.borderTopWidth) * 2;
+    const box = popup.getBoundingClientRect();
+    expect(box.height).toBeLessThanOrEqual(oneLine + 1);
+    const trigger = screen.getByRole('button', { name: 'Add to library' }).element().getBoundingClientRect();
+    if (side === 'left') {
+      expect(Math.abs((box.top + box.bottom) / 2 - (trigger.top + trigger.bottom) / 2)).toBeLessThan(1);
+      expect(box.right).toBeLessThanOrEqual(trigger.left);
+    } else {
+      expect(Math.abs((box.left + box.right) / 2 - (trigger.left + trigger.right) / 2)).toBeLessThan(1);
+      if (side === 'top') expect(box.bottom).toBeLessThanOrEqual(trigger.top);
+      else expect(box.top).toBeGreaterThanOrEqual(trigger.bottom);
+    }
+  });
+}
+
+test('a shortcut follows the label in the subtle ink, tracked, on the same line', async () => {
+  const screen = await render(
+    <Tooltip.Provider delay={0}>
+      <Tooltip.Root defaultOpen>
+        <Tooltip.Trigger aria-label="Search" aria-keyshortcuts="Meta+K" render={<button type="button" />}>
+          Search
+        </Tooltip.Trigger>
+        <Tooltip.Portal>
+          <Tooltip.Positioner>
+            <Tooltip.Popup data-testid="popup">
+              <Tooltip.Viewport>
+                <span data-testid="label">Search</span>
+                <Tooltip.Shortcut data-testid="shortcut">⌘K</Tooltip.Shortcut>
+              </Tooltip.Viewport>
+            </Tooltip.Popup>
+          </Tooltip.Positioner>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    </Tooltip.Provider>,
+  );
+  await expect.element(screen.getByTestId('shortcut')).toBeVisible();
+  const shortcut = screen.getByTestId('shortcut').element();
+  const style = getComputedStyle(shortcut);
+  expect(style.color).toBe(resolved('color', 'var(--ult-color-text-subtle)'));
+  expect(style.fontSize).toBe(resolved('font-size', 'var(--ult-text-2)'));
+  expect(style.letterSpacing).not.toBe('normal');
+  expect(style.whiteSpace).toBe('nowrap');
+  const label = screen.getByTestId('label').element().getBoundingClientRect();
+  const keys = shortcut.getBoundingClientRect();
+  expect(keys.left - label.right).toBeGreaterThanOrEqual(parseFloat(resolved('width', 'var(--ult-space-4)')) - 0.5);
+  expect(Math.abs(keys.top - label.top)).toBeLessThan(2);
+});
+
 test('the popup has no outline', async () => {
   const screen = await render(<OpenTooltip />);
   const popup = screen.getByTestId('popup').element();
@@ -129,6 +205,8 @@ test('public prop types require aria-label on Trigger and drop className on styl
   expectTypeOf<TooltipPositionerProps>().not.toHaveProperty('className');
   expectTypeOf<TooltipArrowProps>().not.toHaveProperty('className');
   expectTypeOf<TooltipPopupProps>().toHaveProperty('style');
+  expectTypeOf<TooltipShortcutProps>().not.toHaveProperty('className');
+  expectTypeOf<TooltipShortcutProps>().toHaveProperty('style');
 });
 
 for (const mode of themes) {

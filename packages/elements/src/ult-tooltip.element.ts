@@ -21,8 +21,16 @@ const RIGHTWARD = ':is([data-side="left"], [data-side="inline-start"]:not([dir="
 const LEFTWARD = ':is([data-side="right"], [data-side="inline-end"]:not([dir="rtl"] *), [data-side="inline-start"]:is([dir="rtl"] *))';
 
 const styles = stylex.create({
+  /**
+   * A Viewport measures the popup and writes its size here, then pins the popup to the far edge on
+   * a top or left side. Unread, the positioner has no size, so the pinned popup shrinks to nothing
+   * and wraps a word per line, and the positioner is placed as a point off the trigger's center.
+   * Without a Viewport the variables are unset and both sizes stay auto.
+   */
   positioner: {
+    height: 'var(--positioner-height)',
     outline: '0',
+    width: 'var(--positioner-width)',
   },
   popup: {
     backgroundColor: color['--ult-color-surface-raised'],
@@ -57,6 +65,19 @@ const styles = stylex.create({
     transitionProperty: 'opacity, transform',
     transitionTimingFunction: { default: easing.enter, ':is([data-ending-style])': easing.exit },
     zIndex: z.popup,
+  },
+  /**
+   * The keys that run the trigger's action, after the label: the subtle ink, and the wide tracking
+   * that capitals and modifier glyphs take, so they read as keys rather than as a word.
+   */
+  shortcut: {
+    color: color['--ult-color-text-subtle'],
+    fontFamily: font['--ult-font-sans'],
+    fontSize: text['--ult-text-2'],
+    letterSpacing: font['--ult-font-tracking-wide'],
+    lineHeight: font['--ult-font-leading-snug'],
+    marginInlineStart: space['--ult-space-4'],
+    whiteSpace: 'nowrap',
   },
   /**
    * A square turned 45deg, half outside the popup's edge on the side that faces the anchor.
@@ -304,6 +325,15 @@ class UltTooltipArrow extends UltTooltipPart {
   }
 }
 
+class UltTooltipShortcut extends UltTooltipPart {
+  protected build(): HTMLElement {
+    const shortcut = document.createElement('span');
+    shortcut.setAttribute('part', 'shortcut');
+    shortcut.className = mergeStyles(styles.shortcut);
+    return shortcut;
+  }
+}
+
 if (!customElements.get('ult-tooltip')) customElements.define('ult-tooltip', UltTooltip);
 if (!customElements.get('ult-tooltip-trigger'))
   customElements.define('ult-tooltip-trigger', UltTooltipTrigger);
@@ -313,3 +343,5 @@ if (!customElements.get('ult-tooltip-popup'))
   customElements.define('ult-tooltip-popup', UltTooltipPopup);
 if (!customElements.get('ult-tooltip-arrow'))
   customElements.define('ult-tooltip-arrow', UltTooltipArrow);
+if (!customElements.get('ult-tooltip-shortcut'))
+  customElements.define('ult-tooltip-shortcut', UltTooltipShortcut);

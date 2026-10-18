@@ -216,7 +216,15 @@ export const RUNTIME_VARIABLES: readonly RuntimeVariable[] = [
   ...variable("Base UI's positioner", ['combobox', 'command', 'hover-card', 'navigation-menu', 'popover', 'toast'], ['length'], NOTES, '--available-width'),
   ...variable("Base UI's positioner", ['combobox', 'command'], ['length'], NOTES, '--available-height'),
   ...variable("Base UI's positioner", ['combobox', 'command', 'select'], ['length'], NOTES, '--anchor-width'),
-  ...variable("Base UI's Navigation Menu", ['navigation-menu'], ['length'], NOTES, '--positioner-width', '--positioner-height', '--popup-width', '--popup-height'),
+  ...variable("Base UI's Navigation Menu", ['navigation-menu'], ['length'], NOTES, '--popup-width', '--popup-height'),
+  ...variable(
+    "Base UI's Navigation Menu and popup Viewport, restated by the tooltip element",
+    ['dropdown-menu', 'hover-card', 'navigation-menu', 'popover', 'tooltip', 'ult-tooltip'],
+    ['length'],
+    NOTES,
+    '--positioner-width',
+    '--positioner-height',
+  ),
   ...variable(
     "Base UI's Tabs indicator, restated by the tabs element",
     ['tabs', 'ult-tabs'],

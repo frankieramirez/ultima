@@ -1,4 +1,4 @@
-import { ArchiveIcon, LinkIcon, PencilIcon } from 'lucide-react';
+import { ArchiveIcon, CopyIcon, LinkIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import { Button, DropdownMenu, Icon } from '@ultima/ui';
 
 export default function MenuFeatures() {
@@ -16,16 +16,22 @@ export default function MenuFeatures() {
                 <DropdownMenu.Item>
                   <Icon><PencilIcon /></Icon>
                   Rename
+                  <DropdownMenu.Shortcut>F2</DropdownMenu.Shortcut>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item disabled>
+                  <Icon><CopyIcon /></Icon>
+                  Duplicate
+                  <DropdownMenu.Shortcut>⌘D</DropdownMenu.Shortcut>
                 </DropdownMenu.Item>
                 <DropdownMenu.LinkItem href="https://base-ui.com/react/components/menu">
                   <Icon><LinkIcon /></Icon>
                   Base UI docs
                 </DropdownMenu.LinkItem>
-                <DropdownMenu.Item disabled>Delete</DropdownMenu.Item>
               </DropdownMenu.Group>
               <DropdownMenu.Separator />
               <DropdownMenu.CheckboxItem defaultChecked>
                 Show archived
+                <DropdownMenu.Shortcut>⇧⌘A</DropdownMenu.Shortcut>
                 <DropdownMenu.CheckboxItemIndicator />
               </DropdownMenu.CheckboxItem>
               <DropdownMenu.RadioGroup defaultValue="comfortable">
@@ -53,6 +59,12 @@ export default function MenuFeatures() {
                   </DropdownMenu.Positioner>
                 </DropdownMenu.Portal>
               </DropdownMenu.SubmenuRoot>
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item tone="danger">
+                <Icon><TrashIcon /></Icon>
+                Delete
+                <DropdownMenu.Shortcut>⌘⌫</DropdownMenu.Shortcut>
+              </DropdownMenu.Item>
             </DropdownMenu.Viewport>
           </DropdownMenu.Popup>
         </DropdownMenu.Positioner>

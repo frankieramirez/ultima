@@ -31,15 +31,19 @@ When the registry is available, before adding an item or editing an installed on
 npx ultima-design status
 ```
 
-## 5. Reach for the kit
+## 5. Update Ultima
+
+When the user asks to update Ultima, run `npx ultima-design update --plan --json > plan.json` and show them the plan. Apply it with `npx ultima-design update --apply plan.json` only on their word ([update loop](https://ultima.systems/install/update#the-update-loop)).
+
+## 6. Reach for the kit
 
 Before writing a native control or importing `@base-ui/react`, add the item that provides it with `npx shadcn@4.21.4 add @ultima/<item>`; `check` enforces this as `ULT-APP-CONTROL-001` and `ULT-APP-PRIMITIVE-001` ([catalogue](https://ultima.systems/components)).
 
-## 6. Paint from the design system
+## 7. Paint from the design system
 
 Read a semantic token for every color, shadow, radius, border width, and type value, and make a new need a token override; `check` enforces this as `ULT-APP-PAINT-001` and `ULT-APP-PALETTE-001` ([token reference](https://ultima.systems/tokens)).
 
-## 7. Check after edits
+## 8. Check after edits
 
 Offline, use `npx --no-install` for the checks below; do not fetch the CLI.
 
@@ -65,7 +69,7 @@ Lint StyleX with the project's ESLint and the [StyleX lint recipe](https://ultim
 
 Check the production rendering in both explicit modes and system mode, including an open popup. A zero CLI exit cannot prove the theme rendered ([install walkthrough](https://ultima.systems/install#theme-adoption)).
 
-## 8. Reading results
+## 9. Reading results
 
 - Exit 0: the run completed with no blocking finding.
 - Exit 1: fix the findings.

@@ -50,6 +50,15 @@ describe('the consumer skill', () => {
     expect(SKILL).toContain('A zero CLI exit cannot prove the theme rendered');
   });
 
+  it('updates after learning what is installed, from a plan applied only on the user\'s word', () => {
+    expect(SKILL.indexOf('## 4. Learn what is installed')).toBeLessThan(SKILL.indexOf('## 5. Update Ultima'));
+    expect(SKILL.indexOf('## 5. Update Ultima')).toBeLessThan(SKILL.indexOf('## 6. Reach for the kit'));
+    expect(SKILL).toContain('When the user asks to update Ultima, run `npx ultima-design update --plan --json > plan.json` and show them the plan.');
+    expect(SKILL).toContain('Apply it with `npx ultima-design update --apply plan.json` only on their word');
+    expect(SKILL).toContain('https://ultima.systems/install/update#the-update-loop');
+    expect(SKILL).not.toMatch(/update --yes/);
+  });
+
   it('points to the StyleX lint recipe without claiming doctor runs lint', () => {
     expect(SKILL).toContain('[StyleX lint recipe](https://ultima.systems/install#stylex-lint)');
     expect(SKILL).toContain('`doctor` reports lint as `detected` at best, never as a lint pass');

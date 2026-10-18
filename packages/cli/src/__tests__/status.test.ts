@@ -335,9 +335,19 @@ describe('status', () => {
         '',
         'behind    npx shadcn@4.21.4 add @ultima/dialog --overwrite',
         'diverged  npx ultima-design diff sidebar  (reinstalling discards your edits)',
+        'update    npx ultima-design update',
         '',
       ].join('\n'),
     );
+  });
+
+  it('ends with the update command when a file is behind, and keeps its reinstall command', async () => {
+    const registry = await serve([{ name: 'dialog', files: { 'dialog.tsx': await contentHash(staged('Dialog', 'two'), 'c1') } }]);
+    const root = consumer(registry, { 'src/components/ui/dialog.tsx': await stamped('dialog', staged('Dialog', 'one'), OLD) });
+    expect((await status(root)).stdout.trimEnd().split('\n').slice(-2)).toEqual([
+      'behind  npx shadcn@4.21.4 add @ultima/dialog --overwrite',
+      'update  npx ultima-design update',
+    ]);
   });
 
   it('closes with one line each for retired files and unknown schemes', async () => {

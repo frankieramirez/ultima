@@ -16,6 +16,8 @@ npx shadcn@4.21.4 add @ultima/dropdown-menu
 
 The trigger slot must hold an Ultima Button or an element carrying its own focus ring. Icons belong in an item's content, and may come from any icon set in an [Icon](/components/icon); Ultima itself ships no icon dependency.
 
+A shortcut is `DropdownMenu.Shortcut`, muted text at the row's trailing edge. In a checkbox or radio item it goes before the indicator, and the check keeps the outermost edge, so state stays in one column. A destructive action takes `tone="danger"` on `Item`: its label, icon and shortcut turn the danger ink, and its highlight the danger tint. Put it last, after a separator.
+
 <Demo component={Features} source={featuresSource} />
 
 ## Props
@@ -25,7 +27,10 @@ Only what Ultima adds. Every inherited part and prop is documented by [Base UI's
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
 | `style` | `StyleXStyles` | — | Available on styled menu parts and merged last. There is no `className`. |
+| `tone` | `'neutral' \| 'danger'` | `'neutral'` | On `Item`. `danger` marks a destructive action. |
 | `render` | `ReactElement \| function` | — | Base UI's render prop. Trigger is an unstyled slot for a control with its own focus ring. |
+
+`DropdownMenu.Shortcut` is a `<span>` with the style slot. Its text joins the item's accessible name, so when the app binds the keys, name them in `aria-keyshortcuts` on the item too.
 
 ## Accessibility
 

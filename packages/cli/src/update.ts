@@ -3,7 +3,7 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
 import ts from 'typescript';
 
@@ -13,7 +13,8 @@ import { type Base, installedBase } from './base.ts';
 import { LOCKFILES } from './detect.ts';
 import { type Diagnostic, SPEC } from './diagnostic.ts';
 import { type ServedPayloads, renderAsInstalled, servedContent } from './diff.ts';
-import { UPDATE, type JournalEntry, fileHash, hashes, loadJournal, newRunId, recordOutputs, recordedRuns, rememberOriginals, saveJournal, startJournal, undo, writeInPlace } from './journal.ts';
+import { DESTINATIONS, detectHarnesses, install, managedSkills } from './install.ts';
+import { UPDATE, type JournalEntry, type RunJournal, fileHash, hashes, loadJournal, newRunId, recordOutputs, recordedRuns, rememberOriginals, saveJournal, startJournal, undo, writeInPlace } from './journal.ts';
 import { merge3 } from './merge.ts';
 import { SHADCN_ADD } from './shadcn.ts';
 import type { ConsumerScope } from './scope.ts';
@@ -50,6 +51,7 @@ export type UpdatePlan = {
   /** The items the command named, empty for every installed file. */
   names: string[];
   files: PlanRow[];
+  /** The managed skill and hook files: `refresh` where `install` would rewrite them, `report` where it would not. */
   managed: { file: string; state: string; action: Action }[];
   notices: StatusReport['notices'];
   /** Named items the registry serves that this project has not installed. */
@@ -224,7 +226,7 @@ export async function update(root: string, names: string[], options: UpdateOptio
     revision: report.revision,
     names: [...named],
     files,
-    managed: [],
+    managed: names.length === 0 ? managedPlan(root, report.managed).rows : [],
     notices: report.notices,
     notInstalled: [...named].filter((name) => rowsOf(name).length === 0),
     acceptBaseTheme: options.acceptBaseTheme ?? false,
@@ -242,8 +244,9 @@ const WRITES: Action[] = ['replace', 'merge', 'conflict'];
 const writes = (plan: Pick<UpdatePlan, 'writeConflicts'>, { action }: Pick<PlanRow, 'action'>) => action !== 'conflict' ? WRITES.includes(action) : plan.writeConflicts;
 
 /**
- * The one apply path, for `--yes` and `--apply` alike: writes the plan's `replace` and `merge` rows, and its `conflict`
- * rows when it writes conflicts, under a journal. `merges` holds each merged file's text, worked out from the same inputs.
+ * The one apply path, for `--yes` and `--apply` alike: writes the plan's `replace`, `merge` and `refresh` rows, and its
+ * `conflict` rows when it writes conflicts, under a journal. `merges` holds each merged file's text, worked out from the
+ * same inputs.
  */
 export async function applyPlan(
   root: string,
@@ -259,10 +262,11 @@ export async function applyPlan(
     if (content === undefined) return unfetched(row.file, url.replace('{name}', row.item));
     pending.push({ file: row.file, action: row.action, content: row.action === 'replace' ? renderAsInstalled(content, scope.aliases, scope.components.rsc === true) : content });
   }
-  if (pending.length === 0) return { runId: null, written: [], failed: null, next: [] };
+  const refresh = plan.managed.filter(({ action }) => action === 'refresh').map(({ file }) => file);
+  if (pending.length === 0 && refresh.length === 0) return { runId: null, written: [], failed: null, next: [] };
 
   const journal = startJournal(root, UPDATE, newRunId());
-  rememberOriginals(journal, pending.map(({ file }) => file));
+  rememberOriginals(journal, [...pending.map(({ file }) => file), ...refresh]);
   const written: string[] = [];
   for (const { file, content, action } of pending) {
     const entry: JournalEntry = { id: `${action} ${file}`, status: 'started', at: new Date().toISOString(), before: hashes(root, [file]) };
@@ -285,9 +289,53 @@ export async function applyPlan(
     written.push(file);
     saveJournal(journal);
   }
+  const next = written.length > 0 ? [`npx ultima-design check --files ${written.join(' ')}`, typecheck(root, scope.tsconfig)] : [];
+  if (refresh.length > 0) {
+    const error = refreshManaged(journal, refresh);
+    if (error !== undefined) return { runId: journal.runId, written, failed: { file: refresh.join(', '), error }, next: [] };
+    written.push(...refresh);
+  }
   journal.status = 'finished';
   saveJournal(journal);
-  return { runId: journal.runId, written, failed: null, next: [`npx ultima-design check --files ${written.join(' ')}`, typecheck(root, scope.tsconfig)] };
+  return { runId: journal.runId, written, failed: null, next };
+}
+
+/**
+ * The managed rows, from `install`'s own planner for the detected harnesses whose skill is `stale`: `refresh` for each
+ * file it would rewrite, `report` for an edited skill, for a stale one no detected harness owns, and for a file it skips.
+ */
+function managedPlan(root: string, skills: StatusReport['managed']): { rows: UpdatePlan['managed']; harnesses: ReturnType<typeof detectHarnesses> } {
+  const stale = skills.filter(({ state }) => state === 'stale').map(({ file }) => dirname(file));
+  const harnesses = detectHarnesses(root).filter((harness) => stale.includes(DESTINATIONS[harness]));
+  const planned = harnesses.length > 0 ? install(root, { harnesses, dryRun: true, force: false }).files : [];
+  const rows: UpdatePlan['managed'] = skills
+    .filter(({ file, state }) => state === 'edited' || (state === 'stale' && !planned.some((row) => row.file === file)))
+    .map(({ file, state }) => ({ file, state, action: 'report' }));
+  for (const { file, action } of planned) {
+    if (action === 'write') rows.push({ file, state: 'stale', action: 'refresh' });
+    else if (action === 'outside' || action === 'invalid') rows.push({ file, state: action, action: 'report' });
+  }
+  return { rows, harnesses };
+}
+
+/** Rewrites the managed files with `install` itself, so update has no skill writer of its own, and journals the write. */
+function refreshManaged(journal: RunJournal, files: string[]): string | undefined {
+  const { root } = journal;
+  const entry: JournalEntry = { id: `refresh ${files.join(', ')}`, status: 'started', at: new Date().toISOString(), before: hashes(root, files) };
+  journal.operations.push(entry);
+  saveJournal(journal);
+  let error: string | undefined;
+  try {
+    install(root, { harnesses: managedPlan(root, managedSkills(root)).harnesses, dryRun: false, force: false });
+  } catch (thrown) {
+    error = (thrown as Error).message;
+  }
+  entry.after = hashes(root, files);
+  recordOutputs(journal, entry.after);
+  Object.assign(entry, error === undefined ? { status: 'done' } : { status: 'failed', error });
+  if (error !== undefined) journal.status = 'stopped';
+  saveJournal(journal);
+  return error;
 }
 
 function planRow(root: string, row: Row, decide: (row: Row) => Planned & Partial<Pick<PlanRow, 'requires'>> = planAction): Omit<PlanRow, 'uncommitted'> {
@@ -407,6 +455,10 @@ function staleness(root: string, path: string, plan: UpdatePlan, report: StatusR
     const inputs = INPUTS.filter((key) => key !== 'base' || row.base !== null);
     if (!fresh || inputs.some((key) => canonical(fresh[key]) !== canonical(row[key]))) changed.push(row.file);
   }
+  const managed = managedPlan(root, report.managed).rows;
+  for (const row of plan.managed) {
+    if (!managed.some((now) => canonical(now) === canonical(row))) changed.push(row.file);
+  }
   if (changed.length === 0) return null;
   return {
     diagnostics: [
@@ -422,6 +474,9 @@ function staleness(root: string, path: string, plan: UpdatePlan, report: StatusR
   };
 }
 
+const FORCE = 'npx ultima-design install --force';
+const applies = (plan: UpdatePlan) => plan.files.some((row) => writes(plan, row)) || plan.managed.some(({ action }) => action === 'refresh');
+const editedSkill = (plan: UpdatePlan) => plan.managed.some(({ state }) => state === 'edited');
 const acceptCommand = (plan: UpdatePlan) => ['npx ultima-design update', ...plan.names, '--accept-base-theme'].join(' ');
 /** This plan's command with its decisions, and `flags` after them. */
 const updateCommand = (plan: UpdatePlan, ...flags: string[]) =>
@@ -457,11 +512,12 @@ export function updateJson({ plan, run }: UpdateReport): PlanJson | Record<strin
         ...(replaceConflicts(plan).length > 0
           ? [updateCommand(plan, '--write-conflicts'), updateCommand(plan, ...replaceConflicts(plan))].map((command) => ({ for: 'conflict', command }))
           : []),
-        ...(plan.files.some((row) => writes(plan, row)) ? [{ for: 'apply', command: applyCommand(plan) }] : []),
+        ...(editedSkill(plan) ? [{ for: 'skill', command: FORCE }] : []),
+        ...(applies(plan) ? [{ for: 'apply', command: applyCommand(plan) }] : []),
       ],
     };
   }
-  const of = (action: Action) => plan.files.filter((row) => row.action === action).map(({ file }) => file);
+  const of = (action: Action) => [...plan.files, ...plan.managed].filter((row) => row.action === action).map(({ file }) => file);
   return {
     kind: 'ultima-update-run',
     schemaVersion: SCHEMA_VERSION,
@@ -523,9 +579,16 @@ export function printRollback({ runId, restored, left, notes }: { runId: string;
   ].join('\n')}\n`;
 }
 
+const MANAGED_REASONS: Record<string, string> = {
+  edited: 'edited since install',
+  stale: 'no harness detected for it; install --harness <name> refreshes it',
+  outside: 'resolves outside the repository root',
+  invalid: 'not valid JSON; fix it by hand',
+};
+
 export function printUpdate({ plan, run }: UpdateReport): string {
   const closing: [string, string][] = [];
-  const reported = plan.files.filter(({ action }) => action === 'report').map(({ file }) => file);
+  const reported = [...plan.files, ...plan.managed].filter(({ action }) => action === 'report').map(({ file }) => file);
   const held = plan.files.filter(({ action }) => action === 'hold').map(({ file }) => file);
   const conflicted = plan.files.filter(({ action }) => action === 'conflict').map(({ file }) => file);
   const holds: [string, string][] = [];
@@ -535,10 +598,11 @@ export function printUpdate({ plan, run }: UpdateReport): string {
   }
   plan.adds.forEach((command, index) => holds.push([index === 0 ? 'needs' : '', command]));
   const resolve = replaceConflicts(plan).length > 0 ? `${updateCommand(plan, '--write-conflicts')}  or  ${replaceConflicts(plan).join(' ')}` : null;
+  if (editedSkill(plan)) holds.push(['skill', `${FORCE}  replaces the edited skill, discarding its edits`]);
   if (run === null) {
     closing.push(...holds);
     if (resolve) closing.push(['conflict', resolve]);
-    if (plan.files.some((row) => writes(plan, row))) {
+    if (applies(plan)) {
       closing.push(['apply', applyCommand(plan)]);
     }
   } else {
@@ -557,14 +621,14 @@ export function printUpdate({ plan, run }: UpdateReport): string {
     const hunks = row.action === 'conflict' ? `${row.hunks} ${row.hunks === 1 ? 'hunk' : 'hunks'}` : null;
     const reason = [hunks, row.reason, row.uncommitted ? 'uncommitted changes, kept in the journal' : null].filter(Boolean).join('; ');
     return [row.item, row.file, row.state, row.action, ...(reason ? [reason] : [])];
-  })];
+  }), ...plan.managed.map(({ file, state, action }) => [file.endsWith('SKILL.md') ? 'skill' : 'hook', file, state, action, ...(MANAGED_REASONS[state] && action === 'report' ? [MANAGED_REASONS[state]] : [])])];
   const width = (column: string[]) => Math.max(...column.map((cell) => cell.length)) + 2;
   const first = width([...table.map(([item]) => item as string), ...closing.map(([label]) => label)]);
   const widths = [first, ...[1, 2, 3].map((index) => width(table.map((row) => row[index] as string)))];
   const line = (cells: string[]) => cells.map((cell, index) => (index < cells.length - 1 ? cell.padEnd(widths[index] as number) : cell)).join('');
 
   const lines = [`Registry  ${plan.registry}  revision ${plan.revision ?? 'none'}`, ''];
-  lines.push(...(plan.files.length > 0 ? table.map(line) : ['Nothing to update.']));
+  lines.push(...(table.length > 1 ? table.map(line) : ['Nothing to update.']));
   for (const name of plan.notInstalled) lines.push(`${name}: not installed; update adds nothing new: ${SHADCN_ADD} @ultima/${name}`);
   if (closing.length > 0) lines.push('', ...closing.map(([label, text]) => `${label.padEnd(first)}${text}`));
   return `${lines.join('\n')}\n`;

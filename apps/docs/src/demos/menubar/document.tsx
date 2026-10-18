@@ -8,7 +8,10 @@ export default function MenubarDocument() {
         <DropdownMenu.Portal>
           <DropdownMenu.Positioner sideOffset={8}>
             <DropdownMenu.Popup>
-              <DropdownMenu.Item>New</DropdownMenu.Item>
+              <DropdownMenu.Item>
+                New
+                <DropdownMenu.Shortcut>⌘N</DropdownMenu.Shortcut>
+              </DropdownMenu.Item>
               <DropdownMenu.SubmenuRoot>
                 <DropdownMenu.SubmenuTrigger>Open recent</DropdownMenu.SubmenuTrigger>
                 <DropdownMenu.Portal>
@@ -21,7 +24,10 @@ export default function MenubarDocument() {
                 </DropdownMenu.Portal>
               </DropdownMenu.SubmenuRoot>
               <DropdownMenu.Separator />
-              <DropdownMenu.Item>Save</DropdownMenu.Item>
+              <DropdownMenu.Item>
+                Save
+                <DropdownMenu.Shortcut>⌘S</DropdownMenu.Shortcut>
+              </DropdownMenu.Item>
             </DropdownMenu.Popup>
           </DropdownMenu.Positioner>
         </DropdownMenu.Portal>
@@ -31,8 +37,14 @@ export default function MenubarDocument() {
         <DropdownMenu.Portal>
           <DropdownMenu.Positioner sideOffset={8}>
             <DropdownMenu.Popup>
-              <DropdownMenu.Item>Undo</DropdownMenu.Item>
-              <DropdownMenu.Item disabled>Redo</DropdownMenu.Item>
+              <DropdownMenu.Item>
+                Undo
+                <DropdownMenu.Shortcut>⌘Z</DropdownMenu.Shortcut>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item disabled>
+                Redo
+                <DropdownMenu.Shortcut>⇧⌘Z</DropdownMenu.Shortcut>
+              </DropdownMenu.Item>
             </DropdownMenu.Popup>
           </DropdownMenu.Positioner>
         </DropdownMenu.Portal>
@@ -46,8 +58,14 @@ export default function MenubarDocument() {
                 <DropdownMenu.CheckboxItemIndicator />
                 Show sidebar
               </DropdownMenu.CheckboxItem>
-              <DropdownMenu.Item>Zoom in</DropdownMenu.Item>
-              <DropdownMenu.Item>Zoom out</DropdownMenu.Item>
+              <DropdownMenu.Item>
+                Zoom in
+                <DropdownMenu.Shortcut>⌘+</DropdownMenu.Shortcut>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item>
+                Zoom out
+                <DropdownMenu.Shortcut>⌘−</DropdownMenu.Shortcut>
+              </DropdownMenu.Item>
             </DropdownMenu.Popup>
           </DropdownMenu.Positioner>
         </DropdownMenu.Portal>

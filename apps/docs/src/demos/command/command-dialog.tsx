@@ -74,6 +74,8 @@ const groups = [
   { label: 'Go to', items: ['Components', 'Tokens', 'Palette', 'Accessibility'] },
 ];
 
+const shortcuts: Record<string, string> = { 'New file': '⌘N', 'Export PDF': '⇧⌘E', 'Toggle sidebar': '⌘B', 'Close window': '⌘W' };
+
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent);
 
 export default function CommandDialog() {
@@ -131,6 +133,7 @@ export default function CommandDialog() {
                               {(action: string) => (
                                 <Command.Item key={action} value={action} onClick={() => run(action)}>
                                   {action}
+                                  {shortcuts[action] ? <Command.Shortcut>{shortcuts[action]}</Command.Shortcut> : null}
                                 </Command.Item>
                               )}
                             </Command.Collection>

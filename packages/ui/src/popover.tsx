@@ -13,8 +13,19 @@ const RIGHTWARD = ':is([data-side="left"], [data-side="inline-start"]:not([dir="
 const LEFTWARD = ':is([data-side="right"], [data-side="inline-end"]:not([dir="rtl"] *), [data-side="inline-start"]:is([dir="rtl"] *))';
 
 const styles = stylex.create({
+  /**
+   * A Viewport measures the popup and writes its size here, then pins the popup to the far edge on
+   * a top or left side. Unread, the positioner has no size, so the pinned popup shrinks to nothing
+   * and wraps a word per line, and the positioner is placed as a point off the trigger's center.
+   * Without a Viewport the variables are unset and both sizes stay auto. The cap to the room
+   * available sits here rather than on the popup: the Viewport measures with that room set to
+   * `max-content`, which no `min()` accepts, so a capped popup would measure uncapped.
+   */
   positioner: {
+    height: 'var(--positioner-height)',
+    maxWidth: 'var(--available-width)',
     outline: '0',
+    width: 'var(--positioner-width)',
   },
   popup: {
     backgroundColor: color['--ult-color-surface-raised'],
@@ -28,7 +39,7 @@ const styles = stylex.create({
     fontFamily: font['--ult-font-sans'],
     lineHeight: font['--ult-font-leading-normal'],
     margin: 0,
-    maxWidth: `min(calc(${space['--ult-space-12']} * 5), var(--available-width))`,
+    maxWidth: `calc(${space['--ult-space-12']} * 5)`,
     overflowWrap: 'break-word',
     opacity: {
       default: 1,

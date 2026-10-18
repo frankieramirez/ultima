@@ -17,7 +17,7 @@ import {
 } from '@ultima/ui';
 
 import { themeDocument, themes, violations } from './axe';
-import { expectMicroLabel } from './overlay';
+import { expectMicroLabel, resolved } from './overlay';
 
 function FruitSelect({
   size,
@@ -307,6 +307,46 @@ test('an open trigger holds the hover edge, and its popup is never narrower than
   const popup = screen.getByTestId('Open popup').element();
   // --anchor-width is rounded to a whole pixel, so allow one.
   expect(popup.getBoundingClientRect().width).toBeGreaterThanOrEqual(open.getBoundingClientRect().width - 1);
+});
+
+test('under a short trigger the popup keeps the 128px menu floor, starts on the trigger, and the check keeps 12px', async () => {
+  const sizes = [
+    { value: 's', label: 'S' },
+    { value: 'm', label: 'M' },
+  ];
+  const screen = await render(
+    <div style={{ paddingInline: 160 }}>
+      <Select.Root items={sizes} defaultValue="m" defaultOpen modal={false}>
+        <Select.Trigger aria-label="Size" size="sm">
+          <Select.Value />
+          <Select.Icon />
+        </Select.Trigger>
+        <Select.Portal>
+          <Select.Positioner alignItemWithTrigger={false}>
+            <Select.Popup data-testid="popup">
+              <Select.List>
+                {sizes.map((size) => (
+                  <Select.Item key={size.value} value={size.value} data-testid={`${size.value} item`}>
+                    <Select.ItemText data-testid={`${size.value} text`}>{size.label}</Select.ItemText>
+                    <Select.ItemIndicator data-testid={`${size.value} check`} />
+                  </Select.Item>
+                ))}
+              </Select.List>
+            </Select.Popup>
+          </Select.Positioner>
+        </Select.Portal>
+      </Select.Root>
+    </div>,
+  );
+  await expect.element(screen.getByTestId('m check')).toBeVisible();
+  const trigger = screen.getByRole('combobox', { name: 'Size' }).element().getBoundingClientRect();
+  const popup = screen.getByTestId('popup').element().getBoundingClientRect();
+  const floor = parseFloat(resolved('width', 'calc(var(--ult-space-12) * 2)'));
+  expect(trigger.width).toBeLessThan(floor);
+  expect(popup.width).toBeGreaterThanOrEqual(floor - 0.5);
+  expect(Math.abs(popup.left - trigger.left)).toBeLessThan(1);
+  const item = getComputedStyle(screen.getByTestId('m item').element());
+  expect(item.columnGap).toBe(resolved('column-gap', 'var(--ult-space-5)'));
 });
 
 test('items set their own leading rather than inheriting the page', async () => {

@@ -35,9 +35,9 @@ function prefer(mode: keyof typeof modes) {
 }
 
 const FOUNDATIONS = [
-  { path: '/install', title: 'Install', place: '02', previous: 'Home', next: 'Update the base theme' },
-  { path: '/install/update', title: 'Update the base theme', place: '03', previous: 'Install', next: 'Build a screen' },
-  { path: '/build-a-screen', title: 'Build a screen', place: '04', previous: 'Update the base theme', next: 'CLI' },
+  { path: '/install', title: 'Install', place: '02', previous: 'Home', next: 'Update' },
+  { path: '/install/update', title: 'Update', place: '03', previous: 'Install', next: 'Build a screen' },
+  { path: '/build-a-screen', title: 'Build a screen', place: '04', previous: 'Update', next: 'CLI' },
   { path: '/cli', title: 'CLI', place: '05', previous: 'Build a screen', next: 'Elements' },
   { path: '/elements', title: 'Elements', place: '06', previous: 'CLI', next: 'Tokens' },
   { path: '/tokens', title: 'Tokens', place: '07', previous: 'Elements', next: 'Palette' },
@@ -81,7 +81,7 @@ test('a trailing slash still finds the page in the site order', async () => {
   await expect.element(screen.getByRole('heading', { name: 'Install', level: 1 })).toBeVisible();
   expect(document.querySelector('main')?.textContent).toContain('Foundations · 02');
   const pager = screen.getByRole('navigation', { name: 'Previous and next page' });
-  expect([...pager.element().querySelectorAll('a')].map((link) => link.textContent)).toEqual(['PreviousHome', 'NextUpdate the base theme']);
+  expect([...pager.element().querySelectorAll('a')].map((link) => link.textContent)).toEqual(['PreviousHome', 'NextUpdate']);
 });
 
 test('the section number stays out of the heading name', async () => {
