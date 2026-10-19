@@ -102,6 +102,7 @@ export {
   type ChartRootProps,
   type ChartCaptionProps,
   type ChartPlotProps,
+  type ChartLegendProps,
 } from './chart';
 export {
   Checkbox,

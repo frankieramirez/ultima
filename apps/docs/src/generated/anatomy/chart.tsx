@@ -9,6 +9,7 @@ export {
   type ChartRootProps,
   type ChartCaptionProps,
   type ChartPlotProps,
+  type ChartLegendProps,
 } from '@ultima/ui/chart';
 
 export const Chart = {
@@ -16,4 +17,5 @@ export const Chart = {
   Root: mark(Source.Root, 'chart', 'Root'),
   Caption: mark(Source.Caption, 'chart', 'Caption'),
   Plot: mark(Source.Plot, 'chart', 'Plot'),
+  Legend: mark(Source.Legend, 'chart', 'Legend'),
 };
