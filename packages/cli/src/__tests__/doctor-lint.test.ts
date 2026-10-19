@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import type { Diagnostic } from '../diagnostic.ts';
-import { LINT_PINS, type LintReport } from '../lint.ts';
+import { LINT_PINS, LINT_TYPESCRIPT, type LintReport } from '../lint.ts';
 import { run } from '../run.ts';
 import { edit, project, smoke, snapshot, write } from './fixtures.ts';
 
@@ -118,7 +118,7 @@ describe.each(['vite', 'next-app', 'next-src'] as const)('doctor StyleX lint in 
     expect(report.lint.state).toBe('not-configured');
     expect(report.lint.diagnostics).toEqual([expect.objectContaining({ ruleId: 'ULT-LINT-001', severity: 'advisory', file: '.' })]);
     expect(report.lint.diagnostics[0]!.message).toBe(`${NOT_CONFIGURED}: no ESLint package resolves and the project root has no ESLint config.`);
-    expect(report.lint.diagnostics[0]!.repair).toContain(`eslint@${LINT_PINS.eslint} typescript-eslint@${LINT_PINS['typescript-eslint']} @stylexjs/eslint-plugin@${LINT_PINS['@stylexjs/eslint-plugin']}`);
+    expect(report.lint.diagnostics[0]!.repair).toContain(`eslint@${LINT_PINS.eslint} typescript-eslint@${LINT_PINS['typescript-eslint']} @stylexjs/eslint-plugin@${LINT_PINS['@stylexjs/eslint-plugin']} typescript@${LINT_TYPESCRIPT}`);
     expect(report.lint.diagnostics[0]!.repair).toContain('https://ultima.systems/install#stylex-lint');
   });
 

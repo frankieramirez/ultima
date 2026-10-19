@@ -139,10 +139,10 @@ The plugin must match `@stylexjs/stylex` exactly, and `init` installs StyleX 0.1
 
 Invalid styles are errors. `allowOuterPseudoAndMedia` accepts the namespace-level `':hover'` and `@media` blocks that installed components use. Unused styles, shorthand advice and conflicting props are warnings. Key order is your choice, so `sort-keys` is off, and so is every other upstream rule.
 
-**A project without ESLint.** This includes a create-vite app, which ships oxlint. Install the tested versions:
+**A project without ESLint.** This includes a create-vite app, which ships oxlint. Install the tested versions. typescript-eslint supports TypeScript up to 6.0, and create-vite now scaffolds TypeScript 7, so the line also holds TypeScript at 6.0:
 
 ```sh title="Terminal"
-npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1
+npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 typescript@~6.0
 ```
 
 Then create the config. It parses TypeScript and JSX syntax only. It adds no type-aware linting and no general TypeScript rules.
