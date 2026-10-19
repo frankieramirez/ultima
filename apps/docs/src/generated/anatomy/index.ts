@@ -104,6 +104,7 @@ export {
   type ChartCaptionProps,
   type ChartPlotProps,
   type ChartTooltipProps,
+  type ChartLegendProps,
   type ChartState,
 } from './chart';
 export {

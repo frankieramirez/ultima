@@ -12,8 +12,11 @@ import type {
   ChartScene,
   ChartSize,
   ChartValue,
+  SceneArea,
+  SceneDot,
   SceneLabel,
   SceneNode,
+  ScenePolyline,
   SceneRect,
 } from '@tanstack/charts/types';
 import { border, color, font, radius, shadow, space, text, z } from '@ultima/tokens/tokens.stylex';
@@ -113,16 +116,52 @@ const styles = stylex.create({
   label: {
     fill: color['--ult-color-text-muted'],
   },
+  /** Bars, bands and dots fill solid in their series color: no mark is translucent. */
+  mark: {
+    fill: 'currentColor',
+  },
+  /** A round join keeps a sharp turn on its data point, where a miter would overshoot it. */
+  line: {
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeLinejoin: 'round',
+    strokeWidth: border.focus,
+  },
+  legend: {
+    color: color['--ult-color-text-muted'],
+    columnGap: space['--ult-space-6'],
+    display: 'flex',
+    flexWrap: 'wrap',
+    fontSize: text['--ult-text-3'],
+    fontWeight: font['--ult-font-weight-regular'],
+    lineHeight: font['--ult-font-leading-snug'],
+    listStyle: 'none',
+    margin: 0,
+    padding: 0,
+    rowGap: space['--ult-space-2'],
+  },
+  legendItem: {
+    alignItems: 'center',
+    display: 'flex',
+    gap: space['--ult-space-4'],
+  },
+  swatch: {
+    backgroundColor: 'currentColor',
+    blockSize: space['--ult-space-4'],
+    borderRadius: radius['--ult-radius-xs'],
+    flexShrink: 0,
+    inlineSize: space['--ult-space-4'],
+  },
 });
 
-/** Marks take the series tokens by their group's position in the color domain, wrapping after six. */
+/** Marks and swatches take the series tokens by their group's position in the color domain, wrapping after six. */
 const series = stylex.create({
-  one: { fill: color['--ult-color-series-1'] },
-  two: { fill: color['--ult-color-series-2'] },
-  three: { fill: color['--ult-color-series-3'] },
-  four: { fill: color['--ult-color-series-4'] },
-  five: { fill: color['--ult-color-series-5'] },
-  six: { fill: color['--ult-color-series-6'] },
+  one: { color: color['--ult-color-series-1'] },
+  two: { color: color['--ult-color-series-2'] },
+  three: { color: color['--ult-color-series-3'] },
+  four: { color: color['--ult-color-series-4'] },
+  five: { color: color['--ult-color-series-5'] },
+  six: { color: color['--ult-color-series-6'] },
 });
 const SERIES = [series.one, series.two, series.three, series.four, series.five, series.six];
 
@@ -189,6 +228,7 @@ type ChartRootProps = PartProps<useRender.ComponentProps<'figure'>> &
 type ChartCaptionProps = PartProps<useRender.ComponentProps<'figcaption'>>;
 type ChartPlotProps = PartProps<Omit<ComponentProps<'svg'>, 'children'>>;
 type ChartTooltipProps = PartProps<useRender.ComponentProps<'div'>>;
+type ChartLegendProps = PartProps<Omit<useRender.ComponentProps<'ul'>, 'children'>>;
 
 /** Text layout with the plot's own computed font, so the scene's label boxes match the labels painted. */
 function measurer(plot: SVGSVGElement): ChartLayoutOptions {
@@ -296,13 +336,18 @@ function labelPaint(scene: ChartScene, label: SceneLabel) {
 }
 
 /**
- * The mark's place in the color domain, read as the slot its point's color takes in the ordinal range,
- * which follows the domain: the color string is matched, never painted.
+ * A group's place in the color domain, read as the slot its color takes in the ordinal range, which
+ * follows the domain: the color string is matched, never painted.
  */
-function markPaint(scene: ChartScene, mark: SceneRect) {
-  const point = mark.interaction?.point;
-  const position = point ? scene.colors.range.indexOf(point.color) : -1;
+function seriesPaint(scene: ChartScene, groupColor: string | undefined) {
+  const position = groupColor ? scene.colors.range.indexOf(groupColor) : -1;
   return SERIES[Math.max(position, 0) % SERIES.length];
+}
+
+/** A bar's point, the first of a line's or a band's points, or the point a dot marks. */
+function markPaint(scene: ChartScene, mark: SceneRect | ScenePolyline | SceneArea | SceneDot) {
+  const point = mark.interaction?.point ?? mark.interaction?.points?.[0] ?? mark.pointOwner;
+  return seriesPaint(scene, point?.color);
 }
 
 /** Draws one scene node from its geometry alone: the scene's paint, class names and focus layers are not Ultima's. */
@@ -312,8 +357,14 @@ function draw(scene: ChartScene, node: SceneNode): ReactNode {
       return node.focus ? null : <g key={node.key}>{node.children.map((child) => draw(scene, child))}</g>;
     case 'rule':
       return <line key={node.key} x1={node.x1} x2={node.x2} y1={node.y1} y2={node.y2} {...stylex.props(styles.rule)} />;
+    case 'polyline':
+      return <polyline key={node.key} points={node.points.join(' ')} {...stylex.props(styles.line, markPaint(scene, node))} />;
+    case 'area':
+      return <polygon key={node.key} points={node.points.join(' ')} {...stylex.props(styles.mark, markPaint(scene, node))} />;
+    case 'dot':
+      return <circle key={node.key} cx={node.x} cy={node.y} r={node.radius} {...stylex.props(styles.mark, markPaint(scene, node))} />;
     case 'rect':
-      return <rect key={node.key} height={node.height} width={node.width} x={node.x} y={node.y} {...stylex.props(markPaint(scene, node))} />;
+      return <rect key={node.key} height={node.height} width={node.width} x={node.x} y={node.y} {...stylex.props(styles.mark, markPaint(scene, node))} />;
     case 'label':
       return (
         <text
@@ -455,11 +506,24 @@ function Tooltip({ ref, render, style, ...props }: ChartTooltipProps) {
   });
 }
 
+/** One swatch and text label per color group, in domain order. Not interactive. */
+function Legend({ ref, render, style, ...props }: ChartLegendProps) {
+  const { scene } = useChartContext('Legend');
+  const items = scene?.colors.domain.map((group) => (
+    <li key={group} {...stylex.props(styles.legendItem)}>
+      <span aria-hidden="true" {...stylex.props(styles.swatch, seriesPaint(scene, scene.colors.map(group)))} />
+      {group}
+    </li>
+  ));
+  return useRender({ defaultTagName: 'ul', ref, render, props: { ...props, children: items, ...stylex.props(styles.legend, style) } });
+}
+
 const Chart = {
   Root,
   Caption,
   Plot,
   Tooltip,
+  Legend,
 };
 
-export { Chart, useChart, type ChartRootProps, type ChartCaptionProps, type ChartPlotProps, type ChartTooltipProps, type ChartState };
+export { Chart, useChart, type ChartRootProps, type ChartCaptionProps, type ChartPlotProps, type ChartTooltipProps, type ChartLegendProps, type ChartState };

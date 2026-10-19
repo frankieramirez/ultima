@@ -11,6 +11,7 @@ export {
   type ChartCaptionProps,
   type ChartPlotProps,
   type ChartTooltipProps,
+  type ChartLegendProps,
   type ChartState,
 } from '@ultima/ui/chart';
 
@@ -20,4 +21,5 @@ export const Chart = {
   Caption: mark(Source.Caption, 'chart', 'Caption'),
   Plot: mark(Source.Plot, 'chart', 'Plot'),
   Tooltip: mark(Source.Tooltip, 'chart', 'Tooltip'),
+  Legend: mark(Source.Legend, 'chart', 'Legend'),
 };

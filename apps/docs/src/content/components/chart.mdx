@@ -1,6 +1,12 @@
 import { Demo } from '../../demo';
+import Area from '../../demos/chart/area';
+import areaSource from '../../demos/chart/area?raw';
 import Bar from '../../demos/chart/bar';
 import barSource from '../../demos/chart/bar?raw';
+import CollapsibleTable from '../../demos/chart/collapsible-table';
+import collapsibleTableSource from '../../demos/chart/collapsible-table?raw';
+import Line from '../../demos/chart/line';
+import lineSource from '../../demos/chart/line?raw';
 
 # Chart
 
@@ -22,6 +28,26 @@ Give the root exactly one of `height`, in CSS pixels, or `aspectRatio`, width ov
 
 <Demo component={Bar} source={barSource} fill />
 
+## Line chart with a legend
+
+`lineY` from `@tanstack/charts/line` draws one line per color group. Give it one row per x value and series, and name the series field as its `color` channel. `points: true` adds a dot at each observation. An ordered x takes `scalePoint` from `@tanstack/charts/scales/point`.
+
+`Chart.Legend` lists the color groups in the order the chart colors them, each with its swatch and its name. Place it inside `Chart.Root`, after the plot. It is a plain list: it takes no focus and toggles nothing.
+
+<Demo component={Line} source={lineSource} fill />
+
+## Stacked area chart
+
+`stackRowsY` from `@tanstack/charts/transform/stack` gives each row its band's base, `y1`, and top, `y2`. `areaY` from `@tanstack/charts/area` draws one band per group from them, with the stack's `z` as its `color`. Bands fill solid, so they stack and never overlap. Series you compare against one baseline rather than add up belong in a line chart.
+
+<Demo component={Area} source={areaSource} fill />
+
+## Data table in a disclosure
+
+Every chart pairs with a `Table` of the same rows. Where a table beside the chart would crowd the layout, put it in a `Collapsible` under the plot, as Dashboard 01 does. A single series needs no legend, because the caption names it.
+
+<Demo component={CollapsibleTable} source={collapsibleTableSource} fill />
+
 ## Exploring a chart
 
 `Chart.Plot` is one Tab stop. Focusing it activates nothing: the first arrow key starts at the first point. Hovering activates the point nearest the pointer, and leaving the plot or moving focus away clears it. The active point carries a ring in `--ult-color-border-focus`, and `Chart.Plot` announces it through a status region it renders beside the SVG.
@@ -40,7 +66,7 @@ Give the root exactly one of `height`, in CSS pixels, or `aspectRatio`, width ov
 
 A series is one mark's color group, in the order the scene lists its points, so in a stacked bar chart Up climbs the stack. The order comes from TanStack's `viewportInteractionPoints`, and hover from its `findNearestPoint`.
 
-The active point is shared state. Pass `active` and `onActiveChange` to control it, or `defaultActive` to seed it. A point is matched by its `key`, so a point from an earlier render still finds its bar after a resize.
+The active point is shared state. Pass `active` and `onActiveChange` to control it, or `defaultActive` to seed it. A point is matched by its `key`, so a point from an earlier render still finds its mark after a resize.
 
 ### useChart
 
@@ -61,11 +87,39 @@ function DayRow({ day, requests }: { day: string; requests: number }) {
 
 ## What Chart draws, and what it ignores
 
-`Chart.Plot` walks the compiled scene and draws its `group`, `rule`, `rect` and `label` nodes as SVG elements painted from tokens, then the active point's ring. Bars take `--ult-color-series-1` through `-6` by their group's position in the color domain, and a seventh group starts again at series 1, so fold small groups into an "Other" group rather than let colors repeat. Gridlines and the axis baseline take `--ult-color-border`. Tick labels take `--ult-color-text-subtle`, and axis titles and band labels `--ult-color-text-muted`, all at `--ult-text-3`. Labels are measured with the plot's own font, so the scene's layout matches the text you see.
+`Chart.Plot` walks the compiled scene and draws its seven node kinds as SVG elements painted from tokens: `group`, `rule`, `rect`, `polyline`, `area`, `dot` and `label`, then the active point's ring over them.
 
-The scene's own paint strings and `ts-chart` class names never reach the page, and no `--ts-chart-*` variable is set or read. The definition's `theme`, `tooltip`, `keyboard`, `focusRing` and `svgAnimation` options are ignored, because Chart owns each of them.
+- **Marks** take `--ult-color-series-1` through `-6` by their group's position in the color domain. Bars, area bands and dots fill solid in their series color, and a line is a 2px stroke in it. A dot keeps the radius the scene gives it, because a dot's size can be data. Lines and bands run straight between their points.
+- **Guides.** Gridlines and the axis baseline take `--ult-color-border`. Tick labels take `--ult-color-text-subtle`, and axis titles and band labels `--ult-color-text-muted`, all at `--ult-text-3`. Labels are measured with the plot's own font, so the scene's layout matches the text you see.
+- **The legend.** Swatches take the series token and labels `--ult-color-text-muted`, at `--ult-text-3`.
 
-A chart whose groups carry meaning, such as a series that should read as danger, re-points `--ult-color-series-<n>` on its `Root` with a `stylex.createTheme` passed through `style`.
+The scene's own paint strings and `ts-chart` class names never reach the page, and no `--ts-chart-*` variable is set or read, so a mark's own `stroke`, `fill`, opacity or stroke width is ignored. So are the definition's `theme`, `tooltip`, `keyboard`, `focusRing` and `svgAnimation` options, because Chart owns each of them.
+
+## Other marks
+
+Any mark that compiles to the seven node kinds draws through the same renderer, with no demo of its own: `dot` from `@tanstack/charts/dot` for a scatter plot, sized by its `r` channel; `ruleX` and `ruleY` from `/rule` for reference lines; `tickX` and `tickY` from `/tick`; `rect` and `cell` from `/rect`; `bandX` and `bandY` from `/band`; `text` from `/text`; and the horizontal `barX` and `lineX`.
+
+## Series colors
+
+There are six series tokens, and a seventh group starts again at series 1, so two groups share a color. Fold small groups into an "Other" group rather than let colors repeat.
+
+A chart whose groups carry meaning, such as a series that should read as danger, re-points `--ult-color-series-<n>` on its `Root` with a `stylex.createTheme` passed through `style`. The marks and the legend inside the root both follow it.
+
+```tsx
+import * as stylex from '@stylexjs/stylex';
+import { color } from '@ultima/tokens/tokens.stylex';
+
+// Errors are the second color group in the definition.
+const errorsInDanger = stylex.createTheme(color, {
+  '--ult-color-series-2': color['--ult-color-danger'],
+});
+
+<Chart.Root definition={definition} height={240} style={errorsInDanger}>
+  <Chart.Caption>Requests and errors</Chart.Caption>
+  <Chart.Plot />
+  <Chart.Legend />
+</Chart.Root>;
+```
 
 ## Props
 
@@ -78,10 +132,10 @@ A chart whose groups carry meaning, such as a series that should read as danger,
 | `Root` | `defaultActive` | `ChartPoint \| null` | `null` | The active point at mount, uncontrolled. |
 | `Root` | `onActiveChange` | `(point: ChartPoint \| null) => void` | — | Called when the keyboard, the pointer or `setActive` changes the active point. |
 | `Root` | `formatPoint` | `(point: ChartPoint) => string` | series, x, y | The text of the tooltip and the announcement. |
-| `Root`, `Caption`, `Tooltip` | `render` | `ReactElement \| function` | — | Changes the part's element from its default `figure`, `figcaption` or `div`. |
+| `Root`, `Caption`, `Tooltip`, `Legend` | `render` | `ReactElement \| function` | — | Changes the part's element from its default `figure`, `figcaption`, `div` or `ul`. |
 | Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
 
-`Chart.Plot` renders a fixed `svg` and takes no `render`.
+`Chart.Plot` renders a fixed `svg` and takes no `render`. `Chart.Legend` takes no children: its items come from the chart's color groups.
 
 ## Accessibility
 
@@ -89,5 +143,5 @@ A chart whose groups carry meaning, such as a series that should read as danger,
 - **Keyboard and focus.** The plot is one Tab stop and takes the focus ring on `:focus-visible`. The keys are in the table under Exploring a chart. The active point's ring marks it for keyboard and pointer alike.
 - **Announcements.** A clip-hidden `role="status"` region with `aria-atomic="true"` sits beside the SVG, mounted empty. It holds `formatPoint(active)` and empties when the point clears. A repeated text gains a Word Joiner, so it still announces. `Chart.Tooltip` is `aria-hidden`, so nothing is said twice.
 - **The data equivalent.** Pair every chart with a `Table` holding the same rows, beside it or in a `Collapsible` disclosure. A visually hidden table is not an equivalent.
-- **Color alone.** The caption names the chart and the table carries every value, so no reading depends on a bar's color.
+- **Color alone.** The legend names each series in text and its swatches are `aria-hidden`, and the table carries every value, so no reading depends on a mark's color.
 - **Motion.** Nothing animates, and the definition's `svgAnimation` is ignored.
