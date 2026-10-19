@@ -7,8 +7,18 @@ import { scaleLinear } from '@tanstack/charts/scales/linear';
 import { scalePoint } from '@tanstack/charts/scales/point';
 import { defineChart } from '@tanstack/charts/scene';
 import { stackRowsY } from '@tanstack/charts/transform/stack';
-import { Chart, type ChartCaptionProps, type ChartLegendProps, type ChartPlotProps, type ChartRootProps } from '@ultima/ui';
-import { expect, expectTypeOf, test } from 'vitest';
+import type { ChartPoint } from '@tanstack/charts/types';
+import {
+  Chart,
+  type ChartCaptionProps,
+  type ChartLegendProps,
+  type ChartPlotProps,
+  type ChartRootProps,
+  type ChartTooltipProps,
+  useChart,
+} from '@ultima/ui';
+import { expect, expectTypeOf, test, vi } from 'vitest';
+import { useState } from 'react';
 import { userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-react';
 
@@ -21,17 +31,19 @@ import { tokenValue } from './token-value';
  *    and a stacked area render in both color modes, sized by `height` or by `aspectRatio`.
  * 2. The name resolves: the figure is named by its caption, and the plot is `role="img"` with
  *    `aria-roledescription="chart"`, labelled by the same caption.
- * 3. The focus ring lands where the contract says: on nothing yet; the plot takes no focus until the
- *    keyboard model ships.
- * 4. The primitive is still wired: no primitive; `useRender` carries `render` and `ref` on Root and
- *    Caption, and the scene comes from `createChartRuntime` at the plot's measured size.
+ * 3. The focus ring lands where the contract says: the plot is one Tab stop with the system ring on
+ *    :focus-visible, and the active point carries the border-focus marker.
+ * 4. The primitive is still wired: no primitive; `useRender` carries `render` and `ref` on Root,
+ *    Caption and Tooltip, and the scene comes from `createChartRuntime` at the plot's measured size.
  * 5. Documented state drives its style: none; Chart has no data-* state.
  * 6. Typecheck passes: `height` and `aspectRatio` are mutually exclusive, className is rejected,
  *    and Plot takes no `render`.
  * 7. Behavior this component wires itself: the plot draws the scene's bars, lines, areas, dots, rules
  *    and labels from tokens by color group, with no `ts-chart` class or scene paint string, and the
  *    definition's own theme, tooltip, keyboard, focus ring and animation ignored; the legend lists
- *    one swatch and label per color group and takes no focus.
+ *    one swatch and label per color group and takes no focus. The keyboard moves a controllable
+ *    active point, the status region announces it, and the tooltip shows it. Pointer hover is the
+ *    docs demo's browser test, apps/docs/src/__tests__/chart.test.tsx.
  * 8. CSS the primitive reads: no primitive; the one inline declaration is the plot's size.
  */
 
@@ -55,6 +67,7 @@ const weekdayChart = defineChart({
 
 const styles = stylex.create({
   column: { inlineSize: '480px' },
+  unbounded: { maxWidth: 'none' },
 });
 
 function Weekdays(props: Partial<ChartRootProps>) {
@@ -70,7 +83,7 @@ function Weekdays(props: Partial<ChartRootProps>) {
 
 const plotOf = (container: Element) => container.querySelector('svg') as SVGSVGElement;
 const drawn = async (container: Element) => {
-  await expect.poll(() => plotOf(container).querySelectorAll('rect').length).toBeGreaterThan(0);
+  await expect.poll(() => plotOf(container).querySelectorAll('rect, polyline, polygon').length).toBeGreaterThan(0);
   return plotOf(container);
 };
 const labels = (plot: SVGSVGElement) => [...plot.querySelectorAll('text')];
@@ -117,7 +130,7 @@ test('the plot draws the bars, rules and labels of the scene, in proportion to t
   expect(texts).toContain('100000');
   // Gridlines, the two baselines and the tick stubs are all rules.
   expect(plot.querySelectorAll('line').length).toBeGreaterThan(weekdays.length);
-  // The scene's focus layer is the item's to draw, and nothing draws it yet.
+  // The scene's focus layer is not drawn: the item draws its own marker, and only on an active point.
   expect(plot.querySelectorAll('circle')).toHaveLength(0);
 });
 
@@ -302,6 +315,8 @@ test('the legend lists one swatch and text label per color group, and takes no f
   });
 
   await userEvent.tab();
+  expect(document.activeElement).toBe(plotOf(screen.container));
+  await userEvent.tab();
   expect(document.activeElement).toBe(screen.getByRole('button', { name: 'After' }).element());
   expect(list.element().querySelectorAll('[tabindex], button, a, input')).toHaveLength(0);
 });
@@ -334,18 +349,336 @@ test('aspectRatio sizes the plot from its width, and a resize compiles the scene
   expect(lastBar()).toBeLessThanOrEqual(320);
 });
 
-test('the plot takes no focus yet', async () => {
+const status = (container: Element) => container.querySelector('[role="status"]') as HTMLElement;
+const marker = (plot: SVGSVGElement) => plot.parentElement?.querySelector(':scope > span[aria-hidden="true"]') as HTMLElement | null;
+const press = async (...keys: string[]) => {
+  for (const key of keys) await userEvent.keyboard(`{${key}}`);
+};
+const focusPlot = async (container: Element) => {
+  const plot = await drawn(container);
+  await userEvent.tab();
+  expect(document.activeElement).toBe(plot);
+  return plot;
+};
+
+test('the plot is one Tab stop with the focus ring, focus alone activates nothing, and leaving clears the point', async () => {
+  const onActiveChange = vi.fn();
   const screen = await render(
     <>
-      <Weekdays />
+      <Weekdays onActiveChange={onActiveChange} />
       <button type="button">After</button>
     </>,
   );
-  await drawn(screen.container);
+  const plot = await focusPlot(screen.container);
+  expect(getComputedStyle(plot).outlineStyle).toBe('solid');
+  expect(getComputedStyle(plot).outlineColor).toBe(tokenValue('outline-color', 'var(--ult-color-border-focus)'));
+  expect(getComputedStyle(plot).outlineWidth).toBe('2px');
+  expect(getComputedStyle(plot).outlineOffset).toBe('2px');
+  expect(marker(plot)).toBeNull();
+  expect(status(screen.container).textContent).toBe('');
+  expect(onActiveChange).not.toHaveBeenCalled();
+  await press('ArrowRight');
+  expect(marker(plot)).not.toBeNull();
   await userEvent.tab();
   expect(document.activeElement).toBe(screen.getByRole('button', { name: 'After' }).element());
-  expect(plotOf(screen.container).hasAttribute('tabindex')).toBe(false);
+  expect(onActiveChange).toHaveBeenLastCalledWith(null);
+  expect(marker(plot)).toBeNull();
 });
+
+test('the status region is mounted empty beside the plot, and holds the formatted point once one is active', async () => {
+  const screen = await render(<Weekdays />);
+  const region = status(screen.container);
+  expect(region.tagName).toBe('SPAN');
+  expect(region.getAttribute('aria-atomic')).toBe('true');
+  expect(region.textContent).toBe('');
+  expect(getComputedStyle(region).clipPath).toBe('inset(50%)');
+  const plot = await focusPlot(screen.container);
+  expect(region.previousElementSibling).toBe(plot);
+  await press('ArrowRight');
+  expect(region.textContent).toBe('Mon, 84200');
+});
+
+test('Right and Left walk the series in x order from the first point, and Home and End reach its ends', async () => {
+  const screen = await render(<Weekdays />);
+  await focusPlot(screen.container);
+  const said = () => status(screen.container).textContent;
+  await press('ArrowRight');
+  expect(said()).toBe('Mon, 84200');
+  await press('ArrowRight');
+  expect(said()).toBe('Tue, 91700');
+  await press('ArrowLeft');
+  expect(said()).toBe('Mon, 84200');
+  await press('ArrowLeft');
+  expect(said()).toBe('Mon, 84200');
+  await press('End');
+  expect(said()).toBe('Sun, 38900');
+  await press('ArrowRight');
+  expect(said()).toBe('Sun, 38900');
+  await press('Home');
+  expect(said()).toBe('Mon, 84200');
+});
+
+test('Left, Home and End also start the walk when nothing is active', async () => {
+  for (const [key, text] of [
+    ['ArrowLeft', 'Mon, 84200'],
+    ['Home', 'Mon, 84200'],
+    ['End', 'Sun, 38900'],
+  ]) {
+    const screen = await render(<Weekdays />);
+    await focusPlot(screen.container);
+    await press(key as string);
+    expect(status(screen.container).textContent, key).toBe(text);
+    await screen.unmount();
+  }
+});
+
+test('Escape clears the active point, and Enter and Space do nothing', async () => {
+  const onActiveChange = vi.fn();
+  const screen = await render(<Weekdays onActiveChange={onActiveChange} />);
+  const plot = await focusPlot(screen.container);
+  await press('ArrowRight', 'ArrowRight');
+  expect(onActiveChange).toHaveBeenCalledTimes(2);
+  await press('Enter', ' ');
+  expect(onActiveChange).toHaveBeenCalledTimes(2);
+  expect(status(screen.container).textContent).toBe('Tue, 91700');
+  await press('Escape');
+  expect(onActiveChange).toHaveBeenLastCalledWith(null);
+  expect(status(screen.container).textContent).toBe('');
+  expect(marker(plot)).toBeNull();
+  expect(document.activeElement).toBe(plot);
+});
+
+const bySource = ['Mon', 'Tue', 'Wed'].flatMap((day, index) => [
+  { day, source: 'API', requests: 40 + index },
+  { day, source: 'Web', requests: 20 + index },
+]);
+const stacked = defineChart({
+  marks: [barY(bySource, { x: 'day', y: 'requests', color: 'source' })],
+  scales: { x: { scale: scaleBand }, y: { scale: scaleLinear } },
+});
+
+test('Up and Down move to the same x in the next and previous series, and Home and End stay in the active one', async () => {
+  const screen = await render(<Weekdays definition={stacked} />);
+  await focusPlot(screen.container);
+  const said = () => status(screen.container).textContent;
+  await press('ArrowRight');
+  expect(said()).toBe('API, Mon, 40');
+  await press('ArrowDown');
+  expect(said()).toBe('API, Mon, 40');
+  await press('ArrowUp');
+  expect(said()).toBe('Web, Mon, 20');
+  await press('ArrowUp');
+  expect(said()).toBe('Web, Mon, 20');
+  await press('ArrowRight');
+  expect(said()).toBe('Web, Tue, 21');
+  await press('End');
+  expect(said()).toBe('Web, Wed, 22');
+  await press('ArrowDown');
+  expect(said()).toBe('API, Wed, 42');
+  await press('Home');
+  expect(said()).toBe('API, Mon, 40');
+});
+
+test('on a two-series line the keys walk one line and Up and Down cross to the other, naming its series', async () => {
+  const screen = await render(<Weekdays definition={lineChart} />);
+  await focusPlot(screen.container);
+  const said = () => status(screen.container).textContent;
+  await press('ArrowRight');
+  expect(said()).toBe('Web, Jan, 120');
+  await press('ArrowRight');
+  expect(said()).toBe('Web, Feb, 130');
+  await press('ArrowUp');
+  expect(said()).toBe('API, Feb, 86');
+  await press('End');
+  expect(said()).toBe('API, Jun, 110');
+});
+
+test('formatPoint is the announcement, and a repeated text still announces', async () => {
+  const screen = await render(<Weekdays formatPoint={(point) => (Number(point.yValue) > 80_000 ? 'Busy' : 'Quiet')} />);
+  await focusPlot(screen.container);
+  const said = () => status(screen.container).textContent;
+  await press('ArrowRight');
+  expect(said()).toBe('Busy');
+  await press('ArrowRight');
+  expect(said()).toBe('Busy⁠');
+  await press('ArrowRight');
+  expect(said()).toBe('Busy');
+  await press('End');
+  expect(said()).toBe('Quiet');
+});
+
+test('the default text reads values through the axis formats', async () => {
+  const thousands = defineChart({
+    marks: [barY(weekdays, { x: 'day', y: 'requests' })],
+    scales: {
+      x: { scale: scaleBand, axis: { ticks: { format: (day: string) => day.toUpperCase() } } },
+      y: { scale: scaleLinear, axis: { ticks: { format: (value: number) => `${value / 1000}k` } } },
+    },
+  });
+  const screen = await render(<Weekdays definition={thousands} />);
+  await focusPlot(screen.container);
+  await press('ArrowRight');
+  expect(status(screen.container).textContent).toBe('MON, 84.2k');
+});
+
+test('the active point carries a border-focus ring over a page-colored disc, at the point', async () => {
+  const onActiveChange = vi.fn();
+  const screen = await render(<Weekdays onActiveChange={onActiveChange} />);
+  const plot = await focusPlot(screen.container);
+  await press('ArrowRight', 'ArrowRight');
+  const point = onActiveChange.mock.lastCall?.[0] as ChartPoint;
+  const ring = marker(plot) as HTMLElement;
+  const box = ring.getBoundingClientRect();
+  const origin = plot.getBoundingClientRect();
+  expect(box.left + box.width / 2 - origin.left).toBeCloseTo(point.x, 0);
+  expect(box.top + box.height / 2 - origin.top).toBeCloseTo(point.y, 0);
+  expect(box.width).toBe(10);
+  expect(box.height).toBe(10);
+  const paint = getComputedStyle(ring);
+  expect(paint.borderTopColor).toBe(tokenValue('border-color', 'var(--ult-color-border-focus)'));
+  expect(paint.backgroundColor).toBe(tokenValue('background-color', 'var(--ult-color-surface)'));
+  expect(paint.borderTopWidth).toBe('2px');
+  expect(paint.borderRadius).toBe(tokenValue('border-radius', 'var(--ult-radius-full)'));
+  expect(paint.pointerEvents).toBe('none');
+});
+
+function Controlled({ onActiveChange }: { onActiveChange: (point: ChartPoint | null) => void }) {
+  const [active, setActive] = useState<ChartPoint | null>(null);
+  return (
+    <Weekdays
+      active={active}
+      onActiveChange={(point) => {
+        onActiveChange(point);
+        if (point?.xValue !== 'Wed') setActive(point);
+      }}
+    />
+  );
+}
+
+test('a controlled active point moves only when the owner takes the change', async () => {
+  const onActiveChange = vi.fn();
+  const screen = await render(<Controlled onActiveChange={onActiveChange} />);
+  await focusPlot(screen.container);
+  await press('ArrowRight', 'ArrowRight');
+  expect(status(screen.container).textContent).toBe('Tue, 91700');
+  await press('ArrowRight');
+  expect((onActiveChange.mock.lastCall?.[0] as ChartPoint).xValue).toBe('Wed');
+  expect(status(screen.container).textContent).toBe('Tue, 91700');
+});
+
+function Readout() {
+  const { scene, active, setActive } = useChart();
+  return (
+    <button type="button" onClick={() => setActive(scene?.points.at(-1) ?? null)}>
+      {active ? `${String(active.xValue)} active` : 'None active'}
+    </button>
+  );
+}
+
+test('useChart reads and sets the active point from a part of the consumer’s own', async () => {
+  const screen = await render(
+    <div {...stylex.props(styles.column)}>
+      <Chart.Root definition={weekdayChart} height={240}>
+        <Chart.Caption>Requests per weekday</Chart.Caption>
+        <Chart.Plot />
+        <Readout />
+      </Chart.Root>
+    </div>,
+  );
+  await drawn(screen.container);
+  const readout = screen.getByRole('button');
+  await expect.element(readout).toHaveTextContent('None active');
+  await readout.click();
+  await expect.element(readout).toHaveTextContent('Sun active');
+  expect(status(screen.container).textContent).toBe('Sun, 38900');
+});
+
+test('defaultActive seeds the active point, matched by key in the scene the plot draws', async () => {
+  const onActiveChange = vi.fn();
+  const first = await render(<Weekdays onActiveChange={onActiveChange} />);
+  await focusPlot(first.container);
+  await press('End');
+  const sunday = onActiveChange.mock.lastCall?.[0] as ChartPoint;
+  await first.unmount();
+  const seeded = await render(<Weekdays defaultActive={{ ...sunday }} />);
+  await expect.poll(() => status(seeded.container).textContent).toBe('Sun, 38900');
+  expect(marker(plotOf(seeded.container))).not.toBeNull();
+});
+
+function Outside() {
+  useChart();
+  return null;
+}
+
+test('useChart throws outside Chart.Root', async () => {
+  await expect(render(<Outside />)).rejects.toThrowError('useChart must be used inside Chart.Root.');
+});
+
+function Explored(props: Partial<ChartTooltipProps>) {
+  return (
+    <div {...stylex.props(styles.column)}>
+      <Chart.Root definition={weekdayChart} height={240}>
+        <Chart.Caption>Requests per weekday</Chart.Caption>
+        <Chart.Plot />
+        <Chart.Tooltip {...props} />
+      </Chart.Root>
+    </div>
+  );
+}
+
+test('the tooltip shows the active point’s text above it, hidden from assistive technology, in Tooltip’s popup tokens', async () => {
+  const screen = await render(<Explored />);
+  const plot = await focusPlot(screen.container);
+  const figure = screen.container.querySelector('figure') as HTMLElement;
+  expect(figure.querySelectorAll(':scope > div')).toHaveLength(0);
+  await press('ArrowRight', 'ArrowRight');
+  const tooltip = figure.querySelector(':scope > div') as HTMLElement;
+  expect(tooltip.textContent).toBe('Tue, 91700');
+  expect(tooltip.getAttribute('aria-hidden')).toBe('true');
+  const paint = getComputedStyle(tooltip);
+  expect(paint.backgroundColor).toBe(tokenValue('background-color', 'var(--ult-color-surface-raised)'));
+  expect(paint.borderTopColor).toBe(tokenValue('border-color', 'var(--ult-color-border)'));
+  expect(paint.borderRadius).toBe(tokenValue('border-radius', 'var(--ult-radius-sm)'));
+  expect(paint.boxShadow).toBe(tokenValue('box-shadow', 'var(--ult-shadow-sm)'));
+  expect(paint.fontSize).toBe(tokenValue('font-size', 'var(--ult-text-2)'));
+  expect(paint.pointerEvents).toBe('none');
+
+  const ring = (marker(plot) as HTMLElement).getBoundingClientRect();
+  const box = tooltip.getBoundingClientRect();
+  const center = ring.left + ring.width / 2;
+  expect(box.left).toBeLessThan(center);
+  expect(box.right).toBeGreaterThan(center);
+  expect(ring.top + ring.height / 2 - box.bottom).toBeCloseTo(12, 0);
+
+  await press('End');
+  const end = tooltip.getBoundingClientRect();
+  expect(end.right).toBeLessThanOrEqual(plot.getBoundingClientRect().right);
+  await press('Escape');
+  expect(figure.querySelectorAll(':scope > div')).toHaveLength(0);
+});
+
+test('render and style reach the tooltip', async () => {
+  const screen = await render(<Explored render={<p data-testid="tooltip" />} style={styles.unbounded} />);
+  await focusPlot(screen.container);
+  await press('ArrowRight');
+  const tooltip = screen.getByTestId('tooltip').element();
+  expect(tooltip.tagName).toBe('P');
+  expect(getComputedStyle(tooltip).maxWidth).toBe('none');
+});
+
+for (const mode of themes) {
+  test(`a chart with an active point and its tooltip passes axe in ${mode.name}`, async () => {
+    themeDocument(mode);
+    const screen = await render(
+      <main>
+        <Explored />
+      </main>,
+    );
+    await focusPlot(screen.container);
+    await press('ArrowRight');
+    expect(await violations()).toEqual([]);
+  });
+}
 
 test('render reaches Root, Caption and Legend', async () => {
   const screen = await render(
@@ -373,7 +706,10 @@ test('public prop types: one of height or aspectRatio, the style slot, no classN
   expectTypeOf<ChartCaptionProps>().toHaveProperty('render');
   expectTypeOf<ChartLegendProps>().toHaveProperty('render');
   expectTypeOf<ChartPlotProps>().not.toHaveProperty('render');
-  for (const part of [{} as ChartRootProps, {} as ChartCaptionProps, {} as ChartPlotProps, {} as ChartLegendProps]) {
+  expectTypeOf<ChartTooltipProps>().toHaveProperty('render');
+  expectTypeOf<ChartRootProps['active']>().toEqualTypeOf<ChartPoint | null | undefined>();
+  expectTypeOf<ChartRootProps['formatPoint']>().toEqualTypeOf<((point: ChartPoint) => string) | undefined>();
+  for (const part of [{} as ChartRootProps, {} as ChartCaptionProps, {} as ChartPlotProps, {} as ChartTooltipProps, {} as ChartLegendProps]) {
     expectTypeOf(part).not.toHaveProperty('className');
     expectTypeOf(part).toHaveProperty('style');
   }

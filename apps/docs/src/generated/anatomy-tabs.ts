@@ -27,7 +27,7 @@ export const anatomyTabs: Record<string, { parts: readonly string[]; demo?: Comp
   'button-group': { parts: ['Root', 'Item'] },
   'calendar': { parts: ['Root', 'Label', 'Content', 'ViewControl', 'PrevTrigger', 'NextTrigger', 'ViewTrigger', 'RangeText', 'View', 'Table', 'TableHead', 'TableBody', 'TableRow', 'TableHeader', 'TableCell', 'TableCellTrigger', 'MonthSelect', 'YearSelect'] },
   'card': { parts: ['Root', 'Header', 'Title', 'Description', 'Body', 'Footer'] },
-  'chart': { parts: ['Root', 'Caption', 'Plot', 'Legend'] },
+  'chart': { parts: ['Root', 'Caption', 'Plot', 'Tooltip', 'Legend'] },
   'checkbox': { parts: ['Root', 'Indicator', 'Group'] },
   'code': { parts: ['Code'] },
   'collapsible': { parts: ['Root', 'Trigger', 'Panel'] },

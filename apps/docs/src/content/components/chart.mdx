@@ -48,9 +48,46 @@ Every chart pairs with a `Table` of the same rows. Where a table beside the char
 
 <Demo component={CollapsibleTable} source={collapsibleTableSource} fill />
 
+## Exploring a chart
+
+`Chart.Plot` is one Tab stop. Focusing it activates nothing: the first arrow key starts at the first point. Hovering activates the point nearest the pointer, and leaving the plot or moving focus away clears it. The active point carries a ring in `--ult-color-border-focus`, and `Chart.Plot` announces it through a status region it renders beside the SVG.
+
+`Chart.Tooltip` shows the same text near the active point. It wears Tooltip's popup tokens and is `aria-hidden`, since the status region already speaks the text. Place it inside `Chart.Root`, after the plot, with no positioned element between them, because Root's box is the one it is placed in. It renders nothing while no point is active.
+
+`formatPoint` on the root is the one text for the tooltip and the announcement. The default reads the series label, when the mark has color groups, then the x and y values through the definition's axis tick formats, so a compact axis such as `84K` reads `Mon, 84K`. The demo passes its own, which spells the exact value and its unit.
+
+| Key | Moves to |
+| --- | --- |
+| Right Arrow, Left Arrow | The next or previous point in x order within the active series. With no active point, the first point. |
+| Up Arrow, Down Arrow | The nearest point at the same x in the next or previous series. |
+| Home, End | The first or last point of the active series. |
+| Escape | Clears the active point. |
+| Enter, Space | Nothing: there is no selection, and the tooltip already follows the active point. |
+
+A series is one mark's color group, in the order the scene lists its points, so in a stacked bar chart Up climbs the stack. The order comes from TanStack's `viewportInteractionPoints`, and hover from its `findNearestPoint`.
+
+The active point is shared state. Pass `active` and `onActiveChange` to control it, or `defaultActive` to seed it. A point is matched by its `key`, so a point from an earlier render still finds its mark after a resize.
+
+### useChart
+
+`useChart()` returns `{ scene, active, setActive }` for a part of your own inside `Chart.Root`, such as a table row that marks the active point. `scene` is the compiled `ChartScene`, or `null` until the plot has been measured. The hook throws outside `Chart.Root`.
+
+```tsx
+function DayRow({ day, requests }: { day: string; requests: number }) {
+  const { scene, setActive } = useChart();
+  const point = scene?.points.find((candidate) => candidate.xValue === day) ?? null;
+  return (
+    <Table.Row onPointerEnter={() => setActive(point)} onPointerLeave={() => setActive(null)}>
+      <Table.Cell>{day}</Table.Cell>
+      <Table.Cell numeric>{requests}</Table.Cell>
+    </Table.Row>
+  );
+}
+```
+
 ## What Chart draws, and what it ignores
 
-`Chart.Plot` walks the compiled scene and draws its seven node kinds as SVG elements painted from tokens: `group`, `rule`, `rect`, `polyline`, `area`, `dot` and `label`.
+`Chart.Plot` walks the compiled scene and draws its seven node kinds as SVG elements painted from tokens: `group`, `rule`, `rect`, `polyline`, `area`, `dot` and `label`, then the active point's ring over them.
 
 - **Marks** take `--ult-color-series-1` through `-6` by their group's position in the color domain. Bars, area bands and dots fill solid in their series color, and a line is a 2px stroke in it. A dot keeps the radius the scene gives it, because a dot's size can be data. Lines and bands run straight between their points.
 - **Guides.** Gridlines and the axis baseline take `--ult-color-border`. Tick labels take `--ult-color-text-subtle`, and axis titles and band labels `--ult-color-text-muted`, all at `--ult-text-3`. Labels are measured with the plot's own font, so the scene's layout matches the text you see.
@@ -91,7 +128,11 @@ const errorsInDanger = stylex.createTheme(color, {
 | `Root` | `definition` | `ChartDefinition` | — | Required. A `defineChart({ marks })` result. |
 | `Root` | `height` | `number` | — | CSS pixels. Exactly one of `height` or `aspectRatio`, written inline on the plot as its one size declaration. |
 | `Root` | `aspectRatio` | `number` | — | Width over height. Exactly one of `height` or `aspectRatio`. |
-| `Root`, `Caption`, `Legend` | `render` | `ReactElement \| function` | — | Changes the part's element from its default `figure`, `figcaption` or `ul`. |
+| `Root` | `active` | `ChartPoint \| null` | — | The active point, controlled. |
+| `Root` | `defaultActive` | `ChartPoint \| null` | `null` | The active point at mount, uncontrolled. |
+| `Root` | `onActiveChange` | `(point: ChartPoint \| null) => void` | — | Called when the keyboard, the pointer or `setActive` changes the active point. |
+| `Root` | `formatPoint` | `(point: ChartPoint) => string` | series, x, y | The text of the tooltip and the announcement. |
+| `Root`, `Caption`, `Tooltip`, `Legend` | `render` | `ReactElement \| function` | — | Changes the part's element from its default `figure`, `figcaption`, `div` or `ul`. |
 | Every part | `style` | `StyleXStyles` | — | The style slot, merged last. There is no `className`. |
 
 `Chart.Plot` renders a fixed `svg` and takes no `render`. `Chart.Legend` takes no children: its items come from the chart's color groups.
@@ -99,6 +140,8 @@ const errorsInDanger = stylex.createTheme(color, {
 ## Accessibility
 
 - **Role and name.** `Chart.Root` is a `figure` named by `Chart.Caption`, which is required. `Chart.Plot` is an `svg` with `role="img"` and `aria-roledescription="chart"`, labelled by the same caption through `aria-labelledby`.
+- **Keyboard and focus.** The plot is one Tab stop and takes the focus ring on `:focus-visible`. The keys are in the table under Exploring a chart. The active point's ring marks it for keyboard and pointer alike.
+- **Announcements.** A clip-hidden `role="status"` region with `aria-atomic="true"` sits beside the SVG, mounted empty. It holds `formatPoint(active)` and empties when the point clears. A repeated text gains a Word Joiner, so it still announces. `Chart.Tooltip` is `aria-hidden`, so nothing is said twice.
 - **The data equivalent.** Pair every chart with a `Table` holding the same rows, beside it or in a `Collapsible` disclosure. A visually hidden table is not an equivalent.
 - **Color alone.** The legend names each series in text and its swatches are `aria-hidden`, and the table carries every value, so no reading depends on a mark's color.
 - **Motion.** Nothing animates, and the definition's `svgAnimation` is ignored.
