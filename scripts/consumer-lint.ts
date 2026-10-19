@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { appendFile, copyFile, mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
-import { LINT_PINS, VERIFIED_MAJORS } from '../packages/cli/src/lint.ts';
+import { LINT_PINS, LINT_TYPESCRIPT, VERIFIED_MAJORS } from '../packages/cli/src/lint.ts';
 import { toStylex } from '../packages/tokens/src/theme/export.ts';
 import type { ThemeDraft } from '../packages/tokens/src/theme/draft.ts';
 import { repository, type Run } from './consumer-helpers.ts';
@@ -17,7 +17,7 @@ export { LINT_PINS };
 /** The supplied severities: 2 error, 1 warning, 0 off. */
 export const LINT_RULES: Record<string, number> = { '@stylexjs/valid-styles': 2, '@stylexjs/no-unused': 1, '@stylexjs/valid-shorthands': 1, '@stylexjs/no-conflicting-props': 1, '@stylexjs/sort-keys': 0 };
 /** The install command for a project without ESLint, as the walkthrough prints it. */
-export const LINT_INSTALL = ['install', '-D', '--save-exact', ...Object.entries(LINT_PINS).map(([name, version]) => `${name}@${version}`)];
+export const LINT_INSTALL = ['install', '-D', '--save-exact', ...Object.entries(LINT_PINS).map(([name, version]) => `${name}@${version}`), `typescript@${LINT_TYPESCRIPT}`];
 /** The complete config for a project without ESLint, byte for byte as the install walkthrough shows it. */
 export const MINIMAL_CONFIG = `import tseslint from 'typescript-eslint';
 import { ultimaStylex } from './ultima.eslint.mjs';

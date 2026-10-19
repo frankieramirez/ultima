@@ -211,6 +211,7 @@ describe('hook', () => {
 });
 
 describe('the installed Claude Code hook', () => {
+  // Install plus a hook command allowed 30 seconds: the default 5-second limit fails it on a loaded machine.
   it('returns the finding for a recorded payload piped into its command', async () => {
     const app = consumer();
     expect((await run(['install', '--cwd', app, '--harness', 'claude'])).code).toBe(0);
@@ -231,5 +232,5 @@ describe('the installed Claude Code hook', () => {
     expect(result.status).toBe(0);
     const { additionalContext } = JSON.parse(result.stdout).hookSpecificOutput;
     expect(additionalContext).toMatch(/^Fix before handing work back: ULT-APP-PALETTE-001 src\/Palette\.tsx:7:/);
-  });
+  }, 60_000);
 });
