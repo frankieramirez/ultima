@@ -14,6 +14,8 @@ import { compareVersions, position, resolveInstalledVersion } from './setup.ts';
 export const LINT_PINS = { eslint: '9.39.5', 'typescript-eslint': '8.71.1', '@stylexjs/eslint-plugin': '0.19.1' } as const;
 /** ESLint and its TypeScript parser are verified by major line; the plugin must match the installed `@stylexjs/stylex` exactly. */
 export const VERIFIED_MAJORS = { eslint: 9, '@typescript-eslint/parser': 8 } as const;
+/** typescript-eslint 8 peers on TypeScript below 6.1, and create-vite 9.3 scaffolds TypeScript 7, so a fresh install holds TypeScript at 6.0. */
+export const LINT_TYPESCRIPT = '~6.0';
 
 const PLUGIN = '@stylexjs/eslint-plugin';
 /** The StyleX runtime and compiler packages a setup recipe installs, which move together with the lint plugin. */
@@ -85,7 +87,7 @@ export function doctorLint(root: string, target: Target | null): LintReport {
       `${NOT_CONFIGURED}: ${versions.eslint ? 'ESLint is installed, but the project root has no eslint.config.* file' : 'no ESLint package resolves and the project root has no ESLint config'}.`,
       versions.eslint
         ? `Install ${PLUGIN}@${pluginVersion} if it is missing, then ${create}${behind ? ` ${align}` : ''}`
-        : `Run \`npm install -D --save-exact ${(['eslint', 'typescript-eslint', PLUGIN] as const).map(pinned).join(' ')}\`, then ${create}`,
+        : `Run \`npm install -D --save-exact ${(['eslint', 'typescript-eslint', PLUGIN] as const).map(pinned).join(' ')} typescript@${LINT_TYPESCRIPT}\`, then ${create}`,
     );
     return report('not-configured', NOT_CONFIGURED, null);
   }

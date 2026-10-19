@@ -23,13 +23,13 @@ The [upstream rule reference](https://stylexjs.com/docs/api/configuration/eslint
 
 ## Compatibility and ownership
 
-The plugin declares no ESLint peer range, so package metadata alone cannot prove compatibility. The decision started from ESLint 9.39.5, `typescript-eslint` 8.71.1 and `@stylexjs/eslint-plugin` 0.19.0. Setup items install the latest StyleX runtime, which was 0.19.1 when the installed fixtures ran on October 9, 2026, so the plugin follows it to 0.19.1. The 0.19.1 plugin also needs `allowOuterPseudoAndMedia` for shipped sources ([#791](https://github.com/frankieramirez/ultima/issues/791)). `init` pins the StyleX runtime and compiler packages to the same 0.19.1, and the workspace resolves it, so the plugin, the runtime and doctor's tested ceiling agree ([#809](https://github.com/frankieramirez/ultima/pull/809)). The 0.19.0 plugin rejects shipped sources such as Select's numeric `gridColumn`, so a project on an older runtime moves its StyleX packages up to the tested version; the plugin never moves down to meet it. ESLint's `latest` tag is now 10, so an unpinned install no longer gets ESLint 9.
+The plugin declares no ESLint peer range, so package metadata alone cannot prove compatibility. The decision started from ESLint 9.39.5, `typescript-eslint` 8.71.1 and `@stylexjs/eslint-plugin` 0.19.0. Setup items install the latest StyleX runtime, which was 0.19.1 when the installed fixtures ran on October 9, 2026, so the plugin follows it to 0.19.1. The 0.19.1 plugin also needs `allowOuterPseudoAndMedia` for shipped sources ([#791](https://github.com/frankieramirez/ultima/issues/791)). `init` pins the StyleX runtime and compiler packages to the same 0.19.1, and the workspace resolves it, so the plugin, the runtime and doctor's tested ceiling agree ([#809](https://github.com/frankieramirez/ultima/pull/809)). The 0.19.0 plugin rejects shipped sources such as Select's numeric `gridColumn`, so a project on an older runtime moves its StyleX packages up to the tested version; the plugin never moves down to meet it. ESLint's `latest` tag is now 10, so an unpinned install no longer gets ESLint 9. create-vite 9.3.0 (October 19, 2026) scaffolds TypeScript 7, and `typescript-eslint` 8 peers on TypeScript below 6.1, so the no-ESLint install also holds TypeScript at `~6.0`. The template's `tsconfig` is unchanged from 9.2.1, so TypeScript 6.0 builds it. Lift the hold when `typescript-eslint` supports TypeScript 7.
 
 The published combination is the one every installed fixture passed:
 
 | Fixture | ESLint | typescript-eslint | `@stylexjs/eslint-plugin` / `@stylexjs/stylex` | TypeScript | Framework |
 | --- | --- | --- | --- | --- | --- |
-| Vite, create-vite 9.2.1, minimal config | 9.39.5 | 8.71.1 | 0.19.1 / 0.19.1 | 6.0.3 | Vite 8.3.4, oxlint 1.87.0 kept |
+| Vite, create-vite 9.3.0, minimal config | 9.39.5 | 8.71.1 | 0.19.1 / 0.19.1 | 6.0.3, held from the template's 7.0.2 | Vite 8.3.4, oxlint 1.88.0 kept |
 | Next root `app`, create-next-app 16.4.0 `--eslint` | 9.39.5 | 8.71.1 (through `eslint-config-next` 16.4.0) | 0.19.1 / 0.19.1 | 5.9.3 | Next 16.4.0 |
 | Next `src/app`, create-next-app 16.4.0 `--eslint` | 9.39.5 | 8.71.1 (through `eslint-config-next` 16.4.0) | 0.19.1 / 0.19.1 | 5.9.3 | Next 16.4.0 |
 
@@ -95,7 +95,7 @@ For create-next-app's config, import `ultimaStylex` and put it right after `...n
 For an absent lint installation, install the published pins. Existing projects add only missing compatible dependencies and preserve their lockfile choices; a create-next-app project with ESLint adds only `@stylexjs/eslint-plugin@0.19.1`. Install and pin the CLI separately through its existing documented path.
 
 ```sh
-pnpm add -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1
+pnpm add -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 typescript@~6.0
 pnpm exec eslint --print-config src/main.tsx
 pnpm exec eslint .
 pnpm exec ultima doctor
