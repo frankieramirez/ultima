@@ -103,7 +103,7 @@ Any mark that compiles to the seven node kinds draws through the same renderer, 
 
 There are six series tokens, and a seventh group starts again at series 1, so two groups share a color. Fold small groups into an "Other" group rather than let colors repeat.
 
-A chart whose groups carry meaning, such as a series that should read as danger, re-points `--ult-color-series-<n>` to that status's `-text` ink on its `Root` with a `stylex.createTheme` passed through `style`. The marks and the legend inside the root both follow it. The `-text` ink is the status color gated against the surface, so it reads as a mark in both modes.
+A series that counts a status, such as errors per day, re-points `--ult-color-series-<n>` to that status's `-text` ink on its `Root` with a `stylex.createTheme` passed through `style`. The marks and the legend inside the root both follow it. The `-text` ink is the status color gated against `surface` and `surface-raised`, so it reads as a mark in both modes.
 
 ```tsx
 import * as stylex from '@stylexjs/stylex';
