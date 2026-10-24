@@ -23,6 +23,11 @@
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=0, must-revalidate
 
+# The share video and its poster, rendered by `pnpm og:video`. The names are not fingerprinted, so a
+# rerender keeps its URL: a day fresh, then a week served stale while it revalidates, not immutable.
+/og/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
 # Vite fingerprints everything here, so a changed byte is a changed URL.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

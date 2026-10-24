@@ -31,6 +31,7 @@ All paths below are relative to `apps/docs/public/`.
 | Default compact mark | `brand/ultima-mark.svg` | Ink, transparent background |
 | Square avatar | `brand/ultima-avatar.svg`, `.png` | Repository or social avatar; PNG is 1024 × 1024 |
 | Social card | `brand/ultima-social.svg`, `og.png` | Editable vector and 1200 × 630 share image |
+| Share video | `og/theme-studio.mp4`, `og/theme-studio.jpg` | 8-second 1200 × 630 loop of Theme Studio re-theming Dashboard 01, and its poster |
 | Browser icons | `favicon.svg`, `favicon.ico` | SVG and 16–256 px ICO sizes |
 | Platform icons | `apple-touch-icon.png`, `android-chrome-*.png` | 180, 192, and 512 px icons |
 | Review board | `brand/ultima-brand-board.png` | Both backgrounds and actual-size icon samples |
@@ -48,3 +49,5 @@ python3 -m venv .scratch/brand-venv
 ```
 
 CairoSVG also requires the system Cairo library. The generator holds the custom wordmark paths, uses the bundled fonts for social-card captions, and produces vector and raster exports from the same geometry. It writes provenance into PNG metadata. Edit the generator rather than its output. After regeneration, inspect the board and share image, then verify the site header in both modes at desktop and mobile widths.
+
+The share video is rendered from the production docs build, not from this generator. Run `pnpm og:video` from the repository root after a change to the social card's title treatment, Dashboard 01 or the presets. It needs ffmpeg with libx264 and the Playwright Chromium the repository pins, builds the docs first (`--skip-build` reuses `apps/docs/dist`), and rewrites both files in `apps/docs/public/og/`. Grove and Cinder name system fonts, so a machine with different fonts renders those frames slightly differently. Inspect a few frames before committing.
