@@ -207,7 +207,7 @@ test('the month and year selects drive the grid', async () => {
   const rangeText = screen.container.querySelector('[data-part="range-text"]')!;
   const before = rangeText.textContent;
   const monthSelect = selects[0]!;
-  const nextMonth = String((Number(monthSelect.value) + 1) % 12);
+  const nextMonth = String((Number(monthSelect.value) % 12) + 1);
   await userEvent.selectOptions(monthSelect, nextMonth);
   await expect.poll(() => rangeText.textContent).not.toBe(before);
 });
