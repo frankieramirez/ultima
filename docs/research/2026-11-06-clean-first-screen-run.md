@@ -8,7 +8,7 @@ Research for [#987](https://github.com/frankieramirez/ultima/issues/987), 2026-1
 
 Drop `--safe-mode`. It turns off skills and hooks, so an installed arm cannot use it. `--bare` and `--restricted` don't work either. The documented way to load the project's skill and hooks and nothing else has four parts:
 
-1. Start Claude Code **in the application root**, the directory where `ultima-design install --harness claude` wrote `.claude/`. Claude Code reads hooks from the `.claude/settings.json` of the primary working directory only, with no parent fallback and no subdirectory discovery.
+1. Start Claude Code **in the application root**, the directory where `npx ultima-design install --harness claude` wrote `.claude/`. Claude Code reads hooks from the `.claude/settings.json` of the primary working directory only, with no parent fallback and no subdirectory discovery.
 2. Pass `--setting-sources project`, so user and local settings, user CLAUDE.md and rules, and user skills, commands and agents don't load.
 3. Point `CLAUDE_CONFIG_DIR` at a new empty directory. `~/.claude.json`, auto memory, installed plugins, synced claude.ai skills and credentials all live under it, and `--setting-sources` doesn't cover `~/.claude.json` or auto memory.
 4. Pass `--strict-mcp-config` with no `--mcp-config`, plus `disableBundledSkills: true` and `autoMemoryEnabled: false` in `--settings`.
@@ -79,11 +79,17 @@ Sources: Agent SDK *What settingSources does not control* and the `settingSource
 This assumes the project was prepared before launch: `init`, then `git init` in the app root, then `install --harness claude`. That leaves `larder/.claude/skills/ultima-design/SKILL.md` and `larder/.claude/settings.json` with one `PostToolUse` entry. The entry has `matcher: "Edit|Write"` and runs `cd "$CLAUDE_PROJECT_DIR" && npx --no-install ultima-design hook claude 2>/dev/null || true` with a 30-second timeout (`packages/cli/src/install.ts`, `hookEntry`).
 
 ```bash
-# after the runner strips CLAUDE* from env, set these again:
-CLAUDE_CONFIG_DIR="$RUN/claude-config"      # new, empty directory
-CLAUDE_CODE_OAUTH_TOKEN="<from claude setup-token>"   # or ANTHROPIC_API_KEY
-CLAUDE_CODE_DISABLE_AUTO_MEMORY=1
-ENABLE_CLAUDEAI_MCP_SERVERS=false
+# after the runner strips CLAUDE* from env, export these again:
+export CLAUDE_CONFIG_DIR="$RUN/claude-config"      # new, empty directory
+export CLAUDE_CODE_OAUTH_TOKEN="<from claude setup-token>"   # or ANTHROPIC_API_KEY
+export CLAUDE_CODE_DISABLE_AUTO_MEMORY=1
+export ENABLE_CLAUDEAI_MCP_SERVERS=false
+
+# the deny list as scripts/first-screen.ts builds it today, plus the two keys;
+# SERVED=1 when the run may read the live ultima.systems host
+SETTINGS=$(node -e 'const served = process.argv[1] === "1";
+const deny = ["WebSearch", ...(served ? ["WebFetch(domain:ultima.systems)"] : []), "Read(~/orca/**)", "Read(~/Projects/**)", "Read(~/.herdr/**)"];
+console.log(JSON.stringify({ permissions: { deny }, disableBundledSkills: true, autoMemoryEnabled: false }));' "$SERVED")
 
 cd "$RUN/work/larder"     # the application root and its git root
 claude -p "$PROMPT" \
@@ -94,7 +100,7 @@ claude -p "$PROMPT" \
   --output-format stream-json --verbose \
   --include-hook-events \
   --debug-file "$RUN/claude-debug.log" \
-  --settings '{"permissions":{"deny":[...same as today...]},"disableBundledSkills":true,"autoMemoryEnabled":false}'
+  --settings "$SETTINGS"
 ```
 
 Keep session persistence on: don't pass `--no-session-persistence`. The session JSONL under `$CLAUDE_CONFIG_DIR/projects/` saves each hook's injected `additionalContext` (hooks, *Add context for Claude*), so it is a second record. Its format is not documented.
@@ -110,7 +116,7 @@ Keep session persistence on: don't pass `--no-session-persistence`. The session 
    For a clean run, assert that `cwd` is the app root, `skills` is exactly `["ultima-design"]`, `plugins` is `[]`, `mcp_servers` is `[]` and no `*_errors` key is present. The ultima-design skill has a `description` and doesn't set `user-invocable: false` (`packages/cli/skill/ultima-design/SKILL.md`), so it belongs in `skills` (agent-sdk/skills *Confirm skills loaded*).
 2. **That the skill was used.** Look for an assistant `tool_use` block named `Skill` that names `ultima-design`, followed by its `tool_result`. The rendered SKILL.md enters the conversation as a single message (skills *Skill content lifecycle*). A `Read` or `Bash cat` of `.claude/skills/ultima-design/SKILL.md` also counts as reading it. The SDK reference doesn't give the Skill tool's input field name.
 3. **That the hook fired.** `--include-hook-events` adds `system/hook_started`, `hook_progress` and `hook_response` events (cli-reference; SDK `SDKHookStartedMessage` and `SDKHookResponseMessage`). Each response carries `hook_id`, `hook_name`, `hook_event`, `stdout`, `stderr`, `exit_code` and `outcome`.
-   - Match each `Edit` or `Write` tool_use to a `hook_event: "PostToolUse"` started/response pair with `exit_code: 0`.
+   - Match each successful `Edit` or `Write` tool_use (its `tool_result` is not an error) to a `hook_event: "PostToolUse"` started/response pair with `exit_code: 0`. `PostToolUse` fires only after a tool call succeeds, so a failed or denied edit has no pair.
    - When the hook found something, `stdout` is `{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Fix before handing work back: …"}}` (`packages/cli/src/hook.ts`, `renderHookOutput`). Otherwise it is empty.
    - Install writes the only hook, so the run should contain no other `hook_event`.
 4. **Which command ran.** `--debug-file` writes one line per command hook in v2.1.296 or later: `Hooks: PostToolUse:Write [<command>] finished with status 0 (<n>ms)` (hooks *Debug hooks*). The bracketed command ties each run to `npx --no-install ultima-design hook claude`. A line with another command is a leak.
@@ -119,7 +125,7 @@ Some cases these checks cannot separate:
 
 - **A clean edit and a failed command look the same.** The managed command ends in `2>/dev/null || true`, and `hook` exits 0 and prints nothing when it finds nothing (`packages/cli/src/hook.ts`). So exit 0 with empty stdout also covers `npx --no-install` failing to find `ultima-design`. Three ways to separate them:
   - require at least one response whose stdout carries findings;
-  - after the run, replay a recorded `Write` payload into `npx --no-install ultima-design hook claude` in the finished app;
+  - after the run, write a controlled violation (for example a raw hex color) into a copy of the finished app and pipe a matching `Write` payload into `npx --no-install ultima-design hook claude` there. The hook reads the file on disk, not the payload, so replaying an old payload against the finished app proves nothing, and an empty result can't tell a clean file from a swallowed error. A finding from the seeded file shows the command resolves and runs;
   - add a product-side breadcrumb, such as an environment-variable log path the `hook` command appends to. That would be a CLI change for a later ticket.
 - **Shell edits don't fire the hook.** Edits made through Bash (`shadcn add`, `sed`, heredocs) match no `Edit|Write` hook. Count only `Edit` and `Write` tool_uses when matching hook runs.
 - **CLAUDE.md loads leave no stream event.** To prove which instruction files loaded, add an `InstructionsLoaded` observer hook in `--settings` that appends its stdin (`file_path`, `memory_type`, `load_reason`) to a run file. That observer is harness instrumentation, not a project hook, and the record has to say so. `InstructionsLoaded` misses an AGENTS.md read directly (hooks *InstructionsLoaded*).
