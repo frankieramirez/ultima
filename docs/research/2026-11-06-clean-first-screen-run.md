@@ -51,6 +51,8 @@ So an installed arm has to prepare the project before the agent starts:
 3. Run `install --harness claude`.
 4. Launch `claude` with `cwd` set to the application root.
 
+That changes the prompt, not the measurement. Today's prompt (`scripts/first-screen.ts`) tells the agent to run `init larder`, to build in `./larder` and to write the notes file beside `./larder`. Started inside `larder`, an agent following it would make a nested `larder/larder`. The installed arm needs its own prompt text: drop the `init` step, say "build the screen in this directory", and point the notes file at `../` so it still lands beside the app. The runner already measures `<run>/work/larder`, which is this arm's working directory, so that stays as it is. Two prompts also mean two prompt hashes in the record, and #989 should decide whether that difference is acceptable or whether both arms should share one prompt that works from either directory.
+
 If the arm instead has the agent run `install` after starting in the application root, the docs say a project `.claude/settings.json` created mid-session loads, "even when you create the folder in the same session" (settings, *When edits take effect*). A project skills directory that didn't exist at startup needs `/reload-skills`, though, which `-p` can't send (skills, *Edit a skill during a session*). Preparing the project first avoids both problems.
 
 ### What each remaining source is, and what keeps it out
