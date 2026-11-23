@@ -1,7 +1,7 @@
 // Ultima's StyleX lint fragment for an ESLint 9 flat config: https://ultima.systems/install#stylex-lint
 // Save it beside eslint.config.mjs; you own it from then on. Append `ultimaStylex` to your config array
 // after your framework's configuration, and put your own overrides after it.
-// Tested with eslint 9.39.5, typescript-eslint 8.71.1 and @stylexjs/eslint-plugin 0.19.1.
+// Tested with eslint 9.39.5 and typescript-eslint 8.71.1; install @stylexjs/eslint-plugin at your @stylexjs/stylex version.
 import stylex from '@stylexjs/eslint-plugin';
 
 export const ultimaStylex = {

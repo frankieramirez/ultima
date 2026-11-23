@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { test } from 'node:test';
-import { LINT_FRAGMENT, LINT_INSTALL, LINT_PINS, LINT_RULES, MINIMAL_CONFIG, NEXT_IMPORT, combinationProblems, lintSnapshotProblems, lintVerdict, severity } from '../consumer-lint.ts';
+import { LINT_FRAGMENT, LINT_INSTALL, LINT_INSTALL_DOC, LINT_PLUGIN_DOC, LINT_PINS, LINT_RULES, MINIMAL_CONFIG, NEXT_IMPORT, combinationProblems, lintSnapshotProblems, lintVerdict, severity } from '../consumer-lint.ts';
 import { LINT_CASES, consumerReportProblems, lintCases } from '../consumer-report.ts';
 import { setupItems } from '../../registry/items.config.ts';
 import setupNext from '../../registry/metadata/setup/setup-next.ts';
@@ -21,15 +21,19 @@ test('the hosted fragment registers the plugin with the supplied severities and 
   assert.deepEqual(ultimaStylex.files, ['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}']);
   assert.deepEqual(Object.fromEntries(Object.entries(ultimaStylex.rules).map(([rule, value]) => [rule, severity(value)])), LINT_RULES);
   assert.deepEqual(ultimaStylex.rules['@stylexjs/valid-styles'][1], { allowOuterPseudoAndMedia: true });
-  for (const [name, version] of Object.entries(LINT_PINS)) assert.ok(fragment.includes(`${name} ${version}`), `the fragment names the tested ${name}`);
+  for (const [name, version] of Object.entries(LINT_PINS)) {
+    if (name === '@stylexjs/eslint-plugin') assert.ok(fragment.includes('@stylexjs/eslint-plugin'), 'the fragment names the plugin, whose version follows the installed runtime');
+    else assert.ok(fragment.includes(`${name} ${version}`), `the fragment names the tested ${name}`);
+  }
 });
 
 test('the install walkthrough shows the exact fragment, config and pinned commands the runner uses', () => {
   assert.ok(install.includes('## StyleX lint'), 'the walkthrough section is #stylex-lint');
   assert.ok(install.includes(`\`\`\`js title="ultima.eslint.mjs"\n${fragment}\`\`\``), 'the walkthrough copies the hosted fragment byte for byte');
   assert.ok(install.includes(`\`\`\`js title="eslint.config.mjs"\n${MINIMAL_CONFIG}\`\`\``), 'the minimal config is the one the Vite fixture lints with');
-  assert.ok(install.includes(`npm ${LINT_INSTALL.join(' ')}`), 'the walkthrough installs the tested combination');
-  assert.ok(install.includes(`npm install -D --save-exact @stylexjs/eslint-plugin@${LINT_PINS['@stylexjs/eslint-plugin']}`), 'an existing config adds only the plugin');
+  assert.ok(install.includes(LINT_INSTALL_DOC), 'the walkthrough installs the tested combination with the plugin at the installed StyleX version');
+  assert.equal(LINT_INSTALL('0.19.2').at(-2), '@stylexjs/eslint-plugin@0.19.2', 'the runner installs the plugin at the installed StyleX version');
+  assert.ok(install.includes(LINT_PLUGIN_DOC), 'an existing config adds only the plugin, at the installed StyleX version');
   assert.ok(install.includes(`${NEXT_IMPORT}\n`) && install.includes('  ...nextTs,\n  ultimaStylex,\n'), 'the Next example appends the fragment after nextTs, as the Next fixtures do');
   assert.ok(install.includes('(/ultima.eslint.mjs)'), 'the walkthrough links the download');
   assert.ok(!/--max-warnings 0`?\s*\n/.test(install) && !install.includes('eslint . --fix'), 'supplied commands never fail on warnings or autofix');
