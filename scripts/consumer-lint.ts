@@ -16,8 +16,12 @@ export const LINT_FRAGMENT = 'apps/docs/public/ultima.eslint.mjs';
 export { LINT_PINS };
 /** The supplied severities: 2 error, 1 warning, 0 off. */
 export const LINT_RULES: Record<string, number> = { '@stylexjs/valid-styles': 2, '@stylexjs/no-unused': 1, '@stylexjs/valid-shorthands': 1, '@stylexjs/no-conflicting-props': 1, '@stylexjs/sort-keys': 0 };
-/** The install command for a project without ESLint, as the walkthrough prints it. */
-export const LINT_INSTALL = ['install', '-D', '--save-exact', ...Object.entries(LINT_PINS).map(([name, version]) => `${name}@${version}`), `typescript@${LINT_TYPESCRIPT}`];
+/** The plugin must equal the installed `@stylexjs/stylex`, which the setup item resolves at install time, so the pin follows it rather than a fixed release. */
+export const LINT_INSTALL = (stylex: string) => ['install', '-D', '--save-exact', `eslint@${LINT_PINS.eslint}`, `typescript-eslint@${LINT_PINS['typescript-eslint']}`, `@stylexjs/eslint-plugin@${stylex}`, `typescript@${LINT_TYPESCRIPT}`];
+/** The same install as the walkthrough prints it: the plugin version is read from the installed runtime. */
+export const LINT_INSTALL_DOC = `npm install -D --save-exact eslint@${LINT_PINS.eslint} typescript-eslint@${LINT_PINS['typescript-eslint']} "@stylexjs/eslint-plugin@$(node -p 'require("./node_modules/@stylexjs/stylex/package.json").version')" typescript@${LINT_TYPESCRIPT}`;
+/** An existing config adds only the plugin, at the installed runtime's version, as the walkthrough prints it. */
+export const LINT_PLUGIN_DOC = `npm install -D --save-exact "@stylexjs/eslint-plugin@$(node -p 'require("./node_modules/@stylexjs/stylex/package.json").version')"`;
 /** The complete config for a project without ESLint, byte for byte as the install walkthrough shows it. */
 export const MINIMAL_CONFIG = `import tseslint from 'typescript-eslint';
 import { ultimaStylex } from './ultima.eslint.mjs';
@@ -205,12 +209,14 @@ export async function lintScene(app: string, layout: ConsumerLayout, registry: {
   assert.equal(fragment, await readFile(join(repository, LINT_FRAGMENT), 'utf8'), 'the downloaded fragment must be the hosted bytes');
   await writeFile(join(app, 'ultima.eslint.mjs'), fragment);
   const config = join(app, 'eslint.config.mjs');
+  const stylex = (JSON.parse(await readFile(join(app, 'node_modules/@stylexjs/stylex/package.json'), 'utf8')) as { version?: string }).version;
+  assert.ok(stylex, '@stylexjs/stylex must be installed before the lint dependencies');
   if (layout === 'vite') {
     assert.ok(!existsSync(config), 'create-vite no longer ships without ESLint; this layout needs the existing-config path');
-    await execute(app, 'npm', LINT_INSTALL);
+    await execute(app, 'npm', LINT_INSTALL(stylex));
     await writeFile(config, MINIMAL_CONFIG);
   } else {
-    await execute(app, 'npm', ['install', '-D', '--save-exact', `@stylexjs/eslint-plugin@${LINT_PINS['@stylexjs/eslint-plugin']}`]);
+    await execute(app, 'npm', ['install', '-D', '--save-exact', `@stylexjs/eslint-plugin@${stylex}`]);
     const scaffolded = await readFile(config, 'utf8');
     assert.ok(scaffolded.includes(NEXT_ANCHOR), 'create-next-app no longer composes nextTs; update the walkthrough');
     await writeFile(config, `${NEXT_IMPORT}\n${scaffolded.replace(NEXT_ANCHOR, `${NEXT_ANCHOR}  ultimaStylex,\n`)}`);

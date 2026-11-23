@@ -118,7 +118,7 @@ The StyleX compiler can accept styles that are not valid, so [StyleX recommends 
 // Ultima's StyleX lint fragment for an ESLint 9 flat config: https://ultima.systems/install#stylex-lint
 // Save it beside eslint.config.mjs; you own it from then on. Append `ultimaStylex` to your config array
 // after your framework's configuration, and put your own overrides after it.
-// Tested with eslint 9.39.5, typescript-eslint 8.71.1 and @stylexjs/eslint-plugin 0.19.1.
+// Tested with eslint 9.39.5 and typescript-eslint 8.71.1; install @stylexjs/eslint-plugin at your @stylexjs/stylex version.
 import stylex from '@stylexjs/eslint-plugin';
 
 export const ultimaStylex = {
@@ -135,14 +135,14 @@ export const ultimaStylex = {
 };
 ```
 
-The plugin must match `@stylexjs/stylex` exactly, and `init` installs StyleX 0.19.1. A project on an older StyleX moves its StyleX packages to 0.19.1 with the plugin, because the 0.19.0 plugin rejects installed component sources.
+The plugin must match `@stylexjs/stylex` exactly, so install it at the version your project already resolved. `init` pins the StyleX packages to 0.19.1; a project that installed the setup item by hand resolves the latest release. A project on an older StyleX moves its StyleX packages up with the plugin, because the 0.19.0 plugin rejects installed component sources.
 
 Invalid styles are errors. `allowOuterPseudoAndMedia` accepts the namespace-level `':hover'` and `@media` blocks that installed components use. Unused styles, shorthand advice and conflicting props are warnings. Key order is your choice, so `sort-keys` is off, and so is every other upstream rule.
 
-**A project without ESLint.** This includes a create-vite app, which ships oxlint. Install the tested versions. typescript-eslint supports TypeScript up to 6.0, and create-vite now scaffolds TypeScript 7, so the line also holds TypeScript at 6.0:
+**A project without ESLint.** This includes a create-vite app, which ships oxlint. Install the tested versions, with the plugin at your installed `@stylexjs/stylex` version. typescript-eslint supports TypeScript up to 6.0, and create-vite now scaffolds TypeScript 7, so the line also holds TypeScript at 6.0:
 
 ```sh title="Terminal"
-npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 @stylexjs/eslint-plugin@0.19.1 typescript@~6.0
+npm install -D --save-exact eslint@9.39.5 typescript-eslint@8.71.1 "@stylexjs/eslint-plugin@$(node -p 'require("./node_modules/@stylexjs/stylex/package.json").version')" typescript@~6.0
 ```
 
 Then create the config. It parses TypeScript and JSX syntax only. It adds no type-aware linting and no general TypeScript rules.
@@ -166,7 +166,7 @@ export default [
 
 If `package.json` has no `lint` script, add `"lint": "eslint ."`. If it already runs another linter, such as create-vite's oxlint, keep that linter and run ESLint after it: `"lint": "oxlint && eslint ."`.
 
-**An existing ESLint 9 flat config.** Install only the plugin, `npm install -D --save-exact @stylexjs/eslint-plugin@0.19.1`, and keep your parser, rules and ignores. Import the fragment and put it after your framework's configuration. In a create-next-app project with ESLint, that looks like this:
+**An existing ESLint 9 flat config.** Install only the plugin at your installed `@stylexjs/stylex` version, `npm install -D --save-exact "@stylexjs/eslint-plugin@$(node -p 'require("./node_modules/@stylexjs/stylex/package.json").version')"`, and keep your parser, rules and ignores. Import the fragment and put it after your framework's configuration. In a create-next-app project with ESLint, that looks like this:
 
 ```js title="eslint.config.mjs"
 import { ultimaStylex } from './ultima.eslint.mjs';
